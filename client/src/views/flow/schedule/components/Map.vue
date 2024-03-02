@@ -95,25 +95,46 @@
     <MglMarker v-if="currentProjectMarker.pinned"
                :key="currentProjectMarker.projectProcessStepEventId+ `${markerCount}`"
                :coordinates="currentProjectMarker.coordinates"
+
                @click="selectAddressForDriveTime(currentProjectMarker)"
-               color="var(--v-primary-base)"/>
+               color="var(--v-primary-base)">
+      <MglPopup :close-button="false" :offset="36">
+        <v-card flat class="pa-1 pb-0" style="font-family: 'Lato, sans-serif'">
+          <div class="label-large pb-2">{{ currentProjectMarker.projectName }}</div>
+          <div class="body-large pb-2">{{ currentProjectMarker.processStepName }}</div>
+          <span class="body-large pb-2" v-if="null != currentProjectMarker.street1 || null != currentProjectMarker.city || null != currentProjectMarker.postalCode">
+            {{ currentProjectMarker.street1 }}<br/>
+            {{ currentProjectMarker.city }}, {{ currentProjectMarker.stateAbbreviation }} {{ currentProjectMarker.postalCode }}<br/>
+          </span>
+          <div v-if="eventIsSameDay(currentProjectMarker.start, currentProjectMarker.end)" class="body-large pb-2">{{currentProjectMarker.start | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{currentProjectMarker.end | formatDate('timestamp','h:mm a')}}</div>
+          <div v-else-if="currentProjectMarker.start" class="body-large pb-2">{{currentProjectMarker.start | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{currentProjectMarker.end | formatDate('timestamp','MMM DD YYYY, h:mm a')}}</div>
+          <div>
+            <v-btn outlined color="primary" width="100%" class="text-capitalize body-medium" @click="openProjectEvent(currentProjectMarker)">Open Project</v-btn>
+          </div>
+        </v-card>
+      </MglPopup>
+    </MglMarker>
     <!-- these markers come from the project search  -->
     <MglMarker v-for="m in markers" v-if="m.coordinates"
                :key="m.projectProcessStepEventId + `${markerCount}`"
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
-      <MglPopup :close-button="false">
-        <VCard flat>
-          {{ m.projectName }}<br/>
-          {{ m.processStepName }}
-          <span v-if="null != m.street1 || null != m.city || null != m.postalCode">
-            <br/>
+      <MglPopup :close-button="false" :offset="36">
+        <v-card flat class="pa-1 pb-0" style="font-family: 'Lato, sans-serif'">
+          <div class="label-large pb-2">{{ m.projectName }}</div>
+          <div class="label-large pb-2">{{ m.processStepName }}</div>
+          <span class="body-large pb-2" v-if="null != m.street1 || null != m.city || null != m.postalCode">
             {{ m.street1 }}<br/>
             {{ m.city }}, {{ m.stateAbbreviation }} {{ m.postalCode }}<br/>
             {{ m.color }} - {{ m.projectProcessStepEventId + markerCount.toString() }}
           </span>
-        </VCard>
+          <div v-if="eventIsSameDay(m.start, m.end)" class="body-large pb-2">{{m.start | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{m.end | formatDate('timestamp','h:mm a')}}</div>
+          <div v-else-if="m.start" class="body-large pb-2">{{m.start | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{m.end | formatDate('timestamp','MMM DD YYYY, h:mm a')}}</div>
+          <div>
+            <v-btn outlined color="primary" width="100%" class="text-capitalize body-medium" @click="openProjectEvent(m)">Open Project</v-btn>
+          </div>
+        </v-card>
       </MglPopup>
     </MglMarker>
     <!-- these markers come from the calendar  -->
@@ -122,16 +143,20 @@
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
-      <MglPopup :close-button="false">
-        <VCard flat>
-          {{ m.projectName }}<br/>
-          {{ m.processStepName }}
-          <span v-if="null != m.street1 || null != m.city || null != m.postalCode">
-            <br/>
+      <MglPopup :close-button="false" :offset="36">
+        <v-card flat class="pa-1 pb-0" style="font-family: 'Lato, sans-serif'">
+          <div class="label-large pb-2">{{ m.projectName }}</div>
+          <div class="label-large pb-2">{{ m.processStepName }}</div>
+          <span class="body-large pb-2" v-if="null != m.street1 || null != m.city || null != m.postalCode">
             {{ m.street1 }}<br/>
             {{ m.city }}, {{ m.stateAbbreviation }} {{ m.postalCode }}
           </span>
-        </VCard>
+          <div v-if="eventIsSameDay(m.start, m.end)" class="body-large pb-2">{{m.start | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{m.end | formatDate('timestamp','h:mm a')}}</div>
+          <div v-else-if="m.start" class="body-large pb-2">{{m.start | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{m.end | formatDate('timestamp','MMM DD YYYY, h:mm a')}}</div>
+          <div>
+            <v-btn outlined color="primary" width="100%" class="text-capitalize body-medium" @click="openProjectEvent(m)">Open Project</v-btn>
+          </div>
+        </v-card>
       </MglPopup>
     </MglMarker>
     <MglNavigationControl :showCompass="false" position="top-right"/>
@@ -495,6 +520,18 @@ export default {
       await this.changeMapLocation()
     },
 
+
+    eventIsSameDay (startDate, endDate) {
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+      return start.getDate() === end.getDate() && start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()
+    },
+
+    openProjectEvent (project) {
+      //open event clicks in new window every time so they dont have to keep reloading the calendar
+      let routerData = this.$router.resolve({path: `/project/${project.projectId}/processStep/${project.projectProcessStepId}/event/${project.projectProcessStepEventId}`})
+      window.open(routerData.href, '_blank')
+    },
 
     /**Project Search Methods**/
     async getProjects(resetQuery) {

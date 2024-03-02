@@ -250,7 +250,7 @@ const cancelProjectProcessStepEvent = async() => {
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in US/Mountain Time</div>
       </v-card-text>
       <v-card-actions class="pb-4 px-4">
-        <v-btn color="primary" width="100%"
+        <v-btn color="primary" width="100%" class="text-capitalize body-medium"
                :disabled="fieldsSaving || saveInvalid"
                @click="[fieldsSaving = true, checkForSchedulingConflicts()]"
         >Schedule</v-btn>
