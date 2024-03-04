@@ -633,8 +633,10 @@ export default {
       this.workQueueType.defaultColumnDisplay.forEach((c) => {
         if (fName === c.text) {
           c.show = !fShow
+          console.log(`Updated ${c.text} field from ${fShow} to ${c.show}`)
         }
       })
+      this.defaultFields = this.workQueueType?.defaultColumnDisplay
     },
   },
 }
