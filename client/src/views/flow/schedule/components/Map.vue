@@ -99,19 +99,7 @@
                @click="selectAddressForDriveTime(currentProjectMarker)"
                color="var(--v-primary-base)">
       <MglPopup :close-button="false" :offset="36">
-        <v-card flat class="pa-1 pb-0" style="font-family: 'Lato, sans-serif'">
-          <div class="label-large pb-2">{{ currentProjectMarker.projectName }}</div>
-          <div class="body-large pb-2">{{ currentProjectMarker.processStepName }}</div>
-          <span class="body-large pb-2" v-if="null != currentProjectMarker.street1 || null != currentProjectMarker.city || null != currentProjectMarker.postalCode">
-            {{ currentProjectMarker.street1 }}<br/>
-            {{ currentProjectMarker.city }}, {{ currentProjectMarker.stateAbbreviation }} {{ currentProjectMarker.postalCode }}<br/>
-          </span>
-          <div v-if="eventIsSameDay(currentProjectMarker.start, currentProjectMarker.end)" class="body-large pb-2">{{currentProjectMarker.start | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{currentProjectMarker.end | formatDate('timestamp','h:mm a')}}</div>
-          <div v-else-if="currentProjectMarker.start" class="body-large pb-2">{{currentProjectMarker.start | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{currentProjectMarker.end | formatDate('timestamp','MMM DD YYYY, h:mm a')}}</div>
-          <div>
-            <v-btn outlined color="primary" width="100%" class="text-capitalize body-medium" @click="openProjectEvent(currentProjectMarker)">Open Project</v-btn>
-          </div>
-        </v-card>
+        <MapPopUp :marker="currentProjectMarker"/>
       </MglPopup>
     </MglMarker>
     <!-- these markers come from the project search  -->
@@ -121,20 +109,7 @@
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
       <MglPopup :close-button="false" :offset="36">
-        <v-card flat class="pa-1 pb-0" style="font-family: 'Lato, sans-serif'">
-          <div class="label-large pb-2">{{ m.projectName }}</div>
-          <div class="label-large pb-2">{{ m.processStepName }}</div>
-          <span class="body-large pb-2" v-if="null != m.street1 || null != m.city || null != m.postalCode">
-            {{ m.street1 }}<br/>
-            {{ m.city }}, {{ m.stateAbbreviation }} {{ m.postalCode }}<br/>
-            {{ m.color }} - {{ m.projectProcessStepEventId + markerCount.toString() }}
-          </span>
-          <div v-if="eventIsSameDay(m.start, m.end)" class="body-large pb-2">{{m.start | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{m.end | formatDate('timestamp','h:mm a')}}</div>
-          <div v-else-if="m.start" class="body-large pb-2">{{m.start | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{m.end | formatDate('timestamp','MMM DD YYYY, h:mm a')}}</div>
-          <div>
-            <v-btn outlined color="primary" width="100%" class="text-capitalize body-medium" @click="openProjectEvent(m)">Open Project</v-btn>
-          </div>
-        </v-card>
+      <MapPopUp :marker="m"/>
       </MglPopup>
     </MglMarker>
     <!-- these markers come from the calendar  -->
@@ -143,21 +118,7 @@
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
-      <MglPopup :close-button="false" :offset="36">
-        <v-card flat class="pa-1 pb-0" style="font-family: 'Lato, sans-serif'">
-          <div class="label-large pb-2">{{ m.projectName }}</div>
-          <div class="label-large pb-2">{{ m.processStepName }}</div>
-          <span class="body-large pb-2" v-if="null != m.street1 || null != m.city || null != m.postalCode">
-            {{ m.street1 }}<br/>
-            {{ m.city }}, {{ m.stateAbbreviation }} {{ m.postalCode }}
-          </span>
-          <div v-if="eventIsSameDay(m.start, m.end)" class="body-large pb-2">{{m.start | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{m.end | formatDate('timestamp','h:mm a')}}</div>
-          <div v-else-if="m.start" class="body-large pb-2">{{m.start | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{m.end | formatDate('timestamp','MMM DD YYYY, h:mm a')}}</div>
-          <div>
-            <v-btn outlined color="primary" width="100%" class="text-capitalize body-medium" @click="openProjectEvent(m)">Open Project</v-btn>
-          </div>
-        </v-card>
-      </MglPopup>
+      <MapPopUp :marker="m"/>
     </MglMarker>
     <MglNavigationControl :showCompass="false" position="top-right"/>
   </MglMap>
@@ -175,10 +136,12 @@ import debounce from "lodash.debounce";
 import axios from "axios";
 import ProjectSearchDialog from "@/views/flow/schedule/components/ProjectSearchDialog.vue";
 import ProjectModal from "@/views/flow/schedule/components/ProjectModal.vue";
+import MapPopUp from "@/views/flow/schedule/components/MapPopUp.vue";
 
 export default {
   name: 'ScheduleMap',
   components: {
+    MapPopUp,
     ProjectModal,
     ProjectSearchDialog,
     MglMap,
@@ -219,7 +182,7 @@ export default {
       constants,
       markerCount: 0, //this is used to reset the key when the color of a marker changes so it gets redrawn
       drivingMarkerColor: '#ab4711',
-      defaultEmptyColor: '#ffffff',
+      defaultEmptyColor: '#EEEEEE',
       location: '',
       address1: '',
       showAddress1List: false,
