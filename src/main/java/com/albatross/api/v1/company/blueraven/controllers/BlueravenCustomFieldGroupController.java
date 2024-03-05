@@ -87,6 +87,11 @@ public class BlueravenCustomFieldGroupController {
     customFieldGroupService.updateFieldsInGroup(customFields);
   }
 
+  @PutMapping(value="/updateFieldAssignment")
+  public void updateFieldAssignment(@RequestBody CustomField customField) {
+    customFieldGroupService.updateCustomFieldGroupAssignment(customField);
+  }
+
   @PutMapping(value = "/saveUseParentData")
   public void saveUseParentData(@RequestBody CustomField customField) {
     customFieldGroupService.saveUseParentData(customField);
