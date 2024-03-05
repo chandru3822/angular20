@@ -248,9 +248,10 @@
             </div>
           </div>
         </template>
-<!--        <template v-slot:eventContent="{event}">-->
-<!--          <div class="label-medium" style="height: 30px">{{ event.title }}</div>-->
-<!--        </template>-->
+        <template v-slot:eventContent="{event}">
+          <div v-if="event.title">{{event.title}}</div>
+          {{event}}
+        </template>
       </FullCalendar>
     </div>
   </div>
@@ -267,9 +268,10 @@ import constants from '@/helpers/constants'
 import ConfirmationDialog from "../../../../components/ConfirmationDialog.vue";
 import {UserActions} from "@/stores/UserStore";
 import FullCalendar from "@fullcalendar/vue";
+import momentTimezonePlugin from "@fullcalendar/moment-timezone";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
-import {ScheduleMutations} from "@/stores/ScheduleStore.js";
+import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
 
 
   export default {
@@ -379,9 +381,19 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
       // this.getEvents()
     },
     watch: {
-      '$store.state.user.details.timezone.value': function () {
-        this.calendar.options.timezone = this.$store.state.user.details.timezone.value
-
+      '$store.state.schedule.timezone.value': function (value) {
+        //when the schedule timezone value changes, update the calendar plugin's timezone
+        let calendarApi = this.$refs.eventCalendar.getApi()
+        calendarApi.setOption('timeZone', this.$store.state.schedule.timezone.value)
+      },
+      '$store.state.user.details.timezone': function(){
+        //when the app timezone changes, update the schedule timezone to match
+        this.timezone = this.$store.state.user.details.timezone
+      },
+      timezone : function () {
+        //when the value of the timezone changes (either via the time zone dropdown selector or a change in the user store timezone value),
+        // update the timezone for the schedule page
+        this.changeTimezone(this.timezone)
       },
       // whenever selectedUsers or selectedOrgs changes, concat them both into resources
       'selectedUsers': function () {
@@ -410,9 +422,7 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
           this.getDayOptions()
         }
       },
-      timezone : function () {
-        this.changeTimezone(this.timezone)
-      },
+
     },
     created() {
       // this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
@@ -427,7 +437,7 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
       return {
         calendarOptions: {
           plugins: [
-              resourceTimelinePlugin, interaction
+              resourceTimelinePlugin, interaction, momentTimezonePlugin
           ],
           initialView: 'resourceTimelineDay',
           resources: [],
@@ -461,6 +471,7 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
             weekday: 'long'
           },
           height: '100%',
+          timeZone: this.$store.state.schedule.timezone.value || {},
 
           customButtons: {
             customToday: {
@@ -475,7 +486,6 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
             //   text: 'day',
             //   id:'customTimelineDay',
             //   click: () => {
-            //     debugger
             //     let calendarApi = this.$refs.eventCalendar.getApi()
             //     if(calendarApi.view.type !== 'resourceTimelineDay') {
             //       this.$refs.daySelectionbtn.$el.click()
@@ -547,20 +557,20 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
         licenseKey: 'GPL-My-Project-Is-Open-Source',
         daySelector: false,
         dayOptions: [],
-        timezone: this.$store.state.user.details.timezone.value,
+        timezone: this.$store.state.schedule.timezone.value,
         calendar: {
           options: {
             slotDuration: '00:30:00',
             slotLabelInterval: '01:00:00',
             slotWidth: 45,
-            scrollTime: moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'),
+            scrollTime: moment().tz(this.$store.state.schedule.timezone.value).startOf('hour').format('HH:mm:ss'),
             hiddenDays: [],
             minTime: '02:00:00',
             maxTime: '23:00:00',
             height: 'parent',
             firstDay: 1,
             editable: true,
-            timezone: this.$store.state.user.details.timezone.value || {},
+            timezone: this.$store.state.schedule.timezone.value || {},
           }
         },
         timezones: [
@@ -1001,7 +1011,7 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
             userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
             startTime: info.start,
             endTime: info.end,
-            timezone: this.timezone
+            timezone: this.timezone.value
           }
           const {data} = await postRequest(`/schedule/availability`, params)
 
@@ -1141,10 +1151,8 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
         return colorClassList[index%20]
       },
       async changeTimezone (tz) {
-        //todo: make this work only here
-        await this.$store.dispatch(UserActions.CHANGE_TIMEZONE, tz)
-        // i dont think we have to refresh, the filter should do that for us
-        // window.location.reload()
+        //update the timezone in the schedule store
+        await this.$store.dispatch(ScheduleActions.CHANGE_TIMEZONE, tz)
       },
 
 

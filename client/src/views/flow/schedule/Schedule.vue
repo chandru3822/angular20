@@ -74,7 +74,7 @@
   import ProjectSearchDialog from "@/views/flow/schedule/components/ProjectSearchDialog.vue";
   import ProjectModal from "@/views/flow/schedule/components/ProjectModal.vue";
   import {ProjectMutations} from "@/stores/ProjectStore.js";
-  import {ScheduleMutations} from "@/stores/ScheduleStore.js";
+  import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
 
   export default {
     name: 'Schedule',
@@ -94,7 +94,7 @@
         showFilters: true,
         listLoading: false,
         saveInvalid: true,
-        timezone: this.$store.state.user.details.timezone.value,
+        timezone: null,
         defaultZoom: 2.0,
         startTime: null,
         endTime: null,
@@ -173,9 +173,10 @@
       },
       endTime () {
         // this.getProjects()
-      }
+      },
     },
     created() {
+      this.loadTimezone()
       this.getActiveStatesByHierarchy()
       this.getStatusTypes()
       this.getEventStatusTypes()
@@ -186,6 +187,18 @@
       }
     },
     methods: {
+      loadTimezone(){
+        if(this.$store.state.schedule.timezone?.value === null) {
+          this.timezone = this.$store.state.user.details.timezone
+          this.updateTimezone()
+        }
+        else {
+          this.timezone = this.$store.state.user.details.timezone
+        }
+      },
+      updateTimezone(){
+        this.$store.dispatch(ScheduleActions.CHANGE_TIMEZONE, this.timezone)
+      },
       showHideMap(show){
         if(show !== this.showMap) {
           this.$store.commit(ScheduleMutations.SHOW_HIDE_MAP)
