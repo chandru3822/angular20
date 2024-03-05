@@ -196,7 +196,7 @@
           </v-toolbar-items>
         </v-toolbar>
 
-        <v-col class="text-left">
+        <v-col>
           <template>
             <v-row>
               <v-card flat tile v-for="item in workQueueType.schedule" class="flex-display  card-main"
@@ -230,6 +230,48 @@
         </v-col>
       </v-col>
     </v-row>
+    <!--    Default Columns-->
+    <v-row>
+      <v-col cols="12" class="pa-0 mt-4">
+        <v-toolbar flat class="wqt-header-bar">
+          <v-toolbar-title class="app-title">Default Column Visibility</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
+              <v-btn v-if="!editDefaultFields" text color="primary" @click="editDefaultFields = !editDefaultFields">
+                <v-icon>edit</v-icon>
+              </v-btn>
+              <v-btn v-else text color="primary" class="" @click="saveType()">
+                <v-icon>save</v-icon>
+              </v-btn>
+              <v-btn text color="primary" v-if="editDefaultFields" @click="editDefaultFields = false">
+                cancel
+              </v-btn>
+            </div>
+          </v-toolbar-items>
+        </v-toolbar>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12">
+        <v-data-table
+          :items="defaultFields"
+          :headers="defaultCheckboxHeaders"
+          class="table-striped pa-0 ma-0"
+          hide-default-footer
+        >
+          <template v-slot:item.show="{ item }">
+            <v-checkbox
+              :input-value="item.show"
+              :disabled="!editDefaultFields"
+              @change="updateDefaultFields(item)"
+            >
+            </v-checkbox>
+          </template>
+        </v-data-table>
+      </v-col>
+    </v-row>
+
     <v-row>
       <SmartlistColumn
         v-if="this.workQueueType.smartlistId"
@@ -334,7 +376,10 @@ export default {
         {day: 'Saturday', startTime: '07:00', endTime: '22:00', selected: true}
       ],
       prevSchedule: [],
-      cardColorToggle: true
+      cardColorToggle: true,
+      defaultFields: [],
+      defaultCheckboxHeaders: [{text: "Field Name", value: "value", show: true}, {text: "Show", value: "show", show: true}],
+      editDefaultFields: false,
     }
   },
   computed: {
@@ -356,13 +401,11 @@ export default {
       this.getDurationTypes(),
       this.getPositions(),
       this.getPsAndEventsUsingWqt(),
-      this.getWorkQueueType()
+      this.getWorkQueueType(),
     ]
     await Promise.all(requests).then(async () => {
       this.$store.commit(AppMutations.SET_LOADING, false);
     })
-
-
   },
   methods: {
     selectAllHidden () {
@@ -474,6 +517,7 @@ export default {
         this.workQueueLoading = true;
         const {data, status} = await getRequest(`/workQueueType/${this.workQueueTypeId}`)
         this.workQueueType = data
+        this.defaultFields = this.workQueueType?.defaultColumnDisplay
         if (this.workQueueType.schedule.length < 1) {
           this.workQueueType.schedule = this.noScheduleDefault;
         }
@@ -504,6 +548,7 @@ export default {
           this.workQueueType = data
           this.editType = false
           this.editSchedule = false
+          this.editDefaultFields = false
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
@@ -581,10 +626,19 @@ export default {
     workQueueTypeHiddenCheckboxEventListener(e){
       this.workQueueType.hidden = e;
     },
+    updateDefaultFields(fieldName) {
+      let fName = fieldName.text
+      let fShow = fieldName.show
 
+      this.workQueueType.defaultColumnDisplay.forEach((c) => {
+        if (fName === c.text) {
+          c.show = !fShow
+          console.log(`Updated ${c.text} field from ${fShow} to ${c.show}`)
+        }
+      })
+      this.defaultFields = this.workQueueType?.defaultColumnDisplay
+    },
   },
-
-
 }
 </script>
 
@@ -624,8 +678,12 @@ export default {
   border: 2px solid #DBE0E3;
 }
 
-.wqt-header-bar {
-  border-bottom: 1px solid #E6E6E6;
-  border-top: 1px solid #E6E6E6;
+.default-fields {
+  font-size: 12px;
+  color: var(--v-grey-base);
+  font-weight: 700; line-height: 18px;
+  text-align: left;
 }
+
+
 </style>

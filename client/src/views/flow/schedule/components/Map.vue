@@ -157,6 +157,7 @@ export default {
   watch: {
     'latitude': function () {
       // reset the selected group when the object type changes
+      console.log("firing watch")
       this.changeMapLocation()
     }
   },
@@ -398,25 +399,25 @@ export default {
       }
     },
     async changeMapLocation() {
-      try {
-        this.center = this.latitude && this.longitude ? [this.longitude, this.latitude] : this.defaultCenter
-        let zoom = this.zoom ?? this.defaultZoom
-        await this.asyncActions.flyTo({
-          center: this.center,
-          zoom: zoom,
-          speed: 2
-        })
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error jumping to address')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
+      this.asyncActions?.flyTo({
+        center:[this.longitude, this.latitude],
+        zoom: this.zoom,
+        speed: 2
+      })
+
     },
     async onMapLoad(event) {
       // Here we're catching 'load' map event
       this.asyncActions = event.component.actions
-      await this.changeMapLocation()
+      this.center = this.latitude && this.longitude ? [this.longitude, this.latitude] : this.defaultCenter
+      let zoom = this.zoom ?? this.defaultZoom
+      await this.asyncActions.flyTo({
+        center: this.center,
+        zoom: zoom,
+        speed: 2
+      })
     },
+
   }
 
 }

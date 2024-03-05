@@ -52,7 +52,7 @@ import {Actions} from "@/store.js";
     },
     computed: {
       unseenAnnouncements() {
-        return this.$store.state.app.announcements?.filter(a => !a.seen &&
+        return this.$store.state?.app?.announcements?.filter(a => !a.seen &&
             (moment().isBetween(moment(a.startTime), moment(a.endTime))
             || (moment().isAfter((moment(a.startTime))) && a.endTime == null))
 

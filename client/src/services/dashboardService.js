@@ -1,4 +1,4 @@
-import { postRequest } from '@/helpers/helpers'
+import { postRequest, getRequestWithParams } from '@/helpers/helpers'
 
 export async function getCloserAreas (userId, setterOverride) {
   const requestBody = {userId, setterOverride}
@@ -28,6 +28,12 @@ export async function getCloserOffices (userId, areas, regions, districts, sette
 export async function getCloserReps (userId, areas, regions, districts, offices) {
   const requestBody = {userId, areas, regions, districts, offices}
   const {data} = await postRequest('/closerDashboard/getReps', requestBody, 'blueraven', [])
+  return data
+}
+
+export async function getCloserRepRankings (timeInterval, selectedOrgId) {
+  const params = {timeInterval, selectedOrgId}
+  const {data} = await getRequestWithParams('/closerDashboard/getRepRankings', {params}, 'blueraven', [])
   return data
 }
 

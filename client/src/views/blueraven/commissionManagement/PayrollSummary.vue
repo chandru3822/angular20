@@ -90,7 +90,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataLoading = true
         try {
-          const {data, status} = await getRequest(`/payroll/${this.payrollId}/summary/`, 'blueraven')
+          const {data, status} = await getRequest(`/payroll/${this.payrollId}/summary`, 'blueraven')
           this.payrollSummary = data
           this.dataLoading = false
           handleHidingGlobalLoader(this, status)

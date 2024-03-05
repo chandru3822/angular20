@@ -21,6 +21,7 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -163,7 +164,8 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
 
   @Scheduled(fixedDelay = 5, timeUnit = TimeUnit.MINUTES)
   public void companyDashboardSetup() {
-    companyDashboardService.callCompanyDashboardSetup(LocalDate.now());
+    //due to counts being processed in mountain time this "now" date also needs to be in mountain
+    companyDashboardService.callCompanyDashboardSetup(LocalDate.now(ZoneId.of("America/Denver")));
   }
 
   private void setBlueravenSystemUser() {

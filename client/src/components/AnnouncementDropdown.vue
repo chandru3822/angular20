@@ -39,15 +39,15 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
-      <v-list v-else-if="$store.state.app.announcements?.length === 0">
+      <v-list v-else-if="$store.state?.app?.announcements?.length === 0">
           <v-list-item class="pr-1">
             <v-list-item-content class="">
               You don't have any notifications
             </v-list-item-content>
           </v-list-item>
       </v-list>
-      <v-list v-else-if="$store.state.app.announcements?.length > 0">
-        <template  v-for="(item, index) in $store.state.app.announcements">
+      <v-list v-else-if="$store.state?.app?.announcements?.length > 0">
+        <template  v-for="(item, index) in $store.state?.app?.announcements">
         <v-list-item class="pr-1"
                      :key="item.id">
           <v-list-item-icon v-if="!item.read" class="mr-2">
@@ -65,7 +65,7 @@
           </v-list-item-action>
           </v-list-item>
         <v-divider
-            v-if="index < $store.state.app.announcements.length - 1"
+            v-if="index < $store.state?.app?.announcements?.length - 1"
         ></v-divider>
         </template>
       </v-list>

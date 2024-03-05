@@ -1,4 +1,5 @@
-drop function if exists brs.get_calculated_proposal_values(bigint, boolean, bigint);
+drop function if exists brs.get_calculated_proposal_values(bigint, boolean, boolean);
+drop function if exists brs.get_calculated_proposal_values(bigint, boolean);
 drop type if exists brs.calculated_proposal_value cascade;
 
 create type brs.calculated_proposal_value as
@@ -37,6 +38,7 @@ create type brs.calculated_proposal_value as
   monthly_payment_all_credits_to_loan_after_term     varchar,
   monthly_payment_no_credits_to_loan_after_term      varchar,
   system_size                                        numeric,
+  system_size_ac                                     numeric,
   first_year_production_estimate                     bigint,
   total_system_cost                                  varchar,
   referral_promotion                                 varchar,
@@ -156,7 +158,7 @@ create type brs.calculated_proposal_value as
   deposit_amount                                     varchar,
   deposit_amount_number                              numeric,
   has_critter_guard boolean,
-  commission_details json,
+ -- commission_details json,
   qualifies_for_incentive       boolean,
   above_the_line_utility_rebate_amount varchar,
   below_the_line_utility_rebate_amount varchar,
@@ -170,7 +172,10 @@ create type brs.calculated_proposal_value as
   nominal_power numeric,
   battery_manufacturers_warranty bigint,
   battery_workmanship_warranty bigint,
-  virtual_sales_price_adjustment numeric
+  virtual_sales_price_adjustment numeric,
+  red_line_funding_amount numeric,
+  closer_gen_discount numeric,
+  small_system_size_adder_amount numeric
 );
 
 drop type brs.excluded_proposal_value;
@@ -244,8 +249,7 @@ create type brs.excluded_proposal_value as
 
 CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
   p_proposal_id bigint,
-  p_insert_prop_log_history boolean default false,
-  p_run_details boolean default false
+  p_insert_prop_log_history boolean default false
 )
 
   RETURNS TABLE
@@ -262,6 +266,7 @@ declare
   v_first_year_production_estimate                      bigint;
   v_friends_and_family                                  boolean;
   v_system_size                                         numeric;
+  v_system_size_ac                                      numeric;
   v_production_factor                                   numeric;
   v_funding_range                                       numeric;
   v_production_factor_range                             numeric;
@@ -557,7 +562,8 @@ BEGIN
          qualifies_for_incentive,
          adder_amount,
          company_process_id,
-         virtual_sales_price_adjustment
+         virtual_sales_price_adjustment,
+         system_size_ac
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -621,7 +627,8 @@ BEGIN
     v_qualifies_for_incentive,
     v_adder_amount,
     v_company_process_id,
-    v_virtual_sales_price_adjustment
+    v_virtual_sales_price_adjustment,
+    v_system_size_ac
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -1318,7 +1325,8 @@ BEGIN
   from brs.get_above_the_line_utility_rebates(v_version_id, v_utility_company_id,
                                               v_aurora_design_summary,v_system_size,
                                               v_total_system_cost_before_rebates,
-                                              v_state_id);
+                                              v_state_id,
+                                                v_storage_capacity);
 
   --raise notice 'v_above_the_line_utility_rebate_amount = %',v_above_the_line_utility_rebate_amount;
   --raise notice 'v_above_the_line_utility_rebates = %',v_above_the_line_utility_rebates;
@@ -1472,7 +1480,7 @@ BEGIN
                                               v_aurora_design_summary,v_system_size,
                                               (coalesce(v_total_loan_amount, 0) + coalesce(v_down_payment_amount, 0) +
                                                coalesce(v_required_down_payment, 0)),
-                                              v_state_id,v_qualifies_for_incentive);
+                                              v_state_id,v_qualifies_for_incentive,v_storage_capacity);
 
   --raise notice 'v_below_the_line_utility_rebate_amount = %',v_below_the_line_utility_rebate_amount;
   --raise notice 'v_below_the_line_utility_rebates = %',v_below_the_line_utility_rebates;
@@ -1805,7 +1813,8 @@ BEGIN
                                          net_system_cost,
                                          eto_rebate_amount,
                                          virtual_sales_price_adjustment,
-                                         virtual_sales_base_price)
+                                         virtual_sales_base_price,
+                                         system_size_ac)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -1910,7 +1919,8 @@ BEGIN
             v_net_system_cost,
             v_eto_rebate_amount,
             v_virtual_sales_price_adjustment,
-            v_virtual_sales_base_price);
+            v_virtual_sales_base_price,
+            v_system_size_ac);
   end if;
 
   return query
@@ -1948,6 +1958,7 @@ BEGIN
            to_char(v_monthly_payment_all_credits_to_loan_after_term, '$FM9,999,999')::varchar,
            to_char(v_monthly_payment_no_credits_to_loan_after_term, '$FM9,999,999')::varchar,
            v_system_size,
+           v_system_size_ac,
            v_first_year_production_estimate,
            to_char(v_total_system_cost, '$FM9,999,999')::varchar,
            to_char(v_referral_promotion, '$FM9,999,999')::varchar,
@@ -2067,26 +2078,26 @@ BEGIN
            to_char(coalesce(v_deposit_amount,0),'$FM9,999,999')::varchar,
            coalesce(v_deposit_amount_number,0),
            v_has_critter_guard,
-           case when p_run_details is true then
-                  (SELECT array_to_json(array_agg(row_to_json(proposal_commission_details)))
-                   FROM (
-                          select *
-                          from brs.get_proposal_commission_details(v_product_id::bigint,
-                                                                   v_source_id ,
-                                                                   v_system_size ,
-                                                                   v_unapproved_zip_code_adder ,
-                                                                   v_red_line_funding_amount ,
-                                                                   v_closer_gen_discount ,
-                                                                   v_equipment_panel_adder ,
-                                                                   v_equipment_inverter_adder ,
-                                                                   v_zone_adder ,
-                                                                   v_misc_adders ,
-                                                                   v_small_system_size_adder_amount ,
-                                                                   v_dealer_fee ,
-                                                                   v_initial_payment_factor,
-                                                                   v_above_line_rebate)
-                        ) proposal_commission_details)
-                else '{}'::json end,
+--            case when p_run_details is true then
+--                   (SELECT array_to_json(array_agg(row_to_json(proposal_commission_details)))
+--                    FROM (
+--                           select *
+--                           from brs.get_proposal_commission_details(v_product_id::bigint,
+--                                                                    v_source_id ,
+--                                                                    v_system_size ,
+--                                                                    v_unapproved_zip_code_adder ,
+--                                                                    v_red_line_funding_amount ,
+--                                                                    v_closer_gen_discount ,
+--                                                                    v_equipment_panel_adder ,
+--                                                                    v_equipment_inverter_adder ,
+--                                                                    v_zone_adder ,
+--                                                                    v_misc_adders ,
+--                                                                    v_small_system_size_adder_amount ,
+--                                                                    v_dealer_fee ,
+--                                                                    v_initial_payment_factor,
+--                                                                    v_above_line_rebate)
+--                         ) proposal_commission_details)
+--                 else '{}'::json end,
            v_qualifies_for_incentive_boolean,
            to_char(v_above_the_line_utility_rebate_amount, '$FM9,999,999')::varchar,
            to_char(v_below_the_line_utility_rebate_amount, '$FM9,999,999')::varchar,
@@ -2100,7 +2111,10 @@ BEGIN
            v_nominal_power,
            v_battery_manufacturers_warranty,
            v_battery_workmanship_warranty,
-           v_virtual_sales_price_adjustment;
+           v_virtual_sales_price_adjustment,
+           v_red_line_funding_amount,
+           v_closer_gen_discount,
+           v_small_system_size_adder_amount;
 
 
 END
