@@ -117,44 +117,44 @@
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
                     <v-btn small text color="primary"
-                             v-if="userCanAdd"
-                             @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded[n] = [item], selectedIndex = index]">
-                        <v-icon v-if="addField && expanded[n].includes(item)">remove</v-icon>
-                        <v-icon v-else>add</v-icon>
-                      </v-btn>
+                           v-if="userCanAdd"
+                           @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded[n] = [item], selectedIndex = index]">
+                      <v-icon v-if="addField && expanded[n].includes(item)">remove</v-icon>
+                      <v-icon v-else>add</v-icon>
+                    </v-btn>
 
-                      <div v-if="userCanEdit" class="flex-display">
-                        <v-btn small text color="primary"
-                               @click="item.edit = !item.edit">
-                          <v-icon v-if="item.edit">remove</v-icon>
-                          <v-icon v-else>edit</v-icon>
-                        </v-btn>
-                        <v-btn small text color="primary"
-                               v-if="item.edit"
-                               @click="[saveGroup(item), item.edit = false]">
-                          <v-icon>save</v-icon>
-                        </v-btn>
-                      </div>
-                      <v-menu offset-y
-                              v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                        <template v-slot:activator="{ on: menu }">
-                          <v-tooltip bottom>
-                            <template v-slot:activator="{ on: tooltip }">
-                              <v-btn text small color="primary" v-on="{...tooltip, ...menu}"
-                                     v-if="objectType && objectType.customColumns">
-                                <v-icon>mdi-cursor-move</v-icon>
-                              </v-btn>
-                            </template>
-                            <span>Change Column</span>
-                          </v-tooltip>
-                        </template>
-                        <v-list>
-                          <v-list-item v-for="num in numberOfCols" v-if="n !== num"
-                                       @click="moveCustomFieldGroupToColumn(item, num)">
-                            <v-list-item-title>{{ `Column ${numberValues[num]}` }}</v-list-item-title>
-                          </v-list-item>
-                        </v-list>
-                      </v-menu>
+                    <div v-if="userCanEdit" class="flex-display">
+                      <v-btn small text color="primary"
+                             @click="item.edit = !item.edit">
+                        <v-icon v-if="item.edit">remove</v-icon>
+                        <v-icon v-else>edit</v-icon>
+                      </v-btn>
+                      <v-btn small text color="primary"
+                             v-if="item.edit"
+                             @click="[saveGroup(item), item.edit = false]">
+                        <v-icon>save</v-icon>
+                      </v-btn>
+                    </div>
+                    <v-menu offset-y
+                            v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                      <template v-slot:activator="{ on: menu }">
+                        <v-tooltip bottom>
+                          <template v-slot:activator="{ on: tooltip }">
+                            <v-btn text small color="primary" v-on="{...tooltip, ...menu}"
+                                   v-if="objectType && objectType.customColumns">
+                              <v-icon>mdi-cursor-move</v-icon>
+                            </v-btn>
+                          </template>
+                          <span>Change Column</span>
+                        </v-tooltip>
+                      </template>
+                      <v-list>
+                        <v-list-item v-for="num in numberOfCols" v-if="n !== num"
+                                     @click="moveCustomFieldGroupToColumn(item, num)">
+                          <v-list-item-title>{{ `Column ${numberValues[num]}` }}</v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </v-menu>
                     <v-btn v-if="userCanEdit" small text color="primary" @click="cfgToDelete=item">
                       <v-icon>delete</v-icon>
                     </v-btn>
@@ -263,12 +263,12 @@
                               Conditional On
                             </label>
                             <v-select v-model="cf.conditionalOnId"
-                              v-if="cf.hasConditionalOnId"
-                              :items="filterAvailableCustomFields(cf)"
-                              item-value="customFieldGroupAssignmentId"
-                              item-text="fieldName"
-                              placeholder="Choose a field"
-                              @change="saveConditionalField(cf)"
+                                      v-if="cf.hasConditionalOnId"
+                                      :items="filterAvailableCustomFields(cf)"
+                                      item-value="customFieldGroupAssignmentId"
+                                      item-text="fieldName"
+                                      placeholder="Choose a field"
+                                      @change="saveConditionalField(cf)"
                             />
                           </div>
 
@@ -413,21 +413,44 @@
                             </v-btn>
                           </div>
                         </v-list-item-content>
-                        <v-tooltip left>
-                          <template v-slot:activator="{ on, attrs }">
-                            <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)"
-                                   v-bind="attrs"
-                                   v-on="on">
-                              <v-icon>mdi-information</v-icon>
-                            </v-btn>
-                          </template>
-                          <span>Custom Field Group Assignment Id: {{ cf.customFieldGroupAssignmentId }}</span>
-                          <div class="text-center">(click to copy)</div>
-                        </v-tooltip>
-                        <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" small text
-                               color="primary" @click="[cfgToDelete=item, cFieldToDelete = cf]">
-                          <v-icon>delete</v-icon>
-                        </v-btn>
+                        <div>
+                          <v-tooltip left>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)"
+                                     v-bind="attrs"
+                                     v-on="on">
+                                <v-icon class="mr-3">mdi-information</v-icon>
+                              </v-btn>
+                            </template>
+                            <span>Custom Field Group Assignment Id: {{ cf.customFieldGroupAssignmentId }}</span>
+                            <div class="text-center">(click to copy)</div>
+                          </v-tooltip>
+
+                          <v-menu offset-y
+                                  v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                            <template v-slot:activator="{ on: menu }">
+                              <v-tooltip bottom>
+                                <template v-slot:activator="{ on: tooltip }">
+                                  <v-btn text small color="primary" v-on="{...tooltip, ...menu}"
+                                         v-if="objectType && objectType.customColumns">
+                                    <v-icon>mdi-cursor-move</v-icon>
+                                  </v-btn>
+                                </template>
+                                <span >Change Custom Field Group Assignment</span>
+                              </v-tooltip>
+                            </template>
+                            <v-list>
+                              <v-list-item v-for="cfg in customFieldGroups"
+                                           @click="moveCustomFieldToGroup(cf, cfg)">
+                                <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
+                              </v-list-item>
+                            </v-list>
+                          </v-menu>
+                          <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" small text
+                                 color="primary" @click="[cfgToDelete=item, cFieldToDelete = cf]">
+                            <v-icon>delete</v-icon>
+                          </v-btn>
+                        </div>
                       </v-list-item>
                     </v-list>
                   </draggable>
@@ -474,6 +497,7 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
+import customField from "@/views/flow/settings/customFields/CustomField.vue";
 
 export default {
   name: 'CompanyCustomFieldGroup',
@@ -542,10 +566,14 @@ export default {
       this.groupsByColumn = [undefined, this.getGroupsByCol(1), this.getGroupsByCol(2)]
     },
     customFieldGroups() {
+      console.log("Watcher Fired")
       this.groupsByColumn = [undefined, this.getGroupsByCol(1), this.getGroupsByCol(2)]
     }
   },
   computed: {
+    customField() {
+      return customField
+    },
     cfgToDeleteName() {
       return this.cfgToDelete ? this.cfgToDelete.groupName : ''
     },
@@ -741,6 +769,36 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Group Changes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+
+    // Reassign a custom field to another custom field group
+    async moveCustomFieldToGroup(cf, toGroup) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.customFieldGroups.forEach((cfg) => {
+          if (cfg.id === cf.customFieldGroupId) {
+            cfg.customFields = cfg.customFields.filter(cfs => cfs.id !== cf.id)
+          }
+        })
+
+        cf.customFieldGroupId = toGroup.id
+        const {data, status} = await putRequest(`/customFieldGroup/updateFieldAssignment`, cf, 'blueraven')
+        this.customFieldGroups.forEach((cfg) => {
+          if (cfg.id === toGroup.id) {
+            cfg.customFields.push(cf)
+            this.saveGroup(cfg)
+          }
+        })
+        this.snackbar = getSnackbar('SUCCESS', 'Custom Field Has Been Reassigned')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Reassigning Custom Field ')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -991,7 +1049,7 @@ export default {
 .item-icons {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  
+
   @media (max-width: 1040px) {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -1008,7 +1066,7 @@ export default {
   float: right;
   @media(max-width: 465px) {
     flex-direction: row;
-  div.row {
+    div.row {
 
       flex-direction: column;
     }
@@ -1021,6 +1079,6 @@ export default {
 </style>
 <style lang="scss">
 #columnTables > div > div > div.v-data-table__wrapper > table > tbody {
-display: table-row-group;
+  display: table-row-group;
 }
 </style>

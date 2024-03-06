@@ -149,9 +149,9 @@ export default {
         //there seems to be an issue when stale announcements are in the eventstream and they are populating when they shouldn't
         //this time check will hopefully fix that.
         if(ae.endTime == null || moment().isBetween(moment(ae.startTime), moment(ae.endTime))) {
-          let match = this.$store.state.app.announcements.find(a => a.id === ae.announcement?.id)
+          let match = this.$store.state?.app.announcements?.find(a => a.id === ae.announcement?.id)
           if(!match && ae.announcement) {
-            this.$store.state.app.announcements.push(ae.announcement)
+            this.$store.state?.app?.announcements.push(ae.announcement)
           }
         }
       })

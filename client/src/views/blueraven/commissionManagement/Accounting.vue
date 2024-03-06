@@ -34,11 +34,11 @@
         model: '',
         tabs: [ {
           label: 'Current Payroll',
-          path: `/commissionManagement/accounting/current/`,
+          path: `/commissionManagement/accounting/current`,
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
           label: 'Summary',
-          path: `/commissionManagement/accounting/summary/`,
+          path: `/commissionManagement/accounting/summary`,
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }]
       }

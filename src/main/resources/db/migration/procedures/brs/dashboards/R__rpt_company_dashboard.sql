@@ -19,7 +19,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -45,7 +45,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -73,7 +73,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -99,7 +99,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -125,7 +125,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -151,7 +151,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -177,7 +177,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -203,7 +203,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -229,7 +229,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -255,7 +255,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -281,7 +281,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -307,7 +307,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -333,7 +333,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -359,7 +359,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -385,7 +385,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -411,7 +411,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -437,7 +437,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -463,7 +463,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -489,7 +489,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -515,7 +515,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -541,7 +541,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (
@@ -567,7 +567,7 @@ BEGIN
                              display_order,
                              company_count,
                              case when trend_count is not null then
-                                    round((company_count - trend_count)/greatest(trend_count,1) * 100) end as trend_count,
+                                    round((company_count::numeric - trend_count::numeric)/greatest(trend_count::numeric,1) * 100)::numeric end as trend_count,
                              major_milestone
 
                       from (

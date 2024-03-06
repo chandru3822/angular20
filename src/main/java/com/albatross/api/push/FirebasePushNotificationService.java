@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -29,20 +30,19 @@ public class FirebasePushNotificationService implements PushNotificationService 
   private final SqlCache sqlCache;
 
   private final static String USER_NOTIFICATION_TOKENS_QUERY = """
-      select token
+      select distinct token
       from flow.user_notification_token unt
       where unt.archived is false
         and unt.user_id in (:ids)
-      order by user_id, date_modified desc
     """;
 
   @Async
   public void pushNotification(@NonNull Message message, @NonNull Long userId) {
-    pushNotification(message, List.of(userId));
+    pushNotification(message, Set.of(userId));
   }
 
   @Async
-  public void pushNotification(@NonNull Message message, @Size(min = 1) List<Long> userIds) {
+  public void pushNotification(@NonNull Message message, @Size(min = 1) Set<Long> userIds) {
     log.info("Sending push notification to {} users", userIds.size());
 
     List<String> tokens = sqlCache.queryBySql(
@@ -65,7 +65,7 @@ public class FirebasePushNotificationService implements PushNotificationService 
       .forEach(chunk -> {
         try {
           firebaseMessaging.sendEachForMulticast(MulticastMessage.builder()
-            .addAllTokens(tokens)
+            .addAllTokens(chunk)
             .setNotification(notification)
             .build(), appProperties.getFirebase().isDryRun());
         } catch (FirebaseMessagingException e) {

@@ -74,23 +74,6 @@ public class SmsServiceQuery {
     ORDER BY created ASC
         """;
 
-  //  //language=PostgreSQL
-//  public final static String exportAll = """
-//    SELECT
-//                concat(u.first_name, ' ', u.last_name) AS full_name,
-//                    u.email,
-//                    sms.to_phone,
-//                    sms.message,
-//                    sms.message_status,
-//                    sms.created,
-//                    sms.twilio_sent,
-//                    sms.twilio_delivered
-//                FROM flow.sms_queue sms
-//                    INNER JOIN flow.user u
-//                        ON sms.user_id = u.id
-//                ORDER BY sms.created DESC
-//        """;
-
   //language=PostgreSQL
   public final static String insert = """
     WITH sq AS (INSERT INTO flow.sms_queue (

@@ -80,26 +80,6 @@ public class SMSService {
       results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
-  //not used anymore?
-//  public List<Owner> getOwners() {
-//    User user = securityService.getCurrentUser();
-//    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
-//
-//    return sqlCache.queryBySql(
-//      ProjectQuery.getOwners,
-//      Map.of(
-//        "companyId", user.getCompanyId(),
-//        "isParent", isParent,
-//        "parentCompanyId", user.getHighestParentCompanyId()),
-//      Owner.class);
-//  }
-
-//  public List<SMSQueueExportItem> exportSmsQueue() {
-//
-//    return sqlCache.queryBySql(
-//      SmsServiceQuery.exportAll, Map.of(), new SMSQueueMapper<>(SMSQueueExportItem.class, om));
-//  }
-
   public List<SMSQueueItem> getSmsByProjectId(Long projectId) {
     Map<String, Object> params = Map.of("projectId", projectId);
     return sqlCache.queryBySql(

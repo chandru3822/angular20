@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-/** Created by John on 2022-01-21. */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -21,12 +20,12 @@ import java.util.Optional;
 public class SmsTeamController {
   private final SmsTeamService smsTeamService;
 
-  @PutMapping(value = "/")
+  @PutMapping
   public SmsTeam saveTeam(@RequestBody SmsTeam st) {
     return smsTeamService.saveTeam(st);
   }
 
-  @GetMapping(value = "/")
+  @GetMapping
   public List<SmsTeam> getTeams() {
     return smsTeamService.getTeams();
   }

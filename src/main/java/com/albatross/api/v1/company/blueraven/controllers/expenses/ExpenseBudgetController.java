@@ -4,7 +4,6 @@ import com.albatross.api.v1.company.blueraven.models.expenses.BudgetTemplate;
 import com.albatross.api.v1.company.blueraven.models.expenses.BudgetType;
 import com.albatross.api.v1.company.blueraven.models.expenses.ExpenseBudget;
 import com.albatross.api.v1.company.blueraven.services.expenses.ExpenseBudgetService;
-import com.albatross.api.v1.flow.model.User;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;

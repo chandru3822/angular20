@@ -8,19 +8,28 @@ CREATE OR REPLACE FUNCTION flow.project_count_by_company_status_by_user(p_compan
           (
             company_project_status_type_id bigint,
             company_project_status         character varying,
-            project_status_count           bigint
+            project_status_count           bigint,
+            icon_tag              character varying,
+            commissions   jsonb
           )
   LANGUAGE plpgsql
 AS
 $function$
-
+declare
+  v_commission_project_status_ids bigint[];
 BEGIN
+  select array_agg(cpst.id)
+  into v_commission_project_status_ids
+  from flow.company_project_status_type cpst
+  where used_in_commissions = true;
 
   case
     when p_is_down_line is true then RETURN QUERY
       SELECT limited_projects.company_project_status_type_id::bigint,
              limited_projects.company_project_status,
-             limited_projects.project_status_count::bigint
+             limited_projects.project_status_count::bigint,
+             limited_projects.icon_tag,
+             limited_projects.commissions
       FROM (with project_ids as (with positions as (select up.org_id as parent_org_id, up.user_id as user_id
                                                     from flow.user_position up
                                                     where up.primary_flag is true
@@ -62,7 +71,8 @@ BEGIN
                  counts as (select cpst.id                  as company_project_status_type_id,
                                    cpst.project_status_type as company_project_status,
                                    count(p.id)              as project_status_count,
-                                   cpst.display_order
+                                   cpst.display_order,
+                                   cpst.icon_tag
                             from flow.company_project_status_type cpst
                                    inner join flow.project p
                                               on cpst.id = p.company_project_status_type_id
@@ -76,13 +86,23 @@ BEGIN
             select c.company_project_status_type_id,
                    c.company_project_status,
                    c.project_status_count,
-                   c.display_order
+                   c.display_order,
+                   c.icon_tag,
+                   case when c.company_project_status_type_id = any(v_commission_project_status_ids) then
+                          (
+                                  select * from brs.get_total_commissions_by_project_status(p_user_id,c.company_project_status_type_id)
+                                )::jsonb end as commissions
             from counts c
             union
             select cpst.id as               company_project_status_type_id,
                    cpst.project_status_type company_project_status,
                    0       as               project_status_count,
-                   cpst.display_order
+                   cpst.display_order,
+                   cpst.icon_tag,
+                   case when cpst.id = any(v_commission_project_status_ids) then
+
+                                  (select * from brs.get_total_commissions_by_project_status(p_user_id,cpst.id))::jsonb
+                                 end as commissions
             from flow.company_project_status_type cpst
             where cpst.company_id = p_company_id
               and cpst.archived is false
@@ -94,7 +114,9 @@ BEGIN
     else RETURN QUERY
       SELECT limited_projects.company_project_status_type_id,
              limited_projects.company_project_status,
-             limited_projects.project_status_count
+             limited_projects.project_status_count,
+             limited_projects.icon_tag,
+             limited_projects.commissions
       FROM (with user_position_ids as (select array_agg(up.id) as user_position_ids
                                        from flow.user_position up
                                        where user_id = p_user_id),
@@ -113,7 +135,8 @@ BEGIN
                  counts as (select cpst.id                  as company_project_status_type_id,
                                    cpst.project_status_type as company_project_status,
                                    count(p.id)              as project_status_count,
-                                   cpst.display_order
+                                   cpst.display_order,
+                                   cpst.icon_tag
                             from flow.company_project_status_type cpst
                                    inner join flow.project p on cpst.id = p.company_project_status_type_id
                               and p.archived is not true
@@ -126,13 +149,23 @@ BEGIN
             select c.company_project_status_type_id,
                    c.company_project_status,
                    c.project_status_count,
-                   c.display_order
+                   c.display_order,
+                   c.icon_tag,
+                   case when c.company_project_status_type_id = any(v_commission_project_status_ids) then
+                           (
+                select * from brs.get_total_commissions_by_project_status(p_user_id,c.company_project_status_type_id)
+              )::jsonb end as commissions
             from counts c
             union
             select cpst.id as               company_project_status_type_id,
                    cpst.project_status_type company_project_status,
                    0       as               project_status_count,
-                   cpst.display_order
+                   cpst.display_order,
+                   cpst.icon_tag,
+                   case when cpst.id = any(v_commission_project_status_ids) then
+                    (
+                           select * from brs.get_total_commissions_by_project_status(p_user_id,cpst.id)
+                         )::jsonb end as commissions
             from flow.company_project_status_type cpst
             where cpst.company_id = p_company_id
               and cpst.archived is false

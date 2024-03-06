@@ -2,7 +2,6 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.ProjectTag;
 import com.albatross.api.v1.flow.model.Tag;
-import com.albatross.api.v1.flow.model.smartlist.Smartlist;
 import com.albatross.api.v1.flow.services.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

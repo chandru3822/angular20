@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('PROCESS_STEPS')")
+@PreAuthorize("hasFeatureAccess('PROCESS_STEPS') || isBrSystemUser()")
 @RequiredArgsConstructor
 public class ProcessStepEventService {
 
@@ -35,7 +35,6 @@ public class ProcessStepEventService {
   private final SecurityService securityService;
   private final ObjectMapper om;
   private final ProcessStepActionService processStepActionService;
-
   private final UserPositionService userPositionService;
 
   public List<ProcessStepEvent> getStepEvents(Long processStepId, Boolean adminScreenLoad) {
@@ -49,7 +48,7 @@ public class ProcessStepEventService {
     params.put("systemAdmin", adminLoad);
     params.put("userPositions", userPositionIds);
     List<ProcessStepEvent> processStepEvents = sqlCache.queryBySql(ProcessStepEventQuery.getStepEvents, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
-    if(!adminLoad) {
+    if (!adminLoad) {
       for (int x = 0; x < processStepEvents.size(); x++) {
         if (processStepEvents.get(x).getEventHidden()) {
           boolean hiddenWhiteListed = false;
@@ -57,7 +56,7 @@ public class ProcessStepEventService {
 
           //Checks if the user's position is in the whitelist
           for (int y = 0; y < processStepEvents.get(x).getEventHiddenWhiteListedPositions().size(); y++) {
-            for(int z = 0; z < user.getUserPositions().size(); z++) {
+            for (int z = 0; z < user.getUserPositions().size(); z++) {
               if (processStepEvents.get(x).getEventHiddenWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
                 hiddenWhiteListed = true;
               }
@@ -69,7 +68,6 @@ public class ProcessStepEventService {
             hiddenWhiteListed = !hiddenWhiteListed;
           }
 
-
           processStepEvents.get(x).getEventHiddenWhiteListedPositions().clear();
           processStepEvents.get(x).setEventHidden(!hiddenWhiteListed);
           if (!hiddenWhiteListed) {
@@ -77,17 +75,15 @@ public class ProcessStepEventService {
             x--;
             continue;
           }
-
-
         }
 
-        if(processStepEvents.get(x).getReadonly()) {
+        if (processStepEvents.get(x).getReadonly()) {
           boolean whiteListed = false;
           boolean allowFlag = processStepEvents.get(x).getReadonlyAllow();
 
           //Checks if the user's position is in the whitelist
           for (int y = 0; y < processStepEvents.get(x).getReadonlyWhiteListPositions().size(); y++) {
-            for(int z = 0; z < user.getUserPositions().size(); z++) {
+            for (int z = 0; z < user.getUserPositions().size(); z++) {
               if (processStepEvents.get(x).getReadonlyWhiteListPositions().get(y).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
                 whiteListed = true;
               }
@@ -119,8 +115,7 @@ public class ProcessStepEventService {
   public Optional<ProcessStepEvent> getProcessStepEvent(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<ProcessStepEvent> result = sqlCache.getBySql(ProcessStepEventQuery.get, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
-    return result;
+    return sqlCache.getBySql(ProcessStepEventQuery.get, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
   }
 
   public Optional<ProcessStepEvent> addEventToStep(Long processStepId, ProcessStepEvent processStepEvent) {
@@ -159,40 +154,39 @@ public class ProcessStepEventService {
     }
   }
 
-  public void saveProcessStepEventReadonlyWhiteList(ProcessStepEvent processStepEvent, Boolean savePositions){
-      User currentUser = securityService.getCurrentUser();
+  public void saveProcessStepEventReadonlyWhiteList(ProcessStepEvent processStepEvent, Boolean savePositions) {
+    User currentUser = securityService.getCurrentUser();
 
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("userId", currentUser.trueUserId());
-      params.put("companyId", currentUser.getCompanyId());
-      params.put("processStepEventId", processStepEvent.getId());
-      params.put("readOnly", processStepEvent.getReadonly());
-      params.put("readOnlyAllow", processStepEvent.getReadonlyAllow());
-      params.put("eventId", processStepEvent.getEventId());
-      params.put("processStepId", processStepEvent.getProcessStepId());
-      params.put("whiteListTypeId", WhiteListType.PROCESS_STEP_EVENT_READ_ONLY.id);
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.trueUserId());
+    params.put("companyId", currentUser.getCompanyId());
+    params.put("processStepEventId", processStepEvent.getId());
+    params.put("readOnly", processStepEvent.getReadonly());
+    params.put("readOnlyAllow", processStepEvent.getReadonlyAllow());
+    params.put("eventId", processStepEvent.getEventId());
+    params.put("processStepId", processStepEvent.getProcessStepId());
+    params.put("whiteListTypeId", WhiteListType.PROCESS_STEP_EVENT_READ_ONLY.id);
 
-      sqlCache.updateBySql(ProcessStepEventQuery.saveReadOnly, params);
+    sqlCache.updateBySql(ProcessStepEventQuery.saveReadOnly, params);
 
-      if(!processStepEvent.getReadonly() || processStepEvent.getReadonlyWhiteListPositions().isEmpty()){
-          //this means they removed ALL white listed positions
-          sqlCache.updateBySql(ProcessStepEventQuery.archiveAllWhiteListPositionsForPSEvent, params);
-      } else {
-          List<Long> positionIdsUsed = processStepEvent.getReadonlyWhiteListPositions().stream()
-                  .map(WhiteListedPosition::getPositionId)
-                  .collect(Collectors.toList());
-          params.put("positionIdsUsed", positionIdsUsed);
-          //archive any positions that are no longer in the list
-          sqlCache.updateBySql(ProcessStepEventQuery.archiveWhiteListPositionsNoLongerUsed, params);
+    if (!processStepEvent.getReadonly() || processStepEvent.getReadonlyWhiteListPositions().isEmpty()) {
+      //this means they removed ALL white listed positions
+      sqlCache.updateBySql(ProcessStepEventQuery.archiveAllWhiteListPositionsForPSEvent, params);
+    } else {
+      List<Long> positionIdsUsed = processStepEvent.getReadonlyWhiteListPositions().stream()
+        .map(WhiteListedPosition::getPositionId)
+        .collect(Collectors.toList());
+      params.put("positionIdsUsed", positionIdsUsed);
+      //archive any positions that are no longer in the list
+      sqlCache.updateBySql(ProcessStepEventQuery.archiveWhiteListPositionsNoLongerUsed, params);
 
-          //insert any positions that are new to the list
-          for (Long whiteListPositionId : positionIdsUsed) {
-              params.put("positionId", whiteListPositionId);
-              //this insert checks if there is already a non-archived row with the same values
-              sqlCache.updateBySql(ProcessStepEventQuery.insertWhiteListPosition, params);
-          }
-
+      //insert any positions that are new to the list
+      for (Long whiteListPositionId : positionIdsUsed) {
+        params.put("positionId", whiteListPositionId);
+        //this insert checks if there is already a non-archived row with the same values
+        sqlCache.updateBySql(ProcessStepEventQuery.insertWhiteListPosition, params);
       }
+    }
   }
 
   public Boolean userCanEditStartTime(Long processStepEventId) {
@@ -376,7 +370,7 @@ public class ProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", currentUser.trueUserId());
 
-    for(ProcessStepActionChildFunction child : childFns) {
+    for (ProcessStepActionChildFunction child : childFns) {
       params.put("id", child.getId());
       params.put("displayOrder", child.getDisplayOrder());
 
@@ -432,7 +426,6 @@ public class ProcessStepEventService {
         .updateBySqlReturningId(ProcessStepEventQuery.addSmsToEventAction, params, "id")
         .longValue();
 
-
     return getEventActionChildSms(id);
   }
 
@@ -465,7 +458,6 @@ public class ProcessStepEventService {
       params,
       new ProcessStepEventService.ProcessStepEventActionChildSmsTemplateMapper<>(ProcessStepEventActionChildSmsTemplate.class, om));
   }
-
 
   public Long updateRequiredFieldStatus(Long actionId, ProcessStepEventActionField processStepEventActionField) {
     User currentUser = securityService.getCurrentUser();
@@ -508,23 +500,23 @@ public class ProcessStepEventService {
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<CompanyEventStatusType>> companyEventStatusTypeRef = new TypeReference<>() {
       };
-      bw.registerCustomEditor(List.class, "companyEventStatusTypes", new JsonCollectionDeserializer(companyEventStatusTypeRef, objectMapper));
+      bw.registerCustomEditor(List.class, "companyEventStatusTypes", new JsonCollectionDeserializer<>(companyEventStatusTypeRef, objectMapper));
 
       TypeReference<List<ProcessStepEventAction>> processStepEventActionRef = new TypeReference<>() {
       };
-      bw.registerCustomEditor(List.class, "processStepEventActions", new JsonCollectionDeserializer(processStepEventActionRef, objectMapper));
+      bw.registerCustomEditor(List.class, "processStepEventActions", new JsonCollectionDeserializer<>(processStepEventActionRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> processStepEventReadonlyRef = new TypeReference<>() {
       };
-      bw.registerCustomEditor(List.class, "readonlyWhiteListPositions", new JsonCollectionDeserializer(processStepEventReadonlyRef, objectMapper));
+      bw.registerCustomEditor(List.class, "readonlyWhiteListPositions", new JsonCollectionDeserializer<>(processStepEventReadonlyRef, objectMapper));
 
       TypeReference<List<ProcessStepEventWorkQueueType>> processStepEventWqtRef = new TypeReference<>() {
       };
-      bw.registerCustomEditor(List.class, "workQueueTypes", new JsonCollectionDeserializer(processStepEventWqtRef, objectMapper));
+      bw.registerCustomEditor(List.class, "workQueueTypes", new JsonCollectionDeserializer<>(processStepEventWqtRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> eventHiddenWhiteListedPositionsRef = new TypeReference<>() {
       };
-      bw.registerCustomEditor(List.class, "eventHiddenWhiteListedPositions", new JsonCollectionDeserializer(eventHiddenWhiteListedPositionsRef, objectMapper));
+      bw.registerCustomEditor(List.class, "eventHiddenWhiteListedPositions", new JsonCollectionDeserializer<>(eventHiddenWhiteListedPositionsRef, objectMapper));
     }
   }
 
@@ -538,17 +530,21 @@ public class ProcessStepEventService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ProcessStepEventLogic>> processStepEventLogicTypeRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "processStepEventLogicList", new JsonCollectionDeserializer(processStepEventLogicTypeRef, objectMapper));
+      TypeReference<List<ProcessStepEventLogic>> processStepEventLogicTypeRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "processStepEventLogicList", new JsonCollectionDeserializer<>(processStepEventLogicTypeRef, objectMapper));
 
-      TypeReference<List<ProcessStepEventActionLink>> childLinksRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "childLinks", new JsonCollectionDeserializer(childLinksRef, objectMapper));
+      TypeReference<List<ProcessStepEventActionLink>> childLinksRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "childLinks", new JsonCollectionDeserializer<>(childLinksRef, objectMapper));
 
-      TypeReference<List<ProcessStepEventActionChildFunction>> childFunctionsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "childFunctions", new JsonCollectionDeserializer(childFunctionsRef, objectMapper));
+      TypeReference<List<ProcessStepEventActionChildFunction>> childFunctionsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "childFunctions", new JsonCollectionDeserializer<>(childFunctionsRef, objectMapper));
 
-      TypeReference<List<ProcessStepEventActionField>> customFieldsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "customFields", new JsonCollectionDeserializer(customFieldsRef, objectMapper));
+      TypeReference<List<ProcessStepEventActionField>> customFieldsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "customFields", new JsonCollectionDeserializer<>(customFieldsRef, objectMapper));
     }
   }
 
@@ -564,7 +560,7 @@ public class ProcessStepEventService {
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<ActionParamDynamicValue>> actionParamDynamicValuesRef = new TypeReference<>() {
       };
-      bw.registerCustomEditor(List.class, "actionParamDynamicValues", new JsonCollectionDeserializer(actionParamDynamicValuesRef, objectMapper));
+      bw.registerCustomEditor(List.class, "actionParamDynamicValues", new JsonCollectionDeserializer<>(actionParamDynamicValuesRef, objectMapper));
 
       TypeReference<List<CompanyFunctionParam>> companyFunctionParamsRef = new TypeReference<>() {
       };
@@ -585,12 +581,12 @@ public class ProcessStepEventService {
       TypeReference<List<Long>> teamIdsTypeRef = new TypeReference<>() {
       };
       bw.registerCustomEditor(List.class, "teamIds",
-        new JsonCollectionDeserializer(teamIdsTypeRef, objectMapper));
+        new JsonCollectionDeserializer<>(teamIdsTypeRef, objectMapper));
 
       TypeReference<List<MessageTeam>> teamsTypeRef = new TypeReference<>() {
       };
       bw.registerCustomEditor(List.class, "teams",
-        new JsonCollectionDeserializer(teamsTypeRef, objectMapper));
+        new JsonCollectionDeserializer<>(teamsTypeRef, objectMapper));
     }
   }
 }

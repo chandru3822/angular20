@@ -198,7 +198,7 @@
         try {
           this.newCallGroup.maxCallCount = this.maxCallCount
           this.newCallGroup.daysPerPeriod = this.daysPerPeriod
-          const {data, status} = await postRequest(`/callGroup/`, this.newCallGroup, 'blueraven')
+          const {data, status} = await postRequest(`/callGroup`, this.newCallGroup, 'blueraven')
           this.$router.push({path: `/settings/callGroup/${data.id}/codes`})
           this.snackbar = getSnackbar('SUCCESS', 'Call Group Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -215,7 +215,7 @@
         this.errorMsg = ''
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await postRequest(`/callGroup/`, item, 'blueraven')
+          const {status} = await postRequest(`/callGroup`, item, 'blueraven')
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)

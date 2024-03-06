@@ -251,6 +251,18 @@ public class BlueravenCustomFieldGroupQuery {
     """;
 
   //language=PostgreSQL
+  public final static String updateCustomFieldGroupAssignment = """
+    update brs.custom_field_group_assignment
+    set custom_field_group_id =:groupID,
+        field_order = (select coalesce(max(field_order) + 1, 0)
+                       from brs.custom_field_group_assignment
+                       where custom_field_group_id = :groupID and archived is not true),
+        date_modified = now(),
+        modified_by_id = :modifiedById
+    where id = :id
+  """;
+
+  //language=PostgreSQL
   public final static String saveUseParentData = """
     update brs.custom_field_group_assignment
       set use_parent_data = :useParentData,

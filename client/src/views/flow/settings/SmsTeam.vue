@@ -364,7 +364,7 @@ export default {
     async getTeams () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/smsTeam/`)
+        const {data, status} = await getRequest(`/smsTeam`)
         this.teams = data
         this.teams.map(team => team.checked = team.isDefault)
         handleHidingGlobalLoader(this, status)
@@ -384,11 +384,11 @@ export default {
           const oldDefaultTeam = this.teams.filter(team => team.isDefault)[0]
           if (oldDefaultTeam) {
             oldDefaultTeam.isDefault = false
-            const {removeData, removeStatus} = await putRequest(`/smsTeam/`, oldDefaultTeam) //removes the default state from
+            const {removeData, removeStatus} = await putRequest(`/smsTeam`, oldDefaultTeam) //removes the default state from
           }
           team.isDefault = team.checked
         }
-        const {data, status} = await putRequest(`/smsTeam/`, team)
+        const {data, status} = await putRequest(`/smsTeam`, team)
         if(isNew){
           this.teams.push(data)
           this.addTeam = false
