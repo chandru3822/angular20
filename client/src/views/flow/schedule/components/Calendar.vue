@@ -424,14 +424,17 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
       },
 
     },
-    created() {
+    async created() {
       // this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
       // this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
       this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
-      this.getSchedulingOrgs()
-      this.getSchedulingUsers()
-      this.getSchedulingOrgTypes()
-      this.getPositions()
+      await this.getSchedulingOrgs()
+      await this.getSchedulingUsers()
+      await this.getSchedulingOrgTypes()
+      await this.getPositions()
+      if(this.preselectedEvent){
+        this.filterOrgsAndUsers()
+      }
     },
     data() {
       return {
@@ -889,7 +892,6 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
         })
       },
       filterOrgsAndUsers() {
-        //todo: figure out when this is used
         //only filter if something is selected or deselected back down to 0 length - cant watch these values because we don't want to call the function on the change but only on blur
         let stateFilterRequired = this.selectedStates?.length > 0
         let stateReset = this.previousStateCount > 0 && this.selectedStates?.length === 0

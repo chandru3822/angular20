@@ -25,7 +25,7 @@ const emit = defineEmits(['toggleProjectMapPin'])
 
 const props = defineProps({
   project:Object,
-  timezone:String,
+  timezone:Object,
   resourceFromCalendar:Object,
 })
 const show = ref(true)
@@ -228,7 +228,7 @@ const cancelProjectProcessStepEvent = async() => {
         />              <!--setting the 'active' prop this way forces the value to appear when when click the schedule button on the calendar-->
         <DatetimePickerInput
             v-model="project.start"
-            :timezone="timezone"
+            :timezone="timezone.value"
             :readonly="project.startFieldReadOnly"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
@@ -239,7 +239,7 @@ const cancelProjectProcessStepEvent = async() => {
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in US/Mountain Time</div>
         <DatetimePickerInput
             v-model="project.end"
-            :timezone="timezone"
+            :timezone="timezone.value"
             :readonly="project.endFieldReadOnly || !userCanEdit || project.processStepStatusTypeId !== 1 || project.eventStatusTypeId !== 1"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
