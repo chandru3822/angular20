@@ -4,14 +4,16 @@ drop function if exists flow.search_projects_by_user(p_searchterm character vary
                                                      p_offset bigint ,
                                                      p_company_project_status_type_id bigint ,
                                                      p_sort_column character varying ,
-                                                     p_sort_direction character varying );
+                                                     p_sort_direction character varying ,
+                                                     p_query_commissions boolean);
 create or replace function flow.search_projects_by_user(p_searchterm character varying, p_company_id bigint,
                                                          p_user_id bigint, p_is_parent boolean,
                                                          p_limit bigint DEFAULT NULL::bigint,
                                                          p_offset bigint DEFAULT NULL::bigint,
                                                          p_company_project_status_type_id bigint DEFAULT NULL::bigint,
                                                          p_sort_column character varying DEFAULT NULL::character varying,
-                                                         p_sort_direction character varying DEFAULT NULL::character varying)
+                                                         p_sort_direction character varying DEFAULT NULL::character varying,
+                                                         p_query_commissions boolean default false)
   returns TABLE
           (
             id                             bigint,
@@ -28,7 +30,8 @@ create or replace function flow.search_projects_by_user(p_searchterm character v
             longitude                      double precision,
             company_project_status_type_id bigint,
             project_status_type            character varying,
-            contact                        jsonb
+            contact                        jsonb,
+            commissions_outstanding        numeric
           )
   language plpgsql
 as
@@ -41,6 +44,7 @@ DECLARE
   v_clean_address_search_term VARCHAR;
   v_company_ids               bigint[];
   v_position_ids              bigint[];
+  v_commission_project_status_ids bigint[];
 BEGIN
   v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.& ', '')));
   v_clean_phone_search_term = right(trim(translate(p_searchterm, '+-(). ', '')), 10);
@@ -54,6 +58,11 @@ BEGIN
     select array(select p_company_id)
     into v_company_ids;
   end if;
+
+  select array_agg(cpst.id)
+  into v_commission_project_status_ids
+  from flow.company_project_status_type cpst
+  where used_in_commissions = true;
 
   select array_agg(up.id)
   into v_position_ids
@@ -77,7 +86,12 @@ BEGIN
              limited_projects.longitude,
              limited_projects.company_project_status_type_id::bigint,
              limited_projects.project_status_type,
-             limited_projects.contact
+             limited_projects.contact,
+             case when limited_projects.company_project_status_type_id = any(v_commission_project_status_ids) and p_query_commissions is true then
+                    (select t.commissions_outstanding
+                     from brs.get_commissions_by_project_status(limited_projects.company_project_status_type_id::bigint,limited_projects.id::bigint) as t)
+              else null::numeric
+               end as commissions_oustanding
       FROM (select *
             from (select p.id::bigint,
                          p.project_name,
@@ -180,7 +194,12 @@ BEGIN
                 limited_projects.longitude,
                 limited_projects.company_project_status_type_id::bigint,
                 limited_projects.project_status_type,
-                limited_projects.contact
+                limited_projects.contact,
+             case when limited_projects.company_project_status_type_id = any(v_commission_project_status_ids) and p_query_commissions is true then
+                    (select t.commissions_outstanding
+                     from brs.get_commissions_by_project_status(limited_projects.company_project_status_type_id::bigint,limited_projects.id::bigint) as t)
+                  else null::numeric
+               end as commissions_oustanding
          FROM (select p.id::bigint,
                       p.project_name,
                       p.contact_id::bigint,
