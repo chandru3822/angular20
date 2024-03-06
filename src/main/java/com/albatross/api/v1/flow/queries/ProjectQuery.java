@@ -127,16 +127,8 @@ select *
                                                             :isParent::boolean,
                                                             :limit::bigint, :offset::bigint,
                                                             :companyProjectStatusTypeId::bigint,
-                                                            :sortColumn::character varying, :sortDirection::character varying)
-    """;
-
-  //language=PostgreSQL
-  public final static String searchDownlineCount = """
-      select *
-      from flow.search_projects_with_down_line_count(:query::character varying, :companyId::bigint,
-                                                              :userId::bigint,
-                                                              :isParent::boolean,
-                                                            :companyProjectStatusTypeId::bigint)
+                                                            :sortColumn::character varying, :sortDirection::character varying,
+                                                            :includeCommissionDetails::boolean)
     """;
 
   //language=PostgreSQL
@@ -152,11 +144,6 @@ select *
                                   :sortDirection::character varying)
     """;
 
-  //language=PostgreSQL
-  public final static String searchCount = """
-    select * from flow.search_all_projects_count(:query::character varying, :companyId::bigint, :isParent::boolean,
-                                                            :companyProjectStatusTypeId::bigint)
-    """;
 
   //language=PostgreSQL
   public final static String searchByOwner = """
@@ -164,13 +151,8 @@ select *
     from flow.search_projects_by_user(:query::character varying, :companyId::bigint,
                                  :userId::bigint,  :isParent::boolean,:limit::bigint, :offset::bigint,
                                                             :companyProjectStatusTypeId::bigint,
-                                                            :sortColumn::character varying, :sortDirection::character varying)
-    """;
-
-  //language=PostgreSQL
-  public final static String searchByOwnerCount = """
-    select * from flow.search_projects_by_user_count(:query::character varying, :companyId::bigint, :userId::bigint, :isParent::boolean,
-                                                            :companyProjectStatusTypeId::bigint)
+                                                            :sortColumn::character varying, :sortDirection::character varying,
+                                                            :includeCommissionDetails::boolean)
     """;
 
   //language=PostgreSQL
