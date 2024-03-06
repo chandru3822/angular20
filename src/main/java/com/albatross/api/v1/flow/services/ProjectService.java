@@ -151,6 +151,7 @@ public class ProjectService {
       String overrideType,
       String sortColumn,
       String sortDirection,
+      Boolean includeCommissionDetails,
       Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
@@ -182,6 +183,7 @@ public class ProjectService {
     params.put("isParent", isParent);
     params.put("sortColumn", sortColumn);
     params.put("sortDirection", sortDirection);
+    params.put("includeCommissionDetails", includeCommissionDetails != null ? includeCommissionDetails : false);
     params.put("userId", user.getId());
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
@@ -237,14 +239,7 @@ public class ProjectService {
     }
 
     List<ProjectStatusCount> results =
-        sqlCache.queryBySql(searchSql, params, ProjectStatusCount.class);
-
-    for (ProjectStatusCount c : results) {
-      // set the icon for the status
-      Attachment a =
-          attachmentService.getOneBySourceIdAndType(c.getCompanyProjectStatusTypeId(), 463L);
-      c.setIcon(null != a && null != a.getId() ? a : new Attachment());
-    }
+        sqlCache.queryBySql(searchSql, params, new ProjectStatusCountMapper<>(ProjectStatusCount.class, om));
 
     return results;
   }
@@ -791,5 +786,23 @@ public class ProjectService {
 
       }
     }
+
+  private static class ProjectStatusCountMapper<T> extends BeanPropertyRowMapper<T> {
+    public final ObjectMapper objectMapper;
+
+    public ProjectStatusCountMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<ProjectCommissions> commissionsRef = new TypeReference<>() {};
+
+      bw.registerCustomEditor(
+        Object.class, "commissions", new JsonCollectionDeserializer(commissionsRef, objectMapper));
+
+    }
+  }
 
 }

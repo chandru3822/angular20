@@ -1,6 +1,5 @@
 package com.albatross.api.v1.flow.model.project;
 
-import com.albatross.api.v1.flow.model.Attachment;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,7 +8,7 @@ import lombok.NoArgsConstructor;
 public class ProjectStatusCount {
 
   private Long companyProjectStatusTypeId, projectStatusCount;
-  private Attachment icon;
-  private String companyProjectStatus;
+  private String companyProjectStatus, iconTag;
+  private ProjectCommissions commissions;
 
 }
