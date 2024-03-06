@@ -1413,7 +1413,15 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
     transform-origin: center;
   }
 
-  #calendar-container .fc-event:hover {
+
+//#calendar-container .fc-timeline-bg-harness .fc-event:hover {
+//    max-width: unset;
+//    width: fit-content;
+//    z-index: 20;
+//
+//}
+
+  #calendar-container .fc-event.event-tile:hover {
     color: inherit !important;
     max-width: unset;
     width: fit-content;
@@ -1427,7 +1435,6 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
       width: fit-content;
       padding-right: 4px;
     }
-
   }
 
   #calendar-container .fc-rows tr,
