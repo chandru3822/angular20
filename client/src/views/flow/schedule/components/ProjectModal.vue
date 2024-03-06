@@ -7,15 +7,13 @@
 *@description
 *
 */
-import {getCurrentInstance, ref} from "vue";
+import {getCurrentInstance, ref, watch} from "vue";
 import {AppMutations} from "@/stores/AppStore.js";
-import {getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
+import {handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import {
-  getAssignedToEvent,
-  getCancelledCompanyStatusTypesAssignedToPpsEvent
-} from "@/services/eventStatusTypeService.js";
+import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/eventStatusTypeService.js";
+import {ScheduleMutations} from "@/stores/ScheduleStore.js";
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -37,22 +35,41 @@ const confirmUnschedule = ref(false)
 const cancelledCompanyEventStatuses = ref()
 
 
-import { watch } from 'vue'
-import {ScheduleMutations} from "@/stores/ScheduleStore.js";
 watch(() => props.resourceFromCalendar, () => {
   if(props.resourceFromCalendar.id) {
     scheduleCalendarResourceToProject(props.resourceFromCalendar)
   } else {
     props.project.resource = null
-    store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, {})
+    setSelectedResourceInStore(null)
+    validateSaveEvent()
   }
 })
 
 const setSelectedResourceInStore = (resourceId) => {
   if(resourceId){
     store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, resourceId)
+    let snackbar = createSnackbar('Resource assigned')
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
   }
-  else store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, null)
+  else {
+    store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, null)
+    let snackbar = createSnackbar('Resource unassigned')
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
+  }
+}
+
+//this snackbar is different from others so we built it here
+const createSnackbar = (text) => {
+  return {
+    y: 'bottom',
+    x: null,
+    mode: '',
+    timeout: 5000,
+    text: text,
+    color: 'grey darken-3',
+    fontClass: 'secondary--text',
+    enabled: true
+  }
 }
 
 const openInNewTab = (path) => {
@@ -93,12 +110,9 @@ const getResources = async(item) => {
 const scheduleCalendarResourceToProject = (resource) => {
   props.project.resource = props.project.resources.find( r => r.id === resource.extendedProps.orgId)
   if(!props.project.resource) {
-    const projectUserResources = resource.extendedProps?.userPositions?.map(up => {
-      return props.project.resources.find(r => r.id === up.id)
+    props.project.resource = resource.extendedProps?.userPositions?.find(up => {
+      return  props.project.resources.find(r => r.id === up.id)
     })
-    if (projectUserResources?.length > 0) {
-      props.project.resource = projectUserResources[0]
-    }
   }
   setSelectedResourceInStore(props.project.resource.id)
   validateSaveEvent()

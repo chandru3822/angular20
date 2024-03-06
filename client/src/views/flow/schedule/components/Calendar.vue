@@ -777,7 +777,7 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
             const allowedPositions = resource.extendedProps?.userPositions?.filter(p => this.preselectedEvent.systemListOptionIds.includes(p.positionId))
             return allowedPositions?.length > 0
           } else if (this.preselectedEvent.systemListId === 3) {
-            return this.preselectedEvent.systemListOptionIds.includes(resource.extendedProps.orgId)
+            return this.preselectedEvent.systemListOptionIds.includes(resource.extendedProps.orgTypeId)
           }
         }
         return false
