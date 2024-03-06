@@ -249,8 +249,8 @@
           </div>
         </template>
         <template v-slot:eventContent="{event}">
-          <div v-if="event.title">{{event.title}}</div>
-          {{event}}
+          <span v-if="event.title !== 'null'" class="event-title text-no-wrap">{{event.title}}</span>
+<!--yes, 'null' is intentionally a string because that's how it comes back from the calendar-->
         </template>
       </FullCalendar>
     </div>
@@ -1325,7 +1325,6 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
 .event-tile{
   border-left-width: 20px;
   height: 20px;
-  overflow: hidden;
 }
 .event-tile-red {
   border-left-color: #e7211b !important;
@@ -1416,9 +1415,19 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
 
   #calendar-container .fc-event:hover {
     color: inherit !important;
+    max-width: unset;
+    width: fit-content;
     -webkit-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
     -moz-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
     box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
+    z-index: 5;
+
+    span {
+      max-width: unset;
+      width: fit-content;
+      padding-right: 4px;
+    }
+
   }
 
   #calendar-container .fc-rows tr,
@@ -1445,6 +1454,12 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
   .event-style{
     background-image: linear-gradient(to right, purple 20px, rgba(0,0,0,0) 20px) !important;
   }
+
+#event-calendar {
+  position: relative;
+  z-index: 0;
+//  this keeps the calendar from being in front of the filter dropdowns.
+}
 </style>
 
 <style lang="scss" scoped>
@@ -1473,6 +1488,15 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
   position: relative;
   height: calc(100% - 150px);
 }
+
+.event-title {
+  display: block;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+
 
 .border-bottom {
   border-bottom: 1px solid #C7C7CC;
