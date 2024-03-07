@@ -86,8 +86,8 @@ const selectableUsers = ref([])
 
 onMounted(async () => {
   await getTeams()
-  if(defaultTeamId.value) {
-    teamToSave.value = selectableTeams.value.find(team => defaultTeamId.value === team.id)
+  if(props.defaultTeamId) {
+    teamToSave.value = selectableTeams.value.find(team => props.defaultTeamId === team.id)
     getSelectableUsers()
   }
 })
@@ -128,11 +128,11 @@ const addTeamDetails = async () => {
     users: ownersToSave.value
   }
   try {
-    if (projectId.value) {
-      await postRequest(`/messaging/addTeam/project/${projectId.value}`, params)
+    if (props.projectId) {
+      await postRequest(`/messaging/addTeam/project/${props.projectId}`, params)
     }
-    else if (ownerUserId.value) {
-      await postRequest(`/messaging/addTeam/user/${ownerUserId.value}`, params)
+    else if (props.ownerUserId) {
+      await postRequest(`/messaging/addTeam/user/${props.ownerUserId}`, params)
     }
 
     const snackbarText = (!ownersToSave.value || ownersToSave.value.length === 0 ) ? 'Team added':
@@ -155,7 +155,7 @@ const cancel = () => {
 }
 const isTeamAlreadyAdded = (team) => {
   let teamAlreadyAdded = false
-     smsTeamOwners.value.forEach(owner => {
+     props.smsTeamOwners.forEach(owner => {
        if (owner.id === team.id) {
          teamAlreadyAdded = true
          return true
@@ -167,7 +167,7 @@ const getSelectableUsers = () => {
   let teamAlreadyAdded = false;
   selectableUsers.value = [];
   ownersToSave.value = [];
-  smsTeamOwners.value.forEach(owner => {
+  props.smsTeamOwners.forEach(owner => {
     // If this is the team being added has already been added
     if (owner.id === teamToSave.value.id) {
       teamAlreadyAdded = true;
