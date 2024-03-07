@@ -198,6 +198,7 @@ public class BlueravenProposalService {
   private static final Long dealerFieldId = 407L;
   private static final Long financialProductFieldId = 128L;
   private static final Long rebatesFieldId = 415L;
+  private static final Long commissionStrategyFieldId = 467L;
 
 
   public Optional<Proposal> getProposal(@NonNull Long proposalId, Long userId) {
@@ -252,6 +253,16 @@ public class BlueravenProposalService {
 
             cfv.setListOfValues(listOfValues);
           }
+
+          if (commissionStrategyFieldId.equals(cfv.getCustomFieldId())) {
+            List<Long> ids = filterCommissionStrategiesByUser(proposal.getProposalVersionId(), userId);
+            List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
+              .filter(v -> ids.contains(v.getId()))
+              .sorted(Comparator.comparing(ListOfValue::getName))
+              .toList();
+
+            cfv.setListOfValues(listOfValues);
+          }
         })));
 
     //filter out any custom fields that _should_ have a list of values but don't (previously filtered)
@@ -270,6 +281,14 @@ public class BlueravenProposalService {
       }));
 
     return result;
+  }
+
+  private List<Long> filterCommissionStrategiesByUser(@NonNull Long proposalVersionId, @NonNull Long userId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalVersionId", proposalVersionId);
+    params.put("userId", userId);
+
+    return sqlCache.queryBySql(ProposalQuery.filterCommissionStrategiesByUser, params, new SingleColumnRowMapper<>(Long.class));
   }
 
   private List<Long> filterDealersByOrg(@NonNull Long proposalVersionId, Long orgId) {
