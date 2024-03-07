@@ -45,7 +45,8 @@ public class Project {
       companyName,
       companyProjectStatusTypeColor,
       email,
-      rootProjectStatusType;
+      rootProjectStatusType,
+      ownerName;
   private String dateCreated;
   private Owner owner;
   private Contact contact;
