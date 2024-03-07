@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import {ProjectStore} from '@/stores/ProjectStore'
-import {BrsStore} from '@/stores/BrsStore'
 import {AppStore} from '@/stores/AppStore'
 import constants from '@/helpers/constants'
 import ProposalStore, { ProposalMutations } from '@/views/blueraven/settings/proposalDesigner/store'
@@ -67,7 +66,7 @@ const store = new Vuex.Store({
   },
   modules: {
     // user: UserStore,
-    brs: BrsStore,
+    // brs: BrsStore,
     app: AppStore,
     project: ProjectStore,
     proposal: ProposalStore

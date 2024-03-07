@@ -37,15 +37,18 @@
 </template>
 
 <script>
-  import {BrsMutations} from '@/stores/BrsStore'
   import { mapStores } from 'pinia'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useBrsStore } from '@/stores/BrsStorePinia.js'
 
   export default {
     name: 'Commissions',
 
     computed: {
-      ...mapStores(useUserStore),
+      ...mapStores(useUserStore, useBrsStore),
+      selectedPositionId() {
+        return this.brsStore.commissionPositionId
+      },
       tabs() {
         return [ {
           label: 'Users',
@@ -91,7 +94,7 @@
       },
     },
     created() {
-      if(!this.$store.state.brs.commissionPositionId) {
+      if(!this.brsStore.commissionPositionId) {
         this.changeSelectedPosition(1)
       }
     },
@@ -99,7 +102,6 @@
       return {
         snackbar: {},
         model: '',
-        selectedPositionId: this.$store.state.brs.commissionPositionId,
         positions: [
           {id: 1, label: 'Closer'},
           {id: 4, label: 'Setter'}
@@ -108,7 +110,7 @@
     },
     methods: {
       changeSelectedPosition(positionId) {
-        this.$store.commit(BrsMutations.SET_COMMISSION_POSITION_ID, positionId)
+        this.brsStore.commissionPositionId = positionId
         // this.$router.push(`/commissionManagement/${this.selectedPositionId}/users`)
       }
     }
