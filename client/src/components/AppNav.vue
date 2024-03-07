@@ -283,8 +283,8 @@ export default {
         this.appStore.spinnerUrl = this.selectedCompany?.spinnerPresignedUrl
 
         //this handles if the color is null too
-        this.$store.commit(AppMutations.SET_PRIMARY_BASE_COLOR, this.selectedCompany?.primaryColor)
-        this.$store.commit(AppMutations.SET_BANNER_COLOR, this.selectedCompany?.bannerColor)
+        this.appStore.setPrimaryBaseColor(this.selectedCompany?.primaryColor)
+        this.appStore.setBannerColor(this.selectedCompany?.bannerColor)
 
       } catch (e) {
         console.error('*** ERROR ***', e)
