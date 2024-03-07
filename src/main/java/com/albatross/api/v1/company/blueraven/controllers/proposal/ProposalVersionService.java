@@ -298,6 +298,11 @@ public class ProposalVersionService {
     return query.stream().map(getMapper(objectMapper, ProposalCustomValuesRow.class)).filter(Objects::nonNull).toList();
   }
 
+  public Optional<String> getKwhProposalValueForUtility(String utilityCompany) {
+    Map<String, Object> params = Map.of("utilityCompany", utilityCompany);
+    return sqlCache.getBySql(ProposalToolQuery.getKwhProposalValueForUtility, params, new SingleColumnRowMapper<>(String.class));
+  }
+
   //  TODO: cacheable
   public List<Long> getProposalValuesFilterIds(@NonNull Long versionId, ProposalValueFilter filter) {
     try {
