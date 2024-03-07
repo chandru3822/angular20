@@ -382,6 +382,7 @@ import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList
 import ActionButton from "./ActionButton";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export default {
   name: 'ProjectProcessStepEvent',
@@ -501,7 +502,7 @@ export default {
     },
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useAppStore),
     timezone() {
       return this.userStore.details.timezone.value
     },
@@ -663,7 +664,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     async userCanScheduleLeadAllocation() {
@@ -680,7 +681,7 @@ export default {
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         } finally {
           this.schedulerLoading = false
         }
@@ -696,7 +697,7 @@ export default {
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         } finally {
           this.schedulerLoading = false
         }
@@ -718,7 +719,7 @@ export default {
         const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/${action.id}/perform`, params)
 
         this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
 
         //calls fn that tells the upcoming events to update
         //we dont know if an event action will trigger other changes so we have to refresh everything all the time
@@ -757,7 +758,7 @@ export default {
         let saveMismatch = e.data?.message === 'Save Version Mismatch'
         let msg = saveMismatch ? `Cannot save changes, this event has been updated by another user. Click <a class="white--text underline" href="">here</a> to refresh.` : 'Error Performing Event'
         this.snackbar = getSnackbar('ERROR', msg, saveMismatch)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -839,7 +840,7 @@ export default {
     //   } catch (e) {
     //     console.error('*** ERROR ***', e)
     //     this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
-    //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    //     this.appStore.showSnack(this.snackbar)
     //     this.$store.commit(AppMutations.SET_LOADING, false)
     //   }
     // },
@@ -854,7 +855,7 @@ export default {
           this.projectMismatch = true
           this.eventDetailsLoading = false
           this.snackbar = getSnackbar('ERROR', `Invalid Request: Project Mismatch`)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         } else {
           this.selectedEvent = data
           //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
@@ -888,7 +889,7 @@ export default {
         console.error('*** ERROR ***', e)
         let msg = e?.data?.message || 'Error Retrieving Details'
         this.snackbar = getSnackbar('ERROR', msg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     deleteEvent: async function () {
@@ -905,7 +906,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -935,7 +936,7 @@ export default {
         this.$refs.ppseFieldsContainer.$el.scrollTop = 0
         this.selectedEvent = data
         this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$emit('refresh-upcoming-events')
         if (data.uniqueBehaviorTypeId === 1) {
           this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
@@ -950,7 +951,7 @@ export default {
           let saveMismatch = e.data?.message === 'Save Version Mismatch'
           let msg = saveMismatch ? `<div class="text-center">Cannot Save Changes. <br/>This event has been updated by another user. <br/>Click <a class="white--text underline" href="">here</a> to refresh.</div>` : 'Error Performing Event'
           this.snackbar = getSnackbar('ERROR', msg, saveMismatch)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         }
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -997,7 +998,7 @@ export default {
         this.inPersonSearchLoading = false
         let errorMsg = e.data ? e.data.message : 'Error Retrieving Time Slots'
         this.snackbar = getSnackbar('ERROR', errorMsg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     async saveCloserAppointment() {
@@ -1041,7 +1042,7 @@ export default {
         logError(e)
         let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'
         this.snackbar = getSnackbar('ERROR', msg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -1063,7 +1064,7 @@ export default {
         if (selectedDate > cappedDate) {
           this.availabilityDateField.dateValue = null
           this.snackbar = getSnackbar('ERROR', `You can only schedule appointments ${this.roundRobinNumberOfDays} days in advance`)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         } else {
           this.populateDirtyCfvs(this.availabilityDateField)
         }

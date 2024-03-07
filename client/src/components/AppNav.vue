@@ -127,6 +127,7 @@ import AnnouncementDropdown from '@/components/AnnouncementDropdown.vue'
 import moment from 'moment'
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const { VITE_ENV } =  import.meta.env
 //@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
@@ -150,9 +151,9 @@ export default {
         //there seems to be an issue when stale announcements are in the eventstream and they are populating when they shouldn't
         //this time check will hopefully fix that.
         if(ae.endTime == null || moment().isBetween(moment(ae.startTime), moment(ae.endTime))) {
-          let match = this.$store.state.app.announcements.find(a => a.id === ae.announcement?.id)
+          let match = this.appStore.announcements.find(a => a.id === ae.announcement?.id)
           if(!match && ae.announcement) {
-            this.$store.state.app.announcements.push(ae.announcement)
+            this.appStore.announcements.push(ae.announcement)
           }
         }
       })
@@ -237,7 +238,7 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useAppStore),
     userIsMasquerading() {
       return  this.userStore?.details?.masqueradingUserId != null
     },
@@ -279,11 +280,11 @@ export default {
         this.userStore.companies = this.companies
         this.selectedCompany = this.companies.find(c => c.id === this.userStore?.details?.companyId) || {}
         //always do this, that way if they dont have a spinner it will unset the url
-        this.$store.commit(AppMutations.SET_SPINNER_URL, this.selectedCompany?.spinnerPresignedUrl)
+        this.appStore.spinnerUrl = this.selectedCompany?.spinnerPresignedUrl
 
         //this handles if the color is null too
-        this.$store.commit(AppMutations.SET_PRIMARY_BASE_COLOR, this.selectedCompany?.primaryColor)
-        this.$store.commit(AppMutations.SET_BANNER_COLOR, this.selectedCompany?.bannerColor)
+        this.appStore.setPrimaryBaseColor(this.selectedCompany?.primaryColor)
+        this.appStore.setBannerColor(this.selectedCompany?.bannerColor)
 
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -354,10 +355,10 @@ export default {
     },
     async getActiveAnnouncements() {
       try {
-        this.$store.commit(AppMutations.SET_ANNOUNCEMENTS, [])
+        this.appStore.announcements = []
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data, status} = await getRequest(`/announcements/active`)
-        this.$store.commit(AppMutations.SET_ANNOUNCEMENTS, data)
+        this.appStore.announcements = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

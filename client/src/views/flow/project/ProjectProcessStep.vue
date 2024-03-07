@@ -327,6 +327,7 @@ import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList
 import ConfirmationDialog from "../../../components/ConfirmationDialog.vue";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -404,7 +405,7 @@ export default {
     await this.loadAllPageDetails()
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useAppStore),
     userCanEdit() {
       return this.userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
     },
@@ -520,7 +521,7 @@ export default {
           this.availableProcessStepStatuses = data
         } catch (e) {
           this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           logError(e)
         }
       }
@@ -534,7 +535,7 @@ export default {
           this.projectMismatch = true
           this.processStepLoading = false
           this.snackbar = getSnackbar('ERROR', `Invalid Request: Project Mismatch`)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         } else {
           this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
           this.processStepReadOnly = this.processStep.readonly && !this.userStore.userHasAnyPosition(this.processStep.whiteListedPositions?.map(wlp => wlp.positionId))
@@ -572,7 +573,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     async getAvailableOwners() {
@@ -586,7 +587,7 @@ export default {
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           // this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -609,12 +610,12 @@ export default {
         //not sure why this.$refs.ppsFieldsContainer.scrollTop = 0 works everywhere else in the app but not here
         this.$refs.ppsFieldsContainer.$el.scrollTop = 0
         this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } finally {
         this.fieldsSaving = false
@@ -638,12 +639,12 @@ export default {
         this.processStep.owner = {}
         const {status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
         this.snackbar = getSnackbar('SUCCESS', 'Owner Removed')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Removing Owner')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -657,7 +658,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -679,7 +680,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.processStep.main = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -727,7 +728,7 @@ export default {
       this.$emit('refresh-project-status')
 
       this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
-      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      this.appStore.showSnack(this.snackbar)
       //if there are links returned, open them
       data?.childFunctionReturnedStrings?.forEach(rs => {
         //the date stringify guarantees a new tab opens every time
@@ -761,7 +762,7 @@ export default {
       }
 
       this.snackbar = getSnackbar('ERROR', message)
-      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      this.appStore.showSnack(this.snackbar)
     },
     addEvent: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -773,7 +774,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -800,7 +801,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

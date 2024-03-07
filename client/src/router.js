@@ -9,10 +9,12 @@ import ProposalDesignerRoutes from '@/views/blueraven/settings/proposalDesigner/
 import {AppMutations} from "@/stores/AppStore";
 import {pinia} from '@/store'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 Vue.use(Router)
 const nonRedirectPaths = ['/', '/home']
 const userStore = useUserStore(pinia)
+const appStore = useAppStore(pinia)
 
 const router = new Router({
   mode: 'history',
@@ -77,7 +79,7 @@ const router = new Router({
           if (from.name !== 'login') {
             try {
               //this sets the redirect url in case the getUser request returns a 401
-              store.commit(AppMutations.SET_REDIRECT_URL, nonRedirectPaths.includes(to.path) ? null : to.path)
+              appStore.redirectUrl = nonRedirectPaths.includes(to.path) ? null : to.path
 
               const {data} = await getUser()
               userStore.details = data

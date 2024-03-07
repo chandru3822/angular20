@@ -21,7 +21,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import AppNav from '@/components/AppNav'
 import Snackbar from '@/components/Snackbar'
 import Spinner from '@/components/Spinner'
@@ -31,11 +30,14 @@ import {NotificationActions} from '@/plugins/notifications/NotificationStore'
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import theme from '@/helpers/defaultTheme.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
 const userStore = useUserStore()
+const appStore = useAppStore()
 
 // In moving this from vuex to pinia, I noticed `hideHeader` never exists in
 // the user store. Still keeping this logic here though in case of a breaking
@@ -75,8 +77,8 @@ watch(revokeAccessEvents, async () => {
 
 onMounted(() => {
   //set the theme which will use the default until one load from company
-  store.commit(AppMutations.SET_INITIAL_THEME)
-  vueInstance.$vuetify.theme.themes.light = store.state.app.theme
+  appStore.theme = theme.LIGHT
+  vueInstance.$vuetify.theme.themes.light = theme.LIGHT
 })
 </script>
 

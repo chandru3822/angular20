@@ -551,6 +551,7 @@
   import UserImages from "./UserImages";
   import { mapStores } from 'pinia'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
   const defaultEmailMessage = '${user.firstName},\n'
 
@@ -661,7 +662,7 @@
       }
     },
     computed: {
-      ...mapStores(useUserStore),
+      ...mapStores(useUserStore, useAppStore),
       companyId() {
         return this.userStore.details.companyId
       },
@@ -836,7 +837,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving All Users')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.allUsersLoading = false
           // this.$store.commit(AppMutations.SET_LOADING, false)
         }
@@ -902,7 +903,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.appStore.showSnack(this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
@@ -968,7 +969,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.appStore.showSnack(this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
@@ -1017,7 +1018,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Filters')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1057,7 +1058,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1068,7 +1069,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1236,7 +1237,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.conversationIsLoading = false
         }
       },
@@ -1252,7 +1253,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving templates')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         }
       },
       async sendMessage(sendEmail, sendText) {
@@ -1283,7 +1284,7 @@
                   if (this.textMessage && this.textMessage.length > 1599) {
                     let textOverflowLength = this.textMessage.length - 1599;
                     this.snackbar = getSnackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
-                    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                    this.appStore.showSnack(this.snackbar)
                     this.messageSuccess = false
                     this.$store.commit(AppMutations.SET_LOADING, false)
                     return;
@@ -1307,7 +1308,7 @@
               }
 
              this.snackbar = getSnackbar('ERROR', message)
-             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+             this.appStore.showSnack(this.snackbar)
              this.$store.commit(AppMutations.SET_LOADING, false)
              return
           }
@@ -1331,7 +1332,7 @@
           this.emailAttachments = []
           this.emailFile = null
           this.textFiles = []
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
       },
       onEmailMessageChange({ text }) {
@@ -1365,7 +1366,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         }
       },
       async getEmailSenders() {
@@ -1375,7 +1376,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Email Addresses')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         }
       },
       async exportCsv() {
@@ -1420,7 +1421,7 @@
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error exporting user data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         }
       }
     }
