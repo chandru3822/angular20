@@ -19,7 +19,7 @@ const { VITE_GA_ID } = import.meta.env
 Vue.config.productionTip = false
 
 Vue.use(NotificationPlugin, { store })
-Vue.use(SnackbarPlugin, { store })
+Vue.use(SnackbarPlugin)
 Vue.use(Vue2Filters)
 Vue.prototype.$filters = Vue.options.filters
 
