@@ -49,7 +49,7 @@
 
         <v-data-table
           :headers="headers"
-          :items="filterAssignedFields()"
+          :items="filteredAssignedFields"
           :fixed-header="true"
           :items-per-page="-1"
           hide-default-footer
@@ -91,188 +91,172 @@
 </template>
 
 
-<script>
-import {Actions} from '@/store'
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
 
-import orderBy from 'lodash.orderby'
-import {getCompanyProjectStatusType, getProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar, getRequest, postRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables";
 
-export default {
-  name: 'ProjectStatusFields',
-  mixins: [Vue2Filters.mixin],
-  components: {
-    ConfirmationDialog,
-    draggable,
-  },
-  mounted() {
-    let table = document.querySelector('tbody')
-    const _self = this
-    Sortable.create(table, {
-      handle: '.handle',
-      onEnd({ newIndex, oldIndex }) {
-        const rowSelected = _self.assignedFields.splice(oldIndex, 1)[0]
-        _self.assignedFields.splice(newIndex, 0, rowSelected)
-        let assignedFieldsClone = cloneDeep(_self.assignedFields)
-        assignedFieldsClone.forEach((g, idx) => {
-          g.displayOrder = idx
-        })
-        _self.saveOrderChanges(assignedFieldsClone)
-      }
-    })
-  },
-  data() {
-    return {
-      snackbar: {},
-      constants,
-      addNew: false,
-      selectedDataView: {},
-      selectedDataViewField: {},
-      showDeleteDialog: false,
-      itemToDelete: null,
-      headers: [
-        { text: null, value: 'draggable', width: '50px', show: true },
-        {text: 'Field Name', value: 'fieldName', show: true},
-        {text: '', value: 'icons', show: true},
-      ],
-      dataViews: [],
-      fieldsLoading: true,
-      assignedFields: [],
-      availableDataViewFields: [],
-      statusId: this.$route.params.id
+const route = useRoute()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+
+onMounted(() => {
+
+  let table = document.querySelector('tbody')
+  const _self = vueInstance
+  Sortable.create(table, {
+    handle: '.handle',
+    onEnd({ newIndex, oldIndex }) {
+      const rowSelected = _self.assignedFields.splice(oldIndex, 1)[0]
+      _self.assignedFields.splice(newIndex, 0, rowSelected)
+      let assignedFieldsClone = cloneDeep(_self.assignedFields)
+      assignedFieldsClone.forEach((g, idx) => {
+        g.displayOrder = idx
+      })
+      _self.saveOrderChanges(assignedFieldsClone)
     }
-  },
-  computed: {
-    ...mapStores(useUserStore),
-    userId() {
-      return this.userStore.details.id
-    },
-    companyId() {
-      return this.userStore.details.companyId
-    },
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
-    },
-    userCanAdd() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
-    }
-  },
-  methods: {
-    async saveOrderChanges (fields) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+  })
+  loadFields()
+})
+
+
+
+
+const addNew = ref( false)
+const selectedDataView = ref( {})
+const selectedDataViewField = ref( {})
+const showDeleteDialog = ref( false)
+const itemToDelete = ref( null)
+const dataViews = ref( [])
+const fieldsLoading = ref( true)
+const assignedFields = ref( [])
+const availableDataViewFields = ref( [])
+const headers = ref( [
+  { text: null, value: 'draggable', width: '50px', show: true },
+  {text: 'Field Name', value: 'fieldName', show: true},
+  {text: '', value: 'icons', show: true},
+])
+
+const statusId = computed(() => {
+  return route.params.id
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
+const filteredAssignedFields = computed(() => {
+  return assignedFields.value.filter(s => { return !s.archived})
+})
+
+
+    const saveOrderChanges = async (fields) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await putRequest(`/projectStatus/company/${this.statusId}/fields`, fields)
-        this.snackbar = getSnackbar('SUCCESS', 'Field Order Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        const {status} = await putRequest(`/projectStatus/company/${statusId.value}/fields`, fields)
+        getSnackbar('SUCCESS', 'Field Order Updated')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Field Order')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Saving Field Order')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    closeDeleteDialog() {
-      this.showDeleteDialog = false
-      this.itemToDelete = null
-    },
-    async loadDataViews() {
+    }
+    const closeDeleteDialog = () => {
+      showDeleteDialog.value = false
+      itemToDelete.value = null
+    }
+    const loadDataViews = async() => {
       //dont reload the list every time
-      if(this.dataViews.length === 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      if(dataViews.value.length === 0) {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/dataView`, null, [])
-          this.dataViews = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          dataViews.value = data
+          store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          getSnackbar('ERROR', 'Error Retrieving Data')
+          store.commit(AppMutations.SET_LOADING, false)
         }
       }
-    },
-    async getDataViewFields() {
+    }
+    const getDataViewFields = async() => {
       //dont reload the list every time
-      if(this.availableDataViewFields.length === 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      if(availableDataViewFields.value.length === 0) {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/customField/getByDataView/${this.selectedDataView.id}`)
-          this.availableDataViewFields = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {data, status} = await getRequest(`/customField/getByDataView/${selectedDataView.value.id}`)
+          availableDataViewFields.value = data
+          store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          getSnackbar('ERROR', 'Error Retrieving Data')
+          store.commit(AppMutations.SET_LOADING, false)
         }
       }
-    },
-    async deleteField() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const deleteField = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        let id = this.itemToDelete.id
+        let id = itemToDelete.value.id
         const {status} = await deleteRequest(`/projectStatus/field/${id}`)
-        this.assignedFields = this.assignedFields.filter(af => af.id !== id)
-        this.snackbar = getSnackbar('SUCCESS', 'Field Removed')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        assignedFields.value = assignedFields.value.filter(af => af.id !== id)
+        getSnackbar('SUCCESS', 'Field Removed')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Removing Field')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Removing Field')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async saveFieldToMilestone() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const saveFieldToMilestone = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
-          dataViewFieldConfigId: !this.selectedDataViewField.dataViewChildFieldConfigId ? this.selectedDataViewField.dataViewFieldConfigId : null,
-          dataViewChildFieldConfigId: this.selectedDataViewField.dataViewChildFieldConfigId
+          dataViewFieldConfigId: !selectedDataViewField.value.dataViewChildFieldConfigId ? selectedDataViewField.value.dataViewFieldConfigId : null,
+          dataViewChildFieldConfigId: selectedDataViewField.value.dataViewChildFieldConfigId
         }
-        const {data, status} = await postRequest(`/projectStatus/company/${this.statusId}/field`, params)
-        this.assignedFields.push(data)
-        this.selectedDataViewField = {}
-        this.addNew = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        const {data, status} = await postRequest(`/projectStatus/company/${statusId.value}/field`, params)
+        assignedFields.value.push(data)
+        selectedDataViewField.value = {}
+        addNew.value = false
+        store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Retrieving Data')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async loadFields() {
-      this.fieldsLoading = true
+    }
+    const loadFields = async() => {
+      fieldsLoading.value = true
       try {
-        const {data} = await getRequest(`/projectStatus/company/${this.statusId}/fields`, null, [])
-        this.assignedFields = data
-        this.fieldsLoading = false
+        const {data} = await getRequest(`/projectStatus/company/${statusId.value}/fields`, null, [])
+        assignedFields.value = data
+        fieldsLoading.value = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.fieldsLoading = false
+        getSnackbar('ERROR', 'Error Retrieving Data')
+        fieldsLoading.value = false
       }
-    },
-    filterAssignedFields () {
-      return this.assignedFields.filter(s => { return !s.archived})
-    },
-  },
-  async created() {
-    this.loadFields()
-  }
-}
+    }
+
 </script>
 
 <style scoped lang="scss">

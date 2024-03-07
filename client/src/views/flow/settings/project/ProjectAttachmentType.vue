@@ -4,20 +4,9 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import ObjectTypeAttachment from "@/views/flow/settings/objectType/ObjectTypeAttachment";
 
-export default {
-  name: 'ProjectAttachmentType',
-  components: {
-    ObjectTypeAttachment
-  },
-  data () {
-    return {}
-  },
-  watch: {},
-  methods: {}
-}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

@@ -3,22 +3,22 @@
     <v-card flat color="primary lighten-9" class="square-card">
       <v-card-text>
         <multi-select-group
-        v-if="!objectTypeDetailsLoading"
-        background-color="primary lighten-9"
-        :userCanEdit="userCanEdit"
-        :returnObject="projectObjectType"
-        :content="positions"
-        :dropdownEnabled="projectObjectType.statusReadOnly"
-        :selectedContent="projectObjectType.statusReadOnlyWhiteListedPositions"
-        :title="'Status Read Only'"
-        :label="'Allowed Positions'"
-        :alternateLabel = "'Denied Positions'"
-        user
-        :allow="projectObjectType.statusReadOnlyAllow"
-        :contentLoading="objectTypeDetailsLoading"
-        @selected-changed="statusReadOnlySelectedEventListener"
-        @allow-changed="statusReadOnlyAllowEventListener"
-        @checkbox-changed="statusReadOnlyCheckboxEventListener"></multi-select-group>
+            v-if="!objectTypeDetailsLoading"
+            background-color="primary lighten-9"
+            :userCanEdit="userCanEdit"
+            :returnObject="projectObjectType"
+            :content="positions"
+            :dropdownEnabled="projectObjectType.statusReadOnly"
+            :selectedContent="projectObjectType.statusReadOnlyWhiteListedPositions"
+            :title="'Status Read Only'"
+            :label="'Allowed Positions'"
+            :alternateLabel="'Denied Positions'"
+            user
+            :allow="projectObjectType.statusReadOnlyAllow"
+            :contentLoading="objectTypeDetailsLoading"
+            @selected-changed="statusReadOnlySelectedEventListener"
+            @allow-changed="statusReadOnlyAllowEventListener"
+            @checkbox-changed="statusReadOnlyCheckboxEventListener"></multi-select-group>
         <br/>
         <v-btn v-if="userCanEdit" color="primary" dark class="d-inline-block white--text"
                @click="saveReadOnlyAndWhiteList()">
@@ -30,21 +30,21 @@
     <v-card flat color="primary lighten-9" class="square-card mt-5">
       <v-card-text>
         <multi-select-group
-          v-if="!objectTypeDetailsLoading"
-          background-color="primary lighten-9"
-          :userCanEdit="userCanEdit"
-          :returnObject="projectObjectType"
-          :content="positions"
-          :dropdownEnabled="projectObjectType.ownerReadOnly"
-          :selectedContent="projectObjectType.ownerReadOnlyWhiteListedPositions"
-          :title="'Owner Read Only'"
-          :label="'Allowed Positions'"
-          :alternateLabel = "'Denied Positions'"
-          :allow="projectObjectType.ownerReadOnlyAllow"
-          :contentLoading="objectTypeDetailsLoading"
-          @selected-changed="ownerReadOnlySelectedEventListener"
-          @allow-changed="ownerReadOnlyAllowEventListener"
-          @checkbox-changed="ownerReadOnlyCheckboxEventListener"></multi-select-group>
+            v-if="!objectTypeDetailsLoading"
+            background-color="primary lighten-9"
+            :userCanEdit="userCanEdit"
+            :returnObject="projectObjectType"
+            :content="positions"
+            :dropdownEnabled="projectObjectType.ownerReadOnly"
+            :selectedContent="projectObjectType.ownerReadOnlyWhiteListedPositions"
+            :title="'Owner Read Only'"
+            :label="'Allowed Positions'"
+            :alternateLabel="'Denied Positions'"
+            :allow="projectObjectType.ownerReadOnlyAllow"
+            :contentLoading="objectTypeDetailsLoading"
+            @selected-changed="ownerReadOnlySelectedEventListener"
+            @allow-changed="ownerReadOnlyAllowEventListener"
+            @checkbox-changed="ownerReadOnlyCheckboxEventListener"></multi-select-group>
         <br/>
         <v-btn v-if="userCanEdit" color="primary" dark class="d-inline-block white--text"
                @click="saveOwnerReadOnlyAndWhiteList()">
@@ -57,169 +57,150 @@
 </template>
 
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import cloneDeep from 'lodash.clonedeep'
-  import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+import {AppMutations} from '@/stores/AppStore'
+import cloneDeep from 'lodash.clonedeep'
+import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {getCurrentInstance, computed, ref, onMounted} from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
 
-  export default {
-    name: 'ProjectSystem',
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 
-    data() {
-      return {
-        snackbar: {},
-        positions: [],
-        projectObjectType: {},
-        statusReadOnlyWhiteListedPositions: [],
-        statusReadOnlyPositionsChanged: false,
-        ownerReadOnlyPositionsChanged: false,
-        ownerReadOnlyWhiteListedPositions: [],
-        positionsLoading: false,
-        objectTypeDetailsLoading: false
-      }
-    },
-    computed: {
-      ...mapStores(useUserStore),
-      userId() {
-        return this.userStore.details.id
-      },
-      companyId() {
-        return this.userStore.details.companyId
-      },
-      userCanAdd() {
-        return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
-      },
-      userCanEdit() {
-        return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
-      },
-    },
-    async created() {
-      this.getPositions()
-      this.getObjectTypeDetails()
-    },
-    methods: {
-      selectAll () {
-        return this.statusReadOnlyWhiteListedPositions?.length === this.positions?.length
-      },
-      selectSome (f) {
-        return this.statusReadOnlyWhiteListedPositions?.length > 0 && !this.selectAll(f)
-      },
-      icon (f) {
-        if (this.selectAll(f)) {
-          return 'check_box'
-        }
-        if (this.selectSome(f)) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      toggleSelectAllPositions () {
-        this.$nextTick(() => {
-          if (this.selectAll()) {
-            this.statusReadOnlyWhiteListedPositions = []
-          } else {
-            this.statusReadOnlyWhiteListedPositions = cloneDeep(this.positions)
-            this.statusReadOnlyPositionsChanged = true
-          }
-        })
-      },
-      toggleSelectAllPositionsOwner () {
-        this.$nextTick(() => {
-          if (this.selectAll()) {
-            this.ownerReadOnlyWhiteListedPositions = []
-            this.ownerReadOnlyPositionsChanged = true
-          } else {
-            this.ownerReadOnlyWhiteListedPositions = cloneDeep(this.positions)
-            this.ownerReadOnlyPositionsChanged = true
-          }
-        })
-      },
-      async getPositions() {
-        if(this.positions?.length === 0) {
-          try {
-            this.positionsLoading = true
-            const {data, status} = await getRequest(`/position/withParent`)
-            this.positions = data
-            this.positionsLoading = false
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            this.positionsLoading = false
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async saveReadOnlyAndWhiteList () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await putRequest(`/objectType/saveStatusReadOnlyAndWhiteList?savePositions=${this.statusReadOnlyPositionsChanged ?? false}`, this.projectObjectType)
-          this.statusReadOnlyPositionsChanged = false
-          if(!this.projectObjectType.statusReadOnly) {
-            this.statusReadOnlyWhiteListedPositions = []
-          }
-          this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveOwnerReadOnlyAndWhiteList () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await putRequest(`/objectType/saveOwnerReadOnlyAndWhiteList?savePositions=${this.ownerReadOnlyPositionsChanged ?? false}`, this.projectObjectType)
-          this.ownerReadOnlyPositionsChanged = false
-          if(!this.projectObjectType.ownerReadOnly) {
-            this.ownerReadOnlyWhiteListedPositions = []
-          }
-          this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getObjectTypeDetails () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.objectTypeDetailsLoading = true;
-          const {data, status} = await getRequest(`/objectType/getByType/1`)
-          this.projectObjectType = data
-          handleHidingGlobalLoader(this, status)
-          this.objectTypeDetailsLoading = false;
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      statusReadOnlySelectedEventListener(e){
-        this.projectObjectType.statusReadOnlyWhiteListedPositions = e;
-        this.statusReadOnlyPositionsChanged = true;
-      },
-      statusReadOnlyAllowEventListener(e){
-        this.projectObjectType.statusReadOnlyAllow = (e === 0);
-      },
-      statusReadOnlyCheckboxEventListener(e){
-        this.projectObjectType.statusReadOnly = e;
-      },
-      ownerReadOnlySelectedEventListener(e){
-        this.projectObjectType.ownerReadOnlyWhiteListedPositions = e;
-        this.ownerReadOnlyPositionsChanged = true;
-      },
-      ownerReadOnlyAllowEventListener(e){
-        this.projectObjectType.ownerReadOnlyAllow = (e === 0);
-      },
-      ownerReadOnlyCheckboxEventListener(e){
-        this.projectObjectType.ownerReadOnly = e;
-      },
-    },
+
+const positions = ref([])
+const projectObjectType = ref({})
+const statusReadOnlyWhiteListedPositions = ref([])
+const statusReadOnlyPositionsChanged = ref(false)
+const ownerReadOnlyPositionsChanged = ref(false)
+const ownerReadOnlyWhiteListedPositions = ref([])
+const positionsLoading = ref(false)
+const objectTypeDetailsLoading = ref(false)
+
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
+
+onMounted(() => {
+  getPositions()
+  getObjectTypeDetails()
+})
+
+const selectAll = () => {
+  return statusReadOnlyWhiteListedPositions.value?.length === value?.length
+}
+const selectSome = (f) => {
+  return statusReadOnlyWhiteListedPositions.value?.length > 0 && !selectAll(f)
+}
+const icon = (f) => {
+  if (selectAll(f)) {
+    return 'check_box'
   }
+  if (selectSome(f)) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+}
+const toggleSelectAllPositions = () => {
+  vueInstance.$nextTick(() => {
+    if (selectAll()) {
+      statusReadOnlyWhiteListedPositions.value = []
+    } else {
+      statusReadOnlyWhiteListedPositions.value = cloneDeep(positions.value)
+      statusReadOnlyPositionsChanged.value = true
+    }
+  })
+}
+
+const getPositions = async () => {
+  if (positions.value?.length === 0) {
+    try {
+      positionsLoading.value = true
+      const {data, status} = await getRequest(`/position/withParent`)
+      positions.value = data
+      positionsLoading.value = false
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      positionsLoading.value = false
+      console.error('*** ERROR ***', e)
+      getSnackbar('ERROR', 'Error Retrieving Positions')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+}
+
+const saveReadOnlyAndWhiteList = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await putRequest(`/objectType/saveStatusReadOnlyAndWhiteList?savePositions=${statusReadOnlyPositionsChanged.value ?? false}`, projectObjectType.value)
+    statusReadOnlyPositionsChanged.value = false
+    if (!projectObjectType.value.statusReadOnly) {
+      statusReadOnlyWhiteListedPositions.value = []
+    }
+    getSnackbar('SUCCESS', 'Saved Successfully')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const saveOwnerReadOnlyAndWhiteList = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await putRequest(`/objectType/saveOwnerReadOnlyAndWhiteList?savePositions=${ownerReadOnlyPositionsChanged.value ?? false}`, projectObjectType.value)
+    ownerReadOnlyPositionsChanged.value = false
+    if (!projectObjectType.value.ownerReadOnly) {
+      ownerReadOnlyWhiteListedPositions.value = []
+    }
+    getSnackbar('SUCCESS', 'Saved Successfully')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const getObjectTypeDetails = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    objectTypeDetailsLoading.value = true;
+    const {data, status} = await getRequest(`/objectType/getByType/1`)
+    projectObjectType.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+    objectTypeDetailsLoading.value = false;
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Retrieving Details')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const statusReadOnlySelectedEventListener = (e) => {
+  projectObjectType.value.statusReadOnlyWhiteListedPositions = e;
+  statusReadOnlyPositionsChanged.value = true;
+}
+const statusReadOnlyAllowEventListener = (e) => {
+  projectObjectType.value.statusReadOnlyAllow = (e === 0);
+}
+const statusReadOnlyCheckboxEventListener = (e) => {
+  projectObjectType.value.statusReadOnly = e;
+}
+const ownerReadOnlySelectedEventListener = (e) => {
+  projectObjectType.value.ownerReadOnlyWhiteListedPositions = e;
+  ownerReadOnlyPositionsChanged.value = true;
+}
+const ownerReadOnlyAllowEventListener = (e) => {
+  projectObjectType.value.ownerReadOnlyAllow = (e === 0);
+}
+const ownerReadOnlyCheckboxEventListener = (e) => {
+  projectObjectType.value.ownerReadOnly = e;
+}
 </script>

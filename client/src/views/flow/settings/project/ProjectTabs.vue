@@ -22,7 +22,7 @@
           </div>
           <v-data-table
               :headers="headers"
-              :items="filterTabs()"
+              :items="filteredTabs"
               :items-per-page="-1"
               :sort-desc="[false]"
               :sort-by="['displayOrder']"
@@ -77,7 +77,7 @@
 </template>
 
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
@@ -85,152 +85,132 @@
   import Sortable from "sortablejs";
   import cloneDeep from "lodash.clonedeep";
   import ConfirmationDialog from "@/components/ConfirmationDialog";
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+  import {useUserStore} from '@/stores/UserStorePinia.js'
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
 
-  export default {
-    name: 'ProjectTabs',
-    components: {ConfirmationDialog},
-    mixins: [Vue2Filters.mixin],
+  onMounted(() => {
+    let table = document.querySelector('tbody')
+    const _self = vueInstance
+    Sortable.create(table, {
+      handle: '.handle',
+      onEnd({ newIndex, oldIndex }) {
+        const rowSelected = _self.tabs.splice(oldIndex, 1)[0]
+        _self.tabs.splice(newIndex, 0, rowSelected)
+        let rowsClone = cloneDeep(_self.tabs)
 
-    mounted() {
-      let table = document.querySelector('tbody')
-      const _self = this
-      Sortable.create(table, {
-        handle: '.handle',
-        onEnd({ newIndex, oldIndex }) {
-          const rowSelected = _self.tabs.splice(oldIndex, 1)[0]
-          _self.tabs.splice(newIndex, 0, rowSelected)
-          let rowsClone = cloneDeep(_self.tabs)
-
-          let rowsToSave = []
-          rowsClone.forEach((r, idx) => {
-            //check if the row needs to be saved before updating display order
-            //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-            let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-            //update display order
-            r.displayOrder = idx
-            //save only rows that changed
-            if(save) {
-              _self.tabs[idx].newDisplayOrder = idx
-              rowsToSave.push(r)
-            }
-          })
-          _self.saveRowChanges(rowsToSave)
-        }
-      })
-    },
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        tabs: [],
-        addNew: false,
-        newTab: {},
-        selectedTabId: null,
-        expanded: [],
-        headers: [
+        let rowsToSave = []
+        rowsClone.forEach((r, idx) => {
+          //check if the row needs to be saved before updating display order
+          //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+          let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
+          //update display order
+          r.displayOrder = idx
+          //save only rows that changed
+          if(save) {
+            _self.tabs[idx].newDisplayOrder = idx
+            rowsToSave.push(r)
+          }
+        })
+        _self.saveRowChanges(rowsToSave)
+      }
+    })
+    getTabs()
+  })
+    
+        const tabs = ref( [])
+        const addNew = ref( false)
+        const newTab = ref( {})
+        const selectedTabId = ref( null)
+        const expanded = ref( [])
+        const tabToDelete = ref( null)
+        const headers = ref( [
           { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
           { text: 'Tab Label', value: 'tabName', show: true },
           { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        tabToDelete: null
-      }
-    },
-    computed: {
-      ...mapStores(useUserStore),
-      userId() {
-        return this.userStore.details.id
-      },
-      companyId() {
-        return this.userStore.details.companyId
-      },
-      userCanAdd() {
-        return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
-      },
-      userCanEdit() {
-        return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
-      },
-      tabToDeleteName(){
-        return this.tabToDelete ? this.tabToDelete.tabName : ''
-      }
-    },
-    methods: {
-      async getTabs() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        ])
+  const filteredTabs = computed(() => {
+    return tabs.value.filter(t => { return !t.archived})
+  })
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
+  const userId = computed(() => {
+    return userStore.details.id
+  })
+  const tabToDeleteName = computed(() => {
+    return tabToDelete.value ? tabToDelete.value.tabName : ''
+  })
+
+    
+      const getTabs = async() => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/objectTypeTab/project`)
-          this.tabs = data
+          tabs.value = data
 
-          handleHidingGlobalLoader(this, status)
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Tabs')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          getSnackbar('ERROR', 'Error Retrieving Tabs')
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async deleteTab() {
-        const tabId= this.tabToDelete.id
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const deleteTab = async() => {
+        const tabId= tabToDelete.value.id
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/objectTypeTab/${tabId}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Tab')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          getSnackbar('SUCCESS', 'Successfully Deleted Tab')
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Tab')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          getSnackbar('ERROR', 'Error Deleting Tab')
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async saveTab(tab) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const saveTab = async(tab) => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await postRequest(`/objectTypeTab/project`, tab)
-          this.snackbar = getSnackbar('SUCCESS', 'Tab Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.selectedTabId = null
+          getSnackbar('SUCCESS', 'Tab Saved')
+          selectedTabId.value = null
           if(!tab.id) {
             // add it to the records already on the screen
-            this.tabs.push(data)
+            tabs.value.push(data)
           }
 
           // reset the new process fields
-          this.addNew = false
-          this.newTab = {}
+          addNew.value = false
+          newTab.value = {}
 
-          handleHidingGlobalLoader(this, status)
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Tab')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          getSnackbar('ERROR', 'Error Adding Tab')
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async saveRowChanges(rows) {
+      }
+      const saveRowChanges = async(rows) => {
         if(rows?.length > 0) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
+          store.commit(AppMutations.SET_LOADING, true)
           try {
             const {status} = await putRequest(`/objectTypeTab/order`, rows)
-            this.snackbar = getSnackbar('SUCCESS', 'Tab Order Saved')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            handleHidingGlobalLoader(this, status)
+            getSnackbar('SUCCESS', 'Tab Order Saved')
+            handleHidingGlobalLoader(vueInstance, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Saving Tab Order')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            getSnackbar('ERROR', 'Error Saving Tab Order')
+            store.commit(AppMutations.SET_LOADING, false)
           }
         }
-      },
-      filterTabs () {
-        return this.tabs.filter(t => { return !t.archived})
-      },
-    },
-    async created() {
-      this.getTabs()
-    }
-  }
+      }
 </script>
