@@ -43,9 +43,13 @@
 
     <v-card-actions>
       <v-spacer></v-spacer>
-      <v-btn text color="primary" @click="cancel()">Cancel</v-btn>
-      <v-btn :disabled="!teamToSave || !ownersToSave"
-             color="primary" class="white--text" @click="addTeamDetails()">Save</v-btn>
+      <AlbatrossButton variant="text" color="primary" @click="cancel()"
+        text="CANCEL"
+      />
+      <AlbatrossButton :disabled="!teamToSave || !ownersToSave"
+             color="primary" class="white--text" @click="addTeamDetails()"
+             text="SAVE"
+      />
     </v-card-actions>
   </v-card>
 </template>
