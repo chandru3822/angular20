@@ -19,33 +19,33 @@ const firebaseConfig = {
   messagingSenderId: VITE_FIREBASE_MESSAGING_SENDER_ID
 }
 
+const STORAGE_KEY = 'firebase/token'
 
-function getFirebaseApp(){
+function getFirebaseApp() {
   try {
     // Initialize Firebase
-    if (firebaseConfig.apiKey && firebaseConfig.projectId){
+    if (firebaseConfig.apiKey && firebaseConfig.projectId) {
       return initializeApp(firebaseConfig)
     }
     return undefined
-  }catch (e){
+  } catch (e) {
     log.error(e)
     return undefined
   }
 }
 
-function getFirebaseMessaging(app){
+function getFirebaseMessaging(app) {
   try {
-    if (app){
+    if (app) {
       return getMessaging(app)
     }
     return undefined
-  }catch (e){
+  } catch (e) {
     return undefined
   }
 }
 
 export function useFirebase() {
-
   const app = getFirebaseApp()
 
   // Initialize Firebase Cloud Messaging and get a reference to the service
@@ -55,17 +55,27 @@ export function useFirebase() {
 
   const getNotificationToken = async function () {
     try {
+      const isProduction = import.meta.env.MODE === 'production'
       const sw = await navigator.serviceWorker.register(
-        import.meta.env.MODE === 'production' ? '/firebase-messaging-sw.js' : '/dev-sw.js?dev-sw',
-        { type: import.meta.env.MODE === 'production' ? 'classic' : 'module' }
+        isProduction
+          ? '/firebase-messaging-sw.js'
+          : '/dev-sw.js?dev-sw',
+        { type: isProduction ? 'classic' : 'module' }
       )
+
+      const storedToken = localStorage.getItem(STORAGE_KEY)
+
       const token = await getToken(messaging, {
         serviceWorkerRegistration: sw,
-        vapidKey: VITE_VAPID_KEY })
-      if (token) {
+        vapidKey: VITE_VAPID_KEY
+      })
+
+      if (!storedToken || storedToken !== token){
         await postRequest('/user/token', { token })
-        registered.value = true
+        localStorage.setItem(STORAGE_KEY, token)
       }
+
+      registered.value = true
       return token
     } catch (e) {
       registered.value = false
@@ -75,12 +85,17 @@ export function useFirebase() {
   }
 
   const removeNotificationToken = async function () {
-    const notificationToken = await getNotificationToken()
+    const notificationToken = localStorage.getItem(STORAGE_KEY)
     if (!notificationToken) {
       return
     }
-    await deleteRequest(`/user/token?id=${notificationToken}`)
-    await deleteToken(messaging)
+    await Promise.allSettled([
+      deleteRequest(`/user/token?id=${notificationToken}`),
+      deleteToken(messaging)
+    ])
+
+    localStorage.removeItem(STORAGE_KEY)
+
     registered.value = false
     return true
   }
@@ -96,15 +111,16 @@ export function useFirebase() {
     }
   }
 
-  if (app && messaging){
+  if (app && messaging) {
     init()
     return { registered, removeNotificationToken, getNotificationToken }
   }
 
   return {
     registered,
-    removeNotificationToken: ()=> console.error('notifications not configured properly'),
-    getNotificationToken: ()=> console.error('notifications not configured properly'),
+    removeNotificationToken: () =>
+      console.error('notifications not configured properly'),
+    getNotificationToken: () =>
+      console.error('notifications not configured properly')
   }
-
 }
