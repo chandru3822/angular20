@@ -6,6 +6,8 @@ import store from '@/store'
 import constants from '@/helpers/constants'
 import { NotificationActions } from '@/plugins/notifications/NotificationStore'
 import { UserActions } from '@/stores/UserStore'
+import { useFirebase } from '@/firebase/firebase.js'
+import { watch } from 'vue'
 
 export default {
   data() {
@@ -19,14 +21,33 @@ export default {
   beforeDestroy() {
     this.cleanupNotificationStream()
   },
+  setup() {
+    const { init, message } = useFirebase()
+    init()
+
+    watch(message, function (value, oldValue) {
+      if (value) {
+        //todo: figure out what to do here
+        console.log('firebase message', {value})
+        // store.dispatch(NotificationActions.HANDLE_STREAM_EVENT, { topic: 'sms_reply', value })
+      }
+    })
+  },
   methods: {
     setupNotificationStream() {
       const setup = () => {
         const url = `${constants.VUE_APP_BASE_API}/api/v1/flow/notifications/stream?access_token=${store.state.user.jwt}`
-        const topics = ['sms_ownership', 'sms_reply', 'project_tag', 'revoke_access', 'theme_update', 'announcement']
+        const topics = [
+          'sms_ownership',
+          'sms_reply',
+          'project_tag',
+          'revoke_access',
+          'theme_update',
+          'announcement'
+        ]
         this.evtSource = new EventSource(url, { withCredentials: true })
-        topics.forEach(topic => {
-          this.evtSource.addEventListener(topic, function(e) {
+        topics.forEach((topic) => {
+          this.evtSource.addEventListener(topic, function (e) {
             const data = JSON.parse(e?.data)
             store.dispatch(NotificationActions.HANDLE_STREAM_EVENT, data)
           })
@@ -60,7 +81,6 @@ export default {
     cleanupNotificationStream() {
       this.evtSource?.close()
     }
-
   }
 }
 </script>
