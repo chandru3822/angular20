@@ -8,4 +8,5 @@ import java.util.Set;
 public interface PushNotificationService {
   void pushNotification(@NonNull Message message, @NonNull Long userId);
   void pushNotification(@NonNull Message message, @Size(min = 1) Set<Long> userIds);
+  void pruneTokens();
 }

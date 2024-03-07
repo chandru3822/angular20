@@ -11,9 +11,9 @@ import java.util.Set;
 @Slf4j
 @Service
 @ConditionalOnMissingBean(FirebaseMessaging.class)
-public class FallbackPushNotificationService implements PushNotificationService{
+public class FallbackPushNotificationService implements PushNotificationService {
 
-  public FallbackPushNotificationService(){
+  public FallbackPushNotificationService() {
     log.warn("Firebase push notifications through FCM are not enabled");
   }
 
@@ -25,5 +25,10 @@ public class FallbackPushNotificationService implements PushNotificationService{
   @Override
   public void pushNotification(@NonNull Message message, Set<Long> userIds) {
     log.info("Sending message: {} to users: {}", message, userIds);
+  }
+
+  @Override
+  public void pruneTokens() {
+
   }
 }
