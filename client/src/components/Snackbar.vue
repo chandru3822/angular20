@@ -24,28 +24,33 @@
   </v-snackbar>
 </template>
 
-<script>
-  export default {
-    name: 'Snackbar',
-    props: {},
-    data() {
-      return {
-        snackbar: {},
-        show: false
-      }
-    },
-    created() {
-      this.$store.subscribe((mutation, state) => {
-        if (mutation.type === "SHOW_SNACK") {
-          this.snackbar = state.app.snack
-          this.show = true
-        }
-      });
-    },
+<script setup>
+import { getCurrentInstance, ref } from 'vue'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const appStore = useAppStore()
+
+const snackbar = ref({})
+const show = ref(false)
+
+appStore.$subscribe((mut, state) => {
+  if (state.snack.show) {
+    snackbar.value = state.snack
+    show.value = true
   }
+})
+
+//@TODO: subscribe to the old app store until pinia takes over, then remove this
+store.subscribe((mutation, state) => {
+  if (mutation.type === "SHOW_SNACK") {
+    snackbar.value = state.app.snack
+    show.value = true
+  }
+});
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 #app-snackbar {
   z-index: 1002 !important;
