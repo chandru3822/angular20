@@ -103,6 +103,8 @@
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby"
   import ScoreDrilldown from "./component/ScoreDrilldown";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'Qualifying',
@@ -122,7 +124,6 @@
         selectRerender: 1,
         search: '',
         tournament: {},
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         lastQualifiedUserScore: null,
         tournamentUserCount: 0,
         matchesNotGenerated: false,
@@ -165,6 +166,12 @@
       await this.getTournament()
       this.getPool()
       this.getPoolUsers()
+    },
+    computed: {
+      ...mapStores(useUserStore),
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+      },
     },
     methods: {
       toggleSingleSelect(item) {

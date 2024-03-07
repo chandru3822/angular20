@@ -87,6 +87,8 @@ import constants from '@/helpers/constants'
 import {AppMutations} from '@/stores/AppStore'
 import RequestTable from "@/components/RequestTable";
 import Snackbar from "@/components/Snackbar";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProjectRequests',
@@ -112,7 +114,6 @@ export default {
       projectsSearch: '',
       searchQuery: '',
       showCancelled: false,
-      userCanManage: this.$store.getters.userHasFeatureAccessLevel('INSTALLATION_AGREEMENT', 'MANAGE'),
       totalItems: 0,
       requestItem: {
         customer_name: '',
@@ -129,7 +130,12 @@ export default {
       editEmail: false
     }
   },
-  computed: {},
+  computed: {
+    ...mapStores(useUserStore),
+    userCanManage() {
+      return this.userStore.userHasFeatureAccessLevel('INSTALLATION_AGREEMENT', 'MANAGE')
+    },
+  },
   watch: {
     options: {
       handler() {

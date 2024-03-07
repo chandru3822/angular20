@@ -32,17 +32,14 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
-
-import { handleHidingGlobalLoader, getRequest } from '@/helpers/helpers'
-import constants from '@/helpers/constants'
-import {getCurrentInstance, onMounted, ref, computed, watch, defineProps, defineEmits} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import {getCurrentInstance, ref, computed, defineProps, defineEmits} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
+const userStore = useUserStore()
 const route = vueInstance.$route
 
 const props = defineProps({
@@ -52,7 +49,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['updateTitle', 'closeMenu'])
-const hasSettingsAccess = ref(store.getters.userHasFeature('SETTINGS'))
+const hasSettingsAccess = ref(userStore.userHasFeature('SETTINGS'))
 const companyObjectTypes = ref([])
 const setTitle = (title) => {
   emit('updateTitle', title)

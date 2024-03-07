@@ -63,13 +63,15 @@ import constants from '@/helpers/constants'
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
+const userStore = useUserStore()
 
 const userProfileDefaultFields = ref([])
-const userIsAdmin = ref(store.getters.userHasFeatureAccessLevel('USERS', 'ADMIN'))
+const userIsAdmin = ref(userStore.userHasFeatureAccessLevel('USERS', 'ADMIN'))
 const headers = ref([
   {text: 'Field Name', value: 'fieldName'},
   {text: 'Show On User Profile', value: 'showOnUserProfile'},

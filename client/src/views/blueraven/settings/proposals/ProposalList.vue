@@ -74,6 +74,8 @@ import { getRequestWithParams, postRequest } from '@/helpers/helpers'
 import store from '@/store'
 import ProposalVersionHistory from "@/views/blueraven/settings/proposals/ProposalVersionHistory.vue";
 import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProposalSettings',
@@ -109,8 +111,9 @@ export default {
     this.getProposalFields()
   },
   computed: {
+    ...mapStores(useUserStore),
     canCreateVersion() {
-      if (!store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')) {
+      if (!this.userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')) {
         return false
       }
       return !this.loading && !this.versions.some(v => v.status === 'DRAFT')

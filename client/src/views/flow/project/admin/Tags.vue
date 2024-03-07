@@ -79,6 +79,8 @@ import {
 } from '@/helpers/helpers'
 import {getCompanyAssignedToProcessStep, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import {DateTime} from "luxon";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProjectTags.vue',
@@ -87,7 +89,6 @@ export default {
   data() {
     return {
       projectId: parseInt(this.$route.params.projectId),
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
       projectTags: [],
       displayDropdown: false,
       tagsLoading: false,
@@ -107,6 +108,10 @@ export default {
   components: {
   },
   computed: {
+    ...mapStores(useUserStore),
+    userIsAdmin() {
+      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')
+    },
     filteredProjectTags() {
       return this.projectTags.filter(pt => !pt.archived)
     },

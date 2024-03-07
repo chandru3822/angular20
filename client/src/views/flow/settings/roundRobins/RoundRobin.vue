@@ -102,6 +102,8 @@
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'RoundRobin',
@@ -127,7 +129,6 @@ export default {
       constants,
       companyTimezones: [],
       roundRobin: {},
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
       roundRobinId: this.$route.params.id,
       dataLoading: true,
       breadcrumbs: [
@@ -143,6 +144,12 @@ export default {
   async created() {
     this.getCompanyTimezones()
     await this.getRoundRobinDetails()
+  },
+  computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
+    },
   },
   methods: {
     async saveRoundRobinInfo() {

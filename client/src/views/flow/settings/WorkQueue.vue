@@ -23,12 +23,13 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "../../../components/customVuetify/AlbatrossButton.vue";
 import constants from '@/helpers/constants'
 
 import { getCurrentInstance, ref } from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const userCanAccessCategories = ref(store.getters.userHasFeature('SETTINGS'))
+const userStore = useUserStore()
+const userCanAccessCategories = ref(userStore.userHasFeature('SETTINGS'))
 
 </script>

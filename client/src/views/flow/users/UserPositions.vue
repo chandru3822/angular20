@@ -173,7 +173,7 @@
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn class="align-self-center" text color="primary" v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
-                <v-btn v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'DELETE')" class="align-self-center" text color="primary" @click="positionToDelete = item"><v-icon>delete</v-icon></v-btn>
+                <v-btn v-if="userStore.userHasFeatureAccessLevel('USERS', 'DELETE')" class="align-self-center" text color="primary" @click="positionToDelete = item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>

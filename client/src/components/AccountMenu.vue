@@ -76,13 +76,15 @@
     props: {
       showImage: Boolean
     },
-    watch: {
-      // whenever userImage changes, this function will run
-      'userStore.userImage': function () {
-        // reset the user image in the account menu when a new one is added or one is deleted
-        this.userImage = this.userStore.userImage
-      }
-    },
+    // With the move to Pinia, the `userImage` property is now computed. Which means this watcher is no
+    // longer required. Keeping the code around for now in case of unknown breakage.
+    // watch: {
+    //   // whenever userImage changes, this function will run
+    //   'userStore.userImage': function () {
+    //     // reset the user image in the account menu when a new one is added or one is deleted
+    //     this.userImage = this.userStore.userImage
+    //   }
+    // },
     data () {
       return {
         constants,
