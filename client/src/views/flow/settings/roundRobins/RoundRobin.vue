@@ -98,104 +98,98 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
-import constants from '@/helpers/constants'
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+const userStore = useUserStore()
+import {useRoute} from "vue-router/composables";
+const route = useRoute()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 
-export default {
-  name: 'RoundRobin',
 
-  data() {
-    return {
-      snackbar: {},
-      model: '',
-      tabs: [{
-        label: 'Schedule To',
-        path: `/settings/roundRobin/${this.$route.params.id}/scheduleTo`,
-        display: true
-      }, {
-        label: 'Schedule By',
-        path: `/settings/roundRobin/${this.$route.params.id}/scheduleBy`,
-        display: true
-      }, {
-        label: 'Postal Codes',
-        path: `/settings/roundRobin/${this.$route.params.id}/codes`,
-        display: true
-      }],
-      editRoundRobin: false,
-      constants,
-      companyTimezones: [],
-      roundRobin: {},
-      roundRobinId: this.$route.params.id,
-      dataLoading: true,
-      breadcrumbs: [
+const roundRobinId = computed(() => {
+  return route.params.id
+})
+
+      const model = ref( '')
+      const editRoundRobin = ref( false)
+      const companyTimezones = ref( [])
+      const roundRobin = ref( {})
+      const dataLoading = ref( true)
+      const breadcrumbs = ref([
         {
           text: 'Back to Round Robins',
           disabled: false,
           exact: true,
           to: `/settings/roundRobins`
         },
-      ]
-    }
-  },
-  async created() {
-    this.getCompanyTimezones()
-    await this.getRoundRobinDetails()
-  },
-  computed: {
-    ...mapStores(useUserStore),
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
-    },
-  },
-  methods: {
-    async saveRoundRobinInfo() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      ])
+      const tabs = ref([{
+        label: 'Schedule To',
+        path: `/settings/roundRobin/${roundRobinId.value}/scheduleTo`,
+        display: true
+      }, {
+        label: 'Schedule By',
+        path: `/settings/roundRobin/${roundRobinId.value}/scheduleBy`,
+        display: true
+      }, {
+        label: 'Postal Codes',
+        path: `/settings/roundRobin/${roundRobinId.value}/codes`,
+        display: true
+      }])
+
+
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
+})
+
+onMounted(async () => {
+  getCompanyTimezones()
+  await getRoundRobinDetails()
+})
+
+    const saveRoundRobinInfo = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await postRequest(`/roundRobin`, this.roundRobin)
-        this.editRoundRobin = false
-        this.snackbar = getSnackbar('SUCCESS', 'Round Robin Name Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        const {status} = await postRequest(`/roundRobin`, roundRobin.value)
+        editRoundRobin.value = false
+        getSnackbar('SUCCESS', 'Round Robin Name Saved')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Round Robin Name')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Saving Round Robin Name')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async getCompanyTimezones() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getCompanyTimezones = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequestWithParams(`/timezone`)
-        this.companyTimezones = data
-        handleHidingGlobalLoader(this, status)
+        companyTimezones.value = data
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Retrieving Timezones')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async getRoundRobinDetails() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getRoundRobinDetails = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/roundRobin/${this.roundRobinId}`)
-        this.roundRobin = data
-        this.dataLoading = false
-        handleHidingGlobalLoader(this, status)
+        const {data, status} = await getRequest(`/roundRobin/${roundRobinId.value}`)
+        roundRobin.value = data
+        dataLoading.value = false
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Retrieving Data')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-  }
-}
+    }
 </script>
 
 <style lang="scss" scoped>

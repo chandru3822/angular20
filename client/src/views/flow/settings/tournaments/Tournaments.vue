@@ -130,12 +130,7 @@
         newTournament= ref({
           tournamentFormulaFields: []
         }),
-        timezone=ref(userStore.details.timezone.value),
         dataLoading= ref(true),
-        userCanAdd=ref(userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'ADD')),
-        userCanEdit=ref(userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')),
-        userCanDelete=ref(userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')),
-        companyId=ref(userStore.details.companyId),
         userId=ref(userStore.details.id),
         tournaments=ref([]),
         currentYear=ref(moment().year()),
@@ -153,6 +148,26 @@
     const tournamentToDeleteName = computed(() => {
         return tournamentToDelete.value ? tournamentToDelete.value.tournamentName : ''
       })
+
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'ADD')
+  })
+
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+  })
+
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')
+  })
+
+  const timezone = computed(() => {
+    return userStore.details.timezone.value
+  })
+
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
 
     const validateCustomFields = () => {
         let invalid = false

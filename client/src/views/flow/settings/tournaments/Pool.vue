@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12" class="pt-0" v-if="!poolLoading">
         <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="title-large">{{pool.customName || pool.poolType + ' Pool'}}</v-toolbar-title>
+          <v-toolbar-title class="title-large">{{ pool.customName || pool.poolType + ' Pool' }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="editPool = !editPool">
             <v-icon v-if="!editPool">edit</v-icon>
@@ -12,30 +12,30 @@
         </v-toolbar>
         <div>
           <v-text-field
-            v-if="editPool"
-            label="Custom Pool Name"
-            hint="(optional)"
-            persistent-hint
-            v-model="pool.customName"
+              v-if="editPool"
+              label="Custom Pool Name"
+              hint="(optional)"
+              persistent-hint
+              v-model="pool.customName"
           ></v-text-field>
           <div>
             <DatetimePickerInput
-              v-model="pool.startDate"
-              :readonly="!editPool"
-              :disabled="!editPool"
-              :timezone="this.timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="Start Date"
+                v-model="pool.startDate"
+                :readonly="!editPool"
+                :disabled="!editPool"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                label="Start Date"
             />
             <DatetimePickerInput
-              v-model="pool.endDate"
-              :readonly="!editPool"
-              :disabled="!editPool"
-              :timezone="this.timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="End Date"
+                v-model="pool.endDate"
+                :readonly="!editPool"
+                :disabled="!editPool"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                label="End Date"
             />
           </div>
           <v-btn color="primary"
@@ -53,13 +53,21 @@
             <v-toolbar-title class="title-large text-wrap">Winner Background Image</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit && !savingImage && !pool.backgroundAttachmentPresignedUrl"
+              <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary"
+                     v-if="userCanEdit && !savingImage && !pool.backgroundAttachmentPresignedUrl"
                      @click="addImage = !addImage">
                 <v-icon v-if="addImage">remove</v-icon>
                 <v-icon v-else>add</v-icon>
               </v-btn>
-              <v-btn v-else-if="userCanEdit" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="deleteWinnerBackgroundDialog = true"><v-icon>delete</v-icon></v-btn>
-              <ConfirmationDialog :open-dialog="deleteWinnerBackgroundDialog" @confirm="deleteAttachment(pool.backgroundAttachmentId)" @close-dialog="deleteWinnerBackgroundDialog = false">Are you sure you want to delete the Winner Background Image?</ConfirmationDialog>
+              <v-btn v-else-if="userCanEdit" icon :large="$vuetify.breakpoint.smAndDown" color="primary"
+                     @click="deleteWinnerBackgroundDialog = true">
+                <v-icon>delete</v-icon>
+              </v-btn>
+              <ConfirmationDialog :open-dialog="deleteWinnerBackgroundDialog"
+                                  @confirm="deleteAttachment(pool.backgroundAttachmentId)"
+                                  @close-dialog="deleteWinnerBackgroundDialog = false">Are you sure you want to delete
+                the Winner Background Image?
+              </ConfirmationDialog>
             </v-toolbar-items>
           </v-toolbar>
           <label></label>
@@ -67,12 +75,12 @@
           <div class="mt-2" v-if="addImage">
             <form enctype="multipart/form-data" novalidate>
               <input
-                type="file"
-                :accept="acceptedFileTypes"
-                class="file-input clickable"
-                :disabled="savingImage"
-                @change="uploadFile($event.target.files, attachmentTypeId, pool.id, 2097152)"
-                name="avatar"
+                  type="file"
+                  :accept="acceptedFileTypes"
+                  class="file-input clickable"
+                  :disabled="savingImage"
+                  @change="uploadFile($event.target.files, attachmentTypeId, pool.id, 2097152)"
+                  name="avatar"
               >
               <br/><span>* Due to render times associated with this file it cannot exceed 2MB</span>
             </form>
@@ -96,11 +104,11 @@
           </v-toolbar>
           <v-card flat v-if="addPosition">
             <v-autocomplete
-              v-model="positionId"
-              :items="positions"
-              label="Positions"
-              item-text="position"
-              item-value="id"
+                v-model="positionId"
+                :items="positions"
+                label="Positions"
+                item-text="position"
+                item-value="id"
             ></v-autocomplete>
 
             <v-btn color="primary" :disabled="!positionId"
@@ -113,13 +121,13 @@
           </v-card>
 
           <v-data-table
-            :headers="positionHeaders"
-            :items="filterPositions()"
-            :fixed-header="true"
-            :items-per-page="-1"
-            :mobile-breakpoint="0"
-            hide-default-footer
-            class="elevation-1 org-type-table"
+              :headers="positionHeaders"
+              :items="filteredPositions"
+              :fixed-header="true"
+              :items-per-page="-1"
+              :mobile-breakpoint="0"
+              hide-default-footer
+              class="elevation-1 org-type-table"
           >
             <template #no-data>
               <span class="default-text-color">No positions assigned</span>
@@ -133,7 +141,9 @@
               <tr class="text-left" :class="{'shaded-row': pool.positions.indexOf(item) % 2}">
                 <td class="text-left">{{ item.position }}</td>
                 <td class="text-right">
-                  <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="positionToDelete=item"><v-icon>delete</v-icon></v-btn>
+                  <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="positionToDelete=item">
+                    <v-icon>delete</v-icon>
+                  </v-btn>
                 </td>
               </tr>
             </template>
@@ -151,12 +161,12 @@
           </v-toolbar>
           <v-card flat v-if="addUser">
             <v-autocomplete
-              v-model="userId"
-              :items="users"
-              label="Users"
-              item-text="fullName"
-              item-value="id"
-              attach
+                v-model="userId"
+                :items="users"
+                label="Users"
+                item-text="fullName"
+                item-value="id"
+                attach
             ></v-autocomplete>
 
             <v-btn color="primary" :disabled="!userId"
@@ -168,21 +178,21 @@
             </v-btn>
           </v-card>
           <v-text-field
-            v-model="userSearch"
-            prepend-inner-icon="search"
-            label="Search"
-            class="mb-2"
-            single-line
-            hide-details
+              v-model="userSearch"
+              prepend-inner-icon="search"
+              label="Search"
+              class="mb-2"
+              single-line
+              hide-details
           ></v-text-field>
           <v-data-table id="tournament-pool-table"
-            :headers="userHeaders"
-            :items="filterUsers()"
-            :fixed-header="true"
-            :search="userSearch"
-            :items-per-page="100"
-            :mobile-breakpoint="0"
-            class="elevation-1 org-type-table"
+                        :headers="userHeaders"
+                        :items="filteredUsers"
+                        :fixed-header="true"
+                        :search="userSearch"
+                        :items-per-page="100"
+                        :mobile-breakpoint="0"
+                        class="elevation-1 org-type-table"
           >
             <template #no-data>
               <span class="default-text-color">No users assigned</span>
@@ -196,7 +206,9 @@
               <tr class="text-left" :class="{'shaded-row': pool.users.indexOf(item) % 2}">
                 <td class="text-left">{{ item.fullName }}</td>
                 <td class="text-right">
-                  <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="userToDelete=item"><v-icon>delete</v-icon></v-btn>
+                  <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="userToDelete=item">
+                    <v-icon>delete</v-icon>
+                  </v-btn>
                 </td>
               </tr>
             </template>
@@ -207,326 +219,328 @@
 
     </v-row>
     <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromPool" @close-dialog="userToDelete=null">
-      Are you sure you want to delete this user: <strong>{{userToDeleteName}}</strong>?
+      Are you sure you want to delete this user: <strong>{{ userToDeleteName }}</strong>?
     </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="!!positionToDelete" @confirm="deletePositionFromPool" @close-dialog="positionToDelete=null">
+    <ConfirmationDialog :open-dialog="!!positionToDelete" @confirm="deletePositionFromPool"
+                        @close-dialog="positionToDelete=null">
       Are you sure you want to delete this position?
     </ConfirmationDialog>
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import { Actions } from '@/store'
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import constants from '@/helpers/constants'
-  import {
-    handleHidingGlobalLoader,
-    getRequest,
-    deleteRequest,
-    putRequest,
-    postRequest,
-    getSnackbar
-  } from '@/helpers/helpers'
-  import ConfirmationDialog from '@/components/ConfirmationDialog'
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+import {AppMutations} from '@/stores/AppStore'
+import Vue2Filters from 'vue2-filters'
+import {Actions} from '@/store'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import constants from '@/helpers/constants'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  deleteRequest,
+  putRequest,
+  postRequest,
+  getSnackbar
+} from '@/helpers/helpers'
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import {getCurrentInstance, watch, computed, ref, onMounted} from 'vue'
+import {useRoute} from "vue-router/composables";
 
-  export default {
-    name: 'PoolAdmin',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      ConfirmationDialog,
-      DatetimePickerInput
-    },
-    data() {
-      return {
-        constants,
-        snackbar: {},
-        positionToDelete: null,
-        edit: false,
-        pool: {},
-        userSearch: '',
-        addImage: false,
-        savingImage: false,
-        acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
-        //todo: 915 = tournament pool image
-        attachmentTypeId: 915,
-        editPool: false,
-        poolLoading: true,
-        addPosition: false,
-        positionId: null,
-        positions: [],
-        addUser: false,
-        userId: null,
-        users: [],
-        tournamentId: this.$route.params.id,
-        poolTypeId: parseInt(this.$route.params.poolTypeId),
-        positionHeaders: [
-          {text: 'Position', value: 'position', show: true},
-          {text: null, value: 'icons', show: true}
-        ],
-        userHeaders: [
-          {text: 'User', value: 'fullName', show: true},
-          {text: null, value: 'icons', show: true}
-        ],
-        deleteWinnerBackgroundDialog: false,
-        userToDelete: null
-      }
-    },
-    async created() {
-      this.getTournamentPool()
-      this.getPositions()
-      this.getUsers()
-    },
-    watch: {
-      // whenever pool type id changes, this function will run
-      '$route.params.poolTypeId': function () {
-        // reset the selected group when the object type changes
-        this.poolTypeId = parseInt(this.$route.params.poolTypeId)
-        this.pool = {}
-        this.getTournamentPool()
-      }
-    },
-    computed: {
-      ...mapStores(useUserStore),
-      userCanEdit() {
-        return this.userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
-      },
-      timezone() {
-        return this.userStore.details.timezone.value
-      },
-      userToDeleteName(){
-        return this.userToDelete ? this.userToDelete.fullName : ''
-      }
-    },
-    methods: {
-      async savePoolDates() {
-        try {
-          const {status} = await putRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}`, this.pool, 'blueraven')
-          this.editPool = false
-          this.snackbar = getSnackbar('SUCCESS', 'Pool Changes Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Pool')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getPositions() {
-        try {
-          const {data, status} = await getRequest(`/position`)
-          this.positions = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getUsers() {
-        try {
-          const {data, status} = await getRequest(`/user/active`)
-          this.users = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getTournamentPool() {
-        this.poolLoading = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
-          this.pool = data
-          this.poolLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Tournament')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async addPositionToPool() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/addPosition/${this.positionId}`, {}, 'blueraven')
-          this.pool.positions.push(data)
-          this.positionId = null
-          this.addPosition = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Position')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deletePositionFromPool() {
-        const position = this.positionToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/deletePosition/${position.id}`, 'blueraven')
-          position.archived = true
-          handleHidingGlobalLoader(this, status)
-          this.positionToDelete=null
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Position')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.positionToDelete=null
-        }
-      },
-      filterPositions () {
-        return this.pool?.positions?.filter(p => { return !p.archived})
-      },
-      async addUserToPool() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/addUser/${this.userId}`, {}, 'blueraven')
-          this.pool.users.push(data)
-          this.userId = null
-          this.addUser = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteUserFromPool() {
-        const user = this.userToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/deleteUser/${user.id}`, 'blueraven')
-          user.archived = true
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.userToDelete=null
-      },
-      filterUsers () {
-        return this.pool?.users?.filter(p => { return !p.archived})
-      },
-      async uploadFile (files, attachmentTypeId, sourceId, sizeLimit) {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          let file = files[0]
-          await this.$store.dispatch(Actions.FILE_UPLOAD, {
-            file: file,
-            sizeLimit,
-            attachmentTypeId,
-            sourceId,
-            displayName: file.name.substr(0, file.name.lastIndexOf('.')),
-            callback: async (img, error) => {
-              if(error?.error) {
-                this.snackbar = getSnackbar('ERROR', error.errorMsg)
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.$store.commit(AppMutations.SET_LOADING, false)
-              } else {
-                this.pool.backgroundAttachmentPresignedUrl = img.presignedUrl
-                this.pool.backgroundAttachmentId = img.id
-                this.addImage = false
-                this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.$store.commit(AppMutations.SET_LOADING, false)
-              }
-            }
-          })
-        } catch(e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteAttachment (id) {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          await this.$store.dispatch(Actions.FILE_DELETE, {
-            id,
-            callback: async () => {
-              this.pool.backgroundAttachmentId = null
-              this.pool.backgroundAttachmentPresignedUrl = null
-              this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
-            }
-          })
-        } catch(e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.deleteWinnerBackgroundDialog = false
-      },
-    },
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const route = useRoute()
+import {useUserStore} from '@/stores/UserStorePinia.js'
 
+const userStore = useUserStore()
+
+const positionToDelete = ref(null)
+const edit = ref(false)
+const pool = ref({})
+const userSearch = ref('')
+const addImage = ref(false)
+const savingImage = ref(false)
+const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY)
+const attachmentTypeId = ref(915)
+const editPool = ref(false)
+const poolLoading = ref(true)
+const addPosition = ref(false)
+const positionId = ref(null)
+const positions = ref([])
+const addUser = ref(false)
+const userId = ref(null)
+const users = ref([])
+const deleteWinnerBackgroundDialog = ref(false)
+const userToDelete = ref(null)
+const positionHeaders = ref([
+  {text: 'Position', value: 'position', show: true},
+  {text: null, value: 'icons', show: true}
+])
+const userHeaders = ref([
+  {text: 'User', value: 'fullName', show: true},
+  {text: null, value: 'icons', show: true}
+])
+
+onMounted(() => {
+  getTournamentPool()
+  getPositions()
+  getUsers()
+})
+
+const tournamentId = computed(() => {
+  return route.params.id
+})
+
+const poolTypeId = computed(() => {
+  return parseInt(route.params.poolTypeId)
+})
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+})
+
+const timezone = computed(() => {
+  return userStore.details.timezone.value
+})
+
+const userToDeleteName = computed(() => {
+  return userToDelete.value ? userToDelete.value.fullName : ''
+})
+
+const filteredPositions = computed(() => {
+  return pool.value?.positions?.filter(p => {
+    return !p.archived
+  })
+})
+
+const filteredUsers = computed(() => {
+  return pool.value?.users?.filter(p => {
+    return !p.archived
+  })
+})
+
+
+watch(() => poolTypeId.value, () => {
+  poolTypeId.value = parseInt(route.params.poolTypeId)
+  pool.value = {}
+  getTournamentPool()
+})
+
+
+const savePoolDates = async () => {
+  try {
+    const {status} = await putRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}`, pool.value, 'blueraven')
+    editPool.value = false
+    getSnackbar('SUCCESS', 'Pool Changes Saved')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Updating Pool')
+    store.commit(AppMutations.SET_LOADING, false)
   }
+}
+const getPositions = async () => {
+  try {
+    const {data, status} = await getRequest(`/position`)
+    positions.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Retrieving Positions')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const getUsers = async () => {
+  try {
+    const {data, status} = await getRequest(`/user/active`)
+    users.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Retrieving Users')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const getTournamentPool = async () => {
+  poolLoading.value = true
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {
+      data,
+      status
+    } = await getRequest(`/tournament/${tournamentId.value}/pool/byType/${poolTypeId.value}`, 'blueraven')
+    pool.value = data
+    poolLoading.value = false
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Loading Tournament')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const addPositionToPool = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {
+      data,
+      status
+    } = await postRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/addPosition/${positionId.value}`, {}, 'blueraven')
+    pool.value.positions.push(data)
+    positionId.value = null
+    addPosition.value = false
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Adding Position')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const deletePositionFromPool = async () => {
+  const position = positionToDelete.value
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await deleteRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/deletePosition/${position.id}`, 'blueraven')
+    position.archived = true
+    handleHidingGlobalLoader(vueInstance, status)
+    positionToDelete.value = null
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Deleting Position')
+    store.commit(AppMutations.SET_LOADING, false)
+    positionToDelete.value = null
+  }
+}
+
+const addUserToPool = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {
+      data,
+      status
+    } = await postRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/addUser/${userId.value}`, {}, 'blueraven')
+    pool.value.users.push(data)
+    userId.value = null
+    addUser.value = false
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Adding User')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const deleteUserFromPool = async () => {
+  const user = userToDelete.value
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await deleteRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/deleteUser/${user.id}`, 'blueraven')
+    user.archived = true
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Deleting User')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+  userToDelete.value = null
+}
+
+const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
+  try {
+    store.commit(AppMutations.SET_LOADING, true)
+    let file = files[0]
+    await store.dispatch(Actions.FILE_UPLOAD, {
+      file: file,
+      sizeLimit,
+      attachmentTypeId,
+      sourceId,
+      displayName: file.name.substr(0, file.name.lastIndexOf('.')),
+      callback: async (img, error) => {
+        if (error?.error) {
+          getSnackbar('ERROR', error.errorMsg)
+          store.commit(AppMutations.SET_LOADING, false)
+        } else {
+          pool.value.backgroundAttachmentPresignedUrl = img.presignedUrl
+          pool.value.backgroundAttachmentId = img.id
+          addImage.value = false
+          getSnackbar('SUCCESS', 'Image Uploaded')
+          store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Uploading File')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const deleteAttachment = async (id) => {
+  try {
+    store.commit(AppMutations.SET_LOADING, true)
+    await store.dispatch(Actions.FILE_DELETE, {
+      id,
+      callback: async () => {
+        pool.value.backgroundAttachmentId = null
+        pool.value.backgroundAttachmentPresignedUrl = null
+        // store.commit(UserMutations.SET_USER_IMAGE, {})
+        getSnackbar('SUCCESS', 'Image Deleted')
+        store.commit(AppMutations.SET_LOADING, false)
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Deleting File')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+  deleteWinnerBackgroundDialog.value = false
+}
 </script>
 
 <style lang="scss">
-  #pool-container .v-data-table__wrapper {
-    max-height: calc(100vh - 650px);
-    min-height: 300px;
-  }
+#pool-container .v-data-table__wrapper {
+  max-height: calc(100vh - 650px);
+  min-height: 300px;
+}
 
-  @media (max-width: 770px) {
-    #tournament-pool-table {
+@media (max-width: 770px) {
+  #tournament-pool-table {
+    padding-bottom: 12px;
+
+    div.v-data-footer {
+      display: inline-block;
+      width: 100%;
       padding-bottom: 12px;
-      div.v-data-footer {
-        display: inline-block;
-        width: 100%;
-        padding-bottom: 12px;
 
-        div.v-data-footer__select {
-          justify-content: center;
-        }
+      div.v-data-footer__select {
+        justify-content: center;
+      }
 
-        div.v-data-footer__pagination {
-
-        }
-
-        div.v-data-footer__icons-before {
-          display: inline;
-          margin-left: calc(50% - 36px);
-
-
-        }
-
-        div.v-data-footer__icons-after {
-          display: inline;
-        }
+      div.v-data-footer__pagination {
 
       }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: calc(50% - 36px);
+
+
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
     }
   }
+}
 
 </style>
 
 <style scoped lang="scss">
 
-  .tournament-logo {
-    margin-top: 15px;
-    max-width: 400px;
-    height: auto;
-    @media (max-width: 500px){
-      max-width: 100%;
-    }
+.tournament-logo {
+  margin-top: 15px;
+  max-width: 400px;
+  height: auto;
+  @media (max-width: 500px) {
+    max-width: 100%;
   }
+}
 </style>

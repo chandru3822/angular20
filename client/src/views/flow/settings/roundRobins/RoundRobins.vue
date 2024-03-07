@@ -6,9 +6,10 @@
           <v-toolbar-title class="title-large">Round Robins</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newRoundRobin = {}, getCompanyTimezones()]" v-if="userCanAdd">
-              <span v-if="!addNew">{{'Add New'}}</span>
-              <span v-else>{{'Cancel'}}</span>
+            <v-btn text color="primary" @click="[addNew = !addNew, newRoundRobin = {}, getCompanyTimezones()]"
+                   v-if="userCanAdd">
+              <span v-if="!addNew">{{ 'Add New' }}</span>
+              <span v-else>{{ 'Cancel' }}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -32,31 +33,34 @@
                             item-value="id"
                             attach
             ></v-autocomplete>
-            <v-btn color="primary" :disabled="!newRoundRobin.roundRobinName || !newRoundRobin.distributionTimeFrameDays || !newRoundRobin.distributionTimeFrameDays" @click="addRoundRobin" class="mb-3">Save</v-btn>
+            <v-btn color="primary"
+                   :disabled="!newRoundRobin.roundRobinName || !newRoundRobin.distributionTimeFrameDays || !newRoundRobin.distributionTimeFrameDays"
+                   @click="addRoundRobin" class="mb-3">Save
+            </v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
             <v-card-title class="pt-0">
               <v-text-field
-                v-model="search"
-                prepend-inner-icon="search"
-                label="Search users and round robins"
-                single-line
-                hide-details
-                @input="debounceSearch"
+                  v-model="search"
+                  prepend-inner-icon="search"
+                  label="Search users and round robins"
+                  single-line
+                  hide-details
+                  @input="debounceSearch"
               ></v-text-field>
             </v-card-title>
             <v-data-table
-              :headers="headers"
-              :items="filterRoundRobins()"
-              :fixed-header="true"
-              :items-per-page="-1"
-              disable-sort
-              :loading="dataLoading"
-              @click:row="goToRoundRobin"
-              hide-default-footer
-              :mobile-breakpoint="770"
-              class="elevation-1 round-robin-table table-striped"
+                :headers="headers"
+                :items="filteredRoundRobins"
+                :fixed-header="true"
+                :items-per-page="-1"
+                disable-sort
+                :loading="dataLoading"
+                @click:row="goToRoundRobin"
+                hide-default-footer
+                :mobile-breakpoint="770"
+                class="elevation-1 round-robin-table table-striped"
             >
 
               <template #header.roundRobinName="{ header }">
@@ -76,17 +80,21 @@
                   <td class="text-left">
                     {{ item.roundRobinName }}
                   </td>
-                  <td class="text-left">{{item.distributionTimeFrameDays}}</td>
+                  <td class="text-left">{{ item.distributionTimeFrameDays }}</td>
                   <td class="text-left">{{ item.schedulableFutureDays }}</td>
                   <td class="text-left">
                     <input type="checkbox" readonly disabled v-model="item.usesTotalLeadAllocation"/>
                   </td>
 
                   <td class="text-right">
-                    <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click.stop="goToRoundRobin(item)">
+                    <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary"
+                           @click.stop="goToRoundRobin(item)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn v-if="userCanDelete" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click.stop="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
+                    <v-btn v-if="userCanDelete" icon :large="$vuetify.breakpoint.smAndDown" color="primary"
+                           @click.stop="[itemToDelete=item, showDeleteDialog=true]">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
                   </td>
                 </tr>
               </template>
@@ -100,166 +108,169 @@
         :open-dialog="showDeleteDialog"
         @confirm="deleteRoundRobin"
         @close-dialog="closeDeleteDialog">
-      Are you sure you want to delete this round robin: <strong>{{itemToDeleteName}}</strong>
+      Are you sure you want to delete this round robin: <strong>{{ itemToDeleteName }}</strong>
 
     </ConfirmationDialog>
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import debounce from 'lodash.debounce'
-  import cloneDeep from 'lodash.clonedeep'
-  import {  handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+import {AppMutations} from '@/stores/AppStore'
+import Vue2Filters from 'vue2-filters'
+import debounce from 'lodash.debounce'
+import cloneDeep from 'lodash.clonedeep'
+import {
+  handleHidingGlobalLoader,
+  getRequestWithParams,
+  deleteRequest,
+  postRequest,
+  getSnackbar
+} from '@/helpers/helpers'
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import {getCurrentInstance, computed, ref, onMounted} from 'vue'
+import {useRouter} from "vue-router/composables";
+import {useUserStore} from '@/stores/UserStorePinia.js'
 
-  export default {
-    name: 'RoundRobins',
-    components: {ConfirmationDialog},
-    mixins: [Vue2Filters.mixin],
+const router = useRouter()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
 
-    data () {
-      return {
-        snackbar: {},
-        addNew: false,
-        search: null,
-        newRoundRobin: {},
-        nameSearch: '',
-        dataLoading: true,
-        selectedRoundRobinId: null,
-        roundRobins: [],
-        masterRoundRobins: [],
-        headers: [
-          {text: 'Round Robin Name', value: 'roundRobinName', show: true},
-          {text: 'Distribution Time Frame (Days)', value: 'distributionTimeFrameDays', show: true},
-          {text: 'Schedulable Future Days', value: 'schedulableFutureDays', show: true},
-          {text: 'Uses Total Lead Allocation', value: 'usesTotalLeadAllocation', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        companyTimezones: [],
-        showDeleteDialog: false,
-        itemToDelete: null
-      }
-    },
-    computed: {
-      ...mapStores(useUserStore),
-      userCanAdd() {
-        return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD')
-      },
-      userCanEdit() {
-        return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
-      },
-      userCanDelete() {
-        return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE')
-      },
-      companyId() {
-        return this.userStore.details.companyId
-      },
-      userId() {
-        return this.userStore.details.id
-      },
-      itemToDeleteName() {
-        return this.itemToDelete ? this.itemToDelete.roundRobinName : '';
-      }
-    },
-    methods: {
-      async getCompanyTimezones() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequestWithParams(`/timezone`)
-          this.companyTimezones = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      debounceSearch: debounce( function () {
-        //don't allow search to be null - causes issues
-        // this.search = this.search || ''
-        this.getRoundRobins()
-      }, 500),
-      filterRoundRobins () {
-        return this.roundRobins.filter(pcz => { return !pcz.archived})
-      },
-      goToRoundRobin(rr) {
-        this.$router.push({path: `/settings/roundRobin/${rr.id}/scheduleTo`})
-      },
-      async getRoundRobins () {
-        this.dataLoading = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequestWithParams(`/roundRobin`, { params: { searchQuery: this.search}})
-          this.roundRobins = data
-          this.masterRoundRobins = cloneDeep(data)
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.dataLoading = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteRoundRobin () {
-        this.itemToDelete.archived = true
-        const roundRobinId = this.itemToDelete.id
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/roundRobin/${roundRobinId}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Round Robin Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Round Robin')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.closeDeleteDialog()
-      },
-      async addRoundRobin () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/roundRobin`, this.newRoundRobin)
-          this.$router.push({path: `/settings/roundRobin/${data.id}/scheduleTo`})
-          this.snackbar = getSnackbar('SUCCESS', 'Round Robin Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Round Robin')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterResults() {
-        this.roundRobins = this.masterRoundRobins.filter(pcz => {
-          return pcz?.roundRobinName?.toLowerCase().includes(this.nameSearch.toLowerCase())
-        })
-      },
-      closeDeleteDialog() {
-        this.showDeleteDialog = false;
-        this.itemToDelete = null;
-      }
-    },
-    async created () {
-      this.getRoundRobins()
-    }
+
+const addNew = ref(false)
+const search = ref(null)
+const newRoundRobin = ref({})
+const nameSearch = ref('')
+const dataLoading = ref(true)
+const selectedRoundRobinId = ref(null)
+const roundRobins = ref([])
+const masterRoundRobins = ref([])
+const companyTimezones = ref([])
+const showDeleteDialog = ref(false)
+const itemToDelete = ref(null)
+const headers = ref([
+  {text: 'Round Robin Name', value: 'roundRobinName', show: true},
+  {text: 'Distribution Time Frame (Days)', value: 'distributionTimeFrameDays', show: true},
+  {text: 'Schedulable Future Days', value: 'schedulableFutureDays', show: true},
+  {text: 'Uses Total Lead Allocation', value: 'usesTotalLeadAllocation', show: true},
+  {text: '', value: 'icons', show: true},
+])
+
+
+const filteredRoundRobins = computed(() => {
+  return roundRobins.value.filter(pcz => {
+    return !pcz.archived
+  })
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
+})
+const userCanDelete = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
+const itemToDeleteName = computed(() => {
+  return itemToDelete.value ? itemToDelete.value.roundRobinName : ''
+})
+
+onMounted(() => {
+  getRoundRobins()
+})
+
+
+const getCompanyTimezones = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getRequestWithParams(`/timezone`)
+    companyTimezones.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Retrieving Timezones')
+    store.commit(AppMutations.SET_LOADING, false)
   }
+}
+
+const debounceSearch = () => {
+  debounce(function () {
+    getRoundRobins()
+  }, 500)
+}
+
+const goToRoundRobin = (rr) => {
+  router.push({path: `/settings/roundRobin/${rr.id}/scheduleTo`})
+}
+
+const getRoundRobins = async () => {
+  dataLoading.value = true
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getRequestWithParams(`/roundRobin`, {params: {searchQuery: search.value}})
+    roundRobins.value = data
+    masterRoundRobins.value = cloneDeep(data)
+    dataLoading.value = false
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    dataLoading.value = false
+    getSnackbar('ERROR', 'Error Retrieving Data')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const deleteRoundRobin = async () => {
+  itemToDelete.value.archived = true
+  const roundRobinId = itemToDelete.value.id
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await deleteRequest(`/roundRobin/${roundRobinId}`)
+    getSnackbar('SUCCESS', 'Round Robin Deleted')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Deleting Round Robin')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+  closeDeleteDialog()
+}
+const addRoundRobin = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await postRequest(`/roundRobin`, newRoundRobin.value)
+    getSnackbar('SUCCESS', 'Round Robin Added')
+    handleHidingGlobalLoader(vueInstance, status)
+    await router.push({path: `/settings/roundRobin/${data.id}/scheduleTo`})
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Adding Round Robin')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const filterResults = () => {
+  roundRobins.value = masterRoundRobins.value.filter(pcz => {
+    return pcz?.roundRobinName?.toLowerCase().includes(nameSearch.value.toLowerCase())
+  })
+}
+const closeDeleteDialog = () => {
+  showDeleteDialog.value = false;
+  itemToDelete.value = null;
+}
+
+
 </script>
 
 <style lang="scss">
-  #postal-codes .v-data-table__wrapper {
-    height: calc(100vh - 300px);
-    min-height: 300px;
-    border-top: solid 1px #E0E0E0;
-  }
+#postal-codes .v-data-table__wrapper {
+  height: calc(100vh - 300px);
+  min-height: 300px;
+  border-top: solid 1px #E0E0E0;
+}
 </style>
 
