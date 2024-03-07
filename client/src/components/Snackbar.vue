@@ -39,6 +39,7 @@ appStore.$subscribe((mut, state) => {
   if (state.snack.show) {
     snackbar.value = state.snack
     show.value = true
+    appStore.snack.show = false
   }
 })
 
