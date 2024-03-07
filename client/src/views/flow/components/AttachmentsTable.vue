@@ -92,6 +92,8 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import Vue2Filters from 'vue2-filters'
 import {ProjectMutations} from "@/stores/ProjectStore"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { mapStores } from 'pinia'
 
 export default {
   name: "AttachmentsTable",
@@ -147,6 +149,7 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useAppStore),
     drillDownAttachments() {
       if (this.displayType === null) {
         return []
@@ -186,11 +189,11 @@ export default {
         this.$root.$emit('attachmentDeleted', id)
 
         this.snackbar = getSnackbar('SUCCESS', 'Document Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Document')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } finally {
         this.closeDeleteDialog()
@@ -233,11 +236,11 @@ export default {
 
         this.performingLink = false
         this.snackbar = getSnackbar('SUCCESS', 'Document Linked')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Linking Document')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

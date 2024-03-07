@@ -233,6 +233,7 @@ import SpinnerInline from "@/components/SpinnerInline.vue";
 import constants from "@/helpers/constants";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export default {
   name: 'ActivitySection',
@@ -305,7 +306,7 @@ export default {
     },
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useAppStore),
     userIsAdmin() {
       return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')
     },
@@ -477,7 +478,7 @@ export default {
         } catch {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error loading notes')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         }
       }
     },
@@ -490,7 +491,7 @@ export default {
         } catch {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error loading notes')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         } finally {
           this.activitiesLoading = false
         }
@@ -504,7 +505,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -524,7 +525,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error loading topics')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.topicsLoading = false
       }
     },
@@ -613,11 +614,11 @@ export default {
         this.savingActivity = false
         this.$emit('scrollToTop')
         this.snackbar = getSnackbar('SUCCESS', 'Note Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error saving note')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.savingActivity = false
       }
     },
@@ -668,11 +669,11 @@ export default {
         }
         this.savingActivity = false
         this.snackbar = getSnackbar('SUCCESS', 'Note Edited')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error saving note')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.savingActivity = false
       }
     },

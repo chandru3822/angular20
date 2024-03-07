@@ -270,6 +270,7 @@
   import ConfirmationDialog from "../../../../components/ConfirmationDialog.vue";
   import { mapStores } from 'pinia'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
   export default {
     name: 'ScheduleCalendar',
@@ -284,7 +285,7 @@
       states: {type: Array}
     },
     computed: {
-      ...mapStores(useUserStore),
+      ...mapStores(useUserStore, useAppStore),
       timezone() {
         return this.userStore.details.timezone.value
       },
@@ -661,7 +662,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Orgs')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -675,7 +676,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -689,7 +690,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -717,7 +718,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -781,7 +782,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Availability')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -855,7 +856,7 @@
             } catch (e) {
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error Retrieving Events')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              this.appStore.showSnack(this.snackbar)
               this.calendarLoading = false
             } finally {
               this.orgValuesChanged = false

@@ -222,6 +222,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from "@/components/ConfirmationDialog"
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export default {
   name: "AttachmentCoversheetModal",
@@ -287,7 +288,7 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useAppStore),
     timezone() {
       return this.userStore.details.timezone.value
     },
@@ -398,7 +399,7 @@ export default {
         this.errorMsg = 'Additional fields are required before saving.'
         this.saveError = true
         this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     async saveDisplayName() {
@@ -411,7 +412,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -441,14 +442,14 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     async uploadCallback(newAttachment, error) {
       if (error) {
         this.error = error
         this.snackbar = getSnackbar('ERROR', error.message)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       } else {
         await this.updateFieldGroups(newAttachment.id)
         this.fileUploadedCallback(newAttachment)
@@ -466,12 +467,12 @@ export default {
           this.dirtyCfvs = []
           this.customFieldGroups = data
           this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } finally {
           this.fieldsSaving = false

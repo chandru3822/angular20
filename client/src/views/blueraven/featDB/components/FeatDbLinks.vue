@@ -55,6 +55,8 @@
   import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
   import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
+  import { mapStores } from 'pinia'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
   export default {
     name: "FeatDbinks",
@@ -98,6 +100,7 @@
       }
     },
     computed: {
+      ...mapStores(useAppStore),
       linkInfoEntered() {
         return this.link.name && this.link.link && this.validUrl
       }
@@ -136,12 +139,12 @@
 
             this.linksCopy.push(cloneDeep(res.data))
             this.snackbar = getSnackbar('SUCCESS', 'Link added')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.appStore.showSnack(this.snackbar)
             this.$refs.linkForm.reset()
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding link')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.appStore.showSnack(this.snackbar)
           }
         } else {
           try {
@@ -160,12 +163,12 @@
             this.linksCopy[updatedLinkIndex].password = res.data.password
             this.linksCopy[updatedLinkIndex].notes = res.data.notes
             this.snackbar = getSnackbar('SUCCESS', 'Link updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.appStore.showSnack(this.snackbar)
             this.$refs.linkForm.reset()
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding link')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.appStore.showSnack(this.snackbar)
           }
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -184,11 +187,11 @@
           let deletedLinkIndex = this.linksCopy.findIndex(i => i.id === this.link.id)
           this.linksCopy.splice(deletedLinkIndex, 1)
           this.snackbar = getSnackbar('SUCCESS', 'Link deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting link')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       },

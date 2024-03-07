@@ -95,6 +95,7 @@
   import constants from "@/helpers/constants";
   import { mapStores } from 'pinia'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
   export default {
     name: 'ZipPostalCode',
@@ -115,7 +116,7 @@
       }
     },
     computed: {
-      ...mapStores(useUserStore),
+      ...mapStores(useUserStore, useAppStore),
       userCanEdit() {
         return this.userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')
       },
@@ -150,7 +151,7 @@
           console.error('*** ERROR ***', e)
           this.dataLoading = false
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         }
       },
       async getStates () {
@@ -160,7 +161,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         }
       },
       async getRoundRobins () {
@@ -170,7 +171,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         }
       },
       async getZones () {
@@ -180,7 +181,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         }
       },
       async getCallGroups () {
@@ -190,7 +191,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         }
       },
       async savePostalCode () {
@@ -198,12 +199,12 @@
         try {
           const {data, status} = await postRequest(`/postalCode`, this.postalCode)
           this.snackbar = getSnackbar('SUCCESS', 'Postal Code Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Postal Code')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

@@ -91,6 +91,8 @@ import VueClamp from 'vue-clamp'
 import {SearchTypeEnum} from "./ActivityListConstants";
 import SpinnerInline from '@/components/SpinnerInline'
 import InfiniteLoading from 'vue-infinite-loading'
+import { mapStores } from 'pinia'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export default {
   name: 'ActivityList',
@@ -132,6 +134,7 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useAppStore)
   },
   created() {
   },
@@ -178,11 +181,11 @@ export default {
         let msg = activity.pinned ? 'Note Pinned' : 'Note Unpinned'
         this.$emit('reload');
         this.snackbar = getSnackbar('SUCCESS', msg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error pinning note')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.savingActivity = false
       }
     },
@@ -192,12 +195,12 @@ export default {
         activity.archived = true
         //todo handle sending this back up
         this.snackbar = getSnackbar('SUCCESS', 'Note Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$emit('remove-deleted', activity.id);
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error deleting note')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.savingActivity = false
       }
     },

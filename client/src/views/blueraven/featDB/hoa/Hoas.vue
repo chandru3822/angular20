@@ -181,6 +181,7 @@ import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export default {
   name: "hoas",
@@ -223,7 +224,7 @@ export default {
     duplicateHoaMatch: null
   }),
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useAppStore),
     filteredHoas() {
       return this.hoas && this.hoas.filter(hoa => {
         return Object.keys(this.hoaFilters).every(filterName => {
@@ -278,7 +279,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -292,7 +293,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.dataLoading = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -307,7 +308,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -337,13 +338,13 @@ export default {
       try {
         const {status} = await deleteRequest(`/featDb/hoa/${this.hoaToDelete.id}`, 'blueraven')
         this.snackbar = getSnackbar('SUCCESS', 'HOA deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         await this.fetchHoas().then(() => this.fetchStates())
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error deleting HOA')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
       this.hoaToDelete = null
@@ -397,24 +398,24 @@ export default {
           }
           const {status} = await postRequest('/featDb/hoa', this.editedItem, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'HOA created')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error creating HOA')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       } else {
         try {
           const {status} = await putRequest(`/featDb/hoa/simpleUpdate`, this.editedItem, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'HOA updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error updating HOA')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }

@@ -228,6 +228,7 @@ import {
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export default {
   name: 'WorkQueueDrilldown',
@@ -296,7 +297,7 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useAppStore),
     timezone() {
       return this.userStore.details.timezone.value
     },
@@ -324,7 +325,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Results')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -380,7 +381,7 @@ export default {
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', e.message)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         logError(e)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -540,7 +541,7 @@ export default {
         this.errorLoading = true
         let msg = e?.data?.message || 'Error Retrieving Results'
         this.snackbar = getSnackbar('ERROR', msg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -550,7 +551,7 @@ export default {
         const {status} = await postRequest(`/projectProcessStep/${item.projectProcessStepId}/owner/checkExisting`, {userPositionId: userPosition.id})
         item['Owner'] = this.userFullName
         this.snackbar = getSnackbar('SUCCESS', 'You are now assigned as the owner.')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         item.owner = this.userFullName
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -561,7 +562,7 @@ export default {
           item['Owner'] = 'Already Assigned. Please Refresh.'
         }
         this.snackbar = getSnackbar('ERROR', msg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

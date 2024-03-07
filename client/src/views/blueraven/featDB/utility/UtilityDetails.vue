@@ -112,6 +112,7 @@ import FeatDbAttachments from "@/views/blueraven/featDB/components/FeatDbAttachm
 import TwoColumnMasonry from "@/views/blueraven/featDB/components/TwoColumnMasonry.vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { mapStores } from 'pinia'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export default {
   name: "UtilityDetails",
@@ -125,7 +126,7 @@ export default {
     FeatDbCard
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useAppStore),
     userCanEdit() {
       return this.userStore.userHasFeatureAccessLevel("UTILITY", "EDIT")
     },
@@ -194,7 +195,7 @@ export default {
       } catch (e) {
         console.error("*** ERROR ***", e)
         this.snackbar = getSnackbar("ERROR", "Error retrieving Utility")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -228,7 +229,7 @@ export default {
         this.saveUtility()
       } else {
         this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     async getFinancierList() {
@@ -241,7 +242,7 @@ export default {
       } catch (e) {
         console.error("*** ERROR ***", e)
         this.snackbar = getSnackbar("ERROR", "Error retrieving list of financiers")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -260,7 +261,7 @@ export default {
       } catch (e) {
         console.error("*** ERROR ***", e)
         this.snackbar = getSnackbar("ERROR", "Error retrieving custom fields")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -307,12 +308,12 @@ export default {
         this.utility = cloneDeep(data)
         this.dataWasChanged = false
         this.snackbar = getSnackbar("SUCCESS", "Utility saved")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error("*** ERROR ***", e)
         this.snackbar = getSnackbar("ERROR", "Error saving Utility")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

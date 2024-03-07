@@ -91,6 +91,7 @@ import orderBy from 'lodash.orderby'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export default {
   name: 'ObjectTypeAttachments',
@@ -141,7 +142,7 @@ export default {
   //   })
   // },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useAppStore),
     userCanEdit() {
       return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
     },
@@ -184,12 +185,12 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {status} = await putRequest(`/attachmentType/${this.objectType}/update`, item)
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -218,12 +219,12 @@ export default {
         this.addNewType = false
         this.newType = {}
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -240,7 +241,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         handleHidingGlobalLoader(this, status)
       }
     },
@@ -254,7 +255,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -264,12 +265,12 @@ export default {
           this.$store.commit(AppMutations.SET_LOADING, true)
           const {status} = await putRequest(`/attachmentType/${this.objectType}/order`, rows)
           this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Order Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type Order')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -281,12 +282,12 @@ export default {
         this.addNewType = false
         const {status} = await deleteRequest(`/attachmentType/${this.objectType}/${id}`)
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
       this.attachmentTypeToDelete = null

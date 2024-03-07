@@ -62,6 +62,8 @@ import {AppMutations} from "@/stores/AppStore";
 import {Actions} from "@/store";
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable.vue";
 import constants from "@/helpers/constants";
+import { mapStores } from 'pinia'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export default {
   name: "FeatDbAttachments",
@@ -99,7 +101,9 @@ export default {
     }
   },
   created() {},
-  computed: {},
+  computed: {
+    ...mapStores(useAppStore)
+  },
   methods: {
     getTypeCount: function (typeId) {
       try {
@@ -125,7 +129,7 @@ export default {
     uploadDocument: async function (files, attachmentTypeId) {
       if (files?.length > this.maxFiles) {
         this.snackbar = getSnackbar('ERROR', `Cannot upload more than ${this.maxFiles} files at one time. Please try again and select fewer files.`)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       } else if (files?.length > 0) {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
@@ -140,13 +144,13 @@ export default {
             callback: async (document) => {
               this.attachments.push(document)
               this.snackbar = getSnackbar('SUCCESS', 'Successfully uploaded document')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              this.appStore.showSnack(this.snackbar)
             }
           })
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error uploading document')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -155,14 +159,14 @@ export default {
       if (error) {
         this.error = error
         this.snackbar = getSnackbar('ERROR', error.message)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       } else {
         let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
         newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
         //adding this "copy" so that if they edit a name then click cancel we dont update the ui with their change
         newAttachment.editableNameCopy = newAttachment.editableName
         this.snackbar = getSnackbar('SUCCESS', 'Document Uploaded')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.attachments = [...this.attachments, newAttachment]
       }
       this.$store.commit(AppMutations.SET_LOADING, false)

@@ -102,6 +102,7 @@ import FeatDbCustomFields from "@/views/blueraven/featDB/components/FeatDbCustom
 import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export default {
   name: "hoaDetails",
@@ -114,7 +115,7 @@ export default {
     FeatDbLinks,
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useAppStore),
     userCanEdit() {
       return this.userStore.userHasFeatureAccessLevel("HOA", "EDIT")
     },
@@ -162,7 +163,7 @@ export default {
       } catch (e) {
         console.error("*** ERROR ***", e)
         this.snackbar = getSnackbar("ERROR", "Error retrieving HOA")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -172,7 +173,7 @@ export default {
         this.saveHoa()
       } else {
         this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     async getCustomFieldGroupAssignmentsForScreen() {
@@ -190,7 +191,7 @@ export default {
       } catch (e) {
         console.error("*** ERROR ***", e)
         this.snackbar = getSnackbar("ERROR", "Error retrieving custom fields")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -224,12 +225,12 @@ export default {
         this.hoa = cloneDeep(data)
         this.dataWasChanged = false
         this.snackbar = getSnackbar("SUCCESS", "HOA saved")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error("*** ERROR ***", e)
         this.snackbar = getSnackbar("ERROR", "Error saving HOA")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

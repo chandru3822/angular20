@@ -145,6 +145,7 @@
   import {FEAT_DB_TABS, FILTER_DEFAULTS} from "@/views/blueraven/featDB/FeatDbConstants";
   import { mapStores } from 'pinia'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
   export default {
     name: 'ahjs',
@@ -183,7 +184,7 @@
       }
     }),
     computed: {
-      ...mapStores(useUserStore),
+      ...mapStores(useUserStore, useAppStore),
       filteredAhjs () {
         return this.ahjs && this.ahjs.filter(ahj => {
           return Object.keys(this.ahjFilters).every(filterName => {
@@ -233,7 +234,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
@@ -247,7 +248,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -280,24 +281,24 @@
           try {
             const {status} = await postRequest('/featDb/ahj', this.editedItem, 'blueraven')
             this.snackbar = getSnackbar('SUCCESS', 'AHJ created')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.appStore.showSnack(this.snackbar)
             handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error creating AHJ')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.appStore.showSnack(this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
           try {
             const {status} = await putRequest(`/featDb/ahj/${this.editedItem.id}`, this.editedItem, 'blueraven')
             this.snackbar = getSnackbar('SUCCESS', 'AHJ updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.appStore.showSnack(this.snackbar)
             handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error updating AHJ')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.appStore.showSnack(this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -332,7 +333,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }
