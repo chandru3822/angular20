@@ -280,7 +280,7 @@ export default {
         this.userStore.companies = this.companies
         this.selectedCompany = this.companies.find(c => c.id === this.userStore?.details?.companyId) || {}
         //always do this, that way if they dont have a spinner it will unset the url
-        this.$store.commit(AppMutations.SET_SPINNER_URL, this.selectedCompany?.spinnerPresignedUrl)
+        this.appStore.spinnerUrl = this.selectedCompany?.spinnerPresignedUrl
 
         //this handles if the color is null too
         this.$store.commit(AppMutations.SET_PRIMARY_BASE_COLOR, this.selectedCompany?.primaryColor)

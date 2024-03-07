@@ -9,7 +9,7 @@ export const AppMutations = {
   SHOW_SNACK: 'SHOW_SNACK',
   // SET_ANNOUNCEMENTS: 'SET_ANNOUNCEMENTS',
   // SET_REDIRECT_URL: 'SET_REDIRECT_URL',
-  SET_SPINNER_URL: 'SET_SPINNER_URL',
+  // SET_SPINNER_URL: 'SET_SPINNER_URL',
   SET_PRIMARY_BASE_COLOR: 'SET_PRIMARY_BASE_COLOR',
   SET_BANNER_COLOR: 'SET_BANNER_COLOR',
   SET_INITIAL_THEME: 'SET_INITIAL_THEME',
@@ -31,7 +31,7 @@ export const AppStore = {
     [AppMutations.SHOW_SNACK]: (state, snack) => (state.snack = snack),
     // [AppMutations.SET_ANNOUNCEMENTS]: (state, announcements) => (state.announcements = announcements),
     // [AppMutations.SET_REDIRECT_URL]: (state, url) => (state.redirectUrl = url),
-    [AppMutations.SET_SPINNER_URL]: (state, url) => (state.spinnerUrl = url),
+    // [AppMutations.SET_SPINNER_URL]: (state, url) => (state.spinnerUrl = url),
     [AppMutations.SET_INITIAL_THEME]: (state) => {
       if(state.theme === undefined) {
         state.theme = { ...theme.LIGHT }

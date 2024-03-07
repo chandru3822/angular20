@@ -18,6 +18,9 @@
 </template>
 
 <script>
+import { mapStores } from 'pinia'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
 export default {
   name: 'Spinner',
   props: {
@@ -25,8 +28,9 @@ export default {
     size: Number
   },
   computed: {
+    ...mapStores(useAppStore),
     spinnerUrl() {
-      return this.$store.state.app.spinnerUrl || null
+      return this.appStore.spinnerUrl || null
     }
   },
   data() {
