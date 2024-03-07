@@ -39,15 +39,15 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
-      <v-list v-else-if="$store.state.app.announcements?.length === 0">
+      <v-list v-else-if="appStore.announcements?.length === 0">
           <v-list-item class="pr-1">
             <v-list-item-content class="">
               You don't have any notifications
             </v-list-item-content>
           </v-list-item>
       </v-list>
-      <v-list v-else-if="$store.state.app.announcements?.length > 0">
-        <template  v-for="(item, index) in $store.state.app.announcements">
+      <v-list v-else-if="appStore.announcements?.length > 0">
+        <template  v-for="(item, index) in appStore.announcements">
         <v-list-item class="pr-1"
                      :key="item.id">
           <v-list-item-icon v-if="!item.read" class="mr-2">
@@ -65,7 +65,7 @@
           </v-list-item-action>
           </v-list-item>
         <v-divider
-            v-if="index < $store.state.app.announcements.length - 1"
+            v-if="index < appStore.announcements.length - 1"
         ></v-divider>
         </template>
       </v-list>
@@ -85,6 +85,7 @@
   import {Actions} from "@/store.js";
   import { mapStores } from 'pinia'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
   export default {
     name: 'AnnouncementDropdown',
@@ -120,7 +121,7 @@
       }
     },
     computed: {
-      ...mapStores(useUserStore),
+      ...mapStores(useUserStore, useAppStore),
       userId() {
         return this.userStore.details.id
       },
@@ -128,7 +129,7 @@
         return this.constants.IS_MOBILE ? 320 : 400
       },
       hasUnalertedAnnouncements () {
-        return this.$store.state.app.announcements?.filter(a => !a.alerted)?.length > 0 || false
+        return this.appStore.announcements?.filter(a => !a.alerted)?.length > 0 || false
       },
     },
     created () {
@@ -142,7 +143,7 @@
             doUpdate: true //we do this every time in case something changed behind the scenes
           }
           const {data, status} = await getRequestWithParams(`/announcements/active`, {params})
-          this.$store.commit(AppMutations.SET_ANNOUNCEMENTS, data)
+          this.appStore.announcements = data
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')

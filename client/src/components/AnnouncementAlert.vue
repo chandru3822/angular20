@@ -36,6 +36,8 @@ import {getSnackbar, postRequest, postRequestWithRequestParams} from "@/helpers/
 import {AppMutations} from "@/stores/AppStore.js";
 import AnnouncementModal from "@/components/AnnouncementModal.vue";
 import {Actions} from "@/store.js";
+import { mapStores } from 'pinia'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
   export default {
     name: 'AnnouncementAlert',
@@ -51,8 +53,9 @@ import {Actions} from "@/store.js";
       }
     },
     computed: {
+      ...mapStores(useAppStore),
       unseenAnnouncements() {
-        return this.$store.state.app.announcements?.filter(a => !a.seen &&
+        return this.appStore.announcements?.filter(a => !a.seen &&
             (moment().isBetween(moment(a.startTime), moment(a.endTime))
             || (moment().isAfter((moment(a.startTime))) && a.endTime == null))
 

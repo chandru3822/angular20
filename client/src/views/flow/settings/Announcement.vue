@@ -166,12 +166,10 @@ import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import 'quill/dist/quill.snow.css'
 import {quillEditor} from 'vue-quill-editor'
 import {
-  getSnackbar,
   getRequest,
   handleHidingGlobalLoader,
-  postRequest,
-  postRequestWithRequestParams
-} from "@/helpers/helpers";
+  postRequest
+} from '@/helpers/helpers'
 import {AppMutations} from "@/stores/AppStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {Actions} from "@/store";
@@ -184,6 +182,7 @@ import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const route = vueInstance.$route
+const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
 const store = vueInstance.$store
