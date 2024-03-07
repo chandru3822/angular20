@@ -20,9 +20,20 @@
 </template>
 
 <script>
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+
 export default {
   name: 'installationAgreements',
   computed: {
+    ...mapStores(useUserStore),
+    tabs() {
+      return [{
+        label: 'Installation Agreement Request',
+        path: '/installation-agreements/request',
+        display: this.userStore.userHasFeature('INSTALLATION_AGREEMENT')
+      }]
+    },
     displayedTabs() {
       return this.tabs.filter(tab => tab.display)
     }
@@ -30,12 +41,7 @@ export default {
   data() {
     return {
       snackbar: {},
-      model: '',
-      tabs: [{
-        label: 'Installation Agreement Request',
-        path: '/installation-agreements/request',
-        display: this.$store.getters.userHasFeature('INSTALLATION_AGREEMENT')
-      }]
+      model: ''
     }
   },
   methods: {}

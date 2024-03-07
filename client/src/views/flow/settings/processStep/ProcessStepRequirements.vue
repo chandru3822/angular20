@@ -684,6 +684,8 @@ import {
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog"
 import constants from "@/helpers/constants";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProcessStepRequirements',
@@ -709,8 +711,6 @@ export default {
       deleteError: false,
       actionsUsingLogic: [],
       invalidRequirement: true,
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       headers: [
         {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
         {text: 'Type', value: 'processStepRequirementType', show: true},
@@ -740,7 +740,6 @@ export default {
       availableRequirementTypes: [],
       processStepId: this.$route.params.id,
       processStepEventId: this.$route.params.eventId,
-      companyId: this.$store.state.user.details.companyId,
       parentObjects: [],
       dataViews: [],
       availableDataViewFields: [],
@@ -761,6 +760,13 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
     },

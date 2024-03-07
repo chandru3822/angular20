@@ -125,30 +125,31 @@ import {
   getRequest,
   postRequest,
   deleteRequest,
-  putRequest,
-  getSnackbar
+  putRequest
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
+import ConfirmationDialog from '@/components/ConfirmationDialog'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import moment from 'moment'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
 
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 const snackbar = vueInstance.$snackbar
 
 const addNew = ref(false)
-const timezone = ref(store.state.user.details.timezone.value)
+const timezone = ref(userStore.details.timezone.value)
 const certs = ref([])
 const selectedCert = ref({})
 const selectedCertId = ref(null)
 const expanded = ref([])
 const certToDelete = ref(null)
-const userId = ref(store.state.user.details.id)
-const companyId = ref(store.state.user.details.companyId)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
 const headers = ref([
   {text: 'Cert Name', value: 'certName', show: true},
   {text: 'Expiration Date', value: 'expirationDate', show: true},

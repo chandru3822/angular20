@@ -110,6 +110,8 @@ import {
   getSnackbar, handleHidingGlobalLoader
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProcessStepAttachmentTypes',
@@ -147,8 +149,6 @@ export default {
       snackbar: {},
       expandTypes: true,
       processStepId: this.$route.params.id,
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       headers: [
         // {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
         {text: 'Attachment Type', value: 'attachmentType', show: true},
@@ -165,6 +165,13 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
     attachmentTypeToDeleteName(){
       return this.attachmentTypeToDelete ? this.attachmentTypeToDelete.attachmentType : ''
     },

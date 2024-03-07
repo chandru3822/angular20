@@ -100,6 +100,8 @@ import FeatDbContact from "@/views/blueraven/featDB/components/FeatDbContacts.vu
 import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue";
 import FeatDbCustomFields from "@/views/blueraven/featDB/components/FeatDbCustomFieldGroup.vue";
 import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { mapStores } from 'pinia'
 
 export default {
   name: "supplierDetails",
@@ -112,8 +114,9 @@ export default {
     FeatDbLinks,
   },
   computed: {
+    ...mapStores(useUserStore),
     userCanEdit() {
-      return this.$store.getters.userHasFeatureAccessLevel("SUPPLIERS", "EDIT")
+      return this.userStore.userHasFeatureAccessLevel("SUPPLIERS", "EDIT")
     },
     expandedAll(){
       if(this.expandedGroups === this.totalGroups){

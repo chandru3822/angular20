@@ -18,30 +18,35 @@
 
 <script>
 import constants from '@/helpers/constants'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'ZipContainer',
 
     computed: {
+      ...mapStores(useUserStore),
+      tabs() {
+        return [
+          {
+            label: 'Postal Codes',
+            path: `/settings/zip/postalCodes`,
+            display: this.userStore.userHasFeature('POSTAL_CODE')
+          },
+          {
+            label: 'Postal Code Zones',
+            path: `/settings/zip/zones`,
+            display: this.userStore.userHasFeature('POSTAL_CODE')
+          },
+        ]
+      },
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)
       },
     },
     data() {
       return {
-        constants,
-        tabs: [
-          {
-            label: 'Postal Codes',
-            path: `/settings/zip/postalCodes`,
-            display: this.$store.getters.userHasFeature('POSTAL_CODE')
-          },
-          {
-            label: 'Postal Code Zones',
-            path: `/settings/zip/zones`,
-            display: this.$store.getters.userHasFeature('POSTAL_CODE')
-          },
-        ]
+        constants
       }
     },
     created() {},

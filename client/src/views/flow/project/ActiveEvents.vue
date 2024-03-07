@@ -1,11 +1,11 @@
 <template>
-  <SidePanelExpansionPanel v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
+  <SidePanelExpansionPanel v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
                            header="Active Events"
                            :section-expanded="sectionExpanded"
                            :is-loading="activeEventsLoading"
                            @click="toggleCollapseExpand">
     <template v-slot:tool-btn>
-      <v-btn v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
+      <v-btn v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
              text small color="primary" @click.stop :to="`/project/${projectId}/events`" class="pa-2 mx-2" max-width="48px">
         <v-icon :size="20">mdi-format-list-bulleted</v-icon>
       </v-btn>
@@ -16,7 +16,7 @@
                           :events="events"
                           :projectId="projectId"/>
       <v-col
-          v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
+          v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
           cols="12"
           class="text-left pt-0 albatross-body-3"
       >
@@ -31,8 +31,10 @@ import {getRequest, logError} from '@/helpers/helpers'
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import ActiveEventSnippet from '@/views/flow/project/ActiveEventSnippet'
-import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
-import {ProjectMutations} from "@/stores/ProjectStore";
+import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
+import {ProjectMutations} from '@/stores/ProjectStore'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ActiveEvents',
@@ -58,18 +60,23 @@ export default {
       sectionExpanded: this.$store.state.project.activeEventDropdown,
       customFieldGroups: [],
       menuOpen: false,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       activeEventsLoading: false,
       snackbar: {},
       eventSearch: '',
       eventsExpanded: false,
-      companyId: this.$store.state.user.details.companyId,
     }
   },
   created() {
     this.getEvents()
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     eventsByName() {
       const names = [...new Set(this.events.map(e => e.eventName))]
 

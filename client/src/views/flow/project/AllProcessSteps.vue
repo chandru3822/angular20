@@ -1,14 +1,14 @@
 <template>
   <v-row no-gutters id="project-details-container" class="py-0 relative height-one-hunned overflow-y-auto">
     <v-col cols="12" lg="12" class="text-left pt-0">
-      <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
+      <v-col class="py-0" v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>
           <v-toolbar color="transparent" class="elevation-0">
             <v-toolbar-title class="albatross-header-3">Active Process Steps</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <AddProcessStep
-                v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD')"
+                v-if="project.processId && userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD')"
                 class="d-inline-block"
                 :project-id="projectId"
                 :process-id="project.processId"
@@ -31,7 +31,7 @@
       </v-col>
 
 
-      <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
+      <v-fade-transition v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-col
           v-show="!isProcessStepsExpanded"
           cols="12"
@@ -102,6 +102,8 @@ import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSn
 import SpinnerInline from '@/components/SpinnerInline'
 import orderBy from 'lodash.orderby'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ActiveProcessSteps',
@@ -120,19 +122,26 @@ export default {
       processSteps: [],
       customFieldGroups: [],
       menuOpen: false,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
       isProcessStepsLoading: false,
       snackbar: {},
       stepsSearch: '',
       isProcessStepsExpanded: true,
-      companyId: this.$store.state.user.details.companyId,
     }
   },
   created () {
     this.getProcessSteps()
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+    },
+    userHasEventsFeature() {
+      return this.userStore.userHasFeature('EVENTS')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     processStepsByName () {
       const names = [...new Set(this.processSteps.map(step => step.processStepName))]
 

@@ -187,7 +187,7 @@
              class="left-panel-scrollable-area overflow-y-auto">
           <PageOverview
             page-name="Project"
-            :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
+            :show-edit-btn="(userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
             @clickEdit="showEditModal()"
             :details="overviewDetails"
           />
@@ -262,6 +262,8 @@ import {NotificationActions} from "@/plugins/notifications/NotificationStore";
 import {endTimer, projectOpened} from '@/services/analyticsService'
 import StatusTrackerIcon from "@/views/flow/project/StatusTrackerIcon";
 import StatusTrackerItem from "@/views/flow/project/StatusTrackerItem";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'Project',
@@ -303,10 +305,7 @@ export default {
       selectedTab: {},
       milestones: [],
       projectLoading: true,
-      projectId: parseInt(this.$route.params.projectId),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      is7oaksAdmin: this.$store.getters.isFullAdmin,
-      userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
+      projectId: parseInt(this.$route.params.projectId)
     }
   },
   created() {
@@ -337,6 +336,16 @@ export default {
     next();
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+    },
+    is7oaksAdmin() {
+      return this.userStore.isSystemAdmin
+    },
+    userHasEventsFeature() {
+      return this.userStore.userHasFeature('EVENTS')
+    },
     projectTagEvents() {
       return this.$store.getters.getEventsByTopic('project_tag')?.filter(e => e.projectId === this.projectId)
     },

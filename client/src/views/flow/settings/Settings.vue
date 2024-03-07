@@ -49,32 +49,33 @@
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
 
-import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
-import constants from '@/helpers/constants'
-import SettingsMenu from "./SettingsMenu";
-import {UserMutations} from "../../../stores/UserStore";
-import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import { handleHidingGlobalLoader, getRequest } from '@/helpers/helpers'
+import SettingsMenu from './SettingsMenu'
+import {getCurrentInstance, onMounted, ref, computed} from 'vue'
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
+const userStore = useUserStore()
+
 const route = vueInstance.$route
 
 const menuOpen = ref(false)
 const title = ref(null)
-const hasSettingsAccess = ref(store.getters.userHasFeature('SETTINGS'))
+const hasSettingsAccess = ref(userStore.userHasFeature('SETTINGS'))
 const companyObjectTypes = ref([])
-const companyId = ref(store.state.user.details.companyId)
-const parentId = ref(store.state.user.details.parentCompanyId)
+const companyId = ref(userStore.details.companyId)
+const parentId = ref(userStore.details.parentCompanyId)
 
 
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
 })
 const leftCollapsed = computed(() => {
-  return store.state.user.settingsMenuCollapsed
+  return userStore.settingsMenuCollapsed
 })
 const items = computed(() => {
   return [
@@ -96,7 +97,7 @@ const items = computed(() => {
     }, {
       path: '/settings/proposals',
       title: 'Proposals',
-      show: store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
+      show: userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
     }, {
       path: '/settings/states',
       title: 'States',
@@ -105,31 +106,31 @@ const items = computed(() => {
       path: '/settings/zip/postalCodes',
       title: 'Postal Codes',
       pathMatch: '/settings/zip',
-      show: store.getters.userHasFeature('POSTAL_CODE')
+      show: userStore.userHasFeature('POSTAL_CODE')
     }, {
       path: '/settings/roundRobins',
       title: 'Round Robins',
       pathMatch: '/settings/roundRobin',
-      show: store.getters.userHasFeature('ROUND_ROBIN')
+      show: userStore.userHasFeature('ROUND_ROBIN')
     }, {
       path: '/settings/callGroups',
       title: 'Call Groups',
       pathMatch: '/settings/callGroup',
-      show: store.getters.userHasFeature('CALL_GROUPS')
+      show: userStore.userHasFeature('CALL_GROUPS')
     }, {
       path: '/settings/tournaments',
       title: 'Tournaments',
       pathMatch: '/settings/tournaments',
-      show: store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')
+      show: userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')
     }, {
       path: '/settings/companyCustomFields',
       title: 'Company Custom Fields',
       pathMatch: '/settings/companyCustomField',
-      show: hasSettingsAccess.value && null != store.state.user.details.apiPath,
+      show: hasSettingsAccess.value && null != userStore.details.apiPath,
     }, {
       path: '/settings/companyObjectTypes',
       title: 'Company Object Types',
-      show: hasSettingsAccess.value && null != store.state.user.details.apiPath,
+      show: hasSettingsAccess.value && null != userStore.details.apiPath,
     },
     {
       header: 'User Management',
@@ -137,7 +138,7 @@ const items = computed(() => {
     }, {
       path: '/settings/availability/main/schedule',
       title: 'Availability',
-      show: hasSettingsAccess.value || store.getters.userHasFeature('AVAILABILITY')
+      show: hasSettingsAccess.value || userStore.userHasFeature('AVAILABILITY')
     }, {
       path: '/settings/positions',
       title: 'Positions',
@@ -186,7 +187,7 @@ const items = computed(() => {
       path: '/settings/dataViews',
       title: 'Data Views',
       pathMatch: '/settings/dataView',
-      show: store.getters.userHasFeatureAccessLevel('DATA_VIEW', 'ADMIN')
+      show: userStore.userHasFeatureAccessLevel('DATA_VIEW', 'ADMIN')
     }, {
       path: '/settings/orgTypes',
       title: 'Organization Types',
@@ -210,7 +211,7 @@ const items = computed(() => {
     }, {
       path: '/settings/workQueue/types',
       title: 'Work Queue',
-      show: hasSettingsAccess.value || store.getters.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')
+      show: hasSettingsAccess.value || userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')
     }, {
       header: 'Processes',
       show: hasSettingsAccess.value
@@ -268,7 +269,7 @@ const setTitle =  (_title)  => {
   }
 }
 const collapseMenu =  () => {
-  store.commit(UserMutations.SETTINGS_MENU_COLLAPSE)
+  userStore.settingsMenuCollapsed = !userStore.settingsMenuCollapsed
 }
 
 onMounted(() =>{

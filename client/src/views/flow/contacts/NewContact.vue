@@ -118,6 +118,8 @@ import {saveContact} from '@/services/contactService'
 import {getCompanyStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const { VITE_ENV } =  import.meta.env
 
@@ -151,8 +153,7 @@ export default {
       dirtyCfvs: [],
       customFieldGroups: [],
       requiredRules: constants.BASIC_REQUIRED_RULE,
-      emailRules: constants.EMAIL_RULES,
-      companyId: this.$route.query.cid || this.$store.state.user.details.companyId,
+      emailRules: constants.EMAIL_RULES
     }
   },
   watch: {
@@ -174,6 +175,12 @@ export default {
     this.getCompanyStates()
     this.getCountries()
     this.getCustomFieldGroups()
+  },
+  computed: {
+    ...mapStores(useUserStore),
+    companyId() {
+      return this.$route.query.cid || this.userStore.details.companyId
+    }
   },
   methods: {
     validate (saveContact) {
@@ -260,7 +267,7 @@ export default {
       }
     },
     getReadOnly: function (field) {
-      return getCustomFieldReadOnly(this.$store, field)
+      return getCustomFieldReadOnly(field)
     },
     setFakeContact () {
       this.contact = {

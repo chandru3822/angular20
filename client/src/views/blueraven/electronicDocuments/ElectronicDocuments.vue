@@ -21,6 +21,8 @@
 
 <script>
   import Snackbar from '@/components/Snackbar.vue'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'electronicDocuments',
@@ -28,6 +30,14 @@
       Snackbar
     },
     computed: {
+      ...mapStores(useUserStore),
+      tabs() {
+        return [ {
+          label: 'Electronic Documents Request',
+          path: '/installation-agreements/request',
+          display: this.userStore.userHasFeature('ELECTRONIC_DOCUMENTS')
+        }]
+      },
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)
       }
@@ -35,12 +45,7 @@
     data() {
       return {
         snackbar: {},
-        model: '',
-        tabs: [ {
-          label: 'Electronic Documents Request',
-          path: '/installation-agreements/request',
-          display: this.$store.getters.userHasFeature('ELECTRONIC_DOCUMENTS')
-        }]
+        model: ''
       }
     },
     methods: {

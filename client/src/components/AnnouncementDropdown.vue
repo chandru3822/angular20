@@ -79,12 +79,12 @@
   import constants from '@/helpers/constants'
   import Vue2Filters from "vue2-filters"
   import SpinnerInline from '@/components/SpinnerInline'
-  import {getRequestWithParams, postRequestWithRequestParams, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
-  const { VITE_ENV } =  import.meta.env
+  import {getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import AnnouncementModal from "@/components/AnnouncementModal.vue";
   import {Actions} from "@/store.js";
-  import {UserActions, UserMutations} from "@/stores/UserStore.js";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'AnnouncementDropdown',
@@ -112,7 +112,6 @@
       return {
         constants,
         showModal: false,
-        userId: this.$store.state.user.details.id,
         headerColor: constants.ENV_COLOR,
         menuOpen: false,
         selectedAnnouncement: {},
@@ -121,6 +120,10 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      userId() {
+        return this.userStore.details.id
+      },
       menuWidth() {
         return this.constants.IS_MOBILE ? 320 : 400
       },

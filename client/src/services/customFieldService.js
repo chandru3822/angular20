@@ -1,4 +1,8 @@
-export function getCustomFieldReadOnly(store, field) {
+import { useUserStore } from '@/stores/UserStorePinia.js'
+
+const userStore = useUserStore()
+
+export function getCustomFieldReadOnly(field) {
   let readonly = false
   //more verbose but easier to figure out what is going on
   if(field.ancillaryCustomFieldGroupAssignmentId !== null) {
@@ -7,7 +11,7 @@ export function getCustomFieldReadOnly(store, field) {
   } else if (field.whiteListedPositions?.length > 0) {
     //this is a change to how it used to work.  now having white listed positions overrides the master/higher level readonly
     //do any of the users active positions match the white listed positions
-    readonly = !store.getters.userHasAnyPosition(field.whiteListedPositions?.map(wlp => wlp.positionId))
+    readonly = !userStore.userHasAnyPosition(field.whiteListedPositions?.map(wlp => wlp.positionId))
   } else if (field.customFieldGroupAssignmentReadOnly) {
     //the cfga is marked as readonly but there are no whitelisted positions.  always readonly
     readonly = true
@@ -19,7 +23,7 @@ export function getCustomFieldReadOnly(store, field) {
   return readonly
 }
 
-export function getEventCustomFieldReadOnly(store, field) {
+export function getEventCustomFieldReadOnly(field) {
   let readonly = false
   //more verbose but easier to figure out what is going on
   if(field.ancillaryCustomFieldGroupAssignmentId !== null) {
@@ -28,7 +32,7 @@ export function getEventCustomFieldReadOnly(store, field) {
   } else if (field.whiteListedPositions?.length > 0) {
     //this is a change to how it used to work.  now having white listed positions overrides the master/higher level readonly
     //do any of the users active positions match the white listed positions
-    readonly = !store.getters.userHasAnyPosition(field.whiteListedPositions?.map(wlp => wlp.positionId))
+    readonly = !userStore.userHasAnyPosition(field.whiteListedPositions?.map(wlp => wlp.positionId))
   } else if (field.customFieldGroupAssignmentReadOnly) {
     //the cfga is marked as readonly but there are no whitelisted positions.  always readonly
     readonly = true
@@ -40,11 +44,11 @@ export function getEventCustomFieldReadOnly(store, field) {
   return readonly
 }
 
-export function getEventDefaultFieldReadOnly(store, whiteListedPositions, fieldReadOnlyValue, allowFlag) {
+export function getEventDefaultFieldReadOnly(whiteListedPositions, fieldReadOnlyValue, allowFlag) {
   let readonly = false
   if (whiteListedPositions?.length > 0) {
     //do any of the user's active positions match the white listed positions
-    readonly = allowFlag ? !store.getters.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId)) : store.getters.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId));
+    readonly = allowFlag ? !userStore.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId)) : userStore.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId));
   } else if (fieldReadOnlyValue) {
     //the field is marked as readonly but there are no whitelisted positions.  always readonly
     readonly = true
@@ -53,9 +57,9 @@ export function getEventDefaultFieldReadOnly(store, whiteListedPositions, fieldR
   return readonly
 }
 
-export function getUserPositionIds(store) {
-  return store.getters.getUserPositionIds;
-}
+// export function getUserPositionIds(store) {
+//   return store.getters.getUserPositionIds;
+// }
 //
 // export function getEventCustomFieldHidden(store, field) {
 //     let hidden = false
@@ -75,11 +79,11 @@ export function getUserPositionIds(store) {
 //     return hidden
 // }
 
-export function getEventDefaultFieldHidden(store, whiteListedPositions, fieldHiddenValue, hiddenFlag) {
+export function getEventDefaultFieldHidden(whiteListedPositions, fieldHiddenValue, hiddenFlag) {
   let hidden = false
   if (whiteListedPositions?.length > 0) {
     //do any of the user's active positions match the white listed positions
-    hidden = hiddenFlag ? !store.getters.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId)) : store.getters.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId))
+    hidden = hiddenFlag ? !userStore.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId)) : userStore.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId))
   } else if (fieldHiddenValue) {
     //the field is marked as hidden but there are no whitelisted positions.  always hidden
     hidden = true

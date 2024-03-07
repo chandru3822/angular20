@@ -64,15 +64,17 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, putRequest} from '@/helpers/helpers'
 import {getUserStatusTypes} from '@/services/userService'
 import {getCurrentInstance, onMounted, ref} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import AlbatrossButton from'"@/components/customVuetify/AlbatrossButton'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 const snackbar = vueInstance.$snackbar
 
 const statusTypes = ref([])
-const userId = ref(store.state.user.details.id)
-const companyId = ref(store.state.user.details.companyId)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
 const expanded = ref([])
 const headers = ref([
   {text: 'User Status Type', value: 'userStatusType', show: true},

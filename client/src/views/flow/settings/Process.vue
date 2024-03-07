@@ -14,7 +14,7 @@
             <AlbatrossButton
               color="primary white--text"
               @click="saveProcess"
-              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
               text="SAVE CHANGES"
             />
           </div>
@@ -29,7 +29,7 @@
               size="small"
               variant="text"
               color="primary"
-              v-if="processId && editName && store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+              v-if="processId && editName && userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
               @click="saveProcess()"
               prepend-icon="save"
             />
@@ -38,7 +38,7 @@
               size="small"
               variant="text"
               color="primary"
-              v-else-if="processId && store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+              v-else-if="processId && userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
               @click="editName = true"
               prepend-icon="edit"
             />
@@ -48,7 +48,7 @@
               variant="text"
               color="primary"
               @click="getAvailableProcessSteps()"
-              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
               :hide-text-on-mobile="isMobile"
               :prepend-icon="addNew && isMobile ? 'mdi-close' : isMobile ? 'mdi-plus' : ''"
               :text="addNew ? 'CANCEL' : 'ADD PROCESS STEP'"
@@ -218,7 +218,7 @@
                     variant="text"
                     color="primary"
                     @click="[expanded.includes(item) ? expanded = [] : expanded = [item], getActiveProcessAssignedToProcessStep(item)]"
-                    v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+                    v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
                     :prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
                   />
                   <AlbatrossButton
@@ -254,10 +254,12 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
+const userStore = useUserStore()
 const route = vueInstance.$route
 
 
@@ -269,7 +271,6 @@ const availableProcessSteps = ref([])
 const processStepStatusTypes = ref([])
 const owningPositions = ref([])
 const processId = ref(route.params.id)
-const companyId = ref(store.state.user.details.companyId)
 const changesMade = ref(false)
 const statusesLoading = ref(false)
 const process = ref({
@@ -298,9 +299,9 @@ const footerProps = ref({
 const expanded = ref([])
 const selectedIndex = ref(null)
 const processStepToDelete = ref(null)
-const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
+const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
 
 onMounted(() => {
   getPositions()

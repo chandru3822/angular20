@@ -26,6 +26,8 @@
   import Vue2Filters from 'vue2-filters'
 
   import constants from '@/helpers/constants'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { mapStores } from 'pinia'
 
   export default {
     name: 'ProjectSettings',
@@ -36,7 +38,6 @@
         snackbar: {},
         constants,
         processStepId: this.$route.params.id,
-        companyId: this.$store.state.user.details.companyId,
         companyObjectTypeId: this.$route.query.companyObjectTypeId,
         tabs: [
           {
@@ -63,6 +64,10 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      companyId() {
+        return this.userStore.details.companyId
+      },
       //this should not be so hard
       activeTab: {
         get: function() {
@@ -79,7 +84,6 @@
     async created () {
     },
     methods: {}
-
   }
 </script>
 

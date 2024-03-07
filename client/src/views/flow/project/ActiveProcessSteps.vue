@@ -1,5 +1,5 @@
 <template>
-  <SidePanelExpansionPanel v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
+  <SidePanelExpansionPanel v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
                            header="Active Process Steps"
                            :section-expanded="sectionExpanded"
                            :is-loading="isProcessStepsLoading"
@@ -14,15 +14,15 @@
                                        :projectId="projectId"
                                        :contactId="project.contactId"/>
       <v-row
-          v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
+          v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
           class="text-left pt-0 px-0"
       >
         <v-col class="px-3 py-0">
           <AddProcessStep
               title="Add Process Step"
-              v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD') && !hideAddBtn"
+              v-if="project.processId && userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD') && !hideAddBtn"
               class="d-inline-block"
-              :admin="$store.getters.isFullAdmin"
+              :admin="userStore.isSystemAdmin"
               :project-id="projectId"
               :process-id="project.processId"
               :contact-id="project.contactId"
@@ -36,15 +36,15 @@
 </template>
 
 <script>
-
 import {getRequest, logError} from '@/helpers/helpers'
 import ActiveProjectProcessStepSnippet from '@/views/flow/project/ActiveProjectProcessStepSnippet'
 import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
-
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
-import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
-import {ProjectMutations} from "@/stores/ProjectStore";
+import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
+import {ProjectMutations} from '@/stores/ProjectStore'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { mapStores } from 'pinia'
 
 export default {
   name: 'ActiveProcessSteps',
@@ -75,19 +75,26 @@ export default {
       sectionExpanded: this.$store.state.project.activePpsDropdown,
       customFieldGroups: [],
       menuOpen: false,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
       isProcessStepsLoading: false,
       snackbar: {},
       stepsSearch: '',
       isProcessStepsExpanded: false,
-      companyId: this.$store.state.user.details.companyId,
     }
   },
   created() {
     this.getProcessSteps()
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+    },
+    userHasEventsFeature() {
+      return this.userStore.userHasFeature('EVENTS')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     processStepsByName() {
       const names = [...new Set(this.processSteps.map(step => step.processStepName))]
 

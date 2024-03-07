@@ -189,13 +189,14 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
   import keyBy from 'lodash.keyby'
   import {getOrgFilters} from '@/services/orgService'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from "@/helpers/constants";
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import constants from '@/helpers/constants'
+  import ConfirmationDialog from '@/components/ConfirmationDialog'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'UserPositions',
@@ -210,12 +211,9 @@
         userPositions: [],
         requiredRules: constants.BASIC_REQUIRED_RULE,
         positions: [],
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('USERS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
         addNew: false,
         newPositionHierarchyPopulated: false,
         filters: [],
-        timezone: this.$store.state.user.details.timezone.value,
         expanded: [],
         userId: this.$route.params.id,
         headers: [
@@ -228,6 +226,16 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      userCanAdd() {
+        return this.userStore.userHasFeatureAccessLevel('USERS', 'ADD')
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('USERS', 'EDIT')
+      },
+      timezone() {
+        return this.userStore.details.timezone.value
+      },
       positionToDeleteName(){
         return this.positionToDelete ? this.positionToDelete.position : ''
       }

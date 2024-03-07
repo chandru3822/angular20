@@ -208,24 +208,25 @@
 import { Actions } from '@/store'
 import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
-import { UserMutations } from '@/stores/UserStore'
 import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
 import {getUserProfileDefaultFields} from '@/services/userService'
 
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar, postRequest} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, putRequest, postRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import { useFirebase } from '@/firebase/firebase.js'
 
 import { onBeforeRouteLeave } from 'vue-router/composables'
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
+const userStore = useUserStore()
 const router = vueInstance.$router
 
 const { registered, getNotificationToken, removeNotificationToken } = useFirebase()
@@ -246,15 +247,15 @@ const timeValue = ref(moment.utc().format('YYYY-MM-DDTHH:mm:ssZ'))
 const user = ref({})
 const homePages = ref([])
 const userIsAlbatross = ref(false)
-const userIsAdmin = ref(store.getters.userHasFeatureAccessLevel('USERS', 'ADMIN'))
-const userIsMasquerading = ref(store.state.user?.details?.masqueradingUserId != null)
+const userIsAdmin = ref(userStore.userHasFeatureAccessLevel('USERS', 'ADMIN'))
+const userIsMasquerading = ref(userStore.details?.masqueradingUserId != null)
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
 const emailRules = ref(constants.EMAIL_RULES)
 const usernameRules = ref(constants.USERNAME_RULES)
 const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY)
 const savingUserImage = ref(false)
 const attachmentTypeId = ref(9)
-const userId = ref(store.state.user.details.id)
+const userId = ref(userStore.details.id)
 const profileImage = ref({})
 const userNotificationTypes = ref([
   {
@@ -283,7 +284,7 @@ const isMobile = computed(()=> {
   return vuetify.breakpoint.smAndDown
 })
 onMounted(async () => {
-  if(store.state.user.details.highestCompanyId === 1) {
+  if(userStore.isSystemAdmin) {
     //this was all super dumb because we can't load albatross users the same way as regular users
     userIsAlbatross.value = true
     await getUser(userIsAlbatross.value)
@@ -361,7 +362,7 @@ const getHomePages = async () => {
   try {
     const {data, status} = await getRequest(`/feature/homePages`, null, [])
     homePages.value = data.filter(d => {
-      return store.getters.userHasFeature(d.featureCode)
+      return userStore.userHasFeature(d.featureCode)
     })
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
@@ -411,7 +412,7 @@ const deleteAttachment = async (id) => {
       id,
       callback: async () => {
         profileImage.value = {}
-        store.commit(UserMutations.SET_USER_IMAGE, {})
+        userStore.userImage = {}
         snackbar('SUCCESS', 'Image Deleted')
         store.commit(AppMutations.SET_LOADING, false)
       }
@@ -439,7 +440,7 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
           store.commit(AppMutations.SET_LOADING, false)
         } else {
           profileImage.value = img
-          store.commit(UserMutations.SET_USER_IMAGE, img)
+          userStore.userImage = img
           addImage.value = false
           snackbar('SUCCESS', 'Image Uploaded')
           store.commit(AppMutations.SET_LOADING, false)

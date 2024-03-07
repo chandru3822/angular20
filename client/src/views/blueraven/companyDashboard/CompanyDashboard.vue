@@ -323,6 +323,8 @@ import {handleHidingGlobalLoader, getRequestWithParams, getSnackbar, logError, p
 import cloneDeep from 'lodash.clonedeep'
 import {DateTime} from "luxon";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 
 export default {
@@ -345,8 +347,6 @@ export default {
       selectedMilestone: {},
       loadPartners: false,
       dividerForSingleDayTargets: 6,
-      isBrCorporateUser: this.$store.state.user.details.companyId === 2,
-      is7oaksAdmin: this.$store.getters.isFullAdmin,
       headers: [],
       timezone: 'US/Mountain',
       selectedDateRange: 'Today',
@@ -439,6 +439,13 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    isBrCorporateUser() {
+      return this.userStore.details.companyId === 2
+    },
+    is7oaksAdmin() {
+      return this.userStore.isSystemAdmin
+    },
     // visibleHeaders () {
     //   return this.headers.filter(header => header.show === true)
     // },
@@ -1026,10 +1033,11 @@ export default {
     // { text: 'Partners', value: 'differencePartner', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser }
 
 
-    if (this.$store?.state?.user?.details?.timezone?.value) {
-      this.timezone = this.$store.state.user.details.timezone.value
+    if (this.userStore.details?.timezone?.value) {
+      this.timezone = this.userStore.details.timezone.value
     }
 
+    this.getWeekNum()
     this.getWeekNum()
     this.getDropdownValues()
     this.getDashboardValues()

@@ -32,6 +32,7 @@
 import { getCurrentInstance, ref } from 'vue'
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 ```
 </td>
 </tr>
@@ -46,7 +47,8 @@ const store = vueInstance.$store
 <td>
 
 ```
-userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
+(old) userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
+(new) userCanEdit: this.userStore.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
 ```
 </td>
 </tr>
@@ -59,7 +61,8 @@ userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
 <td>
 
 ```
-const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+(old) const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+(new) const userCanAdd = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
 ```
 </td>
 </tr>

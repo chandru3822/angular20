@@ -124,6 +124,8 @@
 import {getSnackbar, getRequest, putRequest} from "@/helpers/helpers";
 import AddTeamDropdown from "@/views/flow/settings/inbox/AddTeamDropdown";
 import {AppMutations} from "@/stores/AppStore";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: "TeamAssignmentChips",
@@ -142,9 +144,6 @@ export default {
   },
   data (){
     return {
-      userCanManage: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE'),
-      userCanView: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
-      loggedInUserId: this.$store.state.user.details.id,
       showRemoveDialog: false,
       showRemoveLastTeamDialog: false,
       showRemoveTeamDialog: false,
@@ -157,6 +156,18 @@ export default {
       selectedUserId: null,
       readOnly: false
     }
+  },
+  computed: {
+    ...mapStores(useUserStore),
+    userCanManage() {
+      return this.userStore.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE')
+    },
+    userCanView() {
+      return this.userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW')
+    },
+    loggedInUserId() {
+      return this.userStore.details.id
+    },
   },
   watch: {
     '$route.params.projectId': function () {

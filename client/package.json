@@ -49,6 +49,7 @@
     "moment": "^2.30.1",
     "moment-timezone": "^0.5.44",
     "pinia": "^2.0.34",
+    "pinia-plugin-persistedstate": "^3.2.1",
     "rrule": "^2.6.6",
     "sortablejs": "^1.10.2",
     "tippy.js": "^6.3.7",

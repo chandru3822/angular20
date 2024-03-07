@@ -88,7 +88,7 @@
               <v-tab :to="`/user/${userId}/positions`">
                 Positions
               </v-tab>
-              <v-tab :to="`/user/${userId}/access`" v-if="$store.getters.userHasFeatureAccessLevel('ACCESS_CONTROL', 'VIEW')">
+              <v-tab :to="`/user/${userId}/access`" v-if="userStore.userHasFeatureAccessLevel('ACCESS_CONTROL', 'VIEW')">
                 Access
               </v-tab>
             </v-tabs>
@@ -111,7 +111,8 @@
   import axios from 'axios'
   import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import {UserMutations} from "@/stores/UserStore";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'User',
@@ -132,11 +133,6 @@
         snackbar: {},
         user: {},
         userId: parseInt(this.$route.params.id),
-        companyId: this.$store.state.user.details.companyId,
-        loggedInUserId: this.$store.state.user.details.id,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
-        userCanMasquerade: this.$store.getters.userHasFeatureAccessLevel('MASQUERADE', 'ADMIN'),
-        userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
         userImage: {},
         unsavedFieldsModal: false,
         hasDirtyFields: false,
@@ -173,6 +169,24 @@
         this.unsavedFieldsModal = true
       }
     },
+    computed: {
+      ...mapStores(useUserStore),
+      companyId() {
+        return this.userStore.details.companyId
+      },
+      loggedInUserId() {
+        return this.userStore.details.id
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('USERS', 'EDIT')
+      },
+      userCanMasquerade() {
+        return this.userStore.userHasFeatureAccessLevel('MASQUERADE', 'ADMIN')
+      },
+      userIsMasquerading() {
+        return this.userStore?.details?.masqueradingUserId != null
+      },
+    },
     methods: {
       doChangePhoto() {
         if(this.userCanEdit) {
@@ -194,10 +208,10 @@
         try {
           const {data} = await axios.get(`${constants.VUE_APP_BASE_API}/auth/masquerade/${this.userId}`)
           if(data && data.token) {
-            this.$store.commit(UserMutations.SET_JWT, data.token)
+            this.userStore.jwt = data.token
             //update the user
             const {data: currentUser} = await getRequest(`/user/current`)
-            await this.$store.commit(UserMutations.SET_DETAILS, currentUser);
+            this.userStore.details = currentUser
             //then reload the screen
             window.location.reload()
           }

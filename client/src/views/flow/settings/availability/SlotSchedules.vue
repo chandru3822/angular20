@@ -132,10 +132,12 @@
 
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {getCurrentInstance, onMounted, ref, computed, watch, defineProps} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const userStore = useUserStore()
   const route = vueInstance.$route
 
   const itemToDeleteName = computed(() => {
@@ -150,8 +152,8 @@
   const selectedSlotId = ref(null)
   const allowedMinutesStep = ref(m => m % 5 === 0)
   const slotSchedules = ref([])
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
-  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE'))
+  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
+  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE'))
   const expanded = ref([])
   const showDeleteDialog = ref(false)
   const itemToDelete = ref(null)

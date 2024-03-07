@@ -15,7 +15,7 @@
           <template #header.icons="{}">
             <div class="text-right mr-2">
               <v-btn text @click="addItem" color="primary"
-                     v-if="$store.getters.userHasFeatureAccessLevel('HOA', 'ADD')">
+                     v-if="userStore.userHasFeatureAccessLevel('HOA', 'ADD')">
                 <v-icon>add</v-icon>
                 <span v-if="!constants.IS_MOBILE">Add New</span>
               </v-btn>
@@ -68,11 +68,11 @@
                 <v-btn :to="`/database/hoa/${item.id}/details`" text x-small fab>
                   <v-icon>mdi-arrow-right</v-icon>
                 </v-btn>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('HOA', 'EDIT')" small color="primary"
+                <v-icon v-if="userStore.userHasFeatureAccessLevel('HOA', 'EDIT')" small color="primary"
                         class="mr-3 feat-db-link-icon" @click="editHoa(item)">
                   edit
                 </v-icon>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('HOA', 'DELETE')" small color="primary"
+                <v-icon v-if="userStore.userHasFeatureAccessLevel('HOA', 'DELETE')" small color="primary"
                         class="mr-3 feat-db-link-icon" @click="deleteHoa(item)">
                   delete
                 </v-icon>
@@ -179,6 +179,8 @@ import {AppMutations} from "@/stores/AppStore";
 import {deleteRequest, getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: "hoas",
@@ -221,6 +223,7 @@ export default {
     duplicateHoaMatch: null
   }),
   computed: {
+    ...mapStores(useUserStore),
     filteredHoas() {
       return this.hoas && this.hoas.filter(hoa => {
         return Object.keys(this.hoaFilters).every(filterName => {
@@ -262,7 +265,6 @@ export default {
   },
   async created() {
     this.$store.commit(AppMutations.SET_LOADING, true)
-    this.currentUser = this.$store.state.user.details.id
     this.fetchStates()
     await this.fetchHoas()
   },

@@ -13,6 +13,7 @@ import {AppMutations} from "@/stores/AppStore";
 import {Actions} from "@/store";
 import {getSnackbar} from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const ImageTypeEnum = ref({
   CLOSER_DASH_TOURNAMENT_HEADER_LOGO: {
@@ -39,11 +40,12 @@ const ImageTypeEnum = ref({
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 
-const companyId = store.state.user.details.companyId
+const companyId = userStore.details.companyId
 const acceptedFileTypes = constants.STANDARD_IMAGES_ONLY
 
-const userCanEdit= store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+const userCanEdit= userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
 
 let imageToDelete = ref(null)
 

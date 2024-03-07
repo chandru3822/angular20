@@ -22,7 +22,7 @@
           <v-toolbar-items>
             <AlbatrossButton variant="text" color="primary"
                    @click="goToCustomField()"
-                   v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+                   v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
                    :prepend-icon="vuetify.breakpoint.smAndDown ? 'add' : ''"
                    :text="!vuetify.breakpoint.smAndDown ? 'ADD NEW' : ''"
             />
@@ -69,7 +69,7 @@
                     <AlbatrossButton class="clickable" size="small" variant="text" icon :large="vuetify.breakpoint.smAndDown" color="primary"
                            @click="goToCustomField(item.id)" prepend-icon="edit"
                     />
-                    <AlbatrossButton v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" variant="text"
+                    <AlbatrossButton v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" variant="text"
                                      icon :large="vuetify.breakpoint.smAndDown" color="primary" @click="getUsesForField(item)"
                                      prepend-icon="delete"
                     />
@@ -122,11 +122,13 @@ import {
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
+const userStore = useUserStore()
 const router = vueInstance.$router
 
 const props = defineProps({
@@ -138,8 +140,8 @@ const fieldsInUse = ref([])
 const search = ref("")
 const customFields = ref([])
 const fieldsLoading = ref(true)
-const userIsSystemAdmin = ref(store.getters.userHasFeature("SYSTEM"))
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel("SETTINGS", "EDIT"))
+const userIsSystemAdmin = ref(userStore.userHasFeature("SYSTEM"))
+const userCanEdit = ref(userStore.userHasFeatureAccessLevel("SETTINGS", "EDIT"))
 const showDeleteDialog = ref(false)
 const itemToDelete = ref(null)
 const usesForField = ref([])

@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Users</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newUser" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'ADD')">
+            <v-btn text to="/newUser" color="primary" v-if="userStore.userHasFeatureAccessLevel('USERS', 'ADD')">
               <v-icon>add</v-icon>
               Add User
             </v-btn>
@@ -549,6 +549,8 @@
   import { saveAs } from 'file-saver'
   import axios from 'axios'
   import UserImages from "./UserImages";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const defaultEmailMessage = '${user.firstName},\n'
 
@@ -651,7 +653,6 @@
         primaryPositionsOnly: true,
         source: null,
         allUsersLoading: false,
-        companyId: this.$store.state.user.details.companyId,
         attachmentTypeId: 9,
         templateTeams: [],
         selectedTemplate: null,
@@ -660,6 +661,10 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      companyId() {
+        return this.userStore.details.companyId
+      },
       leftArrowDisabled(){
         return this.currentPage == 1;
       },

@@ -262,6 +262,8 @@ import {
   getSnackbar
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProcessStepComponents',
@@ -283,8 +285,6 @@ export default {
       expanded: [],
       deleteError: false,
       cannotDeleteReasons: {},
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       addNewCustomFieldGroup: false,
       changesMade: false,
       addNewType: false,
@@ -293,7 +293,6 @@ export default {
       newLink: {},
       availableLinks: [],
       processStepId: this.$route.params.id,
-      companyId: this.$store.state.user.details.companyId,
       processStep: {},
       positions: [],
       positionsLoading: false,
@@ -317,6 +316,16 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     allowNonAdminAdd() {
       return this.nonAdminAdd
     },

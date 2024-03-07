@@ -31,13 +31,15 @@
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
   import {computed, getCurrentInstance, onMounted, ref} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const userStore = useUserStore()
 
-  const companyId = ref(store.state.user.details.companyId)
-  const userId = ref(store.state.user.details.id)
+  const companyId = ref(userStore.details.companyId)
+  const userId = ref(userStore.details.id)
   const functions = ref([])
 
   const filteredFunctions = computed(() => {

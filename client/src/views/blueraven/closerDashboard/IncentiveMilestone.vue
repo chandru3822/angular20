@@ -31,6 +31,8 @@ import TrophyDynamic from "@/assets/blueraven/trophy-dynamic";
 import moment from "moment";
 import SetterMilestoneDrilldown from "@/views/blueraven/setterDashboard/SetterMilestoneDrilldown";
 import CloserMilestoneDrilldown from "@/views/blueraven/closerDashboard/CloserMilestoneDrilldown";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: "IncentiveMilestone",
@@ -57,6 +59,7 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
     windowInnerWidth () { return window.innerWidth},
     milestoneUnits () {
       return this.dashboardType.milestoneUnits
@@ -128,7 +131,7 @@ export default {
       try {
         let params = {}
         if(this.dashboardType === DashboardTypeEnum.SETTERMGR){
-          let userPositions = this.$store.state.user.details.userPositions
+          let userPositions = this.userStore.details.userPositions
           let userOffice = userPositions.filter(position => position.primaryFlag && !position.endDate)[0]
           let userOfficeId = userOffice ? userOffice.orgId : null
 
@@ -138,7 +141,7 @@ export default {
             setterMgrOfficeId: userOfficeId ? userOfficeId : null
           }
         } else if (this.dashboardType === DashboardTypeEnum.SETTER){
-          let userPositions = this.$store.state.user.details.userPositions
+          let userPositions = this.userStore.details.userPositions
           let userOffice = userPositions.filter(position => position.primaryFlag && !position.endDate)[0]
           let userOfficeId = userOffice ? userOffice.orgId : null
 
@@ -180,7 +183,7 @@ export default {
   },
 
   async created () {
-    this.currentUserId = this.$store.state.user.details.id
+    this.currentUserId = this.userStore.details.id
     this.setLabels()
   }
 }

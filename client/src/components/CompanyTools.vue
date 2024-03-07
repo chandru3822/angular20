@@ -91,10 +91,9 @@
 
 <script>
   import constants from '@/helpers/constants'
-  import Vue2Filters from "vue2-filters"
+  import Vue2Filters from 'vue2-filters'
   import SpinnerInline from '@/components/SpinnerInline'
   import { getRequest, getSnackbar } from '@/helpers/helpers'
-  const { VITE_ENV } =  import.meta.env
   import { AppMutations } from '@/stores/AppStore'
 
   export default {
@@ -115,10 +114,8 @@
         tourneysLoading: false,
         loadComplete: false,
         mutableCompanyTools: this.companyTools,
-        userId: this.$store.state.user.details.id,
         headerColor: constants.ENV_COLOR,
         menuOpen: false,
-        highestCompanyId: this.$store.state.user.details.highestCompanyId,
         databaseLoaded: false,
         databaseOptions: [],
         databasePaths: []

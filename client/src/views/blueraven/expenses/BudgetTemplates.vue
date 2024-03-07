@@ -151,7 +151,6 @@ export default {
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
       },
       availableUsers: [],
-      timezone: this.$store.state.user.details.timezone.value,
       templates: [],
       expanded: [],
       headers: [

@@ -303,6 +303,8 @@ import DatetimePickerInput from "@/components/DatetimePickerInput"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import BudgetReportTable from "@/views/blueraven/expenses/BudgetReportTable.vue";
 import SpinnerInline from "@/components/SpinnerInline.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ReimbursementRequests',
@@ -313,6 +315,19 @@ export default {
     SpinnerInline
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('EXPENSES', 'ADD')
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('EXPENSES', 'EDIT')
+    },
+    timezone() {
+      return this.userStore.details.timezone.value
+    },
+    userId() {
+      return this.userStore.details.id
+    },
     itemToDeleteCreatedBy() {
       return this.itemToDelete ? this.itemToDelete.createdBy : ''
     },
@@ -329,13 +344,10 @@ export default {
       createNew: false,
       dataLoading: true,
       budgetsLoading: false,
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'EDIT'),
       newReimbursementRequest: {
         expenseBudgetId: null
       },
       requiredRules: constants.BASIC_REQUIRED_RULE,
-      timezone: this.$store.state.user.details.timezone.value,
       selectedRequest: {},
       editIndex: null,
       footerProps: {
@@ -347,7 +359,6 @@ export default {
       selectedBudgetReport: {},
       loadingBudgetReport: true,
       usersWithBudget: [],
-      userId: this.$store.state.user.details.id,
       budgetTypes: [],
       glCodes: [],
       headers: [

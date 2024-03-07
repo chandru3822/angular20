@@ -55,6 +55,8 @@
 <script>
 import moment from "moment";
 import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: "SetterMilestoneDrilldown",
@@ -81,8 +83,9 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
     milestoneDrilldownTitle () {
-      return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + DashboardTypeEnum.SETTER.drilldown.label + this.selectedQuarter
+      return this.userStore.details.firstName + ' ' + this.userStore.details.lastName + DashboardTypeEnum.SETTER.drilldown.label + this.selectedQuarter
     },
   },
   methods: {

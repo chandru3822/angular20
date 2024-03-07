@@ -508,10 +508,12 @@ import cloneDeep from 'lodash.clonedeep'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 import {getCurrentInstance, onMounted, ref} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
+const userStore = useUserStore()
 const vuetify = vueInstance.$vuetify
 const router = vueInstance.$router
 
@@ -562,8 +564,8 @@ const childSaveErrorMsg = ref('')
 const newField = ref({})
 const viewId = ref(parseInt(vueInstance.$route.params.id))
 const dataView = ref({})
-const userId = ref(store.state.user.details.id)
-const companyId = ref(store.state.user.details.companyId)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
 const headers = ref([
   {text: 'Field Name', value: 'displayName', show: true},
   {text: 'Field to Update', value: 'fieldToUpdate', show: true},

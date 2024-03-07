@@ -10,7 +10,7 @@
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newProject = {}]"
-              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               :hide-text-on-mobile="constants.IS_MOBILE"
               :prepend-icon="addNew ? 'add' : ''"
               :text="addNew ? 'CANCEL' : 'ADD NEW'"
@@ -45,7 +45,7 @@
                 />
               </v-list-item-action>
               <AlbatrossButton
-                  v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                  v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                   @click="processToDelete=p"
                   color="primary"
                   variant="text"
@@ -74,18 +74,20 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
+const userStore = useUserStore()
 const router = vueInstance.$router
 
 const addNew = ref(false)
 const selectedProcessId = ref(null)
 const newProcess = ref({})
-const companyId = ref(store.state.user.details.companyId)
-const parentCompanyId = ref(store.state.user.details.highestParentCompanyId)
-const userId = ref(store.state.user.details.id)
+const companyId = ref(userStore.details.companyId)
+const parentCompanyId = ref(userStore.details.highestParentCompanyId)
+const userId = ref(userStore.details.id)
 const processes = ref([])
 const processToDelete = ref(null)
 

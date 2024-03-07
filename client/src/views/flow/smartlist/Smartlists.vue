@@ -37,12 +37,14 @@
 
 <script setup>
 import { getCurrentInstance } from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
-const userCanViewAll = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL')
-const userIsSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+const userStore = useUserStore()
+const userCanAdd = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+const userCanViewAll = userStore.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL')
+const userIsSmartlistAdmin = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
 </script>
 
 <style scoped lang="scss">

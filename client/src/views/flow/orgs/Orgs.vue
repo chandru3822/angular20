@@ -16,7 +16,7 @@
               <v-icon>mdi-cloud-download</v-icon>
               <span class="ml-2" v-if="!constants.IS_MOBILE">Export</span>
             </v-btn>
-            <v-btn text color="primary" to="/newOrg" v-if="$store.getters.userHasFeatureAccessLevel('ORGS', 'ADD')">
+            <v-btn text color="primary" to="/newOrg" v-if="hasOrgAddAccess">
               <v-icon>add</v-icon>
               <span class="ml-2" v-if="!constants.IS_MOBILE">Add Organization</span>
             </v-btn>
@@ -96,6 +96,8 @@
   import {  handleHidingGlobalLoader, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import { saveAs } from 'file-saver'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { mapStores } from 'pinia'
 
   export default {
     name: 'Orgs',
@@ -174,6 +176,10 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      hasOrgAddAccess() {
+        return this.userStore.userHasFeatureAccessLevel('ORGS', 'ADD')
+      },
       filteredOrgs () {
         return this.orgs.filter(o => { return this.search?.inactive ? true : o.activeFlag})
       },

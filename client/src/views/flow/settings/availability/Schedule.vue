@@ -357,10 +357,12 @@
 
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {getCurrentInstance, onMounted, ref, computed, watch, defineProps} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const userStore = useUserStore()
 
   const props = defineProps({
     orgId: Number,
@@ -368,10 +370,10 @@
     useSlotSchedule: Boolean
   })
   const addNew = ref(false)
-  const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD'))
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
-  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE'))
-  const userIsAdmin = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'))
+  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADD'))
+  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
+  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE'))
+  const userIsAdmin = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'))
   const selectedIndex = ref(null)
   const newSchedule = ref({})
   const allowedMinutesStep = ref(m => m % 30 === 0)
@@ -379,7 +381,7 @@
     { text: 'Schedules', value: 'schedule', show: true},
     { text: '', value: 'icons', show: true}
   ])
-  const timezone = ref(store.state.user.details.timezone.value)
+  const timezone = ref(userStore.details.timezone.value)
   const schedules = ref([])
   const expanded = ref([])
   const workDays = ref([])

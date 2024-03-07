@@ -113,12 +113,14 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
-  import {computed, getCurrentInstance, onMounted, ref} from "vue";
-  import {useRouter} from "vue-router/composables";
+  import ConfirmationDialog from '@/components/ConfirmationDialog'
+  import {computed, getCurrentInstance, onMounted, ref} from 'vue'
+  import {useRouter} from 'vue-router/composables'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
+  const userStore = useUserStore()
 
   const router = useRouter()
 
@@ -128,13 +130,13 @@
         newTournament= ref({
           tournamentFormulaFields: []
         }),
-        timezone=ref(store.state.user.details.timezone.value),
+        timezone=ref(userStore.details.timezone.value),
         dataLoading= ref(true),
-        userCanAdd=ref(store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADD')),
-        userCanEdit=ref(store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')),
-        userCanDelete=ref(store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')),
-        companyId=ref(store.state.user.details.companyId),
-        userId=ref(store.state.user.details.id),
+        userCanAdd=ref(userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'ADD')),
+        userCanEdit=ref(userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')),
+        userCanDelete=ref(userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')),
+        companyId=ref(userStore.details.companyId),
+        userId=ref(userStore.details.id),
         tournaments=ref([]),
         currentYear=ref(moment().year()),
         ownerTypes=ref([]),

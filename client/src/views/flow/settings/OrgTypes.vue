@@ -10,7 +10,7 @@
               variant="text"
               color="primary"
               @click="[addType = !addType, newType = {}]"
-              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               :hide-text-on-mobile="constants.IS_MOBILE"
               :prepend-icon="addType ? 'add' : ''"
               :text="addType ? 'CANCEL' : 'ADD NEW'"
@@ -34,7 +34,7 @@
                     item-text="orgType"
                     item-value="id"
           ></v-select>
-          <div class="mb-3" v-if="store.getters.isParent(parentId)">
+          <div class="mb-3" v-if="userStore.isParent">
             <label>Make available in children:</label>
             <input type="checkbox" class="ml-3" v-model="newOrgType.availableToChildren">
           </div>
@@ -90,7 +90,7 @@
                         item-text="orgType"
                         item-value="id"
               ></v-select>
-              <div class="mb-3" v-if="store.getters.isParent(parentId)">
+              <div class="mb-3" v-if="userStore.isParent">
                 <label>Make available in children:</label>
                 <input type="checkbox" class="ml-3" v-model="item.availableToChildren">
               </div>
@@ -114,7 +114,7 @@
                   size="small"
                   variant="text"
                   color="primary"
-                  v-if="!expanded.includes(item) && store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+                  v-if="!expanded.includes(item) && userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
                   @click="expanded = [item]"
                   prepend-icon="edit"
                 />
@@ -146,16 +146,17 @@
 
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {computed, getCurrentInstance, onMounted, ref} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const userStore = useUserStore()
 
   const orgTypes = ref([])
   const newOrgType = ref({})
   const addType = ref(false)
   const levels = ref([])
-  const parentId = ref(store.state.user.details.parentCompanyId)
   const expanded = ref([])
   const headers = ref([
     { text: 'Org Type', value: 'orgType', show: true },

@@ -27,7 +27,7 @@
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-btn
-            v-if="(selectedEvent.startTime === null && selectedEvent.allowAllUserDeletion) || $store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
+            v-if="(selectedEvent.startTime === null && selectedEvent.allowAllUserDeletion) || userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
             small text color="primary" class="align-self-end" @click="showDeleteDialog = true">
             <v-icon>delete</v-icon>
           </v-btn>
@@ -158,7 +158,7 @@
 
       <v-form ref="eventFieldForm" class="px-6" v-else>
         <div class="albatross-header-4 d-flex align-baseline">Overview
-          <a small text color="anchor" v-if="$store.getters.userHasFeature('SCHEDULE')"
+          <a small text color="anchor" v-if="userStore.userHasFeature('SCHEDULE')"
              class="px-0 d-flex align-baseline" target="_blank"
              :href="`/schedule?projectProcessStepEventId=${ppsEventId}`">
             <span color="anchor" class="albatross-header-5 pl-2 scheduler-button-text">Open Scheduler</span>
@@ -304,7 +304,7 @@
         >
           <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
             <v-toolbar-title class="albatross-header-4">
-              <!--              <v-btn small text v-if="cfg.eventId && $store.getters.userHasFeature('SCHEDULE')"-->
+              <!--              <v-btn small text v-if="cfg.eventId && userStore.userHasFeature('SCHEDULE')"-->
               <!--                     :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">-->
               <!--                <v-icon>mdi-calendar</v-icon>-->
               <!--              </v-btn>-->
@@ -362,11 +362,12 @@ import {
   getRequestWithParams,
   putRequest,
   postRequest,
-  postRequestWithRequestParams, deleteRequest, followLink
+  deleteRequest,
+  followLink
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getAssignedToEvent} from '@/services/eventStatusTypeService'
-import {getEventCustomFieldReadOnly, getEventDefaultFieldReadOnly, getEventDefaultFieldHidden, getUserPositionIds} from "@/services/customFieldService";
+import {getEventCustomFieldReadOnly, getEventDefaultFieldReadOnly, getEventDefaultFieldHidden} from "@/services/customFieldService";
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import constants from '@/helpers/constants'
@@ -376,9 +377,11 @@ import SpinnerInline from '@/components/SpinnerInline'
 import {ProjectMutations} from "@/stores/ProjectStore";
 import {getStatusClass} from '@/services/eventStatusTypeService'
 import Vue2Filters from 'vue2-filters'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import ConfirmationDialog from '@/components/ConfirmationDialog'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import ActionButton from "./ActionButton";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProjectProcessStepEvent',
@@ -416,13 +419,7 @@ export default {
       menuOpen: false,
       dirtyCfvs: [],
       requiredRules: constants.BASIC_REQUIRED_RULE,
-      timezone: this.$store.state.user.details.timezone.value,
       projectId: parseInt(this.$route.params.projectId),
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'),
-      userCanManage: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'MANAGE'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADD'),
-      userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
       projectProcessStepId: parseInt(this.$route.params.processStepId),
       processStepId: this.$route.query.processStepId,
       eventSaveOverrideRequired: false,
@@ -504,6 +501,25 @@ export default {
     },
   },
   computed: {
+    ...mapStores(useUserStore),
+    timezone() {
+      return this.userStore.details.timezone.value
+    },
+    userIsAdmin() {
+      return this.userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
+    },
+    userCanManage() {
+      return this.userStore.userHasFeatureAccessLevel('EVENTS', 'MANAGE')
+    },
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('EVENTS', 'ADD')
+    },
+    userIsScheduler() {
+      return this.userStore.details.userPositions?.some(p => p.scheduler)
+    },
     filteredActions() {
       if (!this?.selectedEvent?.eventActions) {
         return []
@@ -765,7 +781,7 @@ export default {
     userIsWhitelisted(){
       if(this.selectedEvent?.readonlyWhiteListedPositions) {
         for (let wlp of this.selectedEvent?.readonlyWhiteListedPositions) {
-          let match = this.$store.state.user.details.userPositions.find(up => up.positionId === wlp.positionId)
+          let match = this.userStore.details.userPositions.find(up => up.positionId === wlp.positionId)
           if (match) {
             return true //if the user has a position that matches any of the whiteList positions, the user should see the event
           }
@@ -782,13 +798,13 @@ export default {
       return this.userIsAdmin || this.userCanManage || this.userCanEdit
     },
     getIsEventReadonly() {
-      return !this.$store.getters.isFullAdmin && (
+      return !this.userStore.isSystemAdmin && (
           (this.selectedEvent?.readonly && !this.userIsWhitelisted())
           || !this.isEventEditableByThisUserIgnoringReadOnly()
         )
     },
     getIsUploadReadonly() {
-      return !this.$store.getters.isFullAdmin && (
+      return !this.userStore.isSystemAdmin && (
         (this.selectedEvent?.readonly && !this.userIsWhitelisted())
         || !this.isButtonEditableByThisUserIgnoringReadOnly()
       )
@@ -797,18 +813,18 @@ export default {
       if (null != field) {
         // read only if either the field or the event is read only or the user cannot edit
         //had to remove the fullAdmin thing because events can now have ancillary fields which need to always be readonly regardless of permissions
-        return !this.userCanEdit || getEventCustomFieldReadOnly(this.$store, field) || this.isEventReadonly
+        return !this.userCanEdit || getEventCustomFieldReadOnly(field) || this.isEventReadonly
       }
       return false
     },
     getDefaultFieldReadOnly: function (wlp, readOnlyFieldValue, allowFlag) {
       //full Admin is never read only
       // read only if either the field or the event is read only
-      return (!this.$store.getters.isFullAdmin && getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue, allowFlag)) || this.isEventReadonly
+      return (!this.userStore.isSystemAdmin && getEventDefaultFieldReadOnly(wlp, readOnlyFieldValue, allowFlag)) || this.isEventReadonly
 
     },
     getDefaultFieldHidden: function (wlp, hiddenFieldValue, hiddenFlag) {
-      return getEventDefaultFieldHidden(this.$store, wlp, hiddenFieldValue, hiddenFlag)
+      return getEventDefaultFieldHidden(wlp, hiddenFieldValue, hiddenFlag)
     },
     populateDirtyCfvs(field) {
       let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)

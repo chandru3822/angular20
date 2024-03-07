@@ -140,6 +140,8 @@ import moment from 'moment'
 import {saveAs} from 'file-saver'
 import {mapState} from "vuex";
 import debounce from "lodash.debounce";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const FILTER_TYPE = {
   TEXT: 'text',
@@ -174,7 +176,6 @@ export default {
       batches: [],
       payments: [],
       batchId: '',
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'ADMIN'),
       batchLoaded: false,
       paymentSearchFilters: {
         projectName: [],
@@ -193,6 +194,10 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userIsAdmin() {
+      return this.userStore.userHasFeatureAccessLevel('REBATES', 'ADMIN')
+    },
     visibleHeaders() {
       return this.headers.filter(header => header.show === true)
     },

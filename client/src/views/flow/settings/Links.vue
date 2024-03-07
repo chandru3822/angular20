@@ -10,7 +10,7 @@
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newLink = { url: ''}]"
-              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               :hide-text-on-mobile="isMobile"
               :prepend-icon="addNew ? 'close' : 'add'"
               :text="addNew ? '': 'Add New'"
@@ -93,12 +93,12 @@
                   <AlbatrossButton
                     variant="text"
                     color="primary"
-                    :disabled="!a.url || !a.link" v-if="selectedLinkId === a.id && store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+                    :disabled="!a.url || !a.link" v-if="selectedLinkId === a.id && userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
                     @click="saveLink(a)"
                     prepend-icon="save"
                   />
                   <v-icon
-                    v-else-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+                    v-else-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
                     color="primary"
                     @click="selectedLinkId = a.id">edit</v-icon>
                   <AlbatrossButton
@@ -113,7 +113,7 @@
                     size="small"
                     variant="text"
                     color="primary"
-                    v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                    v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                     @click="linkToDelete=a"
                     prepend-icon="delete"
                   />
@@ -134,19 +134,18 @@
 
 <script setup>
   import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
   import orderBy from 'lodash.orderby'
-
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
-  import AlbatrossButton from "../../../components/customVuetify/AlbatrossButton.vue";
-  import {computed, getCurrentInstance, onMounted, ref} from "vue";
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest} from '@/helpers/helpers'
+  import ConfirmationDialog from '@/components/ConfirmationDialog'
+  import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+  import {computed, getCurrentInstance, onMounted, ref} from 'vue'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
+  const userStore = useUserStore()
 
   const links = ref([])
   const addNew = ref(false)
@@ -160,8 +159,8 @@
     { name: 'Project Process Step Event ID', code: 'ALB_PPSE_ID'},
   ])
   const selectedLinkId = ref(null)
-  const userId = ref(store.state.user.details.id)
-  const companyId = ref(store.state.user.details.companyId)
+  const userId = ref(userStore.details.id)
+  const companyId = ref(userStore.details.companyId)
   const linkToDelete = ref(null)
 
   const linkToDeleteValue = computed(() => {

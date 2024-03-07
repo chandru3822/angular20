@@ -117,14 +117,16 @@
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
 import {getOrgFilters, getOrgLevels} from '@/services/orgService'
-import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, deleteRequest, putRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
@@ -135,8 +137,8 @@ const newOrgFilter = ref({})
 const expanded = ref([])
 const filterToDelete = ref(null)
 const selectedOrgFilterId = ref(null)
-const userId = ref(store.state.user.details.id)
-const companyId = ref(store.state.user.details.companyId)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
 const headers = ref([
   {text: 'Org Level', value: 'levelName', show: true},
   {text: 'Rank', value: 'rank', width: 80, show: true},

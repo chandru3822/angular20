@@ -352,7 +352,7 @@
                             <div class="text-center">(click to copy)</div>
                           </v-tooltip>
                           <v-menu offset-y
-                                  v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                                  v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
@@ -420,6 +420,8 @@ import Sortable from "sortablejs";
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from "lodash.orderby"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 
 export default {
@@ -484,9 +486,6 @@ export default {
       availableCustomFields: [],
       parent: {},
       processStepId: this.$route.params.id,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      companyId: this.$store.state.user.details.companyId,
       parentObjects: [],
       selectedAncillaryField: {},
       ancillaryCustomFields: [],
@@ -504,6 +503,16 @@ export default {
   },
   created () {},
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     localCustomFieldGroups: {
       get: function () {
         return this.customFieldGroups

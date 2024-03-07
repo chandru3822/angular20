@@ -152,7 +152,7 @@
                             (Ancillary)
                           </v-list-item-content>
                           <v-menu offset-y
-                                  v-if="localCustomFieldGroups.length > 1 && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                                  v-if="localCustomFieldGroups.length > 1 && userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
@@ -224,6 +224,8 @@ import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
 import draggable from 'vuedraggable'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProcessStepAttachmentType',
@@ -244,8 +246,6 @@ export default {
       selectedIndex: null,
       processStepId: this.$route.params.id,
       attachmentTypeId: parseInt(this.$route.params.attachmentTypeId),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       componentKey: 0,
       newGroup: {},
       expanded: [],
@@ -261,6 +261,13 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
     localCustomFieldGroups: {
       get: function () {
         return this.selectedAttachment?.customFieldGroups

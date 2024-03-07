@@ -276,7 +276,6 @@
         constants,
         users: [],
         selectedUserId: null,
-        currentUserId: this.$store.state.user.details.id,
         residualData: {},
         totalQualifyingSearch: '',
         minDate: '2023-02',

@@ -142,6 +142,8 @@
     putRequest,
     getSnackbar
   } from '@/helpers/helpers'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'TournamentDetails',
@@ -158,19 +160,24 @@
         acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
         //todo: 914 = tournament image
         attachmentTypeId: 914,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         snackbar: {},
         edit: false,
         tournament: {},
-        timezone: this.$store.state.user.details.timezone.value,
         ownerTypes: [],
         dirtyCfvs: [],
         formulas: [],
-        tournamentId: parseInt(this.$route.params.id),
-        userId: this.$store.state.user.details.id
+        tournamentId: parseInt(this.$route.params.id)
       }
     },
-    computed: {},
+    computed: {
+      ...mapStores(useUserStore),
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+      },
+      timezone() {
+        return this.userStore.details.timezone.value
+      },
+    },
     async created() {
       this.getTournamentOwnerTypes()
       await this.getTournament()
@@ -288,7 +295,6 @@
             callback: async () => {
               this.tournament.backgroundAttachmentId = null
               this.tournament.backgroundAttachmentPresignedUrl = null
-              // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
               this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
               this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)

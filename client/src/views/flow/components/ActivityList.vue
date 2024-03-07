@@ -122,7 +122,6 @@ export default {
       snackbar: {},
       loaderState: null,
       editedIndex: null,
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
       activityToDelete: null,
       hitMax: false
     }

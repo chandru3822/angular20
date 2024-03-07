@@ -89,6 +89,8 @@ import {handleHidingGlobalLoader, deleteRequest, getRequest, getSnackbar, postRe
 import Vue2Filters from "vue2-filters"
 import orderBy from 'lodash.orderby'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ObjectTypeAttachments',
@@ -139,6 +141,13 @@ export default {
   //   })
   // },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
     attachmentTypeToDeleteName() {
       return this.attachmentTypeToDelete ? this.attachmentTypeToDelete.attachmentType : ''
     },
@@ -156,8 +165,6 @@ export default {
   },
   data () {
     return {
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       addNewType: false,
       companyObjectTypeId: this.$route.query.companyObjectTypeId,
       objectType: this.objectTypeValue || this.$route?.query?.objectType?.toLowerCase(),

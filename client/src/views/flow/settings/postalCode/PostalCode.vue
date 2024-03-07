@@ -8,7 +8,7 @@
           <v-toolbar-items>
             <v-btn text @click="savePostalCode"
                    :disabled="!postalCode.placeName || !postalCode.stateId"
-                   color="primary" v-if="$store.getters.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')">
+                   color="primary" v-if="userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')">
               <v-icon>save</v-icon>
               Save
             </v-btn>
@@ -93,6 +93,8 @@
   import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import constants from "@/helpers/constants";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'ZipPostalCode',
@@ -103,9 +105,6 @@
       return {
         snackbar: {},
         dataLoading: true,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT'),
-        companyId: this.$store.state.user.details.companyId,
-        userId: this.$store.state.user.details.id,
         postalCodeId: this.$route.params.id,
         postalCode: {},
         zones: [],
@@ -116,6 +115,16 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')
+      },
+      companyId() {
+        return this.userStore.details.companyId
+      },
+      userId() {
+        return this.userStore.details.id
+      },
     },
     async created () {
       this.$store.commit(AppMutations.SET_LOADING, true)

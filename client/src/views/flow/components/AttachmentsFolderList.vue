@@ -175,17 +175,19 @@ import {
   getRequestWithParams,
   getSnackbar,
   logError
-} from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
-import orderBy from "lodash.orderby";
-import {Actions} from "@/store";
+} from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
+import orderBy from 'lodash.orderby'
+import {Actions} from '@/store'
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import AttachmentCompareModal from '@/views/flow/components/AttachmentCompareModal'
-import constants from "@/helpers/constants";
-import {ProjectMutations} from "@/stores/ProjectStore";
+import constants from '@/helpers/constants'
+import {ProjectMutations} from '@/stores/ProjectStore'
 import SpinnerInline from '@/components/SpinnerInline'
 import cloneDeep from 'lodash.clonedeep'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: "AttachmentsFolderList",
@@ -237,7 +239,6 @@ export default {
       maxFiles: constants.MAX_FILE_UPLOADS,
       renderTicker: 0,
       acceptedFileTypes: constants.STANDARD_IMAGES_DOCS_AUDIO,
-      companyId: this.$store.state.user.details.companyId,
       headers: [
         {text: null, value: 'fileIcon', show: true},
         {text: null, value: 'filename', show: true},
@@ -295,6 +296,10 @@ export default {
     this.loadAllPageDetails();
   },
   computed: {
+    ...mapStores(useUserStore),
+    companyId() {
+      return this.userStore.details.companyId
+    },
     sortedAttachments() {
       return orderBy(this.attachments, [a => a.dateCreated], this.search != null && this.search !== '' && this.sortOldToNew ? 'asc' : 'desc')
     },

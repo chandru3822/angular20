@@ -129,6 +129,8 @@ import {
 } from '@/helpers/helpers'
 import ProcessStepRequirements from './ProcessStepRequirements'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'EventActionChildSms',
@@ -148,14 +150,20 @@ export default {
     return {
       snackbar: {},
       addChildSms: false,
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       selectedTemplate: {},
       selectedTeams: [],
       childSmsTemplates: [],
     }
   },
-  computed: {},
+  computed: {
+    ...mapStores(useUserStore),
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
+  },
   async created() {
   },
   methods: {

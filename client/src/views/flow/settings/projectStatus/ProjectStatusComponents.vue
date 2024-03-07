@@ -129,14 +129,13 @@ import {Actions} from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
-import cloneDeep from 'lodash.clonedeep'
-import Sortable from 'sortablejs'
 
-import orderBy from 'lodash.orderby'
 import {getCompanyProjectStatusType, getProjectStatusTypes} from '@/services/projectStatusTypeService'
-import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProjectStatusComponents',
@@ -161,13 +160,15 @@ export default {
       savingTypeLogo: false,
       //463 = project status type attachment
       attachmentTypeId: 463,
-      statusId: this.$route.params.id,
-      userId: this.$store.state.user.details.id,
-      companyId: this.$store.state.user.details.companyId,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+      statusId: this.$route.params.id
     }
   },
-  computed: {},
+  computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    }
+  },
   methods: {
     initItemColor(item) {
       item.color = item.color ?? '#FFFFFF'
@@ -210,7 +211,6 @@ export default {
           id: item.icon.id,
           callback: async () => {
             item.icon = {}
-            // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
             this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)

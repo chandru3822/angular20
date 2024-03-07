@@ -102,23 +102,25 @@
 
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
+  const userStore = useUserStore()
 
   const addNew = ref(false)
   const levels = ref([])
   const companyStates = ref([])
   const selectedState = ref({})
   const states = ref([])
-  const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
+  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
   const selectedCompanyStateId = ref(null)
-  const userId = ref(store.state.user.details.id)
-  const companyId = ref(store.state.user.details.companyId)
+  const userId = ref(userStore.details.id)
+  const companyId = ref(userStore.details.companyId)
   const headers = ref([
     { text: 'State', value: 'state', show: true },
     { text: 'Abbreviation', value: 'abbreviation', show: true },

@@ -33,7 +33,7 @@
       </div>
     </div>
     <div class="albatross-body-3 grey--text text--darken-2"
-         v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')">
+         v-if="userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')">
       {{ event.id }}
     </div>
   </v-card>
@@ -41,6 +41,8 @@
 
 <script>
 import {getStatusClass} from '@/services/eventStatusTypeService'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 export default {
   name: 'EventButton',
   props: {
@@ -48,6 +50,7 @@ export default {
     event: Object,
   },
   computed: {
+    ...mapStores(useUserStore),
     ppsEventId () {
       return parseInt(this.$route.params.ppsEventId)
     }

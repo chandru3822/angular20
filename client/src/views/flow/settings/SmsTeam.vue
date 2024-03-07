@@ -22,7 +22,7 @@
               variant="text"
               color="primary"
               @click="[addTeam = !addTeam, newType = {}]"
-              v-if="store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'ADD')"
+              v-if="userStore.userHasFeatureAccessLevel('SMS_INBOX', 'ADD')"
               :hide-text-on-mobile="constants.IS_MOBILE"
               :prepend-icon="constants.IS_MOBILE ? 'add' : ''"
               :text="addTeam ? 'CANCEL' : 'ADD NEW'"
@@ -239,10 +239,10 @@
               <td class="pl-6"><v-icon v-if="item.isDefault">mdi-check</v-icon></td>
               <td class="text-right">
                 <AlbatrossButton size="small" variant="text" color="primary"
-                                 v-if="!expanded.includes(item) && store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')"
+                                 v-if="!expanded.includes(item) && userStore.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')"
                                  @click="expanded = [item]; expandedItem = item;" prepend-icon="edit"/>
                 <AlbatrossButton
-                  v-if="!expanded.includes(item) && store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'DELETE')"
+                  v-if="!expanded.includes(item) && userStore.userHasFeatureAccessLevel('SMS_INBOX', 'DELETE')"
                   :disabled="item.isDefault" size="small" variant="text" color="primary"
                   @click="startDelete(DeleteTypeEnum.TEAM, item)" prepend-icon="delete"/>
                 <AlbatrossButton size="small" variant="text" color="primary"
@@ -274,11 +274,13 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import AlbatrossButton from "../../../components/customVuetify/AlbatrossButton.vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
+const userStore = useUserStore()
 const route = vueInstance.$route
 
 const DeleteTypeEnum = ref(Object.freeze({
@@ -294,7 +296,7 @@ const addTeam = ref(false)
 const userSearch = ref('')
 const orgSearch = ref('')
 const levels = ref([])
-const parentId = ref(store.state.user.details.parentCompanyId)
+const parentId = ref(userStore.details.parentCompanyId)
 const headers = ref([
   { text: 'Team Name', value: 'teamName', show: true },
   {text: 'Default', value: 'isDefault', show: true },

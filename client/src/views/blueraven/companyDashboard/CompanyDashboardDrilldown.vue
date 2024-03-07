@@ -100,6 +100,8 @@
   import DatetimePickerInput from "@/components/DatetimePickerInput"
   import Snackbar from '@/components/Snackbar.vue'
   import { saveAs } from 'file-saver'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'companyDashboardDrilldown',
@@ -117,17 +119,19 @@
       additionalHeaders: Array
     },
     created() {
-      if (this.$store?.state?.user?.details?.timezone?.value) {
-        this.timezone = this.$store.state.user.details.timezone.value
-      }
       this.addHeaders();
+    },
+    computed: {
+      ...mapStores(useUserStore),
+      timezone() {
+        return this.userStore.details.timezone.value || 'US/Mountain'
+      }
     },
     data() {
       return {
         snackbar: {},
         constants,
         headers: [],
-        timezone: 'US/Mountain',
         isLoading: true,
         dashValues: [],
         drilldownHeaders: [

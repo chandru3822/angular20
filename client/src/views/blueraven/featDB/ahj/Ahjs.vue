@@ -14,7 +14,7 @@
         >
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ', 'ADD')">
+              <v-btn text @click="addItem" color="primary" v-if="userStore.userHasFeatureAccessLevel('AHJ', 'ADD')">
                 <v-icon>add</v-icon>
                 <span v-if="!constants.IS_MOBILE">Add New</span>
               </v-btn>
@@ -63,10 +63,10 @@
                   <router-link :to="`ahj/${item.id}/inspection`" class="mr-3 ahj-link primary--text">Inspection</router-link>
                   <router-link :to="`ahj/${item.id}/design`" class="mr-3 ahj-link primary--text">Design</router-link>
                 </span>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ', 'EDIT')" small color="primary" class="mr-3 ahj-link-icon" @click="editAhj(item)">
+                <v-icon v-if="userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')" small color="primary" class="mr-3 ahj-link-icon" @click="editAhj(item)">
                   edit
                 </v-icon>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ', 'DELETE')" small color="primary" class="ahj-link-icon" @click="deleteItem(item)">
+                <v-icon v-if="userStore.userHasFeatureAccessLevel('AHJ', 'DELETE')" small color="primary" class="ahj-link-icon" @click="deleteItem(item)">
                   delete
                 </v-icon>
               </td>
@@ -143,6 +143,8 @@
   import { AppMutations } from '@/stores/AppStore'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import {FEAT_DB_TABS, FILTER_DEFAULTS} from "@/views/blueraven/featDB/FeatDbConstants";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'ahjs',
@@ -181,6 +183,7 @@
       }
     }),
     computed: {
+      ...mapStores(useUserStore),
       filteredAhjs () {
         return this.ahjs && this.ahjs.filter(ahj => {
           return Object.keys(this.ahjFilters).every(filterName => {
@@ -336,7 +339,6 @@
     },
     created () {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      this.currentUser = this.$store.state.user.details.id
       this.initFilters()
       this.fetchAhjs().then(() => {
         if (this.ahjs.length > 0) {

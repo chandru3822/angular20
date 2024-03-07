@@ -17,6 +17,7 @@ import { getRequestWithParams, getSnackbar, logError } from '@/helpers/helpers'
 import { DateTime } from 'luxon'
 import { saveAs } from 'file-saver'
 import { getCurrentInstance } from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const props = defineProps({
   smartlist: {
@@ -39,12 +40,13 @@ const emit = defineEmits(['exported'])
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 
 let exportSmartlist = async () => {
 
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    const params = {timezone: store.state.user.details.timezone.value}
+    const params = {timezone: userStore.details.timezone.value}
     const {data} = await getRequestWithParams(`/smartlist/${props.smartlist.id}/export`, {params})
     let blob = new Blob([data], {
       type: 'text/csv;charset=utf-8'

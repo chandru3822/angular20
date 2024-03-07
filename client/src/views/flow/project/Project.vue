@@ -173,7 +173,7 @@
                      :milestones="milestones"
                      page-name="Project"
                      :isExpandable="false"
-                     :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
+                     :show-edit-btn="(userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
                      @clickEdit="showEditModal()"
                      :details="overviewDetails"
                      :updateKey="updateKeyProp"
@@ -265,7 +265,7 @@
           <div v-if="project && project.id">
           <PageOverview
             page-name="Project"
-            :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
+            :show-edit-btn="(userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
             @clickEdit="showEditModal()"
             :details="overviewDetails"
         />
@@ -333,6 +333,8 @@ import StatusTrackerIcon from "@/views/flow/project/StatusTrackerIcon";
 import StatusTrackerItem from "@/views/flow/project/StatusTrackerItem";
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
 import ThreeColumnLayoutMobile from '@/views/ThreeColumnLayoutMobile'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 export default {
   name: 'Project',
   components: {
@@ -376,9 +378,6 @@ export default {
       milestones: [],
       projectLoading: true,
       projectId: parseInt(this.$route.params.projectId),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      is7oaksAdmin: this.$store.getters.isFullAdmin,
-      userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
       pageOverviewMenuItem: {
       },
       updateKeyProp: 0,
@@ -414,6 +413,16 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+    },
+    is7oaksAdmin() {
+      return this.userStore.isSystemAdmin
+    },
+    userHasEventsFeature() {
+      return this.userStore.userHasFeature('EVENTS')
+    },
     projectTagEvents() {
       return this.$store.getters.getEventsByTopic('project_tag')?.filter(e => e.projectId === this.projectId)
     },

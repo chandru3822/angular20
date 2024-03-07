@@ -220,6 +220,8 @@ import cloneDeep from 'lodash.clonedeep'
 import VuePdfEmbed from 'vue-pdf-embed/dist/vue2-pdf-embed'
 import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from "@/components/ConfirmationDialog"
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: "AttachmentCoversheetModal",
@@ -255,7 +257,6 @@ export default {
   data() {
     return {
       fileDetails: {},
-      timezone: this.$store.state.user.details.timezone.value,
       acceptedFileTypes: constants.STANDARD_IMAGES_DOCS_AUDIO,
       imageFileExtensions: constants.IMAGE_FILE_EXTENSIONS,
       customFieldGroups: [],
@@ -286,6 +287,10 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    timezone() {
+      return this.userStore.details.timezone.value
+    },
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
     },
@@ -371,7 +376,7 @@ export default {
       }
     },
     getReadOnly: function (field) {
-      return getCustomFieldReadOnly(this.$store, field)
+      return getCustomFieldReadOnly(field)
     },
     closeModal() {
       this.closeCallback(this.existingAttachment.attachmentTypeId)

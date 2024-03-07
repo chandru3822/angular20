@@ -53,7 +53,7 @@
                 ></v-autocomplete>
                 <h6 class="mt-3 error-text" v-if="org.schedulable && !org.companyTimezoneId">* Required when Schedulable Organization</h6>
               </div>
-              <v-checkbox class="mb-n4" v-if="$store.getters.isParent(parentId)" label="Make available in children" v-model="org.availableToChildren"></v-checkbox>
+              <v-checkbox class="mb-n4" v-if="userStore.isParent" label="Make available in children" v-model="org.availableToChildren"></v-checkbox>
             </v-col>
           </v-row>
         </v-container>
@@ -84,6 +84,8 @@
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
   import SpinnerInline from '@/components/SpinnerInline'
   import {getCompanyStates} from "@/services/stateService";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'NewLead',
@@ -103,15 +105,19 @@
         states: [],
         dirtyCfvs: [],
         customFieldGroups: [],
-        parentId: this.$store.state.user.details.parentCompanyId,
         requiredRules: constants.BASIC_REQUIRED_RULE,
-        companyId: this.$store.state.user.details.companyId,
       }
     },
     created () {
       this.getCompanyStates()
       this.getCustomFieldGroups()
       this.getOrgTypes()
+    },
+    computed: {
+      ...mapStores(useUserStore),
+      companyId() {
+        return this.userStore.details.companyId
+      },
     },
     methods: {
       validate () {
@@ -203,7 +209,7 @@
         }
       },
       getReadOnly: function (field) {
-        return getCustomFieldReadOnly(this.$store, field)
+        return getCustomFieldReadOnly(field)
       },
       async getCompanyStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)

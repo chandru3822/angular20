@@ -3,14 +3,16 @@ import Router from 'vue-router'
 import Login from './views/Login.vue'
 import ForgotPasswordReset from './views/ForgotPasswordReset.vue'
 import store from './store'
-import {UserMutations} from './stores/UserStore'
 import {getRequest} from '@/helpers/helpers'
 import ProposalVersionSettingsRoutes from '@/views/blueraven/settings/proposals/routes'
 import ProposalDesignerRoutes from '@/views/blueraven/settings/proposalDesigner/routes'
 import {AppMutations} from "@/stores/AppStore";
+import {pinia} from '@/store'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 Vue.use(Router)
 const nonRedirectPaths = ['/', '/home']
+const userStore = useUserStore(pinia)
 
 const router = new Router({
   mode: 'history',
@@ -54,14 +56,14 @@ const router = new Router({
       name: 'root',
       redirect: 'home',
       component: () => {
-        if (store.getters.userHasAnyFeature) {
+        if (userStore.userHasAnyFeature) {
           return import( './views/Root.vue')
         } else {
           return accessDenied()
         }
       },
       beforeEnter: async (to, from, next) => {
-        if (!store.state.user.authorized && from.name !== 'login') {
+        if (!userStore.authorized && from.name !== 'login') {
           //only re-route back to login if not already on login
           let rt = {
             path: '/login'
@@ -78,15 +80,15 @@ const router = new Router({
               store.commit(AppMutations.SET_REDIRECT_URL, nonRedirectPaths.includes(to.path) ? null : to.path)
 
               const {data} = await getUser()
-              store.commit(UserMutations.SET_DETAILS, data)
+              userStore.details = data
               next()
             } catch (e) {
               next('/login')
             }
           } else {
             //had to do the matching or it just does a continuous loop if the user has a homepagepath
-            if (store.state.user.details.homePagePath && to.path !== store.state.user.details.homePagePath) {
-              router.push({path: store.state.user.details.homePagePath})
+            if (userStore.details.homePagePath && to.path !== userStore.details.homePagePath) {
+              router.push({path: userStore.details.homePagePath})
             } else {
               next()
             }
@@ -98,7 +100,7 @@ const router = new Router({
           path: 'home',
           name: 'home',
           component: () => {
-            if (store.getters.userHasAnyFeature) {
+            if (userStore.userHasAnyFeature) {
               return import( './views/Home.vue')
             } else {
               return accessDenied()
@@ -122,7 +124,7 @@ const router = new Router({
           meta: {title: 'Albatross - Schedule'},
           props: true,
           component: () => {
-            if (store.getters.userHasFeature('SCHEDULE')) {
+            if (userStore.userHasFeature('SCHEDULE')) {
               return import( './views/flow/schedule/Schedule.vue')
             } else {
               return accessDenied()
@@ -134,7 +136,7 @@ const router = new Router({
           meta: {title: 'Albatross - App Download'},
           props: true,
           component: () => {
-            if (store.getters.userHasFeature('APP_DOWNLOADS')) {
+            if (userStore.userHasFeature('APP_DOWNLOADS')) {
               return import( './views/flow/appDownloads/AppDownloads.vue')
             } else {
               return accessDenied()
@@ -145,7 +147,7 @@ const router = new Router({
           name: 'errorLog',
           meta: {title: 'Albatross - Errors'},
           component: () => {
-            if (store.getters.userHasFeature('ERROR_LOG')) {
+            if (userStore.userHasFeature('ERROR_LOG')) {
               return import( './views/flow/ErrorLog.vue')
             } else {
               return accessDenied()
@@ -156,7 +158,7 @@ const router = new Router({
           name: 'users',
           meta: {title: 'Albatross - Users'},
           component: () => {
-            if (store.getters.userHasFeature('USERS')) {
+            if (userStore.userHasFeature('USERS')) {
               return import( './views/flow/users/Users.vue')
             } else {
               return accessDenied()
@@ -176,7 +178,7 @@ const router = new Router({
           meta: {title: 'Albatross - User'},
           props: true,
           component: () => {
-            if (store.getters.userHasFeature('USERS')) {
+            if (userStore.userHasFeature('USERS')) {
               return import ( './views/flow/users/User.vue')
             } else {
               return accessDenied()
@@ -196,7 +198,7 @@ const router = new Router({
               path: 'access',
               meta: {title: 'Albatross - User'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('ACCESS_CONTROL', 'VIEW')) {
+                if (userStore.userHasFeatureAccessLevel('ACCESS_CONTROL', 'VIEW')) {
                   return import ( './views/flow/users/UserAccess.vue')
                 } else {
                   return accessDenied()
@@ -209,7 +211,7 @@ const router = new Router({
           name: 'newUser',
           meta: {title: 'Albatross - New User'},
           component: () => {
-            if (store.getters.userHasFeatureAccessLevel('USERS', 'ADD')) {
+            if (userStore.userHasFeatureAccessLevel('USERS', 'ADD')) {
               return import ( './views/flow/users/NewUser.vue')
             } else {
               return accessDenied()
@@ -221,7 +223,7 @@ const router = new Router({
           name: 'reimbursement',
           meta: {title: 'Albatross - Reimbursement'},
           component: () => {
-            if (store.getters.userHasFeature('REIMBURSEMENT')) {
+            if (userStore.userHasFeature('REIMBURSEMENT')) {
               return import ( './views/blueraven/expenses/Reimbursement.vue')
             } else {
               return accessDenied()
@@ -233,7 +235,7 @@ const router = new Router({
           alias: '/expenses/manage',
           meta: {title: 'Albatross - Expenses'},
           component: () => {
-            if (store.getters.userHasFeature('EXPENSES')) {
+            if (userStore.userHasFeature('EXPENSES')) {
               return import ( './views/blueraven/expenses/Expenses.vue')
             } else {
               return accessDenied()
@@ -257,7 +259,7 @@ const router = new Router({
               name: 'glCodes',
               meta: {title: 'Albatross - GL Codes'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN') || store.getters.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')) {
+                if (userStore.userHasFeatureAccessLevel('EXPENSES', 'ADMIN') || userStore.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')) {
                   return import ( './views/blueraven/expenses/GlCodes.vue')
                 } else {
                   return accessDenied()
@@ -269,7 +271,7 @@ const router = new Router({
               name: 'monthlyBudgets',
               meta: {title: 'Albatross - Expense Budgets'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN') || store.getters.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')) {
+                if (userStore.userHasFeatureAccessLevel('EXPENSES', 'ADMIN') || userStore.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')) {
                   return import ( './views/blueraven/expenses/MonthlyBudgets.vue')
                 } else {
                   return accessDenied()
@@ -281,7 +283,7 @@ const router = new Router({
               name: 'budgetTemplates',
               meta: {title: 'Albatross - Expense Budgets'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN') || store.getters.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')) {
+                if (userStore.userHasFeatureAccessLevel('EXPENSES', 'ADMIN') || userStore.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')) {
                   return import ( './views/blueraven/expenses/BudgetTemplates.vue')
                 } else {
                   return accessDenied()
@@ -293,7 +295,7 @@ const router = new Router({
               name: 'expenseBudgetTypes',
               meta: {title: 'Albatross - Budget Types'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN') || store.getters.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')) {
+                if (userStore.userHasFeatureAccessLevel('EXPENSES', 'ADMIN') || userStore.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')) {
                   return import ( './views/blueraven/expenses/BudgetTypes.vue')
                 } else {
                   return accessDenied()
@@ -306,7 +308,7 @@ const router = new Router({
           name: 'closer',
           meta: {title: 'Albatross - Closer Dashboard'},
           component: () => {
-            if (store.getters.userHasFeature('CLOSER_DASHBOARD')) {
+            if (userStore.userHasFeature('CLOSER_DASHBOARD')) {
               return import ( './views/blueraven/closerDashboard/Closer.vue')
             } else {
               return accessDenied()
@@ -347,7 +349,7 @@ const router = new Router({
           name: 'setter',
           meta: {title: 'Albatross - Setter Dashboard'},
           component: () => {
-            if (store.getters.userHasFeature('SETTER_DASHBOARD')) {
+            if (userStore.userHasFeature('SETTER_DASHBOARD')) {
               return import ( './views/blueraven/setterDashboard/Setter.vue')
             } else {
               return accessDenied()
@@ -377,7 +379,7 @@ const router = new Router({
           name: 'companyDashboard',
           meta: {title: 'Albatross - Company Dashboard'},
           component: () => {
-            if (store.getters.userHasFeature('COMPANY_DASHBOARD')) {
+            if (userStore.userHasFeature('COMPANY_DASHBOARD')) {
               return import ( './views/blueraven/companyDashboard/CompanyDashboard.vue')
             } else {
               return accessDenied()
@@ -388,7 +390,7 @@ const router = new Router({
           name: 'companyDashboardTargets',
           meta: {title: 'Albatross - Company Dashboard Targets'},
           component: () => {
-            if (store.getters.userHasFeatureAccessLevel('COMPANY_DASHBOARD', 'ADMIN')) {
+            if (userStore.userHasFeatureAccessLevel('COMPANY_DASHBOARD', 'ADMIN')) {
               return import ( './views/blueraven/companyDashboard/CompanyDashboardTargets.vue')
             } else {
               return accessDenied()
@@ -400,7 +402,7 @@ const router = new Router({
           meta: {title: 'Albatross - Closer Availability'},
           props: true,
           component: () => {
-            if (store.getters.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW') || store.getters.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW_CUSTOM') || store.getters.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW_ALL')) {
+            if (userStore.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW') || userStore.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW_CUSTOM') || userStore.userHasFeatureAccessLevel('CLOSER_AVAILABILITY', 'VIEW_ALL')) {
               return import( './views/blueraven/closerAvailability/CloserAvailability.vue')
             } else {
               return accessDenied()
@@ -411,7 +413,7 @@ const router = new Router({
           name: 'featDbContainer',
           meta: {title: 'Databases'},
           component: () => {
-            if (store.getters.userHasFeature('AHJ') || store.getters.userHasFeature('UTILITY') || store.getters.userHasFeature('HOA')) {
+            if (userStore.userHasFeature('AHJ') || userStore.userHasFeature('UTILITY') || userStore.userHasFeature('HOA')) {
               return import ( './views/blueraven/featDB/FeatDbContainer.vue')
             } else {
               return accessDenied()
@@ -423,7 +425,7 @@ const router = new Router({
               name: 'ahjs',
               meta: {title: 'Databases - AHJ'},
               component: () => {
-                if (store.getters.userHasFeature('AHJ')) {
+                if (userStore.userHasFeature('AHJ')) {
                   return import ( './views/blueraven/featDB/ahj/Ahjs.vue')
                 } else {
                   return accessDenied()
@@ -435,7 +437,7 @@ const router = new Router({
               meta: {title: 'Databases - AHJ'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('AHJ')) {
+                if (userStore.userHasFeature('AHJ')) {
                   return import ( './views/blueraven/featDB/ahj/details/AhjDetails.vue')
                 } else {
                   return accessDenied()
@@ -463,7 +465,7 @@ const router = new Router({
               name: 'utilities',
               meta: {title: 'Databases - Utility'},
               component: () => {
-                if (store.getters.userHasFeature('UTILITY')) {
+                if (userStore.userHasFeature('UTILITY')) {
                   return import ( './views/blueraven/featDB/utility/Utilities.vue')
                 } else {
                   return accessDenied()
@@ -475,7 +477,7 @@ const router = new Router({
               meta: {title: 'Databases - Utility'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('UTILITY')) {
+                if (userStore.userHasFeature('UTILITY')) {
                   return import ( './views/blueraven/featDB/utility/UtilityDetails.vue')
                 } else {
                   return accessDenied()
@@ -486,7 +488,7 @@ const router = new Router({
               name: 'hoa',
               meta: {title: 'Albatross - HOA'},
               component: () => {
-                if (store.getters.userHasFeature('HOA')) {
+                if (userStore.userHasFeature('HOA')) {
                   return import ( './views/blueraven/featDB/hoa/Hoas.vue')
                 } else {
                   return accessDenied()
@@ -498,7 +500,7 @@ const router = new Router({
               meta: {title: 'Databases - HOA'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('HOA')) {
+                if (userStore.userHasFeature('HOA')) {
                   return import ( './views/blueraven/featDB/hoa/HoaDetails.vue')
                 } else {
                   return accessDenied()
@@ -509,7 +511,7 @@ const router = new Router({
               name: 'supplier',
               meta: {title: 'Albatross - Suppliers'},
               component: () => {
-                if (store.getters.userHasFeature('SUPPLIERS')) {
+                if (userStore.userHasFeature('SUPPLIERS')) {
                   return import ( './views/blueraven/featDB/suppliers/Suppliers.vue')
                 } else {
                   return accessDenied()
@@ -521,7 +523,7 @@ const router = new Router({
               meta: {title: 'Databases - Supplier'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('SUPPLIERS')) {
+                if (userStore.userHasFeature('SUPPLIERS')) {
                   return import ( './views/blueraven/featDB/suppliers/SupplierDetails.vue')
                 } else {
                   return accessDenied()
@@ -532,7 +534,7 @@ const router = new Router({
               name: 'incentive',
               meta: {title: 'Albatross - Incentive'},
               component: () => {
-                if (store.getters.userHasFeature('INCENTIVE')) {
+                if (userStore.userHasFeature('INCENTIVE')) {
                   return import ( './views/blueraven/featDB/incentive/Incentives.vue')
                 } else {
                   return accessDenied()
@@ -544,7 +546,7 @@ const router = new Router({
               meta: {title: 'Databases - Incentive'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('INCENTIVE')) {
+                if (userStore.userHasFeature('INCENTIVE')) {
                   return import ( './views/blueraven/featDB/incentive/IncentiveDetails.vue')
                 } else {
                   return accessDenied()
@@ -559,7 +561,7 @@ const router = new Router({
           name: 'tournament',
           props: true,
           component: () => {
-            if (store.getters.userHasFeature('TOURNAMENTS')) {
+            if (userStore.userHasFeature('TOURNAMENTS')) {
               return import ( './views/blueraven/tournament/Tournament.vue')
             } else {
               return accessDenied()
@@ -603,7 +605,7 @@ const router = new Router({
               path: 'statusCheck',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/StatusCheck.vue')
                 } else {
                   return accessDenied()
@@ -614,7 +616,7 @@ const router = new Router({
               path: 'attachments',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Attachments.vue')
                 } else {
                   return accessDenied()
@@ -626,7 +628,7 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/attachments/AttachmentType.vue')
                 } else {
                   return accessDenied()
@@ -643,7 +645,7 @@ const router = new Router({
               path: 'companyCustomFields',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/customFields/CompanyCustomFields.vue')
                 } else {
                   return accessDenied()
@@ -653,7 +655,7 @@ const router = new Router({
               path: 'companyCustomField/:id?',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/customFields/CompanyCustomField.vue')
                 } else {
                   return accessDenied()
@@ -663,7 +665,7 @@ const router = new Router({
               path: 'companyObjectTypes',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/companyObjectType/CompanyObjectTypes.vue')
                 } else {
                   return accessDenied()
@@ -674,7 +676,7 @@ const router = new Router({
               name: 'companyObjectTypes',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/companyObjectType/CompanyObjectType.vue')
                 } else {
                   return accessDenied()
@@ -684,7 +686,7 @@ const router = new Router({
                   path: 'tournaments',
                   meta: {title: 'Albatross - Settings'},
                   component: () => {
-                      if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
+                      if (userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
                           return import ( './views/flow/settings/tournaments/Tournaments.vue')
                       } else {
                           return accessDenied()
@@ -695,7 +697,7 @@ const router = new Router({
                   path: 'tournaments/:id',
                   meta: {title: 'Albatross - Settings'},
                   component: () => {
-                      if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
+                      if (userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
                           return import ( './views/flow/settings/tournaments/Tournament.vue')
                       } else {
                           return accessDenied()
@@ -736,7 +738,7 @@ const router = new Router({
               path: 'company',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/defaults/Defaults.vue')
                 } else {
                   return accessDenied()
@@ -747,7 +749,7 @@ const router = new Router({
                   path: 'settings',
                   meta: {title: 'Albatross - Settings'},
                   component: () => {
-                    if (store.getters.userHasFeature('SETTINGS')) {
+                    if (userStore.userHasFeature('SETTINGS')) {
                       return import ( './views/flow/settings/defaults/CompanySettings.vue')
                     } else {
                       return accessDenied()
@@ -757,7 +759,7 @@ const router = new Router({
                   path: 'configurations',
                   meta: {title: 'Albatross - Settings'},
                   component: () => {
-                    if (store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')) {
+                    if (userStore.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')) {
                       return import ( './views/flow/settings/defaults/Configurations.vue')
                     } else {
                       return accessDenied()
@@ -768,7 +770,7 @@ const router = new Router({
                   path: 'email',
                   meta: {title: 'Albatross - Settings'},
                   component: () => {
-                    if (store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')) {
+                    if (userStore.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')) {
                       return import ( './views/flow/settings/defaults/EmailSettings.vue')
                     } else {
                       return accessDenied()
@@ -790,7 +792,7 @@ const router = new Router({
               path: 'roundRobins',
               meta: {title: 'Albatross - Round Robin'},
               component: () => {
-                if (store.getters.userHasFeature('ROUND_ROBIN')) {
+                if (userStore.userHasFeature('ROUND_ROBIN')) {
                   return import ( './views/flow/settings/roundRobins/RoundRobins.vue')
                 } else {
                   return accessDenied()
@@ -800,7 +802,7 @@ const router = new Router({
               path: 'zip',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('POSTAL_CODE')) {
+                if (userStore.userHasFeature('POSTAL_CODE')) {
                   return import ( './views/flow/settings/postalCode/ZipContainer.vue')
                 } else {
                   return accessDenied()
@@ -833,7 +835,7 @@ const router = new Router({
               path: 'roundRobin/:id',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('ROUND_ROBIN')) {
+                if (userStore.userHasFeature('ROUND_ROBIN')) {
                   return import ( './views/flow/settings/roundRobins/RoundRobin.vue')
                 } else {
                   return accessDenied()
@@ -856,7 +858,7 @@ const router = new Router({
               path: 'callGroups',
               meta: {title: 'Albatross - Call Groups'},
               component: () => {
-                if (store.getters.userHasFeature('CALL_GROUPS')) {
+                if (userStore.userHasFeature('CALL_GROUPS')) {
                   return import ( './views/flow/settings/callGroups/CallGroups.vue')
                 } else {
                   return accessDenied()
@@ -866,7 +868,7 @@ const router = new Router({
               path: 'callGroup/:id',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/callGroups/PostalCode.vue')
                 } else {
                   return accessDenied()
@@ -886,7 +888,7 @@ const router = new Router({
               path: 'orgTypes',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/OrgTypes.vue')
                 } else {
                   return accessDenied()
@@ -896,7 +898,7 @@ const router = new Router({
               path: 'messageTemplates',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/MessageTemplate.vue')
                 } else {
                   return accessDenied()
@@ -907,7 +909,7 @@ const router = new Router({
               alias: 'announcements/past',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Announcements.vue')
                 } else {
                   return accessDenied()
@@ -917,7 +919,7 @@ const router = new Router({
               path: 'announcement/:id?',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Announcement.vue')
                 } else {
                   return accessDenied()
@@ -927,7 +929,7 @@ const router = new Router({
               path: 'hashtags',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Hashtags.vue')
                 } else {
                   return accessDenied()
@@ -937,7 +939,7 @@ const router = new Router({
               path: 'dataViews',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('DATA_VIEW', 'ADMIN')) {
+                if (userStore.userHasFeatureAccessLevel('DATA_VIEW', 'ADMIN')) {
                   return import ( './views/flow/settings/DataViews.vue')
                 } else {
                   return accessDenied()
@@ -947,7 +949,7 @@ const router = new Router({
               path: 'dataView/:id',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('DATA_VIEW', 'ADMIN')) {
+                if (userStore.userHasFeatureAccessLevel('DATA_VIEW', 'ADMIN')) {
                   return import ( './views/flow/settings/DataView.vue')
                 } else {
                   return accessDenied()
@@ -957,7 +959,7 @@ const router = new Router({
               path: 'workQueue',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS') || store.getters.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')) {
+                if (userStore.userHasFeature('SETTINGS') || userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')) {
                   return import ( './views/flow/settings/WorkQueue.vue')
                 } else {
                   return accessDenied()
@@ -982,7 +984,7 @@ const router = new Router({
               path: 'customFields',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/customFields/FlowCustomFields.vue')
                 } else {
                   return accessDenied()
@@ -992,7 +994,7 @@ const router = new Router({
               path: 'customField/:id?',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/customFields/FlowCustomField.vue')
                 } else {
                   return accessDenied()
@@ -1003,7 +1005,7 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/objectType/ObjectType.vue')
                 } else {
                   return accessDenied()
@@ -1028,7 +1030,7 @@ const router = new Router({
               path: 'tags',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Tags.vue')
                 } else {
                   return accessDenied()
@@ -1038,7 +1040,7 @@ const router = new Router({
               path: 'links',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Links.vue')
                 } else {
                   return accessDenied()
@@ -1048,7 +1050,7 @@ const router = new Router({
               path: 'processes',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Processes.vue')
                 } else {
                   return accessDenied()
@@ -1060,7 +1062,7 @@ const router = new Router({
               name: 'process',
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Process.vue')
                 } else {
                   return accessDenied()
@@ -1070,7 +1072,7 @@ const router = new Router({
               path: 'processSteps',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/ProcessSteps.vue')
                 } else {
                   return accessDenied()
@@ -1082,7 +1084,7 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/processStep/ProcessStep.vue')
                 } else {
                   return accessDenied()
@@ -1124,7 +1126,7 @@ const router = new Router({
               path: 'eventStatuses',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/EventStatuses.vue')
                 } else {
                   return accessDenied()
@@ -1134,7 +1136,7 @@ const router = new Router({
               path: 'eventStatuses',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/EventStatuses.vue')
                 } else {
                   return accessDenied()
@@ -1144,7 +1146,7 @@ const router = new Router({
               path: 'processStepStatuses',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/ProcessStepStatuses.vue')
                 } else {
                   return accessDenied()
@@ -1154,7 +1156,7 @@ const router = new Router({
               path: 'projectStatuses',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/projectStatus/ProjectStatuses.vue')
                 } else {
                   return accessDenied()
@@ -1164,7 +1166,7 @@ const router = new Router({
               path: 'projectStatus/:id',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/projectStatus/ProjectStatus.vue')
                 } else {
                   return accessDenied()
@@ -1187,7 +1189,7 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/project/Project.vue')
                 } else {
                   return accessDenied()
@@ -1223,7 +1225,7 @@ const router = new Router({
               path: 'events',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Events.vue')
                 } else {
                   return accessDenied()
@@ -1235,7 +1237,7 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/event/Event.vue')
                 } else {
                   return accessDenied()
@@ -1266,7 +1268,7 @@ const router = new Router({
               path: 'smsTeams',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/SmsTeam.vue')
                 } else {
                   return accessDenied()
@@ -1276,7 +1278,7 @@ const router = new Router({
               path: 'functions',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Functions.vue')
                 } else {
                   return accessDenied()
@@ -1286,7 +1288,7 @@ const router = new Router({
               path: 'function/:id',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Function.vue')
                 } else {
                   return accessDenied()
@@ -1298,7 +1300,7 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               props: true,
               component: () => {
-                if (store.getters.userHasFeature('AVAILABILITY')) {
+                if (userStore.userHasFeature('AVAILABILITY')) {
                   return import ( './views/flow/settings/availability/AvailabilityHeader.vue')
                 } else {
                   return accessDenied()
@@ -1312,7 +1314,7 @@ const router = new Router({
                   // redirect: "availability/main/schedule",
                   props: true,
                   component: () => {
-                    if (store.getters.userHasFeature('AVAILABILITY')) {
+                    if (userStore.userHasFeature('AVAILABILITY')) {
                       return import ( './views/flow/settings/availability/Availability.vue')
                     } else {
                       return accessDenied()
@@ -1338,7 +1340,7 @@ const router = new Router({
                   meta: {title: 'Albatross - Settings'},
                   props: true,
                   component: () => {
-                    if (store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')) {
+                    if (userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')) {
                       return import ( './views/flow/settings/availability/SlotSchedules.vue')
                     } else {
                       return accessDenied()
@@ -1350,7 +1352,7 @@ const router = new Router({
               path: 'positions',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Positions.vue')
                 } else {
                   return accessDenied()
@@ -1361,7 +1363,7 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               name: 'position',
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Position.vue')
                 } else {
                   return accessDenied()
@@ -1371,7 +1373,7 @@ const router = new Router({
               path: 'roles',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Roles.vue')
                 } else {
                   return accessDenied()
@@ -1382,7 +1384,7 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               name: 'role',
               component: () => {
-                if (store.getters.userHasFeature('SETTINGS')) {
+                if (userStore.userHasFeature('SETTINGS')) {
                   return import ( './views/flow/settings/Role.vue')
                 } else {
                   return accessDenied()
@@ -1395,7 +1397,7 @@ const router = new Router({
           name: 'workQueue',
           meta: {title: 'Albatross - Work Queue'},
           component: () => {
-            if (store.getters.userHasFeature('WORK_QUEUE')) {
+            if (userStore.userHasFeature('WORK_QUEUE')) {
               return import ( './views/flow/workQueue/WorkQueue.vue')
             } else {
               return accessDenied()
@@ -1406,7 +1408,7 @@ const router = new Router({
           name: 'workQueueDrilldown',
           meta: {title: 'Albatross - Work Queue'},
           component: () => {
-            if (store.getters.userHasFeature('WORK_QUEUE')) {
+            if (userStore.userHasFeature('WORK_QUEUE')) {
               return import ( './views/flow/workQueue/WorkQueueDrilldown.vue')
             } else {
               return accessDenied()
@@ -1417,7 +1419,7 @@ const router = new Router({
           name: 'smsQueue',
           meta: {title: 'Albatross - SMS Queue'},
           component: () => {
-            if (store.getters.userHasFeature('SMS_QUEUE')) {
+            if (userStore.userHasFeature('SMS_QUEUE')) {
               return import ( './views/flow/smsQueue/SmsQueue.vue')
             } else {
               return accessDenied()
@@ -1428,7 +1430,7 @@ const router = new Router({
           name: 'installerDashboard',
           meta: {title: 'Albatross - Installer Dashboard'},
           component: () => {
-            if (store.getters.userHasFeature('INSTALLER_DASHBOARD')) {
+            if (userStore.userHasFeature('INSTALLER_DASHBOARD')) {
               return import ( './views/blueraven/installerDashboard/InstallerDashboard.vue')
             } else {
               return accessDenied()
@@ -1439,7 +1441,7 @@ const router = new Router({
           name: 'projects',
           meta: {title: 'Albatross - Projects'},
           component: () => {
-            if (store.getters.userHasFeature('PROJECTS')) {
+            if (userStore.userHasFeature('PROJECTS')) {
               return import ( './views/flow/project/Projects.vue')
             } else {
               return accessDenied()
@@ -1450,7 +1452,7 @@ const router = new Router({
           path: '/project/:projectId',
           name: 'project',
           component: () => {
-            if (store.getters.userHasFeature('PROJECTS')) {
+            if (userStore.userHasFeature('PROJECTS')) {
               return import ( './views/flow/project/Project.vue')
             } else {
               return accessDenied()
@@ -1467,7 +1469,7 @@ const router = new Router({
             name: 'projectProcessStep',
             path: 'processStep/:processStepId',
             component: () => {
-              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+              if (userStore.userHasFeature('PROCESS_STEPS')) {
                 return import ( './views/flow/project/ProjectProcessStep.vue')
               } else {
                 return accessDenied()
@@ -1477,7 +1479,7 @@ const router = new Router({
             name: 'ppsEvent',
             path: 'processStep/:processStepId/event/:ppsEventId',
             component: () => {
-              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+              if (userStore.userHasFeature('PROCESS_STEPS')) {
                 return import ( './views/flow/project/ProjectProcessStepEvent.vue')
               } else {
                 return accessDenied()
@@ -1486,7 +1488,7 @@ const router = new Router({
           }, {
             path: 'workQueues',
             component: () => {
-              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+              if (userStore.userHasFeature('PROCESS_STEPS')) {
                 return import ( './views/flow/project/AllWorkQueues.vue')
               } else {
                 return accessDenied()
@@ -1495,7 +1497,7 @@ const router = new Router({
           }, {
             path: 'projectOverview',
             component: () => {
-              if (store.getters.userHasFeature('PROJECTS')) {
+              if (userStore.userHasFeature('PROJECTS')) {
                 return import ( './views/flow/PageOverview.vue')
               } else {
                 return accessDenied()
@@ -1504,7 +1506,7 @@ const router = new Router({
           }, {
             path: 'processSteps',
             component: () => {
-              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+              if (userStore.userHasFeature('PROCESS_STEPS')) {
                 return import ( './views/flow/project/AllProcessSteps.vue')
               } else {
                 return accessDenied()
@@ -1513,7 +1515,7 @@ const router = new Router({
           }, {
             path: 'activeprocessSteps',
             component: () => {
-              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+              if (userStore.userHasFeature('PROCESS_STEPS')) {
                 return import ( './views/flow/project/ActiveProcessSteps.vue')
               } else {
                 return accessDenied()
@@ -1522,7 +1524,7 @@ const router = new Router({
           }, {
             path: 'events',
             component: () => {
-              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+              if (userStore.userHasFeature('PROCESS_STEPS')) {
                 return import ( './views/flow/project/AllEvents.vue')
               } else {
                 return accessDenied()
@@ -1531,7 +1533,7 @@ const router = new Router({
           }, {
             path: 'activeevents', //should only be used on mobile
             component: () => {
-              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+              if (userStore.userHasFeature('PROCESS_STEPS')) {
                 return import ( './views/flow/project/ActiveEvents.vue')
               } else {
                 return accessDenied()
@@ -1540,7 +1542,7 @@ const router = new Router({
           }, {
             path: 'projectActivity/:viewId', //should only be used on mobile
             component: () => {
-              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+              if (userStore.userHasFeature('PROCESS_STEPS')) {
                 return import ( './views/flow/project/ProjectActivity.vue')
               } else {
                 return accessDenied()
@@ -1550,7 +1552,7 @@ const router = new Router({
             name: 'projectStatus',
             path: 'status',
             component: () => {
-              if (store.getters.userHasFeature('PROJECTS')) {
+              if (userStore.userHasFeature('PROJECTS')) {
                 return import ( './views/flow/project/StatusTracker.vue')
               } else {
                 return accessDenied()
@@ -1563,7 +1565,7 @@ const router = new Router({
           path: '/projectAdmin/:projectId',
           component: () => {
             //dont change this permission unless double checking with rn and cj. we have been back and forth on this 100 times
-            if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')) {
+            if (userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || userStore.userHasFeatureAccessLevel('PROJECTS', 'DELETE')) {
               return import ( './views/flow/project/admin/ProjectAdmin.vue')
             } else {
               return accessDenied()
@@ -1583,7 +1585,7 @@ const router = new Router({
           name: 'contacts',
           meta: {title: 'Albatross - Contacts'},
           component: () => {
-            if (store.getters.userHasFeature('CONTACTS')) {
+            if (userStore.userHasFeature('CONTACTS')) {
               return import ( './views/flow/contacts/Contacts.vue')
             } else {
               return accessDenied()
@@ -1596,7 +1598,7 @@ const router = new Router({
           props: true,
           meta: {title: 'Albatross - Contact'},
           component: () => {
-            if (store.getters.userHasFeature('CONTACTS')) {
+            if (userStore.userHasFeature('CONTACTS')) {
               return import ( './views/flow/contacts/Contact.vue')
             } else {
               return accessDenied()
@@ -1608,7 +1610,7 @@ const router = new Router({
           name: 'newContact',
           props: true,
           component: () => {
-            if (store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADD')) {
+            if (userStore.userHasFeatureAccessLevel('CONTACTS', 'ADD')) {
               return import ( './views/flow/contacts/NewContact.vue')
             } else {
               return accessDenied()
@@ -1620,7 +1622,7 @@ const router = new Router({
           name: 'orgs',
           meta: {title: 'Albatross - Orgs'},
           component: () => {
-            if (store.getters.userHasFeature('ORGS')) {
+            if (userStore.userHasFeature('ORGS')) {
               return import ( './views/flow/orgs/Orgs.vue')
             } else {
               return accessDenied()
@@ -1632,7 +1634,7 @@ const router = new Router({
           name: 'org',
           meta: {title: 'Albatross - Org'},
           component: () => {
-            if (store.getters.userHasFeature('ORGS')) {
+            if (userStore.userHasFeature('ORGS')) {
               return import ( './views/flow/orgs/Org.vue')
             } else {
               return accessDenied()
@@ -1644,7 +1646,7 @@ const router = new Router({
           name: 'newOrg',
           meta: {title: 'Albatross - New Org'},
           component: () => {
-            if (store.getters.userHasFeature('ORGS')) {
+            if (userStore.userHasFeature('ORGS')) {
               return import ( './views/flow/orgs/NewOrg.vue')
             } else {
               return accessDenied()
@@ -1655,7 +1657,7 @@ const router = new Router({
           path: '/admin',
           name: 'admin',
           component: () => {
-            if (store.getters.userHasFeature('SYSTEM')) {
+            if (userStore.userHasFeature('SYSTEM')) {
               return import ( './views/flow/admin/Admin.vue')
             } else {
               return accessDenied()
@@ -1693,7 +1695,7 @@ const router = new Router({
           name: 'commissionManagement',
           meta: {title: 'Albatross - Commissions'},
           component: () => {
-            if (store.getters.userHasFeature('COMMISSIONS')) {
+            if (userStore.userHasFeature('COMMISSIONS')) {
               return import ( './views/blueraven/commissionManagement/CommissionManagement.vue')
             } else {
               return accessDenied()
@@ -1788,7 +1790,7 @@ const router = new Router({
               meta: {title: 'Albatross - Commissions'},
               // component: () => import ( './views/blueraven/closerDashboard/CloserResiduals.vue')
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')) {
+                if (userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')) {
                   return import ( './views/blueraven/closerDashboard/CloserResiduals.vue')
                 } else {
                   return accessDenied()
@@ -1811,7 +1813,7 @@ const router = new Router({
           name: 'finances',
           meta: {title: 'Albatross - Finances'},
           component: () => {
-            if (store.getters.userHasFeature('REBATES')) {
+            if (userStore.userHasFeature('REBATES')) {
               return import ( './views/blueraven/finances/rebate/Rebate.vue')
             } else {
               return accessDenied()
@@ -1822,7 +1824,7 @@ const router = new Router({
               path: 'rebate/batches',
               meta: {title: 'Albatross - Finances'},
               component: () => {
-                if (store.getters.userHasFeature('REBATES')) {
+                if (userStore.userHasFeature('REBATES')) {
                   return import ( './views/blueraven/finances/rebate/Batches.vue')
                 } else {
                   return accessDenied()
@@ -1832,7 +1834,7 @@ const router = new Router({
               path: 'rebate/viewPayments',
               meta: {title: 'Albatross - Finances'},
               component: () => {
-                if (store.getters.userHasFeature('REBATES')) {
+                if (userStore.userHasFeature('REBATES')) {
                   return import ( './views/blueraven/finances/rebate/ViewPayments.vue')
                 } else {
                   return accessDenied()
@@ -1843,7 +1845,7 @@ const router = new Router({
               name: 'rebateDetails',
               meta: {title: 'Albatross - Finances'},
               component: () => {
-                if (store.getters.userHasFeature('REBATES')) {
+                if (userStore.userHasFeature('REBATES')) {
                   return import ( './views/blueraven/finances/rebate/RebateDetails.vue')
                 } else {
                   return accessDenied()
@@ -1856,7 +1858,7 @@ const router = new Router({
           name: 'electronicDocuments',
           meta: {title: 'Albatross - Electronic Documents'},
           component: () => {
-            if (store.getters.userHasFeature('ELECTRONIC_DOCUMENTS')) {
+            if (userStore.userHasFeature('ELECTRONIC_DOCUMENTS')) {
               return import ( './views/blueraven/electronicDocuments/ElectronicDocuments.vue')
             } else {
               return accessDenied()
@@ -1866,7 +1868,7 @@ const router = new Router({
             {
               path: 'request',
               component: () => {
-                if (store.getters.userHasFeature('ELECTRONIC_DOCUMENTS')) {
+                if (userStore.userHasFeature('ELECTRONIC_DOCUMENTS')) {
                   return import ( './views/blueraven/electronicDocuments/Request.vue')
                 } else {
                   return accessDenied()
@@ -1889,7 +1891,7 @@ const router = new Router({
           path: '/smartlistv1',
           meta: {title: 'Albatross - Smartlists V1'},
           component: () => {
-            if (store.getters.userHasFeature('SMARTLIST')) {
+            if (userStore.userHasFeature('SMARTLIST')) {
               return import ( './views/flow/smartlistv1/SmartlistHome.vue')
             } else {
               return accessDenied()
@@ -1900,7 +1902,7 @@ const router = new Router({
             meta: {title: 'Albatross - Smartlists V1'},
             name: 'smartlist',
             component: () => {
-              if (store.getters.userHasFeature('SMARTLIST')) {
+              if (userStore.userHasFeature('SMARTLIST')) {
                 return import ( './views/flow/smartlistv1/Smartlists.vue')
               } else {
                 return accessDenied()
@@ -1911,7 +1913,7 @@ const router = new Router({
             meta: {title: 'Albatross - Smartlists V1'},
             name: 'smartlistEditor',
             component: () => {
-              if (store.getters.userHasFeature('SMARTLIST')) {
+              if (userStore.userHasFeature('SMARTLIST')) {
                 return import ( './views/flow/smartlistv1/Smartlist.vue')
               } else {
                 return accessDenied()
@@ -1924,7 +1926,7 @@ const router = new Router({
           meta: {title: 'Albatross - Smartlists'},
           redirect: '/smartlist/mine',
           component: () => {
-            if (store.getters.userHasFeature('SMARTLIST')) {
+            if (userStore.userHasFeature('SMARTLIST')) {
               return import ( './views/flow/smartlist/Smartlists.vue')
             } else {
               return accessDenied()
@@ -1935,7 +1937,7 @@ const router = new Router({
             meta: {title: 'Albatross - Smartlists'},
             name: 'mySmartlists',
             component: () => {
-              if (store.getters.userHasFeature('SMARTLIST')) {
+              if (userStore.userHasFeature('SMARTLIST')) {
                 return import ( './views/flow/smartlist/MySmartlists.vue')
               } else {
                 return accessDenied()
@@ -1946,7 +1948,7 @@ const router = new Router({
             meta: {title: 'Albatross - Smartlists'},
             name: 'sharedSmartlists',
             component: () => {
-              if (store.getters.userHasFeature('SMARTLIST')) {
+              if (userStore.userHasFeature('SMARTLIST')) {
                 return import ( './views/flow/smartlist/SharedSmartlists.vue')
               } else {
                 return accessDenied()
@@ -1957,7 +1959,7 @@ const router = new Router({
             meta: {title: 'Albatross - Smartlists'},
             name: 'publicSmartlists',
             component: () => {
-              if (store.getters.userHasFeature('SMARTLIST')) {
+              if (userStore.userHasFeature('SMARTLIST')) {
                 return import ( './views/flow/smartlist/PublicSmartlists.vue')
               } else {
                 return accessDenied()
@@ -1968,7 +1970,7 @@ const router = new Router({
             meta: {title: 'Albatross - Smartlists'},
             name: 'allSmartlists',
             component: () => {
-              if (store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')) {
+              if (userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')) {
                 return import ( './views/flow/smartlist/AllSmartlists.vue')
               } else {
                 return accessDenied()
@@ -1980,7 +1982,7 @@ const router = new Router({
           meta: {title: 'Albatross - Smartlist Editor'},
           name: 'reportEditor',
           component: () => {
-            if (store.getters.userHasFeature('SMARTLIST')) {
+            if (userStore.userHasFeature('SMARTLIST')) {
               return import ( './views/flow/smartlist/editor/ReportEditor.vue')
             } else {
               return accessDenied()
@@ -1991,7 +1993,7 @@ const router = new Router({
           name: 'proposals',
           meta: {title: 'Albatross - Proposals'},
           component: () => {
-            if (store.getters.userHasFeature('PROPOSALS')) {
+            if (userStore.userHasFeature('PROPOSALS')) {
               return import ( './views/blueraven/proposals/Proposals.vue')
             } else {
               return accessDenied()
@@ -2002,7 +2004,7 @@ const router = new Router({
           name: 'proposal',
           meta: {title: 'Albatross - Proposals'},
           component: () => {
-            if (store.getters.userHasFeature('PROPOSALS')) {
+            if (userStore.userHasFeature('PROPOSALS')) {
               return import ( './views/blueraven/proposals/Proposal.vue')
             } else {
               return accessDenied()
@@ -2013,7 +2015,7 @@ const router = new Router({
           name: 'proposalDesigns',
           meta: {title: 'Albatross - Proposals'},
           component: () => {
-            if (store.getters.userHasFeature('PROPOSALS')) {
+            if (userStore.userHasFeature('PROPOSALS')) {
               return import ( './views/blueraven/proposals/ProposalDesigns.vue')
             } else {
               return accessDenied()
@@ -2025,7 +2027,7 @@ const router = new Router({
           name: 'inbox',
           meta: {title: 'Albatross - Inbox'},
           component: () => {
-            if (store.getters.userHasFeature('SMS_INBOX')) {
+            if (userStore.userHasFeature('SMS_INBOX')) {
               return import ( './views/flow/settings/inbox/MainInbox')
             } else {
               return accessDenied()
@@ -2036,7 +2038,7 @@ const router = new Router({
               path: 'inboxConversation/project/:projectId',
               meta: {title: 'Albatross - Inbox Conversation'},
               component: () => {
-                if (store.getters.userHasFeature('SMS_INBOX')) {
+                if (userStore.userHasFeature('SMS_INBOX')) {
                   return import ( './views/flow/settings/inbox/MainInbox')
                 } else {
                   return accessDenied()
@@ -2047,7 +2049,7 @@ const router = new Router({
               path: 'inboxConversation/user/:userId',
               meta: {title: 'Albatross - Inbox Conversation'},
               component: () => {
-                if (store.getters.userHasFeature('SMS_INBOX')) {
+                if (userStore.userHasFeature('SMS_INBOX')) {
                   return import ( './views/flow/settings/inbox/MainInbox')
                 } else {
                   return accessDenied()

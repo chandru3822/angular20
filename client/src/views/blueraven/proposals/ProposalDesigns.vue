@@ -255,6 +255,8 @@ import DatetimePickerInput from '@/components/DatetimePickerInput'
 import constants from '@/helpers/constants'
 import ImgProxy from '@/components/ImgProxy'
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const dateSortFn = (prop = 'dateCreated') => {
   return (a, b) => {
@@ -294,7 +296,6 @@ export default {
       activeDesign: {},
       requestSuccessful: false,
       projectId: this.$route.params.projectId,
-      timezone: this.$store.state.user.details.timezone?.value,
       formatPhoneNumber
     }
   },
@@ -304,9 +305,10 @@ export default {
     await this.getActiveDesign()
   },
   computed: {
+    ...mapStores(useUserStore),
     canEdit() {
-      const hasAdmin = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
-      const hasEdit = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'EDIT')
+      const hasAdmin = this.userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
+      const hasEdit = this.userStore.userHasFeatureAccessLevel('PROPOSALS', 'EDIT')
       return hasAdmin || hasEdit
     },
     hasActiveDesign() {

@@ -85,6 +85,8 @@
   import {handleHidingGlobalLoader, getRequest, logError, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ScoreDrilldown from "./component/ScoreDrilldown"
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'LastChance',
@@ -104,7 +106,6 @@
           'items-per-page-options': [25, 50, 100],
         },
         selectRerender: 1,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         tournamentId: this.$route.params.id,
         pool: {},
         poolUsers: [],
@@ -120,6 +121,12 @@
     async created () {
       this.getPool()
       this.getPoolUsers()
+    },
+    computed: {
+      ...mapStores(useUserStore),
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+      }
     },
     methods: {
       toggleSingleSelect(item) {

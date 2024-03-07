@@ -70,15 +70,15 @@
 
 <script setup>
 import constants from '@/helpers/constants'
-import {getCurrentInstance, computed, onMounted, ref} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import {getCurrentInstance, computed, ref} from 'vue'
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 
 const menuOpen = ref(false)
-const companyId = ref(store.state.user.details.companyId)
-const parentId = ref(store.state.user.details.parentCompanyId)
 
 const items = computed(() => {
   return [
@@ -92,28 +92,28 @@ const items = computed(() => {
     }, {
       path: '/admin/functions',
       title: 'Functions',
-      show: store.getters.isCompanyRoot(companyId.value)
+      show: userStore.isCompanyRoot
     }, {
       path: '/admin/certs',
       title: 'Certs',
-      show: store.getters.isCompanyRoot(companyId.value)
+      show: userStore.isCompanyRoot
     }, {
       path: '/admin/orgFilters',
       title: 'Org Filters',
-      show: !store.getters.isCompanyRoot(companyId.value)
+      show: !userStore.isCompanyRoot
     }, {
       path: '/admin/orgLevels',
       title: 'Org Levels',
-      show: !store.getters.isCompanyRoot(companyId.value)
+      show: !userStore.isCompanyRoot
     }, {
       path: '/admin/statusTypes',
       title: 'Status Types',
       //todo: make this page work like features. so that if at root you add a status type to flow.user_status_type instead of flow.company_user_status_type
-      show: !store.getters.isCompanyRoot(companyId.value)
+      show: !userStore.isCompanyRoot
     },  {
       path: '/admin/uploads',
       title: 'File Upload',
-      show: !store.getters.isCompanyRoot(companyId.value)
+      show: !userStore.isCompanyRoot
     }
   ]
 })

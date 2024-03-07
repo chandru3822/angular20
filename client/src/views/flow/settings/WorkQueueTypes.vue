@@ -138,9 +138,11 @@ import constants from '@/helpers/constants'
 import Sortable from "sortablejs";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
@@ -155,12 +157,12 @@ const addNew = ref(false)
 const newType = ref({})
 const selectedWorkQueueTypeId = ref(null)
 const selectedWorkQueueCategoryId = ref(-1)
-const userId = ref(store.state.user.details.id)
-const companyId = ref(store.state.user.details.companyId)
-const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
-const userIsAdmin = ref(store.getters.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN'))
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
+const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
+const userIsAdmin = ref(userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN'))
 const expanded = ref([])
 const workQueueToDelete = ref(null)
 const headers = ref([

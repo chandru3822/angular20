@@ -239,7 +239,7 @@
           <v-toolbar v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0" color="transparent" class="elevation-0 cfg-name-toolbar" dense>
             <v-toolbar-title>
               <!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
-              <v-btn small text v-if="cfg.eventId && $store.getters.userHasFeature('SCHEDULE')"
+              <v-btn small text v-if="cfg.eventId && userStore.userHasFeature('SCHEDULE')"
                      :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">
                 <v-icon>mdi-calendar</v-icon>
               </v-btn>
@@ -325,6 +325,8 @@ import SpinnerInline from '@/components/SpinnerInline'
 import Vue2Filters from 'vue2-filters'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import ConfirmationDialog from "../../../components/ConfirmationDialog.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -353,17 +355,10 @@ export default {
       projectMismatch: false,
       processStepReadOnly: false,
       getStatusClass,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
-      userCanAddEvents: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADD'),
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
-      userCanManage: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'MANAGE'),
-      userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
-      userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
       schedulerCanEdit: false,
       showRemoteSearch: false,
       mostRecentSearchWasRemote: false,
       schedulerLoading: true,
-      timezone: this.$store.state.user.details.timezone.value,
       projectId: parseInt(this.$route.params.projectId),
       projectProcessStepId: parseInt(this.$route.params.processStepId),
       collapsedAttachments: false,
@@ -409,6 +404,25 @@ export default {
     await this.loadAllPageDetails()
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
+    },
+    userCanAddEvents() {
+      return this.userStore.userHasFeatureAccessLevel('EVENTS', 'ADD')
+    },
+    userIsAdmin() {
+      return this.userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN')
+    },
+    userCanManage() {
+      return this.userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'MANAGE')
+    },
+    userHasEventsFeature() {
+      return this.userStore.userHasFeature('EVENTS')
+    },
+    timezone() {
+      return this.userStore.details.timezone.value
+    },
     filteredActions() {
       if (!this?.processStep?.actions) {
         return []
@@ -523,7 +537,7 @@ export default {
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } else {
           this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
-          this.processStepReadOnly = this.processStep.readonly && !this.$store.getters.userHasAnyPosition(this.processStep.whiteListedPositions?.map(wlp => wlp.positionId))
+          this.processStepReadOnly = this.processStep.readonly && !this.userStore.userHasAnyPosition(this.processStep.whiteListedPositions?.map(wlp => wlp.positionId))
           this.processStepId = this.processStep.processStepId
           // this.contactId = this.processStep.contactId
           this.existingEvents = this.processStep.projectProcessStepEvents
@@ -648,7 +662,7 @@ export default {
       }
     },
     selectSelf() {
-      let currentUserId = this.$store.state.user.details.id
+      let currentUserId = this.userStore.details.id
       let currentUserOwner = this.availableOwners.find(o => o.userId === currentUserId)
       if(!!currentUserOwner) {
         this.processStep.owner = currentUserOwner
@@ -674,7 +688,7 @@ export default {
       // if process_step admin then they can edit any process step fields, otherwise they can only edit active ones (1 = active)
       let fieldReadOnly = false
       if (null != field) {
-        fieldReadOnly = getCustomFieldReadOnly(this.$store, field)
+        fieldReadOnly = getCustomFieldReadOnly(field)
       }
       let val = (!this.userIsAdmin && this?.processStep?.processStepStatusTypeId !== 1)
         || fieldReadOnly
@@ -768,11 +782,11 @@ export default {
       try {
         const {data, status} = await getRequest(`/processStep/${this.processStepId}/event`, null, [])
         this.processStepEvents = data
-        if(!this.$store.getters.isFullAdmin){ //if the user is a 7 Oaks admin, they should see the event regardless of readonly status
+        if(!this.userStore.isSystemAdmin){ //if the user is a 7 Oaks admin, they should see the event regardless of readonly status
           this.processStepEvents = this.processStepEvents.filter(pse => {
                 if(pse.readonly) {
                   for(let wlp of pse.readonlyWhiteListPositions) {
-                    let match = this.$store.state.user.details.userPositions.find(up => up.positionId === wlp.positionId)
+                    let match = this.userStore.details.userPositions.find(up => up.positionId === wlp.positionId)
                     if (match) {
                       return true //if the user has a position that matches any of the whiteList positions, the user should see the event
                     }

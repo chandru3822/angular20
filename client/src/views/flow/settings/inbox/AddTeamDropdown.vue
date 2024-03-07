@@ -53,6 +53,8 @@
 <script>
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, postRequest} from "@/helpers/helpers";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: "AddTeamDropdown",
@@ -68,10 +70,7 @@ export default {
       selectableTeams: [],
       existingTeams: {},
       ownersToSave: [],
-      selectableUsers: [],
-      userCanView: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
-      userCanManage: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE'),
-      userId: this.$store.state.user.details.id,
+      selectableUsers: []
     }
   },
   async created() {
@@ -80,6 +79,18 @@ export default {
       this.teamToSave = this.selectableTeams.find(team => this.defaultTeamId === team.id)
       this.getSelectableUsers()
     }
+  },
+  computed: {
+    ...mapStores(useUserStore),
+    userCanView() {
+      return this.userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW')
+    },
+    userCanManage() {
+      return this.userStore.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE')
+    },
+    userId() {
+      return this.userStore.details.id
+    },
   },
   methods: {
     async getTeams() {

@@ -109,6 +109,8 @@ import {
   getSnackbar
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProcessStepEvents',
@@ -149,9 +151,6 @@ export default {
       processStepStatuses: [],
       newEventStatuses: [],
       processStepId: this.$route.params.id,
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
       headers: [
         {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
         {text: 'Event', value: 'eventName', show: true},
@@ -167,6 +166,16 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
+    userCanDelete() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+    },
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
     },

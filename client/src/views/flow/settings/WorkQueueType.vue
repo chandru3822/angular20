@@ -261,12 +261,13 @@ import cloneDeep from 'lodash.clonedeep'
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
+const userStore = useUserStore()
 const route = vueInstance.$route
-
 
 const editType = ref(false)
 const editSchedule = ref(false)
@@ -282,13 +283,13 @@ const itemsUsingType = ref([])
 const positionsLoading = ref(false)
 const hiddenPositionsChanged = ref(false)
 const sql = ref('')
-const is7oaksAdmin = ref(store.getters.isFullAdmin)
-const userId = ref(store.state.user.details.id)
-const companyId = ref(store.state.user.details.companyId)
-const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
-const userIsAdmin = ref(store.getters.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN'))
+const is7oaksAdmin = ref(userStore.isSystemAdmin)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
+const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
+const userIsAdmin = ref(userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN'))
 const allowedMinutesStep = ref(m => m % 60 === 0)
 const noScheduleDefault = ref([
   {day: 'Sunday', startTime: null, endTime: null, selected: false},

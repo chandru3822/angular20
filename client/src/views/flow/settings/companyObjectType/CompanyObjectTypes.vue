@@ -42,21 +42,20 @@
 </template>
 
 <script setup>
-import constants from '@/helpers/constants'
-import {getRequest, getSnackbar, logError} from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
-
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-import {getCurrentInstance, onMounted, ref} from "vue";
+import {getRequest, logError} from '@/helpers/helpers'
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+import {getCurrentInstance, onMounted, ref} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
+const userStore = useUserStore()
 const router = vueInstance.$router
 
 const companyObjectTypes = ref([])
-const apiPath = ref(store.state.user.details.apiPath)
+const apiPath = ref(userStore.details.apiPath)
 const headers = ref([
   {text: 'Object Type', value: 'objectType'},
   {text: '', value: 'icons', show: true},

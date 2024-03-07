@@ -226,6 +226,8 @@ import {
   logError, getRequest
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'WorkQueueDrilldown',
@@ -248,8 +250,6 @@ export default {
       initialPageLoad: true,
       search: '',
       ytfDoWeNeedThis: 0,
-      timezone: this.$store.state.user.details.timezone.value,
-      userFullName: this.$store.state.user.details.fullName,
       showPropCustom: false,
       dataLoading: true,
       errorLoading: false,
@@ -276,7 +276,6 @@ export default {
       options: {
         itemsPerPage: 100
       },
-      userPositions: this.$store.state.user.details.userPositions,
       headers: [],
     }
   },
@@ -296,7 +295,18 @@ export default {
       this.$vuetify.goTo(table, {container: wrapper}); // to header
     }
   },
-  computed: {},
+  computed: {
+    ...mapStores(useUserStore),
+    timezone() {
+      return this.userStore.details.timezone.value
+    },
+    userFullName() {
+      return this.userStore.details.fullName
+    },
+    userPositions() {
+      return this.userStore.details.userPositions
+    },
+  },
   async created() {
     this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
     this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
@@ -541,7 +551,7 @@ export default {
         item['Owner'] = this.userFullName
         this.snackbar = getSnackbar('SUCCESS', 'You are now assigned as the owner.')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        item.owner = this.$store.state.user.details.fullName
+        item.owner = this.userFullName
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

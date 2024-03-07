@@ -196,6 +196,8 @@
   import { handleHidingGlobalLoader, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'setterDashboard',
@@ -231,6 +233,7 @@
       numOffices: 0
     }),
     computed: {
+      ...mapStores(useUserStore),
       windowInnerWidth () { return window.innerWidth},
     },
     watch: {},
@@ -535,8 +538,8 @@
       /* RANKING TABLES-RELATED CODE END */
     },
     async created () {
-      this.currentUserId = this.$store.state.user.details.id
-      let userPositions = this.$store.state.user.details.userPositions
+      this.currentUserId = this.userStore.details.id
+      let userPositions = this.userStore.details.userPositions
 
       if (userPositions?.length > 0) {
         this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId

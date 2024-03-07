@@ -113,27 +113,29 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import orderBy from "lodash.orderby";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import orderBy from 'lodash.orderby'
+import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 const snackbar = vueInstance.$snackbar
 
-const isCompanyRoot = ref(store.getters.isCompanyRoot(store.state.user.details.companyId))
+const isCompanyRoot = ref(userStore.isCompanyRoot)
 const addNew = ref(false)
 const levels = ref([])
 const companyFeatures = ref([])
 const selectedFeature = ref({})
 const features = ref([])
-const apiUrl = ref(store.getters.isCompanyRoot(store.state.user.details.companyId) ? `/feature` : `/feature/company`)
+const apiUrl = ref(userStore.isCompanyRoot ? `/feature` : `/feature/company`)
 const selectedFeatureId = ref(null)
-const userId = ref(store.state.user.details.id)
-const companyId = ref(store.state.user.details.companyId)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
 const expanded = ref([])
 const featureToDelete = ref(null)
 const headers = ref([

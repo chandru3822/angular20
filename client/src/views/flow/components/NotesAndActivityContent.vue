@@ -166,11 +166,11 @@
                   <v-list-item @click="[item.showReply = true, expanded=[item]];">
                     <v-list-item-title>Add Comment</v-list-item-title>
                   </v-list-item>
-                  <v-list-item v-if="item.createdById === userId || $store.getters.isFullAdmin"
+                  <v-list-item v-if="item.createdById === userId || userStore.isSystemAdmin"
                                @click="[item.oldNote = item.note, item.edit = true]">
                     <v-list-item-title>Edit Note</v-list-item-title>
                   </v-list-item>
-                  <v-list-item v-if="item.createdById === userId || $store.getters.isFullAdmin" @click="startNoteDelete(item, false)">
+                  <v-list-item v-if="item.createdById === userId || userStore.isSystemAdmin" @click="startNoteDelete(item, false)">
                     <v-list-item-title>Delete Note</v-list-item-title>
                   </v-list-item>
 
@@ -285,11 +285,11 @@
                       </v-btn>
                     </template>
                     <v-list>
-                      <v-list-item v-if="cn.createdById === userId || $store.getters.isFullAdmin"
+                      <v-list-item v-if="cn.createdById === userId || userStore.isSystemAdmin"
                                    @click="[cn.oldNote = cn.note, cn.edit = true]">
                         <v-list-item-title>Edit Comment</v-list-item-title>
                       </v-list-item>
-                      <v-list-item v-if="cn.createdById === userId || $store.getters.isFullAdmin" @click="startNoteDelete(cn, true, item)">
+                      <v-list-item v-if="cn.createdById === userId || userStore.isSystemAdmin" @click="startNoteDelete(cn, true, item)">
                         <v-list-item-title>Delete Comment</v-list-item-title>
                       </v-list-item>
                     </v-list>
@@ -316,6 +316,8 @@ import Vue2Filters from "vue2-filters"
 import {Mentionable} from 'vue-mention'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'NotesAndActivityContent',
@@ -341,8 +343,6 @@ export default {
       note: {},
       dirtyNote: false,
       savingNote: false,
-      userId: this.$store.state.user.details.id,
-      timezone: this.$store.state.user.details.timezone.value,
       noteOptions: [
         {label: 'Add Comment'},
         {label: 'Edit Note'},
@@ -364,6 +364,13 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userId() {
+      return this.userStore.details.id
+    },
+    timezone() {
+      return this.userStore.details.timezone.value
+    },
     displayedHeaders() {
       return this.headers.filter(header => header.show)
     },

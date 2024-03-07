@@ -289,6 +289,8 @@
   import { handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'closerDashboard',
@@ -299,10 +301,8 @@
       return {
         snackbar: {},
         constants,
-        currentUserId: this.$store.state.user.details.id,
         currentUserOrgId: null,
         selectedQuarter: 1,
-        userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL'),
         timeIntervalBtnGroup: 1, // determines which time interval button gets the active class
         timeIntervalString: '60 days', // 60 days is selected by default
         timeInterval: 60, // default time interval selection
@@ -332,6 +332,13 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      currentUserId() {
+        return this.userStore.details.id
+      },
+      userCanViewAll() {
+        return this.userStore.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL')
+      },
       filteredTopRepsData () {
         if (this.searchText) {
           return this.topRepsData.filter(r => {
@@ -572,8 +579,8 @@
       /* RANKING TABLES-RELATED CODE END */
     },
     async created () {
-      if (this.$store.state.user.details.userPositions?.length > 0) {
-        let usersPrimaryPosition = this.$store.state.user.details.userPositions.find(p => {
+      if (this.userStore.details.userPositions?.length > 0) {
+        let usersPrimaryPosition = this.userStore.details.userPositions.find(p => {
           return (!p.archived && p.primaryFlag)
         })
 

@@ -170,14 +170,16 @@ import {
   getRequest,
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import ConfirmationDialog from '@/components/ConfirmationDialog'
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 
-import {computed, getCurrentInstance, onMounted, ref} from "vue";
+import {computed, getCurrentInstance, onMounted, ref} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
+const userStore = useUserStore()
 
 const templates = ref([])
 const newTemplate = ref({})
@@ -186,7 +188,6 @@ const addTeam = ref(false)
 const teamFilter = ref(null)
 const showFilter = ref(false)
 const levels = ref([])
-const parentId = ref(store.state.user.details.parentCompanyId)
 const expanded = ref([])
 const expandedItem = ref([])
 const showDeleteDialog = ref(false)
@@ -209,7 +210,7 @@ const filterTemplates = computed(() => {
   return templates.value.filter(tmp => !tmp.archived)
 })
 const userCanEdit = computed(() => {
-  return store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE')
+  return userStore.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE')
 })
 
 const getTemplates = async () => {

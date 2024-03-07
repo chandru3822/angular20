@@ -10,7 +10,7 @@
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newTag = {}]"
-              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               :hide-text-on-mobile="constants.IS_MOBILE"
               :text="!addNew ? 'Add Topic' : 'Cancel'"
               :prepend-icon="addNew ? '' : 'add'"
@@ -131,7 +131,7 @@
                       size="small"
                       variant="text"
                       color="primary"
-                      v-if="item.hashtagTypeId !== 1 && store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                      v-if="item.hashtagTypeId !== 1 && userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                       @click="tagToDelete=item"
                       prepend-icon="delete"
                     />
@@ -192,10 +192,12 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AlbatrossButton from "../../../components/customVuetify/AlbatrossButton.vue";
 
 import { computed, getCurrentInstance, ref, onMounted } from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
+const userStore = useUserStore()
 
 const tags = ref([])
 const addNew = ref(false)
@@ -203,8 +205,8 @@ const showSaveDialog = ref(false)
 const tagMaxChars = ref(255)
 const newTag = ref({})
 const selectedTagId = ref(null)
-const userId = ref(store.state.user.details.id)
-const companyId = ref(store.state.user.details.companyId)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
 const tagToDelete = ref(null)
 const tagToSave = ref(null)
 

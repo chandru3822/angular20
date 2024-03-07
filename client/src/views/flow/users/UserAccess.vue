@@ -14,7 +14,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="saveUserAccess"
-                   color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
+                   color="primary" v-if="userStore.userHasFeatureAccessLevel('USERS', 'EDIT')">
               <v-icon>save</v-icon>
               Save
             </v-btn>
@@ -35,7 +35,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
 <!--            <v-btn text @click="[addCalendar = !addCalendar, selectedCalendar = {}]"-->
-<!--                   color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">-->
+<!--                   color="primary" v-if="userStore.userHasFeatureAccessLevel('USERS', 'EDIT')">-->
 <!--              <v-icon class="mr-3">edit</v-icon>-->
 <!--              Change Org Calendar(s)-->
 <!--            </v-btn>-->
@@ -131,6 +131,8 @@
   } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import SpinnerInline from '@/components/SpinnerInline'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'UserAccess',
@@ -140,13 +142,16 @@
       AccessControl
     },
     computed: {
+      ...mapStores(useUserStore),
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('ACCESS_CONTROL', 'EDIT')
+      },
     },
     data() {
       return {
         snackbar: {},
         addCalendar: false,
         userId: this.$route.params.id,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ACCESS_CONTROL', 'EDIT'),
         features: [],
         orgCalendars: [],
         userOrgCalendars: [],

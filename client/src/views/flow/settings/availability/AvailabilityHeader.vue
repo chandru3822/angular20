@@ -19,21 +19,23 @@
 <script setup>
 
 import {getCurrentInstance, ref, computed} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
+const userStore = useUserStore()
 
 const tabs = ref([
   {
     label: 'Availability',
     path: `/settings/availability/main/schedule`,
-    display: store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW')
+    display: userStore.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW')
   },
   {
     label: 'Slot Schedules',
     path: `/settings/availability/slots`,
-    display: store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')
+    display: userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')
   }
 ])
 

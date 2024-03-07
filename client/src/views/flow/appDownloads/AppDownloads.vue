@@ -61,6 +61,8 @@ import constants from '@/helpers/constants'
 import AppList from '@/views/flow/appDownloads/AppList'
 import {getSnackbar, handleHidingGlobalLoader, putRequest, postRequest } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'AppDownloads',
@@ -76,8 +78,6 @@ export default {
       constants,
       buildMenu: false,
       apps: [],
-      is7oaksAdmin: this.$store.getters.isFullAdmin,
-      isAdmin: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'ADMIN'),
       branches: ['stage', 'uat', 'master'],
       dataSources: ['stage', 'uat', 'prod', 'flux'],
       headers: [
@@ -92,6 +92,15 @@ export default {
     if(this.is7oaksAdmin) {
       this.branches.push('develop')
     }
+  },
+  computed: {
+    ...mapStores(useUserStore),
+    is7oaksAdmin() {
+      return this.userStore.isSystemAdmin
+    },
+    isAdmin() {
+      return this.userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'ADMIN')
+    },
   },
   methods: {
     setVersionNumber (version) {

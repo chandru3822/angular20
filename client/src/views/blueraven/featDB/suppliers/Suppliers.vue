@@ -15,7 +15,7 @@
           <template #header.icons="{}">
             <div class="text-right mr-2">
               <v-btn text @click="addItem" color="primary"
-                     v-if="$store.getters.userHasFeatureAccessLevel('SUPPLIERS', 'ADD')">
+                     v-if="userStore.userHasFeatureAccessLevel('SUPPLIERS', 'ADD')">
                 <v-icon>add</v-icon>
                 <span v-if="!constants.IS_MOBILE">Add New</span>
               </v-btn>
@@ -65,10 +65,10 @@
                 <v-btn :to="`/database/supplier/${item.id}/details`" text x-small fab>
                   <v-icon>mdi-arrow-right</v-icon>
                 </v-btn>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('SUPPLIERS', 'EDIT')" small color="primary"
+                <v-icon v-if="userStore.userHasFeatureAccessLevel('SUPPLIERS', 'EDIT')" small color="primary"
                         class="mr-3 feat-db-link-icon" @click="editSupplier(item)">
                   edit
-                </v-icon><v-icon v-if="$store.getters.userHasFeatureAccessLevel('SUPPLIERS', 'DELETE')" small color="primary"
+                </v-icon><v-icon v-if="userStore.userHasFeatureAccessLevel('SUPPLIERS', 'DELETE')" small color="primary"
                         class="mr-3 feat-db-link-icon" @click="deleteSupplier(item)">
                   delete
                 </v-icon>
@@ -153,6 +153,8 @@ import {AppMutations} from "@/stores/AppStore";
 import {deleteRequest, getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: "suppliers",
@@ -189,6 +191,7 @@ export default {
     duplicateSupplierMatch: null
   }),
   computed: {
+    ...mapStores(useUserStore),
     filteredSuppliers() {
       return this.suppliers && this.suppliers.filter(supplier => {
         return Object.keys(this.supplierFilters).every(filterName => {
@@ -224,7 +227,6 @@ export default {
   },
   async created() {
     this.$store.commit(AppMutations.SET_LOADING, true)
-    this.currentUser = this.$store.state.user.details.id
     this.fetchStates()
     await this.fetchSuppliers()
   },

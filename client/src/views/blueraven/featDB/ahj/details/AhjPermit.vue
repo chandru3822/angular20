@@ -153,6 +153,8 @@ import TwoColumnMasonry from "@/views/blueraven/featDB/components/TwoColumnMason
 import FeatDbCustomFieldGroup from "@/views/blueraven/featDB/components/FeatDbCustomFieldGroup.vue";
 import FeatDbContact from "@/views/blueraven/featDB/components/FeatDbContacts.vue";
 import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const { VITE_ENV } =  import.meta.env
 
@@ -166,8 +168,9 @@ export default {
     CustomValueInput
   },
   computed: {
+    ...mapStores(useUserStore),
     userCanEdit() {
-      return this.$store.getters.userHasFeatureAccessLevel('AHJ', 'EDIT')
+      return this.userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')
     },
     hardCodedDocsMap() {
       const docsMap = new Map()
@@ -221,7 +224,7 @@ export default {
     editBrsTechnicianPermitSubmissionInstructions: false,
     totalGroups: 4,
     expandedGroups: 4,
-    // userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AHJ', 'EDIT'),
+    // userCanEdit: this.userStore.userHasFeatureAccessLevel('AHJ', 'EDIT'),
     ahjPermit: {
       submissionChecklist: [],
       revisionChecklist: [],

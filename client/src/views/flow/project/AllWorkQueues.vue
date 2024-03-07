@@ -94,6 +94,8 @@ import SpinnerInline from '@/components/SpinnerInline'
 
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import constants from "@/helpers/constants";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ActiveProcessSteps',
@@ -112,11 +114,8 @@ export default {
       workQueueHistory: [],
       expandHistoric: true,
       expandCurrent: true,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      userHasWorkQueueFeature: this.$store.getters.userHasFeature('WORK_QUEUE'),
       dataLoading: false,
       snackbar: {},
-      companyId: this.$store.state.user.details.companyId,
       headers: [
         {text: 'WQ Category', value: 'workQueueCategory', show: true},
         {text: 'WQ Type', value: 'workQueueType', show: true},
@@ -137,6 +136,13 @@ export default {
     this.getWorkQueueHistory()
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     currentWorkQueues() {
       return this.workQueueHistory.filter(wqh => wqh.status === 'Currently in Queue')
     },

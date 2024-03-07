@@ -86,6 +86,8 @@
   import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import constants from "@/helpers/constants";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'PostalCodeZones',
@@ -106,11 +108,6 @@
         options: {
           itemsPerPage: 100
         },
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('POSTAL_CODE', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('POSTAL_CODE', 'DELETE'),
-        companyId: this.$store.state.user.details.companyId,
-        userId: this.$store.state.user.details.id,
         postalCodeZones: [],
         headers: [
           {text: 'Zone Name', value: 'zoneName', show: true},
@@ -122,6 +119,22 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      userCanAdd() {
+        return this.userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'ADD')
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')
+      },
+      userCanDelete() {
+        return this.userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'DELETE')
+      },
+      companyId() {
+        return this.userStore.details.companyId
+      },
+      userId() {
+        return this.userStore.details.id
+      },
       itemToDeleteName() {
         return this.itemToDelete ? this.itemToDelete.postalCode : '';
       }

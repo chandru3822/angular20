@@ -143,6 +143,8 @@
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'CloserAvailabilityCalendar',
@@ -156,6 +158,13 @@
       states: {type: Array}
     },
     computed: {
+      ...mapStores(useUserStore),
+      scrollTime() {
+        return moment().tz(this.userStore.details.timezone.value).startOf('hour').format('HH:mm:ss')
+      },
+      timezone() {
+        return this.userStore.details.timezone.value
+      },
       //round robin users
       selectAllRoundRobinUsers () {
         return this.roundRobinUsers.length === this.selectedRoundRobinUsers.length
@@ -194,8 +203,8 @@
         })
     },
     watch: {
-      '$store.state.user.details.timezone.value': function () {
-        this.calendar.options.timezone = this.$store.state.user.details.timezone.value
+      'userStore.details.timezone.value': function () {
+        this.calendar.options.timezone = this.userStore.details.timezone.value
       },
       'selectedRoundRobinUsers': function () {
         //clear out selected map resources so we don't orphan map pins when the uncheck a closer
@@ -242,13 +251,12 @@
         mapResourceEvents: [],
         calendarPlugins: [ interaction, resourceTimelinePlugin, momentPlugin, momentTimezonePlugin ],
         licenseKey: 'GPL-My-Project-Is-Open-Source',
-        timezone: this.$store.state.user.details.timezone.value,
         calendar: {
           options: {
             slotDuration: '00:30:00',
             slotLabelInterval: '01:00:00',
             slotWidth: 45,
-            scrollTime: moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'),
+            scrollTime: this.scrollTime,
             hiddenDays: [],
             minTime: '02:00:00',
             maxTime: '23:00:00',
@@ -256,7 +264,7 @@
             firstDay: 1,
             editable: true,
             defaultView: 'resourceTimelineDay',
-            timezone: this.$store.state.user.details.timezone.value,
+            timezone: this.timezone,
             header: {
               left: 'customPrev,customToday,customNext',
               center: 'title',
@@ -530,8 +538,8 @@
         if(this.calendarView === 'resourceTimelineDay') {
           this.calendarStartTime = moment(this.calendarStart).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
           this.calendarEndTime = moment(this.calendarStart).add(1, 'd').startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
-          // this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          // this.calendarStartTime = moment(this.calendarStart).tz(this.userStore.details.timezone.value).format('YYYY-MM-DD')
+          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.userStore.details.timezone.value).format('YYYY-MM-DD')
         } else {
           //moment starts on sunday, isoWeek starts on monday
           this.calendarStartTime = moment(this.calendarStart).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')

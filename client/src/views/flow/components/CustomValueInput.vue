@@ -301,6 +301,8 @@ import 'quill/dist/quill.snow.css'
 import { quillEditor } from 'vue-quill-editor'
 import {getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from "@/stores/AppStore";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'CustomValueInput',
@@ -372,6 +374,10 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    timezone() {
+      return this.userStore.details?.timezone?.value
+    },
     //before this was a computed value it wasn't updating the ui for all field types when they were required
     rules() {
       let rules = []
@@ -425,7 +431,6 @@ export default {
       },
       requiredRules: constants.BASIC_REQUIRED_RULE,
       arrayRequiredRules: constants.BASIC_ARRAY_REQUIRED_RULE,
-      timezone: this.$store.state.user.details?.timezone?.value,
       locked: true,
       currentUserId:null,
     }
@@ -485,14 +490,14 @@ export default {
           //a field with System List Type "Users by Position" or "Users by Organization" returns a distinct list of user positions (so a user can appear more than once)
           //and uses the userPositionId as the value.id
           // if a user appears more than once, we want to use their primary position, so we get the position id of their primary position to find them in the list,
-          let currentUserPrimaryPositionId = this.$store.state.user.details.userPositions.find(position => position.primaryFlag === true)?.id
+          let currentUserPrimaryPositionId = this.userStore.details.userPositions.find(position => position.primaryFlag === true)?.id
           let currentUserValues = this.getListOfValues().filter(value => value.id && value.id === currentUserPrimaryPositionId)
             if(currentUserValues.length > 0) {
               //select the primary position
               this.field.intValue = currentUserValues[0].id
             } else {
               // if their primary position is not in the list, get the newest position in the list
-              let positions = this.$store.state.user.details.userPositions.filter(position => position.primaryFlag === false)
+              let positions = this.userStore.details.userPositions.filter(position => position.primaryFlag === false)
               .sort((position1, position2) => {
                 //sort newest to oldest position
                 if(position1.startDate < position2.startDate){
@@ -517,7 +522,7 @@ export default {
         case 4://All Active Users
         default: //(just using this for the default case because it's simplest)
           //a field with System List Type of “All Active Users” returns a distinct list of users and uses the userId as the value.id
-          let currentUserId = this.$store.state.user.details.id
+          let currentUserId = this.userStore.details.id
           let currentUserPosition = this.getListOfValues().find(value => value.id && value.id === currentUserId)
               if(currentUserPosition){
                 this.field.intValue = currentUserPosition.id

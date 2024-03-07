@@ -28,17 +28,21 @@ import Spinner from '@/components/Spinner'
 import AnnouncementAlert from '@/components/AnnouncementAlert.vue'
 import ReloadPrompt from '@/components/ReloadPrompt.vue'
 import {NotificationActions} from '@/plugins/notifications/NotificationStore'
-import {UserActions} from '@/stores/UserStore'
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
+const userStore = useUserStore()
 
-const hideHeader = ref(store.state.user.hideHeader || false)
-const userIsMasquerading = ref(store.state.user?.details?.masqueradingUserId != null)
-const userId = ref(store.state.user?.details?.id)
+// In moving this from vuex to pinia, I noticed `hideHeader` never exists in
+// the user store. Still keeping this logic here though in case of a breaking
+// change I can't see right now
+const hideHeader = ref(userStore.hideHeader || false)
+const userIsMasquerading = ref(userStore?.details?.masqueradingUserId != null)
+const userId = ref(userStore?.details?.id)
 const noNavRoutes = ref([
   'login',
   'forgotPassword',
@@ -57,7 +61,7 @@ const revokeAccessEvents = computed(() => {
 watch(revokeAccessEvents, async () => {
       //will kick a user out immediately if their access is revoked (only works for web users)
       if (revokeAccessEvents.value?.length > 0) {
-        await store.dispatch(UserActions.LOGOUT)
+        userStore.logout()
         //i tried dispatch after 'await' but it didn't work. dont know why
         router.push('/login').then(() => {
           store.dispatch(

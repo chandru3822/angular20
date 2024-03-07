@@ -118,14 +118,15 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest} from '@/helpers/helpers'
+import ConfirmationDialog from '@/components/ConfirmationDialog'
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
@@ -135,7 +136,7 @@ const functions = ref([])
 const dbFunctionTypes = ref([])
 const dataTypes = ref([])
 const newFunction = ref({})
-const userId = ref(store.state.user.details.id)
+const userId = ref(userStore.details.id)
 const expanded = ref([])
 const functionToDelete = ref(null)
 const headers = ref([

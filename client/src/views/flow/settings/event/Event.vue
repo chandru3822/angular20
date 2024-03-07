@@ -47,6 +47,8 @@ import Vue2Filters from 'vue2-filters'
 
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'Event',
@@ -58,12 +60,17 @@ export default {
       editName: false,
       oldName: null,
       event: {},
-      eventId: this.$route.params.id,
-      companyId: this.$store.state.user.details.companyId,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+      eventId: this.$route.params.id
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    companyId() {
+      return this.userStore.details.companyId
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
     //this should not be so hard
     activeTab: {
       get: function() {

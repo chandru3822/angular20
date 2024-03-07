@@ -61,6 +61,8 @@
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'Configurations',
@@ -75,11 +77,14 @@ export default {
         {text: 'Value', value: 'value', show: true},
         {text: null, value: 'icons', show: true, sortable: false}
       ],
-      configurationValues: [],
-      companyId: this.$store.state.user.details.companyId,
+      configurationValues: []
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    companyId() {
+      return this.userStore.details.companyId
+    }
   },
   async created () {
     this.getConfigurationValues()

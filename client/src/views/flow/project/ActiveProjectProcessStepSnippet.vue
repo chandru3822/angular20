@@ -9,8 +9,8 @@
       <span :class="getStatusClass(ps.processStepStatusTypeId)">{{ps.processStepStatusType}}</span>
       <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>
       <div class="albatross-body-3 grey--text text--darken-2"
-           v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN') ||
-                 $store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')">
+           v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN') ||
+                 userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')">
         {{ ps.projectProcessStepId }}
       </div>
     </v-card>
@@ -20,6 +20,8 @@
 
 <script>
 import {getStatusClass} from '@/services/processStepStatusTypeService'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ActiveProjectProcessStepSnippet',
@@ -29,6 +31,7 @@ export default {
     contactId: Number
   },
   computed: {
+    ...mapStores(useUserStore),
     ppsId () {
       return parseInt(this.$route.params.processStepId)
     }

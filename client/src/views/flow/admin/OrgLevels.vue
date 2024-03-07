@@ -88,26 +88,28 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
-  import {getOrgLevels} from '@/services/orgService'
-  import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
-  import {getCurrentInstance, onMounted, computed, ref} from 'vue'
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import {AppMutations} from '@/stores/AppStore'
+import {getOrgLevels} from '@/services/orgService'
+import {handleHidingGlobalLoader, deleteRequest, putRequest} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import ConfirmationDialog from '@/components/ConfirmationDialog'
+import {getCurrentInstance, onMounted, computed, ref} from 'vue'
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
-  const vueInstance = getCurrentInstance().proxy
-  const store = vueInstance.$store
-  const router = vueInstance.$router
-  const snackbar = vueInstance.$snackbar
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const router = vueInstance.$router
+const snackbar = vueInstance.$snackbar
 
 const addNew = ref(false)
 const levels = ref([])
 const orgLevels = ref([])
 const newOrgLevel = ref({})
 const selectedOrgLevelId = ref(null)
-const userId = ref(store.state.user.details.id)
-const companyId = ref(store.state.user.details.companyId)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
 const expanded = ref([])
 const levelToDelete = ref(null)
 const headers = ref([

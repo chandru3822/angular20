@@ -3,7 +3,7 @@
     <template v-if="!hideAdminBtn" v-slot:tool-btn>
       <v-btn
           text small color="primary" class="pa-0 mx-2" style="max-width: 34px"
-          v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
+          v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || userStore.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
           :to="`/projectAdmin/${projectId}/processSteps`"
           @click.stop
       >
@@ -25,6 +25,8 @@
 import {getRequestWithParams, logError} from '@/helpers/helpers'
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 import {ProjectMutations} from "@/stores/ProjectStore";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProjectTabs',
@@ -50,6 +52,7 @@ export default {
     this.getProjectTabs()
   },
   computed: {
+    ...mapStores(useUserStore),
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
     },

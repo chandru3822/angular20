@@ -38,11 +38,54 @@
 
 <script>
   import {BrsMutations} from '@/stores/BrsStore'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'Commissions',
 
     computed: {
+      ...mapStores(useUserStore),
+      tabs() {
+        return [ {
+          label: 'Users',
+          path: `/commissionManagement/users`,
+          display: this.userStore.userHasFeature('COMMISSIONS')
+        }, {
+          label: 'Commissions',
+          path: `/commissionManagement/commissions`,
+          display: this.userStore.userHasFeature('COMMISSIONS')
+        }, {
+          label: 'Overrides',
+          path: `/commissionManagement/overrides`,
+          display: this.userStore.userHasFeature('COMMISSIONS')
+        }, {
+          label: 'Accounting Review',
+          path: `/commissionManagement/accounting/current`,
+          display: this.userStore.userHasFeature('COMMISSIONS')
+        }, {
+          label: 'Payroll Search',
+          path: `/commissionManagement/payroll`,
+          display: this.userStore.userHasFeature('COMMISSIONS')
+        }, {
+          label: 'Residual Plans',
+          path: '/commissionManagement/residualPlans',
+          display: this.userStore.userHasFeature('COMMISSIONS')
+        }, {
+          label: 'Residuals',
+          path: '/commissionManagement/residuals',
+          display: this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
+        }, {
+          label: 'Closer Residuals',
+          path: '/commissionManagement/closerResiduals',
+          display: this.userStore.userHasFeature('COMMISSIONS')
+        }, {
+          label: 'Residual Search',
+          path: `/commissionManagement/residualSearch`,
+          display: this.userStore.userHasFeature('COMMISSIONS')
+        }
+        ]
+      },
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)
       },
@@ -60,44 +103,6 @@
         positions: [
           {id: 1, label: 'Closer'},
           {id: 4, label: 'Setter'}
-        ],
-        tabs: [ {
-          label: 'Users',
-          path: `/commissionManagement/users`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Commissions',
-          path: `/commissionManagement/commissions`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Overrides',
-          path: `/commissionManagement/overrides`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Accounting Review',
-          path: `/commissionManagement/accounting/current`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Payroll Search',
-          path: `/commissionManagement/payroll`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Residual Plans',
-          path: '/commissionManagement/residualPlans',
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Residuals',
-          path: '/commissionManagement/residuals',
-          display: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
-        }, {
-          label: 'Closer Residuals',
-          path: '/commissionManagement/closerResiduals',
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Residual Search',
-          path: `/commissionManagement/residualSearch`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }
         ]
       }
     },

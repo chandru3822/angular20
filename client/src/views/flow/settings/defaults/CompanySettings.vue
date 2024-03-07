@@ -167,18 +167,19 @@ import {
   handleHidingGlobalLoader,
   postRequestWithRequestParams,
   getRequest,
-  putRequest,
-  getSnackbar
+  putRequest
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+import ConfirmationDialog from '@/components/ConfirmationDialog'
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+import {getCurrentInstance, onMounted, ref, computed} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
+const userStore = useUserStore()
 const route = vueInstance.$route
 
 const LogoTypeEnum = ref({
@@ -227,10 +228,10 @@ const colorOptions = ref({
   hideModeSwitch: true
 })
 const validForm = ref(false)
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-const is7oaksAdmin = ref(store.getters.isFullAdmin)
+const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+const is7oaksAdmin = ref(userStore.isSystemAdmin)
 const testUserPassword = ref('')
-const companyId = ref(store.state.user.details.companyId)
+const companyId = ref(userStore.details.companyId)
 const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY)
 const damnKeyThing = ref(0)
 const logoToDelete = ref(null)
@@ -321,7 +322,6 @@ const logoToDeleteId = computed(() => {
           id: logoToDelete.image?.id,
           callback: async () => {
             LogoTypeEnum[logoToDelete.key].image = {}
-            // store.commit(UserMutations.SET_USER_IMAGE, {})
             snackbar('SUCCESS', 'Image Deleted')
 
             store.commit(AppMutations.SET_LOADING, false)

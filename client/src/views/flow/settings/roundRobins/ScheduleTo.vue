@@ -181,6 +181,8 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import sumBy from "lodash.sumby"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ScheduleTo',
@@ -189,11 +191,6 @@ export default {
     return {
       snackbar: {},
       scheduleToUsers: [],
-      is7oaksAdmin: this.$store.getters.isFullAdmin || this.$store.state.user.details.id === 2350555,
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
-      //per carlin 10-31-22 - users with edit should be able to delete users from a RR
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
-      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
       roundRobinId: this.$route.params.id,
       dataLoading: true,
       selectedUser: {},
@@ -231,6 +228,19 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    is7oaksAdmin() {
+      return this.userStore.isSystemAdmin || this.userStore.details.id === 2350555
+    },
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD')
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
+    },
+    userCanDelete() {
+      return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE')
+    },
     filterHeaders () {
       return this.userHeaders.filter(header => header.show === true)
     },

@@ -48,7 +48,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Project Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text color="primary" @click="[addNew = !addNew, newType = {}]" v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -109,7 +109,7 @@
                 <v-btn small text color="primary" :to="`/settings/projectStatus/${item.id}/components`">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
+                <v-btn small text color="primary" v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
                   <v-icon >delete</v-icon>
                 </v-btn>
               </td>
@@ -144,6 +144,8 @@
   import { handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'ProjectStatuses',
@@ -169,9 +171,6 @@
         ],
         addNew: false,
         newType: {},
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         fieldsInUse: [],
         deleteError: false,
         showDeleteDialog: false,
@@ -195,6 +194,16 @@
       })
     },
     computed: {
+      ...mapStores(useUserStore),
+      userId() {
+        return this.userStore.details.id
+      },
+      companyId() {
+        return this.userStore.details.companyId
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+      },
       toDeleteStatusType(){
         return this.itemToDelete ? this.itemToDelete.projectStatusType : ''
       }

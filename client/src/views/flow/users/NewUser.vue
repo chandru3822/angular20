@@ -130,9 +130,11 @@
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
   import {getUserStatusTypes} from '@/services/userService'
-  import DatetimePickerInput from "@/components/DatetimePickerInput";
+  import DatetimePickerInput from '@/components/DatetimePickerInput'
   import keyBy from 'lodash.keyby'
   import {getOrgFilters} from '@/services/orgService'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'NewUser',
@@ -153,11 +155,9 @@
         userStatusTypes: [],
         requiredRules: constants.BASIC_REQUIRED_RULE,
         emailRules: constants.EMAIL_RULES,
-        companyId: this.$store.state.user.details.companyId,
         userPositionPanel: 0,
         positions: [],
         filters: [],
-        timezone: this.$store.state.user.details.timezone.value,
         newPositionHierarchyPopulated: false,
         newPosition: {},
         userPhoneRule: [
@@ -178,6 +178,15 @@
       this.getCustomFieldGroups()
       this.getFilters()
       this.getPositions()
+    },
+    computed: {
+      ...mapStores(useUserStore),
+      companyId() {
+        return this.userStore.details.companyId
+      },
+      timezone() {
+        return this.userStore.details.timezone.value
+      },
     },
     methods: {
       validate() {
@@ -376,7 +385,7 @@
         }
       },
       getReadOnly: function (field) {
-        return getCustomFieldReadOnly(this.$store, field)
+        return getCustomFieldReadOnly(field)
       },
       populateDirtyCfvs(field) {
         let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)

@@ -95,19 +95,21 @@
 
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
+  const userStore = useUserStore()
   const route = vueInstance.$route
 
   const phoneNumbers = ref([])
   const showError = ref(false)
   const errorMsg = ref('')
-  const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD'))
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'))
-  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE'))
+  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD'))
+  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'))
+  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE'))
   const callGroupId = ref(route.params.id)
   const dataLoading = ref(true)
   const addNumber = ref(false)

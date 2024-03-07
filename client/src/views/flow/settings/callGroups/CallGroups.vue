@@ -131,11 +131,13 @@
 
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
+  const userStore = useUserStore()
   const router = vueInstance.$router
 
   const addNew = ref(false)
@@ -143,11 +145,11 @@
   const newCallGroup = ref({})
   const dataLoading = ref(true)
   const editGroup = ref(false)
-  const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD'))
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'))
-  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE'))
-  const companyId = ref(store.state.user.details.companyId)
-  const userId = ref(store.state.user.details.id)
+  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD'))
+  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'))
+  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE'))
+  const companyId = ref(userStore.details.companyId)
+  const userId = ref(userStore.details.id)
   const CallGroups = ref([])
   const maxCallCount = ref(20)
   const daysPerPeriod = ref(30)

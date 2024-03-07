@@ -65,13 +65,10 @@
 
 <script>
   import { Actions } from '@/store'
-  import { UserMutations } from '@/stores/UserStore'
   import constants from '@/helpers/constants'
-  import { UserActions } from '@/stores/UserStore'
-  import moment from 'moment-timezone'
   import Vue2Filters from "vue2-filters"
-
-  const { VITE_ENV } =  import.meta.env
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { mapStores } from 'pinia'
 
   export default {
     name: 'AccountMenu',
@@ -81,22 +78,18 @@
     },
     watch: {
       // whenever userImage changes, this function will run
-      '$store.state.user.userImage': function () {
+      'userStore.userImage': function () {
         // reset the user image in the account menu when a new one is added or one is deleted
-        this.userImage = this.$store.state.user.userImage
+        this.userImage = this.userStore.userImage
       }
     },
     data () {
       return {
         constants,
         loadComplete: false,
-        userImage: this.$store.state.user.userImage,
         attachmentTypeId: 9,
-        userId: this.$store.state.user.details.id,
         headerColor: constants.ENV_COLOR,
         menuOpen: false,
-        timezone: this.$store.state.user.details.timezone || {},
-        highestCompanyId: this.$store.state.user.details.highestCompanyId,
         timezones: [
           { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
           { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
@@ -109,6 +102,16 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      userImage() {
+        return  this.userStore.userImage
+      },
+      userId() {
+        return  this.userStore.details.id
+      },
+      timezone() {
+        return  this.userStore.details.timezone || {}
+      },
       menuItems() {
         return [
           {
@@ -120,17 +123,17 @@
             path: '/users',
             title: 'Users',
             icon: 'people',
-            show: this.$store.getters.userHasFeature('USERS')
+            show: this.userStore.userHasFeature('USERS')
           }, {
             path: '/orgs',
             title: 'Organizations',
             icon: 'list',
-            show: this.$store.getters.userHasFeature('ORGS')
+            show: this.userStore.userHasFeature('ORGS')
           }, {
             path: '/admin',
             title: 'Admin',
             icon: 'mdi-cogs',
-            show: this.$store.getters.isSystemAdmin(this.highestCompanyId)
+            show: this.userStore.isSystemAdmin
           }
         ]
       }
@@ -139,14 +142,8 @@
       this.getUserImage()
     },
     updated () {
-      if(this.$store.state.user.details.timezone === null) {
-        this.timezone = {
-          friendlyValue: moment.tz.guess(),
-          value: moment.tz.guess()
-        }
-        this.$store.dispatch(UserActions.CHANGE_TIMEZONE, this.timezone)
-      } else {
-        this.timezone = this.$store.state.user.details.timezone
+      if(this.timezone === null || Object.keys(this.timezone).length === 0) {
+        this.userStore.guessTimeZone()
       }
     },
     methods: {
@@ -154,7 +151,7 @@
         this.$router.push({ name: path })
       },
       async changeTimezone (tz) {
-        await this.$store.dispatch(UserActions.CHANGE_TIMEZONE, tz)
+        this.userStore.details.timezone = tz
         this.timezone = tz
         //todo: actually save it to the DB
         // i dont think we have to refresh, the filter should do that for us
@@ -167,7 +164,7 @@
               attachmentTypeId: this.attachmentTypeId,
               sourceId: this.userId,
               callback: async (img) => {
-                this.$store.commit(UserMutations.SET_USER_IMAGE, img)
+                this.userStore.userImage = img
                 this.loadComplete = true
               }
             })
@@ -179,7 +176,7 @@
       },
       logout () {
         this.menuOpen = false
-        this.$store.dispatch(UserActions.LOGOUT)
+        this.userStore.logout()
         this.$router.push('/login')
       }
     }

@@ -14,6 +14,8 @@
 
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
   import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'ProcessStepCFG',
@@ -24,9 +26,7 @@
       return {
         snackbar: {},
         loading: true,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         processStepId: this.$route.params.id,
-        companyId: this.$store.state.user.details.companyId,
         processStep: {},
         breadcrumbs: [
           {
@@ -39,6 +39,13 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+      },
+      companyId() {
+        return this.userStore.details.companyId
+      },
     },
     async created () {
       await this.getProcessStepDetails()

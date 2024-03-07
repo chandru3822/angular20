@@ -27,9 +27,57 @@
 </template>
 
 <script>
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+
   export default {
     name: 'Expenses',
     computed: {
+      ...mapStores(useUserStore),
+      userCanManage() {
+        return this.userStore.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')
+      },
+      userIsAdmin() {
+        return this.userStore.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')
+      },
+      tabs() {
+        return [
+          {
+            label: 'Monthly Budgets',
+            path: '/expenses/manage/monthlyBudgets',
+            manage: true,
+            display: this.userStore.userHasFeature('EXPENSES')
+          },
+          {
+            label: 'Budget Templates',
+            path: '/expenses/manage/budgetTemplates',
+            manage: true,
+            display: this.userStore.userHasFeature('EXPENSES')
+          },
+          {
+            label: 'Budget Types',
+            path: '/expenses/manage/budgetTypes',
+            manage: true,
+            display: this.userStore.userHasFeature('EXPENSES')
+          },
+          {
+            label: 'GL Codes',
+            path: '/expenses/manage/glCodes',
+            manage: true,
+            display: this.userStore.userHasFeature('EXPENSES')
+          },
+          {
+            label: 'Reimbursement Requests',
+            path: '/expenses/reimbursementRequests',
+            manage: false,
+            display: this.userStore.userHasFeature('EXPENSES')
+          }, {
+            label: 'Submitted Expenses',
+            path: '/expenses/submittedExpenses',
+            manage: false,
+            display: this.userStore.userHasFeature('EXPENSES')
+          }]
+      }
       displayedTabs () {
         return this.tabs.filter(tab => tab.display && tab.manage === this.manage)
       },
@@ -43,44 +91,6 @@
       return {
         snackbar: {},
         model: '',
-        userCanManage: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'MANAGE'),
-        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN'),
-        tabs: [
-          {
-            label: 'Monthly Budgets',
-            path: '/expenses/manage/monthlyBudgets',
-            manage: true,
-            display: this.$store.getters.userHasFeature('EXPENSES')
-          },
-          {
-            label: 'Budget Templates',
-            path: '/expenses/manage/budgetTemplates',
-            manage: true,
-            display: this.$store.getters.userHasFeature('EXPENSES')
-          },
-          {
-            label: 'Budget Types',
-            path: '/expenses/manage/budgetTypes',
-            manage: true,
-            display: this.$store.getters.userHasFeature('EXPENSES')
-          },
-          {
-            label: 'GL Codes',
-            path: '/expenses/manage/glCodes',
-            manage: true,
-            display: this.$store.getters.userHasFeature('EXPENSES')
-          },
-        {
-          label: 'Reimbursement Requests',
-          path: '/expenses/reimbursementRequests',
-          manage: false,
-          display: this.$store.getters.userHasFeature('EXPENSES')
-        }, {
-          label: 'Submitted Expenses',
-          path: '/expenses/submittedExpenses',
-            manage: false,
-          display: this.$store.getters.userHasFeature('EXPENSES')
-        }]
       }
     },
     methods: {

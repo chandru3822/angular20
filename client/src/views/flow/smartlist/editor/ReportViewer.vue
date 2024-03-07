@@ -53,9 +53,12 @@ import { AppMutations } from '@/stores/AppStore'
 import isEqual from 'lodash.isequal'
 import axios from 'axios'
 import constants from '@/helpers/constants'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
+
 const snackbar = vueInstance.$snackbar
 
 const http = axios.create({
@@ -92,7 +95,7 @@ const footerProps = ref({
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
 })
 
-const isSystemAdmin = store.getters.isFullAdmin
+const isSystemAdmin = userStore.isSystemAdmin
 const reportData = ref([])
 const isDataLoading = ref(false)
 const isUpdateQueued = ref(false)
@@ -159,7 +162,7 @@ const processQueue = async () => {
     reportData.value = []
 
     const response = await http.post(
-      `/smartlist/adhoc?timezone=${store.state.user.details.timezone.value}`,
+      `/smartlist/adhoc?timezone=${userStore.details.timezone.value}`,
       {
         smartlist: props.report,
         fields: props.fields,

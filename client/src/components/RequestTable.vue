@@ -37,7 +37,7 @@
           <tr
               v-for="(it, index) in items"
               :key="it.id"
-              :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }, {'clickable' : $store.getters.userHasFeatureAccessLevel(featureCode, 'ADD')}]"
+              :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }, {'clickable' : userStore.userHasFeatureAccessLevel(featureCode, 'ADD')}]"
               @click="submitRequest(it)"
           >
             <td class="text-left pl-4">
@@ -79,6 +79,8 @@
 <script>
 import constants from "@/helpers/constants";
 import debounce from "lodash.debounce";
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { mapStores } from 'pinia'
 
 export default {
   name: "RequestTable",
@@ -104,6 +106,8 @@ export default {
     requestDialog: false,
   }),
   computed: {
+    ...mapStores(useUserStore),
+
     dataLoading(){
       return this.isLoading
       //computed so that it updates when the value changes on the parent
@@ -130,7 +134,7 @@ export default {
     }, 500),
 
     submitRequest(item) {
-      if(this.$store.getters.userHasFeatureAccessLevel(this.featureCode, 'ADD')){
+      if(this.userStore.userHasFeatureAccessLevel(this.featureCode, 'ADD')){
         this.$emit('openRequest', item)
         this.requestDialog = true
       }

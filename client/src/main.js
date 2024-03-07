@@ -4,16 +4,16 @@ import Chat from 'vue-beautiful-chat'
 import Vue2Filters from 'vue2-filters'
 import App from '@/App.vue'
 import router from '@/router'
-import store from '@/store'
+import store, { pinia } from '@/store'
 import axios from 'axios'
 import { NotificationPlugin } from '@/plugins/notifications/NotificationPlugin'
 import { SnackbarPlugin } from '@/plugins/SnackbarPlugin'
 import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
-import { createPinia, PiniaVuePlugin } from 'pinia'
 
 import '@/styles/main.scss'
 import { requestInterceptor, responseInterceptor  } from '@/helpers/interceptors'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const { VITE_GA_ID } = import.meta.env
 Vue.config.productionTip = false
@@ -37,7 +37,14 @@ Vue.filter('formatDate', function(value, type, format, inputFormat) {
   //  TYPES: 'date', 'timestamp'
   */
 
-  const timezone = store?.state?.user?.details?.timezone?.value
+  const userStore = useUserStore()
+
+  let timezone = userStore.details?.timezone?.value
+
+  if (!timezone) {
+    userStore.guessTimeZone()
+    timezone = userStore.details?.timezone?.value
+  }
 
   if (!type || (type === 'timestamp' && !timezone)) {
     console.error('TYPE IS REQUIRED, TIMEZONE IS REQUIRED FOR TIMESTAMPS')
@@ -77,9 +84,6 @@ Vue.use(
 )
 
 Vue.use(Chat)
-
-Vue.use(PiniaVuePlugin)
-const pinia = createPinia()
 
 new Vue({
   router,

@@ -166,6 +166,8 @@ import AddProcessStep from '@/views/flow/components/AddProcessStep.vue'
 import PpsHistoryTable from '@/views/flow/components/PpsHistoryTable.vue'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus.vue'
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -185,8 +187,6 @@ export default {
       snackbar: {},
       displayDropdown: false,
       displayChangeOwner: false,
-      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE'),
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
       availableOwners: [],
       cancelledCompanyStatuses: [],
       availableProcessStepStatuses: [],
@@ -217,6 +217,13 @@ export default {
     PpsHistoryTable
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanDelete() {
+      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'DELETE')
+    },
+    userIsAdmin() {
+      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')
+    },
     displayedHeaders() {
       return this.headers.filter(header => header.show)
     },

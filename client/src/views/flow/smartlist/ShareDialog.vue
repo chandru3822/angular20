@@ -200,9 +200,11 @@
 import { getRequest, handleHidingGlobalLoader, logError, postRequest, putRequest, UUID } from '@/helpers/helpers'
 import { getCurrentInstance, ref, computed } from 'vue'
 import { AppMutations } from '@/stores/AppStore'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
@@ -222,9 +224,9 @@ const emit = defineEmits([
   'updated-owner'
 ])
 
-const hasManageAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
-const isSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
-const isSystemAdmin = store.getters.isFullAdmin
+const hasManageAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
+const isSmartlistAdmin = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+const isSystemAdmin = userStore.isSystemAdmin
 
 //a list of user positions and orgs the smartlist can be shared with
 const sharables = ref([])
@@ -240,7 +242,7 @@ const openOwnershipDialog = ref(false)
 const newOwner = ref({})
 
 const isOwner = computed(() => {
-  return props.smartlist?.ownerId === store.state.user.details.id
+  return props.smartlist?.ownerId === userStore.details.id
 })
 
 const canMakePublic = computed(() => {

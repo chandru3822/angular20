@@ -145,20 +145,22 @@
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {computed, getCurrentInstance, onMounted, ref} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
+  const userStore = useUserStore()
 
   const addNew = ref(false)
   const levels = ref([])
   const messageTypes = ref([])
   const newType = ref({})
   const types = ref([])
-  const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
+  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
 
   // stores the content when editing a message type. This way we can discard changes if the user presses 'cancel'
   const tempItemContent = ref('')

@@ -56,6 +56,8 @@
 import { handleHidingGlobalLoader, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getActiveAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'AddProcessStep',
@@ -104,6 +106,7 @@ export default {
     // this.getCancelledStatuses()
   },
   computed: {
+    ...mapStores(useUserStore),
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
     }
@@ -124,8 +127,8 @@ export default {
             let allowAdd = false
             if(ps.nonAdminAddWhiteListedPositions?.length > 0) {
               //do any of the user's active positions match the white listed positions
-              allowAdd = ps.nonAdminAddAllow ? this.$store.getters.userHasAnyPosition(ps.nonAdminAddWhiteListedPositions?.map(wlp => wlp.positionId)) :
-                  !this.$store.getters.userHasAnyPosition(ps.nonAdminAddWhiteListedPositions?.map(wlp => wlp.positionId))
+              allowAdd = ps.nonAdminAddAllow ? this.userStore.userHasAnyPosition(ps.nonAdminAddWhiteListedPositions?.map(wlp => wlp.positionId)) :
+                  !this.userStore.userHasAnyPosition(ps.nonAdminAddWhiteListedPositions?.map(wlp => wlp.positionId))
             } else {
               //allow them to add if nonAdminAdd is true and it is set to a deny list and there are no positions
               allowAdd = ps.nonAdminAdd && !ps.nonAdminAddAllow

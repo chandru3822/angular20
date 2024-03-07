@@ -292,7 +292,6 @@
 </template>
 
 <script setup>
-import useReportStore from '@/views/flow/smartlist/reportStore'
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import { getRequest, logError, postRequest, putRequest } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
@@ -308,6 +307,7 @@ import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
 import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
@@ -320,16 +320,15 @@ const vueInstance = getCurrentInstance().proxy
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
-const reportStore = useReportStore()
-reportStore.$subscribe((mut, state) => localStorage.setItem('report', JSON.stringify(state)))
-
 const store = vueInstance.$store
-const hasViewAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW')
-const hasViewAllAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL')
-const hasAddAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
-const hasManageAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
-const isSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
-const isSystemAdmin = store.getters.isFullAdmin
+const userStore = useUserStore()
+
+const hasViewAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'VIEW')
+const hasViewAllAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL')
+const hasAddAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+const hasManageAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
+const isSmartlistAdmin = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+const isSystemAdmin = userStore.isSystemAdmin
 
 const tab = ref(null)
 const loadingAvailableFields = ref(false)
@@ -380,7 +379,7 @@ const hasUnsavedChanges = computed(() => {
 })
 
 const isOwner = computed(() => {
-  return report.value?.ownerId === store.state.user.details.id
+  return report.value?.ownerId === userStore.details.id
 })
 
 const canView = computed(() => {
@@ -452,7 +451,7 @@ const getReport = async () => {
 
 const getFields = async () => {
   try {
-    const {data} = await getRequest(`/smartlist/${report.value.id}/field?timezone=${store.state.user.details.timezone.value}`)
+    const {data} = await getRequest(`/smartlist/${report.value.id}/field?timezone=${userStore.details.timezone.value}`)
     fields.value = cloneDeep(data)
     sourceFields.value = cloneDeep(data)
   } catch (e) {

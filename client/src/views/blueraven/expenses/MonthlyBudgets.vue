@@ -232,7 +232,6 @@ export default {
       },
       showPastBudgets: false,
       availableUsers: [],
-      timezone: this.$store.state.user.details.timezone.value,
       budgets: [],
       expanded: [],
       headers: [

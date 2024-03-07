@@ -8,7 +8,7 @@
           <v-toolbar-items>
             <AlbatrossButton variant="text" color="primary"
                @click="[addNew = !addNew, newTag = { bgColor: '#878787', fontColor: '#1F3C73'}]"
-               v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+               v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
                :hide-text-on-mobile="constants.IS_MOBILE"
                :prepend-icon="constants.IS_MOBILE ? 'add' : ''"
                :text="addNew ? 'CANCEL' : 'ADD NEW'"
@@ -97,7 +97,7 @@
                 </v-list-item-content>
                 <div>
                 <span class="clickable"
-                                    v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                                    v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                   <AlbatrossButton variant="text" size="small" color="primary"
                    :disabled="!a.tagName || !a.fontColor || !a.bgColor"
                    v-if="selectedTagId === a.id" @click="saveTag(a, false)" prepend-icon="save"/>
@@ -110,7 +110,7 @@
                   prepend-icon="close"
                 />
                 <AlbatrossButton size="small" variant="text" color="primary"
-                       v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                       v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                        @click="tagToDelete=a" prepend-icon="delete"/>
                 <v-tooltip
                   content-class="full-opacity-tooltip"
@@ -160,19 +160,21 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
+const userStore = useUserStore()
 
 const tags = ref([])
 const addNew = ref(false)
 const tagMaxChars = ref(30)
 const newTag = ref({})
 const selectedTagId = ref(null)
-const userId = ref(store.state.user.details.id)
-const companyId = ref(store.state.user.details.companyId)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
 const tagToDelete = ref(null)
 const colorOptions = ref({
   canvasHeight: 75,

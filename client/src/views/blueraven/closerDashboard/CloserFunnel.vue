@@ -649,14 +649,14 @@
                   <td>{{ item.status_type || '' }}</td>
                   <td class="customer-name">{{ item.customer_name || '' }}</td>
                   <td>
-                    <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')"
+                    <router-link text v-if="item.project_id && userStore.userHasFeature('PROJECTS')"
                                  :to="`/project/${item.project_id}/status`">
                       {{ item.project_id }}
                     </router-link>
                     <div v-else>{{ item.project_id || '' }}</div>
                   </td>
                   <td v-if="selectedFunnel.funnel_type_id === 1">
-                    <router-link text v-if="item.project_id && item.project_process_step_id && item.project_process_step_event_id && $store.getters.userHasFeature('EVENTS')"
+                    <router-link text v-if="item.project_id && item.project_process_step_id && item.project_process_step_event_id && userStore.userHasFeature('EVENTS')"
                                  :to="`/project/${item.project_id}/processStep/${item.project_process_step_id}/event/${item.project_process_step_event_id}`">
                       {{ item.project_process_step_event_id }}
                     </router-link>
@@ -787,6 +787,8 @@ import {
   getCloserOffices,
   getCloserReps
 } from '@/services/dashboardService'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'closerDashboard',
@@ -805,8 +807,6 @@ export default {
       isCloserMgr: false,
       selectedFunnel: {},
       isCloserRegional: false,
-      userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL'),
-      userCanViewAllProjects: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'VIEW_ALL'),
       headers: [
         {text: '', value: '', show: true, sortable: false},
         {text: 'Name', value: 'customer_name', show: true},
@@ -920,6 +920,13 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanViewAll() {
+      return this.userStore.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL')
+    },
+    userCanViewAllProjects() {
+      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'VIEW_ALL')
+    },
     funnelDrilldownHeaders() { return [
       {text: '', value: '', show: true, sortable: false, width: 25, optional: false}, // 0
       {text: 'Owner', value: 'owner_name', show: true, width: 90, optional: false}, // 1
@@ -2152,28 +2159,28 @@ export default {
     /* FUNNEL-RELATED CODE END */
   },
   async created() {
-    this.currentUserId = this.$store.state.user.details.id
+    this.currentUserId = this.userStore.details.id
 
-    if (this.$store.state.user.details.userPositions?.length > 0) {
+    if (this.userStore.details.userPositions?.length > 0) {
       let positionId = null
 
-      this.isCloser = this.$store.state.user.details.userPositions.filter(position => {
+      this.isCloser = this.userStore.details.userPositions.filter(position => {
         return (position.positionId === 1 && !position.endDate && !position.archived && position.primaryFlag)
       }).length > 0
 
-      this.isCloserMgr = this.$store.state.user.details.userPositions.filter(position => {
+      this.isCloserMgr = this.userStore.details.userPositions.filter(position => {
         return (position.positionId === 2 && !position.endDate && !position.archived && position.primaryFlag)
       }).length > 0
 
-      this.isCloserDistrictMgr = this.$store.state.user.details.userPositions.filter(position => {
+      this.isCloserDistrictMgr = this.userStore.details.userPositions.filter(position => {
         return (position.positionId === 517 && !position.endDate && !position.archived && position.primaryFlag)
       }).length > 0
 
-      let fakeCloserMgr = this.$store.state.user.details.userPositions.filter(position => {
+      let fakeCloserMgr = this.userStore.details.userPositions.filter(position => {
         return (position.positionId === 326 && !position.endDate && !position.archived && position.primaryFlag)
       }).length > 0
 
-      this.isCloserRegional = this.$store.state.user.details.userPositions.filter(position => {
+      this.isCloserRegional = this.userStore.details.userPositions.filter(position => {
         return (position.positionId === 3 && !position.endDate && !position.archived && position.primaryFlag)
       }).length > 0
 
@@ -2190,7 +2197,7 @@ export default {
       }
 
       if (this.isCloser || this.isCloserMgr || this.isCloserDistrictMgr || this.isCloserRegional) {
-        this.currentUserOrgId = this.$store.state.user.details.userPositions.filter(position => {
+        this.currentUserOrgId = this.userStore.details.userPositions.filter(position => {
           return (position.positionId === positionId && !position.endDate && !position.archived && position.primaryFlag)
         })[0]?.orgId
       }

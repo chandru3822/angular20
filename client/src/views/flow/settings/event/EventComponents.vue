@@ -107,6 +107,8 @@ import orderBy from "lodash.orderby"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import cloneDeep from "lodash.clonedeep";
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'EventComponents',
@@ -118,8 +120,6 @@ export default {
   },
   data () {
     return {
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       addNewType: false,
       expandEsst: true,
       event: {},
@@ -146,6 +146,13 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
     eventStatusTypeToDeleteName(){
       return this.eventStatusTypeToDelete ? this.eventStatusTypeToDelete.eventStatusType : ''
     },

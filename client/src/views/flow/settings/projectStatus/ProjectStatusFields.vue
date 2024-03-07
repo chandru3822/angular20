@@ -69,7 +69,7 @@
                 {{item.fieldName}}
               </td>
               <td class="text-right">
-                <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
+                <v-btn small text color="primary" v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
                   <v-icon >delete</v-icon>
                 </v-btn>
               </td>
@@ -104,6 +104,8 @@ import {getCompanyProjectStatusType, getProjectStatusTypes} from '@/services/pro
 import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar, getRequest, postRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProjectStatusFields',
@@ -146,14 +148,24 @@ export default {
       fieldsLoading: true,
       assignedFields: [],
       availableDataViewFields: [],
-      statusId: this.$route.params.id,
-      userId: this.$store.state.user.details.id,
-      companyId: this.$store.state.user.details.companyId,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+      statusId: this.$route.params.id
     }
   },
-  computed: {},
+  computed: {
+    ...mapStores(useUserStore),
+    userId() {
+      return this.userStore.details.id
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    }
+  },
   methods: {
     async saveOrderChanges (fields) {
       this.$store.commit(AppMutations.SET_LOADING, true)

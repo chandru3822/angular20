@@ -237,6 +237,8 @@ import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
 import FeatDbCustomFieldGroup from "@/views/blueraven/featDB/components/FeatDbCustomFieldGroup.vue";
 import FeatDbContact from "@/views/blueraven/featDB/components/FeatDbContacts.vue";
 import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ahjInspection',
@@ -250,11 +252,12 @@ export default {
     CustomValueInput
   },
   computed: {
+    ...mapStores(useUserStore),
     filteredCfgs() {
       return this.customFieldGroups.filter(cfg => cfg.id !== 45)
     },
     userCanEdit() {
-      return this.$store.getters.userHasFeatureAccessLevel('AHJ', 'EDIT')
+      return this.userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')
     },
     expandedAll(){
       if(this.expandedGroups === this.totalGroups){

@@ -183,6 +183,8 @@ import AddTeamDropdown from '@/views/flow/settings/inbox/AddTeamDropdown'
 import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignmentDialog'
 import debounce from 'lodash.debounce'
 import CollapsableRightPanel from "@/layouts/CollapsableRightPanel.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProjectActivity',
@@ -223,7 +225,7 @@ export default {
     },
     '$route.params.userId': function() {
       this.userId = parseInt(this.$route.params.userId) || null
-      this.selectedOption = this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.$store.state.user.selectedTab ? 1 : this.$store.state.user.selectedTab)
+      this.selectedOption = this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.userStore.selectedTab ? 1 : this.userStore.selectedTab)
       if(this.selectedOption === 0) {
         this.fetchTeamsForUser()
       }
@@ -241,7 +243,6 @@ export default {
   },
   data() {
     return {
-      userCanViewSms: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
       projectId: parseInt(this.$route.params.projectId) || null,
       userId: this.userIdIn ? this.userIdIn : parseInt(this.$route.params.userId) || null,
       projectProcessStepId: parseInt(this.$route.params.processStepId) || null,
@@ -254,7 +255,6 @@ export default {
       teamNamesAssociatedToUser: [],
       selectableTeams: [],
       messageProperties: {},
-      currentUserId: this.$store.state.user.details.id,
       showHistoryDialog: false,
       teamsMenuOpen: false,
       myOwner: [],
@@ -270,6 +270,13 @@ export default {
     this.handlePageLoad()
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanViewSms() {
+      return this.userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW')
+    },
+    currentUserId() {
+      return this.userStore.details.id
+    },
     objectTypeId() {
       //not needed for other types
       return this.userId ? 3 : this.contactId ? 2 : this.orgId ? 5 : null

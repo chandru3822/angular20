@@ -111,7 +111,6 @@
         repSearch: null,
         repsLoading: false,
         dataLoading: false,
-        timezone: this.$store.state.user.details.timezone.value,
         headers: [
           {text: 'ID', value: 'id', show: true},
           {text: 'Period End', value: 'periodEnd', show: true},

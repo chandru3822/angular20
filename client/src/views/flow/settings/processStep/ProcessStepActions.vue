@@ -859,6 +859,8 @@ import Sortable from "sortablejs"
 import ProcessStepRequirements from './ProcessStepRequirements'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ActionChildSms from "@/views/flow/settings/processStep/ActionChildSms";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProcessStepActions',
@@ -906,8 +908,6 @@ export default {
       dragging: false,
       actionsUsingLogic: [],
       invalidRequirement: true,
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       headers: [
         {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
         {text: 'Type', value: 'processStepRequirementType', show: true},
@@ -954,7 +954,6 @@ export default {
       selectedActionIndex: null,
       availableRequirementTypes: [],
       processStepId: parseInt(this.$route.params.id),
-      companyId: this.$store.state.user.details.companyId,
       parentObjects: [],
       parent: {},
       customFields: [],
@@ -962,10 +961,8 @@ export default {
       operationTypes: [],
       selectedProcessStepStatus: {},
       processStepStatuses: [],
-
       requirements: [],
       availableFunctions: [],
-
       logicStringToggle: false,
       addNewAction: false,
       newAction: {},
@@ -991,7 +988,6 @@ export default {
       activeStatusesAssignedToStep: [],
       selectedChildFunction: {},
       selectedChildRequirementParamDynamicValues: [],
-
       childProcessSteps: [],
       childFunctions: [],
       addChildLink: false,
@@ -1032,6 +1028,16 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    companyId() {
+      return this.userStore.details.companyId
+    },
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
     }

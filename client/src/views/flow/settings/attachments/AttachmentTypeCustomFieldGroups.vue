@@ -174,7 +174,7 @@
                             </div>
                           </v-list-item-content>
                           <v-menu offset-y
-                                  v-if="localCustomFieldGroups.length > 1 && store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                                  v-if="localCustomFieldGroups.length > 1 && userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
@@ -247,10 +247,12 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
+const userStore = useUserStore()
 const route = vueInstance.$route
 const vuetify = vueInstance.$vuetify
 
@@ -274,9 +276,9 @@ const selectedGroupId = ref(null)
 const availableCustomFields = ref([])
 const parent = ref({})
 const attachmentTypeId = ref(route.params.id)
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-const companyId = ref(store.state.user.details.companyId)
+const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+const companyId = ref(userStore.details.companyId)
 const parentObjects = ref([])
 const headers = ref([
   {text: null, value: 'draggable', width: '50px', show: true, sortable: false},

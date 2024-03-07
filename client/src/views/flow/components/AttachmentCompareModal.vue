@@ -165,7 +165,6 @@ export default {
   },
   data() {
     return {
-      timezone: this.$store.state.user.details.timezone.value,
       imageFileExtensions: constants.IMAGE_FILE_EXTENSIONS,
       attachmentsCopy: [],
       attachmentWithFields: [],

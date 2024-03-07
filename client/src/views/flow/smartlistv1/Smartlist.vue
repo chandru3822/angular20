@@ -275,6 +275,8 @@ import { saveAs } from 'file-saver'
 import {DateTime} from 'luxon'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import Smartlist from '@/views/flow/smartlist/Smartlist'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { mapStores } from 'pinia'
 
 export default {
   name: 'Smartlist',
@@ -304,15 +306,7 @@ export default {
       originalObjectTypeId: null,
       projectDetailsColumns: [],
       sql: '',
-      is7oaksAdmin: this.$store.getters.isFullAdmin,
-      isSmartlistAdmin: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD'),
-      hasViewAccess: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW'),
-      hasViewAllAccess: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL'),
-      hasManageAccess: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE'),
-      userId: this.$store.state.user.details.id,
-      refreshData: false,
-      timezone: this.$store.state.user.details.timezone.value
+      refreshData: false
     }
   },
   created () {
@@ -326,6 +320,31 @@ export default {
     this.getCompanyObjectTypes()
   },
   computed: {
+    ...mapStores(useUserStore),
+    userId() {
+      return this.userStore.details.id
+    },
+    timezone() {
+      return this.userStore.details.timezone.value
+    },
+    is7oaksAdmin() {
+      return this.userStore.isSystemAdmin
+    },
+    isSmartlistAdmin() {
+      return this.userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+    },
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+    },
+    hasViewAccess() {
+      return this.userStore.userHasFeatureAccessLevel('SMARTLIST', 'VIEW')
+    },
+    hasViewAllAccess() {
+      return this.userStore.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL')
+    },
+    hasManageAccess() {
+      return this.userStore.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
+    },
     isProcessStepOrEvent () {
       return this.smartlist.companyObjectTypeId !== null && ([4,6].includes(this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist?.companyObjectTypeId)?.objectTypeId))
     },
@@ -341,12 +360,12 @@ export default {
         return true
       }
 
-      if (!this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')) {
+      if (!this.userStore.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')) {
         return false
       }
 
-      if (this.$store.state.user.details.id === this?.smartlist?.ownerId ||
-          this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+      if (this.userStore.details.id === this?.smartlist?.ownerId ||
+          this.userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
       ) {
         return true
       }
@@ -361,7 +380,7 @@ export default {
       return Smartlist.userCanView(this.smartlist)
     },
     canDelete () {
-      return ((!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) && this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+      return ((!this.smartlist?.id || this.userStore.details.id === this?.smartlist?.ownerId) && this.userStore.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')) || this.userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
     },
     filteredCompanyObjectTypes () {
       if (this.smartlist.id) {

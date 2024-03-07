@@ -23,7 +23,6 @@ export default {
   data() {
     return {
       snackbar: {},
-      timezone: this.$store.state.user.details.timezone.value,
       startTime: null,
       endTime: null,
       mapResources: [],

@@ -35,9 +35,11 @@ import {handleHidingGlobalLoader, getRequest, getSnackbar, putRequest} from "@/h
 import {Actions} from "@/store";
 import {getCurrentInstance, onMounted, ref} from 'vue'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
@@ -45,9 +47,9 @@ const logoLoaded = ref(false)
 const homePages = ref([])
 const homePageLogo = ref({})
 const homePageAttachmentTypeId = 333
-const companyId = ref(store.state.user.details.companyId)
-const userIsAlbatross = ref(store.state.user.details.highestCompanyId === 1)
-const user = ref(store.state.user.details)
+const companyId = ref(userStore.details.companyId)
+const userIsAlbatross = ref(userStore.details.highestCompanyId === 1)
+const user = ref(userStore.details)
 
 onMounted(() => {
   loadHomePageLogo()
@@ -74,7 +76,7 @@ const getHomePages = async () => {
     const {data, status} = await getRequest(`/feature/homePages`)
     if (status) {
       homePages.value = data.filter(d => {
-        return store.getters.userHasFeature(d.featureCode)
+        return userStore.userHasFeature(d.featureCode)
       })
     }
     handleHidingGlobalLoader(vueInstance, status)

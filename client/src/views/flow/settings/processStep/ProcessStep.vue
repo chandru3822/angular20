@@ -53,6 +53,8 @@
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
   import { handleHidingGlobalLoader, getRequest, putRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'ProcessStep',
@@ -68,8 +70,6 @@
         processStepLoading: true,
         oldName: null,
         processStepId: this.$route.params.id,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        companyId: this.$store.state.user.details.companyId,
         processStep: {},
         positions:[],
         positionsLoading: false,
@@ -104,6 +104,13 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+      },
+      companyId() {
+        return this.userStore.details.companyId
+      },
       //this should not be so hard
       activeTab: {
         get: function() {

@@ -179,6 +179,7 @@ import moment from 'moment'
 import cloneDeep from 'lodash.clonedeep'
 import isEqual from 'lodash.isequal'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 
 const vueInstance = getCurrentInstance().proxy
@@ -186,6 +187,7 @@ const route = vueInstance.$route
 const snackbar = vueInstance.$snackbar
 
 const store = vueInstance.$store
+const userStore = useUserStore()
 const saving = ref(false);
 const override = ref(false);
 const unsavedModal = ref(false);
@@ -221,7 +223,7 @@ const toolbarOptions = ref({
 });
 
 const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY);
-const timezone = ref(store.state.user.details.timezone?.value);
+const timezone = ref(userStore.details.timezone?.value);
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE);
 
 const onePlatformRequired = [
@@ -246,7 +248,7 @@ const pathUrl = computed(() => {
 })
 const userCanEdit = computed(() => {
   //we use the end time copy here so that if they are adding an end time in the past it will still let them save
-  return store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT') &&
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT') &&
       (!announcement.value.id ||
           isCurrent.value)
 })

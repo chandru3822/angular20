@@ -18,45 +18,50 @@
 
 <script>
 import constants from '@/helpers/constants'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'Defaults',
 
     computed: {
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      },
-    },
-    data() {
-      return {
-        constants,
-        tabs: [
+      ...mapStores(useUserStore),
+      tabs() {
+        return [
           {
             label: 'Settings',
             path: `/settings/company/settings`,
-            display: this.$store.getters.userHasFeature('SETTINGS')
+            display: this.userStore.userHasFeature('SETTINGS')
           },
           {
             label: 'Configurations',
             path: `/settings/company/configurations`,
-            display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
+            display: this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
           },
           {
             label: 'Email',
             path: `/settings/company/email`,
-            display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
+            display: this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
           },
           {
             label: 'Message Types',
             path: `/settings/company/messageTypes`,
-            display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
+            display: this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
           },
           {
             label: 'Closer Dashboard',
             path:`/settings/company/closerDashboard`,
-            display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS','ADMIN')
+            display: this.userStore.userHasFeatureAccessLevel('SETTINGS','ADMIN')
           }
         ]
+      },
+      displayedTabs () {
+        return this.tabs.filter(tab => tab.display)
+      }
+    },
+    data() {
+      return {
+        constants
       }
     },
     created() {},

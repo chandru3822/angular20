@@ -100,6 +100,8 @@
     getSnackbar,
     getRequestWithParams
   } from '@/helpers/helpers'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'Payroll',
@@ -124,6 +126,12 @@
         this.getRepsDebounced(val)
       }
     },
+    computed: {
+      ...mapStores(useUserStore),
+      timezone() {
+        return this.userStore.details.timezone.value
+      }
+    },
     data() {
       return {
         snackbar: {},
@@ -137,7 +145,6 @@
         repSearch: null,
         repsLoading: false,
         dataLoading: false,
-        timezone: this.$store.state.user.details.timezone.value,
         headers: [
           {text: 'ID', value: 'id', show: true},
           {text: 'Period End', value: 'periodEnd', show: true},

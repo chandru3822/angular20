@@ -141,6 +141,8 @@ import {
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import constants from "@/helpers/constants";
 import {getStates} from "@/services/stateService";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'PostalCodes',
@@ -163,11 +165,6 @@ export default {
       options: {
         itemsPerPage: 100
       },
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
-      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
-      companyId: this.$store.state.user.details.companyId,
-      userId: this.$store.state.user.details.id,
       postalCodeRules: constants.POSTAL_CODE_FIVE_REQUIRED_RULES,
       postalCodes: [],
       headers: [
@@ -188,6 +185,22 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD')
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
+    },
+    userCanDelete() {
+      return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
+    userId() {
+      return this.userStore.details.id
+    },
     itemToDeleteName() {
       return this.itemToDelete ? this.itemToDelete.postalCode : '';
     }

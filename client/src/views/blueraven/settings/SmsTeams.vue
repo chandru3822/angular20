@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Message Templates</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addTemplate = !addTemplate, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')">
+            <v-btn text color="primary" @click="[addTemplate = !addTemplate, newType = {}]" v-if="userStore.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addTemplate ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -109,7 +109,7 @@
             <tr  class="text-left" :class="{'shaded-row': filterTemplates.indexOf(item) % 2}">
               <td class="text-left">{{ item.title }}</td>
               <td>
-                <v-btn small text v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')" @click="expanded = [item]; expandedItem = item">
+                <v-btn small text v-if="!expanded.includes(item) && userStore.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')" @click="expanded = [item]; expandedItem = item">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
@@ -128,6 +128,8 @@
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, putRequest, getSnackbar, getRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 
 export default {
@@ -141,7 +143,6 @@ export default {
       newTemplate: {},
       addTemplate: false,
       levels: [],
-      parentId: this.$store.state.user.details.parentCompanyId,
       headers: [
         { text: 'Title', value: 'title', show: true },
         { text: null, value: 'icons', show: true, sortable: false }
@@ -154,6 +155,7 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
     filterTemplates () {
       return this.templates.filter(tmp => !tmp.archived)
     },

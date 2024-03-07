@@ -44,7 +44,7 @@
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newStep = {}]"
-              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               :shide-text-on-mobile="true"
               :prepend-icon="addNew ? 'mdi-close' : 'mdi-plus'"
               :text="addNew ? 'CANCEL' : 'ADD NEW'"
@@ -112,12 +112,11 @@
                             size="small"
                             variant="text"
                             color="primary"
-                            v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                            v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                             :disabled="item.workQueueTypes.length > 0 || item.usedByProcess"
                             @click="psToDelete=item"
                             prepend-icon="delete"
                           />
-
                         </div>
                       </template>
                       <span>{{ getDeleteTooltip(item) }}</span>
@@ -145,10 +144,12 @@
 
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
+  const userStore = useUserStore()
   const router = vueInstance.$router
 
   const addNew = ref(false)
@@ -157,8 +158,8 @@
   const search = ref('')
   const newStep = ref({})
   const selectedProcessStepId = ref(null)
-  const companyId = ref(store.state.user.details.companyId)
-  const userId = ref(store.state.user.details.id)
+  const companyId = ref(userStore.details.companyId)
+  const userId = ref(userStore.details.id)
   const processSteps = ref([])
   const headers = ref([
     {text: 'Process Step Name', value: 'processStepName', show: true},

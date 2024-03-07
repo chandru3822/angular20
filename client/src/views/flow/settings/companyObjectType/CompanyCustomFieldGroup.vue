@@ -63,7 +63,7 @@
 
                     </div>
                     <v-menu offset-y
-                            v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                            v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                       <template v-slot:activator="{ on: menu }">
                         <v-tooltip bottom>
                           <template v-slot:activator="{ on: tooltip }">
@@ -136,7 +136,7 @@
                         />
                       </div>
                       <v-menu offset-y
-                              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                         <template v-slot:activator="{ on: menu }">
                           <v-tooltip bottom>
                             <template v-slot:activator="{ on: tooltip }">
@@ -442,7 +442,7 @@
                           <div class="text-center">(click to copy)</div>
                         </v-tooltip>
                         <AlbatrossButton
-                          v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                          v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                           size="small"
                           variant="text"
                           color="primary"
@@ -490,6 +490,7 @@ const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
+const userStore = useUserStore()
 const route = vueInstance.$route
 
 import {
@@ -503,6 +504,7 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 const addNew = ref(false)
 const newFieldType = ref('native')
 const deleteError = ref(false)
@@ -510,8 +512,8 @@ const deleteHeader = ref(null)
 const deleteText = ref(null)
 const fieldsInUse = ref([])
 const minMaxValueChanged = ref(false)
-const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
 const selectedIndex = ref(null)
 const fieldOrderChanged = ref(false)
 const groupOrderChanged = ref(false)
@@ -521,7 +523,7 @@ const newGroup = ref({
 const addField = ref(false)
 const newField = ref({})
 const availableCustomFields = ref([])
-const companyId = ref(store.state.user.details.companyId)
+const companyId = ref(userStore.details.companyId)
 //if you set this to a value it doesn't update when the route param changes
 // objectTypeId: route.params.id
 const headers = ref([

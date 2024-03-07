@@ -7,7 +7,7 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text color="primary" @click="goToDetails({})" v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')">
+        <v-btn text color="primary" @click="goToDetails({})" v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')">
           <v-icon>add</v-icon>
         </v-btn>
       </v-toolbar-items>
@@ -63,6 +63,8 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'Commissions',
@@ -75,6 +77,9 @@
         this.positionId = this.$store.state.brs.commissionPositionId
         this.getCommissions()
       }
+    },
+    computed: {
+      ...mapStores(useUserStore),
     },
     data() {
       return {

@@ -222,6 +222,7 @@
 import { getRequest, logError, UUID } from '@/helpers/helpers'
 import { computed, getCurrentInstance, nextTick, onMounted, ref } from 'vue'
 import cloneDeep from 'lodash.clonedeep'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const emit = defineEmits(['adding', 'added', 'updated', 'cancelled', 'in-progress'])
 
@@ -243,7 +244,8 @@ const props = defineProps({
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
-const companyId = vueInstance.$store.state.user.details.companyId
+const userStore = useUserStore()
+const companyId = userStore.details.companyId
 
 const availableDataTypeRequirements = ref([])
 const availableOperators = ref([])

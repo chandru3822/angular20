@@ -8,11 +8,12 @@
 <script setup>
   import CustomFields from "@/views/flow/settings/customFields/CustomFields.vue"
   import { ref, getCurrentInstance} from 'vue'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance()
-  const store = vueInstance.$store
+  const userStore = useUserStore()
   const snackbar = vueInstance.$snackbar
 
-  const apiPath = ref(store.state.user.details.apiPath)
+  const apiPath = ref(userStore.details.apiPath)
 
 </script>

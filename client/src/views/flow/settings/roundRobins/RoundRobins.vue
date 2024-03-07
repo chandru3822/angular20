@@ -113,6 +113,8 @@
   import cloneDeep from 'lodash.clonedeep'
   import {  handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'RoundRobins',
@@ -128,11 +130,6 @@
         nameSearch: '',
         dataLoading: true,
         selectedRoundRobinId: null,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
-        companyId: this.$store.state.user.details.companyId,
-        userId: this.$store.state.user.details.id,
         roundRobins: [],
         masterRoundRobins: [],
         headers: [
@@ -148,6 +145,22 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      userCanAdd() {
+        return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD')
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
+      },
+      userCanDelete() {
+        return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE')
+      },
+      companyId() {
+        return this.userStore.details.companyId
+      },
+      userId() {
+        return this.userStore.details.id
+      },
       itemToDeleteName() {
         return this.itemToDelete ? this.itemToDelete.roundRobinName : '';
       }

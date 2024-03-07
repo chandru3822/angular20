@@ -260,6 +260,8 @@ import NewMessageDialog from "./NewMessageDialog";
 import { NotificationActions } from '@/plugins/notifications/NotificationStore'
 import debounce from 'lodash.debounce'
 import ProjectActivity from "@/views/flow/project/ProjectActivity.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'Inbox',
@@ -274,7 +276,6 @@ export default {
   constants,
   data() {
     return {
-      userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW_ALL'),
       snackbar: {},
       conversations: [],
       options: {
@@ -286,7 +287,6 @@ export default {
       },
       searchQuery: '',
       constants,
-      userId: this.$store.state.user.details.id,
       sortOldToNew: false,
       ownerFilterOptions: [],
       selectedOwnerFilters: [],
@@ -319,6 +319,13 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanViewAll() {
+      return this.userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW_ALL')
+    },
+    userId() {
+      return this.userStore.details.id
+    },
     inboxNotificationCount() {
       let count = 0;
 

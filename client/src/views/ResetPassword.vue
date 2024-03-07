@@ -40,15 +40,16 @@
 </template>
 
 <script setup>
-  import {UserActions, UserMutations} from '@/stores/UserStore'
   import constants from '@/helpers/constants'
   import axios from 'axios'
-  import {getCurrentInstance, onMounted, ref} from 'vue'
+  import {getCurrentInstance, ref} from 'vue'
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
   const snackbar = vueInstance.$snackbar
+  const userStore = useUserStore()
 
   const validForm = ref(false);
   const errorMsg = 'You must reset your password. Cannot use company default.';
@@ -88,28 +89,22 @@
             const {data} = await axios.post(`${constants.VUE_APP_BASE_API}/auth/login`, params)
             const {token, details} = data
             if (token) {
-              store.commit(UserMutations.SET_JWT, token)
+              userStore.jwt = token
               await loginSuccess(details)
             } else {
               loginLoading.value = false
-              store.commit(
-                UserMutations.LOGIN_ERROR,
-                'Invalid Username or Password.'
-              )
+              userStore.loginError = 'Invalid Username or Password.'
             }
           } catch (e) {
             loginLoading.value = false
-            store.commit(
-              UserMutations.LOGIN_ERROR,
-              e
-            )
+            userStore.loginError = e
           }
         } else {
           loginLoading.value = false
         }
       }
       const loginSuccess = async(details) => {
-        await store.dispatch(UserActions.LOGIN_SUCCESS, details)
+        await userStore.login(details)
         await router.push({name: 'home'})
       }
 

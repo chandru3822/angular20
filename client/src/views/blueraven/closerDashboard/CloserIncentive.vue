@@ -11,6 +11,8 @@
   import Incentive from "@/views/blueraven/closerDashboard/Incentive";
   import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
   import {MilestoneEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'closerIncentive',
@@ -32,6 +34,7 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
       windowInnerWidth () { return window.innerWidth},
       dashboardType() {
         return DashboardTypeEnum.CLOSER;
@@ -90,7 +93,7 @@
       },
     },
     async created () {
-      this.currentUserId = this.$store.state.user.details.id
+      this.currentUserId = this.userStore.details.id
       await this.loadIncentive()
     },
     mounted () {}

@@ -75,7 +75,6 @@ export default {
       maxFiles: 1,
       renderTicker: 0,
       acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
-      companyId: this.$store.state.user.details.companyId,
       headers: [
         {text: null, value: 'fileIcon', show: true},
         {text: null, value: 'filename', show: true},

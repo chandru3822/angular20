@@ -6,7 +6,7 @@
       <p v-for="(fot, index) in servicingFots"
          :key="index"
          class="my-0">
-        <router-link v-if="fot.hierarchy !== null && $store.getters.userHasFeature('ORGS')"
+        <router-link v-if="fot.hierarchy !== null && userStore.userHasFeature('ORGS')"
                      class="list-link"
                      :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}"
                      :to="{ name: 'orgs', params: {orgFilter: fot.hierarchy.orgName} }"
@@ -21,6 +21,9 @@
 </template>
 
 <script>
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+
 export default {
   name: "AhjServicingFot",
   props: {
@@ -32,6 +35,9 @@ export default {
       type: Boolean,
       default: false
     }
+  },
+  computed: {
+    ...mapStores(useUserStore)
   }
 }
 </script>

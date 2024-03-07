@@ -231,6 +231,8 @@ import {Mentionable} from 'vue-mention'
 import {SearchTypeEnum} from "./ActivityListConstants";
 import SpinnerInline from "@/components/SpinnerInline.vue";
 import constants from "@/helpers/constants";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ActivitySection',
@@ -281,8 +283,6 @@ export default {
         {id: 1, activityType: 'Activities', activityTypeSingularLabel: 'Activity', show: false},
         {id: 2, activityType: 'Notes', activityTypeSingularLabel: 'Note', show: true},
       ],
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
-      currentUserId:this.$store.state.user.details.id,
       pinnedActivitiesOnly: [],
       bottomHitCount: 1,
       activitiesToShow: constants.ACTIVITIES_SHOWN
@@ -305,6 +305,13 @@ export default {
     },
   },
   computed: {
+    ...mapStores(useUserStore),
+    userIsAdmin() {
+      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')
+    },
+    currentUserId() {
+      return this.userStore.details.id
+    },
     filteredTopics() {
       let shownActivityTypes = this.activityTypes.filter(at => at.show).map(at => at.id)
       let result = this.activityTopics.filter(a => {

@@ -75,6 +75,8 @@ import debounce from 'lodash.debounce'
 import { getRequest, getSnackbar, postRequest, putRequest } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
 import moment from 'moment'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'Messaging',
@@ -98,7 +100,6 @@ export default {
   data() {
     return {
       snackbar: {},
-      currentUserFullName: this.$store.state.user.details.fullName,
       projectId: parseInt(this.$route.params.projectId),
       userId: this.userIdIn ? this.userIdIn : parseInt(this.$route.params.userId) || null,
       participants: [],
@@ -146,6 +147,10 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    currentUserFullName() {
+      return this.userStore.details.fullName
+    },
     smsOwnershipEvents() {
       return this.$store.getters.getEventsByTopic('sms_ownership').length
     }

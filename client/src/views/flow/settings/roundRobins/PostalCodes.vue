@@ -82,6 +82,8 @@
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'PostalCodes',
@@ -92,10 +94,6 @@
         postalCodes: [],
         showError: false,
         errorMsg: '',
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
-        //per carlin 10-31-22 - users with edit should be able to delete postal codes from a RR
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
         roundRobinId: this.$route.params.id,
         dataLoading: true,
         addCode: false,
@@ -112,6 +110,16 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      userCanAdd() {
+        return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD')
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
+      },
+      userCanDelete() {
+        return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE')
+      },
       itemToDeletePostalCode(){
         return this.itemToDelete ? this.itemToDelete.postalCode : ''
       }

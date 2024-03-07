@@ -7,7 +7,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="savePostalCodeZone"
-                   color="primary" v-if="$store.getters.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')">
+                   color="primary" v-if="userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')">
               <v-icon>save</v-icon>
               Save
             </v-btn>
@@ -38,7 +38,7 @@
               hide-details
             ></v-text-field>
             <v-btn class="my-3" @click="[addPostalCode = !addPostalCode, getAvailablePostalCodes()]"
-                   color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
+                   color="primary" v-if="userStore.userHasFeatureAccessLevel('USERS', 'EDIT')">
               Add Postal Code to Zone
             </v-btn>
             <v-card v-if="addPostalCode" class="pa-3 mb-3">
@@ -91,6 +91,8 @@
   import Vue2Filters from 'vue2-filters'
   import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'ZipPostalCodeZone',
@@ -104,9 +106,6 @@
         itemToDelete: {},
         showDeleteDialog: false,
         addPostalCode: false,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT'),
-        companyId: this.$store.state.user.details.companyId,
-        userId: this.$store.state.user.details.id,
         postalCodeZoneId: this.$route.params.id,
         postalCodeZone: {},
         selectedPostalCode: {},
@@ -120,6 +119,7 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
       filteredPostalCodes() {
         return this.postalCodeZone?.postalCodes?.filter(o => !o.archived)
       }

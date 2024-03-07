@@ -20,6 +20,8 @@
 <script>
   import constants from '@/helpers/constants'
   import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'featDbContainer',
@@ -27,6 +29,9 @@
       constants,
       tabs: FEAT_DB_TABS,
     }),
+    computed: {
+      ...mapStores(useUserStore)
+    },
     methods: {
       isActiveBtn(btn) {
         return btn.pathMatches.some(pm => {
@@ -35,7 +40,7 @@
       },
 
       hasAccess(tab){
-        return this.$store.getters.userHasFeatureAccessLevel(tab.featureCode, 'VIEW')
+        return this.userStore.userHasFeatureAccessLevel(tab.featureCode, 'VIEW')
       }
     }
   }

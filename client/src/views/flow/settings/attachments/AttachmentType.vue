@@ -51,18 +51,20 @@ import {getRequest, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/h
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
+const userStore = useUserStore()
 const route = vueInstance.$route
 
 const editName = ref(false)
 const oldName = ref(null)
 const attachment = ref({})
 const attachmentTypeId = ref(route.params.id)
-const companyId = ref(store.state.user.details.companyId)
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+const companyId = ref(userStore.details.companyId)
+const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
 
 onMounted(async () => {
   await getAttachmentType()

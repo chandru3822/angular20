@@ -110,6 +110,8 @@ import {CollapseExpandEnum, UtilityDocumentTypes} from "@/views/blueraven/featDB
 import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
 import FeatDbAttachments from "@/views/blueraven/featDB/components/FeatDbAttachments.vue";
 import TwoColumnMasonry from "@/views/blueraven/featDB/components/TwoColumnMasonry.vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { mapStores } from 'pinia'
 
 export default {
   name: "UtilityDetails",
@@ -123,8 +125,9 @@ export default {
     FeatDbCard
   },
   computed: {
+    ...mapStores(useUserStore),
     userCanEdit() {
-      return this.$store.getters.userHasFeatureAccessLevel("UTILITY", "EDIT")
+      return this.userStore.userHasFeatureAccessLevel("UTILITY", "EDIT")
     },
     expandedAll() {
       if (this.expandedGroups === this.totalGroups) {

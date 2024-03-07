@@ -19,9 +19,24 @@
 </template>
 
 <script>
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+
   export default {
     name: 'Rebate',
     computed: {
+      ...mapStores(useUserStore),
+      tabs() {
+        return [ {
+          label: 'View Payments',
+          path: '/finances/rebate/viewPayments',
+          display: this.userStore.userHasFeature('REBATES')
+        }, {
+          label: 'Batches',
+          path: '/finances/rebate/batches',
+          display: this.userStore.userHasFeature('REBATES')
+        }]
+      },
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)
       }
@@ -29,16 +44,7 @@
     data() {
       return {
         snackbar: {},
-        model: '',
-        tabs: [ {
-          label: 'View Payments',
-          path: '/finances/rebate/viewPayments',
-          display: this.$store.getters.userHasFeature('REBATES')
-        }, {
-          label: 'Batches',
-          path: '/finances/rebate/batches',
-          display: this.$store.getters.userHasFeature('REBATES')
-        }]
+        model: ''
       }
     },
     methods: {

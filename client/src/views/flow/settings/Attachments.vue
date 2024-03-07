@@ -37,7 +37,7 @@
           <v-toolbar-title class="title-large">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+            <AlbatrossButton v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               variant="text"
               @click="[addNew = !addNew, newType = {}]"
               color="primary"
@@ -115,7 +115,7 @@
   import { getCurrentInstance, ref, computed, onMounted} from "vue";
   import {AppMutations} from '@/stores/AppStore'
   import orderBy from 'lodash.orderby'
-  import AlbatrossButton from "../../../components/customVuetify/AlbatrossButton.vue";
+  import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
   import {
     handleHidingGlobalLoader,
     getRequest,
@@ -123,24 +123,24 @@
     postRequest,
   } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import ConfirmationDialog from '@/components/ConfirmationDialog'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const userStore = useUserStore()
   const router = vueInstance.$router
   const vuetify = vueInstance.$vuetify
-
-  const attachmentTypes =  ref([])
-  const search =  ref('')
-  const addNew =  ref(false)
-  const newType =  ref({})
-  const selectedAttachmentTypeId =  ref(null)
-  const userId =  ref(store.state.user.details.id)
-  const companyId =  ref(store.state.user.details.companyId)
-  const cannotDeleteReasons =  ref({})
-  const deleteError =  ref(false)
-  const headers =  ref([
+  const attachmentTypes = ref([])
+  const search = ref('')
+  const addNew = ref(false)
+  const newType = ref({})
+  const selectedAttachmentTypeId = ref(null)
+  const companyId = ref(userStore.details.companyId)
+  const cannotDeleteReasons = ref({})
+  const deleteError = ref(false)
+  const headers = ref([
     {text: 'Attachment Type', value: 'attachmentType', show: true},
     {text: '', value: 'icons', show: true},
   ])

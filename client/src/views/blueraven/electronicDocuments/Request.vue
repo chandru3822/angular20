@@ -68,6 +68,8 @@ import {
 import constants from '@/helpers/constants'
 import {AppMutations} from '@/stores/AppStore'
 import RequestTable from "@/components/RequestTable";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 export default {
   name: 'DocumentRequests',
   components: {
@@ -95,7 +97,6 @@ export default {
       projectsSearch: '',
       searchQuery: '',
       showCancelled: false,
-      userCanManage: this.$store.getters.userHasFeatureAccessLevel('ELECTRONIC_DOCUMENTS', 'MANAGE'),
       totalItems: 0,
       documents: [],
       selectedDocIds: '',
@@ -117,7 +118,12 @@ export default {
       selectedTempType: 'Permitting'
     }
   },
-  computed: {},
+  computed: {
+    ...mapStores(useUserStore),
+    userCanManage() {
+      return this.userStore.userHasFeatureAccessLevel('ELECTRONIC_DOCUMENTS', 'MANAGE')
+    }
+  },
   watch: {
     options: {
       handler() {

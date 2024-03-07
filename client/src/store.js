@@ -7,6 +7,13 @@ import {AppStore} from '@/stores/AppStore'
 import constants from '@/helpers/constants'
 import ProposalStore, { ProposalMutations } from '@/views/blueraven/settings/proposalDesigner/store'
 import { deleteRequest, getRequestWithParams, postRequest } from './helpers/helpers'
+import { createPinia, PiniaVuePlugin } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+
+
+Vue.use(PiniaVuePlugin)
+export const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
 
 Vue.use(Vuex)
 

@@ -6,7 +6,7 @@
           <v-toolbar-title class="title-large-medium">Contacts</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="canAdd && (!$store.getters.isParent(parentId) || !companies || companies.length === 1)"
+            <v-btn text v-if="canAdd && (!userStore.isParent|| !companies || companies.length === 1)"
                    to="/newContact" color="primary" >
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE" class="body-medium">Add Contact</span>
@@ -114,6 +114,8 @@ import {
 import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 import axios from 'axios'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'Contacts',
@@ -123,12 +125,9 @@ export default {
       delay: 500,
       constants,
       menuOpen: false,
-      companies: this.$store.state.user.companies,
-      canAdd: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADD'),
       dialog: false,
       snackbar: {},
       contacts: [],
-      parentId: this.$store.state.user.details.parentCompanyId,
       descending: true,
       footerProps: {
         'items-per-page-options': [25, 50, 100, 1000],
@@ -148,6 +147,15 @@ export default {
       ],
       search: '',
       source: null
+    }
+  },
+  computed: {
+    ...mapStores(useUserStore),
+    companies() {
+      return this.userStore.companies
+    },
+    canAdd() {
+      return this.userStore.userHasFeatureAccessLevel('CONTACTS', 'ADD')
     }
   },
   watch: {

@@ -1,12 +1,13 @@
 import router from '@/router.js'
-import store from '@/store.js'
-import { UserMutations } from '@/stores/UserStore.js'
+import store, { pinia } from '@/store.js'
 import constants from '@/helpers/constants.js'
 import { AppMutations } from '@/stores/AppStore.js'
 import axios from 'axios'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const { VITE_ENV, VITE_BASE_API } = import.meta.env
 const JWT_EXPIRED = 'invalid token'
+const userStore = useUserStore(pinia)
 
 export function responseInterceptor({ response }) {
   if (response) {
@@ -32,7 +33,7 @@ export function responseInterceptor({ response }) {
         router.push({ name: 'siteUnderMaintenance' })
       } else {
         localStorage.removeItem('store')
-        store.commit(UserMutations.LOGIN_ERROR, msg)
+        userStore.loginError = msg
 
         //this code handles redirecting them back to the page they were trying to get to after they login
         let rt = {
@@ -77,11 +78,11 @@ export function requestInterceptor(config) {
   if (
     store &&
     store.state &&
-    store.state.user &&
+    userStore?.jwt &&
     (config.baseURL?.indexOf(VITE_BASE_API) > -1 ||
       config.url.indexOf(VITE_BASE_API) > -1)
   ) {
-    config.headers['Authorization'] = `Bearer ${store.state.user.jwt}`
+    config.headers['Authorization'] = `Bearer ${userStore.jwt}`
   }
 
   // if config.source passed in then use that

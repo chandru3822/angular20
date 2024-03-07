@@ -61,6 +61,8 @@
   import {AppMutations} from '@/stores/AppStore'
   import cloneDeep from 'lodash.clonedeep'
   import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'ProjectSystem',
@@ -75,15 +77,24 @@
         ownerReadOnlyPositionsChanged: false,
         ownerReadOnlyWhiteListedPositions: [],
         positionsLoading: false,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         objectTypeDetailsLoading: false
-
       }
     },
-    computed: {},
+    computed: {
+      ...mapStores(useUserStore),
+      userId() {
+        return this.userStore.details.id
+      },
+      companyId() {
+        return this.userStore.details.companyId
+      },
+      userCanAdd() {
+        return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+      },
+    },
     async created() {
       this.getPositions()
       this.getObjectTypeDetails()

@@ -171,7 +171,7 @@
           <SidePanelExpansionPanel header="Associated Projects" :sectionExpanded="sectionExpanded">
             <template v-slot:tool-btn>
               <v-menu
-                v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
+                v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
                 bottom
                 offset-y
                 :close-on-content-click="false"
@@ -264,7 +264,7 @@
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-menu
-                v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
+                v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
                 bottom
                 offset-y
                 :close-on-content-click="false"
@@ -537,6 +537,8 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 import {saveContact} from "@/services/contactService";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'Contact',
@@ -595,12 +597,7 @@ export default {
       countriesLoading: false,
       tempContact: {},
       contactId: parseInt(this.$route.params.contactId),
-      is7oaksAdmin: this.$store.getters.isFullAdmin,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
-      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'DELETE'),
-      companyId: this.$store.state.user.details.companyId,
       userPositionIds: [],
-      timezone: this.$store.state.user.details.timezone?.value,
       selectedProcess: null,
       processesLoading: true,
       availableProcesses: [],
@@ -609,10 +606,25 @@ export default {
       showMobileAssociatedProjects: false,
       showMobileNotes: false,
       showMobileDocuments: false
-
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    is7oaksAdmin() {
+      return this.userStore.isSystemAdmin
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('CONTACTS', 'EDIT')
+    },
+    userCanDelete() {
+      return this.userStore.userHasFeatureAccessLevel('CONTACTS', 'DELETE')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
+    timezone() {
+      return this.userStore.details.timezone?.value
+    },
     addressFieldRequired() {
       //this logic seems backwards but it is just the way rules work
       //if one address field is filled in then all of them are required
@@ -724,10 +736,10 @@ export default {
       }
     },
     getUserPositionIds: function () {
-      this.userPositionIds = this.$store.state.user.details.userPositions.map(p => p.positionId)
+      this.userPositionIds = this.userStore.details.userPositions.map(p => p.positionId)
     },
     selectSelf() {
-      let match = this.availableOwners.find(o => o.userId === this.$store.state.user.details.id) || {}
+      let match = this.availableOwners.find(o => o.userId === this.userStore.details.id) || {}
       this.$set(this.tempContact, 'owner', match)
     },
     async validateForm() {
@@ -762,7 +774,7 @@ export default {
       if (this.is7oaksAdmin) {
         return false
       } else if (this.contact.ownerReadOnlyWhiteListedPositions?.length > 0) {
-        return !this.$store.getters.userHasAnyPosition(this.contact.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
+        return !this.userStore.userHasAnyPosition(this.contact.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
       } else {
         return this.contact.ownerReadOnly
       }
@@ -783,7 +795,7 @@ export default {
     },
     contactOwnerIsReadOnly() {
       if (this.contact.ownerReadOnlyWhiteListedPositions?.length > 0) {
-        return !this.$store.getters.userHasAnyPosition(this.contact.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
+        return !this.userStore.userHasAnyPosition(this.contact.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
       } else {
         return this.contact.ownerReadOnly
       }
@@ -881,7 +893,7 @@ export default {
         }
         const {data, status} = await getRequestWithParams(`/processes`, {params})
         this.availableProcesses = data
-            if(!this.$store.getters.isFullAdmin) { //7 Oaks admin should be able to see all processes
+            if(!this.userStore.isSystemAdmin) { //7 Oaks admin should be able to see all processes
             this.availableProcesses = this.availableProcesses.filter(p => {
                 for (let id of this.userPositionIds) {
                   if (!p.denyListPositions.find(dlp => dlp.positionId === id)) {
@@ -939,7 +951,7 @@ export default {
     getReadOnly: function (field) {
       let fieldReadOnly = false
       if (null != field) {
-        fieldReadOnly = getCustomFieldReadOnly(this.$store, field)
+        fieldReadOnly = getCustomFieldReadOnly(field)
       }
       return !this.userCanEdit || fieldReadOnly
     },

@@ -152,7 +152,7 @@
               </v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-tooltip top v-if="$store.getters.userHasFeature('PROJECTS')">
+                <v-tooltip top v-if="userStore.userHasFeature('PROJECTS')">
                   <template v-slot:activator="{ on }">
                     <v-btn x-small text v-on="on"
                            target="_blank"
@@ -160,7 +160,7 @@
                   </template>
                   <span>Go to Project</span>
                 </v-tooltip>
-                <v-tooltip top v-if="$store.getters.userHasFeature('PROCESS_STEPS')">
+                <v-tooltip top v-if="userStore.userHasFeature('PROCESS_STEPS')">
                   <template v-slot:activator="{ on }">
                     <v-btn x-small text v-on="on"
                            target="_blank"
@@ -170,7 +170,7 @@
                   </template>
                   <span>Go to Process Step</span>
                 </v-tooltip>
-                <v-tooltip top v-if="$store.getters.userHasFeature('EVENTS')">
+                <v-tooltip top v-if="userStore.userHasFeature('EVENTS')">
                   <template v-slot:activator="{ on }">
                     <v-btn x-small text v-on="on"
                            target="_blank"
@@ -369,12 +369,14 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { getStatusTypes } from '@/services/processStepStatusTypeService'
   import axios from 'axios'
-  import constants from "@/helpers/constants";
+  import constants from '@/helpers/constants'
   import {
     getCancelledCompanyStatusTypesAssignedToPpsEvent,
     getEventStatusTypes
-  } from "@/services/eventStatusTypeService";
+  } from '@/services/eventStatusTypeService'
   import debounce from 'lodash.debounce'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'Schedule',
@@ -390,7 +392,6 @@
         showFilters: true,
         listLoading: false,
         saveInvalid: true,
-        timezone: this.$store.state.user.details.timezone.value,
         defaultZoom: 2.0,
         // they do these coordinates backwards to comply with geoJSON whatever that is.
         //center of the USA
@@ -404,7 +405,6 @@
         mapResources: [],
         selectedRows: [],
         selectedResources: [],
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'),
         state: {},
         states: [],
         eventStatusTypes: [],
@@ -448,6 +448,15 @@
         },
         // masterProjects: []
       }
+    },
+    computed: {
+      ...mapStores(useUserStore),
+      timezone() {
+        return this.userStore.details.timezone.value
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
+      },
     },
     watch: {
       options: {

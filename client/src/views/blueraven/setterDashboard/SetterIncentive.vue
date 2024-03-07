@@ -12,6 +12,8 @@ import { AppMutations } from '@/stores/AppStore'
 import {MilestoneEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import {incentive_constants, DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
 import Incentive from "@/views/blueraven/closerDashboard/Incentive";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'setterIncentive2',
@@ -29,6 +31,7 @@ export default {
     isSetterMgr: false,
   }),
   computed: {
+    ...mapStores(useUserStore),
     windowInnerWidth () { return window.innerWidth},
     dashboardType() {
       return this.isSetterMgr ? DashboardTypeEnum.SETTERMGR : DashboardTypeEnum.SETTER
@@ -45,8 +48,8 @@ export default {
   },
   /* INCENTIVE-RELATED CODE END */
   async created() {
-    this.currentUserId = this.$store.state.user.details.id
-    let userPositions = this.$store.state.user.details.userPositions
+    this.currentUserId = this.userStore.details.id
+    let userPositions = this.userStore.details.userPositions
     if (userPositions?.length > 0) {
       this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
       this.userOffice = userPositions.filter(position => position.orgId === this.userOfficeId)[0].hierarchy.filter(orgLevel => orgLevel.orgId === this.userOfficeId)[0].orgName

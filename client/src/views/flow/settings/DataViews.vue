@@ -95,13 +95,16 @@
 
 <script setup>
   import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, postRequest} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import { getCurrentInstance, ref, onMounted } from "vue";
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import { getCurrentInstance, ref, onMounted } from 'vue'
+  import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const userStore = useUserStore()
   const router = vueInstance.$router
 
   const addNew = ref(false)
@@ -111,7 +114,7 @@
   const companyProcesses = ref([])
   const selectedCompanyProcesses = ref([])
   const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
-  const is7oaksAdmin = ref(store.getters.isFullAdmin)
+  const is7oaksAdmin = ref(userStore.isSystemAdmin)
   const newDataView = ref({})
   const tableNameRule = ref([
     () => (newDataView.value.viewName != null && newDataView.value.viewName !== '') || "Field to Update is required",
@@ -123,8 +126,8 @@
     v => (!v || (v && (!constants.RESERVED_SQL_WORDS.includes(v)))) || "Cannot use reserved words",
   ])
 
-  const userId = ref(store.state.user.details.id)
-  const companyId = ref(store.state.user.details.companyId)
+  const userId = ref(userStore.details.id)
+  const companyId = ref(userStore.details.companyId)
   const headers = ref([
     { text: 'Display Name', value: 'displayName', show: true },
     { text: 'Table Name', value: 'viewName', width: 80, show: true },

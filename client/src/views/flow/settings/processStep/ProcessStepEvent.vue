@@ -860,6 +860,8 @@ import cloneDeep from 'lodash.clonedeep'
 import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import EventActionChildSms from "@/views/flow/settings/processStep/EventActionChildSms.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProcessStepEvent',
@@ -952,8 +954,6 @@ export default {
       ],
       processStepId: parseInt(this.$route.params.id),
       eventId: parseInt(this.$route.params.eventId),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       eventActionFieldHeaders: [
         {text: 'Field', value: 'fieldName', show: true},
         {text: 'Required', value: 'required', width: '75px', show: true},
@@ -991,6 +991,13 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
     selectAll() {
       return this.selectedEvent.readonlyWhiteListPositions?.length === this.positions?.length
     },

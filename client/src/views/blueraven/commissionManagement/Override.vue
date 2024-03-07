@@ -26,17 +26,17 @@
             Save
           </v-btn>
           <v-btn color="success" class="white--text mr-2"
-                 v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && overrideId && override.status === 'PENDING'"
+                 v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && overrideId && override.status === 'PENDING'"
                  :disabled="errorMessages.length > 0"
                  @click="approveOverride()">
             Approve
           </v-btn><v-btn color="error" class="white--text mr-2"
-                 v-if="overrideId && override.status !== 'ACTIVE' && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+                 v-if="overrideId && override.status !== 'ACTIVE' && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
                  :disabled="errorMessages.length > 0"
                  @click="openDeleteDialog(override, deleteTypes.OVERRIDE)">
             Delete
           </v-btn>
-          <v-btn color="error" class="mr-2" v-else-if="overrideId && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')" @click="inactivateConfirm=true">
+          <v-btn color="error" class="mr-2" v-else-if="overrideId && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')" @click="inactivateConfirm=true">
             Inactivate
           </v-btn>
           <MultiOptionDialog
@@ -514,6 +514,8 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import MultiOptionDialog from "@/components/MultiOptionDialog";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const deleteTypes={
     OVERRIDE:0,
@@ -539,6 +541,19 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      userCanAdd() {
+        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
+      },
+      userIsAdmin() {
+        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
+      },
+      timezone() {
+        return this.userStore.details.timezone.value
+      },
       visibleReceivingHeaders() {
         return this.receivingHeaders.filter(header => header.show === true)
       },
@@ -593,11 +608,7 @@
         positionId: this.$store.state.brs.commissionPositionId,
         payRateText: this.$store.state.brs.commissionPositionId === 4 ? 'Base Pay' : 'Rate per kW ($)',
         cloneStartDate: null,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
-        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN'),
         cloneDateError: false,
-        timezone: this.$store.state.user.details.timezone.value,
         inactivateConfirm: false,
         deleteConfirm: false,
         overrideId: this.$route.params.id,

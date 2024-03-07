@@ -10,7 +10,7 @@
               variant="text"
               to="/settings/position"
               color="primary"
-              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               prepend-icon="add"
               text="ADD POSITION"
             />
@@ -90,11 +90,13 @@
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const userStore = useUserStore()
   const vuetify = vueInstance.$vuetify
   const router = vueInstance.$router
 
@@ -105,9 +107,9 @@
   const dataLoading = ref(true)
   const search = ref('')
   const positionToDelete = ref(null)
-  const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
+  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
   const headers = ref([
     {text: 'Position Name', value: 'position', show: true},
     {text: 'Org Type', value: 'orgType', show: true},

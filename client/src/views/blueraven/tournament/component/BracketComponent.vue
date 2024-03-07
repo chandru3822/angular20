@@ -149,6 +149,8 @@
   import {handleHidingGlobalLoader, getRequest, putRequest, putRequestWithRequestParams, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ScoreDrilldown from "./ScoreDrilldown"
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'BracketComponent',
@@ -163,6 +165,10 @@
 
     },
     computed: {
+      ...mapStores(useUserStore),
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+      },
       itemsReverse() {
         return [...this.bracket?.rounds].reverse()
       }
@@ -170,7 +176,6 @@
     data() {
       return {
         constants,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         snackbar: {},
         showModal: false,
         overrideUser: {},

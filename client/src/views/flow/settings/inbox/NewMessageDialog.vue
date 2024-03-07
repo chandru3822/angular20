@@ -196,6 +196,8 @@
 <script>
 import { AppMutations } from '@/stores/AppStore'
 import {getRequest, getRequestWithParams, putRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: "NewMessageDialog",
@@ -233,6 +235,7 @@ export default {
     this.fetchTeamsForUser()
   },
   computed: {
+    ...mapStores(useUserStore),
     attachmentsText() {
       if (this.uploadedFiles.length == 1) {
         return this.uploadedFiles[0][0].name
@@ -434,7 +437,7 @@ export default {
         id: smsTeamId,
         users: [{
           smsTeamId: smsTeamId,
-          userId: this.$store.state.user.details.id
+          userId: this.userStore.details.id
         }]
       }
 

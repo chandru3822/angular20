@@ -186,6 +186,8 @@ import {
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { mapStores } from 'pinia'
 
 export default {
   name: 'SmartlistColumn',
@@ -245,6 +247,7 @@ export default {
     // this.getAssignedFields()
   },
   computed: {
+    ...mapStores(useUserStore),
     filteredProjectDetailsColumns () {
       return this.projectDetailsColumns.filter(f => {
         return !this.assignedFields.find(af => af.projectDetailsColumn === f.projectDetailsColumn && (f.processStepEventId === null || af.processStepEventId === f.processStepEventId))
@@ -264,7 +267,7 @@ export default {
     },
     async getAssignedFields () {
       try {
-        let timezone = this.$store.state.user.details.timezone.value
+        let timezone = this.userStore.details.timezone.value
         const {data} = await getRequest(`/smartlistv1/${this.smartlistId}/field?timezone=${timezone}`)
         this.assignedFields = data
       } catch (e) {

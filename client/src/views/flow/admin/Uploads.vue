@@ -46,19 +46,20 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
-import constants from '@/helpers/constants'
-import {Actions} from "@/store";
+import {handleHidingGlobalLoader, getRequest} from '@/helpers/helpers'
+import {Actions} from '@/store'
 import {getCurrentInstance, onMounted, ref} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
 const error = ref({})
-const userId = ref(store.state.user.details.id)
-const companyId = ref(store.state.user.details.companyId)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
 const attachmentTypes = ref([])
 const selectedAttachmentTypeId = ref(null)
 const addToJoin = ref(true)

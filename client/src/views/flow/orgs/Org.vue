@@ -69,7 +69,7 @@
           <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2"
                  v-model="tempOrg.schedulable">
         </div>
-        <div class="mb-3" v-if="$store.getters.isParent(parentId)">
+        <div class="mb-3" v-if="userStore.isParent">
           <label>Make available in children:</label>
           <input type="checkbox" :readonly="!userCanEdit" :disabled="!userCanEdit"
                  class="ml-3" v-model="tempOrg.availableToChildren">
@@ -308,6 +308,8 @@ import cloneDeep from 'lodash.clonedeep'
 import Style from "@/views/blueraven/settings/proposalDesigner/panel/Style";
 import {ProjectMutations} from "@/stores/ProjectStore";
 import PageOverview from "../PageOverview";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'Org',
@@ -353,14 +355,20 @@ export default {
       showChildOrgs: false,
       showUsersAssignedToOrg: false,
       fieldsLoading: true,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'EDIT'),
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'ADMIN'),
       orgId: parseInt(this.$route.params.id),
-      companyId: this.$store.state.user.details.companyId,
-      parentId: this.$store.state.user.details.parentCompanyId,
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('ORGS', 'EDIT')
+    },
+    userIsAdmin() {
+      return this.userStore.userHasFeatureAccessLevel('ORGS', 'ADMIN')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     overviewDetails() {
       if (this.org) {
         return [
@@ -595,7 +603,7 @@ export default {
       }
     },
     getReadOnly: function (field) {
-      return getCustomFieldReadOnly(this.$store, field) || !this.userCanEdit
+      return getCustomFieldReadOnly(field) || !this.userCanEdit
     }
   }
 }

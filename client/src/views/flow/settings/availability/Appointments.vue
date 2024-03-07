@@ -2,7 +2,7 @@
   <v-container v-if="orgId || userId" id="appointment-container">
     <v-row>
       <v-col>
-        <AlbatrossButton v-if="!addNew && store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')"
+        <AlbatrossButton v-if="!addNew && userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')"
                          @click="addNew = !addNew" color="primary" class="mb-3" text="ADD APPOINTMENT"/>
         <v-card v-if="addNew" flat class="px-3">
           <v-card-title>Add Schedule</v-card-title>
@@ -197,7 +197,7 @@
                 <AlbatrossButton size="small" variant="text" color="primary" @click="expanded = []"
                        v-if="expanded.includes(item)" text="CANCEL"/>
                 <AlbatrossButton size="small" variant="text" color="primary"
-                       v-if="store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE')"
+                       v-if="userStore.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE')"
                        @click="[itemToDelete=item, showDeleteDialog=true]"
                        prepend-icon="delete"
                 />
@@ -232,10 +232,12 @@
 
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {getCurrentInstance, onMounted, ref, computed, watch, defineProps} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const userStore = useUserStore()
   const route = vueInstance.$route
 
   const { VITE_ENV } = import.meta.env
@@ -265,7 +267,7 @@
   })
   const addNew = ref(false)
   const expanded = ref([])
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
+  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
   const newAppt = ref({})
   const appointments = ref([])
   const saveError = ref(false)
@@ -284,7 +286,7 @@
   const dateFormat = ref('MMMM DD, YYYY')
   const timestampType = ref('timestamp')
   const timestampFormat = ref('MMMM DD, YYYY h:mm a')
-  const timezone = ref(store.state.user.details.timezone.value)
+  const timezone = ref(userStore.details.timezone.value)
   const headers = ref([
     { text: 'Appointments', value: 'appointment', show: true},
     { text: 'Title', value: 'title', show: true},

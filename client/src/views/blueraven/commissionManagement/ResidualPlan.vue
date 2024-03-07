@@ -14,7 +14,7 @@
             Save
           </v-btn>
           <v-btn color="success" class="white--text mr-2"
-                 v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && residualPlan.statusType === 'PENDING'"
+                 v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && residualPlan.statusType === 'PENDING'"
                  :disabled="errorMessages.length > 0"
                  @click="approvePlan()">
             Approve
@@ -369,6 +369,8 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import constants from "@/helpers/constants";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'ResidualPlan',
@@ -430,7 +432,6 @@
         selectedLevel: {},
         moment,
         cloneStartDate: null,
-        timezone: this.$store.state.user.details.timezone.value,
         dataLoading: true,
         inactivateConfirm: false,
         deleteConfirm: false,
@@ -461,6 +462,10 @@
     },
 
     computed: {
+      ...mapStores(useUserStore),
+      timezone() {
+        return this.userStore.details.timezone.value
+      },
       levelToDeleteName() {
         return this.levelToDelete ? this.levelToDelete.name : ''
       },

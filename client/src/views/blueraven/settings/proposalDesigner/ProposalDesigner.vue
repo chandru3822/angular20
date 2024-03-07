@@ -129,6 +129,8 @@ import {AppMutations} from '@/stores/AppStore'
 import {VuexUndoRedoMixin} from './mixin/VuexUndoRedoMixin'
 import {Editor} from "@tiptap/vue-2";
 import {getExtensions} from "@/views/blueraven/settings/proposalDesigner/blocks/text/utils";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 function fixContainer(revert = false) {
   document.querySelectorAll('.router-container').forEach((node) => {
@@ -226,6 +228,7 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
     selected() {
       return this.$store.getters.selectedBlock
     },
@@ -239,7 +242,7 @@ export default {
       return this.$store.getters.modifiedBlocks?.length > 0
     },
     isFullAdmin() {
-      return this.$store.getters.isFullAdmin
+      return this.userStore.isSystemAdmin
     },
     ...mapState({
       selectedId: (state) => state.proposal.selectedId,

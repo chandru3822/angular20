@@ -89,7 +89,7 @@
           <SidePanelExpansionPanel header="Company Access" :section-expanded="sectionExpanded">
             <template v-slot:tool-btn>
               <v-menu
-                  v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
+                  v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
                   bottom
                   offset-y
                   :close-on-content-click="false"
@@ -248,11 +248,13 @@ import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import cloneDeep from 'lodash.clonedeep'
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
-import constants from "@/helpers/constants";
+import constants from '@/helpers/constants'
 import SpinnerInline from '@/components/SpinnerInline'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import PageOverview from "../PageOverview";
-import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
+import ConfirmationDialog from '@/components/ConfirmationDialog'
+import PageOverview from '../PageOverview'
+import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'User',
@@ -285,8 +287,6 @@ export default {
       passwordRule: constants.PASSWORD_RULES,
       emailRule: constants.EMAIL_RULES,
       snackbar: {},
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('USERS', 'ADMIN'),
       companies: [],
       dirtyCfvs: [],
       tempUser: {},
@@ -301,7 +301,6 @@ export default {
       notes: [],
       owners: [],
       userId: parseInt(this.$route.params.id),
-      companyId: this.$store.state.user.details.companyId,
       changeOwner: false,
       userStatusTypes: [],
       addUserCompany: false,
@@ -312,6 +311,16 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('USERS', 'EDIT')
+    },
+    userIsAdmin() {
+      return this.userStore.userHasFeatureAccessLevel('USERS', 'ADMIN')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     overviewDetails() {
       return [
         {
@@ -549,7 +558,7 @@ export default {
       }
     },
     getReadOnly: function (field) {
-      return !this.userCanEdit || getCustomFieldReadOnly(this.$store, field)
+      return !this.userCanEdit || getCustomFieldReadOnly(field)
     },
     filterUserCompanies: function () {
       let companiesInUse = this.user.companies.map(c => c.id)

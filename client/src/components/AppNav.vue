@@ -33,7 +33,7 @@
             </template>
             <v-list>
               <v-list-item v-for="(item, index) in companies" :key="index"
-                           :class="item.id === $store.state.user.details.companyId ? 'v-list-item--active' : ''"
+                           :class="item.id === userStore.details.companyId ? 'v-list-item--active' : ''"
                            @click="[menuOpen = false, changeContext(item.id)]">
                 <v-list-item-title>{{ item.companyName }}</v-list-item-title>
               </v-list-item>
@@ -117,15 +117,16 @@
 
 <script>
 import { AppMutations } from '@/stores/AppStore'
-import { UserActions, UserMutations } from '@/stores/UserStore'
 import {getRequest, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import AccountMenu from '@/components/AccountMenu.vue'
 import CompanyTools from '@/components/CompanyTools.vue'
 import axios from 'axios'
 import { NotificationActions } from '@/plugins/notifications/NotificationStore'
-import AnnouncementDropdown from "@/components/AnnouncementDropdown.vue";
+import AnnouncementDropdown from '@/components/AnnouncementDropdown.vue'
 import moment from 'moment'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const { VITE_ENV } =  import.meta.env
 //@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
@@ -164,8 +165,7 @@ export default {
       appLoading: this.$store.state.app.loading,
       loadComplete: false,
       clearingMasquerade: false,
-      companyName: this.$store.state.user?.details?.companyName,
-      userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
+      companyName: this.userStore?.details?.companyName,
       selectedCompany: {},
       menuOpen: false,
       tabMenuOpen: false,
@@ -173,7 +173,6 @@ export default {
       announcements: [],
       companyTools: [],
       model: '',
-      hideMobileBanner: this.$store.state.user.hideMobileBanner || false,
       showMobileBanner: false,
       headerColor: constants.ENV_COLOR,
       tabs: [{
@@ -214,7 +213,7 @@ export default {
   },
   created() {
     this.loadComplete = true
-    if (this.$store.state.user?.details?.id) {
+    if (this.userStore?.details?.id) {
       this.getCompanies()
       this.getCompanyTools()
       this.getSmsNotification()
@@ -222,7 +221,7 @@ export default {
     }
 
     //@TODO: #smartlistsv2 Please leave while smartlists v2 is being developed
-    if (this.$store.getters.isFullAdmin) {
+    if (this.userStore.isSystemAdmin) {
       this.tabs.splice(4, 0, {
         label: 'Smartlists v1',
         path: '/smartlistv1',
@@ -238,8 +237,15 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userIsMasquerading() {
+      return  this.userStore?.details?.masqueradingUserId != null
+    },
+    hideMobileBanner() {
+      return  this.userStore?.hideMobileBanner || false
+    },
     displayedTabs() {
-      return this.tabs.filter(tab => this.$store.getters.userHasFeature(tab.feature) && tab.show)
+      return this.tabs.filter(tab => this.userStore.userHasFeature(tab.feature) && tab.show)
     },
     smsNotification() {
       return this.$store.getters.getNotificationsByTopic('sms_reply')
@@ -259,19 +265,19 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       const params = {
         companyId,
-        isAdmin: this.$store.getters.isFullAdmin
+        isAdmin: this.userStore.isSystemAdmin
       }
-      await this.$store.dispatch(UserActions.CHANGE_CONTEXT, params)
+      await this.userStore.changeContext(params)
     },
     async getCompanies() {
       // get the companies that a user has access to
       // this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const url = (this.$store.getters.isFullAdmin) ? `/companies` : `/companies/assignedToUser`
+        const url = (this.userStore.isSystemAdmin) ? `/companies` : `/companies/assignedToUser`
         const { data } = await getRequest(url, null, [])
         this.companies = data
-        this.$store.commit(UserMutations.SET_COMPANIES, this.companies)
-        this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user?.details?.companyId) || {}
+        this.userStore.companies = this.companies
+        this.selectedCompany = this.companies.find(c => c.id === this.userStore?.details?.companyId) || {}
         //always do this, that way if they dont have a spinner it will unset the url
         this.$store.commit(AppMutations.SET_SPINNER_URL, this.selectedCompany?.spinnerPresignedUrl)
 
@@ -295,7 +301,7 @@ export default {
         const { data } = await getRequest(`/feature/companyTools`, null, [])
 
         this.companyTools = data.filter(d => {
-          if(d.parentCompanyFeatureId != null && this.$store.getters.userHasFeature(d.childCode)){
+          if (d.parentCompanyFeatureId != null && this.userStore.userHasFeature(d.childCode)) {
             if(parentId == -1 || (parentId != d.parentCompanyFeatureId)){
               childNames = []
               childPaths = []
@@ -307,7 +313,7 @@ export default {
             d.childNames = childNames.slice();
             d.childPaths = childPaths.slice();
           }
-          return this.$store.getters.userHasFeature(d.childCode);
+          return this.userStore.userHasFeature(d.childCode);
 
         })
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -329,10 +335,10 @@ export default {
         this.clearingMasquerade = true
         const { data } = await axios.get(`${constants.VUE_APP_BASE_API}/auth/masquerade/clear`)
         if (data && data.token) {
-          this.$store.commit(UserMutations.SET_JWT, data.token)
+          this.userStore.jwt = data.token
           //update the user
           const { data: currentUser } = await getRequest(`/user/current`)
-          await this.$store.commit(UserMutations.SET_DETAILS, currentUser)
+          this.userStore.details = currentUser
           //then reload the screen
           window.location.reload()
         }

@@ -35,9 +35,7 @@
       return {
         snackbar: {},
         tournament: {},
-        timezone: this.$store.state.user.details.timezone.value,
         tournamentId: parseInt(this.$route.params.id),
-        userId: this.$store.state.user.details.id,
         tabs: [
           {
             label: 'Details',

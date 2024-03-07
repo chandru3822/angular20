@@ -231,6 +231,8 @@ import {mapState} from 'vuex'
 import Vue2Filters from 'vue2-filters'
 import CommissionDetailsMenu from "@/views/blueraven/proposals/CommissionDetailsMenu.vue";
 import ResidualDetailModal from "@/views/blueraven/commissionManagement/ResidualDetailModal.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const { VITE_HIDE_PROPOSAL } = import.meta.env
 
@@ -259,8 +261,6 @@ export default {
       isIntersecting: false,
       loading: false,
       hideProposalSection: VITE_HIDE_PROPOSAL || false,
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN'),
-      userCanManage: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'MANAGE'),
       proposalId: parseInt(this.$route.params.proposalId),
       versionMenu: false,
       loadingVersions: true,
@@ -286,9 +286,16 @@ export default {
     window.removeEventListener('beforeunload', this.beforeWindowUnload)
   },
   computed: {
+    ...mapStores(useUserStore),
+    userIsAdmin() {
+      return this.userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
+    },
+    userCanManage() {
+      return this.userStore.userHasFeatureAccessLevel('PROPOSALS', 'MANAGE')
+    },
     canEdit() {
-      const hasAdmin = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
-      const hasEdit = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'EDIT')
+      const hasAdmin = this.userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
+      const hasEdit = this.userStore.userHasFeatureAccessLevel('PROPOSALS', 'EDIT')
       return (hasAdmin || hasEdit)
     },
     defaultProposalName() {
@@ -340,7 +347,7 @@ export default {
 
       //positions required for user
       const positions = cf[wlAttr]?.map(wlp => wlp.positionId) ?? []
-      return this.$store.getters.userHasAnyPosition(positions)
+      return this.userStore.userHasAnyPosition(positions)
     },
     onStickyHeader(entries) {
       const ratio = entries[0].intersectionRatio

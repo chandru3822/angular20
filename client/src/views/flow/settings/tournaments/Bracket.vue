@@ -55,10 +55,10 @@
                 <span v-else>Cancel</span>
               </v-btn>
               <v-btn small icon :large="$vuetify.breakpoint.smAndDown" class="mx-3" color="primary" @click="bracketToCopy=b"
-                     v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')">
+                     v-if="userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')">
                 <v-icon>mdi-content-copy</v-icon>
               </v-btn>
-              <v-btn small :large="$vuetify.breakpoint.smAndDown" color="primary" icon v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')" @click="bracketToDelete=b"><v-icon>delete</v-icon></v-btn>
+              <v-btn small :large="$vuetify.breakpoint.smAndDown" color="primary" icon v-if="userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')" @click="bracketToDelete=b"><v-icon>delete</v-icon></v-btn>
             </v-toolbar>
             <v-card flat v-if="b.addRound">
               <DatetimePickerInput
@@ -142,7 +142,7 @@
                        @click="saveRound(b, item)"><span :class="{'body-large': $vuetify.breakpoint.smAndDown}">Save</span>
                 </v-btn>
                 <v-btn text color="primary" @click="[roundToDelete = item, bracketToDeleteRoundFrom = b]"
-                       v-if="!b.matchesGenerated && $store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')">
+                       v-if="!b.matchesGenerated && userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')">
                   <v-icon>delete</v-icon>
                 </v-btn>
               </template>
@@ -186,6 +186,8 @@
     getSnackbar
   } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'BracketAdmin',
@@ -207,11 +209,9 @@
         bracketError: false,
         bracketErrorMsg: '',
         newRound: {},
-        timezone: this.$store.state.user.details.timezone.value,
         addRound: false,
         ownerTypes: [],
         tournamentId: this.$route.params.id,
-        userId: this.$store.state.user.details.id,
         headers: [
           {text: 'Round', value: 'roundNumber', show: true},
           {text: 'Users', value: 'users', show: true},
@@ -228,7 +228,12 @@
         bracketToDeleteRoundFrom: null
       }
     },
-    computed: {},
+    computed: {
+      ...mapStores(useUserStore),
+      timezone() {
+        return this.userStore.details.timezone.value
+      }
+    },
     methods: {
       rerenderBracket() {
         this.bracketRerenderKey++

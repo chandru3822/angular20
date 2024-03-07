@@ -174,7 +174,7 @@
                       size="small"
                       variant="text"
                       color="primary"
-                      v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                      v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                       @click="[itemToDelete=item, showDeleteDialog=true]"
                       prepend-icon="delete"
                     />
@@ -225,15 +225,17 @@
 
   import orderBy from 'lodash.orderby'
   import {getStatusTypes, getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
-  import {handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar, getRequest} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getRequest} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import ConfirmationDialog from '@/components/ConfirmationDialog'
 
-  import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import {getCurrentInstance, onMounted, ref, computed} from 'vue'
+  import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const userStore = useUserStore()
 
   const search = ref('')
   const statusTypes = ref([])
@@ -254,9 +256,9 @@
   const addNew = ref(false)
   const newType = ref({})
   const selectedStatusTypeId = ref(null)
-  const userId = ref(store.state.user.details.id)
-  const companyId = ref(store.state.user.details.companyId)
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+  const userId = ref(userStore.details.id)
+  const companyId = ref(userStore.details.companyId)
+  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
   const fieldsInUse = ref([])
   const deleteError = ref(false)
   const showDeleteDialog = ref(false)

@@ -191,7 +191,7 @@
                   <a v-if="item.payment_state_id === 5 && userCanEdit" class="primary--text" @click="openUnvoidDialog(item)">Unvoid</a>
                 </td>
                   <td>
-                      <v-btn v-if="item.payment_state_id != 3 && item.payment_state_id != 2 && $store.getters.userHasFeatureAccessLevel('REBATES', 'DELETE')"
+                      <v-btn v-if="item.payment_state_id != 3 && item.payment_state_id != 2 && userStore.userHasFeatureAccessLevel('REBATES', 'DELETE')"
                           @click="openDeleteDialog(item)" text color="primary"><v-icon>delete</v-icon></v-btn>
                   </td>
               </tr>
@@ -279,11 +279,20 @@
   import moment from "moment";
   import {getCompanyStates} from '@/services/stateService'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'RebateDetails',
     components: {ConfirmationDialog},
     computed: {
+      ...mapStores(useUserStore),
+      userCanAdd() {
+        return this.userStore.userHasFeatureAccessLevel('REBATES', 'ADD')
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('REBATES', 'EDIT')
+      },
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)
       }
@@ -305,8 +314,6 @@
           { text: '', value: 'delete', show: true }
         ],
         rebateDetails: {},
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'EDIT'),
         mailingDetails: {
             mailingStreet1: null,
             mailingStreet2: null,

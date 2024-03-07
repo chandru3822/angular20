@@ -156,6 +156,8 @@ import moment from 'moment'
 import {getBudgetsForUser, getBudgetTypes, getReimbursementRequestImage} from './expenseService'
 import SpinnerInline from "@/components/SpinnerInline.vue";
 import BudgetReportTable from "@/views/blueraven/expenses/BudgetReportTable.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'Reimbursement',
@@ -165,6 +167,16 @@ export default {
     BudgetReportTable
   },
   computed: {
+    ...mapStores(useUserStore),
+    timezone() {
+      return this.userStore.details.timezone.value
+    },
+    userId() {
+      return this.userStore.details.id
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     selectedBudgetId () {
       return this.newReimbursement.expenseDate != null ? this.availableBudgets.find(b => {
         return moment(this.newReimbursement.expenseDate).isBetween(b.startDate, b.endDate, null, '[]')
@@ -178,10 +190,7 @@ export default {
       dataLoading: true,
       savingReceiptImage: false,
       attachmentTypeId: 4,
-      timezone: this.$store.state.user.details.timezone.value,
-      userId: this.$store.state.user.details.id,
       receiptLogo: {},
-      companyId: this.$store.state.user.details.companyId,
       newReimbursement: {},
       renderApprovalRequestImage: false,
       needsApprovalRequest: {},

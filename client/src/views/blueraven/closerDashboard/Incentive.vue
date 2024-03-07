@@ -57,6 +57,7 @@ import {AppMutations} from "@/stores/AppStore";
 import {getSnackbar} from "@/helpers/helpers";
 import {Actions} from "@/store";
 import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 /**
  * counts: {q1:Number, q2:Number, q3:Number, q4:Number}
@@ -85,6 +86,7 @@ const props = defineProps({
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 
 const percentAchieved = ref(0),
     progressBarIsFull=ref(false),
@@ -92,7 +94,7 @@ const percentAchieved = ref(0),
     headerImageTypeId=ref(991),
     backgroundImage=ref({}),
     backgroundImageTypeId=ref(992),
-    companyId = store.state.user.details.companyId,
+    companyId = userStore.details.companyId,
     backgroundImageLoaded=ref(false)
 
 const windowInnerWidth = computed(() => { return window.innerWidth})

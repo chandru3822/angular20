@@ -158,6 +158,8 @@ import {
 import Vue2Filters from "vue2-filters";
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'AppDownloads',
@@ -174,27 +176,12 @@ export default {
       addNew: false,
       apps: [],
       newApp: {},
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'ADD'),
-      userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_ALL'),
-      userCanView: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW'),
-      userHasBeta: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_CUSTOM'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT'),
-      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'DELETE'),
       minVersion: null,
       buildNumbers: [],
       editMinVersion: false,
       appTypeId: this.isIos ? 1 : 3,
       showAndroid: true,
       isMobile: false,
-      headers: [
-        {text: '', value: 'dlIcon', show: true, width: 40},
-        {text: 'Build', value: 'buildNumber', show: true},
-        {text: 'Version', value: 'version', show: true},
-        {text: 'Branch', value: 'mobileBranch', show: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')},
-        {text: 'Created', value: 'dateCreated', show: true},
-        {text: '', value: 'icons', width: 175, show: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')},
-        {text: 'Beta', value: 'beta', show: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_CUSTOM') || this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')}
-      ],
       appToDelete: null,
       appToShowHide: null,
       appToToggleBeta: null,
@@ -203,6 +190,36 @@ export default {
     }
   },
   computed:{
+    ...mapStores(useUserStore),
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'ADD')
+    },
+    userCanViewAll() {
+      return this.userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_ALL')
+    },
+    userCanView() {
+      return this.userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW')
+    },
+    userHasBeta() {
+      return this.userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_CUSTOM')
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')
+    },
+    userCanDelete() {
+      return this.userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'DELETE')
+    },
+    headers() {
+      return [
+        {text: '', value: 'dlIcon', show: true, width: 40},
+        {text: 'Build', value: 'buildNumber', show: true},
+        {text: 'Version', value: 'version', show: true},
+        {text: 'Branch', value: 'mobileBranch', show: this.userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')},
+        {text: 'Created', value: 'dateCreated', show: true},
+        {text: '', value: 'icons', width: 175, show: this.userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')},
+        {text: 'Beta', value: 'beta', show: this.userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_CUSTOM') || this.userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')}
+      ]
+    },
     filterHeaders () {
       return this.headers.filter(header => header.show === true)
     },

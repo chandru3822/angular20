@@ -296,6 +296,8 @@ import moment from 'moment'
 import {saveAs} from 'file-saver'
 import cloneDeep from 'lodash.clonedeep'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'SubmittedExpenses',
@@ -306,10 +308,6 @@ export default {
   data() {
     return {
       snackbar: {},
-      timezone: this.$store.state.user.details.timezone.value,
-      userFullName: this.$store.state.user.details.fullName,
-      userCanManage: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'MANAGE'),
-      userCanAdmin: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN'),
       selectedExpense: {},
       approveDropdown: false,
       approveConfirmLoading: false,
@@ -326,7 +324,6 @@ export default {
       submittedExpenses: [],
       usersWithBudget: [],
       users: [],
-      userId: this.$store.state.user.details.id,
       usersLoading: false,
       userSearchText: '',
       budgetsForUser: [],
@@ -370,6 +367,22 @@ export default {
     this.getSubmittedExpenses()
   },
   computed: {
+    ...mapStores(useUserStore),
+    timezone() {
+      return this.userStore.details.timezone.value
+    },
+    userFullName() {
+      return this.userStore.details.fullName
+    },
+    userCanManage() {
+      return this.userStore.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')
+    },
+    userCanAdmin() {
+      return this.userStore.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')
+    },
+    userId() {
+      return this.userStore.details.id
+    },
     showMiddleHeader() {
       return this.selectedExpenses.length > 0 && this.canPay
     },

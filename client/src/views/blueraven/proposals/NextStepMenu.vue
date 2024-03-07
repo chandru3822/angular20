@@ -150,6 +150,8 @@ import StatefulBtn from '@/views/blueraven/proposals/StatefulBtn'
 import ConfirmDialog from '@/views/blueraven/proposals/ConfirmDialog'
 import {getRequest, logError, postRequest, putRequest} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const DOCS_MESSAGE = {
   'FINANCE_DOCS': {key: 'financeDocsSent', message: 'Finance docs request submitted'},
@@ -188,6 +190,7 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
     isCreditCheckRequired() {
       // find financial field custom group
       const cfv = this.proposal.customFieldGroups.find(x => x.id === 27)?.customFieldValues?.find(x => x.customFieldId === 128)
@@ -253,7 +256,7 @@ export default {
 
       //positions required for user
       const positions = cf[wlAttr]?.map(wlp => wlp.positionId) ?? []
-      return this.$store.getters.userHasAnyPosition(positions)
+      return this.userStore.userHasAnyPosition(positions)
     },
     async submitCreditCheck() {
       //we are going to allow them to click this multiple times to open the credit check and update the credit checked timestamp

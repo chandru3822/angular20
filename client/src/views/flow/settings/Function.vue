@@ -132,10 +132,12 @@
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
   import {getCurrentInstance, onMounted, ref} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const userStore = useUserStore()
   const route = vueInstance.$route
 
   const headers = ref([
@@ -153,10 +155,10 @@
       to: `/settings/functions`
     },
   ])
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-  const companyId = ref(store.state.user.details.companyId)
+  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+  const companyId = ref(userStore.details.companyId)
   const functionId = ref(route.params.id)
-  const userId = ref(store.state.user.details.id)
+  const userId = ref(userStore.details.id)
   const systemValues = ref([])
   const details = ref({})
   const parentObjects = ref([])

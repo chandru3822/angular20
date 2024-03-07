@@ -47,49 +47,49 @@ export const UserStore = {
     })),
   },
   actions: {
-    [UserActions.CHANGE_TIMEZONE]: async ({ commit, state }, timezone) => {
-      state.details.timezone = timezone
-      //todo: date/time inputs don't update when the zone is changed. should we refresh?
-      commit(UserMutations.SET_DETAILS, state.details)
-    },
-    [UserActions.LOGIN_SUCCESS]: async ({ commit, getters }, details) => {
-      commit(UserMutations.LOGIN_ERROR, '')
-      //pls fix the undefined timezone issue!
-      if(!details.timezone) {
-        details.timezone = {
-          friendlyValue: moment.tz.guess(),
-          value: moment.tz.guess()
-        }
-      }
-      commit(UserMutations.SET_DETAILS, details)
-
-      if (getters.userHasAnyFeature) {
-        commit(UserMutations.AUTH_STATUS, true)
-      } else {
-        commit(
-          UserMutations.LOGIN_ERROR,
-          'You do not have permission to access this app.'
-        )
-      }
-    },
-    [UserActions.CHANGE_CONTEXT]: async ({ commit }, params) => {
-      //change context
-      const {data} = await postRequest(`/user/changeContext/${params.companyId}`)
-
-      //update vuex store - user details
-      await commit(UserMutations.SET_DETAILS, data)
-
-      //refresh entire app and go to users home page if they have one
-      if(data.homePagePath) {
-        window.location.href = data.homePagePath
-      } else {
-        window.location.href = '/'
-      }
-    },
-    [UserActions.LOGOUT]: ({ commit }) => {
-      localStorage.removeItem('store')
-      commit(UserMutations.RESET_STATE)
-    }
+    // [UserActions.CHANGE_TIMEZONE]: async ({ commit, state }, timezone) => {
+    //   state.details.timezone = timezone
+    //   //todo: date/time inputs don't update when the zone is changed. should we refresh?
+    //   commit(UserMutations.SET_DETAILS, state.details)
+    // },
+    // [UserActions.LOGIN_SUCCESS]: async ({ commit, getters }, details) => {
+    //   commit(UserMutations.LOGIN_ERROR, '')
+    //   //pls fix the undefined timezone issue!
+    //   if(!details.timezone) {
+    //     details.timezone = {
+    //       friendlyValue: moment.tz.guess(),
+    //       value: moment.tz.guess()
+    //     }
+    //   }
+    //   commit(UserMutations.SET_DETAILS, details)
+    //
+    //   if (getters.userHasAnyFeature) {
+    //     commit(UserMutations.AUTH_STATUS, true)
+    //   } else {
+    //     commit(
+    //       UserMutations.LOGIN_ERROR,
+    //       'You do not have permission to access this app.'
+    //     )
+    //   }
+    // },
+    // [UserActions.CHANGE_CONTEXT]: async ({ commit }, params) => {
+    //   //change context
+    //   const {data} = await postRequest(`/user/changeContext/${params.companyId}`)
+    //
+    //   //update vuex store - user details
+    //   await commit(UserMutations.SET_DETAILS, data)
+    //
+    //   //refresh entire app and go to users home page if they have one
+    //   if(data.homePagePath) {
+    //     window.location.href = data.homePagePath
+    //   } else {
+    //     window.location.href = '/'
+    //   }
+    // },
+    // [UserActions.LOGOUT]: ({ commit }) => {
+    //   localStorage.removeItem('store')
+    //   commit(UserMutations.RESET_STATE)
+    // }
   },
   getters: {
     userHasAnyFeature: state => {

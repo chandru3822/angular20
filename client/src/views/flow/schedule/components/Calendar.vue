@@ -268,6 +268,8 @@
   import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmationDialog from "../../../../components/ConfirmationDialog.vue";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'ScheduleCalendar',
@@ -282,6 +284,13 @@
       states: {type: Array}
     },
     computed: {
+      ...mapStores(useUserStore),
+      timezone() {
+        return this.userStore.details.timezone.value
+      },
+      scrollTime() {
+        return moment().tz(this.userStore.details.timezone.value).startOf('hour').format('HH:mm:ss')
+      },
       //states
       sortedStates() {
         const selectedStates = this.states.filter(state => this.selectedStates.includes(state))
@@ -371,9 +380,8 @@
       this.getEvents()
     },
     watch: {
-      '$store.state.user.details.timezone.value': function () {
-        this.calendar.options.timezone = this.$store.state.user.details.timezone.value
-
+      'userStore.details.timezone.value': function () {
+        this.calendar.options.timezone = this.userStore.details.timezone.value
       },
       // whenever selectedUsers or selectedOrgs changes, concat them both into resources
       'selectedUsers': function () {
@@ -455,7 +463,6 @@
         licenseKey: 'GPL-My-Project-Is-Open-Source',
         daySelector: false,
         dayOptions: [],
-        timezone: this.$store.state.user.details.timezone.value,
         calendar: {
           options: {
             titleFormat:{ month: 'long',
@@ -466,7 +473,7 @@
             slotDuration: '00:30:00',
             slotLabelInterval: '01:00:00',
             slotWidth: 45,
-            scrollTime: moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'),
+            scrollTime: this.scrollTime,
             hiddenDays: [],
             minTime: '02:00:00',
             maxTime: '23:00:00',
@@ -474,7 +481,7 @@
             firstDay: 1,
             editable: true,
             defaultView: 'resourceTimelineDay',
-            timezone: this.$store.state.user.details.timezone.value,
+            timezone: this.timezone,
             header: {
               left: 'customPrev,customToday,customNext',
               center: 'title',
@@ -877,8 +884,8 @@
         if(this.calendarView === 'resourceTimelineDay') {
           this.calendarStartTime = moment(this.calendarStart).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
           this.calendarEndTime = moment(this.calendarStart).add(1, 'd').startOf('d').subtract(1, 's').utc().format('YYYY-MM-DD HH:mm:ss')
-          // this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          // this.calendarStartTime = moment(this.calendarStart).tz(this.userStore.details.timezone.value).format('YYYY-MM-DD')
+          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.userStore.details.timezone.value).format('YYYY-MM-DD')
         } else {
           //moment starts on sunday, isoWeek starts on monday
           this.calendarStartTime = moment(this.calendarStart).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')

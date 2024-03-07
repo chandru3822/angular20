@@ -18,10 +18,25 @@
 </template>
 
 <script>
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+
   export default {
     name: 'PayrollReview',
 
     computed: {
+      ...mapStores(useUserStore),
+      tabs() {
+        return [ {
+          label: 'Payroll Review',
+          path: `/commissionManagement/payroll/${this.$route.params.id}/review`,
+          display: this.userStore.userHasFeature('COMMISSIONS')
+        }, {
+          label: 'Summary',
+          path: `/commissionManagement/payroll/${this.$route.params.id}/summary`,
+          display: this.userStore.userHasFeature('COMMISSIONS')
+        }]
+      },
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)
       }
@@ -29,16 +44,7 @@
     data() {
       return {
         snackbar: {},
-        model: '',
-        tabs: [ {
-          label: 'Payroll Review',
-          path: `/commissionManagement/payroll/${this.$route.params.id}/review`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Summary',
-          path: `/commissionManagement/payroll/${this.$route.params.id}/summary`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }]
+        model: ''
       }
     },
     methods: {}

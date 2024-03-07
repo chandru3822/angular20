@@ -99,6 +99,8 @@
 <script>
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue"
 import constants from "@/helpers/constants"
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: "TournamentCustomField",
@@ -118,12 +120,16 @@ export default {
     DatetimePickerInput
   },
   filters: {},
-  computed: {},
+  computed: {
+    ...mapStores(useUserStore),
+    timezone() {
+      return this.userStore.details?.timezone?.value
+    }
+  },
   data() {
     return {
       isLoading: false,
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-      timezone: this.$store.state.user.details?.timezone?.value
+      requiredRules: constants.BASIC_REQUIRED_RULE
     }
   },
   watch: {},

@@ -94,7 +94,7 @@
           />
 
           <div
-            v-if="store.getters.userHasFeature('SYSTEM') && customField.companyDataType && customField.companyDataType.customBehavior">
+            v-if="userStore.userHasFeature('SYSTEM') && customField.companyDataType && customField.companyDataType.customBehavior">
 
             <div v-if="isSystemReference(customField.companyDataType.companyDataType)">
               <v-autocomplete
@@ -299,6 +299,7 @@ const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
+const userStore = useUserStore()
 const route = vueInstance.$route
 const router = vueInstance.$router
 
@@ -313,11 +314,11 @@ const systemLists = ref([])
 const systemListOptions = ref([])
 const companyDataTypes = ref([])
 const availableCustomFields = ref([])
-const companyId = ref(store.state.user.details.companyId)
+const companyId = ref(userStore.details.companyId)
 const usesForField = ref([])
-const userIsSystemAdmin = ref(store.getters.userHasFeature("SYSTEM"))
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel("SETTINGS", "EDIT"))
-const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
+const userIsSystemAdmin = ref(userStore.userHasFeature("SYSTEM"))
+const userCanEdit = ref(userStore.userHasFeatureAccessLevel("SETTINGS", "EDIT"))
+const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
 
 
 const selectedSystemListTypeIsUsers = computed(() => {
@@ -406,7 +407,7 @@ watch(customFieldQuery, (val) => {
         //not sure why i am doing  but.value leaving for now
         customField.value = {
           fieldName: "",
-          createdById: store.state.user.details.id,
+          createdById: userStore.details.id,
           listOfValues: [],
         }
       }

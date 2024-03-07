@@ -164,9 +164,11 @@ import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
-import {Actions} from "@/store";
-import constants from "@/helpers/constants";
-import ConfirmationDialog from "../../../components/ConfirmationDialog.vue";
+import {Actions} from '@/store'
+import constants from '@/helpers/constants'
+import ConfirmationDialog from '../../../components/ConfirmationDialog.vue'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProjectDetails',
@@ -183,7 +185,6 @@ export default {
       customFieldGroups: [],
       menuOpen: false,
       fieldsSaving: false,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       isFieldsLoading: false,
       dirtyCfvs: [],
       attachmentTypes: [],
@@ -196,7 +197,6 @@ export default {
       unsavedFieldsModal: false,
       toPath: null,
       query: {},
-      companyId: this.$store.state.user.details.companyId,
       // windowWidth: window.innerWidth,
       // splitColumnMinWidth: 1700
     }
@@ -220,6 +220,13 @@ export default {
     },
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
     },
@@ -318,7 +325,7 @@ export default {
       }
     },
     getReadOnly: function (field) {
-      return getCustomFieldReadOnly(this.$store, field) || !this.userCanEdit
+      return getCustomFieldReadOnly(field) || !this.userCanEdit
     },
     selectFile: function (typeId) {
       document.getElementById(`menuFileInput${typeId}`)?.click();

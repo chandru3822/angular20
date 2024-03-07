@@ -169,16 +169,18 @@ import NewMessageDialog from "./settings/inbox/NewMessageDialog";
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getCurrentInstance, onMounted, ref, defineProps} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 const filters = vueInstance.$filters
 
 const showNewMessageDialog = ref(false)
 const teamsAssociatedToUser = ref([])
-const userCanViewSms = ref(store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'))
+const userCanViewSms = ref(userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'))
 const opened = ref(true) //opens this expansion panel by default
 
 const props = defineProps({

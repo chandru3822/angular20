@@ -375,6 +375,8 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import moment from 'moment'
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'Commission',
@@ -388,6 +390,18 @@
         this.$router.push(`/commissionManagement/users`)
       },
     },
+    computed: {
+      ...mapStores(useUserStore),
+      userCanAdd() {
+        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
+      },
+      timezone() {
+        return this.userStore.details.timezone.value
+      },
+    },
     data() {
       return {
         snackbar: {},
@@ -397,11 +411,8 @@
         overrideSelectedIndex: null,
         positionId: this.$store.state.brs.commissionPositionId,
         selectedIndex: null,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
         receivingSelectedIndex: null,
         commissionPlans: [],
-        timezone: this.$store.state.user.details.timezone.value,
         overridePlans: [],
         newCommissionPlan: {},
         newOverridePlan: {},

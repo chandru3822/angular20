@@ -45,11 +45,13 @@ import cloneDeep from "lodash.clonedeep";
 
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
+const userStore = useUserStore()
 const route = vueInstance.$route
 
 const companyObjectTypeId = ref(route.params.id)
@@ -59,7 +61,7 @@ const addNew = ref(false)
 const newGroup = ref({
   groupName: null
 })
-const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
 
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown

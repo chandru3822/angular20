@@ -118,6 +118,8 @@ import {
 import {AppMutations} from "@/stores/AppStore";
 import constants from "@/helpers/constants";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: "EmailSettings",
@@ -126,7 +128,6 @@ export default {
     return {
       addFormValid: false,
       emailQueueProcessing: false,
-      is7oaksAdmin: this.$store.getters.isFullAdmin,
       headers: [
         {text: 'Sender Name', value: 'name', show: true},
         {text: 'Email Address', value: 'value', show: true},
@@ -134,8 +135,6 @@ export default {
         {text: null, value: 'icons', show: true, sortable: false}
       ],
       emailValues: [],
-      companyId: this.$store.state.user.details.companyId,
-      userId: this.$store.state.user.details.id,
       editIndex: null,
       newEmail: {},
       addNew: false,
@@ -146,6 +145,16 @@ export default {
     }
   },
   computed:{
+    ...mapStores(useUserStore),
+    companyId() {
+      return this.userStore.details.companyId
+    },
+    userId() {
+      return this.userStore.details.id
+    },
+    is7oaksAdmin() {
+      return this.userStore.isSystemAdmin
+    },
     emailToDeleteAddress(){
       return this.emailToDelete ? this.emailToDelete.emailAddress : ''
     }

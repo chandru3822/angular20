@@ -61,10 +61,12 @@ import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar}
 
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
+const userStore = useUserStore()
 const route = vueInstance.$route
 
 const props = defineProps({
@@ -84,7 +86,7 @@ const companyFeatureList = ref(cloneDeep(props.companyFeatures))
 const features = ref([])
 const secondaryFeatureAccess = ref([])
 const accessControlList = ref([])
-const parentId = ref(store.state.user.details.parentCompanyId)
+const parentId = ref(userStore.details.parentCompanyId)
 const headers = ref([
   { text: 'Feature', value: 'featureName', show: true },
 ])

@@ -39,7 +39,7 @@
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newStep = {}, getResourceFields()]"
-              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               :text="addNew ? 'Cancel' : 'Add New'"
             />
           </v-toolbar-items>
@@ -102,7 +102,7 @@
                       size="small"
                       variant="text"
                       color="primary"
-                      v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                      v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                       @click="eventToDelete=item"
                       prepend-icon="delete"
                     />
@@ -130,12 +130,13 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 import {computed, getCurrentInstance, ref, onMounted} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const router = vueInstance.$router
-
+const userStore = useUserStore()
 
 const addNew = ref(false)
 const deleteError = ref(false)
@@ -144,8 +145,8 @@ const search = ref('')
 const newEvent = ref({})
 const selectedEventId = ref(null)
 
-const companyId = ref(store.state.user.details.companyId)
-const userId = ref(store.state.user.details.id)
+const companyId = ref(userStore.details.companyId)
+const userId = ref(userStore.details.id)
 const events = ref([])
 const eventResourceFields = ref([])
 const headers = ref([

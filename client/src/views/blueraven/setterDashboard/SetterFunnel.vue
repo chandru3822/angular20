@@ -440,7 +440,7 @@
                 <td>{{ item.setter_name || '' }}</td>
                 <td class="customer-name">{{ item.customer_name || '' }}</td>
                 <td>
-                  <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}/status`">
+                  <router-link text v-if="item.project_id && userStore.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}/status`">
                     {{ item.project_id }}
                   </router-link>
                   <div v-else>{{ item.project_id || '' }}</div>
@@ -501,6 +501,8 @@
     getSetterOffices,
     getSetterReps
   } from '@/services/dashboardService'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'setterFunnel',
@@ -589,6 +591,7 @@
       }
     }),
     computed: {
+      ...mapStores(useUserStore),
       funnelDrilldownHeaders() {
         return [
           {text: '', value: '', show: true, sortable: false, width: 25},
@@ -1431,8 +1434,8 @@
       /* FUNNEL-RELATED CODE END */
     },
     async created () {
-      this.currentUserId = this.$store.state.user.details.id
-      let userPositions = this.$store.state.user.details.userPositions
+      this.currentUserId = this.userStore.details.id
+      let userPositions = this.userStore.details.userPositions
 
       if (userPositions?.length > 0) {
         this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId

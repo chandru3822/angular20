@@ -75,6 +75,7 @@ import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
 import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 import constants from '@/helpers/constants'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100],
@@ -95,10 +96,11 @@ const search = ref('')
 const isLoading = ref(false)
 
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
+const userStore = useUserStore()
+
 const router = vueInstance.$router
-const hasAddAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
-const hasManageAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
+const hasAddAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+const hasManageAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
 
 const smartlists = ref([])
 

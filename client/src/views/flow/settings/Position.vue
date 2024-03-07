@@ -92,7 +92,7 @@
               <label>Can Own SMS Tickets:</label>
               <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.smsOwner" @change="setFieldsDirty">
             </div>
-            <div v-if="store.getters.isParent(parentId)">
+            <div v-if="userStore.isParent">
               <label>Make Available in Children</label>
               <input type="checkbox" class="ml-3" v-model="position.availableToChildren" @change="setFieldsDirty">
             </div>
@@ -134,20 +134,20 @@
 
 <script setup>
   import {AppMutations} from '@/stores/AppStore'
-
   import {getOrgTypes} from '@/services/orgService'
   import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
   import {handleHidingGlobalLoader, getRequest, putRequest, postRequest} from '@/helpers/helpers'
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-
-  import {getCurrentInstance, onMounted, ref, watch} from "vue";
-  import {onBeforeRouteLeave} from "vue-router/composables";
-  import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+  import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+  import {getCurrentInstance, onMounted, ref, watch} from 'vue'
+  import {onBeforeRouteLeave} from 'vue-router/composables'
+  import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const userStore = useUserStore()
   const router = vueInstance.$router
   const route = vueInstance.$route
   const position = ref({
@@ -156,14 +156,13 @@
   const positions = ref([])
   const selectedRows = ref([])
   const positionLoaded = ref(false)
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-  const userCanEditAccessControl = ref(store.getters.userHasFeatureAccessLevel('ACCESS_CONTROL', 'EDIT'))
+  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+  const userCanEditAccessControl = ref(userStore.userHasFeatureAccessLevel('ACCESS_CONTROL', 'EDIT'))
   const orgTypes = ref([])
   const positionId = ref(vueInstance.$route.params.id)
   const clonePositionId = ref('')
   const features = ref([])
   const accessControlList = ref([])
-  const parentId = ref(store.state.user.details.parentCompanyId)
   const accessControlKey = ref(0)
   const unsavedFieldsModal = ref(false)
   const navigationOverride = ref(false)

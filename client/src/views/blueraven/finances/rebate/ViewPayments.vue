@@ -193,6 +193,8 @@ import {saveAs} from 'file-saver'
 import moment from "moment";
 import debounce from "lodash.debounce";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'Payments',
@@ -205,7 +207,6 @@ export default {
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
       },
       payments: [],
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'EDIT'),
       headers: [
         {text: 'Project Name', value: 'projectName', show: true},
         {text: 'Project ID', value: 'projectId', show: true},
@@ -267,6 +268,10 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('REBATES', 'EDIT')
+    },
     visibleHeaders() {
       return this.headers.filter(header => header.show === true)
     },

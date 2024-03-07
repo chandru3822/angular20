@@ -85,6 +85,8 @@
   import Sortable from "sortablejs";
   import cloneDeep from "lodash.clonedeep";
   import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'ProjectTabs',
@@ -126,10 +128,6 @@
         addNew: false,
         newTab: {},
         selectedTabId: null,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         expanded: [],
         headers: [
           { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
@@ -140,6 +138,19 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      userId() {
+        return this.userStore.details.id
+      },
+      companyId() {
+        return this.userStore.details.companyId
+      },
+      userCanAdd() {
+        return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+      },
       tabToDeleteName(){
         return this.tabToDelete ? this.tabToDelete.tabName : ''
       }

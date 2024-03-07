@@ -8,7 +8,7 @@
               <v-toolbar-title>Albatross</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="login-card-text">
-              <h2 class="error--text" v-if="store.state.user.loginError">{{ store.state.user.loginError }}</h2>
+              <h2 class="error--text" v-if="userStore.loginError">{{ userStore.loginError }}</h2>
               <v-form ref="login" v-model="validForm" @submit.prevent="onSubmit()">
                 <v-text-field required color="primary"
                               :rules="requiredRules"
@@ -35,16 +35,17 @@
 </template>
 
 <script setup>
-import {UserActions, UserMutations} from '@/stores/UserStore'
 import constants from '@/helpers/constants'
 import axios from 'axios'
 import {getCurrentInstance, onMounted, ref} from 'vue'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
+const userStore = useUserStore()
 
 const validForm = ref(false)
 const form = ref({
@@ -55,13 +56,8 @@ const loginLoading = ref(false)
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
 const login = ref(null)
 
-
 onMounted(() => {
-    //clear any previous login errors on page refresh
-    store.commit(
-      UserMutations.LOGIN_ERROR,
-      null
-    )
+  userStore.loginError = ''
 })
 
   const onSubmit = async() => {
@@ -75,21 +71,15 @@ onMounted(() => {
           const {data} = await axios.post(`${constants.VUE_APP_BASE_API}/auth/login`, params)
           const {token, details} = data
           if (token) {
-            store.commit(UserMutations.SET_JWT, token)
+            userStore.jwt = token
             loginSuccess(details)
           } else {
             loginLoading.value = false
-            store.commit(
-              UserMutations.LOGIN_ERROR,
-              'Invalid Username or Password.'
-            )
+            userStore.loginError = 'Invalid Username or Password.'
           }
         } catch (e) {
           loginLoading.value = false
-          store.commit(
-            UserMutations.LOGIN_ERROR,
-            e.data
-          )
+          userStore.loginError = e.data
 
           if(e?.status === 406) {
             //this means the user tried to login with the company default password. redirect to the reset password screen
@@ -102,7 +92,7 @@ onMounted(() => {
       }
     }
     const loginSuccess = async(details) => {
-      await store.dispatch(UserActions.LOGIN_SUCCESS, details)
+      await userStore.login(details)
 
       //this code handles redirecting them back to the page they were trying to get to after they login
       let rt = { name: 'home'}

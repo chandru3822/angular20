@@ -180,10 +180,12 @@
 
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const userStore = useUserStore()
 
   const colorOptions = ref({
     canvasHeight: 75,
@@ -201,11 +203,11 @@
   const newCategory = ref({ color: '#ffffff'})
   const selectedWorkQueueCategoryId = ref(null)
   const selectedWorkQueueCategoryDisplayOrder = ref(null)
-  const userId = ref(store.state.user.details.id)
-  const companyId = ref(store.state.user.details.companyId)
-  const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
+  const userId = ref(userStore.details.id)
+  const companyId = ref(userStore.details.companyId)
+  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
   const expanded = ref([])
   const categoryToDelete = ref(null)
   const headers = ref([

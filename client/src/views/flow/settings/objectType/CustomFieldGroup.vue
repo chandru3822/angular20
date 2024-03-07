@@ -374,7 +374,7 @@
                           <span>Custom Field Group Assignment Id: {{cf.customFieldGroupAssignmentId}}</span>
                           <div class="text-center">(click to copy)</div>
                         </v-tooltip>
-                        <v-menu offset-y v-if="!cf.ancillaryCustomFieldGroupAssignmentId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                        <v-menu offset-y v-if="!cf.ancillaryCustomFieldGroupAssignmentId && userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                           <template v-slot:activator="{ on }">
                             <v-btn text small color="primary" v-on="on">
                               <v-icon>mdi-cursor-move</v-icon>
@@ -435,6 +435,8 @@ import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getReque
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'CustomFieldGroup',
@@ -460,8 +462,6 @@ export default {
       deleteHeader: null,
       deleteText: null,
       fieldsInUse: [],
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       positions: [],
       positionsLoading: false,
       newFieldType: 'native',
@@ -481,7 +481,6 @@ export default {
       newField: {},
       customFieldGroups: [],
       availableCustomFields: [],
-      companyId: this.$store.state.user.details.companyId,
       //if you set this to a value it doesn't update when the route param changes
       // objectTypeId: this.$route.params.id
       headers: [
@@ -501,6 +500,16 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     cfgToDeleteName(){
       return this.cfgToDelete ? this.cfgToDelete.groupName : ''
     },

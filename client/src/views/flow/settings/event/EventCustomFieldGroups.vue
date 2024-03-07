@@ -444,7 +444,7 @@
                             <v-icon>edit</v-icon>
                           </v-btn>
                           <v-menu offset-y
-                                  v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                                  v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
@@ -546,6 +546,8 @@ import orderBy from "lodash.orderby"
 import { getEventResourceFields } from "@/services/eventService"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import MultiSelectGroup from "../../../../components/MultiSelectGroup";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const WhiteListTypeEnum = Object.freeze({
   EVENT_START_TIME_READ_ONLY: 6,
@@ -619,10 +621,6 @@ export default {
       availableCustomFields: [],
       parent: {},
       eventId: parseInt(this.$route.params.id),
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      companyId: this.$store.state.user.details.companyId,
       parentObjects: [],
       selectedAncillaryField: {},
       ancillaryCustomFields: [],
@@ -649,6 +647,19 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userIsAdmin() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
+    },
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     localCustomFieldGroups: {
       get: function () {
         return this.event?.customFieldGroups

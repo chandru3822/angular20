@@ -197,6 +197,8 @@ import orderBy from 'lodash.orderby'
 import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ObjectTypeAttachment',
@@ -224,8 +226,6 @@ export default {
       selectedIndex: null,
       companyObjectTypeId: parseInt(this.$route.query.companyObjectTypeId) || parseInt(this.$route.params.id),
       attachmentTypeId: parseInt(this.$route.params.attachmentTypeId),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       componentKey: 0,
       newGroup: {},
       expanded: [],
@@ -240,6 +240,13 @@ export default {
   },
   watch: {},
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
     localCustomFieldGroups: {
       get: function () {
         return this.selectedAttachment?.customFieldGroups

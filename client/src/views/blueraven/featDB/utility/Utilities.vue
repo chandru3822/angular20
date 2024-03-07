@@ -14,7 +14,7 @@
         >
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('UTILITY', 'ADD')">
+              <v-btn text @click="addItem" color="primary" v-if="userStore.userHasFeatureAccessLevel('UTILITY', 'ADD')">
                 <v-icon>add</v-icon>
                 <span v-if="!constants.IS_MOBILE">Add New</span>
               </v-btn>
@@ -63,7 +63,7 @@
                 <v-btn :to="`/database/utility/${item.id}/details`" text x-small fab>
                   <v-icon>mdi-arrow-right</v-icon>
                 </v-btn>
-                <v-icon color="primary" small class="mr-3 feat-db-link-icon" @click.stop="editUtility(item)" v-if="$store.getters.userHasFeatureAccessLevel('UTILITY', 'EDIT')">
+                <v-icon color="primary" small class="mr-3 feat-db-link-icon" @click.stop="editUtility(item)" v-if="userStore.userHasFeatureAccessLevel('UTILITY', 'EDIT')">
                   edit
                 </v-icon>
               </td>
@@ -141,6 +141,8 @@
   import { AppMutations } from '@/stores/AppStore'
   import {getActiveStates} from '@/services/stateService'
   import {FILTER_DEFAULTS, FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { mapStores } from 'pinia'
 
   export default {
     name: 'utilities',
@@ -169,6 +171,7 @@
       metroAreas: []
     }),
     computed: {
+      ...mapStores(useUserStore),
       filteredUtilities () {
         return this.utilities && this.utilities.filter(utility => {
           return Object.keys(this.utilityFilters).every(filterName => {

@@ -63,6 +63,8 @@
 import {DateTime} from 'luxon'
 import moment from 'moment'
 import constants from '@/helpers/constants'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'DatetimePickerInput',
@@ -101,8 +103,6 @@ export default {
       utcDate: null,
       time: null,
       menu: false,
-      //if the company has set a default minute increment, use that. otherwise use 1
-      minuteIncrement: this.$store.state.user.details.minuteIncrement || 1,
       requiredRules: constants.BASIC_REQUIRED_RULE,
       showDate: false,
       showTime: false,
@@ -122,6 +122,11 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    //if the company has set a default minute increment, use that. otherwise use 1
+    minuteIncrement() {
+      return this.userStore.details.minuteIncrement || 1
+    },
     localTime: {
       get: function() {
         return this.$props.value

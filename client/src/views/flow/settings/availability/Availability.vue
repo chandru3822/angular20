@@ -80,28 +80,28 @@
 
 <script setup>
   import {AppMutations} from '@/stores/AppStore'
-
-  import { handleHidingGlobalLoader, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
-
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-  import {getCurrentInstance, onMounted, ref, computed} from "vue";
+  import { handleHidingGlobalLoader, getRequestWithParams, postRequest} from '@/helpers/helpers'
+  import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+  import {getCurrentInstance, onMounted, ref, computed} from 'vue'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const userStore = useUserStore()
 
   const defaultAppointmentLength = ref(null)
   const valueChanged = ref(false)
   const orgs = ref([])
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
+  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
   const orgId = ref(null)
   const orgsLoading = ref(false)
   const users = ref([])
-  const userIsAdmin = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'))
-  const viewAll = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'))
-  const userId = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL') ? null : store.state.user.details.id)
-  const showAllUsers = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'))
-  const currentUser = ref(store.state.user.details.fullName)
+  const userIsAdmin = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'))
+  const viewAll = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'))
+  const userId = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL') ? null : userStore.details.id)
+  const showAllUsers = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'))
+  const currentUser = ref(userStore.details.fullName)
   // serId: 2410262
   const usersLoading = ref(false)
   const model = ref('')
@@ -109,12 +109,12 @@
     {
       label: 'Schedule',
       path: '/settings/availability/main/schedule',
-      display: store.getters.userHasFeature('AVAILABILITY')
+      display: userStore.userHasFeature('AVAILABILITY')
     },
     {
       label: 'Appointments',
       path: '/settings/availability/main/appointments',
-      display: store.getters.userHasFeature('AVAILABILITY')
+      display: userStore.userHasFeature('AVAILABILITY')
     }])
   const displayedTabs = computed(() => {
     return tabs.value.filter(tab => tab.display)
@@ -137,7 +137,7 @@
 
   const useSlotSchedule = () => {
     if(userId.value) {
-      let user = showAllUsers.value ? users.value.find(u => u.id === userId.value) : store.state.user.details
+      let user = showAllUsers.value ? users.value.find(u => u.id === userId.value) : userStore.details
       let useSlots = false
       user?.userPositions?.forEach(up => {
         if(up.useSlotSchedule) {

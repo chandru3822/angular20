@@ -1,7 +1,7 @@
 <template>
   <v-row no-gutters id="project-details-container" class="py-0 relative height-one-hunned overflow-y-auto">
     <v-col cols="12" lg="12" class="text-left pt-0">
-      <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
+      <v-col class="py-0" v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>
           <v-toolbar color="transparent" class="elevation-0">
             <v-toolbar-title class="albatross-header-3">Active Events</v-toolbar-title>
@@ -22,7 +22,7 @@
         </v-row>
       </v-col>
 
-      <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
+      <v-fade-transition v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-col
           v-show="!eventsExpanded"
           cols="12"
@@ -90,6 +90,8 @@ import {getRequest, logError} from '@/helpers/helpers'
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import TableActiveEventSnippet from '@/views/flow/project/TableActiveEventSnippet'
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'AllEvents',
@@ -107,18 +109,23 @@ export default {
       events: [],
       customFieldGroups: [],
       menuOpen: false,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       activeEventsLoading: false,
       snackbar: {},
       eventSearch: '',
       eventsExpanded: true,
-      companyId: this.$store.state.user.details.companyId,
     }
   },
   created () {
     this.getEvents()
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     eventsByName () {
       const names = [...new Set(this.events.map(e => e.eventName))]
 

@@ -7,13 +7,13 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="flex-display align-center" >
-          <v-btn v-if="payrollStatus.action && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')" :color="payrollStatus.actionColor"
+          <v-btn v-if="payrollStatus.action && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')" :color="payrollStatus.actionColor"
                  class="white--text" @click="submitForApproval(payrollStatus.action)">
             {{payrollStatus.actionText}}
           </v-btn>
           <!-- currently only "Approve" has a secondary action which requires a dialog confirm. will have to update if that changes -->
           <v-dialog
-            v-if="payrollStatus.secondaryAction && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')"
+            v-if="payrollStatus.secondaryAction && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')"
             v-model="approveConfirm"
             width="500">
             <template v-slot:activator="{ on }">
@@ -389,6 +389,8 @@
   import sumBy from "lodash.sumby";
   import { saveAs } from 'file-saver'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'CurrentPayroll',
@@ -427,8 +429,6 @@
         dataLoading: true,
         selectAll: false,
         customers: [],
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
         customerSearch: null,
         customersLoading: false,
         positionId: this.$store.state.brs.commissionPositionId,
@@ -442,7 +442,6 @@
         additionalPayrollDataNeeded: false,
         payrollLoading: true,
         payrollSummary: [],
-        timezone: this.$store.state.user.details.timezone.value,
         adjustmentHistoryHeaders: [
           {text: 'Adjustment Type', value: 'adjustmentType', show: true},
           {text: 'Amount', value: 'amount', show: true},
@@ -525,6 +524,16 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      userCanAdd() {
+        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
+      },
+      timezone() {
+        return this.userStore.details.timezone.value
+      },
       headers() {
         return this.positionId === 1 ? this.closerHeaders : this.setterHeaders
       }

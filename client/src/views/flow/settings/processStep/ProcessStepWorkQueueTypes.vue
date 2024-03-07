@@ -360,6 +360,8 @@ import {
   getRequestWithParams
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ProcessStepWorkQueueTypes',
@@ -373,8 +375,6 @@ export default {
     return {
       snackbar: {},
       expandWqt: true,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       companyProjectStatusTypes: [],
       expanded: [],
       projectStatusTypes: [],
@@ -396,7 +396,6 @@ export default {
       addNewType: false,
       newType: {},
       processStepId: this.$route.params.id,
-      companyId: this.$store.state.user.details.companyId,
       companyStatusesLoading: false,
       workQueueTypes: [],
       newWorkQueueType: {
@@ -413,6 +412,16 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
+    userCanEdit() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+    },
+    userCanAdd() {
+      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+    },
+    companyId() {
+      return this.userStore.details.companyId
+    },
     displayedHeaders () {
       return this.headers.filter(h => h.show)
     },

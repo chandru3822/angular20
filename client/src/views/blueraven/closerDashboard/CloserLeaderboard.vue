@@ -71,6 +71,8 @@
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
   import DatetimePickerInput from "@/components/DatetimePickerInput";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'closerLeaderboard',
@@ -82,19 +84,23 @@
       return {
         snackbar: {},
         constants,
-        currentUserId: this.$store.state.user.details.id,
         currentUserOrgId: null,
         bookingDate: null,
         test1: null,
         test2: null,
         showLeaderboard: true,
         bookingsLoading: false,
-        bookingData: [],
-        timezone: this.$store.state.user.details?.timezone?.value
+        bookingData: []
       }
     },
     computed: {
-
+      ...mapStores(useUserStore),
+      currentUserId() {
+        return this.userStore.details.id
+      },
+      timezone() {
+        return this.userStore.details?.timezone?.value
+      }
     },
     methods: {
       async loadBookingData () {

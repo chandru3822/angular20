@@ -25,7 +25,7 @@
             Save
           </v-btn>
           <v-btn color="success" class="white--text mr-2"
-                 v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && commission.statusType === 'PENDING'"
+                 v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && commission.statusType === 'PENDING'"
                  :disabled="errorMessages.length > 0"
                  @click="approvePlan()">
             Approve
@@ -33,13 +33,13 @@
           <ConfirmationDialog :open-dialog="showDeleteConfirm" @confirm="[deleteConfirm = true, deletePlan()]" @close-dialog="showDeleteConfirm=false">
             Are you sure you want to delete this plan?
           </ConfirmationDialog>
-          <v-btn v-if="planId && !commission.approved && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+          <v-btn v-if="planId && !commission.approved && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
                  @click="showDeleteConfirm = true"
                  color="error"
           >
             delete
           </v-btn>
-          <v-btn v-else-if="planId && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+          <v-btn v-else-if="planId && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
                  @click="inactivateConfirm = true"
                  color="error"
                  class="mr-2"
@@ -609,6 +609,8 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
   import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/ProjectAssignmentModal";
   import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'Commission',
@@ -619,6 +621,19 @@
       DatetimePickerInput
     },
     computed: {
+      ...mapStores(useUserStore),
+      userCanAdd() {
+        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
+      },
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
+      },
+      userIsAdmin() {
+        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
+      },
+      timezone() {
+        return this.userStore.details.timezone.value
+      },
       displayedMilestoneHeaders () {
         return this.milestoneHeaders.filter(h => h.show || h.positionId === this.commission?.positionId)
       },
@@ -683,13 +698,9 @@
         usersToAdd: [],
         userSearch: null,
         userHistory: [],
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
-        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN'),
         usersLoading: false,
         moment,
         cloneStartDate: null,
-        timezone: this.$store.state.user.details.timezone.value,
         dataLoading: true,
         inactivateConfirm: false,
         deleteConfirm: false,

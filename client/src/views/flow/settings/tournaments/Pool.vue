@@ -229,7 +229,9 @@
     postRequest,
     getSnackbar
   } from '@/helpers/helpers'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import ConfirmationDialog from '@/components/ConfirmationDialog'
+  import { mapStores } from 'pinia'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
 
   export default {
     name: 'PoolAdmin',
@@ -252,7 +254,6 @@
         //todo: 915 = tournament pool image
         attachmentTypeId: 915,
         editPool: false,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
         poolLoading: true,
         addPosition: false,
         positionId: null,
@@ -260,7 +261,6 @@
         addUser: false,
         userId: null,
         users: [],
-        timezone: this.$store.state.user.details.timezone.value,
         tournamentId: this.$route.params.id,
         poolTypeId: parseInt(this.$route.params.poolTypeId),
         positionHeaders: [
@@ -290,6 +290,13 @@
       }
     },
     computed: {
+      ...mapStores(useUserStore),
+      userCanEdit() {
+        return this.userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+      },
+      timezone() {
+        return this.userStore.details.timezone.value
+      },
       userToDeleteName(){
         return this.userToDelete ? this.userToDelete.fullName : ''
       }
@@ -455,7 +462,6 @@
             callback: async () => {
               this.pool.backgroundAttachmentId = null
               this.pool.backgroundAttachmentPresignedUrl = null
-              // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
               this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
               this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)

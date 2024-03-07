@@ -45,7 +45,7 @@
                        @click="goToPath(item.id)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text color="primary" v-if="current && store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
+                <v-btn small text color="primary" v-if="current && userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
                   <v-icon >delete</v-icon>
                 </v-btn>
               </td>
@@ -71,10 +71,12 @@ import {deleteRequest, getRequestWithParams, handleHidingGlobalLoader} from "@/h
 import {AppMutations} from "@/stores/AppStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCurrentInstance, ref, computed, onMounted, watch} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 const snackbar = vueInstance.$snackbar
 const router = vueInstance.$router
 
@@ -96,8 +98,8 @@ const footerProps = ref({
 })
 const announcements = ref([])
 const fieldsInUse = ref([])
-const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
 const headers = ref([
   { text: 'Title', value: 'title', show: true },
   { text: 'Start Time', value: 'startTime', show: true },
@@ -109,12 +111,12 @@ const tabs = ref([
   {
     label: 'Current',
     path: '/settings/announcements/current',
-    display: store.getters.userHasFeature('SETTINGS')
+    display: userStore.userHasFeature('SETTINGS')
   },
   {
     label: 'Past',
     path: '/settings/announcements/past',
-    display: store.getters.userHasFeature('SETTINGS')
+    display: userStore.userHasFeature('SETTINGS')
   },
 ])
 

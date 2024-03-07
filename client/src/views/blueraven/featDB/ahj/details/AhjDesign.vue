@@ -106,6 +106,8 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
 import TwoColumnMasonry from "@/views/blueraven/featDB/components/TwoColumnMasonry.vue";
+import { mapStores } from 'pinia'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 export default {
   name: 'ahjDesign',
@@ -114,8 +116,9 @@ export default {
     TwoColumnMasonry
   },
   computed: {
+    ...mapStores(useUserStore),
     userCanEdit() {
-      return this.$store.getters.userHasFeatureAccessLevel('AHJ', 'EDIT')
+      return this.userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')
     },
     expandedAll(){
       if(this.expandedGroups === this.totalGroups){
