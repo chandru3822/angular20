@@ -55,215 +55,186 @@
   </component>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
-  import { handleHidingGlobalLoader, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { postRequest, getSnackbar } from '@/helpers/helpers'
   import {getActiveStatesByHierarchy} from '@/services/stateService'
   import Map from './components/Map'
   import Calendar from './components/Calendar'
   import {getEventTypes} from '@/services/scheduleService'
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { getStatusTypes } from '@/services/processStepStatusTypeService'
   import constants from "@/helpers/constants";
-  import {
-    getCancelledCompanyStatusTypesAssignedToPpsEvent,
-    getEventStatusTypes
-  } from "@/services/eventStatusTypeService";
+  import { getEventStatusTypes } from "@/services/eventStatusTypeService";
   import ThreeColumnLayout from "@/views/ThreeColumnLayout.vue";
   import ThreeColumnLayoutMobile from "@/views/ThreeColumnLayoutMobile.vue";
   import ProjectSearchDialog from "@/views/flow/schedule/components/ProjectSearchDialog.vue";
   import ProjectModal from "@/views/flow/schedule/components/ProjectModal.vue";
-  import {ProjectMutations} from "@/stores/ProjectStore.js";
   import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
+  import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 
-  export default {
-    name: 'Schedule',
-    components: {
-      ProjectModal,
-      ProjectSearchDialog,
-      ThreeColumnLayout,
-      ThreeColumnLayoutMobile,
-      Map,
-      Calendar,
-      DatetimePickerInput
-    },
-    data() {
-      return {
-        initialLoad: true,
-        snackbar: {},
-        showFilters: true,
-        listLoading: false,
-        saveInvalid: true,
-        timezone: null,
-        defaultZoom: 2.0,
-        startTime: null,
-        endTime: null,
-        mapResources: [],
-        projectMapMarkers: [],
-        // selectedResources: [],
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'),
-        state: {},
-        mapZoom: null,
-        latitude: null,
-        longitude: null,
-        states: [],
-        eventStatusTypes: [],
-        // selectedEventStatusType: {},
-        processStepStatusTypes: [],
-        // selectedProcessStepStatusType: {},
-        eventTypes: [],
-        totalProjects: 0,
-        //used for multi select
-        selectedEventTypes: [],
-        //used for single select
-        selectedProject: {},
-        cancelledCompanyEventStatuses: [],
-        //used for search
-        searchMenuOpen: false,
-        searchEventType: {},
-        searchProcessStepStatusType: {},
-        searchEventStatusType: {},
-        searchProject: {},
-        searchProjects: [],
-        eventTypesChanged: false,
-        search: null,
-        fieldsSaving: false,
-        projects: [],
-        options: {
-          itemsPerPage: 100
-        },
-        footerProps: {
-          'items-per-page-options': [25, 50, 100],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        calendarResourceToSchedule:{},
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const router = vueInstance.$router
+  const route = vueInstance.$route
+  const vuetify = vueInstance.$vuetify
 
-      }
-    },
-    computed: {
-      activeComp() {
-        return this.$vuetify.breakpoint.smAndDown ? 'ThreeColumnLayoutMobile' : 'ThreeColumnLayout'
-      },
-      showMap(){
-        return this.$store.state.schedule.showMap
-      }
-    },
-    watch: {
-      options: {
-        handler() {
-          if(!this.initialLoad) {
-            this.getProjects()
-          }
-        }
-      },
-      search(val) {
-        if(!val) {
-          this.searchProject = {}
-          return
-        }
-        if(val && (!this.searchProject || this.searchProject.projectName !== val)) {
-          this.getProjectsSearchedFor(val);
-        }
-      },
-      selectedProject() {
-        this.validateSaveEvent()
-      },
-      startTime () {
-        // this.getProjects()
-      },
-      endTime () {
-        // this.getProjects()
-      },
-    },
-    created() {
-      this.loadTimezone()
-      this.getActiveStatesByHierarchy()
-      this.getStatusTypes()
-      this.getEventStatusTypes()
-      this.getEventTypes()
-      if(this.$route.query && this.$route.query.projectProcessStepEventId) {
+  // const initialLoad = ref(true)
+  const snackbar = ref({})
+  // const showFilters = ref(true)
+  // const listLoading = ref(false)
+  const saveInvalid = ref(true)
+  const timezone = ref(null)
+  // const defaultZoom = ref(2.0)
+  const startTime = ref(null)
+  const endTime = ref(null)
+  const mapResources = ref([])
+  const projectMapMarkers = ref([])
+  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
+  const state = ref({})
+  const mapZoom = ref(null)
+  const latitude = ref(null)
+  const longitude = ref(null)
+  const states = ref([])
+  const eventStatusTypes = ref([])
+  const processStepStatusTypes = ref([])
+  const eventTypes = ref([])
+  // const totalProjects = ref(0)
+  //used for multi select
+  const selectedEventTypes = ref([])
+  //used for single select
+  const selectedProject = ref({})
+  // const cancelledCompanyEventStatuses = ref([])
+  //used for search
+  const searchMenuOpen = ref(false)
+  // const searchEventType = ref({})
+  // const searchProcessStepStatusType = ref({})
+  // const searchEventStatusType = ref({})
+  const searchProject = ref({})
+  // const searchProjects = ref([])
+  // const eventTypesChanged = ref(false)
+  const search = ref(null)
+  // const fieldsSaving = ref(false)
+  const projects = ref([])
+  const options = ref({
+    itemsPerPage: 100
+  })
+  const footerProps = ref({
+    'items-per-page-options': [25, 50, 100],
+    'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+  })
+  const calendarResourceToSchedule =ref({})
+
+
+  const activeComp = computed(() => {
+    return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
+  })
+  const showMap = computed(() => {
+    return store.state.schedule.showMap
+  })
+
+  // watch(search, (val) => {
+  //   if(!val) {
+  //     searchProject.value = {}
+  //     return
+  //   }
+  //   if(val && (!searchProject.value || searchProject.value.projectName !== val)) {
+  //     getProjectsSearchedFor(val);
+  //   }
+  // })
+
+  watch(selectedProject, () => {
+        validateSaveEvent()
+  })
+
+    onMounted(() => {
+      loadTimezone()
+      fetchActiveStatesByHierarchy()
+      fetchStatusTypes()
+      fetchEventStatusTypes()
+      fetchEventTypes()
+      if(route.query && route.query.projectProcessStepEventId) {
         //projectId, eventId, processStepStatusTypeId
-        this.getSingleProject(null, null, null,null, parseInt(this.$route.query.projectProcessStepEventId))
+        getSingleProject(null, null, null,null, parseInt(route.query.projectProcessStepEventId))
       }
-    },
-    methods: {
-      loadTimezone(){
-        if(this.$store.state.schedule.timezone?.value === null) {
-          this.timezone = this.$store.state.user.details.timezone
-          this.updateTimezone()
+    })
+
+  const loadTimezone = () => {
+        if(store.state.schedule.timezone?.value === null) {
+          timezone.value = store.state.user.details.timezone
+          updateTimezone()
         }
         else {
-          this.timezone = this.$store.state.user.details.timezone
+          timezone.value = store.state.user.details.timezone
         }
-      },
-      updateTimezone(){
-        this.$store.dispatch(ScheduleActions.CHANGE_TIMEZONE, this.timezone)
-      },
-      showHideMap(show){
-        if(show !== this.showMap) {
-          this.$store.commit(ScheduleMutations.SHOW_HIDE_MAP)
+      }
+  const updateTimezone = () => {
+        store.dispatch(ScheduleActions.CHANGE_TIMEZONE, timezone.value)
+      }
+      const showHideMap = (show)=> {
+        if(show !== showMap.value) {
+          store.commit(ScheduleMutations.SHOW_HIDE_MAP)
         }
-      },
-      validateSaveEvent () {
-        if(!this.selectedProject || !this.selectedProject.start || !this.selectedProject.end
-          || !this.selectedProject.resource || !this.selectedProject.resource.id || (this.selectedProject.start >= this.selectedProject.end) ||
+      }
+      const validateSaveEvent =  () => {
+        if(!selectedProject.value || !selectedProject.value.start || !selectedProject.value.end
+          || !selectedProject.value.resource || !selectedProject.value.resource.id || (selectedProject.value.start >= selectedProject.value.end) ||
           //if all 3 fields are read only, dont let them save
-          (this.selectedProject.startFieldReadOnly && this.selectedProject.endFieldReadOnly && this.selectedProject.resourceFieldReadOnly)) {
-          this.saveInvalid = true
+          (selectedProject.value.startFieldReadOnly && selectedProject.value.endFieldReadOnly && selectedProject.value.resourceFieldReadOnly)) {
+          saveInvalid.value = true
         } else {
-          this.saveInvalid = false
+          saveInvalid.value = false
         }
-      },
-      async checkForSchedulingConflicts(){
-          this.scheduleProject(false);
-      },
-      async cancelDialog(){
-        this.fieldsSaving = false
-        this.$refs.calendar.getEvents(false, true)
-      },
-      goTo (ps, isProject, isProcessStep) {
-        if (isProject) {
-          this.$router.push({name: 'projectDetails', params: {projectId: ps.projectId}})
-        } else if (isProcessStep) {
-          this.$router.push({name: 'projectProcessStep', params: {projectId: ps.projectId, processStepId: ps.projectProcessStepId}, query: { processStepId: ps.processStepId, contactId: ps.contactId }})
-        }
-      },
-      resourceMapCallback (newValue) {
-        this.mapResources = newValue
+      }
+      // const checkForSchedulingConflicts = async() => {
+      //     scheduleProject(false);
+      // }
+      // const cancelDialog = async() => {
+      //   fieldsSaving.value = false
+      //   $refs.value.calendar.getEvents(false, true)
+      // }
+      // const goTo =  (ps, isProject, isProcessStep) => {
+      //   if (isProject) {
+      //     router.push({name: 'projectDetails', params: {projectId: ps.projectId}})
+      //   } else if (isProcessStep) {
+      //     router.push({name: 'projectProcessStep', params: {projectId: ps.projectId, processStepId: ps.projectProcessStepId}, query: { processStepId: ps.processStepId, contactId: ps.contactId }})
+      //   }
+      // }
+      const resourceMapCallback =  (newValue) => {
+        mapResources.value = newValue
         if(newValue.length > 0){
-          this.showHideMap(true)
+          showHideMap(true)
           let zoomObj = newValue[0]
-          this.zoomToMap({latitude: zoomObj.coordinates[1], longitude: zoomObj.coordinates[0]})
+          zoomToMap({latitude: zoomObj.coordinates[1], longitude: zoomObj.coordinates[0]})
         }
         else {
-          this.resetMapZoom()
+          resetMapZoom()
         }
-      },
-      projectMapMarkersCallback(newValue){
-        this.projectMapMarkers = newValue
-        this.showHideMap(true)
+      }
+      const projectMapMarkersCallback = (newValue)=> {
+        projectMapMarkers.value = newValue
+        showHideMap(true)
         if(newValue.length > 0){
-          this.zoomToMap(newValue[0], 8)
+          zoomToMap(newValue[0], 8)
         }
-      },
-      toggleSelectedProjectMapPin(){
-        this.selectedProject.pinned = !this.selectedProject.pinned
-        if(this.selectedProject.pinned){
-          this.zoomToMap({latitude: this.selectedProject.latitude, longitude: this.selectedProject.longitude})
-        } else if(this.latitude === Math.trunc(this.selectedProject.latitude) && this.longitude === Math.trunc(this.selectedProject.longitude)) {
-          this.resetMapZoom()
+      }
+      const toggleSelectedProjectMapPin = ()=> {
+        selectedProject.value.pinned = !selectedProject.value.pinned
+        if(selectedProject.value.pinned){
+          zoomToMap.value({latitude: selectedProject.value.latitude, longitude: selectedProject.value.longitude})
+        } else if(latitude.value === Math.trunc(selectedProject.value.latitude) && longitude.value === Math.trunc(selectedProject.value.longitude)) {
+          resetMapZoom()
         }
-      },
-      dateCallback (startTime, endTime) {
-        this.startTime = startTime
-        this.endTime = endTime
-      },
+      }
+      const dateCallback =  (start, end) => {
+        startTime.value = start
+        endTime.value = end
+      }
 
-      scheduleResourceToCurrentProject(resource){
-        this.calendarResourceToSchedule = resource
-      },
+      const scheduleResourceToCurrentProject = (resource)=> {
+        calendarResourceToSchedule.value = resource
+      }
 
-      async getSingleProject(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) {
+      const getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) => {
         try {
           let params = {
             projectId,
@@ -278,117 +249,117 @@
           let project = data[0]
           project.coordinates = [ project.longitude, project.latitude ]
           project.pinned = false
-            this.selectedProject = project
-          this.$store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, project.resourceId)
-          this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
+            selectedProject.value = project
+          store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, project.resourceId)
+          selectedProject.value.resource = { id: selectedProject.value.resourceId, name: selectedProject.value.resourceName }
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Project Details')
-          store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          snackbar.value = getSnackbar('ERROR', 'Error Loading Project Details')
+          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
         }
-      },
+      }
 
-      async getActiveStatesByHierarchy() {
+      const fetchActiveStatesByHierarchy = async() =>  {
         try {
           const {data} = await getActiveStatesByHierarchy()
-          this.states = data
+          states.value = data
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar.value = getSnackbar('ERROR', 'Error Retrieving States')
+          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async getEventTypes() {
+      }
+      const fetchEventTypes = async() =>  {
         try {
           // 'event types' is just schedulable process steps
           const {data} = await getEventTypes()
-          this.eventTypes = data
-          if(this.eventTypes?.length > 0) {
-            this.selectedEventTypes = this.selectedEventTypes.filter(set => {
-              return this.eventTypes.some(et => et.id === set.id)
+          eventTypes.value = data
+          if(eventTypes.value?.length > 0) {
+            selectedEventTypes.value = selectedEventTypes.value.filter(set => {
+              return eventTypes.value.some(et => et.id === set.id)
             })
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Event Types')
+          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async getEventStatusTypes () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const fetchEventStatusTypes = async() => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getEventStatusTypes()
-          this.eventStatusTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          eventStatusTypes.value = data
+          store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Data')
+          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async getStatusTypes() {
+      }
+      const fetchStatusTypes = async() =>  {
         try {
           //the old way
           // const {data} = await getCompanyStatusTypes()
           // //only show active and complete
-          // this.processStepStatusTypes = data.filter(d => d.processStepStatusTypeId !== 3)
+          // processStepStatusTypes.value = data.filter(d => d.processStepStatusTypeId !== 3)
 
           //the new way - use root statuses
           const {data} = await getStatusTypes()
           //only show active and complete
-          this.processStepStatusTypes = data?.filter(d => d.id !== 3)
+          processStepStatusTypes.value = data?.filter(d => d.id !== 3)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Status Types')
+          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async getResources(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          item.resources = []
+      }
+      // const getResources = async(item) => {
+      //   store.commit(AppMutations.SET_LOADING, true)
+      //   try {
+      //     item.resources = []
+      //
+      //     let params = {
+      //       companyId: item.companyId,
+      //       systemListId: item.systemListId,
+      //       systemListOptionIds: item.systemListOptionIds,
+      //       resourceId: item.resourceId
+      //     }
+      //     const {data, status} = await postRequest(`/schedule/projectResources`, params, null, [])
+      //     item.resources = data || []
+      //     handleHidingGlobalLoader(this, status)
+      //   } catch (e) {
+      //     console.error('*** ERROR ***', e)
+      //     snackbar.value = getSnackbar('ERROR', 'Error Retrieving Resources')
+      //     store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+      //     store.commit(AppMutations.SET_LOADING, false)
+      //   }
+      // }
 
-          let params = {
-            companyId: item.companyId,
-            systemListId: item.systemListId,
-            systemListOptionIds: item.systemListOptionIds,
-            resourceId: item.resourceId
-          }
-          const {data, status} = await postRequest(`/schedule/projectResources`, params, null, [])
-          item.resources = data || []
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Resources')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-
-      resetMapZoom(){
-        this.zoomToMap(
+      const resetMapZoom = ()=> {
+        zoomToMap(
             {
               longitude: null,
               latitude: null,
             },
             2
         )
-      },
+      }
 
-      zoomToMap(item, zoomOverride) {
+      const zoomToMap = (item, zoomOverride) => {
         if(item){
-          this.mapZoom = zoomOverride ? zoomOverride : 6
-          this.longitude = item.mapLongitude | item.longitude
-          this.latitude = item.mapLatitude | item.latitude
+          mapZoom.value = zoomOverride ? zoomOverride : 6
+          longitude.value = item.mapLongitude | item.longitude
+          latitude.value = item.mapLatitude | item.latitude
         }
       }
 
-    }
-  }
+
+
 </script>
 
 <style lang="scss">

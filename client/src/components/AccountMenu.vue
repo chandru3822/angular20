@@ -154,7 +154,6 @@
         this.$router.push({ name: path })
       },
       async changeTimezone (tz) {
-        debugger
         await this.$store.dispatch(UserActions.CHANGE_TIMEZONE, tz)
         this.timezone = tz
         //todo: actually save it to the DB
