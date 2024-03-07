@@ -224,9 +224,8 @@ import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
 import draggable from 'vuedraggable'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
 
+import { useUserStore } from '@/stores/UserStorePinia.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 

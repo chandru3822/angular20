@@ -6,12 +6,13 @@
           <v-toolbar-title class="title-large">{{postalCode.postalCode}}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="savePostalCode"
-                   :disabled="!postalCode.placeName || !postalCode.stateId"
-                   color="primary" v-if="userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')">
-              <v-icon>save</v-icon>
-              Save
-            </v-btn>
+            <AlbatrossButton variant="text"
+                             @click="savePostalCode"
+                             :disabled="!postalCode.placeName || !postalCode.stateId"
+                             color="primary" v-if="userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')"
+                             prepend-icon="save"
+                             text="SAVE"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -86,130 +87,125 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import {getStates} from '@/services/stateService'
   import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import constants from "@/helpers/constants";
-  import { mapStores } from 'pinia'
   import { useUserStore } from '@/stores/UserStorePinia.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 
-  export default {
-    name: 'ZipPostalCode',
-    components: {ConfirmationDialog},
-    mixins: [Vue2Filters.mixin],
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
+  const route = vueInstance.$route
+  const router = vueInstance.$router
+  const vuetify = vueInstance.$vuetify
+  const userStore = useUserStore()
 
-    data () {
-      return {
-        snackbar: {},
-        dataLoading: true,
-        postalCodeId: this.$route.params.id,
-        postalCode: {},
-        zones: [],
-        states: [],
-        roundRobins: [],
-        callGroups: [],
-        requiredRules: constants.BASIC_REQUIRED_RULE,
-      }
-    },
-    computed: {
-      ...mapStores(useUserStore, useAppStore),
-      userCanEdit() {
-        return this.userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')
-      },
-      companyId() {
-        return this.userStore.details.companyId
-      },
-      userId() {
-        return this.userStore.details.id
-      },
-    },
-    async created () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.dataLoading = true
-      Promise.all([
-        this.getPostalCode(),
-        this.getRoundRobins(),
-        this.getZones(),
-        this.getStates(),
-        this.getCallGroups()
-      ]).then(() => {
-        this.$store.commit(AppMutations.SET_LOADING, false);
-        this.dataLoading = false;
+        const dataLoading = ref(true)
+        const postalCodeId = ref(route.params.id)
+        const postalCode = ref({})
+        const zones = ref([])
+        const states = ref([])
+        const roundRobins = ref([])
+        const callGroups = ref([])
+        const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+
+
+
+      const userCanEdit = computed(() => {
+        return userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')
       })
-    },
-    methods: {
-      async getPostalCode () {
+      const companyId = computed(() => {
+        return userStore.details.companyId
+      })
+      const userId = computed(() => {
+        return userStore.details.id
+      })
+
+    onMounted(() => {
+      store.commit(AppMutations.SET_LOADING, true)
+      dataLoading.value = true
+      Promise.all([
+        getPostalCode(),
+        getRoundRobins(),
+        getZones(),
+        getStates(),
+        getCallGroups()
+      ]).then(() => {
+        store.commit(AppMutations.SET_LOADING, false);
+        dataLoading.value = false;
+      })
+    })
+      const getPostalCode = async () => {
         try {
-          const {data, status} = await getRequest(`/postalCode/${this.postalCodeId}`)
-          this.postalCode = data
-          this.dataLoading = false
+          const {data, status} = await getRequest(`/postalCode/${postalCodeId.value}`)
+          postalCode.value = data
+          dataLoading.value = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.dataLoading = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.appStore.showSnack(this.snackbar)
+          dataLoading.value = false
+          snackbar('ERROR', 'Error Retrieving Data')
+
         }
-      },
-      async getStates () {
+      }
+      const getStates = async () => {
         try {
           const {data, status} = await getStates()
-          this.states = data
+          states.value = data
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.appStore.showSnack(this.snackbar)
+          snackbar('ERROR', 'Error Retrieving Data')
+
         }
-      },
-      async getRoundRobins () {
+      }
+      const getRoundRobins = async () => {
         try {
           const {data, status} = await getRequest(`/roundRobin`)
-          this.roundRobins = data
+          roundRobins.value = data
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.appStore.showSnack(this.snackbar)
+          snackbar('ERROR', 'Error Retrieving Data')
+
         }
-      },
-      async getZones () {
+      }
+      const getZones = async () => {
         try {
           const {data, status} = await getRequest(`/postalCode/zones`)
-          this.zones = data
+          zones.value = data
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.appStore.showSnack(this.snackbar)
+          snackbar('ERROR', 'Error Retrieving Data')
+
         }
-      },
-      async getCallGroups () {
+      }
+      const getCallGroups = async () => {
         try {
           const {data, status} = await getRequest(`/callGroup`, 'blueraven')
-          this.callGroups = data
+          callGroups.value = data
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.appStore.showSnack(this.snackbar)
+          snackbar('ERROR', 'Error Retrieving Data')
+
         }
-      },
-      async savePostalCode () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const savePostalCode = async () => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await postRequest(`/postalCode`, this.postalCode)
-          this.snackbar = getSnackbar('SUCCESS', 'Postal Code Saved')
-          this.appStore.showSnack(this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          const {data, status} = await postRequest(`/postalCode`, postalCode.value)
+          snackbar('SUCCESS', 'Postal Code Saved')
+
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Postal Code')
-          this.appStore.showSnack(this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Saving Postal Code')
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-    },
-  }
+      }
 </script>
 
 <style lang="scss">
