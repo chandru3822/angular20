@@ -49,31 +49,26 @@
   </v-dialog>
 </template>
 
-<script>
-export default {
-  name: "ConfirmAssignmentDialog",
-  props: {
-    showJoinConversationDialog: Boolean,
-    teamsAssociatedToUser: Array,
-  },
-  data () {
-    return {
-      selectedSmsTeam:''
-    }
-  },
-  methods: {
-    joinConversation(){
-      this.$emit('joinConversation', this.selectedSmsTeam)
-      this.selectedSmsTeam = ''
-      this.exitDialogue()
+<script setup>
+import {ref, defineProps} from "vue";
 
-    },
+const props = defineProps({
+  showJoinConversationDialog: Boolean,
+  teamsAssociatedToUser: Array,
+})
 
-    exitDialogue(){
-      this.$emit('update:showJoinConversationDialog', false)
-    }
-  }
+const selectedSmsTeam = ref('')
+const emit = defineEmits(['joinConversation', 'update:showJoinConversationDialog'])
+const joinConversation = () => {
+  emit('joinConversation', selectedSmsTeam.value)
+  selectedSmsTeam.value = ''
+  exitDialogue()
 }
+
+const exitDialogue = () => {
+  emit('update:showJoinConversationDialog', false)
+}
+
 </script>
 
 <style lang="scss" scoped>
