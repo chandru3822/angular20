@@ -143,18 +143,12 @@
     created () {
       this.getUserImage()
     },
-    updated () {
-      if(this.timezone === null || Object.keys(this.timezone).length === 0) {
-        this.userStore.guessTimeZone()
-      }
-    },
     methods: {
       changeRoute (path) {
         this.$router.push({ name: path })
       },
       async changeTimezone (tz) {
         this.userStore.details.timezone = tz
-        this.timezone = tz
         //todo: actually save it to the DB
         // i dont think we have to refresh, the filter should do that for us
         // window.location.reload()
