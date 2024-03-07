@@ -86,6 +86,7 @@
   import {getCompanyStates} from "@/services/stateService";
   import { mapStores } from 'pinia'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
   export default {
     name: 'NewLead',
@@ -114,7 +115,7 @@
       this.getOrgTypes()
     },
     computed: {
-      ...mapStores(useUserStore),
+      ...mapStores(useUserStore, useAppStore),
       companyId() {
         return this.userStore.details.companyId
       },
@@ -135,7 +136,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.appStore.showSnack(this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -152,7 +153,7 @@
           console.error('*** ERROR ***', e)
           this.loadingInsertFields = false
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -167,7 +168,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Org')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -180,7 +181,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -195,7 +196,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Parent Orgs')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.appStore.showSnack(this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
@@ -220,7 +221,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

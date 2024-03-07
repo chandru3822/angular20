@@ -21,7 +21,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import AppNav from '@/components/AppNav'
 import Snackbar from '@/components/Snackbar'
 import Spinner from '@/components/Spinner'

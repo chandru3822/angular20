@@ -185,6 +185,7 @@ import debounce from 'lodash.debounce'
 import CollapsableRightPanel from "@/layouts/CollapsableRightPanel.vue";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export default {
   name: 'ProjectActivity',
@@ -270,7 +271,7 @@ export default {
     this.handlePageLoad()
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useAppStore),
     userCanViewSms() {
       return this.userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW')
     },
@@ -376,13 +377,13 @@ export default {
         }
 
         this.snackbar = getSnackbar('SUCCESS', 'Successfully joined conversation')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         await this.loadConversation()
 
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error joining conversation')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -403,7 +404,7 @@ export default {
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.conversationIsLoading = false
         }
       }
@@ -429,7 +430,7 @@ export default {
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching project messaging details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.conversationIsLoading = false
         }
       }
@@ -452,7 +453,7 @@ export default {
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching user messaging details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.conversationIsLoading = false
         }
       }
@@ -470,7 +471,7 @@ export default {
         console.error('*** ERROR ***', e)
         // this.$store.commit(AppMutations.SET_LOADING, false)
         this.snackbar = getSnackbar('ERROR', 'Error retrieving teams')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     async openHistoryDrilldown() {
@@ -488,7 +489,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching history')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
   }

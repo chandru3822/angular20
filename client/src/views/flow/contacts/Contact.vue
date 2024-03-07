@@ -539,6 +539,7 @@ import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 import {saveContact} from "@/services/contactService";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export default {
   name: 'Contact',
@@ -609,7 +610,7 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useAppStore),
     is7oaksAdmin() {
       return this.userStore.isSystemAdmin
     },
@@ -761,12 +762,12 @@ export default {
         this.tempContact.ownerUserPositionId = this.tempContact.owner?.userPositionId || null
         const {status} = await postRequest(`/contact`, this.tempContact)
         this.snackbar = getSnackbar('SUCCESS', 'Contact Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -790,7 +791,7 @@ export default {
         this.fieldsSaving = false
       } else {
         this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     contactOwnerIsReadOnly() {
@@ -816,12 +817,12 @@ export default {
           this.customFieldGroups = data?.cfgs
           this.fieldsSaving = false
           this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
         } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.fieldsSaving = false
@@ -841,7 +842,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     async getContact() {
@@ -854,7 +855,7 @@ export default {
         console.error('*** ERROR ***', e)
         this.contactLoading = false
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contact')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     async getOwners() {
@@ -867,7 +868,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Owners')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     //this method is extra cuz the saving of the contact also updates the owner
@@ -881,7 +882,7 @@ export default {
     //     this.contact.owner = {}
     //     console.error('*** ERROR ***', e)
     //     this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
-    //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    //     this.appStore.showSnack(this.snackbar)
     //     this.$store.commit(AppMutations.SET_LOADING, false)
     //   }
     // },
@@ -907,7 +908,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Processes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     async convertToCustomer() {
@@ -915,7 +916,7 @@ export default {
       try {
         const {data, status} = await putRequest(`/contact/${this.contact.id}/convert`, this.selectedProcess)
         this.snackbar = getSnackbar('SUCCESS', 'Successfully Converted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         // this.$router.push({name: 'projectDetails', params: {projectId: data.id}, query: { checkAddress: true }})
         // ^^ i cant figure out why but doing the routing by name, param, query doesn't load the proper modal on the project screen when needed but it work by hard-coded path
         let path = data.companyStateId ? `/project/${data.id}/status` : `/project/${data.id}/status?checkAddress=true`
@@ -924,7 +925,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Converting Contact')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -935,7 +936,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     async getCountries() {
@@ -945,7 +946,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     getReadOnly: function (field) {
@@ -960,12 +961,12 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await deleteRequest(`/contact/${this.contact.id}`)
         this.snackbar = getSnackbar('SUCCESS', 'Contact Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$router.push('/contacts')
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error deleting contact')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }

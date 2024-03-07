@@ -169,6 +169,7 @@ import constants from '@/helpers/constants'
 import ConfirmationDialog from '../../../components/ConfirmationDialog.vue'
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export default {
   name: 'ProjectDetails',
@@ -220,7 +221,7 @@ export default {
     },
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useAppStore),
     userCanEdit() {
       return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
     },
@@ -303,19 +304,19 @@ export default {
           this.dirtyCfvs = []
           this.customFieldGroups = data
           this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Project Fields')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.appStore.showSnack(this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } finally {
           this.fieldsSaving = false
         }
       } else {
         this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     populateDirtyCfvs(field) {
@@ -400,13 +401,13 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       }
     },
     fileUploaded(attachment, error) {
       if (error) {
         this.snackbar = getSnackbar('ERROR', error.message)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.appStore.showSnack(this.snackbar)
       } else {
           //this value tells the right pane to update when a file is uploaded
           this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
