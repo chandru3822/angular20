@@ -4,10 +4,12 @@ import constants from '@/helpers/constants.js'
 import { AppMutations } from '@/stores/AppStore.js'
 import axios from 'axios'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const { VITE_ENV, VITE_BASE_API } = import.meta.env
 const JWT_EXPIRED = 'invalid token'
 const userStore = useUserStore(pinia)
+const appStore = useAppStore(pinia)
 
 export function responseInterceptor({ response }) {
   if (response) {
@@ -41,10 +43,10 @@ export function responseInterceptor({ response }) {
         }
         if (
           !['/', '/home'].includes(router.currentRoute?.path) ||
-          store.state.app.redirectUrl != null
+          appStore.redirectUrl != null
         ) {
           rt.query = {
-            redirect: router.currentRoute?.path || store.state.app.redirectUrl,
+            redirect: router.currentRoute?.path || appStore.redirectUrl,
           }
         }
 

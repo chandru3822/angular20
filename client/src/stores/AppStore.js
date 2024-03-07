@@ -5,10 +5,10 @@ import { shadeColorByPercent } from '@/helpers/helpers'
 export const AppMutations = {
   INIT: 'storeInt',
   SET_LOADING: 'SET_LOADING',
-  SET_SELECTED_PROCESS_STEP_NAME: 'SET_SELECTED_PROCESS_STEP_NAME',
+  // SET_SELECTED_PROCESS_STEP_NAME: 'SET_SELECTED_PROCESS_STEP_NAME',
   SHOW_SNACK: 'SHOW_SNACK',
   // SET_ANNOUNCEMENTS: 'SET_ANNOUNCEMENTS',
-  SET_REDIRECT_URL: 'SET_REDIRECT_URL',
+  // SET_REDIRECT_URL: 'SET_REDIRECT_URL',
   SET_SPINNER_URL: 'SET_SPINNER_URL',
   SET_PRIMARY_BASE_COLOR: 'SET_PRIMARY_BASE_COLOR',
   SET_BANNER_COLOR: 'SET_BANNER_COLOR',
@@ -27,10 +27,10 @@ export const AppStore = {
   },
   mutations: {
     [AppMutations.SET_LOADING]: (state, loading) => (state.loading = loading),
-    [AppMutations.SET_SELECTED_PROCESS_STEP_NAME]: (state, selectedProcessStepName) => (state.selectedProcessStepName = selectedProcessStepName),
+    // [AppMutations.SET_SELECTED_PROCESS_STEP_NAME]: (state, selectedProcessStepName) => (state.selectedProcessStepName = selectedProcessStepName),
     [AppMutations.SHOW_SNACK]: (state, snack) => (state.snack = snack),
     // [AppMutations.SET_ANNOUNCEMENTS]: (state, announcements) => (state.announcements = announcements),
-    [AppMutations.SET_REDIRECT_URL]: (state, url) => (state.redirectUrl = url),
+    // [AppMutations.SET_REDIRECT_URL]: (state, url) => (state.redirectUrl = url),
     [AppMutations.SET_SPINNER_URL]: (state, url) => (state.spinnerUrl = url),
     [AppMutations.SET_INITIAL_THEME]: (state) => {
       if(state.theme === undefined) {
