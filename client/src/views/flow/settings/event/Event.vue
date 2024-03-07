@@ -42,99 +42,82 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import Vue2Filters from 'vue2-filters'
 
 import {AppMutations} from "@/stores/AppStore";
-import {getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
-import { mapStores } from 'pinia'
+import {getRequest, putRequest} from "@/helpers/helpers";
+
+import {ref, computed, onMounted, getCurrentInstance} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const route = vueInstance.$route
+const vuetify = vueInstance.$vuetify
 
-export default {
-  name: 'Event',
-  mixins: [Vue2Filters.mixin],
+const editName = ref(false)
+const oldName = ref(null)
+const event = ref({})
+const eventId = ref(route.params.id)
+const companyId = ref(userStore.details.companyId)
+const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
 
-  data () {
-    return {
-      snackbar: {},
-      editName: false,
-      oldName: null,
-      event: {},
-      eventId: this.$route.params.id
-    }
+const activeTab = computed({
+  get() {
+    return route?.path?.includes('/attachmentType') ? `/settings/event/${eventId.value}/attachmentTypes` : null
   },
-  computed: {
-    ...mapStores(useUserStore),
-    companyId() {
-      return this.userStore.details.companyId
-    },
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
-    },
-    //this should not be so hard
-    activeTab: {
-      get: function() {
-        return this.$route?.path?.includes('/attachmentType') ? `/settings/event/${this.eventId}/attachmentTypes` : null
-      },
-      set: function(val) {
-        return val
-      }
-    },
-    tabs() {
-      return [
-        {
-          id: 1,
-          label: 'Components',
-          path: `/settings/event/${this.eventId}/components`,
-        },
-        {
-          id: 2,
-          label: 'Custom Field Groups',
-          path: `/settings/event/${this.eventId}/customFieldGroups`,
-        },
-        {
-          id: 3,
-          label: 'Attachment Types',
-          path: `/settings/event/${this.eventId}/attachmentTypes`,
-        }
-      ]
-    }
-  },
-  async created () {
-    await this.getEvent()
-  },
-  methods: {
-    async getEvent () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getRequest(`/event/${this.eventId}`)
-        this.event = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveEventName() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await putRequest(`/event`, this.event)
-        this.editName = false
-        this.snackbar = getSnackbar('SUCCESS', 'Event Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Event')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+  set(val) {
+    return val
   }
-
+})
+const tabs = computed(() => {
+  return [
+    {
+      id: 1,
+      label: 'Components',
+      path: `/settings/event/${eventId.value}/components`,
+    },
+    {
+      id: 2,
+      label: 'Custom Field Groups',
+      path: `/settings/event/${eventId.value}/customFieldGroups`,
+    },
+    {
+      id: 3,
+      label: 'Attachment Types',
+      path: `/settings/event/${eventId.value}/attachmentTypes`,
+    }
+  ]
+})
+onMounted(async () => {
+  await getEvent()
+})
+const getEvent = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data} = await getRequest(`/event/${eventId.value}`)
+    event.value = data
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    store.commit(AppMutations.SET_LOADING, false)
   }
+}
+const saveEventName = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    await putRequest(`/event`, event.value)
+    editName.value = false
+    snackbar('SUCCESS', 'Event Updated')
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating Event')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
 </script>
 
 <style scoped lang="scss">

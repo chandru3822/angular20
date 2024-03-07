@@ -6,14 +6,17 @@
           <v-toolbar-title class="title-large text-wrap">Event Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNewEventStatusType = !addNewEventStatusType, expanded = [], getCompanyEventStatusTypes()]" v-if="userCanAdd">
-              <v-icon v-if="!addNewEventStatusType">add</v-icon>
-              <span v-if="$vuetify.breakpoint.mdAndUp">{{ addNewEventStatusType ? 'Cancel' : 'Add Event Status Type' }}</span>
-            </v-btn>
-            <v-btn text color="primary" @click="expandEsst = !expandEsst">
-              <v-icon v-if="!expandEsst">mdi-chevron-down</v-icon>
-              <v-icon v-else>mdi-chevron-up</v-icon>
-            </v-btn>
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              @click="[addNewEventStatusType = !addNewEventStatusType, expanded = [], getCompanyEventStatusTypes()]"
+              v-if="userCanAdd"
+              :prepend-icon="!addNewEventStatusType ? 'add' : ''"
+              :text="vuetify.breakpoint.mdAndUp ? (addNewEventStatusType ? 'Cancel' : 'Add Event Status Type') : ''"
+            />
+            <AlbatrossButton variant="text" color="primary" @click="expandEsst = !expandEsst"
+               :prepend-icon="!expandEsst ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <div class="mb-4">
@@ -37,7 +40,7 @@
           <v-data-table
             v-if="expandEsst"
             :headers="eventHeaders"
-            :items="filterAssignedEventStatusTypes()"
+            :items="filterAssignedEventStatusTypes"
             hide-default-footer
             :items-per-page="-1"
             disable-sort
@@ -56,7 +59,14 @@
                 <template #item.category="{item}" class="text-left">{{ item.rootEventStatusType }}</template>
                 <td class="text-right">
                   <div class="flex-display align-center">
-                    <v-btn small text color="primary" v-if="userCanEdit" @click="eventStatusTypeToDelete=item"><v-icon>delete</v-icon></v-btn>
+                    <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      v-if="userCanEdit"
+                      @click="eventStatusTypeToDelete=item"
+                      prepend-icon="delete"
+                    />
                   </div>
                 </td>
 
@@ -83,7 +93,7 @@
               :alternateLabel = "'Denied Positions'"
               :allow="event.hiddenAllow"
               :contentLoading="positionsLoading"
-              :full-size="$vuetify.breakpoint.smAndDown"
+              :full-size="vuetify.breakpoint.smAndDown"
               :save-button="userCanEdit"
               @selected-changed="hiddenSelectedEventListener"
               @allow-changed="hiddenAllowEventListener"
@@ -97,7 +107,7 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from "@/stores/AppStore";
 import draggable from 'vuedraggable'
 import {getAvailableForEvent} from '@/services/eventStatusTypeService'
@@ -107,211 +117,195 @@ import orderBy from "lodash.orderby"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import cloneDeep from "lodash.clonedeep";
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
-import { mapStores } from 'pinia'
+
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import {ref, computed, onMounted, getCurrentInstance} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const route = vueInstance.$route
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
 
-export default {
-  name: 'EventComponents',
-  mixins: [Vue2Filters.mixin],
-  components: {
-    MultiSelectGroup,
-    ConfirmationDialog,
-    draggable
-  },
-  data () {
-    return {
-      addNewType: false,
-      expandEsst: true,
-      event: {},
-      eventId: this.$route.params.id,
-      availableCompanyEventStatusTypes: [],
-      companyStatusesLoading: false,
-      addNewEventStatusType: false,
-      newType: {},
-      newEventStatusTypeId: null,
-      combinedStatuses: [ {header: 'Category'} ],
-      companyEventStatusTypes: [],
-      eventStatusTypes: [],
-      eventHeaders: [
-        {text: 'Status Type', value: 'statusType', show: true},
-        {text: 'Category', value: 'category', show: true},
-        {text: '', value: 'icons', show: false, width: '100px'},
-      ],
-      eventStatusTypeToDelete: null,
-      attachmentTypeToDelete: null,
-      positions: [],
-      positionsLoading: false,
-      hiddenPositionsChanged: false,
-      eventLoading: false
-    }
-  },
-  computed: {
-    ...mapStores(useUserStore),
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
-    },
-    userCanAdd() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
-    },
-    eventStatusTypeToDeleteName(){
-      return this.eventStatusTypeToDelete ? this.eventStatusTypeToDelete.eventStatusType : ''
-    },
-    attachmentTypeToDeleteType(){
-      return this.attachmentTypeToDelete ? this.attachmentTypeToDelete.attachmentType : ''
-    },
-  },
-  watch: {},
-  created () {
-    this.getEvent()
-    this.getPositions()
-  },
-  methods: {
-    async getEvent () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.eventLoading = true;
-        const {data} = await getRequest(`/event/${this.eventId}`)
-        this.event = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        this.eventLoading = false;
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    filterAssignedEventStatusTypes() {
-      return orderBy(this.event?.companyEventStatusTypes?.filter(u => {
-        return !u.archived
-      }), [f => f.eventStatusType])
-    },
-    async assignStatusTypeToEvent () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.newType.eventId = this.$route.params.id
-        const {data} = await postRequest(`/event/status/assignCompanyStatus/${this.newEventStatusTypeId}/toEvent/${this.eventId}`)
-        this.event.companyEventStatusTypes.push(data)
-        // reset fields
-        this.addNewEventStatusType = false
-        this.newEventStatusTypeId = null
-        this.snackbar = getSnackbar('SUCCESS', 'Status Type Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Status Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCompanyEventStatusTypes() {
-      if(this.addNewEventStatusType) {
-        this.companyStatusesLoading = true
-        try {
-          const {data} = await getAvailableForEvent(this.eventId)
-          this.availableCompanyEventStatusTypes = data
-          this.companyStatusesLoading = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Status Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.companyStatusesLoading = false
-        }
-      }
+const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+const addNewType = ref(false)
+const expandEsst = ref(true)
+const event = ref({})
+const eventId = ref(route.params.id)
+const availableCompanyEventStatusTypes = ref([])
+const companyStatusesLoading = ref(false)
+const addNewEventStatusType = ref(false)
+const newType = ref({})
+const newEventStatusTypeId = ref(null)
+const combinedStatuses = ref([ {header: 'Category'} ])
+const companyEventStatusTypes = ref([])
+const eventStatusTypes = ref([])
+const eventHeaders = ref([
+  {text: 'Status Type', value: 'statusType', show: true},
+  {text: 'Category', value: 'category', show: true},
+  {text: '', value: 'icons', show: false, width: '100px'},
+])
+const eventStatusTypeToDelete = ref(null)
+const attachmentTypeToDelete = ref(null)
+const positions = ref([])
+const positionsLoading = ref(false)
+const hiddenPositionsChanged = ref(false)
+const eventLoading = ref(false)
 
-    },
-    async deleteStatusTypeFromEvent () {
-      const item = this.eventStatusTypeToDelete
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        item.archived = true
-        await deleteRequest(`/event/${this.eventId}/companyStatus/${item.id}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Event Status Type Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Event Status Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.eventStatusTypeToDelete = null
-    },
-    selectAllHidden () {
-      return this.event.hiddenWhiteListedPositions?.length === this.positions?.length
-    },
-    selectSomeHidden (f) {
-      return this.event.hiddenWhiteListedPositions?.length > 0 && !this.selectAllHidden(f)
-    },
-    icon () {
-      if (this.selectAllHidden()) {
-        return 'check_box'
-      }
-      if (this.selectSomeHidden()) {
-        return 'indeterminate_check_box'
-      }
-      return 'check_box_outline_blank'
-    },
+const eventStatusTypeToDeleteName = computed(() => {
+  return eventStatusTypeToDelete.value ? eventStatusTypeToDelete.value.eventStatusType : ''
+})
+const attachmentTypeToDeleteType = computed(() => {
+  return attachmentTypeToDelete.value ? attachmentTypeToDelete.value.attachmentType : ''
+})
 
-    toggleSelectAllPositionsOwner () {
-      this.$nextTick(() => {
-        if (this.selectAllHidden()) {
-          this.event.hiddenWhiteListedPositions = []
-          this.hiddenPositionsChanged = true
-        } else {
-          this.event.hiddenWhiteListedPositions = cloneDeep(this.positions)
-          this.hiddenPositionsChanged = true
-        }
-      })
-    },
-    async getPositions() {
-      if(this.positions?.length === 0) {
-        try {
-          this.positionsLoading = true
-          const {data, status} = await getRequest(`/position/withParent`)
-          this.positions = data
-          this.positionsLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          this.positionsLoading = false
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    async saveHiddenAndWhiteList () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await putRequest(`/event/saveHiddenAndWhiteList?positionsChanged=${this.event.hiddenPositionsChanged ?? false}`, this.event)
-        this.hiddenPositionsChanged = false
-        if(!this.event.hidden) {
-          this.event.hiddenWhiteListedPositions = []
-        }
-        this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Event Access Control')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    hiddenSelectedEventListener(e){
-      this.event.hiddenWhiteListedPositions = e;
-      this.event.hiddenPositionsChanged = true;
-    },
-    hiddenAllowEventListener(e){
-      this.event.hiddenAllow = (e === 0);
-    },
-    hiddenCheckboxEventListener(e){
-      this.event.hidden = e;
-    },
+onMounted (() => {
+  getEvent()
+  getPositions()
+})
+const getEvent = async  () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    eventLoading.value = true;
+    const {data} = await getRequest(`/event/${eventId.value}`)
+    event.value = data
+    store.commit(AppMutations.SET_LOADING, false)
+    eventLoading.value = false;
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
+const filterAssignedEventStatusTypes = computed(() => {
+  return orderBy(event.value?.companyEventStatusTypes?.filter(u => {
+    return !u.archived
+  }), [f => f.eventStatusType])
+})
+const assignStatusTypeToEvent = async  () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    newType.value.eventId = route.params.id
+    const {data} = await postRequest(`/event/status/assignCompanyStatus/${newEventStatusTypeId.value}/toEvent/${eventId.value}`)
+    event.value.companyEventStatusTypes.push(data)
+    // reset fields
+    addNewEventStatusType.value = false
+    newEventStatusTypeId.value = null
+    snackbar('SUCCESS', 'Status Type Added')
+
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Status Type')
+
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const getCompanyEventStatusTypes = async () => {
+  if(addNewEventStatusType.value) {
+    companyStatusesLoading.value = true
+    try {
+      const {data} = await getAvailableForEvent(eventId.value)
+      availableCompanyEventStatusTypes.value = data
+      companyStatusesLoading.value = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Event Status Types')
+
+      companyStatusesLoading.value = false
+    }
+  }
+
+}
+const deleteStatusTypeFromEvent = async  () => {
+  const item = eventStatusTypeToDelete.value
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    item.archived = true
+    await deleteRequest(`/event/${eventId.value}/companyStatus/${item.id}`)
+    snackbar('SUCCESS', 'Event Status Type Deleted')
+
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Event Status Type')
+
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+  eventStatusTypeToDelete.value = null
+}
+const selectAllHidden = () => {
+  return event.value.hiddenWhiteListedPositions?.length === positions.value?.length
+}
+const selectSomeHidden = (f) => {
+  return event.value.hiddenWhiteListedPositions?.length > 0 && !selectAllHidden(f)
+}
+const icon = () => {
+  if (selectAllHidden()) {
+    return 'check_box'
+  }
+  if (selectSomeHidden()) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+}
+const toggleSelectAllPositionsOwner = () => {
+  vueInstance.$nextTick(() => {
+    if (selectAllHidden()) {
+      event.value.hiddenWhiteListedPositions = []
+      hiddenPositionsChanged.value = true
+    } else {
+      event.value.hiddenWhiteListedPositions = cloneDeep(positions.value)
+      hiddenPositionsChanged.value = true
+    }
+  })
+}
+const getPositions = async () => {
+  if(positions.value?.length === 0) {
+    try {
+      positionsLoading.value = true
+      const {data, status} = await getRequest(`/position/withParent`)
+      positions.value = data
+      positionsLoading.value = false
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      positionsLoading.value = false
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Positions')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+}
+const saveHiddenAndWhiteList = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await putRequest(`/event/saveHiddenAndWhiteList?positionsChanged=${event.value.hiddenPositionsChanged ?? false}`, event.value)
+    hiddenPositionsChanged.value = false
+    if(!event.value.hidden) {
+      event.value.hiddenWhiteListedPositions = []
+    }
+    snackbar('SUCCESS', 'Saved Successfully')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Event Access Control')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const hiddenSelectedEventListener = (e) => {
+  event.value.hiddenWhiteListedPositions = e;
+  event.value.hiddenPositionsChanged = true;
+}
+const hiddenAllowEventListener = (e) => {
+  event.value.hiddenAllow = (e === 0);
+}
+const hiddenCheckboxEventListener = (e) => {
+  event.value.hidden = e;
+}
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
