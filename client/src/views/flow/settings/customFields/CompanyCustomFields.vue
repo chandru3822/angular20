@@ -5,18 +5,14 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import CustomFields from "@/views/flow/settings/customFields/CustomFields.vue"
-  export default {
-    name: 'CompanyCustomFields',
-    components: {
-      CustomFields,
-    },
-    data() {
-      return {
-        snackbar: {},
-        apiPath: this.$store.state.user.details.apiPath,
-      }
-    }
-  }
+  import { ref, getCurrentInstance} from 'vue'
+
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
+
+  const apiPath = ref(store.state.user.details.apiPath)
+
 </script>
