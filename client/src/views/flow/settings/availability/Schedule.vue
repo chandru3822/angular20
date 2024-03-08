@@ -381,7 +381,7 @@
     { text: 'Schedules', value: 'schedule', show: true},
     { text: '', value: 'icons', show: true}
   ])
-  const timezone = ref(userStore.details.timezone.value)
+  const timezone = ref(userStore.details.timezone?.value)
   const schedules = ref([])
   const expanded = ref([])
   const workDays = ref([])

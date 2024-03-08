@@ -505,7 +505,7 @@ export default {
   computed: {
     ...mapStores(useUserStore, useAppStore, useProjectStore),
     timezone() {
-      return this.userStore.details.timezone.value
+      return this.userStore.details.timezone?.value
     },
     userIsAdmin() {
       return this.userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')

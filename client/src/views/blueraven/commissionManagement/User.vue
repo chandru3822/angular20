@@ -399,7 +399,7 @@
         return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
       },
       timezone() {
-        return this.userStore.details.timezone.value
+        return this.userStore.details.timezone?.value
       },
     },
     data() {

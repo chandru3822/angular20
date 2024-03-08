@@ -293,7 +293,7 @@ const userCanDelete = computed(() => {
 })
 
 const timezone = computed(() => {
-  return userStore.details.timezone.value
+  return userStore.details.timezone?.value
 })
 
 onMounted(() => {

@@ -464,7 +464,7 @@
     computed: {
       ...mapStores(useUserStore),
       timezone() {
-        return this.userStore.details.timezone.value
+        return this.userStore.details.timezone?.value
       },
       levelToDeleteName() {
         return this.levelToDelete ? this.levelToDelete.name : ''

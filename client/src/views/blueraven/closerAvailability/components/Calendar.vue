@@ -160,10 +160,10 @@
     computed: {
       ...mapStores(useUserStore),
       scrollTime() {
-        return moment().tz(this.userStore.details.timezone.value).startOf('hour').format('HH:mm:ss')
+        return moment().tz(this.userStore.details.timezone?.value).startOf('hour').format('HH:mm:ss')
       },
       timezone() {
-        return this.userStore.details.timezone.value
+        return this.userStore.details.timezone?.value
       },
       //round robin users
       selectAllRoundRobinUsers () {
@@ -203,8 +203,8 @@
         })
     },
     watch: {
-      'userStore.details.timezone.value': function () {
-        this.calendar.options.timezone = this.userStore.details.timezone.value
+      'userStore.details.timezone?.value': function () {
+        this.calendar.options.timezone = this.userStore.details.timezone?.value
       },
       'selectedRoundRobinUsers': function () {
         //clear out selected map resources so we don't orphan map pins when the uncheck a closer
@@ -538,8 +538,8 @@
         if(this.calendarView === 'resourceTimelineDay') {
           this.calendarStartTime = moment(this.calendarStart).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
           this.calendarEndTime = moment(this.calendarStart).add(1, 'd').startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
-          // this.calendarStartTime = moment(this.calendarStart).tz(this.userStore.details.timezone.value).format('YYYY-MM-DD')
-          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.userStore.details.timezone.value).format('YYYY-MM-DD')
+          // this.calendarStartTime = moment(this.calendarStart).tz(this.userStore.details.timezone?.value).format('YYYY-MM-DD')
+          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.userStore.details.timezone?.value).format('YYYY-MM-DD')
         } else {
           //moment starts on sunday, isoWeek starts on monday
           this.calendarStartTime = moment(this.calendarStart).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')

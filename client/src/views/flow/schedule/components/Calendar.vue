@@ -287,10 +287,10 @@
     computed: {
       ...mapStores(useUserStore, useAppStore),
       timezone() {
-        return this.userStore.details.timezone.value
+        return this.userStore.details.timezone?.value
       },
       scrollTime() {
-        return moment().tz(this.userStore.details.timezone.value).startOf('hour').format('HH:mm:ss')
+        return moment().tz(this.userStore.details.timezone?.value).startOf('hour').format('HH:mm:ss')
       },
       //states
       sortedStates() {
@@ -381,8 +381,8 @@
       this.getEvents()
     },
     watch: {
-      'userStore.details.timezone.value': function () {
-        this.calendar.options.timezone = this.userStore.details.timezone.value
+      'userStore.details.timezone?.value': function () {
+        this.calendar.options.timezone = this.userStore.details.timezone?.value
       },
       // whenever selectedUsers or selectedOrgs changes, concat them both into resources
       'selectedUsers': function () {
@@ -885,8 +885,8 @@
         if(this.calendarView === 'resourceTimelineDay') {
           this.calendarStartTime = moment(this.calendarStart).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
           this.calendarEndTime = moment(this.calendarStart).add(1, 'd').startOf('d').subtract(1, 's').utc().format('YYYY-MM-DD HH:mm:ss')
-          // this.calendarStartTime = moment(this.calendarStart).tz(this.userStore.details.timezone.value).format('YYYY-MM-DD')
-          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.userStore.details.timezone.value).format('YYYY-MM-DD')
+          // this.calendarStartTime = moment(this.calendarStart).tz(this.userStore.details.timezone?.value).format('YYYY-MM-DD')
+          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.userStore.details.timezone?.value).format('YYYY-MM-DD')
         } else {
           //moment starts on sunday, isoWeek starts on monday
           this.calendarStartTime = moment(this.calendarStart).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')

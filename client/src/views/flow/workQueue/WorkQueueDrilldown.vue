@@ -299,7 +299,7 @@ export default {
   computed: {
     ...mapStores(useUserStore, useAppStore),
     timezone() {
-      return this.userStore.details.timezone.value
+      return this.userStore.details.timezone?.value
     },
     userFullName() {
       return this.userStore.details.fullName

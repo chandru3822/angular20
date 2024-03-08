@@ -632,7 +632,7 @@
         return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
       },
       timezone() {
-        return this.userStore.details.timezone.value
+        return this.userStore.details.timezone?.value
       },
       displayedMilestoneHeaders () {
         return this.milestoneHeaders.filter(h => h.show || h.positionId === this.commission?.positionId)

@@ -46,7 +46,7 @@ let exportSmartlist = async () => {
 
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    const params = {timezone: userStore.details.timezone.value}
+    const params = {timezone: userStore.details.timezone?.value}
     const {data} = await getRequestWithParams(`/smartlist/${props.smartlist.id}/export`, {params})
     let blob = new Blob([data], {
       type: 'text/csv;charset=utf-8'

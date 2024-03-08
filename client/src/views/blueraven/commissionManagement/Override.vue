@@ -552,7 +552,7 @@
         return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
       },
       timezone() {
-        return this.userStore.details.timezone.value
+        return this.userStore.details.timezone?.value
       },
       visibleReceivingHeaders() {
         return this.receivingHeaders.filter(header => header.show === true)

@@ -1034,7 +1034,7 @@ export default {
 
 
     if (this.userStore.details?.timezone?.value) {
-      this.timezone = this.userStore.details.timezone.value
+      this.timezone = this.userStore.details.timezone?.value
     }
 
     this.getWeekNum()

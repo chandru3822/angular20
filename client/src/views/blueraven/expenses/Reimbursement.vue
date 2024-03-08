@@ -170,7 +170,7 @@ export default {
   computed: {
     ...mapStores(useUserStore, useFileStore),
     timezone() {
-      return this.userStore.details.timezone.value
+      return this.userStore.details.timezone?.value
     },
     userId() {
       return this.userStore.details.id

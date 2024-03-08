@@ -74,7 +74,7 @@ onMounted(() => {
 })
 
 const timezone = computed(() => {
-  return userStore.details.timezone.value
+  return userStore.details.timezone?.value
 })
 
 const getTournament = async () => {

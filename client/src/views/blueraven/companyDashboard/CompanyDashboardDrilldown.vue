@@ -124,7 +124,7 @@
     computed: {
       ...mapStores(useUserStore),
       timezone() {
-        return this.userStore.details.timezone.value || 'US/Mountain'
+        return this.userStore.details.timezone?.value || 'US/Mountain'
       }
     },
     data() {

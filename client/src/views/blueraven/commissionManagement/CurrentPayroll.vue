@@ -532,7 +532,7 @@
         return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
       },
       timezone() {
-        return this.userStore.details.timezone.value
+        return this.userStore.details.timezone?.value
       },
       headers() {
         return this.positionId === 1 ? this.closerHeaders : this.setterHeaders

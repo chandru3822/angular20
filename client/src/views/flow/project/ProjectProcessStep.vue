@@ -422,7 +422,7 @@ export default {
       return this.userStore.userHasFeature('EVENTS')
     },
     timezone() {
-      return this.userStore.details.timezone.value
+      return this.userStore.details.timezone?.value
     },
     filteredActions() {
       if (!this?.processStep?.actions) {
