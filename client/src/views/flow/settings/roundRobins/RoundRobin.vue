@@ -7,10 +7,17 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit" @click="editRoundRobin = !editRoundRobin">
-          <v-icon v-if="!editRoundRobin">edit</v-icon>
-          <span v-else class="text-capitalize">Cancel</span>
-        </v-btn>
+        <AlbatrossButton
+            icon
+            color="primary"
+            v-if="userCanEdit"
+            :prepend-icon="editRoundRobin ? '' : 'edit'"
+            :text="editRoundRobin ? 'Cancel' : ''"
+            @click="editRoundRobin = !editRoundRobin"
+            :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+        >
+        </AlbatrossButton>
+
       </v-toolbar-items>
     </v-toolbar>
     <v-divider></v-divider>
@@ -72,10 +79,13 @@
           <v-simple-checkbox class="pl-2" label="Uses Total Lead Allocation?" v-model="roundRobin.usesTotalLeadAllocation"></v-simple-checkbox>
           </div>
 
-          <v-btn color="primary" :disabled="!roundRobin.roundRobinName || !roundRobin.companyTimezoneId"
-                 class="white--text" @click="saveRoundRobinInfo()">
-            Save
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              :disabled="!roundRobin.roundRobinName || !roundRobin.companyTimezoneId"
+              class=""
+              @click="saveRoundRobinInfo()"
+              text="Save"
+          ></AlbatrossButton>
 
         </v-col>
       </v-row>
@@ -105,6 +115,7 @@ import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 const userStore = useUserStore()
 import {useRoute} from "vue-router/composables";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 const route = useRoute()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

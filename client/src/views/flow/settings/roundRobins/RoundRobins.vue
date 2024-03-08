@@ -6,11 +6,14 @@
           <v-toolbar-title class="title-large">Round Robins</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newRoundRobin = {}, getCompanyTimezones()]"
-                   v-if="userCanAdd">
-              <span v-if="!addNew">{{ 'Add New' }}</span>
-              <span v-else>{{ 'Cancel' }}</span>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="[addNew = !addNew, newRoundRobin = {}, getCompanyTimezones()]"
+                v-if="userCanAdd"
+                :text="addNew ? 'Cancel' : 'Add New' "
+            ></AlbatrossButton>
+
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -33,10 +36,14 @@
                             item-value="id"
                             attach
             ></v-autocomplete>
-            <v-btn color="primary"
-                   :disabled="!newRoundRobin.roundRobinName || !newRoundRobin.distributionTimeFrameDays || !newRoundRobin.distributionTimeFrameDays"
-                   @click="addRoundRobin" class="mb-3">Save
-            </v-btn>
+            <AlbatrossButton
+                color="primary"
+                :disabled="!newRoundRobin.roundRobinName || !newRoundRobin.distributionTimeFrameDays || !newRoundRobin.distributionTimeFrameDays"
+                @click="addRoundRobin"
+                class="mb-3"
+                text="Save"
+            ></AlbatrossButton>
+
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -87,14 +94,23 @@
                   </td>
 
                   <td class="text-right">
-                    <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                           @click.stop="goToRoundRobin(item)">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                    <v-btn v-if="userCanDelete" icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                           @click.stop="[itemToDelete=item, showDeleteDialog=true]">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
+                    <AlbatrossButton
+                        icon
+                        color="primary"
+                        @click.stop="goToRoundRobin(item)"
+                        prepend-icon="edit"
+                        :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
+                    ></AlbatrossButton>
+
+                    <AlbatrossButton
+                        v-if="userCanDelete"
+                        icon
+                        color="primary"
+                        @click.stop="[itemToDelete=item, showDeleteDialog=true]"
+                        prepend-icon="delete"
+                        :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                    ></AlbatrossButton>
+
                   </td>
                 </tr>
               </template>
@@ -126,6 +142,7 @@ import {
   getSnackbar
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useRouter} from "vue-router/composables";
 import {useUserStore} from '@/stores/UserStorePinia.js'
