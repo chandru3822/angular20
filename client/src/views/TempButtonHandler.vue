@@ -66,6 +66,7 @@ const processBtn = async () => {
     hardcodedSize = tempString.includes(' large ') ? 'large' : ''
   }
   tempString = tempString.replaceAll(' large ', ' size="large" ')
+  tempString = tempString.replaceAll(' v-on="on" ', ' :activation-handler="on" ')
 
 
   //handle complex button text
