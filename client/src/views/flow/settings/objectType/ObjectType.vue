@@ -23,7 +23,6 @@
 </template>
 
 <script setup>
-import Vue2Filters from 'vue2-filters'
 import constants from '@/helpers/constants'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 

@@ -156,7 +156,7 @@
     if(match) {
       saveError.value = true
       saveErrorMsg.value = 'Table Name already in use'
-    } else if (vueINstance.$refs.dataViewForm?.validate()) {
+    } else if (vueInstance.$refs.dataViewForm?.validate()) {
       saveDataView(view, isNew)
     }
   }

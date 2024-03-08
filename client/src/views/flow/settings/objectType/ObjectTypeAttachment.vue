@@ -212,7 +212,6 @@ import {
   putRequest,
   getRequestWithParams
 } from "@/helpers/helpers";
-import Vue2Filters from "vue2-filters";
 import constants from "@/helpers/constants";
 import orderBy from 'lodash.orderby'
 import Sortable from "sortablejs"

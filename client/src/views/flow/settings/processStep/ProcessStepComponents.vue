@@ -245,7 +245,6 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
 import {getAvailableForProcessStep} from '@/services/processStepStatusTypeService'
 import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'

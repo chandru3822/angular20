@@ -249,7 +249,6 @@
 
 <script setup>
 import { AppMutations } from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
 import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import moment from 'moment'

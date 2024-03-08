@@ -6,7 +6,7 @@
           <v-toolbar-title class="title-large">Postal Codes</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newPostalCode = {}, getStates()]" v-if="userCanAdd">
+            <v-btn text color="primary" @click="[addNew = !addNew, newPostalCode = {}, getAllStates()]" v-if="userCanAdd">
               <span v-if="!addNew">{{ 'Add New' }}</span>
               <span v-else>{{ 'Cancel' }}</span>
             </v-btn>
@@ -58,7 +58,7 @@
             <v-data-table
               :headers="headers"
               :search="search"
-              :items="filterPostalCodes()"
+              :items="filteredPostalCodes"
               :fixed-header="true"
               :options.sync="options"
               :footer-props="footerProps"
@@ -127,9 +127,8 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
 import {
   handleHidingGlobalLoader,
   isNumberOrHyphen,
@@ -141,33 +140,31 @@ import {
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import constants from "@/helpers/constants";
 import {getStates} from "@/services/stateService";
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRouter} from "vue-router/composables";
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 
-export default {
-  name: 'PostalCodes',
-  components: {ConfirmationDialog},
-  mixins: [Vue2Filters.mixin],
-
-  data() {
-    return {
-      snackbar: {},
-      addNew: false,
-      isNumberOrHyphen,
-      search: null,
-      newPostalCode: {},
-      states: [],
-      dataLoading: true,
-      footerProps: {
+      const addNew = ref(false)
+      const search = ref(null)
+      const newPostalCode = ref({})
+      const states = ref([])
+      const dataLoading = ref(true)
+      const footerProps = ref({
         'items-per-page-options': [25, 50, 100, 1000],
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-      },
-      options: {
+      })
+      const options = ref({
         itemsPerPage: 100
-      },
-      postalCodeRules: constants.POSTAL_CODE_FIVE_REQUIRED_RULES,
-      postalCodes: [],
-      headers: [
+      })
+      const postalCodeRules = ref(constants.POSTAL_CODE_FIVE_REQUIRED_RULES)
+      const postalCodes = ref([])
+      const showDeleteDialog = ref(false)
+      const itemToDelete = ref(null)
+      const headers = ref([
         {text: 'Postal Code', value: 'postalCode', show: true},
         {text: 'Name', value: 'placeName', show: true},
         {text: 'Zone', value: 'zoneName', show: true},
@@ -179,113 +176,107 @@ export default {
         {text: 'Inside Sales', value: 'insideSales', show: true},
         {text: 'Sales Partners', value: 'salesPartners', show: true},
         {text: '', value: 'icons', show: true},
-      ],
-      showDeleteDialog: false,
-      itemToDelete: null
-    }
-  },
-  computed: {
-    ...mapStores(useUserStore),
-    userCanAdd() {
-      return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD')
-    },
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
-    },
-    userCanDelete() {
-      return this.userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE')
-    },
-    companyId() {
-      return this.userStore.details.companyId
-    },
-    userId() {
-      return this.userStore.details.id
-    },
-    itemToDeleteName() {
-      return this.itemToDelete ? this.itemToDelete.postalCode : '';
-    }
-  },
-  methods: {
-    async validateForm() {
-      if (this.$refs.postalCodeForm.validate()) {
-        await this.addPostalCode()
+      ])
+
+const postalCodeForm = ref(null)
+
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
+})
+const userCanDelete = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE')
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const itemToDeleteName = computed(() => {
+  return itemToDelete.value?.postalCode || ''
+})
+const filteredPostalCodes = computed(() => {
+  return postalCodes.value.filter(pcz => {
+    return !pcz.archived
+  })
+})
+
+onMounted(() => {
+  getPostalCodes()
+})
+
+
+    const validateForm = async () => {
+      if (vueInstance.$refs.postalCodeForm.validate()) {
+        await addPostalCode()
       }
-    },
-    async getStates() {
-      if (this.addNew) {
+    }
+    const getAllStates = async () => {
+      if (addNew.value) {
         try {
           const {data, status} = await getStates()
-          this.states = data
+          states.value = data
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          getSnackbar('ERROR', 'Error Retrieving Data')
         }
       }
-    },
-    filterPostalCodes() {
-      return this.postalCodes.filter(pcz => {
-        return !pcz.archived
-      })
-    },
-    async getPostalCodes() {
-      this.dataLoading = true
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+
+    const getPostalCodes = async () => {
+      dataLoading.value = true
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/postalCode`)
-        this.postalCodes = data
-        this.dataLoading = false
-        handleHidingGlobalLoader(this, status)
+        postalCodes.value = data
+        dataLoading.value = false
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.dataLoading = false
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        dataLoading.value = false
+        getSnackbar('ERROR', 'Error Retrieving Data')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async deletePostalCode() {
-      this.itemToDelete.archived = true
-      const postalCodeId = this.itemToDelete.id
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const deletePostalCode = async () => {
+      itemToDelete.value.archived = true
+      const postalCodeId = itemToDelete.value.id
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await deleteRequest(`/postalCode/${postalCodeId}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Postal Code Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        getSnackbar('SUCCESS', 'Postal Code Deleted')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Postal Code')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Deleting Postal Code')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-      this.closeDeleteDialog()
-    },
-    async addPostalCode() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      closeDeleteDialog()
+    }
+    const addPostalCode = async () => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await postRequest(`/postalCode`, this.newPostalCode)
-        this.$router.push({path: `/settings/zip/postalCode/${data.id}`})
-        this.snackbar = getSnackbar('SUCCESS', 'Postal Code Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        const {data, status} = await postRequest(`/postalCode`, newPostalCode.value)
+        router.push({path: `/settings/zip/postalCode/${data.id}`})
+        getSnackbar('SUCCESS', 'Postal Code Added')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         let msg = e?.data?.message ? e.data.message : 'Error Adding Postal Code'
-        this.snackbar = getSnackbar('ERROR', msg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', msg)
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    closeDeleteDialog() {
-      this.showDeleteDialog = false;
-      this.itemToDelete = null;
     }
-  },
-  async created() {
-    this.getPostalCodes()
-  }
-}
+    const closeDeleteDialog = () => {
+      showDeleteDialog.value = false
+      itemToDelete.value = null
+    }
+
+
+
 </script>
 
 <style lang="scss">

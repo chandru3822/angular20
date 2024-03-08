@@ -43,8 +43,6 @@
 </template>
 
 <script setup>
-import Vue2Filters from 'vue2-filters'
-
 import constants from '@/helpers/constants'
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers";

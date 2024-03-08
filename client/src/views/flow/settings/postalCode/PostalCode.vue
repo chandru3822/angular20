@@ -89,7 +89,6 @@
 
 <script setup>
   import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
   import {getStates} from '@/services/stateService'
   import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -134,7 +133,7 @@
         getPostalCode(),
         getRoundRobins(),
         getZones(),
-        getStates(),
+        getAllStates(),
         getCallGroups()
       ]).then(() => {
         store.commit(AppMutations.SET_LOADING, false);
@@ -153,7 +152,7 @@
 
         }
       }
-      const getStates = async () => {
+      const getAllStates = async () => {
         try {
           const {data, status} = await getStates()
           states.value = data

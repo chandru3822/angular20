@@ -116,7 +116,6 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
 import debounce from 'lodash.debounce'
 import cloneDeep from 'lodash.clonedeep'
 import {

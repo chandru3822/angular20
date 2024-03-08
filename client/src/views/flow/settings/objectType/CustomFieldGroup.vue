@@ -449,7 +449,6 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'

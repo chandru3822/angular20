@@ -560,7 +560,6 @@
 </template>
 
 <script setup>
-import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
 import {AppMutations} from '@/stores/AppStore'
 import {getEventTypes} from '@/services/scheduleService'

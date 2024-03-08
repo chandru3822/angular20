@@ -96,7 +96,6 @@
 import {AppMutations} from "@/stores/AppStore";
 import draggable from 'vuedraggable'
 import {handleHidingGlobalLoader, deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
-import Vue2Filters from "vue2-filters"
 import orderBy from 'lodash.orderby'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
