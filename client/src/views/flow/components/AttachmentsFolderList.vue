@@ -178,7 +178,6 @@ import {
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import orderBy from 'lodash.orderby'
-import {Actions} from '@/store'
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import AttachmentCompareModal from '@/views/flow/components/AttachmentCompareModal'
@@ -188,6 +187,7 @@ import cloneDeep from 'lodash.clonedeep'
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
 export default {
   name: "AttachmentsFolderList",
@@ -296,7 +296,7 @@ export default {
     this.loadAllPageDetails();
   },
   computed: {
-    ...mapStores(useUserStore, useProjectStore),
+    ...mapStores(useUserStore, useProjectStore, useFileStore),
     companyId() {
       return this.userStore.details.companyId
     },
@@ -522,7 +522,7 @@ export default {
                   secondaryId,
                 }
               })
-              const uploaded = await this.$store.dispatch(Actions.FILE_UPLOAD_MULTI, filesToUpload)
+              const uploaded = await this.fileStore.uploadFileMulti(filesToUpload)
               this.attachments = [...this.attachments, ...uploaded]
               if (!this.forceShowUploadBtn) {
                 //so far, if forceShowUploadBtn, then it is on org, user, contact, etc so it is already where it needs to be and doesn't need to refresh again
@@ -533,7 +533,7 @@ export default {
             } else {
               let file = files[0]
               if(file?.size > 0) {
-                await this.$store.dispatch(Actions.FILE_UPLOAD, {
+                await this.fileStore.uploadFile({
                   file: file,
                   attachmentTypeId: type.attachmentTypeId,
                   displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),

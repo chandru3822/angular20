@@ -211,7 +211,6 @@ import {
   putRequest
 } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
-import {Actions} from "@/store";
 import constants from "@/helpers/constants"
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
@@ -223,6 +222,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog"
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
 export default {
   name: "AttachmentCoversheetModal",
@@ -288,7 +288,7 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useUserStore, useAppStore),
+    ...mapStores(useUserStore, useAppStore, useFileStore),
     timezone() {
       return this.userStore.details.timezone.value
     },
@@ -426,7 +426,7 @@ export default {
                                                     this.userId, this.contactId, this.orgId)
 
           if(sourceId != null) {
-            await this.$store.dispatch(Actions.FILE_UPLOAD, {
+            await this.fileStore.uploadFile({
               file: this.file,
               attachmentTypeId: this.existingAttachment.attachmentTypeId,
               displayName: this.fileDetails.displayName,

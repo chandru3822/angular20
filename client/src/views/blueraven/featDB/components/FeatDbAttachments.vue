@@ -64,6 +64,7 @@ import AttachmentsTable from "@/views/flow/components/AttachmentsTable.vue";
 import constants from "@/helpers/constants";
 import { mapStores } from 'pinia'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
 export default {
   name: "FeatDbAttachments",
@@ -102,7 +103,7 @@ export default {
   },
   created() {},
   computed: {
-    ...mapStores(useAppStore)
+    ...mapStores(useAppStore, useFileStore)
   },
   methods: {
     getTypeCount: function (typeId) {
@@ -135,7 +136,7 @@ export default {
 
         try {
           let file = files[0]
-          await this.$store.dispatch(Actions.FILE_UPLOAD, {
+          await this.fileStore.uploadFile({
             file: file,
             attachmentTypeId: attachmentTypeId,
             sourceId: this.sourceId,

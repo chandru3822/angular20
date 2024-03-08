@@ -158,6 +158,7 @@ import SpinnerInline from "@/components/SpinnerInline.vue";
 import BudgetReportTable from "@/views/blueraven/expenses/BudgetReportTable.vue";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
 export default {
   name: 'Reimbursement',
@@ -167,7 +168,7 @@ export default {
     BudgetReportTable
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useFileStore),
     timezone() {
       return this.userStore.details.timezone.value
     },
@@ -271,7 +272,7 @@ export default {
         this.savingReceiptImage = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         let file = files[0]
-        await this.$store.dispatch(Actions.FILE_UPLOAD, {
+        await this.fileStore.uploadFile({
           file: file,
           attachmentTypeId,
           sourceId: null,

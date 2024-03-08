@@ -150,7 +150,6 @@
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
-import {Actions} from '@/store'
 import constants from '@/helpers/constants'
 import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
@@ -162,12 +161,15 @@ import {
 } from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
-const userStore = useUserStore()
 import {useRoute} from "vue-router/composables";
+import { useFileStore } from '@/stores/FileStore.js'
+
+const userStore = useUserStore()
 const route = useRoute()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const fileStore = useFileStore()
 
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
@@ -271,7 +273,7 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
     let file = files[0]
-    await store.dispatch(Actions.FILE_UPLOAD, {
+    await fileStore.uploadFile({
       file: file,
       sizeLimit,
       attachmentTypeId,
@@ -299,7 +301,7 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
 const deleteAttachment = async (id) => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    await store.dispatch(Actions.FILE_DELETE, {
+    await fileStore.deleteFile({
       id,
       callback: async () => {
         tournament.value.backgroundAttachmentId = null

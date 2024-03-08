@@ -126,7 +126,6 @@
 
 
 <script setup>
-import {Actions} from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import {getCompanyProjectStatusType, getProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {handleHidingGlobalLoader, putRequest, getSnackbar} from '@/helpers/helpers'
@@ -134,12 +133,13 @@ import constants from '@/helpers/constants'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables";
+import { useFileStore } from '@/stores/FileStore.js'
 const route = useRoute()
 
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-
+const fileStore = useFileStore()
 
 // const colorOptions = ref({
 //   canvasHeight: 75,
@@ -173,7 +173,7 @@ const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) =>
   try {
     store.commit(AppMutations.SET_LOADING, true)
     let file = files[0]
-    await store.dispatch(Actions.FILE_UPLOAD, {
+    await fileStore.uploadFile({
       file: file,
       sizeLimit,
       attachmentTypeId,
@@ -200,7 +200,7 @@ const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) =>
 const deleteAttachment = async (item) => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    await store.dispatch(Actions.FILE_DELETE, {
+    await fileStore.deleteFile({
       id: item.icon.id,
       callback: async () => {
         item.icon = {}

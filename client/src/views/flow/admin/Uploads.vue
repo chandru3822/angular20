@@ -47,13 +47,14 @@
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest} from '@/helpers/helpers'
-import {Actions} from '@/store'
 import {getCurrentInstance, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
+const fileStore = useFileStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
@@ -94,7 +95,7 @@ const uploadAttachment = async (files) => {
       let count = 0
       for (const f of files) {
         if (f.size > 0) {
-          await store.dispatch(Actions.FILE_UPLOAD, {
+          await fileStore.uploadFile({
             file: f,
             attachmentTypeId: selectedAttachmentTypeId.value,
             sourceId: null,

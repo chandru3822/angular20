@@ -30,18 +30,18 @@
 
 <script setup>
 
-import {AppMutations} from "@/stores/AppStore";
-import {handleHidingGlobalLoader, getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
-import {Actions} from "@/store";
+import {handleHidingGlobalLoader, getRequest, putRequest} from "@/helpers/helpers";
 import {getCurrentInstance, onMounted, ref} from 'vue'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
+const fileStore = useFileStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
@@ -91,7 +91,7 @@ const getHomePages = async () => {
 const loadHomePageLogo = async () => {
   try {
     appStore.loading = true
-    await store.dispatch(Actions.FILE_GET_ONE, {
+    await fileStore.getOne({
       attachmentTypeId: homePageAttachmentTypeId,
       sourceId: companyId.value,
       callback: async (img) => {

@@ -163,12 +163,12 @@ import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
-import {Actions} from '@/store'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '../../../components/ConfirmationDialog.vue'
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
 export default {
   name: 'ProjectDetails',
@@ -220,7 +220,7 @@ export default {
     },
   },
   computed: {
-    ...mapStores(useUserStore, useAppStore),
+    ...mapStores(useUserStore, useAppStore, useFileStore),
     userCanEdit() {
       return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
     },
@@ -376,14 +376,14 @@ export default {
                   secondaryId,
                 }
               })
-              const uploaded = await this.$store.dispatch(Actions.FILE_UPLOAD_MULTI, filesToUpload)
+              const uploaded = await this.fileStore.uploadFileMulti(filesToUpload)
               this.attachments = [...this.attachments, ...uploaded]
               this.$store.commit(AppMutations.SET_LOADING, false)
             } else {
               let file = files[0]
               if(file?.size > 0) {
                 // console.log('doing this')
-                await this.$store.dispatch(Actions.FILE_UPLOAD, {
+                await this.fileStore.uploadFile({
                   file: file,
                   attachmentTypeId: type.attachmentTypeId,
                   displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),

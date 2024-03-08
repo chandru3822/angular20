@@ -178,6 +178,8 @@ import cloneDeep from 'lodash.clonedeep'
 import isEqual from 'lodash.isequal'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 
 const vueInstance = getCurrentInstance().proxy
@@ -187,6 +189,8 @@ const snackbar = vueInstance.$snackbar
 
 const store = vueInstance.$store
 const userStore = useUserStore()
+const appStore = useAppStore()
+const fileStore = useFileStore()
 const saving = ref(false);
 const override = ref(false);
 const unsavedModal = ref(false);
@@ -358,8 +362,8 @@ const getAnnouncement = async () => {
 }
 const deleteAttachment = async () => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
-    await store.dispatch(Actions.FILE_DELETE, {
+    appStore.loading = true
+    await fileStore.deleteFile({
       id: announcement.value.attachmentId,
       callback: async () => {
         announcementLogo.value = {
@@ -370,13 +374,13 @@ const deleteAttachment = async () => {
         announcement.value.presignedUrl = null
         announcement.value.attachmentId = null
         snackbar('SUCCESS', 'Image Deleted')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting File')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const uploadFile = async (uploadedFile, existingFile) => {
@@ -385,8 +389,8 @@ const uploadFile = async (uploadedFile, existingFile) => {
     announcementLogo.value.image = file
   } else if (file && file.name) {
     try {
-      store.commit(AppMutations.SET_LOADING, true)
-      await store.dispatch(Actions.FILE_UPLOAD, {
+      appStore.loading = true
+      await fileStore.uploadFile({
         file: file,
         sizeLimit: 1048576,
         attachmentTypeId: 990,
@@ -402,14 +406,14 @@ const uploadFile = async (uploadedFile, existingFile) => {
             announcementLogo.value.add = false
             announcementLogo.value.saving = false
             snackbar('SUCCESS', 'Image Uploaded')
-            store.commit(AppMutations.SET_LOADING, false)
+            appStore.loading = false
           }
         }
       })
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Uploading File')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }

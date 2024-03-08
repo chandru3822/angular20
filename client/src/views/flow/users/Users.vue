@@ -552,6 +552,7 @@
   import { mapStores } from 'pinia'
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useFileStore } from '@/stores/FileStore.js'
 
   const defaultEmailMessage = '${user.firstName},\n'
 
@@ -662,7 +663,7 @@
       }
     },
     computed: {
-      ...mapStores(useUserStore, useAppStore),
+      ...mapStores(useUserStore, useAppStore, useFileStore),
       companyId() {
         return this.userStore.details.companyId
       },
@@ -1351,7 +1352,7 @@
           for (let file of files) {
             this.$store.commit(AppMutations.SET_LOADING, true)
             // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
-            await this.$store.dispatch(Actions.FILE_UPLOAD, {
+            await this.fileStore.uploadFile({
               file,
               attachmentTypeId: 3,
               sourceId: 1,

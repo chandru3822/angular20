@@ -271,7 +271,6 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
-import {Actions} from '@/store'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import constants from '@/helpers/constants'
 import {
@@ -285,12 +284,14 @@ import {
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, watch, computed, ref, onMounted} from 'vue'
 import {useRoute} from "vue-router/composables";
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import { useFileStore } from '@/stores/FileStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const fileStore = useFileStore()
 const route = useRoute()
-import {useUserStore} from '@/stores/UserStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 const userStore = useUserStore()
 
 const positionToDelete = ref(null)
@@ -485,7 +486,7 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
     let file = files[0]
-    await store.dispatch(Actions.FILE_UPLOAD, {
+    await fileStore.uploadFile({
       file: file,
       sizeLimit,
       attachmentTypeId,
@@ -513,7 +514,7 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
 const deleteAttachment = async (id) => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    await store.dispatch(Actions.FILE_DELETE, {
+    await fileStore.deleteFile({
       id,
       callback: async () => {
         pool.value.backgroundAttachmentId = null

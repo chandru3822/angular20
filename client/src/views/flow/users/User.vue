@@ -113,6 +113,7 @@
   import constants from '@/helpers/constants'
   import { mapStores } from 'pinia'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useFileStore } from '@/stores/FileStore.js'
 
   export default {
     name: 'User',
@@ -170,7 +171,7 @@
       }
     },
     computed: {
-      ...mapStores(useUserStore),
+      ...mapStores(useUserStore, useFileStore),
       companyId() {
         return this.userStore.details.companyId
       },
@@ -240,7 +241,7 @@
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           let file = files[0]
-          await this.$store.dispatch(Actions.FILE_UPLOAD, {
+          await this.fileStore.uploadfile({
             file: file,
             attachmentTypeId,
             sizeLimit,
@@ -269,7 +270,7 @@
       },
       async getUserImage () {
         try {
-          await this.$store.dispatch(Actions.FILE_GET_ONE, {
+          await this.fileStore.getOne({
             attachmentTypeId: this.attachmentTypeId,
             sourceId: this.userId,
             callback: async (img) => {

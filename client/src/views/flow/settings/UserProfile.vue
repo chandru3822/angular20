@@ -205,7 +205,6 @@
 
 
 <script setup>
-import { Actions } from '@/store'
 import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {AppMutations} from '@/stores/AppStore'
@@ -221,12 +220,14 @@ import { onBeforeRouteLeave } from 'vue-router/composables'
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
+const fileStore = useFileStore()
 const router = vueInstance.$router
 
 const { registered, getNotificationToken, removeNotificationToken } = useFirebase()
@@ -408,7 +409,7 @@ const saveUser = async () => {
 const deleteAttachment = async (id) => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    await store.dispatch(Actions.FILE_DELETE, {
+    await fileStore.deleteFile({
       id,
       callback: async () => {
         profileImage.value = {}
@@ -427,7 +428,7 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
     let file = files[0]
-    await store.dispatch(Actions.FILE_UPLOAD, {
+    await fileStore.uploadFile({
       file: file,
       attachmentTypeId,
       sizeLimit,
@@ -456,7 +457,7 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
 const loadProfileImage = async () =>{
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    await store.dispatch(Actions.FILE_GET_ONE, {
+    await fileStore.getOne({
       attachmentTypeId: attachmentTypeId.value,
       sourceId: userId.value,
       callback: async (img) => {

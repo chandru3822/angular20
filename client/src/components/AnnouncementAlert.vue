@@ -32,12 +32,12 @@
 
 <script>
 import moment from 'moment'
-import {getSnackbar, postRequest, postRequestWithRequestParams} from "@/helpers/helpers.js";
+import {getSnackbar, postRequestWithRequestParams} from "@/helpers/helpers.js";
 import {AppMutations} from "@/stores/AppStore.js";
 import AnnouncementModal from "@/components/AnnouncementModal.vue";
-import {Actions} from "@/store.js";
 import { mapStores } from 'pinia'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
   export default {
     name: 'AnnouncementAlert',
@@ -53,7 +53,7 @@ import { useAppStore } from '@/stores/AppStorePinia.js'
       }
     },
     computed: {
-      ...mapStores(useAppStore),
+      ...mapStores(useAppStore, useFileStore),
       unseenAnnouncements() {
         return this.appStore.announcements?.filter(a => !a.seen &&
             (moment().isBetween(moment(a.startTime), moment(a.endTime))
@@ -78,7 +78,7 @@ import { useAppStore } from '@/stores/AppStorePinia.js'
       },
       async getAttachment(item) {
         try {
-          await this.$store.dispatch(Actions.FILE_GET_ONE, {
+          await this.fileStore.getOne({
             attachmentTypeId: 990,
             sourceId: item.id,
             callback: async (img) => {

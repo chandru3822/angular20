@@ -55,9 +55,9 @@ import {MilestoneEnum, QuarterEnum} from "@/views/blueraven/closerDashboard/Mile
 import IncentiveMilestone from "@/views/blueraven/closerDashboard/IncentiveMilestone";
 import {AppMutations} from "@/stores/AppStore";
 import {getSnackbar} from "@/helpers/helpers";
-import {Actions} from "@/store";
 import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
 /**
  * counts: {q1:Number, q2:Number, q3:Number, q4:Number}
@@ -87,6 +87,7 @@ const props = defineProps({
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
+const fileStore = useFileStore()
 
 const percentAchieved = ref(0),
     progressBarIsFull=ref(false),
@@ -137,7 +138,7 @@ const loadImage= async (typeId, imageType) => {
   let snackbar
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    await store.dispatch(Actions.FILE_GET_ONE,{
+    await fileStore.getOne({
       attachmentTypeId: typeId,
       sourceId: companyId,
       callback: async (img) => {

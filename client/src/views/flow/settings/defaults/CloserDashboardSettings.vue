@@ -60,12 +60,12 @@
 import {computed, getCurrentInstance, onMounted, ref} from "vue";
 import constants from "@/helpers/constants";
 import {AppMutations} from "@/stores/AppStore";
-import {Actions} from "@/store";
 import {getSnackbar} from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import { useFileStore } from '@/stores/FileStore.js'
 
 const ImageTypeEnum = ref({
   CLOSER_DASH_TOURNAMENT_HEADER_LOGO: {
@@ -93,6 +93,7 @@ const ImageTypeEnum = ref({
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
+const fileStore = useFileStore()
 
 const companyId = userStore.details.companyId
 const acceptedFileTypes = constants.STANDARD_IMAGES_ONLY
@@ -108,7 +109,7 @@ const deleteImageDialogText = computed(() => {
 const loadImage = async(logoType) => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    await store.dispatch(Actions.FILE_GET_ONE, {
+    await fileStore.getOne({
       attachmentTypeId: logoType.attachmentTypeId,
       sourceId: companyId,
       callback: async (img) => {
@@ -128,7 +129,7 @@ const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit
   try {
     store.commit(AppMutations.SET_LOADING, true)
     let file = files[0]
-    await store.dispatch(Actions.FILE_UPLOAD, {
+    await fileStore.uploadFile({
       file: file,
       sizeLimit,
       attachmentTypeId,
@@ -162,7 +163,7 @@ const deleteAttachment = async() => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
     let key = imageToDelete?.value?.key
-    await store.dispatch(Actions.FILE_DELETE, {
+    await fileStore.deleteFile({
       id: imageToDelete?.value?.image?.id,
       callback: async () => {
         ImageTypeEnum.value[key].image = {}

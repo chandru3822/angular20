@@ -64,11 +64,11 @@
 </template>
 
 <script>
-  import { Actions } from '@/store'
   import constants from '@/helpers/constants'
   import Vue2Filters from "vue2-filters"
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import { mapStores } from 'pinia'
+  import { useFileStore } from '@/stores/FileStore.js'
 
   export default {
     name: 'AccountMenu',
@@ -104,7 +104,7 @@
       }
     },
     computed: {
-      ...mapStores(useUserStore),
+      ...mapStores(useUserStore, useFileStore),
       userImage() {
         return  this.userStore.userImage
       },
@@ -156,7 +156,7 @@
       async getUserImage () {
         if(this.userId) {
           try {
-            await this.$store.dispatch(Actions.FILE_GET_ONE, {
+            await this.fileStore.getOne({
               attachmentTypeId: this.attachmentTypeId,
               sourceId: this.userId,
               callback: async (img) => {

@@ -222,7 +222,6 @@
 
 
 <script setup>
-import {Actions} from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
@@ -237,11 +236,13 @@ import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {computed, getCurrentInstance, ref, onMounted} from "vue";
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const userStore = useUserStore()
+const fileStore = useFileStore()
 
 const search = ref('')
 const statusTypes = ref([])
@@ -305,7 +306,7 @@ const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) =>
   try {
     store.commit(AppMutations.SET_LOADING, true)
     let file = files[0]
-    await store.dispatch(Actions.FILE_UPLOAD, {
+    await fileStore.uploadFile({
       file: file,
       sizeLimit,
       attachmentTypeId,
@@ -332,7 +333,7 @@ const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) =>
 const deleteAttachment = async (item) => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    await store.dispatch(Actions.FILE_DELETE, {
+    await fileStore.deleteFile({
       id: item.icon.id,
       callback: async (status) => {
         item.icon = {}

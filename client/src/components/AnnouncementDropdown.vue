@@ -82,10 +82,10 @@
   import {getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import AnnouncementModal from "@/components/AnnouncementModal.vue";
-  import {Actions} from "@/store.js";
   import { mapStores } from 'pinia'
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useFileStore } from '@/stores/FileStore.js'
 
   export default {
     name: 'AnnouncementDropdown',
@@ -121,7 +121,7 @@
       }
     },
     computed: {
-      ...mapStores(useUserStore, useAppStore),
+      ...mapStores(useUserStore, useAppStore, useFileStore),
       userId() {
         return this.userStore.details.id
       },
@@ -161,7 +161,7 @@
       },
       async getAttachment(item) {
         try {
-          await this.$store.dispatch(Actions.FILE_GET_ONE, {
+          await this.fileStore.getOne({
             attachmentTypeId: 990,
             sourceId: item.id,
             callback: async (img) => {

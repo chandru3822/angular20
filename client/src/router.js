@@ -2,19 +2,19 @@ import Vue from "vue"
 import Router from 'vue-router'
 import Login from './views/Login.vue'
 import ForgotPasswordReset from './views/ForgotPasswordReset.vue'
-import store from './store'
 import {getRequest} from '@/helpers/helpers'
 import ProposalVersionSettingsRoutes from '@/views/blueraven/settings/proposals/routes'
 import ProposalDesignerRoutes from '@/views/blueraven/settings/proposalDesigner/routes'
-import {AppMutations} from "@/stores/AppStore";
 import {pinia} from '@/store'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
 Vue.use(Router)
 const nonRedirectPaths = ['/', '/home']
 const userStore = useUserStore(pinia)
 const appStore = useAppStore(pinia)
+const fileStore = useFileStore(pinia)
 
 const router = new Router({
   mode: 'history',
@@ -2069,9 +2069,9 @@ router.beforeEach((to, from, next) => {
   document.title = to.meta.title || 'Albatross'
   //if the global spinner is on and the request takes a while, then you move to a different page that doesn't toggle the global
   //spinner then it stays on the screen until the previous request finishes.  this fixes that.
-  store.commit(AppMutations.SET_LOADING, false)
+  appStore.loading = false
   //cancel all pending axios requests when route change
-  store.dispatch('CANCEL_PENDING_REQUESTS');
+  fileStore.cancelPendingRequests()
   next()
 })
 

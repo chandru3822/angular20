@@ -76,8 +76,9 @@
 <script>
 import { getRequestWithParams, getSnackbar, handleHidingGlobalLoader, logError } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
-import { Actions } from '@/store'
 import ImgProxy from '@/components/ImgProxy'
+import { mapStores } from 'pinia'
+import { useFileStore } from '@/stores/FileStore.js'
 
 const PROPOSAL_TEMPLATE_ATTACHMENT_TYPE_ID = 939
 const IMAGE_REGEX = /^(jpe?g|png|gif|webp)$/i
@@ -94,6 +95,9 @@ export default {
     }
   },
   components: {ImgProxy},
+  computed: {
+    ...mapStores(useFileStore)
+  },
   methods: {
     async _fetchProposalImages() {
       try {
@@ -154,7 +158,7 @@ export default {
             }
           })
 
-          const uploaded = await this.$store.dispatch(Actions.FILE_UPLOAD_MULTI, filesToUpload)
+          const uploaded = await this.fileStore.uploadFileMulti(filesToUpload)
           this.images = [...this.images, ...uploaded]
           this.uploadFiles = []
         } catch (e) {
