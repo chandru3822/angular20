@@ -8,8 +8,8 @@
           <v-toolbar-items>
             <v-btn @click="[addNewType = !addNewType, getAvailableTypes()]" text v-if="userCanAdd" color="primary">
               <v-icon v-if="!addNewType">add</v-icon>
-              <v-icon v-else-if="isMobile">close</v-icon>
-              <span v-if="!isMobile">{{ addNewType ? 'Cancel' : 'Add Attachment Type'}}</span>
+              <v-icon v-else-if="$vuetify.breakpoint.smAndDown">close</v-icon>
+              <span v-if="!$vuetify.breakpoint.smAndDown">{{ addNewType ? 'Cancel' : 'Add Attachment Type'}}</span>
             </v-btn>
             <v-btn text @click="expandTypes = !expandTypes">
               <v-icon v-if="!expandTypes">mdi-chevron-down</v-icon>
@@ -37,7 +37,7 @@
           <v-col cols="12" class="pt-0">
             <v-data-table
               :headers="headers"
-              :items="filterTypes()"
+              :items="filteredTypes"
               :items-per-page="-1"
               :sort-desc="[false]"
               :sort-by="['displayOrder']"
@@ -98,8 +98,7 @@
   </v-container>
 </template>
 
-<script>
-import Vue2Filters from 'vue2-filters'
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
 import orderBy from 'lodash.orderby'
 import {
@@ -110,177 +109,132 @@ import {
   getSnackbar, handleHidingGlobalLoader
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables";
+const route = useRoute()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 
-export default {
-  name: 'ProcessStepAttachmentTypes',
-  components: {ConfirmationDialog},
-  mixins: [Vue2Filters.mixin],
-  // mounted() {
-  //   let table = document.querySelector('.attachment-type-table tbody')
-  //   const _self = this
-  //   Sortable.create(table, {
-  //     handle: '.handle',
-  //     onEnd({newIndex, oldIndex}) {
-  //       const rowSelected = _self.attachmentTypes.splice(oldIndex, 1)[0]
-  //       _self.attachmentTypes.splice(newIndex, 0, rowSelected)
-  //       let rowsClone = cloneDeep(_self.attachmentTypes)
-  //
-  //       let rowsToSave = []
-  //       rowsClone.forEach((r, idx) => {
-  //         //check if the row needs to be saved before updating display order
-  //         //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-  //         let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-  //         //update display order
-  //         r.displayOrder = idx
-  //         //save only rows that changed
-  //         if (save) {
-  //           _self.attachmentTypes[idx].newDisplayOrder = idx
-  //           rowsToSave.push(r)
-  //         }
-  //       })
-  //       _self.saveRowChanges(rowsToSave)
-  //     }
-  //   })
-  // },
-  data() {
-    return {
-      snackbar: {},
-      expandTypes: true,
-      processStepId: this.$route.params.id,
-      headers: [
-        // {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
-        {text: 'Attachment Type', value: 'attachmentType', show: true},
-        {text: 'Allow Upload', value: 'allowUpload', show: this.showUploadable, width: 100},
-        {text: 'Linkable', value: 'linkable', show: this.showLinkable, width: 100},
-        {text: 'Focused', value: 'focused', show: this.showFocused, width: 100},
-        {text: null, value: 'icons', show: true, width: 150}
-      ],
-      addNewType: false,
-      newType: {},
-      attachmentTypes: [],
-      availableTypes: [],
-      attachmentTypeToDelete: null
+      const expandTypes = ref(true)
+      const addNewType = ref(false)
+      const newType = ref({})
+      const attachmentTypes = ref([])
+      const availableTypes = ref([])
+      const attachmentTypeToDelete = ref(null)
+      const headers = ref([
+  // {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
+  {text: 'Attachment Type', value: 'attachmentType', show: true},
+  {text: 'Allow Upload', value: 'allowUpload', show: true, width: 100},
+  {text: 'Linkable', value: 'linkable', show: true, width: 100},
+  {text: 'Focused', value: 'focused', show: true, width: 100},
+  {text: null, value: 'icons', show: true, width: 150}
+])
+
+const processStepId = computed(() => {
+  return route.params.id
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
+})
+const attachmentTypeToDeleteName = computed(() => {
+  return attachmentTypeToDelete.value?.attachmentType || ''
+})
+const filteredTypes = computed(() => {
+  return orderBy(attachmentTypes.value?.filter(e => !e.archived), [e => e.displayOrder])
+})
+
+onMounted(async() => {
+    await getAttachmentTypes()
+})
+
+    const updateType = async(item) => {
+      try {
+        store.commit(AppMutations.SET_LOADING, true)
+        const {status} = await putRequest(`/processStep/${processStepId.value}/attachmentType/update`, item)
+        getSnackbar('SUCCESS', 'Attachment Type Updated')
+        handleHidingGlobalLoader(vueInstance, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        getSnackbar('ERROR', 'Error Saving Attachment Type')
+        store.commit(AppMutations.SET_LOADING, false)
+      }
     }
-  },
-  computed: {
-    ...mapStores(useUserStore),
-    userCanAdd() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
-    },
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
-    },
-    attachmentTypeToDeleteName(){
-      return this.attachmentTypeToDelete ? this.attachmentTypeToDelete.attachmentType : ''
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-  },
-  async created() {
-    await this.getAttachmentTypes()
-  },
-  methods: {
-    async updateType(item) {
+    const getAttachmentTypes = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await putRequest(`/processStep/${this.processStepId}/attachmentType/update`, item)
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        const {data} = await getRequest(`/processStep/${processStepId.value}/attachmentType`)
+        attachmentTypes.value = data
+        store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Retrieving Data')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async getAttachmentTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getRequest(`/processStep/${this.processStepId}/attachmentType`)
-        this.attachmentTypes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getAvailableTypes() {
-      if(this.addNewType) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getAvailableTypes = async() => {
+      if(addNewType.value) {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/processStep/${this.processStepId}/attachmentType/available`)
-          this.availableTypes = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {data} = await getRequest(`/processStep/${processStepId.value}/attachmentType/available`)
+          availableTypes.value = data
+          store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          getSnackbar('ERROR', 'Error Retrieving Data')
+          store.commit(AppMutations.SET_LOADING, false)
         }
       }
-    },
-    filterTypes() {
-      return orderBy(this.attachmentTypes.filter(e => { return !e.archived}), [e => e.displayOrder])
-    },
-    async addTypeToProcessStep() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const addTypeToProcessStep = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
-          attachmentTypeId: this.newType.id
+          attachmentTypeId: newType.value.id
         }
-        const {data} = await postRequest(`/processStep/${this.processStepId}/attachmentType`, params)
-        this.attachmentTypes.push(data)
-        this.newType = {}
-        this.addNewType = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        const {data} = await postRequest(`/processStep/${processStepId.value}/attachmentType`, params)
+        attachmentTypes.value.push(data)
+        newType.value = {}
+        addNewType.value = false
+        store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Adding Attachment Type')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async deleteTypeFromStep() {
-      let item = this.attachmentTypeToDelete
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const deleteTypeFromStep = async() => {
+      let item = attachmentTypeToDelete.value
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/processStep/${this.processStepId}/attachmentType/${item.id}`)
+        await deleteRequest(`/processStep/${processStepId.value}/attachmentType/${item.id}`)
         item.archived = true
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('SUCCESS', 'Attachment Type Deleted')
+        store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Deleting Attachment Type')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async saveRowChanges(rows) {
+    }
+    const saveRowChanges = async(rows) => {
       if (rows?.length > 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/processStep/${this.processStepId}/attachmentType/order`, rows)
-          this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Order Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          await putRequest(`/processStep/${processStepId.value}/attachmentType/order`, rows)
+          getSnackbar('SUCCESS', 'Attachment Type Order Saved')
+          store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type Order')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          getSnackbar('ERROR', 'Error Saving Attachment Type Order')
+          store.commit(AppMutations.SET_LOADING, false)
         }
       }
-    },
-  }
-
-}
+    }
 </script>
 
 <style scoped lang="scss">

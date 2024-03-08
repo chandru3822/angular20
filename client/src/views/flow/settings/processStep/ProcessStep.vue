@@ -17,18 +17,20 @@
 
           </div>
           <div class="text-right" v-if="userCanEdit">
-            <v-btn text color="primary" v-if="!editName" class="" @click="[oldName = processStep.processStepName, editName = !editName]">
+            <v-btn text color="primary" v-if="!editName" class=""
+                   @click="[oldName = processStep.processStepName, editName = !editName]">
               <v-icon>edit</v-icon>
             </v-btn>
             <v-btn text color="primary" class="" v-else @click="saveProcessStep($event,true)">
               <v-icon>save</v-icon>
             </v-btn>
-            <v-btn text color="primary" v-if="editName" class="" @click="[processStep.processStepName = oldName, editName = !editName]">
+            <v-btn text color="primary" v-if="editName" class=""
+                   @click="[processStep.processStepName = oldName, editName = !editName]">
               cancel
             </v-btn>
           </div>
         </div>
-        <v-tabs class="tabs-bar" v-model="activeTab">
+        <v-tabs class="tabs-bar">
           <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
                  class="text-capitalize ma-0"
                  :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
@@ -46,138 +48,115 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
+<script setup>
+import {AppMutations} from '@/stores/AppStore'
+import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {getCurrentInstance, computed, ref, onMounted} from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables";
 
-  import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
-  import { handleHidingGlobalLoader, getRequest, putRequest, getSnackbar } from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+const route = useRoute()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 
-  export default {
-    name: 'ProcessStep',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      ProcessStepCustomFieldGroups,
-    },
-    data () {
-      return {
-        snackbar: {},
-        constants,
-        editName: false,
-        processStepLoading: true,
-        oldName: null,
-        processStepId: this.$route.params.id,
-        processStep: {},
-        positions:[],
-        positionsLoading: false,
-        nonAdminAddWhiteListedPositionsChanged: false,
-        tabs: [
-          {
-            id: 1,
-            label: 'UI Components',
-            path: `/settings/processStep/${this.$route.params.id}/components`,
-          },
-          {
-            id: 2,
-            label: 'Custom Field Groups',
-            path: `/settings/processStep/${this.$route.params.id}/customFieldGroups`,
-          },
-          {
-            id: 3,
-            label: 'Actions',
-            path: `/settings/processStep/${this.$route.params.id}/actions`,
-          },
-          {
-            id: 4,
-            label: 'Events',
-            path: `/settings/processStep/${this.$route.params.id}/events`,
-          },
-          {
-            id: 5,
-            label: 'Attachment Types',
-            path: `/settings/processStep/${this.$route.params.id}/attachmentTypes`,
-          }
-        ]
-      }
-    },
-    computed: {
-      ...mapStores(useUserStore),
-      userCanEdit() {
-        return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
-      },
-      companyId() {
-        return this.userStore.details.companyId
-      },
-      //this should not be so hard
-      activeTab: {
-        get: function() {
-          return this.$route?.path?.includes('/event') ? `/settings/processStep/${this.$route.params.id}/events` : null
-        },
-        set: function(val) {
-          return val
-        }
-      }
-    },
-    async created () {
-      this.getProcessStepDetails()
-      this.getPositions()
-    },
-    methods: {
-      async getProcessStepDetails () {
-        this.processStepLoading = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/processStep/${this.processStepId}`)
-          this.processStep = data
-          this.processStepLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          let msg = e?.data?.message || 'Error Retrieving Data'
-          this.snackbar = getSnackbar('ERROR', msg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.processStepLoading = false
-        }
-      },
-      async saveProcessStep(closeEditor) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await putRequest(`/processStep?savePositions=${this.nonAdminAddWhiteListedPositionsChanged ?? false}`, this.processStep)
-          this.editName = false
-          this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Process Step')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getPositions() {
-        if(this.positions?.length === 0) {
-          try {
-            this.positionsLoading = true
-            const {data, status} = await getRequest(`/position/withParent`)
-            this.positions = data
-            this.positionsLoading = false
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            this.positionsLoading = false
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-    }
+const processStepId = computed(() => {
+  return route.params.id
+})
 
+const editName = ref(false)
+const processStepLoading = ref(true)
+const oldName = ref(null)
+const processStep = ref({})
+const positions = ref([])
+const positionsLoading = ref(false)
+const nonAdminAddWhiteListedPositionsChanged = ref(false)
+const tabs = ref([
+  {
+    id: 1,
+    label: 'UI Components',
+    path: `/settings/processStep/${processStepId.value}/components`,
+  },
+  {
+    id: 2,
+    label: 'Custom Field Groups',
+    path: `/settings/processStep/${processStepId.value}/customFieldGroups`,
+  },
+  {
+    id: 3,
+    label: 'Actions',
+    path: `/settings/processStep/${processStepId.value}/actions`,
+  },
+  {
+    id: 4,
+    label: 'Events',
+    path: `/settings/processStep/${processStepId.value}/events`,
+  },
+  {
+    id: 5,
+    label: 'Attachment Types',
+    path: `/settings/processStep/${processStepId.value}/attachmentTypes`,
   }
+])
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+
+onMounted(() => {
+  getProcessStepDetails()
+  getPositions()
+})
+
+const getProcessStepDetails = async () => {
+  processStepLoading.value = true
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getRequest(`/processStep/${processStepId.value}`)
+    processStep.value = data
+    processStepLoading.value = false
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let msg = e?.data?.message || 'Error Retrieving Data'
+    getSnackbar('ERROR', msg)
+    store.commit(AppMutations.SET_LOADING, false)
+    processStepLoading.value = false
+  }
+}
+const saveProcessStep = async (closeEditor) => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await putRequest(`/processStep?savePositions=${nonAdminAddWhiteListedPositionsChanged.value ?? false}`, processStep.value)
+    editName.value = false
+    getSnackbar('SUCCESS', 'Process Step Updated')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Updating Process Step')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const getPositions = async () => {
+  if (positions.value?.length === 0) {
+    try {
+      positionsLoading.value = true
+      const {data, status} = await getRequest(`/position/withParent`)
+      positions.value = data
+      positionsLoading.value = false
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      positionsLoading.value = false
+      console.error('*** ERROR ***', e)
+      getSnackbar('ERROR', 'Error Retrieving Positions')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+}
+
 </script>
 
 <style scoped lang="scss">
@@ -196,6 +175,7 @@
   top: -12px;
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;
+
   .v-tab:hover {
     color: var(--v-primary-base);
   }

@@ -9,15 +9,15 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn @click="logicStringToggle = !logicStringToggle" text color="primary">
-              <v-icon v-if="isMobile && logicStringToggle">mdi-numeric</v-icon>
-              <v-icon v-else-if="isMobile">mdi-alphabetical</v-icon>
-              <span v-if="!isMobile">{{ logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}</span>
+              <v-icon v-if="$vuetify.breakpoint.smAndDown && logicStringToggle">mdi-numeric</v-icon>
+              <v-icon v-else-if="$vuetify.breakpoint.smAndDown">mdi-alphabetical</v-icon>
+              <span v-if="!$vuetify.breakpoint.smAndDown">{{ logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}</span>
             </v-btn>
             <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']"
                    text color="primary" v-if="userCanAdd">
               <v-icon v-if="!addNewAction">add</v-icon>
-              <v-icon v-else-if="isMobile">close</v-icon>
-              <span v-if="!isMobile">{{ addNewAction ? 'Cancel' : 'Add Action' }}</span>
+              <v-icon v-else-if="$vuetify.breakpoint.smAndDown">close</v-icon>
+              <span v-if="!$vuetify.breakpoint.smAndDown">{{ addNewAction ? 'Cancel' : 'Add Action' }}</span>
             </v-btn>
             <v-btn text color="primary" @click="expandActions = !expandActions">
               <v-icon v-if="!expandActions">mdi-chevron-down</v-icon>
@@ -131,7 +131,7 @@
         <v-card flat v-if="expandActions">
           <v-data-table
             :headers="actionHeaders"
-            :items="filterActions()"
+            :items="filteredActions"
             :items-per-page="-1"
             single-expand
             :sort-desc="[false]"
@@ -299,7 +299,7 @@
                 <v-row justify="center" class="pl-3 pr-3"
                        v-if="item.actionTypeId === 1 && item.processStepActionLinks && item.processStepActionLinks.length > 0">
                   <v-col cols="12">
-                    <v-list v-for="(al, index) in filterBy(item.processStepActionLinks, false, 'archived')"
+                    <v-list v-for="(al, index) in item.processStepActionLinks.filter(a => !a.archived)"
                             :key="index"
                             :class="{ 'shaded-row': index % 2 }">
                       <v-list-item>
@@ -536,7 +536,7 @@
                                :disabled="!userCanEdit"
                                group="customFields" @start="drag=true" @end="drag=false"
                                @change="saveChildFunctionOrder(item.id, item.processStepActionChildFunctions)">
-                    <v-list v-for="(cp, index) in filterBy(item.processStepActionChildFunctions, false, 'archived')"
+                    <v-list v-for="(cp, index) in item.processStepActionChildFunctions.filter(a => !a.archived)"
                             :key="index"
                             :class="{ 'shaded-row': index % 2 }">
                       <v-list-item class="grab">
@@ -679,7 +679,7 @@
                     <draggable v-if="userCanEdit" v-model="item.processStepLogicList"
                                group="processStepLogicList" @start="drag=true" @end="drag=false"
                                @change="actionLogicOrderChanged(item)">
-                      <div v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')"
+                      <div v-for="(l, index) in item.processStepLogicList.filter(a => !a.archived)"
 
                            :style="{'margin-left': getLogicMargin(l, item, index)}"
                            :key="index">
@@ -695,7 +695,7 @@
                     <draggable v-if="userCanEdit" v-model="item.processStepLogicList"
                                group="processStepLogicList" @start="drag=true" @end="drag=false"
                                @change="actionLogicOrderChanged(item)">
-                      <span v-for="(l, idx) in filterBy(item.processStepLogicList, false, 'archived')"
+                      <span v-for="(l, idx) in item.processStepLogicList.filter(a => !a.archived)"
                            :key="idx">
                         <v-tooltip top max-width="300px"
                                    >
@@ -777,7 +777,7 @@
                   <div style="display: flex; float: right;">
                     <v-tooltip left small>
                       <template v-slot:activator="{on, attrs}">
-                    <v-btn small text color="primary" :class="{'squished-btn':isMobile}"
+                    <v-btn small text color="primary" :class="{'squished-btn':$vuetify.breakpoint.smAndDown}"
                            v-if="userCanEdit"
                            v-bind="attrs" v-on="on"
                            @click="duplicateAction(item.id)">
@@ -786,17 +786,17 @@
                       </template>
                       <span class="label-small">Duplicate action</span>
                     </v-tooltip>
-                    <v-btn small text color="primary"  :class="{'squished-btn':isMobile}"
+                    <v-btn small text color="primary"  :class="{'squished-btn':$vuetify.breakpoint.smAndDown}"
                            @click="[validateActionLogicString(item), actionExpanded = [item], selectedActionIndex = index]"
                            v-if="!actionExpanded.includes(item)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn small text color="primary"  :class="{'squished-btn':isMobile}" @click="[actionExpanded = [], selectedActionIndex = index]"
+                    <v-btn small text color="primary"  :class="{'squished-btn':$vuetify.breakpoint.smAndDown}" @click="[actionExpanded = [], selectedActionIndex = index]"
                            v-if="actionExpanded.includes(item)">
-                      <v-icon v-if="isMobile">close</v-icon>
+                      <v-icon v-if="$vuetify.breakpoint.smAndDown">close</v-icon>
                       <span v-else>Cancel</span>
                     </v-btn>
-                    <v-btn v-if="userCanEdit"  :class="{'squished-btn':isMobile}" small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]">
+                    <v-btn v-if="userCanEdit"  :class="{'squished-btn':$vuetify.breakpoint.smAndDown}" small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]">
                       <v-icon>delete</v-icon>
                     </v-btn>
                   </div>
@@ -835,8 +835,7 @@
   </v-container>
 </template>
 
-<script>
-import Vue2Filters from 'vue2-filters'
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
 import cloneDeep from 'lodash.clonedeep'
 import draggable from 'vuedraggable'
@@ -859,144 +858,138 @@ import Sortable from "sortablejs"
 import ProcessStepRequirements from './ProcessStepRequirements'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ActionChildSms from "@/views/flow/settings/processStep/ActionChildSms";
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: 'ProcessStepActions',
-  mixins: [Vue2Filters.mixin],
-  components: {
-    ActionChildSms,
-    ConfirmationDialog,
-    ProcessStepRequirements,
-    draggable
-  },
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables";
+const route = useRoute()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 
-  mounted() {
-    let table = document.querySelector('.action-table tbody')
-    const _self = this
-    Sortable.create(table, {
-      handle: '.handle',
-      onEnd({newIndex, oldIndex}) {
-        const rowSelected = _self.actions.splice(oldIndex, 1)[0]
-        _self.actions.splice(newIndex, 0, rowSelected)
-        let rowsClone = cloneDeep(_self.actions)
+onMounted(() => {
+  let table = document.querySelector('.action-table tbody')
+  const _self = vueInstance
+  Sortable.create(table, {
+    handle: '.handle',
+    onEnd({newIndex, oldIndex}) {
+      const rowSelected = _self.actions.splice(oldIndex, 1)[0]
+      _self.actions.splice(newIndex, 0, rowSelected)
+      let rowsClone = cloneDeep(_self.actions)
 
-        let rowsToSave = []
-        rowsClone.forEach((r, idx) => {
-          //check if the row needs to be saved before updating display order
-          //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-          let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-          //update display order
-          r.displayOrder = idx
-          //save only rows that changed
-          if (save) {
-            _self.actions[idx].newDisplayOrder = idx
-            rowsToSave.push(r)
-          }
-        })
-        _self.saveRowChanges(rowsToSave)
-      }
-    })
-  },
-  data() {
-    return {
-      snackbar: {},
-      expandRequirements: true,
-      expandActions: true,
-      deleteError: false,
-      dragging: false,
-      actionsUsingLogic: [],
-      invalidRequirement: true,
-      headers: [
+      let rowsToSave = []
+      rowsClone.forEach((r, idx) => {
+        //check if the row needs to be saved before updating display order
+        //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+        let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
+        //update display order
+        r.displayOrder = idx
+        //save only rows that changed
+        if (save) {
+          _self.actions[idx].newDisplayOrder = idx
+          rowsToSave.push(r)
+        }
+      })
+      _self.saveRowChanges(rowsToSave)
+    }
+  })
+
+  getActions()
+  getStatusTypes()
+  getTheseCompanyProjectStatusTypes()
+  getOperationTypes()
+})
+
+      const expandRequirements = ref(true)
+      const expandActions = ref(true)
+      const deleteError = ref(false)
+      const dragging = ref(false)
+      const actionsUsingLogic = ref([])
+      const invalidRequirement = ref(true)
+      const headers = ref([
         {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
         {text: 'Type', value: 'processStepRequirementType', show: true},
         {text: 'Details', value: 'custom', show: true},
         {text: 'Operator', value: 'operatorType', show: true},
         {text: 'Value', value: 'requirementValue', show: true},
         {text: null, value: 'icons', show: true}
-      ],
-      actionHeaders: [
+      ])
+      const actionHeaders = ref([
         {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
         {text: 'Name', value: 'actionName', show: true},
         {text: 'Type', value: 'actionType', show: true},
         {text: 'Parent Status Change', value: 'processStepStatusType', show: true},
         {text: 'Project Status Change', value: 'projectStatusType', show: true},
         {text: null, value: 'icons', show: true}
-      ],
-      childProcessStepHeaders: [
+      ])
+      const childProcessStepHeaders = ref([
         {text: 'Child Step', value: 'processStepName', show: true},
         {text: 'Initial Status', value: 'initialProcessStepStatusType', show: true},
         {text: 'Status for any Existing Active', value: 'existingProcessStepStatusType', show: true},
         {text: null, value: 'icons', show: true}
-      ],
-      addNewRequirement: false,
-      newRequirement: {
+      ])
+      const addNewRequirement = ref(false)
+      const newRequirement = ref({
         requirementParamDynamicValues: [],
         customValue: false
-      },
-      colorOptions: {
+      })
+      const colorOptions = ref({
         canvasHeight: 75,
         width: 200,
         mode: 'hexa',
         hideModeSwitch: true
-      },
-      dataTypeRequirements: [],
-      selectedDataTypeRequirement: {},
-      selectedCustomField: {},
-      listOfValues: [],
-      selectedListOfValues: [],
-      selectedListValue: {},
-      selectedFunction: {},
-      showActionLogicString: false,
-      actionLogicString: null,
-      selectedRequirementIndex: null,
-      selectedActionIndex: null,
-      availableRequirementTypes: [],
-      processStepId: parseInt(this.$route.params.id),
-      parentObjects: [],
-      parent: {},
-      customFields: [],
-      operatorTypes: [],
-      operationTypes: [],
-      selectedProcessStepStatus: {},
-      processStepStatuses: [],
-      requirements: [],
-      availableFunctions: [],
-      logicStringToggle: false,
-      addNewAction: false,
-      newAction: {},
-      actions: [],
-      statusTypes: [],
-      companyProjectStatusTypes: [],
-      expanded: [],
-      cpExpanded: [],
-      actionExpanded: [],
-      //todo: get these from endpoint but i am lazy right now
-      actionTypes: [
+      })
+      const dataTypeRequirements = ref([])
+      const selectedDataTypeRequirement = ref({})
+      const selectedCustomField = ref({})
+      const listOfValues = ref([])
+      const selectedListOfValues = ref([])
+      const selectedListValue = ref({})
+      const selectedFunction = ref({})
+      const showActionLogicString = ref(false)
+      const actionLogicString = ref(null)
+      const selectedRequirementIndex = ref(null)
+      const selectedActionIndex = ref(null)
+      const availableRequirementTypes = ref([])
+      const parentObjects = ref([])
+      const parent = ref({})
+      const customFields = ref([])
+      const operatorTypes = ref([])
+      const operationTypes = ref([])
+      const selectedProcessStepStatus = ref({})
+      const processStepStatuses = ref([])
+      const requirements = ref([])
+      const availableFunctions = ref([])
+      const logicStringToggle = ref(false)
+      const addNewAction = ref(false)
+      const newAction = ref({})
+      const actions = ref([])
+      const statusTypes = ref([])
+      const companyProjectStatusTypes = ref([])
+      const expanded = ref([])
+      const cpExpanded = ref([])
+      const actionExpanded = ref([])
+      const actionTypes = ref([
         {id: 1, actionType: 'Link'},
         {id: 2, actionType: 'Button'},
         {id: 3, actionType: 'Banner'}
-      ],
-      addChildProcess: false,
-      addChildFunction: false,
-      actionLogicError: false,
-      actionLogicErrorMsg: '',
-      actionSearch: '',
-      newChildProcessStep: {},
-      cancelledCompanyStatuses: [],
-      activeStatusesAssignedToStep: [],
-      selectedChildFunction: {},
-      selectedChildRequirementParamDynamicValues: [],
-      childProcessSteps: [],
-      childFunctions: [],
-      addChildLink: false,
-      selectedLink: {},
-      availableLinks: [],
-
-      //action logic string stuff
-      invalidTypeCombos: [
+      ])
+      const addChildProcess = ref(false)
+      const addChildFunction = ref(false)
+      const actionLogicError = ref(false)
+      const actionLogicErrorMsg = ref('')
+      const actionSearch = ref('')
+      const newChildProcessStep = ref({})
+      const cancelledCompanyStatuses = ref([])
+      const activeStatusesAssignedToStep = ref([])
+      const selectedChildFunction = ref({})
+      const selectedChildRequirementParamDynamicValues = ref([])
+      const childProcessSteps = ref([])
+      const childFunctions = ref([])
+      const addChildLink = ref(false)
+      const selectedLink = ref({})
+      const availableLinks = ref([])
+      const invalidTypeCombos = ref([
         '1,2', // open and close paren next to each other
         '2,1', // close then open paren next to each other -- right, this isn't valid? `(8)(17)`
         '2,0', // close paren then requirement next to it
@@ -1015,43 +1008,38 @@ export default {
         '4,4', // or or
         '5,5', // not not
         '0,5', // requirement then not ...needs and/or in between
-      ],
+      ])
       //doing these as strings since the filtered list will be too
-      invalidFirsts: ['2', '3', '4'],
-      invalidLasts: ['1', '3', '4', '5'],
-      showDeleteDialog: false,
-      itemToDelete: null,
-      linkToDelete: null,
-      parentActionForChildToDelete: null,
-      childProcessToDelete: null,
-      childFunctionToDelete: null,
-      showLogicInfoDialog: false,
-    }
-  },
-  computed: {
-    ...mapStores(useUserStore, useAppStore),
-    companyId() {
-      return this.userStore.details.companyId
-    },
-    userCanAdd() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
-    },
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    }
-  },
-  async created() {
-    this.getActions()
-    this.getStatusTypes()
-    this.getCompanyProjectStatusTypes()
-    this.getOperationTypes()
-  },
-  methods: {
-    async saveChildFunctionOrder(actionId, childFns) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      const invalidFirsts = ref (['2', '3', '4'])
+      const invalidLasts = ref (['1', '3', '4', '5'])
+      const showDeleteDialog = ref (false)
+      const itemToDelete = ref (null)
+      const linkToDelete = ref (null)
+      const parentActionForChildToDelete = ref (null)
+      const childProcessToDelete = ref (null)
+      const childFunctionToDelete = ref (null)
+      const showLogicInfoDialog = ref (false)
+
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const filteredActions = computed(() => {
+  return actions.value.filter(a => !a.archived)
+})
+const processStepId = computed(() => {
+  return parseInt(route.params.id)
+})
+
+  
+
+    const saveChildFunctionOrder = async(actionId, childFns) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
         // pull those needing to be saved out of list
@@ -1066,20 +1054,18 @@ export default {
 
         // save them here
         if (fnsToSave.length > 0) {
-          await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateChildFunctionOrder`, fnsToSave)
+          await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateChildFunctionOrder`, fnsToSave)
         }
-        this.snackbar = getSnackbar('SUCCESS', 'Function Order Updated')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('SUCCESS', 'Function Order Updated')
+        store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Function Order')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Updating Function Order')
+        store.commit(AppMutations.SET_LOADING, false)
       }
 
-    },
-    actionLogicOrderChanged(item) {
+    }
+    const actionLogicOrderChanged = (item) => {
       item.processStepLogicList = item.processStepLogicList.filter(psl => !psl.archived)
       item.processStepLogicList?.forEach((f, idx) => {
         let order = idx + 1
@@ -1088,38 +1074,36 @@ export default {
         }
       })
       item.logicListChanged = true
-    },
-    changeBooleanValue(e, fp) {
-      this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
-    },
+    }
+    const changeBooleanValue = (e, fp) => {
+      vueInstance.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
+    }
     //populate requirements so that actions can use them any time they change from the requirements component
-    populateRequirements(reqs) {
-      this.requirements = reqs
-    },
+    const populateRequirements = (reqs) => {
+      requirements.value = reqs
+    }
     //ACTIONS
-    filterItems(items) {
+    const filterItems = (items) => {
       return items.filter(i => !i.archived)
-    },
-    async getStatusesAssignedToStep(item) {
-      this.activeStatusesAssignedToStep = []
+    }
+    const getStatusesAssignedToStep = async(item) => {
+      activeStatusesAssignedToStep.value = []
       try {
         const {data} = await getActiveAssignedToProcessStep(item.processStepId)
-        this.activeStatusesAssignedToStep = data
+        activeStatusesAssignedToStep.value = data
         if (data?.length === 1) {
           item.initialCompanyProcessStepStatusTypeId = data[0].id
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
-        this.appStore.showSnack(this.snackbar)
+        getSnackbar('ERROR', 'Error fetching process step statuses')
       }
-    },
-    copyToClipBoard() {
-      navigator.clipboard.writeText(this.actionLogicString);
-      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
-      this.appStore.showSnack(this.snackbar)
-    },
-    getLogicMargin(item, parentItem, index) {
+    }
+    const copyToClipBoard = () => {
+      navigator.clipboard.writeText(actionLogicString.value);
+      getSnackbar('SUCCESS', 'Copied text to clipboard')
+    }
+    const getLogicMargin = (item, parentItem, index) => {
       parentItem.logicMargin = parentItem.logicMargin || 0
       if (item.operationTypeId === 1) {
         if (parentItem.indexOfPreviousAdd !== undefined && parentItem.indexOfPreviousAdd === index - 1) {
@@ -1138,8 +1122,8 @@ export default {
         }
         return parentItem.logicMargin + 'px'
       }
-    },
-    getLogicButtonText(item) {
+    }
+    const getLogicButtonText = (item) => {
       if (item.logicString) {
         //this part make it work when clicking a requirement and adding to the current logic section, otherwise unused
         return item.logicString
@@ -1194,125 +1178,113 @@ export default {
           return item.operationType
         }
       }
-    },
-    addSms(actionId, smsItem) {
-      this.actions.find(a => a.id === actionId).processStepActionChildSmsTemplates.push(smsItem)
-    },
-    deleteSms(actionId, id) {
-      this.actions.find(a => a.id === actionId).processStepActionChildSmsTemplates = this.actions.find(a => a.id === actionId).processStepActionChildSmsTemplates.filter(st => {
+    }
+    const addSms = (actionId, smsItem) => {
+      actions.value.find(a => a.id === actionId).processStepActionChildSmsTemplates.push(smsItem)
+    }
+    const deleteSms = (actionId, id) => {
+      actions.value.find(a => a.id === actionId).processStepActionChildSmsTemplates = actions.value.find(a => a.id === actionId).processStepActionChildSmsTemplates.filter(st => {
         return st.id !== id
       })
-    },
-    async getActionLogicString(actionId) {
+    }
+    const getActionLogicString = async(actionId) => {
       try {
-        const {data} = await getRequest(`/processStep/${this.processStepId}/action/${actionId}/logicString`)
-        this.actionLogicString = data
-        this.showLogicInfoDialog = true
+        const {data} = await getRequest(`/processStep/${processStepId.value}/action/${actionId}/logicString`)
+        actionLogicString.value = data
+        showLogicInfoDialog.value = true
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching logic string')
-        this.appStore.showSnack(this.snackbar)
+        getSnackbar('ERROR', 'Error fetching logic string')
       }
-    },
-    async getCancelledStatuses(item) {
-      this.cancelledCompanyStatuses = []
+    }
+    const getCancelledStatuses = async(item) => {
+      cancelledCompanyStatuses.value = []
       try {
         const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(item.processStepId)
-        this.cancelledCompanyStatuses = data
+        cancelledCompanyStatuses.value = data
         if (data?.length === 1) {
           item.existingCompanyProcessStepStatusTypeId = data[0].id
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
-        this.appStore.showSnack(this.snackbar)
+        getSnackbar('ERROR', 'Error fetching process step statuses')
       }
-    },
-    async getActions() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getActions = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/processStep/${this.processStepId}/action`)
-        this.actions = data
-        handleHidingGlobalLoader(this, status)
+        const {data, status} = await getRequest(`/processStep/${processStepId.value}/action`)
+        actions.value = data
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Retrieving Data')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    filterActions() {
-      return this.actions.filter(a => {
-        return !a.archived
-      })
-    },
-    async loadChildFunctions() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const loadChildFunctions = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequest(`/function/action/4`)
-        this.childFunctions = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        childFunctions.value = data
+        store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Loading Functions')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async saveNewAction() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const saveNewAction = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        if (!this.newAction.triggerAutomatically) {
+        if (!newAction.value.triggerAutomatically) {
           //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
-          this.newAction.timeBasedTrigger = false
+          newAction.value.timeBasedTrigger = false
         }
         //if action is a banner then null out all the regular action fields (in case they changed type a bunch)
-        if (this.newAction.actionTypeId === 3) {
-          this.newAction.companyProcessStepStatusTypeId = null
-          this.newAction.companyProjectStatusTypeId = null
-          this.newAction.companyProjectStatusTypeId = null
-          this.newAction.removeProcessStepOwner = null
-          this.newAction.triggerAutomatically = null
-          this.newAction.hideFromMobile = null
-          this.newAction.hideFromWeb = null
-          this.newAction.triggerAutomatically = null
-          this.newAction.timeBasedTrigger = null
+        if (newAction.value.actionTypeId === 3) {
+          newAction.value.companyProcessStepStatusTypeId = null
+          newAction.value.companyProjectStatusTypeId = null
+          newAction.value.companyProjectStatusTypeId = null
+          newAction.value.removeProcessStepOwner = null
+          newAction.value.triggerAutomatically = null
+          newAction.value.hideFromMobile = null
+          newAction.value.hideFromWeb = null
+          newAction.value.triggerAutomatically = null
+          newAction.value.timeBasedTrigger = null
         } else {
           //otherwise null out the banner fields
-          this.newAction.content = null
-          this.newAction.color = null
-          this.newAction.bgColor = null
+          newAction.value.content = null
+          newAction.value.color = null
+          newAction.value.bgColor = null
         }
-        this.newAction.processStepId = this.processStepId
-        const {data, status} = await postRequest(`/processStep/${this.processStepId}/action`, this.newAction)
-        this.actions.push(data)
-        this.addNewAction = false
-        this.newAction = {}
-        this.snackbar = getSnackbar('SUCCESS', 'Action Added')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        newAction.value.processStepId = processStepId.value
+        const {data, status} = await postRequest(`/processStep/${processStepId.value}/action`, newAction.value)
+        actions.value.push(data)
+        addNewAction.value = false
+        newAction.value = {}
+        getSnackbar('SUCCESS', 'Action Added')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Action')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Adding Action')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async duplicateAction(actionId) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const duplicateAction = async(actionId) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/processStep/${this.processStepId}/action/${actionId}/duplicate`)
-        this.actions.push(data)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        const {data} = await putRequest(`/processStep/${processStepId.value}/action/${actionId}/duplicate`)
+        actions.value.push(data)
+        store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Duplicating Action')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Duplicating Action')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async updateAction(action) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const updateAction = async(action) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         action.processStepLogicList = action.processStepLogicList.filter(l => {
           return !l.archived
@@ -1327,7 +1299,7 @@ export default {
           return l.processStepRequirementId && !l.processStepRequirementImmutable
         })
 
-        const {data, status} = await putRequest(`/processStep/${this.processStepId}/action`, action)
+        const {data, status} = await putRequest(`/processStep/${processStepId.value}/action`, action)
         // this forces the list to update the values displayed ... using action = data did not work
         action.actionType = data.actionType
         action.logicListChanged = false
@@ -1337,303 +1309,276 @@ export default {
         action.processStepActionLinks = data.processStepActionLinks
         action.processStepLogicList = data.processStepLogicList
         action.triggerAutomatically = data.triggerAutomatically
-        this.actionExpanded = []
+        actionExpanded.value = []
 
         //update the necessary psr's to immutable
         if (psrListToUpdate.length > 0) {
           psrListToUpdate.forEach(psr => {
-            let match = this.requirements.find(r => r.id === psr.processStepRequirementId)
+            let match = requirements.value.find(r => r.id === psr.processStepRequirementId)
             match.immutable = true
           })
         }
 
-        this.snackbar = getSnackbar('SUCCESS', 'Action Updated')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        getSnackbar('SUCCESS', 'Action Updated')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Action')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Updating Action')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async loadFunctionParams(dbFunctionId, isRequirement) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const loadFunctionParams = async(dbFunctionId, isRequirement) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
         if (isRequirement) {
-          this.newRequirement.requirementParamDynamicValues = data
+          newRequirement.value.requirementParamDynamicValues = data
         } else {
-          this.selectedChildRequirementParamDynamicValues = data
+          selectedChildRequirementParamDynamicValues.value = data
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Retrieving Data')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async getStatusTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getStatusTypes = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getCompanyAssignedToProcessStep(this.processStepId)
-        this.statusTypes = data
-        handleHidingGlobalLoader(this, status)
+        const {data, status} = await getCompanyAssignedToProcessStep(processStepId.value)
+        statusTypes.value = data
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Retrieving Data')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async getCompanyProjectStatusTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getTheseCompanyProjectStatusTypes = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getCompanyProjectStatusTypes(null, true)
-        this.companyProjectStatusTypes = data
-        handleHidingGlobalLoader(this, status)
+        companyProjectStatusTypes.value = data
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        getSnackbar('ERROR', 'Error Retrieving Data')
+        handleHidingGlobalLoader(vueInstance, status)
       }
-    },
-    async getOperationTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getOperationTypes = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/operation`)
-        this.operationTypes = orderBy(data, [o => o.operationType.toLowerCase()])
-        handleHidingGlobalLoader(this, status)
+        operationTypes.value = orderBy(data, [o => o.operationType.toLowerCase()])
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Retrieving Data')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async deleteAction() {
-      const item = this.itemToDelete
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const deleteAction = async() => {
+      const item = itemToDelete.value
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${item.id}`)
+        const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${item.id}`)
         item.archived = true
-        this.snackbar = getSnackbar('SUCCESS', 'Action Deleted')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        getSnackbar('SUCCESS', 'Action Deleted')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Action')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Deleting Action')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-      this.itemToDelete.archive = true
-      this.closeDeleteDialog()
-    },
+      itemToDelete.value.archive = true
+      closeDeleteDialog()
+    }
     //child process steps
-    async loadChildProcessSteps(actionId) {
-      const {data} = await getRequest(`/processStep/${this.processStepId}/action/${actionId}/childProcessSteps`)
-      this.childProcessSteps = data
-    },
-    async saveChildProcessCancelledStatus(action, cp) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    const loadChildProcessSteps = async(actionId) => {
+      const {data} = await getRequest(`/processStep/${processStepId.value}/action/${actionId}/childProcessSteps`)
+      childProcessSteps.value = data
+    }
+    const saveChildProcessCancelledStatus = async(action, cp) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         const {
           data,
           status
-        } = await putRequest(`/processStep/${this.processStepId}/action/${action.id}/child/${cp.id}/status`, {
+        } = await putRequest(`/processStep/${processStepId.value}/action/${action.id}/child/${cp.id}/status`, {
           existingCompanyProcessStepStatusTypeId: cp.existingCompanyProcessStepStatusTypeId,
           initialCompanyProcessStepStatusTypeId: cp.initialCompanyProcessStepStatusTypeId,
         })
-        this.cpExpanded = []
+        cpExpanded.value = []
         cp.existingProcessStepStatusType = data.existingProcessStepStatusType
         cp.initialProcessStepStatusType = data.initialProcessStepStatusType
-        this.snackbar = getSnackbar('SUCCESS', 'Child Process Status Saved')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        getSnackbar('SUCCESS', 'Child Process Status Saved')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Child Process Status')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Saving Child Process Status')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async saveProcessStepToAction(action) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const saveProcessStepToAction = async(action) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         const {
           data,
           status
-        } = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
-          processStepId: this.newChildProcessStep.processStepId,
-          existingCompanyProcessStepStatusTypeId: this.newChildProcessStep.existingCompanyProcessStepStatusTypeId,
-          initialCompanyProcessStepStatusTypeId: this.newChildProcessStep.initialCompanyProcessStepStatusTypeId,
+        } = await postRequest(`/processStep/${processStepId.value}/action/${action.id}/addChildStepToAction`, {
+          processStepId: newChildProcessStep.value.processStepId,
+          existingCompanyProcessStepStatusTypeId: newChildProcessStep.value.existingCompanyProcessStepStatusTypeId,
+          initialCompanyProcessStepStatusTypeId: newChildProcessStep.value.initialCompanyProcessStepStatusTypeId,
           displayOrder: 0
         })
         action.processStepActionChildProcesses.push(data)
-        this.newChildProcessStep = {}
-        this.addChildProcess = false
-        this.snackbar = getSnackbar('SUCCESS', 'Child Process Added To Action')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        newChildProcessStep.value = {}
+        addChildProcess.value = false
+        getSnackbar('SUCCESS', 'Child Process Added To Action')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Child Process Action')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Adding Child Process Action')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async deleteChildProcessFromAction() {
-      this.childProcessToDelete.archived = true
-      const actionId = this.parentActionForChildToDelete.id
-      const id = this.childProcessToDelete.id
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const deleteChildProcessFromAction = async() => {
+      childProcessToDelete.value.archived = true
+      const actionId = parentActionForChildToDelete.value.id
+      const id = childProcessToDelete.value.id
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildStep/${id}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Child Process Deleted From Action')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildStep/${id}`)
+        getSnackbar('SUCCESS', 'Child Process Deleted From Action')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Child Process From Action')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Deleting Child Process From Action')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async saveFunctionToAction(action) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const saveFunctionToAction = async(action) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         const {
           data,
           status
-        } = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildFunctionToAction`, {
-          companyFunctionId: this.selectedChildFunction.id,
+        } = await postRequest(`/processStep/${processStepId.value}/action/${action.id}/addChildFunctionToAction`, {
+          companyFunctionId: selectedChildFunction.value.id,
           displayOrder: 0,
-          actionParamDynamicValues: this.selectedChildRequirementParamDynamicValues
+          actionParamDynamicValues: selectedChildRequirementParamDynamicValues.value
         })
         action.processStepActionChildFunctions.push(data)
-        this.selectedChildFunction = {}
-        this.selectedChildRequirementParamDynamicValues = []
-        this.addChildFunction = false
-        this.snackbar = getSnackbar('SUCCESS', 'Child Function Added To Action')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        selectedChildFunction.value = {}
+        selectedChildRequirementParamDynamicValues.value = []
+        addChildFunction.value = false
+        getSnackbar('SUCCESS', 'Child Function Added To Action')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Child Function Action')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Adding Child Function Action')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async deleteChildFunctionFromAction() {
-      this.childFunctionToDelete.archived = true
-      const actionId = this.parentActionForChildToDelete.id
-      const id = this.childFunctionToDelete.id
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const deleteChildFunctionFromAction = async() => {
+      childFunctionToDelete.value.archived = true
+      const actionId = parentActionForChildToDelete.value.id
+      const id = childFunctionToDelete.value.id
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildFunction/${id}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Child Function Deleted From Action')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildFunction/${id}`)
+        getSnackbar('SUCCESS', 'Child Function Deleted From Action')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Child Function From Action')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Deleting Child Function From Action')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async updateChildFunction(actionId, childFunction) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const updateChildFunction = async(actionId, childFunction) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildFunction`, childFunction)
-        this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        const {status} = await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateActionChildFunction`, childFunction)
+        getSnackbar('SUCCESS', 'Child Process Updated')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Child Process')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Updating Child Process')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
+    }
     // child links
-    async loadLinks(actionId) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    const loadLinks = async(actionId) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/links/action/${actionId}`)
-        this.availableLinks = data
-        handleHidingGlobalLoader(this, status)
+        availableLinks.value = data
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Retrieving Data')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async saveLinkToAction(action) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const saveLinkToAction = async(action) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         const {
           data,
           status
-        } = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addLinkToAction`, {
-          linkId: this.selectedLink.id
+        } = await postRequest(`/processStep/${processStepId.value}/action/${action.id}/addLinkToAction`, {
+          linkId: selectedLink.value.id
         })
         action.processStepActionLinks.push(data)
-        this.selectedLink = {}
-        this.addChildLink = false
-        this.snackbar = getSnackbar('SUCCESS', 'Link Added to Action')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        selectedLink.value = {}
+        addChildLink.value = false
+        getSnackbar('SUCCESS', 'Link Added to Action')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Link to Action')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Adding Link to Action')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async deleteLinkFromAction() {
-      this.linkToDelete.archived = true
-      const actionId = this.parentActionForChildToDelete.id
-      const id = this.linkToDelete.id
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const deleteLinkFromAction = async() => {
+      linkToDelete.value.archived = true
+      const actionId = parentActionForChildToDelete.value.id
+      const id = linkToDelete.value.id
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteLinkFromAction/${id}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Link Deleted From Action')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteLinkFromAction/${id}`)
+        getSnackbar('SUCCESS', 'Link Deleted From Action')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Link From Action')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Deleting Link From Action')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    getListValueName(item) {
+    }
+    const getListValueName = (item) => {
       let idToUse = item.customSqlOptionId ? item.customSqlOptionId :
         item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
       let match = item.availableListOfValues.find(i => i.id === idToUse)
       return match ? match.name : 'unknown'
-    },
-    async saveRowChanges(rows) {
+    }
+    const saveRowChanges = async(rows) => {
       if (rows?.length > 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await putRequest(`/processStep/${this.processStepId}/action/order`, rows)
-          this.snackbar = getSnackbar('SUCCESS', 'Action Order Saved')
-          this.appStore.showSnack(this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          const {status} = await putRequest(`/processStep/${processStepId.value}/action/order`, rows)
+          getSnackbar('SUCCESS', 'Action Order Saved')
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Action Order')
-          this.appStore.showSnack(this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          getSnackbar('ERROR', 'Error Saving Action Order')
+          store.commit(AppMutations.SET_LOADING, false)
         }
       }
-    },
+    }
 
-    validateActionLogicString(item, saveChanges) {
+    const validateActionLogicString = (item, saveChanges) => {
       // using 0 to represent a logic item using a requirement
       // 1 = (  2 = )  3 = AND  4 = OR  5 = NOT
 
@@ -1669,47 +1614,44 @@ export default {
       let lastOperationTypeId = operationTypeString?.slice(-1)
 
       if (countOpenParen !== countCloseParen || parenProblem) {
-        this.actionLogicError = true
-        this.actionLogicErrorMsg = 'Logic is missing opening or closing parenthesis.'
-      } else if (this.invalidTypeCombos.some(v => operationTypeString?.includes(v))) {
-        this.actionLogicError = true
-        this.actionLogicErrorMsg = 'Logic is invalid.'
-      } else if (this.invalidFirsts.includes(firstOperationTypeId)) {
-        this.actionLogicError = true
-        this.actionLogicErrorMsg = 'Invalid first logic operation.'
-      } else if (this.invalidLasts.includes(lastOperationTypeId)) {
-        this.actionLogicError = true
-        this.actionLogicErrorMsg = 'Invalid last logic operation.'
+        actionLogicError.value = true
+        actionLogicErrorMsg.value = 'Logic is missing opening or closing parenthesis.'
+      } else if (invalidTypeCombos.value.some(v => operationTypeString?.includes(v))) {
+        actionLogicError.value = true
+        actionLogicErrorMsg.value = 'Logic is invalid.'
+      } else if (invalidFirsts.value.includes(firstOperationTypeId)) {
+        actionLogicError.value = true
+        actionLogicErrorMsg.value = 'Invalid first logic operation.'
+      } else if (invalidLasts.value.includes(lastOperationTypeId)) {
+        actionLogicError.value = true
+        actionLogicErrorMsg.value = 'Invalid last logic operation.'
       } else {
-        this.actionLogicError = false
-        this.actionLogicErrorMsg = ''
+        actionLogicError.value = false
+        actionLogicErrorMsg.value = ''
         if (saveChanges) {
-          this.updateAction(item)
+          updateAction(item)
         }
       }
-    },
-    closeDeleteDialog() {
-      this.showDeleteDialog = false
-      this.itemToDelete = null
-    },
-    closeLinkDeleteDialog() {
-      this.linkToDelete = null
-      this.parentActionForChildToDelete = null
-    },
-    closeChildProcessDialog() {
-      this.childProcessToDelete = null
-      this.parentActionForChildToDelete = null
-    },
-    closeChildFunctionDialog() {
-      this.childFunctionToDelete = null
-      this.parentActionForChildToDelete = null
-    },
-    closeLogicInfoDialog() {
-      this.showLogicInfoDialog = false
     }
-  }
-
-}
+    const closeDeleteDialog = () => {
+      showDeleteDialog.value = false
+      itemToDelete.value = null
+    }
+    const closeLinkDeleteDialog = () => {
+      linkToDelete.value = null
+      parentActionForChildToDelete.value = null
+    }
+    const closeChildProcessDialog = () => {
+      childProcessToDelete.value = null
+      parentActionForChildToDelete.value = null
+    }
+    const closeChildFunctionDialog = () => {
+      childFunctionToDelete.value = null
+      parentActionForChildToDelete.value = null
+    }
+    const closeLogicInfoDialog = () => {
+      showLogicInfoDialog.value = false
+    }
 </script>
 
 <style scoped lang="scss">

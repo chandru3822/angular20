@@ -8,8 +8,8 @@
           <v-toolbar-items>
             <v-btn @click="[addNewEvent = !addNewEvent, getAvailableEvents()]" text color="primary" v-if="userCanAdd">
               <v-icon v-if="!addNewEvent">add</v-icon>
-              <v-icon v-else-if="isMobile">close</v-icon>
-              <span v-if="!isMobile">{{ addNewEvent ? 'Cancel' : 'Add Event'}}</span>
+              <v-icon v-else-if="$vuetify.breakpoint.smAndDown">close</v-icon>
+              <span v-if="!$vuetify.breakpoint.smAndDown">{{ addNewEvent ? 'Cancel' : 'Add Event' }}</span>
             </v-btn>
             <v-btn text color="primary" @click="expandEvents = !expandEvents">
               <v-icon v-if="!expandEvents">mdi-chevron-down</v-icon>
@@ -43,15 +43,15 @@
         <v-row v-if="expandEvents">
           <v-col cols="12" class="pt-0">
             <v-data-table
-              :headers="headers"
-              :items="filterEvents()"
-              :items-per-page="-1"
-              :sort-desc="[false]"
-              :sort-by="['displayOrder']"
-              :mobile-breakpoint="0"
-              hide-default-footer
-              disable-sort
-              class="event-table elevation-1 fix-column-width-bug square-card"
+                :headers="headers"
+                :items="filteredEvents"
+                :items-per-page="-1"
+                :sort-desc="[false]"
+                :sort-by="['displayOrder']"
+                :mobile-breakpoint="0"
+                hide-default-footer
+                disable-sort
+                class="event-table elevation-1 fix-column-width-bug square-card"
             >
               <template #no-data>
                 <span class="default-text-color">No events for this process step</span>
@@ -68,15 +68,22 @@
                       <v-icon>drag_handle</v-icon>
                     </v-btn>
                   </td>
-                  <td class="text-left">{{item.eventName}} </td>
-                  <td class="text-left">{{item.initialEventStatusType}}</td>
+                  <td class="text-left">{{ item.eventName }}</td>
+                  <td class="text-left">{{ item.initialEventStatusType }}</td>
                   <td>
-                    <div class="d-flex justify-end" :class="{'flex-column' : isMobile}">
-                      <v-btn small text :to="`/settings/event/${item.eventId}/components`" target="_blank" :style="{'text-decoration': 'none'}"><v-icon color="primary">mdi-cogs</v-icon></v-btn>
-                        <v-btn :disabled="!userCanEdit" small text color="primary" @click="$router.push({ path: `/settings/processStep/${processStepId}/event/${item.id}` })">
-                          <v-icon>edit</v-icon>
-                        </v-btn>
-                      <v-btn :disabled="!userCanDelete" small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
+                    <div class="d-flex justify-end" :class="{'flex-column' : $vuetify.breakpoint.smAndDown}">
+                      <v-btn small text :to="`/settings/event/${item.eventId}/components`" target="_blank"
+                             :style="{'text-decoration': 'none'}">
+                        <v-icon color="primary">mdi-cogs</v-icon>
+                      </v-btn>
+                      <v-btn :disabled="!userCanEdit" small text color="primary"
+                             @click="$router.push({ path: `/settings/processStep/${processStepId}/event/${item.id}` })">
+                        <v-icon>edit</v-icon>
+                      </v-btn>
+                      <v-btn :disabled="!userCanDelete" small text color="primary"
+                             @click="[itemToDelete=item, showDeleteDialog=true]">
+                        <v-icon>delete</v-icon>
+                      </v-btn>
                     </div>
                   </td>
                 </tr>
@@ -87,16 +94,15 @@
       </v-col>
     </v-row>
     <ConfirmationDialog :open-dialog="showDeleteDialog"
-                                 @confirm="deleteEventFromStep"
-                                 @close-dialog="closeDeleteDialog">
+                        @confirm="deleteEventFromStep"
+                        @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this event?
 
     </ConfirmationDialog>
   </v-container>
 </template>
 
-<script>
-import Vue2Filters from 'vue2-filters'
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
 import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
@@ -109,176 +115,161 @@ import {
   getSnackbar
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import {getCurrentInstance, computed, ref, onMounted} from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
 
-export default {
-  name: 'ProcessStepEvents',
-  components: {ConfirmationDialog},
-  mixins: [Vue2Filters.mixin],
-  mounted() {
-    let table = document.querySelector('.event-table tbody')
-    const _self = this
-    Sortable.create(table, {
-      handle: '.handle',
-      onEnd({newIndex, oldIndex}) {
-        const rowSelected = _self.events.splice(oldIndex, 1)[0]
-        _self.events.splice(newIndex, 0, rowSelected)
-        let rowsClone = cloneDeep(_self.events)
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 
-        let rowsToSave = []
-        rowsClone.forEach((r, idx) => {
-          //check if the row needs to be saved before updating display order
-          //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-          let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-          //update display order
-          r.displayOrder = idx
-          //save only rows that changed
-          if (save) {
-            _self.events[idx].newDisplayOrder = idx
-            rowsToSave.push(r)
-          }
-        })
-        _self.saveRowChanges(rowsToSave)
-      }
-    })
-  },
-  data() {
-    return {
-      snackbar: {},
-      expandEvents: true,
-      companyEventStatuses: [],
-      processStepStatuses: [],
-      newEventStatuses: [],
-      processStepId: this.$route.params.id,
-      headers: [
-        {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
-        {text: 'Event', value: 'eventName', show: true},
-        {text: 'Initial Status', value: 'initialEventStatusType', show: true},
-        {text: null, value: 'icons', show: true}
-      ],
-      addNewEvent: false,
-      newEvent: {},
-      events: [],
-      availableEvents: [],
-      showDeleteDialog: false,
-      itemToDelete: null
+onMounted(async () => {
+  let table = document.querySelector('.event-table tbody')
+  const _self = vueInstance
+  Sortable.create(table, {
+    handle: '.handle',
+    onEnd({newIndex, oldIndex}) {
+      const rowSelected = _self.events.splice(oldIndex, 1)[0]
+      _self.events.splice(newIndex, 0, rowSelected)
+      let rowsClone = cloneDeep(_self.events)
+
+      let rowsToSave = []
+      rowsClone.forEach((r, idx) => {
+        //check if the row needs to be saved before updating display order
+        //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+        let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
+        //update display order
+        r.displayOrder = idx
+        //save only rows that changed
+        if (save) {
+          _self.events[idx].newDisplayOrder = idx
+          rowsToSave.push(r)
+        }
+      })
+      _self.saveRowChanges(rowsToSave)
     }
-  },
-  computed: {
-    ...mapStores(useUserStore),
-    userCanAdd() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
-    },
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
-    },
-    userCanDelete() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-  },
-  async created() {
-    await this.getEvents()
-  },
-  methods: {
-    async getEvents() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getRequest(`/processStep/${this.processStepId}/event/admin`)
-        this.events = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getAvailableEvents() {
-      if(this.addNewEvent) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/processStep/${this.processStepId}/event/available`)
-          this.availableEvents = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    filterEvents() {
-      // return this.events.filter(e => {
-      //   return !e.archived
-      // })
-      return orderBy(this.events.filter(e => { return !e.archived}), [e => e.displayOrder])
-    },
-    async addEventToProcessStep() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let params = {
-          eventId: this.newEvent.id,
-          initialCompanyEventStatusTypeId: this.newEvent.initialCompanyEventStatusTypeId
-        }
-        const {data} = await postRequest(`/processStep/${this.processStepId}/event`, params)
-        this.events.push(data)
-        this.newEvent = {}
-        this.addNewEvent = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteEventFromStep() {
-      const item = this.itemToDelete
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await deleteRequest(`/processStep/${this.processStepId}/event/${item.id}`)
-        item.archived = true
-        this.snackbar = getSnackbar('SUCCESS', 'Event Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.closeDeleteDialog()
-    },
-    async saveRowChanges(rows) {
-      if (rows?.length > 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await putRequest(`/processStep/${this.processStepId}/event/order`, rows)
-          this.snackbar = getSnackbar('SUCCESS', 'Event Order Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Event Order')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    closeDeleteDialog(){
-      this.showDeleteDialog = false
-      this.itemToDelete = null
-    },
-    goToPath(path) {
-      this.$router.push({ path: `${path}` })
+  })
+  await getEvents()
+
+})
+
+const expandEvents = ref(true)
+const companyEventStatuses = ref([])
+const processStepStatuses = ref([])
+const newEventStatuses = ref([])
+const addNewEvent = ref(false)
+const newEvent = ref({})
+const events = ref([])
+const availableEvents = ref([])
+const showDeleteDialog = ref(false)
+const itemToDelete = ref(null)
+const headers = ([
+  {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
+  {text: 'Event', value: 'eventName', show: true},
+  {text: 'Initial Status', value: 'initialEventStatusType', show: true},
+  {text: null, value: 'icons', show: true}
+])
+
+const processStepId = computed(() => {
+  return route.params.id
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const userCanDelete = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+})
+const filteredEvents = computed(() => {
+  return orderBy(events.value.filter(e => {
+    return !e.archived
+  }), [e => e.displayOrder])
+})
+
+const getEvents = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data} = await getRequest(`/processStep/${processStepId.value}/event/admin`)
+    events.value = data
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Retrieving Data')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const getAvailableEvents = async () => {
+  if (addNewEvent.value) {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data} = await getRequest(`/processStep/${processStepId.value}/event/available`)
+      availableEvents.value = data
+      store.commit(AppMutations.SET_LOADING, false)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      getSnackbar('ERROR', 'Error Retrieving Data')
+      store.commit(AppMutations.SET_LOADING, false)
     }
   }
+}
 
+const addEventToProcessStep = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    let params = {
+      eventId: newEvent.value.id,
+      initialCompanyEventStatusTypeId: newEvent.value.initialCompanyEventStatusTypeId
+    }
+    const {data} = await postRequest(`/processStep/${processStepId.value}/event`, params)
+    events.value.push(data)
+    newEvent.value = {}
+    addNewEvent.value = false
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Adding Event')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const deleteEventFromStep = async () => {
+  const item = itemToDelete.value
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    await deleteRequest(`/processStep/${processStepId.value}/event/${item.id}`)
+    item.archived = true
+    getSnackbar('SUCCESS', 'Event Deleted')
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    getSnackbar('ERROR', 'Error Deleting Event')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+  closeDeleteDialog()
+}
+const saveRowChanges = async (rows) => {
+  if (rows?.length > 0) {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      await putRequest(`/processStep/${processStepId.value}/event/order`, rows)
+      getSnackbar('SUCCESS', 'Event Order Saved')
+      store.commit(AppMutations.SET_LOADING, false)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      getSnackbar('ERROR', 'Error Saving Event Order')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+}
+const closeDeleteDialog = () => {
+  showDeleteDialog.value = false
+  itemToDelete.value = null
+}
+const goToPath = (path) => {
+  router.push({path: `${path}`})
 }
 </script>
 

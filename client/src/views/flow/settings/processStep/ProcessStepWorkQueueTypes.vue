@@ -10,8 +10,8 @@
                  @click="[newWorkQueueType = { projectStatuses: [], processStepStatuses: [], eventStatuses: [] }, getWorkQueueTypesForItem(), prepTempStatuses(newWorkQueueType, false), prepTempProcessStepStatuses(newWorkQueueType, false), prepTempEventStatuses(newWorkQueueType, false)]"
                  v-if="userCanAdd">
             <v-icon v-if="!addNewWorkQueueType">add</v-icon>
-            <v-icon v-else-if="isMobile">close</v-icon>
-            <span v-if="!isMobile">{{ addNewWorkQueueType ? 'Cancel' : 'Add Work Queue Type' }}</span>
+            <v-icon v-else-if="$vuetify.breakpoint.smAndDown">close</v-icon>
+            <span v-if="!$vuetify.breakpoint.smAndDown">{{ addNewWorkQueueType ? 'Cancel' : 'Add Work Queue Type' }}</span>
           </v-btn>
           <v-btn text @click="expandWqt = !expandWqt">
             <v-icon v-if="!expandWqt">mdi-chevron-down</v-icon>
@@ -157,7 +157,7 @@
                           || event && event.workQueueTypes && event.workQueueTypes.length > 0) && expandWqt">
           <v-data-table
             :headers="displayedHeaders"
-            :items="filterWorkQueueTypes()"
+            :items="filteredWorkQueueTypes"
             single-expand
             :expanded.sync="expanded"
             hide-default-footer
@@ -305,19 +305,19 @@
                   <a :href="`/settings/workQueue/type/${item.workQueueTypeId}`">{{ item.workQueueType }}</a>
                 </template>
                 <template #item.projectStatus="{item}" class="clickable text-left">
-                        <span v-for="(ps, idx) in filterBy(item.projectStatuses, false, 'archived')">
+                        <span v-for="(ps, idx) in item.projectStatuses.filter(p => !p.archived)">
                           <span v-if="idx !== 0">, </span>
                           <span :class="{'bold': ps.isRoot}">{{ ps.projectStatusType }}</span>
                         </span>
                 </template>
                 <template #item.processStepStatus="{item}" class="clickable text-left">
-                        <span v-for="(pss, idx) in filterBy(item.processStepStatuses, false, 'archived')">
+                        <span v-for="(pss, idx) in item.processStepStatuses.filter(p => !p.archived)">
                           <span v-if="idx !== 0">, </span>
                           <span :class="{'bold': pss.isRoot}">{{ pss.processStepStatusType }}</span>
                         </span>
                 </template>
                 <template #item.eventStatus="{item}" class="clickable text-left" v-if="showEventFields">
-                        <span v-for="(pss, idx) in filterBy(item.eventStatuses, false, 'archived')">
+                        <span v-for="(pss, idx) in item.eventStatuses.filter(p => !p.archived)">
                           <span v-if="idx !== 0">, </span>
                           <span :class="{'bold': pss.isRoot}">{{ pss.eventStatusType }}</span>
                         </span>
@@ -345,9 +345,8 @@
   </v-row>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
 import cloneDeep from 'lodash.clonedeep'
 
 import {
@@ -360,105 +359,119 @@ import {
   getRequestWithParams
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables";
+const route = useRoute()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 
-export default {
-  name: 'ProcessStepWorkQueueTypes',
-  mixins: [Vue2Filters.mixin],
-  components: {ConfirmationDialog},
-  props: {
-    processStep: Object,
-    event: Object
-  },
-  data() {
-    return {
-      snackbar: {},
-      expandWqt: true,
-      companyProjectStatusTypes: [],
-      expanded: [],
-      projectStatusTypes: [],
-      combinedStatuses: [],
-      companyProcessStepStatusTypes: [],
-      processStepStatusTypes: [],
-      combinedProcessStepStatuses: [],
-      companyEventStatusTypes: [],
-      eventStatusTypes: [],
-      combinedEventStatuses: [],
-      headers: [
-        {text: 'Category', value: 'workQueueCategory', show: true},
-        {text: 'Type', value: 'workQueueType', show: true},
-        {text: 'Project Status', value: 'projectStatus', show: true},
-        {text: 'Process Step Status', value: 'processStepStatus', show: true},
-        {text: 'Event Status', value: 'eventStatus', show: this.event?.id},
-        {text: '', value: 'icons', show: true, width: '100px'},
-      ],
-      addNewType: false,
-      newType: {},
-      processStepId: this.$route.params.id,
-      companyStatusesLoading: false,
-      workQueueTypes: [],
-      newWorkQueueType: {
-        processStepStatuses: [],
-        projectStatuses: [],
-        eventStatuses: [],
-      },
-      addNewWorkQueueType: false,
-      showShit: true,
-      showPsShit: true,
-      showEventShit: true, //dom key crap
-      showEventFields: false,
-      workQueueTypeToDelete: null
-    }
-  },
-  computed: {
-    ...mapStores(useUserStore),
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
-    },
-    userCanAdd() {
-      return this.userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
-    },
-    companyId() {
-      return this.userStore.details.companyId
-    },
-    displayedHeaders () {
-      return this.headers.filter(h => h.show)
-    },
-    workQueueTypeToDeleteName(){
-      return this.workQueueTypeToDelete ? this.workQueueTypeToDelete.workQueueType : ''
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-  },
-  async created() {
-    if (this.event?.id) {
-      this.showEventFields = true
-      this.getEventStatusTypesForWorkQueue()
-    }
-    this.getProjectStatusTypesForWorkQueue()
-    this.getProcessStepStatusTypesForWorkQueue()
-  },
-  methods: {
-    addValueToNew(selectedItem) {
+import {defineProps} from 'vue'
+const props = defineProps({
+  processStep: Object,
+  event: Object
+})
+const {processStep, event} = props;
+
+      const expandWqt = ref(true)
+      const companyProjectStatusTypes = ref([])
+      const expanded = ref([])
+      const projectStatusTypes = ref([])
+      const combinedStatuses = ref([])
+      const companyProcessStepStatusTypes = ref([])
+      const processStepStatusTypes = ref([])
+      const combinedProcessStepStatuses = ref([])
+      const companyEventStatusTypes = ref([])
+      const eventStatusTypes = ref([])
+      const combinedEventStatuses = ref([])
+      const addNewType = ref(false)
+      const newType = ref({})
+      const companyStatusesLoading = ref(false)
+      const workQueueTypes = ref([])
+      const addNewWorkQueueType = ref(false)
+      const showShit = ref(true)
+      const showPsShit = ref(true)
+      const showEventShit = ref(true)
+      const showEventFields = ref(false)
+      const workQueueTypeToDelete = ref(null)
+      const headers = ref([
+  {text: 'Category', value: 'workQueueCategory', show: true},
+  {text: 'Type', value: 'workQueueType', show: true},
+  {text: 'Project Status', value: 'projectStatus', show: true},
+  {text: 'Process Step Status', value: 'processStepStatus', show: true},
+  {text: 'Event Status', value: 'eventStatus', show: event?.id},
+  {text: '', value: 'icons', show: true, width: '100px'},
+])
+   const newWorkQueueType = ref({
+  processStepStatuses: [],
+      projectStatuses: [],
+      eventStatuses: [],
+})
+
+const eventId = computed(() => {
+  return route.params.eventId
+})
+const processStepId = computed(() => {
+  return route.params.id
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
+const displayedHeaders = computed(() => {
+  return headers.value?.filter(h => h.show)
+})
+const workQueueTypeToDeleteName = computed(() => {
+  return workQueueTypeToDelete.workQueueType?.value || ''
+})
+const filteredWorkQueueTypes = computed(() => {
+  if(showEventFields.value) {
+    return event?.workQueueTypes?.filter(u => {
+      return !u.archived
+    })
+  } else {
+    return processStep?.workQueueTypes?.filter(u => {
+      return !u.archived
+    })
+  }
+})
+
+onMounted(() => {
+  if (event?.id) {
+    showEventFields.value = true
+    getEventStatusTypesForWorkQueue()
+  }
+  getProjectStatusTypesForWorkQueue()
+  getProcessStepStatusTypesForWorkQueue()
+})
+
+    const addValueToNew = (selectedItem) => {
       if (selectedItem.selected) {
         if (selectedItem.isRoot) {
           //if it is a root item, then remove any company level ones that were already selected that share the root status
-          this.newWorkQueueType.projectStatuses = this.newWorkQueueType.projectStatuses.filter(ps => {
+          newWorkQueueType.value.projectStatuses = newWorkQueueType.value.projectStatuses.filter(ps => {
             return ps.companyProjectStatusTypeId === null || (ps.projectStatusTypeId !== selectedItem.projectStatusTypeId)
           })
           //disable any of the options in the dropdown that share the same root
-          this.newWorkQueueType.tempStatuses = this.newWorkQueueType.tempStatuses.map(ps => ({
+          newWorkQueueType.value.tempStatuses = newWorkQueueType.value.tempStatuses.map(ps => ({
             ...ps,
             disabled: ps.companyProjectStatusTypeId !== null && ps.projectStatusTypeId === selectedItem.projectStatusTypeId ? true : ps.disabled,
             selected: ps.companyProjectStatusTypeId !== null && ps.projectStatusTypeId === selectedItem.projectStatusTypeId ? false : ps.selected
           }))
         }
-        this.newWorkQueueType.projectStatuses.push(selectedItem)
+        newWorkQueueType.value.projectStatuses.push(selectedItem)
       } else {
         //remove it if it has already been added
-        this.newWorkQueueType.projectStatuses = this.newWorkQueueType.projectStatuses.filter(ps => {
+        newWorkQueueType.value.projectStatuses = newWorkQueueType.value.projectStatuses.filter(ps => {
           if (selectedItem.companyProjectStatusTypeId === null) {
             return ps.projectStatusTypeId !== selectedItem.projectStatusTypeId
           } else {
@@ -467,15 +480,15 @@ export default {
         })
         //if the item is de-selected and isRoot then enable the child options again
         if (selectedItem.isRoot) {
-          this.newWorkQueueType.tempStatuses.forEach(ps => {
+          newWorkQueueType.value.tempStatuses.forEach(ps => {
             if (ps.companyProjectStatusTypeId !== null && ps.projectStatusTypeId === selectedItem.projectStatusTypeId) {
               ps.disabled = false
             }
           })
         }
       }
-    },
-    addValueToExisting(e, wqtItem, selectedItem) {
+    }
+    const addValueToExisting = (e, wqtItem, selectedItem) =>{
       //check if already in existing - if it is, set archived as needed
       //note: the selectedItem.selected value hasn't changed yet, but "e" should be the accurate event value
       let match = selectedItem.isRoot
@@ -488,7 +501,7 @@ export default {
 
         //if the selectedItem isRoot then enable/disable the child options as required
         if (selectedItem.isRoot) {
-          this.handleTogglingParentStatus(e, wqtItem, selectedItem)
+          handleTogglingParentStatus(e, wqtItem, selectedItem)
         }
       } else if (selectedItem.selected) {
         //if not already exists then if selected - add to existingProjectStatuses
@@ -496,13 +509,13 @@ export default {
         selectedItem.archived = false //this un-does some crap we do elsewhere
         wqtItem.projectStatuses.push(selectedItem)
         if (selectedItem.isRoot) {
-          this.handleTogglingParentStatus(e, wqtItem, selectedItem)
+          handleTogglingParentStatus(e, wqtItem, selectedItem)
         }
       }
 
-    },
-    handleTogglingParentStatus(e, wqtItem, selectedItem) {
-      this.showShit = false
+    }
+    const handleTogglingParentStatus = (e, wqtItem, selectedItem) => {
+      showShit.value = false
 
       wqtItem.tempStatuses = wqtItem.tempStatuses.map(ts => ({
         ...ts,
@@ -516,10 +529,10 @@ export default {
         archived: !ps.isRoot && ps.projectStatusTypeId === selectedItem.projectStatusTypeId ? true : ps.archived,
         selected: !ps.isRoot && ps.projectStatusTypeId === selectedItem.projectStatusTypeId ? false : ps.archived
       }))
-      this.showShit = true
-    },
-    handleTogglingParentProcessStepStatus(e, wqtItem, selectedItem) {
-      this.showPsShit = false
+      showShit.value = true
+    }
+    const handleTogglingParentProcessStepStatus = (e, wqtItem, selectedItem) => {
+      showPsShit.value = false
 
       wqtItem.tempProcessStepStatuses = wqtItem.tempProcessStepStatuses.map(ts => ({
         ...ts,
@@ -533,9 +546,9 @@ export default {
         archived: !ps.isRoot && ps.processStepStatusTypeId === selectedItem.processStepStatusTypeId ? true : ps.archived,
         selected: !ps.isRoot && ps.processStepStatusTypeId === selectedItem.processStepStatusTypeId ? false : ps.archived
       }))
-      this.showPsShit = true
-    },
-    getExistingValue(existingProjectStatuses, item) {
+      showPsShit.value = true
+    }
+    const getExistingValue = (existingProjectStatuses, item) => {
       //if ps contains item then return true
       if (item.isRoot) {
         let match = existingProjectStatuses?.find(ps => ps.projectStatusTypeId === item.projectStatusTypeId && ps.isRoot && !ps.archived)
@@ -545,10 +558,10 @@ export default {
         let match = existingProjectStatuses?.find(ps => ps.companyProjectStatusTypeId === item.companyProjectStatusTypeId && !ps.isRoot && !ps.archived)
         return match !== undefined
       }
-    },
-    prepTempStatuses(item, existingItem) {
+    }
+    const prepTempStatuses = (item, existingItem) => {
       //this is required so that selections made on one wqt are not auto-selected in other wqt's
-      item.tempStatuses = cloneDeep(this.combinedStatuses)
+      item.tempStatuses = cloneDeep(combinedStatuses.value)
 
       if (existingItem) {
         //if an existing item, then get a list of all the used root statuses and disable the ui as needed
@@ -566,40 +579,39 @@ export default {
           }))
         }
       }
-    },
-    async getProjectStatusTypesForWorkQueue() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getProjectStatusTypesForWorkQueue = async() => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/projectStatus/wqt`)
-        this.combinedStatuses = data
-        handleHidingGlobalLoader(this, status)
+        combinedStatuses.value = data
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Project Status Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Retrieving Project Status Types')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
+    }
     // process step status repeat of all the project status stuff
-    addProcessStepValueToNew(selectedItem) {
+    const addProcessStepValueToNew = (selectedItem) => {
       if (selectedItem.selected) {
         if (selectedItem.isRoot) {
           //if it is a root item, then remove any company level ones that were already selected that share the root status
-          this.newWorkQueueType.processStepStatuses = this.newWorkQueueType.processStepStatuses.filter(ps => {
+          newWorkQueueType.value.processStepStatuses = newWorkQueueType.value.processStepStatuses.filter(ps => {
             return ps.companyProcessStepStatusTypeId === null || (ps.processStepStatusTypeId !== selectedItem.processStepStatusTypeId)
           })
           //disable any of the options in the dropdown that share the same root
-          this.newWorkQueueType.tempProcessStepStatuses = this.newWorkQueueType.tempProcessStepStatuses.map(ps => ({
+          newWorkQueueType.value.tempProcessStepStatuses = newWorkQueueType.value.tempProcessStepStatuses.map(ps => ({
             ...ps,
             disabled: ps.companyProcessStepStatusTypeId !== null && ps.processStepStatusTypeId === selectedItem.processStepStatusTypeId ? true : ps.disabled,
             selected: ps.companyProcessStepStatusTypeId !== null && ps.processStepStatusTypeId === selectedItem.processStepStatusTypeId ? false : ps.selected
           }))
         }
 
-        this.newWorkQueueType.processStepStatuses.push(selectedItem)
+        newWorkQueueType.value.processStepStatuses.push(selectedItem)
       } else {
         //remove it if it has already been added
-        this.newWorkQueueType.processStepStatuses = this.newWorkQueueType.processStepStatuses.filter(ps => {
+        newWorkQueueType.value.processStepStatuses = newWorkQueueType.value.processStepStatuses.filter(ps => {
           if (selectedItem.companyProcessStepStatusTypeId === null) {
             return ps.processStepStatusTypeId !== selectedItem.processStepStatusTypeId
           } else {
@@ -608,15 +620,15 @@ export default {
         })
         //if the item is de-selected and isRoot then enable the child options again
         if (selectedItem.isRoot) {
-          this.newWorkQueueType.tempProcessStepStatuses.forEach(ps => {
+          newWorkQueueType.value.tempProcessStepStatuses.forEach(ps => {
             if (ps.companyProcessStepStatusTypeId !== null && ps.processStepStatusTypeId === selectedItem.processStepStatusTypeId) {
               ps.disabled = false
             }
           })
         }
       }
-    },
-    addProcessStepValueToExisting(e, wqtItem, selectedItem) {
+    }
+    const addProcessStepValueToExisting = (e, wqtItem, selectedItem) => {
       //check if already in existing - if it is, set archived as needed
       //note: the selectedItem.selected value hasn't changed yet, but "e" should be the accurate event value
       let match = selectedItem.isRoot
@@ -629,7 +641,7 @@ export default {
 
         //if the selectedItem isRoot then enable/disable the child options as required
         if (selectedItem.isRoot) {
-          this.handleTogglingParentProcessStepStatus(e, wqtItem, selectedItem)
+          handleTogglingParentProcessStepStatus(e, wqtItem, selectedItem)
         }
       } else if (selectedItem.selected) {
         //if not already exists then if selected - add to existingProjectStatuses
@@ -637,11 +649,11 @@ export default {
         selectedItem.archived = false //this un-does some crap we do elsewhere
         wqtItem.processStepStatuses.push(selectedItem)
         if (selectedItem.isRoot) {
-          this.handleTogglingParentProcessStepStatus(e, wqtItem, selectedItem)
+          handleTogglingParentProcessStepStatus(e, wqtItem, selectedItem)
         }
       }
-    },
-    getProcessStepExistingValue(existingProcessStepStatuses, item) {
+    }
+    const getProcessStepExistingValue = (existingProcessStepStatuses, item) => {
       //if ps contains item then return true
       if (item.isRoot) {
         let match = existingProcessStepStatuses?.find(ps => ps.processStepStatusTypeId === item.processStepStatusTypeId && ps.isRoot && !ps.archived)
@@ -651,10 +663,10 @@ export default {
         let match = existingProcessStepStatuses?.find(ps => ps.companyProcessStepStatusTypeId === item.companyProcessStepStatusTypeId && !ps.isRoot && !ps.archived)
         return match !== undefined
       }
-    },
-    prepTempProcessStepStatuses(item, existingItem) {
+    }
+    const prepTempProcessStepStatuses = (item, existingItem) => {
       //this is required so that selections made on one wqt are not auto-selected in other wqt's
-      item.tempProcessStepStatuses = cloneDeep(this.combinedProcessStepStatuses)
+      item.tempProcessStepStatuses = cloneDeep(combinedProcessStepStatuses.value)
 
       if (existingItem) {
         //if an existing item, then get a list of all the used root statuses and disable the ui as needed
@@ -672,42 +684,41 @@ export default {
           }))
         }
       }
-    },
-    async getProcessStepStatusTypesForWorkQueue() {
+    }
+    const getProcessStepStatusTypesForWorkQueue = async() => {
       try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        store.commit(AppMutations.SET_LOADING, true)
         const {data, status} = await getRequestWithParams(`/processStep/status/forWqt`, {
-          params: {processStepId: this.processStepId}
+          params: {processStepId: processStepId.value}
         })
-        this.combinedProcessStepStatuses = data
-        handleHidingGlobalLoader(this, status)
+        combinedProcessStepStatuses.value = data
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
+    }
     // event status repeat of all the project status stuff
-    addEventValueToNew(selectedItem) {
+    const addEventValueToNew = (selectedItem) => {
       if (selectedItem.selected) {
         if (selectedItem.isRoot) {
           //if it is a root item, then remove any company level ones that were already selected that share the root status
-          this.newWorkQueueType.eventStatuses = this.newWorkQueueType.eventStatuses.filter(ps => {
+          newWorkQueueType.value.eventStatuses = newWorkQueueType.value.eventStatuses.filter(ps => {
             return ps.companyEventStatusTypeId === null || (ps.eventStatusTypeId !== selectedItem.eventStatusTypeId)
           })
           //disable any of the options in the dropdown that share the same root
-          this.newWorkQueueType.tempEventStatuses = this.newWorkQueueType.tempEventStatuses.map(ps => ({
+          newWorkQueueType.value.tempEventStatuses = newWorkQueueType.value.tempEventStatuses.map(ps => ({
             ...ps,
             disabled: ps.companyEventStatusTypeId !== null && ps.eventStatusTypeId === selectedItem.eventStatusTypeId ? true : ps.disabled,
             selected: ps.companyEventStatusTypeId !== null && ps.eventStatusTypeId === selectedItem.eventStatusTypeId ? false : ps.selected
           }))
         }
 
-        this.newWorkQueueType.eventStatuses.push(selectedItem)
+        newWorkQueueType.value.eventStatuses.push(selectedItem)
       } else {
         //remove it if it has already been added
-        this.newWorkQueueType.eventStatuses = this.newWorkQueueType.eventStatuses.filter(ps => {
+        newWorkQueueType.value.eventStatuses = newWorkQueueType.value.eventStatuses.filter(ps => {
           if (selectedItem.companyEventStatusTypeId === null) {
             return ps.eventStatusTypeId !== selectedItem.eventStatusTypeId
           } else {
@@ -716,15 +727,15 @@ export default {
         })
         //if the item is de-selected and isRoot then enable the child options again
         if (selectedItem.isRoot) {
-          this.newWorkQueueType.tempEventStatuses.forEach(ps => {
+          newWorkQueueType.value.tempEventStatuses.forEach(ps => {
             if (ps.companyEventStatusTypeId !== null && ps.eventStatusTypeId === selectedItem.eventStatusTypeId) {
               ps.disabled = false
             }
           })
         }
       }
-    },
-    addEventValueToExisting(e, wqtItem, selectedItem) {
+    }
+    const addEventValueToExisting = (e, wqtItem, selectedItem) => {
       //check if already in existing - if it is, set archived as needed
       //note: the selectedItem.selected value hasn't changed yet, but "e" should be the accurate event value
       let match = selectedItem.isRoot
@@ -737,7 +748,7 @@ export default {
 
         //if the selectedItem isRoot then enable/disable the child options as required
         if (selectedItem.isRoot) {
-          this.handleTogglingParentEventStatus(e, wqtItem, selectedItem)
+          handleTogglingParentEventStatus(e, wqtItem, selectedItem)
         }
       } else if (selectedItem.selected) {
         //if not already exists then if selected - add to existingProjectStatuses
@@ -745,12 +756,12 @@ export default {
         selectedItem.archived = false //this un-does some crap we do elsewhere
         wqtItem.eventStatuses.push(selectedItem)
         if (selectedItem.isRoot) {
-          this.handleTogglingParentEventStatus(e, wqtItem, selectedItem)
+          handleTogglingParentEventStatus(e, wqtItem, selectedItem)
         }
       }
-    },
-    handleTogglingParentEventStatus(e, wqtItem, selectedItem) {
-      this.showEventShit = false
+    }
+    const handleTogglingParentEventStatus = (e, wqtItem, selectedItem) => {
+      showEventShit.value = false
 
       wqtItem.tempEventStatuses = wqtItem.tempEventStatuses.map(ts => ({
         ...ts,
@@ -764,9 +775,9 @@ export default {
         archived: !ps.isRoot && ps.eventStatusTypeId === selectedItem.eventStatusTypeId ? true : ps.archived,
         selected: !ps.isRoot && ps.eventStatusTypeId === selectedItem.eventStatusTypeId ? false : ps.archived
       }))
-      this.showEventShit = true
-    },
-    getEventExistingValue(existingEventStatuses, item) {
+      showEventShit.value = true
+    }
+    const getEventExistingValue = (existingEventStatuses, item) => {
       //if ps contains item then return true
       if (item.isRoot) {
         let match = existingEventStatuses?.find(ps => ps.eventStatusTypeId === item.eventStatusTypeId && ps.isRoot && !ps.archived)
@@ -776,11 +787,11 @@ export default {
         let match = existingEventStatuses?.find(ps => ps.companyEventStatusTypeId === item.companyEventStatusTypeId && !ps.isRoot && !ps.archived)
         return match !== undefined
       }
-    },
-    prepTempEventStatuses(item, existingItem) {
-      if(this.showEventFields) {
+    }
+    const prepTempEventStatuses = (item, existingItem) => {
+      if(showEventFields.value) {
         //this is required so that selections made on one wqt are not auto-selected in other wqt's
-        item.tempEventStatuses = cloneDeep(this.combinedEventStatuses)
+        item.tempEventStatuses = cloneDeep(combinedEventStatuses.value)
 
         if (existingItem) {
           //if an existing item, then get a list of all the used root statuses and disable the ui as needed
@@ -799,120 +810,99 @@ export default {
           }
         }
       }
-    },
-    async getEventStatusTypesForWorkQueue() {
-      if(this.showEventFields) {
+    }
+    const getEventStatusTypesForWorkQueue = async() => {
+      if(showEventFields.value) {
         try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
+          store.commit(AppMutations.SET_LOADING, true)
           const {data, status} = await getRequestWithParams(`/event/statusesForWqt`, {
-            params: {processStepId: this.processStepId, eventId: this.event.eventId}
+            params: {processStepId: processStepId.value, eventId: event.eventId}
           })
-          this.combinedEventStatuses = data
-          handleHidingGlobalLoader(this, status)
+          combinedEventStatuses.value = data
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Status Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          getSnackbar('ERROR', 'Error Retrieving Event Status Types')
+          store.commit(AppMutations.SET_LOADING, false)
         }
       }
-    },
+    }
     //end event stuff
-    async getWorkQueueTypesForItem() {
+    const getWorkQueueTypesForItem = async() => {
       try {
-        this.addNewWorkQueueType = !this.addNewWorkQueueType
-        if (this.addNewWorkQueueType) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          let url = this.showEventFields ? `/workQueueType/event/${this.$route.params.eventId}` :  `/workQueueType/processStep/${this.$route.params.id}`
+        addNewWorkQueueType.value = !addNewWorkQueueType.value
+        if (addNewWorkQueueType.value) {
+          store.commit(AppMutations.SET_LOADING, true)
+          let url = showEventFields.value ? `/workQueueType/event/${eventId.value}` :  `/workQueueType/processStep/${processStepId.value}`
           const {data, status} = await getRequest(url, null, [])
-          this.workQueueTypes = data
-          handleHidingGlobalLoader(this, status)
+          workQueueTypes.value = data
+          handleHidingGlobalLoader(vueInstance, status)
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async assignNewWorkQueueType() {
+    }
+    const assignNewWorkQueueType = async() => {
       //todo make this work for both proj and process step types
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        this.newWorkQueueType.processStepId = this.$route.params.id
-        this.newWorkQueueType.processStepEventId = this.$route.params.eventId
-        let url = this.showEventFields ? `/workQueueType/event` : `/workQueueType/processStep`
-        const {data, status} = await postRequest(url, this.newWorkQueueType)
-        if(this.showEventFields) {
-          this.event?.workQueueTypes.push(data)
+        newWorkQueueType.value.processStepId = processStepId.value
+        newWorkQueueType.value.processStepEventId = eventId.value
+        let url = showEventFields.value ? `/workQueueType/event` : `/workQueueType/processStep`
+        const {data, status} = await postRequest(url, newWorkQueueType.value)
+        if(showEventFields.value) {
+          event?.workQueueTypes.push(data)
         } else {
-          this.processStep?.workQueueTypes.push(data)
+          processStep?.workQueueTypes.push(data)
         }
         // reset fields
-        this.addNewWorkQueueType = false
-        this.newWorkQueueType = {projectStatuses: [], processStepStatuses: [], eventStatuses: []}
-        this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        addNewWorkQueueType.value = false
+        newWorkQueueType.value = {projectStatuses: [], processStepStatuses: [], eventStatuses: []}
+        getSnackbar('SUCCESS', 'Work Queue Type Added')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Work Queue Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Adding Work Queue Type')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async saveStatusesToWorkQueueType(item) {
+    }
+    const saveStatusesToWorkQueueType = async(item) => {
       //todo: fix this to save both things
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        let url = this.showEventFields ? `/workQueueType/saveStatusTypesToProcessStepEventWorkQueueType` : `/workQueueType/saveStatusTypesToProcessStepWorkQueueType`
+        let url = showEventFields.value ? `/workQueueType/saveStatusTypesToProcessStepEventWorkQueueType` : `/workQueueType/saveStatusTypesToProcessStepWorkQueueType`
         const {data, status} = await putRequest(url, item)
         item.projectStatuses = data.projectStatuses
         item.processStepStatuses = data.processStepStatuses
         item.eventStatuses = data.eventStatuses || []
-        this.expanded = []
-        this.snackbar = getSnackbar('SUCCESS', 'Status Types Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        expanded.value = []
+        getSnackbar('SUCCESS', 'Status Types Saved')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Status Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Adding Status Types')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async deleteWorkQueueTypeFromStep() {
-      const item = this.workQueueTypeToDelete
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const deleteWorkQueueTypeFromStep = async() => {
+      const item = workQueueTypeToDelete.value
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        this.addNewWorkQueueType = false
-        let url = this.showEventFields ? `/workQueueType/event/${item.id}` : `/workQueueType/processStep/${item.id}`
+        addNewWorkQueueType.value = false
+        let url = showEventFields.value ? `/workQueueType/event/${item.id}` : `/workQueueType/processStep/${item.id}`
         const {status} = await deleteRequest(url)
         item.archived = true
-        this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        getSnackbar('SUCCESS', 'Work Queue Type Deleted')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        getSnackbar('ERROR', 'Error Deleting Link')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    filterWorkQueueTypes() {
-      if(this.showEventFields) {
-        return this.event?.workQueueTypes.filter(u => {
-          return !u.archived
-        })
-      } else {
-        return this.processStep?.workQueueTypes.filter(u => {
-          return !u.archived
-        })
-      }
-    },
-  }
+    }
 
-}
 </script>
 
 <style scoped lang="scss">

@@ -121,6 +121,8 @@ const props = defineProps({
   callback: Function
 })
 
+const {required, readonly, field, callback} = props;
+
 const timezone = computed(() => {
   return userStore.details.timezone.value
 })

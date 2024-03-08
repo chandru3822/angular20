@@ -250,7 +250,6 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const route = useRoute()
 import {useUserStore} from '@/stores/UserStorePinia.js'
-
 const userStore = useUserStore()
 
 const positionToDelete = ref(null)
@@ -320,7 +319,6 @@ const filteredUsers = computed(() => {
 
 
 watch(() => poolTypeId.value, () => {
-  poolTypeId.value = parseInt(route.params.poolTypeId)
   pool.value = {}
   getTournamentPool()
 })
