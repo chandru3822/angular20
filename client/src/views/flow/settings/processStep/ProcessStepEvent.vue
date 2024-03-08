@@ -871,11 +871,13 @@ import EventActionChildSms from "@/views/flow/settings/processStep/EventActionCh
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const appStore = useAppStore()
 
 onMounted(async () => {
 
@@ -1027,7 +1029,7 @@ const icon = computed(() => {
 })
 
 const saveChildFunctionOrder = async (actionId, childFns) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
     // pull those needing to be saved out of list
@@ -1045,11 +1047,11 @@ const saveChildFunctionOrder = async (actionId, childFns) => {
       await putRequest(`/processStep/${processStepId.value}/event/${eventId.value}/action/${actionId}/updateChildFunctionOrder`, fnsToSave)
     }
     getSnackbar('SUCCESS', 'Function Order Updated')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Updating Function Order')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 
 }
@@ -1194,7 +1196,7 @@ const getPositions = async () => {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
       getSnackbar('ERROR', 'Error Retrieving Positions')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
@@ -1211,49 +1213,49 @@ const toggleSelectAllPositions = () => {
   })
 }
 const saveEventDetails = async (psEvent) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await putRequest(`/processStep/${processStepId.value}/event/${psEvent.eventId}`, psEvent)
     getSnackbar('SUCCESS', 'Event Updated')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Adding Event')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveReadOnlyWhiteList = async () => {
   const psEvent = selectedEvent.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/processStep/${processStepId.value}/event/${psEvent.eventId}/saveReadOnlyWhiteList?savePositions=${psEvent.positionsChanged ?? false}`, psEvent)
     psEvent.positionsChanged = false
     handleHidingGlobalLoader(vueInstance, status)
     getSnackbar('SUCCESS', 'Event Updated')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Updating Event')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteActionFromEvent = async () => {
   const action = eventActionToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await deleteRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/${action.id}`)
     action.archived = true
     getSnackbar('SUCCESS', 'Action Deleted')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Deleting Action')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
   eventActionToDelete.value = null
 }
 const saveEventAction = async (action) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     //if action is a banner or link then null out all the regular action fields (in case they changed type a bunch)
     if (newEventAction.value.actionTypeId !== 2) {
@@ -1277,11 +1279,11 @@ const saveEventAction = async (action) => {
       action.processStepStatusType = data.processStepStatusType
     }
     getSnackbar('SUCCESS', 'Action Updated')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Adding Action')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const validateActionLogicString = (item, saveChanges) => {
@@ -1340,31 +1342,31 @@ const validateActionLogicString = (item, saveChanges) => {
   }
 }
 const getOperationTypes = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/operation`)
     operationTypes.value = orderBy(data, [o => o.operationType.toLowerCase()])
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const duplicateAction = async (actionId) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await putRequest(`/processStep/${processStepId.value}/event/${eventId.value}/action/${actionId}/duplicate`)
     selectedEvent.value.processStepEventActions.push(data)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Duplicating Action')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const updateAction = async (action) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     action.processStepEventLogicList = action.processStepEventLogicList.filter(l => {
       return !l.archived
@@ -1392,11 +1394,11 @@ const updateAction = async (action) => {
     }
 
     getSnackbar('SUCCESS', 'Action Updated')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Updating Action')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const alterRequiredFlag = async (requiredChanged, item, actionId) => {
@@ -1414,7 +1416,7 @@ const alterRequiredFlag = async (requiredChanged, item, actionId) => {
     //resetting the id in case it got archived/added a new one, etc. this will keep multiple updates to the same field working without refreshing the screen
     item.id = data
     getSnackbar('SUCCESS', 'Saved')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Saving')
@@ -1422,32 +1424,32 @@ const alterRequiredFlag = async (requiredChanged, item, actionId) => {
 }
 const saveRowChanges = async (rows) => {
   if (rows?.length > 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       await putRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/order`, rows)
       getSnackbar('SUCCESS', 'Action Order Saved')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
       getSnackbar('ERROR', 'Error Saving Action Order')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 const loadFunctionParams = async (dbFunctionId) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
     selectedChildRequirementParamDynamicValues.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveFunctionToAction = async (action) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {
       data,
@@ -1466,23 +1468,23 @@ const saveFunctionToAction = async (action) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Adding Child Function Action')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const loadChildFunctions = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/function/action/6`)
     childFunctions.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Loading Functions')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const updateChildFunction = async (actionId, childFunction) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/${actionId}/updateActionChildFunction`, childFunction)
     getSnackbar('SUCCESS', 'Child Process Updated')
@@ -1490,11 +1492,11 @@ const updateChildFunction = async (actionId, childFunction) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Updating Child Process')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteChildFunctionFromAction = async (actionId, id) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/${actionId}/deleteChildFunction/${id}`)
     getSnackbar('SUCCESS', 'Child Function Deleted From Action')
@@ -1502,7 +1504,7 @@ const deleteChildFunctionFromAction = async (actionId, id) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Deleting Child Function From Action')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const addSms = (actionId, smsItem) => {
@@ -1515,7 +1517,7 @@ const deleteSms = (actionId, id) => {
 }
 // child links
 const loadLinks = async (actionId) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/links/eventAction/${actionId}`)
     availableLinks.value = data
@@ -1523,11 +1525,11 @@ const loadLinks = async (actionId) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveLinkToAction = async (action) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {
       data,
@@ -1543,11 +1545,11 @@ const saveLinkToAction = async (action) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Adding Link to Action')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteLinkFromAction = async (actionId, id) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/${actionId}/deleteLinkFromAction/${id}`)
     getSnackbar('SUCCESS', 'Link Deleted From Action')
@@ -1555,7 +1557,7 @@ const deleteLinkFromAction = async (actionId, id) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     getSnackbar('ERROR', 'Error Deleting Link From Action')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const startTimeReadOnlySelectedEventListener = (e) => {

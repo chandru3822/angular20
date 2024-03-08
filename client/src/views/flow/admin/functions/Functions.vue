@@ -123,10 +123,12 @@ import ConfirmationDialog from '@/components/ConfirmationDialog'
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
+const appStore = useAppStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
@@ -157,7 +159,7 @@ onMounted(() => {
 })
 
 const getFunctions = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/dbFunction`)
     functions.value = data
@@ -165,12 +167,12 @@ const getFunctions = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Functions')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getDataTypes = async () => {
   if (dataTypes.value.length === 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/dataType/getSystem`)
       dataTypes.value = data
@@ -178,13 +180,13 @@ const getDataTypes = async () => {
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Data Types')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 const getFunctionTypes = async () => {
   if (dbFunctionTypes.value.length === 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/dbFunction/types`)
       dbFunctionTypes.value = data
@@ -192,12 +194,12 @@ const getFunctionTypes = async () => {
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Functions')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 const addFunction = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     //unset the returnDataTypeId if they changed the function type back to Action
     newFunction.value.returnDataTypeId = newFunction.value.dbFunctionTypeId !== 1 ? null : newFunction.value.returnDataTypeId
@@ -207,22 +209,22 @@ const addFunction = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Functions')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteFunction = async () => {
   const item = functionToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/dbFunction/${item.id}`)
     item.archived = true
     handleHidingGlobalLoader(vueInstance, status)
     snackbar('SUCCESS', 'Function Deleted')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Functions')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 

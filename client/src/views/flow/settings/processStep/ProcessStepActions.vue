@@ -836,7 +836,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import cloneDeep from 'lodash.clonedeep'
 import draggable from 'vuedraggable'
 import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
@@ -862,10 +861,12 @@ import ActionChildSms from "@/views/flow/settings/processStep/ActionChildSms";
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const appStore = useAppStore()
 
 onMounted(() => {
   let table = document.querySelector('.action-table tbody')
@@ -1039,7 +1040,7 @@ const processStepId = computed(() => {
   
 
     const saveChildFunctionOrder = async(actionId, childFns) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
         // pull those needing to be saved out of list
@@ -1057,11 +1058,11 @@ const processStepId = computed(() => {
           await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateChildFunctionOrder`, fnsToSave)
         }
         getSnackbar('SUCCESS', 'Function Order Updated')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Updating Function Order')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
 
     }
@@ -1211,7 +1212,7 @@ const processStepId = computed(() => {
       }
     }
     const getActions = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await getRequest(`/processStep/${processStepId.value}/action`)
         actions.value = data
@@ -1219,23 +1220,23 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Retrieving Data')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const loadChildFunctions = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data} = await getRequest(`/function/action/4`)
         childFunctions.value = data
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Loading Functions')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveNewAction = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         if (!newAction.value.triggerAutomatically) {
           //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
@@ -1268,23 +1269,23 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Adding Action')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const duplicateAction = async(actionId) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data} = await putRequest(`/processStep/${processStepId.value}/action/${actionId}/duplicate`)
         actions.value.push(data)
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Duplicating Action')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const updateAction = async(action) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         action.processStepLogicList = action.processStepLogicList.filter(l => {
           return !l.archived
@@ -1324,11 +1325,11 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Updating Action')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const loadFunctionParams = async(dbFunctionId, isRequirement) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
         if (isRequirement) {
@@ -1336,15 +1337,15 @@ const processStepId = computed(() => {
         } else {
           selectedChildRequirementParamDynamicValues.value = data
         }
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Retrieving Data')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const getStatusTypes = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await getCompanyAssignedToProcessStep(processStepId.value)
         statusTypes.value = data
@@ -1352,11 +1353,11 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Retrieving Data')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const getTheseCompanyProjectStatusTypes = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await getCompanyProjectStatusTypes(null, true)
         companyProjectStatusTypes.value = data
@@ -1368,7 +1369,7 @@ const processStepId = computed(() => {
       }
     }
     const getOperationTypes = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await getRequest(`/operation`)
         operationTypes.value = orderBy(data, [o => o.operationType.toLowerCase()])
@@ -1376,12 +1377,12 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Retrieving Data')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const deleteAction = async() => {
       const item = itemToDelete.value
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${item.id}`)
         item.archived = true
@@ -1390,7 +1391,7 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Deleting Action')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
       itemToDelete.value.archive = true
       closeDeleteDialog()
@@ -1401,7 +1402,7 @@ const processStepId = computed(() => {
       childProcessSteps.value = data
     }
     const saveChildProcessCancelledStatus = async(action, cp) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {
           data,
@@ -1418,11 +1419,11 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Saving Child Process Status')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveProcessStepToAction = async(action) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {
           data,
@@ -1441,14 +1442,14 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Adding Child Process Action')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const deleteChildProcessFromAction = async() => {
       childProcessToDelete.value.archived = true
       const actionId = parentActionForChildToDelete.value.id
       const id = childProcessToDelete.value.id
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildStep/${id}`)
         getSnackbar('SUCCESS', 'Child Process Deleted From Action')
@@ -1456,11 +1457,11 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Deleting Child Process From Action')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveFunctionToAction = async(action) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {
           data,
@@ -1479,14 +1480,14 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Adding Child Function Action')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const deleteChildFunctionFromAction = async() => {
       childFunctionToDelete.value.archived = true
       const actionId = parentActionForChildToDelete.value.id
       const id = childFunctionToDelete.value.id
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildFunction/${id}`)
         getSnackbar('SUCCESS', 'Child Function Deleted From Action')
@@ -1494,11 +1495,11 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Deleting Child Function From Action')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const updateChildFunction = async(actionId, childFunction) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateActionChildFunction`, childFunction)
         getSnackbar('SUCCESS', 'Child Process Updated')
@@ -1506,12 +1507,12 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Updating Child Process')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     // child links
     const loadLinks = async(actionId) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await getRequest(`/links/action/${actionId}`)
         availableLinks.value = data
@@ -1519,11 +1520,11 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Retrieving Data')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveLinkToAction = async(action) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {
           data,
@@ -1539,14 +1540,14 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Adding Link to Action')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const deleteLinkFromAction = async() => {
       linkToDelete.value.archived = true
       const actionId = parentActionForChildToDelete.value.id
       const id = linkToDelete.value.id
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteLinkFromAction/${id}`)
         getSnackbar('SUCCESS', 'Link Deleted From Action')
@@ -1554,7 +1555,7 @@ const processStepId = computed(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         getSnackbar('ERROR', 'Error Deleting Link From Action')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const getListValueName = (item) => {
@@ -1565,7 +1566,7 @@ const processStepId = computed(() => {
     }
     const saveRowChanges = async(rows) => {
       if (rows?.length > 0) {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {status} = await putRequest(`/processStep/${processStepId.value}/action/order`, rows)
           getSnackbar('SUCCESS', 'Action Order Saved')
@@ -1573,7 +1574,7 @@ const processStepId = computed(() => {
         } catch (e) {
           console.error('*** ERROR ***', e)
           getSnackbar('ERROR', 'Error Saving Action Order')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     }

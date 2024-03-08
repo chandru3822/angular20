@@ -230,13 +230,14 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, postRequest, putRequest} from '@/helpers/helpers'
 import {getCurrentInstance, onMounted, ref} from 'vue'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const appStore = useAppStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
@@ -275,7 +276,7 @@ onMounted(() => {
 })
 
 const getFunction = async() => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/dbFunction/${functionId.value}`)
     dbFunction.value = data
@@ -283,11 +284,11 @@ const getFunction = async() => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Function')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getCompanies = async() => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/dbFunction/${functionId.value}/availableCompanies`)
     companies.value = data
@@ -295,12 +296,12 @@ const getCompanies = async() => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Function')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getDataTypes = async() => {
   if (dataTypes.value.length === 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/dataType/getSystem`)
       dataTypes.value = data
@@ -308,13 +309,13 @@ const getDataTypes = async() => {
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Data Types')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 const getParameterTypes = async() => {
   if (dataTypes.value.length === 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/dbFunction/parameterTypes`)
       parameterTypes.value = data
@@ -322,12 +323,12 @@ const getParameterTypes = async() => {
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Parameter Types')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 const saveParam = async(item) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await putRequest(`/dbFunction/param`, item)
     expanded.value = []
@@ -335,11 +336,11 @@ const saveParam = async(item) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Function Param')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const addParam = async() => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     newParam.value.dbFunctionId = functionId.value
     newParam.value.dataTypeId = newParam.value.dataTypeId != null ? newParam.value.dataTypeId :
@@ -351,11 +352,11 @@ const addParam = async() => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Function Param')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const pushToCompanies = async() => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     let params = {
       ...dbFunction.value,
@@ -372,12 +373,12 @@ const pushToCompanies = async() => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Function Param')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getSystemValues = async() => {
   if (systemValues.value.length === 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/dbFunction/systemValues`)
       systemValues.value = data
@@ -385,7 +386,7 @@ const getSystemValues = async() => {
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }

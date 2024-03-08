@@ -36,10 +36,12 @@ import {Actions} from "@/store";
 import {getCurrentInstance, onMounted, ref} from 'vue'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
+const appStore = useAppStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
@@ -57,7 +59,7 @@ onMounted(() => {
 })
 
 const saveUserHomePage = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     let tempUsr = {
       homePageCompanyFeatureId: user.value.homePageCompanyFeatureId
@@ -71,7 +73,7 @@ const saveUserHomePage = async () => {
   }
 }
 const getHomePages = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/feature/homePages`)
     if (status) {
@@ -83,25 +85,25 @@ const getHomePages = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Home Pages')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const loadHomePageLogo = async () => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     await store.dispatch(Actions.FILE_GET_ONE, {
       attachmentTypeId: homePageAttachmentTypeId,
       sourceId: companyId.value,
       callback: async (img) => {
         homePageLogo.value = img
         logoLoaded.value = true
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Background Image')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

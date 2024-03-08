@@ -120,10 +120,12 @@ import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
+const appstore = useAppStore()
 const snackbar = vueInstance.$snackbar
 
 const isCompanyRoot = ref(userStore.isCompanyRoot)
@@ -158,7 +160,7 @@ onMounted(() => {
   getFeatures()
 })
 const saveFeature = async (isNew, feature) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     feature = isNew && isCompanyRoot.value ? selectedFeature.value :
         isNew && !isCompanyRoot.value ?
@@ -180,11 +182,11 @@ const saveFeature = async (isNew, feature) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', isNew ? 'Error Adding Feature' : 'Error Updating Feature')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getCompanyFeatures = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`${apiUrl.value}`)
     companyFeatures.value = data
@@ -192,11 +194,11 @@ const getCompanyFeatures = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Features')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getFeatures = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/feature`)
     features.value = data
@@ -204,12 +206,12 @@ const getFeatures = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Features')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteFeature = async () => {
   const feature = featureToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`${apiUrl.value}/${feature.id}`)
     feature.archived = true
@@ -218,7 +220,7 @@ const deleteFeature = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Feature')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

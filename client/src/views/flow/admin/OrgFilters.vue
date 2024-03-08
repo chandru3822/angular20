@@ -115,7 +115,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import {getOrgFilters, getOrgLevels} from '@/services/orgService'
 import {handleHidingGlobalLoader, deleteRequest, putRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
@@ -123,10 +122,12 @@ import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
+const appStore = useAppStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
@@ -155,7 +156,7 @@ onMounted(() => {
 })
 
 const getOrganizationFilters = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getOrgFilters()
     orgFilters.value = data
@@ -163,11 +164,11 @@ const getOrganizationFilters = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Org Filters')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveOrgFilter = async (of, isNew) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await putRequest(`/org/filters`, of)
     if (isNew) {
@@ -183,11 +184,11 @@ const saveOrgFilter = async (of, isNew) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', isNew ? 'Error Adding Org Filter' : 'Error Updating Org Filter')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getOrganizationLevels = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getOrgLevels()
     levels.value = data
@@ -195,12 +196,12 @@ const getOrganizationLevels = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Org Levels')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteOrgFilter = async () => {
   const filter = filterToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/org/filters/${filter.id}`)
     orgFilters.value = orgFilters.value.filter(ol => {
@@ -211,7 +212,7 @@ const deleteOrgFilter = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Org Filter')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

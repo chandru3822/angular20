@@ -229,16 +229,13 @@
 </template>
 
 <script setup>
-import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
-import {AppMutations} from '@/stores/AppStore'
 import {
   getRequest,
   putRequest,
   postRequest,
   getRequestWithParams, handleHidingGlobalLoader
 } from '@/helpers/helpers'
-import constants from '@/helpers/constants'
 import Sortable from "sortablejs";
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from "lodash.orderby"
@@ -248,11 +245,13 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const userStore = useUserStore()
+const appStore = useAppStore()
 const route = vueInstance.$route
 const vuetify = vueInstance.$vuetify
 
@@ -344,20 +343,20 @@ const fieldToDeleteGroupName = computed(() => {
   return customFieldToDelete.value ? customFieldToDelete.value.groupName : ''
 })
 const getAttachment = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/attachmentType/type/${attachmentTypeId.value}`)
     attachmentType.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveFieldGroup = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     newGroup.value.attachmentTypeId = route.params.id
 
@@ -366,16 +365,16 @@ const saveFieldGroup = async () => {
     newGroup.value = {}
     createNew.value = false
     snackbar('SUCCESS', 'Group Saved')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Group')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteWithChecks = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   let item = cfGroupToDelete.value ? cfGroupToDelete.value : customFieldToDelete.value ? customFieldToDelete.value : null
   let customFieldGroupId = cfGroupToDelete.value ? cfGroupToDelete.value.id : null
   let customFieldGroupAssignmentId = customFieldToDelete.value ? customFieldToDelete.value.id : null
@@ -403,32 +402,32 @@ const deleteWithChecks = async () => {
       item.archived = true
       snackbar('SUCCESS', 'Item Deleted')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveGroupName = async (group) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
     snackbar('SUCCESS', 'Group Name Updated')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Change')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const moveFieldToOtherGroup = async (field, newGroup) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
     snackbar('SUCCESS', 'Field Moved')
@@ -439,7 +438,7 @@ const moveFieldToOtherGroup = async (field, newGroup) => {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Moving Field')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
@@ -447,7 +446,7 @@ const filterCustomFields = (customFields) => {
   return customFields.filter((cf) => cf.archived === false)
 }
 const fetchAvailableCustomFields = async (objectTypeId, groupId) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     if (addField.value && newFieldType.value === 'native') {
       const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
@@ -466,16 +465,16 @@ const fetchAvailableCustomFields = async (objectTypeId, groupId) => {
       selectedAncillaryField.value = {}
       parentObjects.value = data
     }
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const loadFieldsByParent = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     if (parent.value.isProcessStep) {
       const {data} = await getRequest(`/customField/getByParentProcessStep/${parent.value.id}`)
@@ -484,56 +483,56 @@ const loadFieldsByParent = async () => {
       const {data} = await getRequest(`/customField/getByParentType/${parent.value.id}`)
       ancillaryCustomFields.value = data
     }
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveUseParentData = async (field) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await putRequest(`/customFieldGroup/saveUseParentData`, field)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Field')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveReadOnlyAndWhiteList = async (field) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
     field.positionsChanged = false
     if (!field.customFieldGroupAssignmentReadOnly) {
       vueInstance.$set(field, 'whiteListedPositions', [])
     }
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Field')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveHiddenAndWhiteList = async (field) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await putRequest(`/customFieldGroup/saveHiddenAndWhiteList?savePositions=${field.hiddenPositionsChanged ?? false}`, field)
     field.hiddenPositionsChanged = false
     if (!field.customFieldGroupAssignmentHidden) {
       vueInstance.$set(field, 'hiddenWhiteListedPositions', [])
     }
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Field')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const updateRequired = async (cf) => {
@@ -549,11 +548,11 @@ const updateRequired = async (cf) => {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Data')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveFieldChanges = async (fields) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
     // pull those needing to be saved out of list
@@ -571,17 +570,17 @@ const saveFieldChanges = async (fields) => {
     }
     snackbar('SUCCESS', 'Fields Updated')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating Fields')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 
 }
 const assignCustomField = async (cfg) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     addField.value = false
     newField.value.customFieldGroupId = cfg.id
@@ -593,16 +592,16 @@ const assignCustomField = async (cfg) => {
     newField.value = {}
     snackbar('SUCCESS', 'Custom Field Assigned')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Assigning Custom Field')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const assignAncillaryCustomField = async (cfg) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const params = {
       customFieldGroupId: cfg.id,
@@ -616,12 +615,12 @@ const assignAncillaryCustomField = async (cfg) => {
     addField.value = false
     parent.value = {}
     snackbar('SUCCESS', 'Reference Field Assigned')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Assigning Reference Field')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const filterCustomFieldGroups = () => {
@@ -631,7 +630,7 @@ const filterCustomFieldGroups = () => {
 }
 const saveRowChanges = async (rows) => {
   if (rows?.length > 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
       localCustomFieldGroups.value = orderBy(localCustomFieldGroups.value, 'groupOrder')
@@ -639,11 +638,11 @@ const saveRowChanges = async (rows) => {
 
       // this componentKey forces the data-table component to re-render
       componentKey.value += 1
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Group Order')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
@@ -654,13 +653,13 @@ const getPositions = async () => {
       const {data} = await getRequest(`/position/withParent`)
       positions.value = data
       positionsLoading.value = false
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Positions')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
