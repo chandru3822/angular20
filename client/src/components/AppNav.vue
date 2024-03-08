@@ -163,7 +163,6 @@ export default {
     return {
       snackbar: {},
       constants,
-      appLoading: this.$store.state.app.loading,
       loadComplete: false,
       clearingMasquerade: false,
       companyName: this.userStore?.details?.companyName,
