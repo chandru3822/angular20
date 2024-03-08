@@ -6,12 +6,20 @@
           <v-toolbar-title class="app-title">Tournaments</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="showPreviousYears = !showPreviousYears">
-              {{ showPreviousYears ? 'Hide Previous Years' : 'Show Previous Years' }}
-            </v-btn>
-            <v-btn text color="primary" @click="[addNew = !addNew, newTournament = { tournamentFormulaFields: [] }]" v-if="userCanAdd">
-              {{'Add New'}}
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                :text="showPreviousYears ? 'HIDE PREVIOUS YEARS' : 'SHOW PREVIOUS YEARS'"
+                @click="showPreviousYears = !showPreviousYears">
+            </AlbatrossButton>
+
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                v-if="userCanAdd"
+                text="ADD NEW"
+                @click="[addNew = !addNew, newTournament = { tournamentFormulaFields: [] }]">
+            </AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -62,14 +70,21 @@
               :format="'MMMM DD, YYYY'"
               label="End Date"
             />
-            <v-btn :disabled="!newTournament.tournamentName || !newTournament.startDate || !newTournament.endDate
+            <AlbatrossButton
+                color="primary"
+                :disabled="!newTournament.tournamentName || !newTournament.startDate || !newTournament.endDate
                    || (newTournament.startDate >= newTournament.endDate) || !newTournament.tournamentOwnerTypeId || !newTournament.tournamentFormulaId
                    || validateCustomFields()"
-                   color="primary"
-                   @click="addTournament">
-              Save
-            </v-btn>
-            <v-btn text color="primary" class="ml-2" @click="[newTournament = { tournamentFormulaFields: [] }, addNew = false]">Cancel</v-btn>
+                text="Save"
+                @click="addTournament">
+            </AlbatrossButton>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                text="Cancel"
+                class="ml-2"
+                @click="[newTournament = { tournamentFormulaFields: [] }, addNew = false]">
+            </AlbatrossButton>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -88,10 +103,22 @@
                 <input type="checkbox" v-model="item.active" readonly disabled>
               </template>
               <template #item.icons="{item}" class="text-right">
-                <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="goToTournament(item.id)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn v-if="userCanDelete" small text color="primary" @click="tournamentToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <AlbatrossButton
+                    :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
+                    :round="true"
+                    color="primary"
+                    prepend-icon="edit"
+                    @click="goToTournament(item.id)">
+                </AlbatrossButton>
+
+                <AlbatrossButton
+                    v-if="userCanDelete"
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    prepend-icon="delete"
+                    @click="tournamentToDelete=item">
+                </AlbatrossButton>
               </template>
 
             </v-data-table>
@@ -109,6 +136,7 @@
 <script setup>
   import {AppMutations} from '@/stores/AppStore'
   import moment from 'moment'
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
   import orderBy from 'lodash.orderby'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
@@ -162,7 +190,7 @@
   })
 
   const timezone = computed(() => {
-    return userStore.details.timezone.value
+    return userStore.details.timezone?.value
   })
 
   const companyId = computed(() => {

@@ -67,20 +67,29 @@
                      v-model="tournament.active"
               />
             </div>
-            <v-btn color="primary"
-                   class="white--text mb-4"
-                   v-if="!edit"
-                   @click="edit = !edit">
-              Edit Details
-            </v-btn>
+            <AlbatrossButton
+                class="mb-4"
+                color="primary"
+                text="Edit Details"
+                v-if="!edit"
+                @click="edit = !edit">
+            </AlbatrossButton>
+
             <div v-if="edit" class="mb-4">
-              <v-btn
+              <AlbatrossButton
                   color="primary"
+                  text="Save"
                   :disabled="!tournament.tournamentName || !tournament.startDate || !tournament.endDate || (tournament.startDate >= tournament.endDate) || !tournament.tournamentOwnerTypeId || !tournament.tournamentFormulaId
                           || validateCustomFields()"
-                  @click="updateTournament">Save
-              </v-btn>
-              <v-btn text color="primary" class="ml-2" @click="edit = false">Cancel</v-btn>
+                  @click="updateTournament">
+              </AlbatrossButton>
+              <AlbatrossButton
+                  variant="text"
+                  color="primary"
+                  class="ml-2"
+                  text="Cancel"
+                  @click="edit = false">
+              </AlbatrossButton>
             </div>
 
             <!--            tournament image -->
@@ -89,16 +98,24 @@
               <v-toolbar-title class="title-large text-wrap">Tournament Background Image</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                       v-if="userCanEdit && !savingImage && !tournament.backgroundAttachmentPresignedUrl"
-                       @click="addImage = !addImage">
-                  <v-icon v-if="addImage">remove</v-icon>
-                  <v-icon v-else>add</v-icon>
-                </v-btn>
-                <v-btn v-else-if="userCanEdit" icon :large="$vuetify.breakpoint.smAndDown" color="primary" class="mr-2"
-                       @click="deleteAttachment(tournament.backgroundAttachmentId)">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                    v-if="userCanEdit && !savingImage && !tournament.backgroundAttachmentPresignedUrl"
+                    :round="true"
+                    color="primary"
+                    :prepend-icon="addImage ? 'remove' : 'add'"
+                    @click="addImage = !addImage">
+                </AlbatrossButton>
+
+                <AlbatrossButton
+                    v-else-if="userCanEdit"
+                    :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                    :round="true"
+                    class="mr-2"
+                    color="primary"
+                    prepend-icon="delete"
+                    @click="deleteAttachment(tournament.backgroundAttachmentId)">
+                </AlbatrossButton>
               </v-toolbar-items>
             </v-toolbar>
             <label></label>
@@ -132,6 +149,7 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {Actions} from '@/store'
 import constants from '@/helpers/constants'
 import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
