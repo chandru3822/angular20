@@ -86,139 +86,122 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
   import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useRoute} from "vue-router/composables";
+  const route = useRoute()
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
 
-  export default {
-    name: 'ZipPostalCodeZone',
-    components: {ConfirmationDialog},
-    mixins: [Vue2Filters.mixin],
-
-    data () {
-      return {
-        snackbar: {},
-        dataLoading: true,
-        itemToDelete: {},
-        showDeleteDialog: false,
-        addPostalCode: false,
-        postalCodeZoneId: this.$route.params.id,
-        postalCodeZone: {},
-        selectedPostalCode: {},
-        availablePostalCodes: [],
-        metroAreas: [],
-        metroAreaCustomFieldId: 185,
-        headers: [
+        const dataLoading = ref(true)
+        const itemToDelete = ref({})
+        const showDeleteDialog = ref(false)
+        const addPostalCode = ref(false)
+        const postalCodeZone = ref({})
+        const selectedPostalCode = ref({})
+        const availablePostalCodes = ref([])
+        const metroAreas = ref([])
+        const metroAreaCustomFieldId = ref(185)
+        const headers = ref([
           {text: 'Postal Code', value: 'postalCode', show: true},
           {text: '', value: 'icons', show: true},
-        ]
-      }
-    },
-    computed: {
-      ...mapStores(useUserStore),
-      filteredPostalCodes() {
-        return this.postalCodeZone?.postalCodes?.filter(o => !o.archived)
-      }
-    },
-    async created () {
-      this.getMetroAreas()
-      this.getPostalCodeZone()
-    },
-    methods: {
-      async getMetroAreas () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        ])
+
+  const filteredPostalCodes = computed(() => {
+    return postalCodeZone.value?.postalCodes?.filter(o => !o.archived)
+  })
+  const postalCodeZoneId = computed(() => {
+    return route.params.id
+  })
+
+  onMounted(() => {
+      getMetroAreas()
+      getPostalCodeZone()
+  })
+      const getMetroAreas = async() => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/customField/${this.metroAreaCustomFieldId}`)
-          this.metroAreas = data?.listOfValues
+          const {data, status} = await getRequest(`/customField/${metroAreaCustomFieldId.value}`)
+          metroAreas.value = data?.listOfValues
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          getSnackbar('ERROR', 'Error Retrieving Data')
         }
-      },
-      async getPostalCodeZone () {
-        this.dataLoading = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const getPostalCodeZone = async() => {
+        dataLoading.value = true
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/postalCode/zone/${this.postalCodeZoneId}`)
-          this.postalCodeZone = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
+          const {data, status} = await getRequest(`/postalCode/zone/${postalCodeZoneId.value}`)
+          postalCodeZone.value = data
+          dataLoading.value = false
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.dataLoading = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          dataLoading.value = false
+          getSnackbar('ERROR', 'Error Retrieving Data')
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async getAvailablePostalCodes () {
-        if(this.addPostalCode) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const getAvailablePostalCodes = async() => {
+        if(addPostalCode.value) {
+          store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data, status} = await getRequest(`/postalCode/zone/${this.postalCodeZoneId}/availableCodes`)
-            this.availablePostalCodes = data
-            handleHidingGlobalLoader(this, status)
+            const {data, status} = await getRequest(`/postalCode/zone/${postalCodeZoneId.value}/availableCodes`)
+            availablePostalCodes.value = data
+            handleHidingGlobalLoader(vueInstance, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            getSnackbar('ERROR', 'Error Retrieving Data')
+            store.commit(AppMutations.SET_LOADING, false)
           }
         }
-      },
-      async savePostalCodeZone () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const savePostalCodeZone = async() => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await postRequest(`/postalCode/zone`, this.postalCodeZone)
-          this.snackbar = getSnackbar('SUCCESS', 'Postal Code Zone Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          const {data, status} = await postRequest(`/postalCode/zone`, postalCodeZone.value)
+          getSnackbar('SUCCESS', 'Postal Code Zone Saved')
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Postal Code Zone')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          getSnackbar('ERROR', 'Error Saving Postal Code Zone')
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async savePostalCodeToZone () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const savePostalCodeToZone = async() => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await postRequest(`/postalCode/zone/${this.postalCodeZoneId}/postalCode`, this.selectedPostalCode)
-          this.postalCodeZone.postalCodes.push(data)
-          this.availablePostalCodes = this.availablePostalCodes.filter(apc => apc.id !== data.id)
-          this.selectedPostalCode = {}
-          this.snackbar = getSnackbar('SUCCESS', 'Postal Code Saved to Zone')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          const {data, status} = await postRequest(`/postalCode/zone/${postalCodeZoneId.value}/postalCode`, selectedPostalCode.value)
+          postalCodeZone.value.postalCodes.push(data)
+          availablePostalCodes.value = availablePostalCodes.value.filter(apc => apc.id !== data.id)
+          selectedPostalCode.value = {}
+          getSnackbar('SUCCESS', 'Postal Code Saved to Zone')
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Postal Code to Zone')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          getSnackbar('ERROR', 'Error Saving Postal Code to Zone')
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async deletePostalCodeFromZone () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const deletePostalCodeFromZone = async() => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/postalCode/zone/${this.postalCodeZoneId}/postalCode/${this.itemToDelete.id}`)
-          this.itemToDelete.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Postal Code Removed from Zone')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          await deleteRequest(`/postalCode/zone/${postalCodeZoneId.value}/postalCode/${itemToDelete.value.id}`)
+          itemToDelete.value.archived = true
+          getSnackbar('SUCCESS', 'Postal Code Removed from Zone')
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Removing Postal Code from Zone')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          getSnackbar('ERROR', 'Error Removing Postal Code from Zone')
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-    },
-  }
+      }
 </script>
 
 <style lang="scss">

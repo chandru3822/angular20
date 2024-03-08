@@ -118,7 +118,6 @@
 </template>
 
 <script setup>
-import Vue2Filters from 'vue2-filters'
 import {AppMutations} from '@/stores/AppStore'
 import {
   handleHidingGlobalLoader,

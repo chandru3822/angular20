@@ -55,9 +55,7 @@ const noNavRoutes = ref([
 ])
 
 const revokeAccessEvents = computed(() => {
-  return store.getters
-      .getEventsByTopic('revoke_access')
-      ?.filter((e) => e.userId === userId.value)
+  return notificationStore.getEventsByTopic('revoke_access')?.filter((e) => e.userId === userId.value)
 })
 
 watch(revokeAccessEvents, async () => {
