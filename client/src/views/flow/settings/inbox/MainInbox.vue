@@ -249,21 +249,20 @@
 
 <script setup>
 import { AppMutations } from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
-import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
+import {getRequest, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import moment from 'moment'
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
 import TeamAssignmentChips from '@/views/flow/settings/inbox/TeamAssignmentChips'
 import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignmentDialog'
 import NewMessageDialog from "./NewMessageDialog";
-import { NotificationActions } from '@/plugins/notifications/NotificationStore'
 import debounce from 'lodash.debounce'
 import ProjectActivity from "@/views/flow/project/ProjectActivity.vue";
 
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
 import {useUserStore} from "@/stores/UserStorePinia.js";
+import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -272,6 +271,7 @@ const route = vueInstance.$route
 const router = vueInstance.$router
 const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
+const notificationStore = useNotificationStore()
 
 const userCanViewAll = ref(userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW_ALL'))
 const conversations = ref([])
@@ -356,10 +356,10 @@ const sentNotificationCount = computed(() => {
   return count;
 })
 const smsOwnershipEvents = computed(() => {
-  return store.getters.getEventsByTopic('sms_ownership').length
+  return notificationStore.getEventsByTopic('sms_ownership').length
 })
 const smsNotification = computed(() => {
-  return store.getters.getNotificationsByTopic('sms_reply')
+  return notificationStore.getNotificationsByTopic('sms_reply')
 })
 const conversationsFiltered = computed(() => {
   let conversationList = conversations.value
@@ -674,14 +674,14 @@ const clearProjectNotification = (projectId) => {
     ?.filter(n => n.metadata.projectId === projectId)
     ?.map(notif => notif.id)
 
-  store.dispatch(NotificationActions.MARK_AS_READ, notificationIds)
+  notificationStore.markAsRead(notificationIds)
 }
 const clearUserNotification = (userId) => {
   const notificationIds = smsNotification.value
     ?.filter(n => n.metadata.userId === userId)
     ?.map(notif => notif.id)
 
-  store.dispatch(NotificationActions.MARK_AS_READ, notificationIds)
+  notificationStore.markAsRead(notificationIds)
 }
 const toggleSelectAllTeams = () => {
   if (allTeamsSelected.value) {

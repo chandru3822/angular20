@@ -326,7 +326,6 @@ import {getActiveStates} from "@/services/stateService";
 import {getCountries} from "@/services/countryService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
-import {NotificationActions} from "@/plugins/notifications/NotificationStore";
 import StatusTrackerIcon from "@/views/flow/project/StatusTrackerIcon";
 import StatusTrackerItem from "@/views/flow/project/StatusTrackerItem";
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
@@ -335,6 +334,7 @@ import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
 export default {
   name: 'Project',
   components: {
@@ -407,13 +407,13 @@ export default {
     },
     projectTagEvents: async function () {
       if (this.projectTagEvents?.length > 0) {
-        this.$store.dispatch(NotificationActions.PROCESS_PROJECT_MSG, this.projectId)
+        this.notificationStore.processProjectMsg(this.projectId)
         await this.getProjectTags()
       }
     }
   },
   computed: {
-    ...mapStores(useUserStore, useAppStore, useProjectStore),
+    ...mapStores(useUserStore, useAppStore, useProjectStore, useNotificationStore),
     userCanEdit() {
       return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
     },

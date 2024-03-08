@@ -3,13 +3,14 @@
 </template>
 <script setup>
 import constants from '@/helpers/constants'
-import {NotificationActions} from '@/plugins/notifications/NotificationStore'
 import {getCurrentInstance, onBeforeUnmount, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
+const notificationStore = useNotificationStore()
 
 const evtSource = ref(undefined)
 
@@ -30,7 +31,7 @@ const setupNotificationStream = () => {
     topics.forEach(topic => {
       evtSource.value.addEventListener(topic, function (e) {
         const data = JSON.parse(e?.data)
-        store.dispatch(NotificationActions.HANDLE_STREAM_EVENT, data)
+        notificationStore.handleStreamEvent(data)
       })
     })
 

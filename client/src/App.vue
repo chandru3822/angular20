@@ -26,18 +26,18 @@ import Snackbar from '@/components/Snackbar'
 import Spinner from '@/components/Spinner'
 import AnnouncementAlert from '@/components/AnnouncementAlert.vue'
 import ReloadPrompt from '@/components/ReloadPrompt.vue'
-import {NotificationActions} from '@/plugins/notifications/NotificationStore'
-
 import {getCurrentInstance, onMounted, ref, computed, watch} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import theme from '@/helpers/defaultTheme.js'
+import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
 const userStore = useUserStore()
 const appStore = useAppStore()
+const notificationStore = useNotificationStore()
 
 // In moving this from vuex to pinia, I noticed `hideHeader` never exists in
 // the user store. Still keeping this logic here though in case of a breaking
@@ -66,10 +66,7 @@ watch(revokeAccessEvents, async () => {
         userStore.logout()
         //i tried dispatch after 'await' but it didn't work. dont know why
         router.push('/login').then(() => {
-          store.dispatch(
-              NotificationActions.PROCESS_REVOKE_ACCESS,
-              userId.value
-          )
+          notificationStore.processRevokeAccess(userId.value)
         })
       }
     }

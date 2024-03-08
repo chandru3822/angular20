@@ -122,12 +122,12 @@ import constants from '@/helpers/constants'
 import AccountMenu from '@/components/AccountMenu.vue'
 import CompanyTools from '@/components/CompanyTools.vue'
 import axios from 'axios'
-import { NotificationActions } from '@/plugins/notifications/NotificationStore'
 import AnnouncementDropdown from '@/components/AnnouncementDropdown.vue'
 import moment from 'moment'
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
 
 const { VITE_ENV } =  import.meta.env
 //@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
@@ -237,7 +237,7 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useUserStore, useAppStore),
+    ...mapStores(useUserStore, useAppStore, useNotificationStore),
     userIsMasquerading() {
       return  this.userStore?.details?.masqueradingUserId != null
     },
@@ -248,16 +248,16 @@ export default {
       return this.tabs.filter(tab => this.userStore.userHasFeature(tab.feature) && tab.show)
     },
     smsNotification() {
-      return this.$store.getters.getNotificationsByTopic('sms_reply')
+      return this.notificationStore.getNotificationsByTopic('sms_reply')
     },
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
     },
     themeUpdateEvents() {
-      return this.$store.getters.getEventsByTopic('theme_update').length
+      return this.notificationStore.getEventsByTopic('theme_update').length
     },
     announcementEvents() {
-      return this.$store.getters.getEventsByTopic('announcement').length
+      return this.notificationStore.getEventsByTopic('announcement').length
     },
   },
   methods: {
@@ -350,7 +350,7 @@ export default {
       }
     },
     getSmsNotification() {
-      this.$store.dispatch(NotificationActions.FETCH_NOTIFICATIONS)
+      this.notificationStore.fetchNotifications()
     },
     async getActiveAnnouncements() {
       try {
