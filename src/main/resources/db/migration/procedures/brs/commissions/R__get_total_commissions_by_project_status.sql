@@ -4,7 +4,14 @@ CREATE or replace function brs.get_total_commissions_by_project_status(p_closer_
 $BODY$
   declare
   v_commissions json;
+  v_status_name text;
 begin
+
+      select project_status_type
+      into v_status_name
+      from flow.company_project_status_type
+      where id = p_company_project_status_type_id;
+
     select row_to_json(commission)
     into v_commissions
   from (
@@ -23,7 +30,10 @@ begin
   where pd.company_project_status_type_id = p_company_project_status_type_id
     and pd.closer_user_id = p_closer_user_id
   group by pd.company_project_status_type) as commission;
-    return v_commissions;
+    return coalesce(v_commissions, concat('{ "statusType": "' || v_status_name || '",
+            "totalByStatus": 0.0,
+            "commissionAtFdc": 0.0,
+            "commissionAtSubstantialCompletion": 0.0 }')::json);
 END
 $BODY$
   LANGUAGE plpgsql
