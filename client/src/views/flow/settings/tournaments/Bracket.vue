@@ -5,9 +5,13 @@
         <v-toolbar flat class="wqt-header-bar">
           <v-toolbar-title class="title-large">Brackets</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="addBracket = !addBracket">
-            <v-icon>add</v-icon>
-          </v-btn>
+          <AlbatrossButton
+              :round="true"
+              color="primary"
+              @click="addBracket = !addBracket"
+              :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+              prepend-icon="add"
+          />
         </v-toolbar>
         <v-card flat v-if="addBracket">
           <v-text-field text
@@ -18,15 +22,16 @@
                         persistent-hint
                         v-model.number="newBracket.numberOfUsers"></v-text-field>
           <div class="error-text" v-if="bracketError">{{ bracketErrorMsg }}</div>
-          <v-btn color="primary"
-                 class="white--text"
-                 :disabled="!newBracket.numberOfUsers"
-                 @click="addNewBracket">
-            Save
-          </v-btn>
-          <v-btn text color="primary" @click="[addBracket = !addBracket, newBracket = {}]">
-            Cancel
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              :disabled="!newBracket.numberOfUsers"
+              @click="addNewBracket"
+              text="Save"/>
+          <AlbatrossButton
+              color="primary"
+              v-if="edit"
+              @click="[addBracket = !addBracket, newBracket = {}]"
+              text="Cancel"/>
         </v-card>
         <div :key="bracketRerenderKey">
           <v-card flat
@@ -37,32 +42,58 @@
                 Bracket #{{ index + 1 }}: {{ b.numberOfUsers }} Users
               </v-toolbar-title>
               <v-spacer></v-spacer>
-              <v-btn text color="primary" :class="{'no-display': b.matchesGenerated && $vuetify.breakpoint.xsOnly}"
-                     @click="bracketForMatches = b"
-                     :disabled="b.matchesGenerated || b.rounds.length === 0">
-                <v-icon large v-if="!b.matchesGenerated && $vuetify.breakpoint.smAndDown">mdi-tournament</v-icon>
-                <span v-else-if="!b.matchesGenerated">Generate Matches</span>
-                <span v-else>Matches Created</span>
-              </v-btn>
-              <v-btn v-if="b.maxRounds" text disabled color="primary" class="white--text">
-                <span v-if="$vuetify.breakpoint.smAndDown">Max</span>
-                <span v-else>Max Rounds Reached</span>
-              </v-btn>
-              <v-btn text color="primary" v-else-if="!b.matchesGenerated" class="white--text"
-                     @click="[b.addRound = !b.addRound, rerenderBracket()]">
-                <v-icon large v-if="!b.addRound && $vuetify.breakpoint.smAndDown">add</v-icon>
-                <span v-else-if="!b.addRound">Add Round</span>
-                <span v-else>Cancel</span>
-              </v-btn>
-              <v-btn small icon :large="$vuetify.breakpoint.smAndDown" class="mx-3" color="primary"
-                     @click="bracketToCopy=b"
-                     v-if="userCanEdit">
-                <v-icon>mdi-content-copy</v-icon>
-              </v-btn>
-              <v-btn small :large="$vuetify.breakpoint.smAndDown" color="primary" icon v-if="userCanDelete"
-                     @click="bracketToDelete=b">
-                <v-icon>delete</v-icon>
-              </v-btn>
+              <AlbatrossButton
+                  variant="text"
+                  color="primary"
+                  :class="{'no-display': b.matchesGenerated && $vuetify.breakpoint.xsOnly}"
+                  :disabled="b.matchesGenerated || b.rounds.length === 0"
+                  @click="bracketForMatches = b">
+                <template v-slot:default>
+                  <v-icon large v-if="!b.matchesGenerated && $vuetify.breakpoint.smAndDown">mdi-tournament</v-icon>
+                  <span v-else-if="!b.matchesGenerated">Generate Matches</span>
+                  <span v-else>MATCHES CREATED</span>
+                </template>
+              </AlbatrossButton>
+
+              <AlbatrossButton v-if="b.maxRounds"
+                               variant="text"
+                               disabled
+                  color="primary"
+                  :disabled="b.matchesGenerated || b.rounds.length === 0"
+              :text="$vuetify.breakpoint.smAndDown ? 'Max' : 'Max Rounds Reached'"/>
+
+              <AlbatrossButton
+                  v-else-if="!b.matchesGenerated"
+                  variant="text"
+                  color="primary"
+                  :disabled="b.matchesGenerated || b.rounds.length === 0"
+                  @click="[b.addRound = !b.addRound, rerenderBracket()]">
+                <template v-slot:default>
+                  <v-icon large v-if="!b.addRound && $vuetify.breakpoint.smAndDown">add</v-icon>
+                  <span v-else-if="!b.addRound">Add Round</span>
+                  <span v-else>Cancel</span>
+                </template>
+              </AlbatrossButton>
+
+              <AlbatrossButton
+                  v-if="userCanEdit"
+                  :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
+                  class="mx-3"
+                  :round="true"
+                  color="primary"
+                  prepend-icon="mdi-content-copy"
+                  @click="bracketToCopy=b">
+              </AlbatrossButton>
+
+              <AlbatrossButton
+                  v-if="userCanDelete"
+                  :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
+                  class="mx-3"
+                  :round="true"
+                  color="primary"
+                  prepend-icon="delete"
+                  @click="bracketToDelete=b">
+              </AlbatrossButton>
             </v-toolbar>
             <v-card flat v-if="b.addRound">
               <DatetimePickerInput
@@ -79,11 +110,11 @@
                   :format="'MMMM DD, YYYY'"
                   label="End Date"
               />
-              <v-btn color="primary"
-                     class="white--text mb-3"
-                     :disabled="!newRound.startDate || !newRound.endDate || newRound.startDate > newRound.endDate"
-                     @click="saveRound(b, newRound)">Save
-              </v-btn>
+              <AlbatrossButton
+                  color="primary"
+                  :disabled="!newRound.startDate || !newRound.endDate || newRound.startDate > newRound.endDate"
+                  @click="saveRound(b, newRound)"
+                  text="Save"/>
             </v-card>
             <v-data-table
                 :key="rerenderKey"
@@ -137,19 +168,39 @@
                 </div>
               </template>
               <template #item.icons="{item}" class="text-right">
-                <v-btn small text color="primary" @click="[item.edit = !item.edit, rerenderKey++]">
-                  <v-icon v-if="!item.edit">edit</v-icon>
-                  <span v-else :class="{'body-large': $vuetify.breakpoint.smAndDown}">cancel</span>
-                </v-btn>
-                <v-btn v-if="item.edit" icon color="primary" :class="{'mx-4': $vuetify.breakpoint.smAndDown}"
-                       :disabled="!item.startDate || !item.endDate || item.startDate > item.endDate"
-                       @click="saveRound(b, item)"><span
-                    :class="{'body-large': $vuetify.breakpoint.smAndDown}">Save</span>
-                </v-btn>
-                <v-btn text color="primary" @click="[roundToDelete = item, bracketToDeleteRoundFrom = b]"
-                       v-if="!b.matchesGenerated && userCanDelete">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    v-if="userCanEdit"
+                    variant="text"
+                    size="small"
+                    color="primary"
+                    prepend-icon="mdi-content-copy"
+                    @click="[item.edit = !item.edit, rerenderKey++]"
+                    :prepend-icon="!item.edit ? 'edit' : ''"
+                  :text="item.edit ? 'cancel' : ''">
+                </AlbatrossButton>
+
+                <AlbatrossButton
+                    v-if="item.edit"
+                    variant="text"
+                    :round="true"
+                    size="small"
+                    :class="{'mx-4': $vuetify.breakpoint.smAndDown}"
+                    color="primary"
+                    :disabled="!item.startDate || !item.endDate || item.startDate > item.endDate"
+                    @click="saveRound(b, item)"
+                    text="Save">
+                </AlbatrossButton>
+
+
+                <AlbatrossButton
+                    v-if="!b.matchesGenerated && userCanDelete"
+                    variant="text"
+                    :round="true"
+                    :class="{'mx-4': $vuetify.breakpoint.smAndDown}"
+                    color="primary"
+                    prepend-icon="delete"
+                    @click="[roundToDelete = item, bracketToDeleteRoundFrom = b]">
+                </AlbatrossButton>
               </template>
             </v-data-table>
           </v-card>
@@ -182,7 +233,7 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {
   handleHidingGlobalLoader,
@@ -199,6 +250,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 import {useRoute} from "vue-router/composables";
 import {useUserStore} from '@/stores/UserStorePinia.js'
+import constants from "@/helpers/constants.js";
 const userStore = useUserStore()
 
 const route = useRoute()

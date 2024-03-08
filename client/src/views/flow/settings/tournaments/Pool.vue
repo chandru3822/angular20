@@ -5,10 +5,14 @@
         <v-toolbar flat class="wqt-header-bar">
           <v-toolbar-title class="title-large">{{ pool.customName || pool.poolType + ' Pool' }}</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="editPool = !editPool">
-            <v-icon v-if="!editPool">edit</v-icon>
-            <v-icon v-else>close</v-icon>
-          </v-btn>
+          <AlbatrossButton
+              :round="true"
+              color="primary"
+              @click="editPool = !editPool"
+              :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+              :prepend-icon="editPool ? 'close' : 'edit'"
+          />
+
         </v-toolbar>
         <div>
           <v-text-field
@@ -38,13 +42,13 @@
                 label="End Date"
             />
           </div>
-          <v-btn color="primary"
-                 v-if="editPool"
-                 class="white--text"
-                 :disabled="!pool.startDate || !pool.endDate || pool.startDate > pool.endDate"
-                 @click="savePoolDates()">
-            Save
-          </v-btn>
+
+          <AlbatrossButton
+              v-if="editPool"
+              color="primary"
+              :disabled="!pool.startDate || !pool.endDate || pool.startDate > pool.endDate"
+              @click="savePoolDates()"
+              text="Save"/>
         </div>
         <div v-if="poolTypeId === 3">
           <v-divider class="mt-2"></v-divider>
@@ -53,16 +57,24 @@
             <v-toolbar-title class="title-large text-wrap">Winner Background Image</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                     v-if="userCanEdit && !savingImage && !pool.backgroundAttachmentPresignedUrl"
-                     @click="addImage = !addImage">
-                <v-icon v-if="addImage">remove</v-icon>
-                <v-icon v-else>add</v-icon>
-              </v-btn>
-              <v-btn v-else-if="userCanEdit" icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                     @click="deleteWinnerBackgroundDialog = true">
-                <v-icon>delete</v-icon>
-              </v-btn>
+              <AlbatrossButton
+                  v-if="userCanEdit && !savingImage && !pool.backgroundAttachmentPresignedUrl"
+                  :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                  :round="true"
+                  color="primary"
+                  :prepend-icon="addImage ? 'remove' : 'add'"
+                  @click="addImage = !addImage">
+              </AlbatrossButton>
+
+              <AlbatrossButton
+                  v-else-if="userCanEdit"
+                  :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                  :round="true"
+                  color="primary"
+                  prepend-icon="delete"
+                  @click="deleteWinnerBackgroundDialog = true">
+              </AlbatrossButton>
+
               <ConfirmationDialog :open-dialog="deleteWinnerBackgroundDialog"
                                   @confirm="deleteAttachment(pool.backgroundAttachmentId)"
                                   @close-dialog="deleteWinnerBackgroundDialog = false">Are you sure you want to delete
@@ -98,9 +110,14 @@
           <v-toolbar flat class="wqt-header-bar">
             <v-toolbar-title class="title-large">Positions</v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="addPosition = !addPosition">
-              <v-icon>add</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                :round="true"
+                color="primary"
+                prepend-icon="add"
+                @click="addPosition = !addPosition">
+            </AlbatrossButton>
+
           </v-toolbar>
           <v-card flat v-if="addPosition">
             <v-autocomplete
@@ -111,13 +128,19 @@
                 item-value="id"
             ></v-autocomplete>
 
-            <v-btn color="primary" :disabled="!positionId"
-                   @click="addPositionToPool">
-              Save
-            </v-btn>
-            <v-btn text color="primary" @click="[addPosition = !addPosition, positionId = null]">
-              Cancel
-            </v-btn>
+            <AlbatrossButton
+                color="primary"
+                text="Save"
+                :disabled="!positionId"
+                @click="addPositionToPool">
+            </AlbatrossButton>
+
+            <AlbatrossButton
+                color="primary"
+                variant="text"
+                text="Cancel"
+                @click="[addPosition = !addPosition, positionId = null]">
+            </AlbatrossButton>
           </v-card>
 
           <v-data-table
@@ -141,9 +164,13 @@
               <tr class="text-left" :class="{'shaded-row': pool.positions.indexOf(item) % 2}">
                 <td class="text-left">{{ item.position }}</td>
                 <td class="text-right">
-                  <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="positionToDelete=item">
-                    <v-icon>delete</v-icon>
-                  </v-btn>
+                  <AlbatrossButton
+                      :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                      :round="true"
+                      color="primary"
+                      prepend-icon="delete"
+                      @click="positionToDelete=item">
+                  </AlbatrossButton>
                 </td>
               </tr>
             </template>
@@ -155,9 +182,13 @@
           <v-toolbar flat class="wqt-header-bar">
             <v-toolbar-title class="title-large">Users</v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="addUser = !addUser">
-              <v-icon>add</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                :round="true"
+                color="primary"
+                prepend-icon="add"
+                @click="addUser = !addUser">
+            </AlbatrossButton>
           </v-toolbar>
           <v-card flat v-if="addUser">
             <v-autocomplete
@@ -169,13 +200,19 @@
                 attach
             ></v-autocomplete>
 
-            <v-btn color="primary" :disabled="!userId"
-                   @click="addUserToPool">
-              Save
-            </v-btn>
-            <v-btn text color="primary" @click="[addUser = !addUser, userId = null]">
-              Cancel
-            </v-btn>
+            <AlbatrossButton
+                color="primary"
+                text="Save"
+                :disabled="!userId"
+                @click="addUserToPool">
+            </AlbatrossButton>
+
+            <AlbatrossButton
+                color="primary"
+                text="Cancel"
+                variant="text"
+                @click="[addUser = !addUser, userId = null]">
+            </AlbatrossButton>
           </v-card>
           <v-text-field
               v-model="userSearch"
@@ -206,9 +243,13 @@
               <tr class="text-left" :class="{'shaded-row': pool.users.indexOf(item) % 2}">
                 <td class="text-left">{{ item.fullName }}</td>
                 <td class="text-right">
-                  <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="userToDelete=item">
-                    <v-icon>delete</v-icon>
-                  </v-btn>
+                  <AlbatrossButton
+                      :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                      :round="true"
+                      color="primary"
+                      prepend-icon="delete"
+                      @click="userToDelete=item">
+                  </AlbatrossButton>
                 </td>
               </tr>
             </template>
@@ -250,6 +291,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const route = useRoute()
 import {useUserStore} from '@/stores/UserStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 const userStore = useUserStore()
 
 const positionToDelete = ref(null)
