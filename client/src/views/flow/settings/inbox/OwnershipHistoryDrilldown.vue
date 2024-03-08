@@ -4,9 +4,14 @@
         History
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
-        <v-btn icon color="primary" class="text-capitalize" @click="$emit('historyDialogClosed')">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
+        <AlbatrossButton
+          variant="text"
+          icon
+          color="primary"
+          class="text-capitalize"
+          @click="emit('historyDialogClosed')"
+          prepend-icon="mdi-close"
+        />
       </v-card-title>
     <v-data-table
       :headers="headers"
@@ -37,37 +42,22 @@
   </v-card>
 </template>
 
-<script>
-  import constants from '@/helpers/constants'
-  export default {
-    name: 'OwnershipHistoryDrilldown',
-    components: {
-    },
-    props: {
-      conversationHistory: Array
-    },
-    watch: {
-    },
-    data() {
-      return {
-        constants,
-        snackbar: {},
-        results: [],
-        headers: [
-          {text: 'Team', value: 'team_name', name: 'team'},
-          {text: 'Team Member', value: 'userName'},
-          {text: 'Joined Conversation', value: 'date_created'},
-          {text: 'Left Conversation', value: 'date_removed'},
-        ]
-      }
-    },
-    computed: {
-    },
-    async created() {
-    },
-    methods: {
-    }
-  }
+<script setup>
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import { ref } from "vue";
+
+  const props = defineProps({
+    conversationHistory: Array
+  })
+  const results = ref([])
+  const headers = ref([
+    {text: 'Team', value: 'team_name', name: 'team'},
+    {text: 'Team Member', value: 'userName'},
+    {text: 'Joined Conversation', value: 'date_created'},
+    {text: 'Left Conversation', value: 'date_removed'},
+  ])
+  const emit = defineEmits(['historyDialogClosed'])
+
 </script>
 
 <style lang="scss">
