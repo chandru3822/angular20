@@ -6,7 +6,6 @@ import App from '@/App.vue'
 import router from '@/router'
 import store, { pinia } from '@/store'
 import axios from 'axios'
-import { NotificationPlugin } from '@/plugins/notifications/NotificationPlugin'
 import { SnackbarPlugin } from '@/plugins/SnackbarPlugin'
 import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
@@ -18,7 +17,6 @@ import { useUserStore } from '@/stores/UserStorePinia.js'
 const { VITE_GA_ID } = import.meta.env
 Vue.config.productionTip = false
 
-Vue.use(NotificationPlugin, { store })
 Vue.use(SnackbarPlugin)
 Vue.use(Vue2Filters)
 Vue.prototype.$filters = Vue.options.filters
