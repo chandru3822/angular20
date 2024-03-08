@@ -230,7 +230,7 @@
               />
             </div>
             <div v-else>
-              <v-alert prominent type="error">
+              <v-alert v-if="!templateLoading" prominent type="error">
                 <v-row>
                   <v-col class="grow"> Error generating proposal </v-col>
                 </v-row>
@@ -382,7 +382,8 @@ export default {
       })
     },
     ...mapState({
-      template: (state) => state.proposal.template
+      template: (state) => state.proposal.template,
+      templateLoading: (state) => state.proposal.loading
     })
   },
   methods: {
