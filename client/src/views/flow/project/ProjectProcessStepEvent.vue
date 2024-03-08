@@ -110,7 +110,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" small @click="setSplitColumnValue()" v-if="!isMobile" class="px-0">
-              <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
+              <v-icon v-if="!projectStore.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
               <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
             </v-btn>
             <div>
@@ -186,7 +186,7 @@
           <v-container v-if="!showRoundRobin" class="px-4" :class="{'pt-0': selectedEvent.uniqueBehaviorTypeId !== 1}">
               <div v-if="!uniqueAlreadyHasValue && selectedEvent.uniqueBehaviorTypeId === 1" class="title-large pt-1">Manual Assignment</div>
             <v-row>
-              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0" :class="{'pt-2': selectedEvent.uniqueBehaviorTypeId === 1}">
+              <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="py-0" :class="{'pt-2': selectedEvent.uniqueBehaviorTypeId === 1}">
                 <DatetimePickerInput
                     v-model="selectedEvent.startTime"
                     :timezone="this.timezone"
@@ -200,7 +200,7 @@
                     :change-callback="startTimeChanged"
                 />
               </v-col>
-              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0" :class="{'pt-2': selectedEvent.uniqueBehaviorTypeId === 1}">
+              <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="py-0" :class="{'pt-2': selectedEvent.uniqueBehaviorTypeId === 1}">
                 <DatetimePickerInput
                     v-model="selectedEvent.endTime"
                     :timezone="this.timezone"
@@ -238,7 +238,7 @@
                 You do not have access to schedule projects in this Postal Code
               </v-card-text>
               <v-row class="pb-3 px-0 one-hunned" v-else>
-                <v-col :cols="($store.state.project.manualColumnSplit && timeSlots.length > 0 && availabilityDateField.dateValue && !dateValueChanged) ? 6 : 12" class="pb-0 pt-2">
+                <v-col :cols="(projectStore.manualColumnSplit && timeSlots.length > 0 && availabilityDateField.dateValue && !dateValueChanged) ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
                   :readonly="!userCanEdit"
                   :min-date="minDate"
@@ -247,7 +247,7 @@
                   :show-field-name="false"
                 />
                 </v-col>
-                <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2" v-if="availabilityDateField.dateValue && !dateValueChanged">
+                <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2" v-if="availabilityDateField.dateValue && !dateValueChanged">
                 <v-select v-if="timeSlots.length > 0"
                           v-model="selectedTimeSlot"
                           class="qa-round-robin-time-select"
@@ -316,7 +316,7 @@
           </v-toolbar>
           <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
             <v-row>
-              <v-col :cols="$store.state.project.manualColumnSplit && cfg.customFieldValues && cfg.customFieldValues.length > 1 ? 6 : 12" class="pb-0 pt-2">
+              <v-col :cols="projectStore.manualColumnSplit && cfg.customFieldValues && cfg.customFieldValues.length > 1 ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                   :key="idx"
@@ -328,7 +328,7 @@
                   :show-field-name="false"
                 />
               </v-col>
-              <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+              <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                   :key="idx"
@@ -383,6 +383,7 @@ import ActionButton from "./ActionButton";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 export default {
   name: 'ProjectProcessStepEvent',
@@ -502,7 +503,7 @@ export default {
     },
   },
   computed: {
-    ...mapStores(useUserStore, useAppStore),
+    ...mapStores(useUserStore, useAppStore, useProjectStore),
     timezone() {
       return this.userStore.details.timezone.value
     },
@@ -553,10 +554,10 @@ export default {
     },
     setSplitColumnValue() {
       //flip the flag
-      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
+      this.projectStore.manualColumnSplit = !this.projectStore.manualColumnSplit
     },
     getCustomFieldValuesToDisplay(values, columnNum) {
-      if (this.$store.state.project.manualColumnSplit) {
+      if (this.projectStore.manualColumnSplit) {
         return values.filter(function (element, index, values) {
           return (index % 2 === (columnNum === 1 ? 0 : 1));
         });
@@ -861,16 +862,17 @@ export default {
           //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
           this.selectedEvent.allowAllUserDeletion = data.startTime === null
           //have to reset the pps stuff too in case they just go directly to the url
-          this.$store.commit(ProjectMutations.SET_PPS, {
+
+          this.projectStore.pps = {
             projectProcessStepId: this.selectedEvent.projectProcessStepId,
             processStepId: this.selectedEvent.processStepId,
             processStepName: this.selectedEvent.processStepName
-          })
+          }
           window.document.title = this.project?.id ? `${this.project.projectName} - ${this.selectedEvent.eventName}`
             : `${this.selectedEvent.eventName}`
-          this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
-          this.$store.commit(ProjectMutations.SET_LINK_LABEL, `${this.selectedEvent.eventName} (${this.selectedEvent.id})`)
-          this.$store.commit(ProjectMutations.SET_LINK_ID, this.selectedEvent.id)
+          this.projectStore.ppsEvent = this.selectedEvent
+          this.projectStore.linkLabel = `${this.selectedEvent.eventName} (${this.selectedEvent.id})`
+          this.projectStore.linkId = this.selectedEvent.id
           this.isEventReadonly = this.getIsEventReadonly()
           this.isUploadReadonly = this.getIsUploadReadonly()
           if (data.uniqueBehaviorTypeId === 1) {

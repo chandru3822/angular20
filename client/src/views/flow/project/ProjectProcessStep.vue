@@ -211,7 +211,7 @@
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-btn text color="primary" @click="setSplitColumnValue()" v-if="!isMobile" class="px-0">
-            <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
+            <v-icon v-if="!projectStore.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
             <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
           </v-btn>
           <div>
@@ -252,7 +252,7 @@
 
           <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
             <v-row>
-              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+              <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                   :key="idx"
@@ -263,7 +263,7 @@
                   :show-field-name="false"
                 />
               </v-col>
-              <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+              <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                   :key="idx"
@@ -314,7 +314,6 @@ import {
 import ActionButton from './ActionButton'
 import EventButton from './EventButton'
 import {AppMutations} from '@/stores/AppStore'
-import {ProjectMutations} from '@/stores/ProjectStore'
 import {getCompanyAssignedToProcessStep, getStatusClass} from '@/services/processStepStatusTypeService'
 import Links from '@/views/flow/components/Links'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
@@ -328,6 +327,7 @@ import ConfirmationDialog from "../../../components/ConfirmationDialog.vue";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -405,7 +405,7 @@ export default {
     await this.loadAllPageDetails()
   },
   computed: {
-    ...mapStores(useUserStore, useAppStore),
+    ...mapStores(useUserStore, useAppStore, useProjectStore),
     userCanEdit() {
       return this.userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
     },
@@ -467,10 +467,10 @@ export default {
   methods: {
     setSplitColumnValue() {
       //flip the flag
-      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
+      this.projectStore.manualColumnSplit = !this.projectStore.manualColumnSplit
     },
     getCustomFieldValuesToDisplay(values, columnNum) {
-      if (this.$store.state.project.manualColumnSplit) {
+      if (this.projectStore.manualColumnSplit) {
         return values.filter(function (element, index, values) {
           return (index % 2 === (columnNum === 1 ? 0 : 1));
         });
@@ -542,9 +542,9 @@ export default {
           this.processStepId = this.processStep.processStepId
           // this.contactId = this.processStep.contactId
           this.existingEvents = this.processStep.projectProcessStepEvents
-          this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
-          this.$store.commit(ProjectMutations.SET_LINK_LABEL, `${this.processStep.processStepName} (${this.processStep.projectProcessStepId})`)
-          this.$store.commit(ProjectMutations.SET_LINK_ID, this.processStep.projectProcessStepId)
+          this.projectStore.pps = this.processStep
+          this.projectStore.linkLabel = `${this.processStep.processStepName} (${this.processStep.projectProcessStepId})`
+          this.projectStore.linkId = this.processStep.projectProcessStepId
           if (reloadAll) {
             //dont reload if only doing simple refresh
             this.getAvailableStatuses()

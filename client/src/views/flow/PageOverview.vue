@@ -161,7 +161,7 @@
 </template>
 
 <script setup>
-import {formatPhoneNumber, cleanPhoneNumberForCopying, getRequest, getSnackbar} from "@/helpers/helpers";
+import {formatPhoneNumber, cleanPhoneNumberForCopying, getRequest} from "@/helpers/helpers";
 import constants from '@/helpers/constants'
 import {getStatusColorClass} from "@/services/projectStatusTypeService";
 import {AppMutations} from "@/stores/AppStore";
@@ -170,10 +170,12 @@ import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getCurrentInstance, onMounted, ref, defineProps} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
+const projectStore = useProjectStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 const filters = vueInstance.$filters
@@ -220,7 +222,7 @@ const selectValue = () => {
 
 }
 const openMenu = () => {
-  store.state.project.leftSideSplit = false;
+  projectStore.leftSideSplit = false;
 }
 const openSendMessageDialogue = (owner) => {
   if (!owner.hasSmsAccess) {

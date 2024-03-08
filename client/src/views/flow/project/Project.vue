@@ -134,18 +134,18 @@
         <v-toolbar-title class="title-medium text-wrap">
           <div>
             <router-link :to="`/project/${project.id}/status`" class="no-text-decoration">{{ project.projectName }}</router-link>
-            <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
+            <span v-if="projectStore && projectStore.pps && projectStore.pps.processStepName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
             <router-link class="breadcrumb albatross-body-2 no-text-decoration"
-                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
-              {{ $store.state.project.pps.processStepName }}
+                         :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}`">
+              {{ projectStore.pps.processStepName }}
             </router-link>
           </span>
-            <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
+            <span v-if="projectStore && projectStore.ppsEvent && projectStore.ppsEvent.eventName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
             <router-link class="breadcrumb albatross-body-2 no-text-decoration"
-                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
-              {{ $store.state.project.ppsEvent.eventName }} Event
+                         :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}/event/${projectStore.ppsEvent.id}`">
+              {{ projectStore.ppsEvent.eventName }} Event
             </router-link>
           </span>
           </div>
@@ -192,21 +192,21 @@
                            >
             <div>
               <router-link :to="`/project/${project.id}/status`">{{ project.projectName }}</router-link>
-              <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
+              <span v-if="projectStore && projectStore.pps && projectStore.pps.processStepName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
             <router-link class="breadcrumb albatross-body-2"
-                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
-              {{ $store.state.project.pps.processStepName }}
+                         :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}`">
+              {{ projectStore.pps.processStepName }}
             </router-link>
           </span>
-              <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
+              <span v-if="projectStore && projectStore.ppsEvent && projectStore.ppsEvent.eventName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
             <router-link class="breadcrumb albatross-body-2"
-                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
-              {{ $store.state.project.ppsEvent.eventName }} Event
+                         :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}/event/${projectStore.ppsEvent.id}`">
+              {{ projectStore.ppsEvent.eventName }} Event
             </router-link>
           </span>
-              <span v-if="$store.state.project && selectedTab && $route.name === 'projectDetails'" class="breadcrumb albatross-body-2 primary--text">
+              <span v-if="projectStore && selectedTab && $route.name === 'projectDetails'" class="breadcrumb albatross-body-2 primary--text">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
               {{ selectedTab.tabName}}
           </span>
@@ -318,14 +318,12 @@ import ProjectTabs from '@/views/flow/project/ProjectTabs'
 import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
 import ActiveEvents from '@/views/flow/project/ActiveEvents'
 import {
-  getCompanyProjectStatusType,
   getCompanyProjectStatusTypes,
   getStatusColorClass
 } from "@/services/projectStatusTypeService"
 import constants from "@/helpers/constants";
 import {getActiveStates} from "@/services/stateService";
 import {getCountries} from "@/services/countryService";
-import {ProjectMutations} from "@/stores/ProjectStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 import {NotificationActions} from "@/plugins/notifications/NotificationStore";
@@ -336,6 +334,7 @@ import ThreeColumnLayoutMobile from '@/views/ThreeColumnLayoutMobile'
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 export default {
   name: 'Project',
   components: {
@@ -386,7 +385,7 @@ export default {
   },
   created() {
     //have to reset this on creation in case there is already a state then they go to the project url directly
-    this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
+    this.projectStore.resetProjectState()
     this.loadProject();
     this.pageOverviewMenuItem = {
       archived: false,
@@ -401,10 +400,10 @@ export default {
   watch: {
     '$route.params.processStepId': async function () {
       //when changing pps, the pps AND ppsEvent state need to be reset so we'll call the project reset for now
-      this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
+      this.projectStore.resetProjectState()
     },
     '$route.params.ppsEventId': function () {
-      this.$store.commit(ProjectMutations.RESET_PPS_EVENT_STATE)
+      this.projectStore.resetPpsEventState()
     },
     projectTagEvents: async function () {
       if (this.projectTagEvents?.length > 0) {
@@ -414,7 +413,7 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useUserStore, useAppStore),
+    ...mapStores(useUserStore, useAppStore, useProjectStore),
     userCanEdit() {
       return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
     },

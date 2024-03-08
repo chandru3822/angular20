@@ -32,9 +32,9 @@ import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import ActiveEventSnippet from '@/views/flow/project/ActiveEventSnippet'
 import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
-import {ProjectMutations} from '@/stores/ProjectStore'
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 export default {
   name: 'ActiveEvents',
@@ -57,7 +57,6 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       events: [],
-      sectionExpanded: this.$store.state.project.activeEventDropdown,
       customFieldGroups: [],
       menuOpen: false,
       activeEventsLoading: false,
@@ -70,7 +69,10 @@ export default {
     this.getEvents()
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useProjectStore),
+    sectionExpanded() {
+      return this.projectStore.activeEventDropdown
+    },
     userCanEdit() {
       return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
     },
@@ -104,7 +106,7 @@ export default {
       }
     },
     toggleCollapseExpand(){
-      this.$store.commit(ProjectMutations.ACTIVE_EVENT_COLLAPSE)
+      this.projectStore.activeEventDropdown = !this.projectStore.activeEventDropdown
     }
 
   }

@@ -19,27 +19,27 @@
     <v-row class="split-container" :class="{'full-height': props.headerHidden, 'tall-header': props.headerLarge}">
       <v-col id="left-column" @click="emit('end-notes-timer')" class=" project-section text-left px-0 left-column"
              :class="{'hidden': props.leftHidden,
-                      'collapsed': store.state.project.leftSideSplit,
+                      'collapsed': projectStore.leftSideSplit,
                       'narrow': props.leftSmall,
                       'mobile-overflow': true,
                       'auto-overflow': props.autoOverflowLeft,
                       'white-bg': props.leftSideWhiteBg,
-                      'hide-column-xs': store.state.project.leftSideSplit}">
-        <div class="mobile-padding-menu-button" :class="{'title-collapsed': store.state.project.leftSideSplit,
-                      'ml-2': !store.state.project.leftSideSplit}">
+                      'hide-column-xs': projectStore.leftSideSplit}">
+        <div class="mobile-padding-menu-button" :class="{'title-collapsed': projectStore.leftSideSplit,
+                      'ml-2': !projectStore.leftSideSplit}">
           <AlbatrossButton size="small" variant="text" prepend-icon="mdi-menu" @click="collapseSide('left')" />
         </div>
-        <div v-if="!store.state.project.leftSideSplit" class="left-panel-scrollable-area auto-overflow">
+        <div v-if="!projectStore.leftSideSplit" class="left-panel-scrollable-area auto-overflow">
           <slot name="left-column"></slot>
         </div>
       </v-col>
       <v-col class="project-section center-panel py-0 px-0" @click="emit('end-notes-timer')"
-             :class="{'white-bg': props.centerWhiteBg, 'hide-column-xs': !store.state.project.leftSideSplit, 'halvsies': props.leftHidden}">
+             :class="{'white-bg': props.centerWhiteBg, 'hide-column-xs': !projectStore.leftSideSplit, 'halvsies': props.leftHidden}">
         <slot name="main-column"></slot>
       </v-col>
       <v-col id="right-column" class="project-section right-column pa-0" :class="{'hidden': props.rightHidden,
                                                                                                   'halvsies': props.leftHidden,
-                                                                                                  'collapsed': store.state.project.rightSideSplit && props.showRightCollapseBtn,
+                                                                                                  'collapsed': projectStore.rightSideSplit && props.showRightCollapseBtn,
                                                                                                   'white-bg': props.rightSideWhiteBg,
                                                                                                   'hide-column-xs': true  }">
         <slot name="right-column">
@@ -47,7 +47,7 @@
                            :allow-sidebar-collapse="props.showRightCollapseBtn"
                            @closeRight="closeRight()"
                            @click="collapseSide('right')"
-                           @openRight="store.state.project.rightSideSplit = false">
+                           @openRight="projectStore.rightSideSplit = false">
             <template v-slot:collapse-button>
               <slot name="collapse-button"></slot>
             </template>
@@ -59,17 +59,17 @@
 </template>
 
 <script setup>
-import constants from '@/helpers/constants'
-import {AppMutations} from "@/stores/AppStore";
-import {getRequest, handleHidingGlobalLoader, logError} from "@/helpers/helpers";
-import {ProjectMutations} from "@/stores/ProjectStore";
+import {getRequest, handleHidingGlobalLoader, logError} from '@/helpers/helpers'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
-import {defineProps, computed, getCurrentInstance, onMounted, ref, watch} from 'vue'
+import {defineProps, getCurrentInstance, onMounted, ref} from 'vue'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const projectStore = useProjectStore()
+const appStore = useProjectStore()
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
@@ -111,7 +111,7 @@ const emit = defineEmits(['closeRight', 'end-notes-timer'])
 //   if (!props.leftHidden) {
 //     return {
 //       'hidden': props.leftHidden,
-//       'collapsed': store.state.project.leftSideSplit,
+//       'collapsed': projectStore.leftSideSplit,
 //       'narrow': props.leftSmall
 //     }
 //   }
@@ -121,7 +121,7 @@ const emit = defineEmits(['closeRight', 'end-notes-timer'])
 //   if (!props.rightHidden) {
 //     return {
 //       'hidden': props.rightHidden,
-//       'collapsed': store.state.project.rightSideSplit && props.showRightCollapseBtn,
+//       'collapsed': projectStore.rightSideSplit && props.showRightCollapseBtn,
 //     }
 //   }
 // })
@@ -139,7 +139,7 @@ const emit = defineEmits(['closeRight', 'end-notes-timer'])
 
 onMounted(() => {
   //have to reset this on creation in case there is already a state then they go to the project url directly
-  store.commit(ProjectMutations.RESET_PROJECT_STATE)
+  projectStore.resetProjectState()
   getProject()
 })
 const getProject = async () => {
@@ -147,17 +147,17 @@ const getProject = async () => {
     if (projectId.value === 0) {
       return;
     }
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     const {data, status} = await getRequest(`/project/${projectId.value}`)
     project.value = data
     window.document.title = `${project.value.projectName} - Project Details`
     projectLoading.value = false
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
 
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     projectLoading.value = false
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     logError(e)
   }
 }
@@ -166,9 +166,9 @@ const closeRight = () => {
 }
 const collapseSide = (side) => {
   if (side === 'left') {
-    store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
+    projectStore.leftSideSplit = !projectStore.leftSideSplit
   } else {
-    store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
+    projectStore.rightSideSplit = !projectStore.rightSideSplit
   }
 }
 </script>

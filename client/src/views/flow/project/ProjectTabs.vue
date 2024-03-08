@@ -24,9 +24,9 @@
 
 import {getRequestWithParams, logError} from '@/helpers/helpers'
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
-import {ProjectMutations} from "@/stores/ProjectStore";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 export default {
   name: 'ProjectTabs',
@@ -44,7 +44,6 @@ export default {
       projectId: parseInt(this.$route.params.projectId),
       tabsLoading: true,
       selectedTab: {},
-      sectionExpanded: this.$store.state.project.projectDetailsDropdown,
       tabs: [],
     }
   },
@@ -52,7 +51,10 @@ export default {
     this.getProjectTabs()
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useProjectStore),
+    sectionExpanded() {
+      return this.projectStore.projectDetailsDropdown
+    },
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
     },
@@ -109,7 +111,7 @@ export default {
       }
     },
     toggleCollapseExpand(){
-      this.$store.commit(ProjectMutations.PROJECT_DETAILS_COLLAPSE)
+      this.projectStore.projectDetailsDropdown = !this.projectStore.projectDetailsDropdown
     },
   }
 }

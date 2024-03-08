@@ -160,7 +160,7 @@
         </div>
       </template>
       <template v-slot:left-column>
-        <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
+        <div v-if="!projectStore.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned overflow-y-auto hide-xs">
           <PageOverview page-name="Contact"
                         :show-edit-btn="contact && contact.id && userCanEdit"
@@ -229,7 +229,7 @@
           </SidePanelExpansionPanel>
           <v-divider></v-divider>
         </div>
-        <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
+        <div v-if="!projectStore.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned scrollable show-xs mobile-padding-menu">
           <div class=menu-option :class="{'body-large': !showMobileSummary, 'label-large': showMobileSummary}" @click="openTab('summary')">Summary</div>
           <div class=menu-option :class="{'body-large': !showMobileOverview, 'label-large': showMobileOverview}" @click="openTab('overview')">Overview</div>
@@ -329,7 +329,7 @@
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0 hide-xs">
-                <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
+                <v-icon v-if="!projectStore.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
                 <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
               </v-btn>
               <div>
@@ -373,7 +373,7 @@
 
                     <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
                       <v-row>
-                        <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                        <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                           <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                                             :key="idx"
                                             :required="cf.required"
@@ -383,7 +383,7 @@
                                             class = "body-large"
                                             :show-field-name="false"></CustomValueInput>
                         </v-col>
-                        <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                        <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
                           <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                                             :key="idx"
                                             :required="cf.required"
@@ -416,7 +416,7 @@
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0 hide-xs">
-                <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
+                <v-icon v-if="!projectStore.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
                 <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
               </v-btn>
               <div>
@@ -462,7 +462,7 @@
 
                     <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
                       <v-row>
-                        <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                        <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                           <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                                             :key="idx"
                                             :required="cf.required"
@@ -472,7 +472,7 @@
                                             class = "body-large"
                                             :show-field-name="false"></CustomValueInput>
                         </v-col>
-                        <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                        <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
                           <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                                             :key="idx"
                                             :required="cf.required"
@@ -513,7 +513,6 @@ import {AppMutations} from '@/stores/AppStore'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
-import {ProjectMutations} from "@/stores/ProjectStore";
 import {
   handleHidingGlobalLoader,
   getRequest,
@@ -523,7 +522,8 @@ import {
   postRequest,
   formatPhoneNumber,
   getRequestWithParams,
-  getSnackbar, logError, postRequestWithRequestParams
+  getSnackbar,
+  logError
 } from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getCompanyStates} from '@/services/stateService'
@@ -540,6 +540,7 @@ import {saveContact} from "@/services/contactService";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 export default {
   name: 'Contact',
@@ -610,7 +611,7 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useUserStore, useAppStore),
+    ...mapStores(useUserStore, useAppStore, useProjectStore),
     is7oaksAdmin() {
       return this.userStore.isSystemAdmin
     },
@@ -704,17 +705,16 @@ export default {
       this.showMobileAssociatedProjects = (tab == 'associatedProjects');
       this.showMobileNotes = (tab == 'notes');
       this.showMobileDocuments = (tab == 'documents');
-      this.$store.state.project.leftSideSplit = true;
+      this.projectStore.leftSideSplit = true;
     },
     openMenu(){
-      this.$store.state.project.leftSideSplit = false;
+      this.projectStore.leftSideSplit = false;
     },
     setSplitColumnValue() {
-      //flip the flag
-      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
+      this.projectStore.manualColumnSplit = !this.projectStore.manualColumnSplit
     },
     getCustomFieldValuesToDisplay(values, columnNum) {
-      if (this.$store.state.project.manualColumnSplit) {
+      if (this.projectStore.manualColumnSplit) {
         return values.filter(function (element, index, values) {
           return (index % 2 === (columnNum === 1 ? 0 : 1));
         });
@@ -724,9 +724,9 @@ export default {
     },
     collapseSide(side) {
       if (side === 'left') {
-        this.$store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
+        this.projectStore.leftSideSplit = !this.projectStore.leftSideSplit
       } else {
-        this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
+        this.projectStore.rightSideSplit = !this.projectStore.rightSideSplit
       }
     },
     getStatesAndCountries: function () {

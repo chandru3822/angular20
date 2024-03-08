@@ -55,7 +55,7 @@
                    text
                    color="primary"
                    @click="setSplitColumnValue()">
-              <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
+              <v-icon v-if="!projectStore.manualColumnSplit">mdi-format-columns</v-icon>
               <v-icon v-else>mdi-format-align-justify</v-icon>
             </v-btn>
             <div class="align-self-center">
@@ -91,7 +91,7 @@
                 </v-toolbar>
                 <v-card class="px-4 text-left square-card" :class="{'mb-6': index === customFieldGroups.length - 1}">
                   <v-row>
-                    <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                    <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                       <CustomValueInput
                         v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues,1)"
                         :key="idx"
@@ -102,7 +102,7 @@
                         :field="field"
                       />
                     </v-col>
-                    <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                    <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
                       <CustomValueInput
                         v-for="(field, idx) in getCustomFieldValuesToDisplay(group.customFieldValues, 2)"
                         :key="idx"
@@ -159,7 +159,6 @@ import {
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
-import {ProjectMutations} from '@/stores/ProjectStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
@@ -263,10 +262,10 @@ export default {
     },
     setSplitColumnValue() {
       //flip the flag
-      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
+      this.projectStore.manualColumnSplit = !this.projectStore.manualColumnSplit
     },
     getCustomFieldValuesToDisplay(values, columnNum) {
-      if (this.$store.state.project.manualColumnSplit) {
+      if (this.projectStore.manualColumnSplit) {
         return values.filter(function (element, index, values) {
           return (index % 2 === (columnNum === 1 ? 0 : 1));
         });
@@ -410,7 +409,7 @@ export default {
         this.appStore.showSnack(this.snackbar)
       } else {
           //this value tells the right pane to update when a file is uploaded
-          this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+        this.projectStore.incrementReloadKey()
       }
       this.$store.commit(AppMutations.SET_LOADING, false)
     },

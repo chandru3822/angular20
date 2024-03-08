@@ -174,7 +174,6 @@
 import ActivitySection from '@/views/flow/components/ActivitySection'
 import Messaging from '@/views/flow/components/Messaging'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
-import { ProjectMutations } from '@/stores/ProjectStore'
 import { AppMutations } from '@/stores/AppStore'
 import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import TeamAssignmentChips from '@/views/flow/settings/inbox/TeamAssignmentChips'
@@ -186,6 +185,7 @@ import CollapsableRightPanel from "@/layouts/CollapsableRightPanel.vue";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 export default {
   name: 'ProjectActivity',
@@ -219,7 +219,7 @@ export default {
     // whenever userImage changes, this function will run
     '$route.params.projectId': function() {
       this.projectId = parseInt(this.$route.params.projectId) || null
-      this.selectedOption = this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.$store.state.project.selectedTab ? 1 : this.$store.state.project.selectedTab)
+      this.selectedOption = this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.projectStore.selectedTab ? 1 : this.projectStore.selectedTab)
       if(this.selectedOption === 0) {
         this.fetchTeamsForUser()
       }
@@ -248,7 +248,7 @@ export default {
       userId: this.userIdIn ? this.userIdIn : parseInt(this.$route.params.userId) || null,
       projectProcessStepId: parseInt(this.$route.params.processStepId) || null,
       projectProcessStepEventId: parseInt(this.$route.params.ppsEventId) || null,
-      selectedOption: this.$route.params.viewId ? parseInt(this.$route.params.viewId) :  this.showSmsTab && this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.$store.state.project.selectedTab || (this.$store.state.project.selectedTab === 0 && !this.showSmsTab)) ? 1 : this.$store.state.project.selectedTab,
+      selectedOption: this.$route.params.viewId ? parseInt(this.$route.params.viewId) :  this.showSmsTab && this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.projectStore.selectedTab || (this.projectStore.selectedTab === 0 && !this.showSmsTab)) ? 1 : this.projectStore.selectedTab,
       userHasTeam: false,
       userAssigned: false,
       showJoinConversationDialog: false,
@@ -263,7 +263,7 @@ export default {
       conversationIsLoading: true,
       toggleFocused: this.isMobile ? 1 : 0,
       toggleFocusedXs: 0,
-      toggleTimelineView: this.$store.state.project.notesActivityView,
+      toggleTimelineView: this.projectStore.notesActivityView,
       hideEmptyFolderStatus: false,
     }
   },
@@ -271,7 +271,7 @@ export default {
     this.handlePageLoad()
   },
   computed: {
-    ...mapStores(useUserStore, useAppStore),
+    ...mapStores(useUserStore, useAppStore, useProjectStore),
     userCanViewSms() {
       return this.userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW')
     },
@@ -308,7 +308,7 @@ export default {
       }
     },
     isSidebarCollapsed() {
-      return this.allowSidebarCollapse && this.$store.state.project.rightSideSplit
+      return this.allowSidebarCollapse && this.projectStore.rightSideSplit
     },
     smsOwnershipEvents() {
       return this.$store.getters.getEventsByTopic('sms_ownership').length
@@ -338,17 +338,17 @@ export default {
       this.$emit('closeRight')
     },
     collapseSide() {
-      this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
+      this.projectStore.rightSideSplit = !this.projectStore.rightSideSplit
     },
     selectView: function(viewOption) {
-      this.$store.commit(ProjectMutations.SET_SELECTED_TAB, viewOption)
+      this.projectStore.selectedTab = viewOption
       this.selectedOption = viewOption
     },
     selectNotesActivityView(){
       if(this.toggleTimelineView === 0){
-        this.$store.commit(ProjectMutations.SET_NOTES_ACTIVITY_VIEW, 1)
+        this.projectStore.notesActivityView = 1
       } else {
-        this.$store.commit(ProjectMutations.SET_NOTES_ACTIVITY_VIEW, 0)
+        this.projectStore.notesActivityView = 0
       }
       this.scrollToTop()
     },
@@ -365,7 +365,7 @@ export default {
       }
     },
     openMenu(){
-      this.$store.state.project.leftSideSplit = false;
+      this.projectStore.leftSideSplit = false;
     },
     async joinConversation(selectedTeam) {
       try {

@@ -234,6 +234,7 @@ import constants from "@/helpers/constants";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 export default {
   name: 'ActivitySection',
@@ -306,7 +307,7 @@ export default {
     },
   },
   computed: {
-    ...mapStores(useUserStore, useAppStore),
+    ...mapStores(useUserStore, useAppStore, useProjectStore),
     userIsAdmin() {
       return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')
     },
@@ -394,7 +395,7 @@ export default {
       this.bottomHitCount = this.bottomHitCount + 1
     },
     getLinkLabel() {
-      return this.editedActivity.linked && null != this.editedActivity.linkLabel ? `Link ${this.editedActivity.linkLabel}` : `Link ${this.$store.state.project.linkLabel}`
+      return this.editedActivity.linked && null != this.editedActivity.linkLabel ? `Link ${this.editedActivity.linkLabel}` : `Link ${this.projectStore.linkLabel}`
     },
     sortAndFilterActivities(activities, sortDirection){
       return orderBy(activities.filter(a => {
@@ -569,7 +570,7 @@ export default {
         this.editedActivity.linkedPpseId = parseInt(this.$route.params.ppsEventId)
         //this has to populate even when the linked item is an event or else we can't re-load the link path correctly
         this.editedActivity.linkedPpsId = parseInt(this.$route.params.processStepId)
-        this.editedActivity.linkLabel = this.$store.state.project.linkLabel
+        this.editedActivity.linkLabel = this.projectStore.linkLabel
       } else {
         this.editedActivity.linkLabel = null
         this.editedActivity.linkedPpseId = null

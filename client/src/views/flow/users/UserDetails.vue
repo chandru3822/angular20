@@ -69,7 +69,7 @@
     <ThreeColumnLayout :header-hidden="true"
                        :auto-overflow-left="false">
       <template v-slot:left-column>
-        <div v-if="!$store.state.project.leftSideSplit && user && user.id"
+        <div v-if="!projectStore.leftSideSplit && user && user.id"
              class="height-one-hunned overflow-y-auto">
           <PageOverview
             page-name="User"
@@ -153,7 +153,7 @@
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0">
-                <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
+                <v-icon v-if="!projectStore.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
                 <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
               </v-btn>
               <div>
@@ -189,7 +189,7 @@
 
                     <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
                       <v-row>
-                        <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                        <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                           <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                                             :key="idx"
                                             :required="cf.required"
@@ -198,7 +198,7 @@
                                             :field="cf"
                                             :show-field-name="false"></CustomValueInput>
                         </v-col>
-                        <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                        <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
                           <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                                             :key="idx"
                                             :required="cf.required"
@@ -256,6 +256,7 @@ import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 export default {
   name: 'User',
@@ -312,7 +313,7 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useUserStore, useAppStore),
+    ...mapStores(useUserStore, useAppStore, useProjectStore),
     userCanEdit() {
       return this.userStore.userHasFeatureAccessLevel('USERS', 'EDIT')
     },
@@ -367,10 +368,10 @@ export default {
   methods: {
     setSplitColumnValue() {
       //flip the flag
-      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
+      this.projectStore.manualColumnSplit = !this.projectStore.manualColumnSplit
     },
     getCustomFieldValuesToDisplay(values, columnNum) {
-      if (this.$store.state.project.manualColumnSplit) {
+      if (this.projectStore.manualColumnSplit) {
         return values.filter(function (element, index, values) {
           return (index % 2 === (columnNum === 1 ? 0 : 1));
         });

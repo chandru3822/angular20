@@ -91,9 +91,9 @@ import {deleteAttachment} from "@/services/attachmentService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import Vue2Filters from 'vue2-filters'
-import {ProjectMutations} from "@/stores/ProjectStore"
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import { mapStores } from 'pinia'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 export default {
   name: "AttachmentsTable",
@@ -149,7 +149,7 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useAppStore),
+    ...mapStores(useAppStore, useProjectStore),
     drillDownAttachments() {
       if (this.displayType === null) {
         return []
@@ -183,7 +183,7 @@ export default {
         await deleteAttachment(id)
         if(this.deleteCallback) {this.deleteCallback(id)}
         //this value tells the right pane to update when a file is deleted
-        this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+        this.projectStore.incrementReloadKey()
 
         //only emit a change event if something was linked, only the actively showing linked section will update
         this.$root.$emit('attachmentDeleted', id)
@@ -227,7 +227,7 @@ export default {
           attachment.linkedToSelected = false
           //this value tells the right pane to update after a file is unlinked from the center pane
           //definitely better ways to handle this but fully refreshing is what we are doing for now
-          this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+          this.projectStore.incrementReloadKey()
         } else {
           attachment.linkedToSelected = true
           //only emit a change event if something was linked, only the actively showing linked section will update

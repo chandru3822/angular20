@@ -19,11 +19,11 @@
 */
 
 import {getCurrentInstance, computed, defineProps, defineEmits} from 'vue'
-import {ProjectMutations} from "@/stores/ProjectStore";
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
-//instantiate the store
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const projectStore = useProjectStore()
 
 //props and emits
 const props = defineProps({
@@ -46,7 +46,7 @@ const selectView = (viewOption) => {
 
 //collapsed or expanded
 const isSidebarCollapsed = computed(() => {
-  return store.state.project.rightSideSplit
+  return projectStore.rightSideSplit
 })
 const collapseButtonClicked = () => {
   if(props.allowSidebarCollapse) {
@@ -56,7 +56,7 @@ const collapseButtonClicked = () => {
   }
 }
 const collapseExpandSide = () => {
-  store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
+  projectStore.rightSideSplit = !projectStore.rightSideSplit
 }
 
 const isMobile = computed(() => {

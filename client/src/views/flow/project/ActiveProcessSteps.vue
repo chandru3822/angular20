@@ -42,9 +42,9 @@ import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSn
 import SpinnerInline from '@/components/SpinnerInline'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
-import {ProjectMutations} from '@/stores/ProjectStore'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { mapStores } from 'pinia'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 export default {
   name: 'ActiveProcessSteps',
@@ -72,7 +72,6 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
-      sectionExpanded: this.$store.state.project.activePpsDropdown,
       customFieldGroups: [],
       menuOpen: false,
       isProcessStepsLoading: false,
@@ -85,7 +84,10 @@ export default {
     this.getProcessSteps()
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useProjectStore),
+    sectionExpanded() {
+      return this.projectStore.activePpsDropdown
+    },
     userCanEdit() {
       return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
     },
@@ -122,7 +124,7 @@ export default {
       }
     },
     toggleCollapseExpand(){
-      this.$store.commit(ProjectMutations.ACTIVE_PPS_COLLAPSE)
+      this.projectStore.activePpsDropdown = !this.projectStore.activePpsDropdown
     }
   }
 }

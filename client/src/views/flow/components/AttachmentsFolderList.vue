@@ -183,11 +183,11 @@ import AttachmentsTable from "@/views/flow/components/AttachmentsTable";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import AttachmentCompareModal from '@/views/flow/components/AttachmentCompareModal'
 import constants from '@/helpers/constants'
-import {ProjectMutations} from '@/stores/ProjectStore'
 import SpinnerInline from '@/components/SpinnerInline'
 import cloneDeep from 'lodash.clonedeep'
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 export default {
   name: "AttachmentsFolderList",
@@ -283,7 +283,7 @@ export default {
       this.loadAllPageDetails()
     },
     // // whenever the project store forces a reload - do this - i cant remember why atm
-    '$store.state.project.forceReloadKey': async function () {
+    'projectStore.forceReloadKey': async function () {
       if (this.reloadOnKeyChange) {
         // reset the selected item
         this.updateProcessStepAndEventIds()
@@ -296,7 +296,7 @@ export default {
     this.loadAllPageDetails();
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useProjectStore),
     companyId() {
       return this.userStore.details.companyId
     },
@@ -368,7 +368,7 @@ export default {
         if (!this.forceShowUploadBtn) {
           //so far, if forceShowUploadBtn, then it is on org, user, contact, etc so it is already where it needs to be and doesn't need to refresh again
           //this value tells the right pane to update when a file is uploaded
-          this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+          this.projectStore.incrementReloadKey()
         }
       }
       this.$store.commit(AppMutations.SET_LOADING, false)
@@ -527,7 +527,7 @@ export default {
               if (!this.forceShowUploadBtn) {
                 //so far, if forceShowUploadBtn, then it is on org, user, contact, etc so it is already where it needs to be and doesn't need to refresh again
                 //this value tells the right pane to update when a file is uploaded
-                this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+                this.projectStore.incrementReloadKey()
               }
               this.$store.commit(AppMutations.SET_LOADING, false)
             } else {

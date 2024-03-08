@@ -111,18 +111,18 @@
                        :class="{'mt-4': project.tags && project.tags.length > 0}">
         <div>
           <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
-          <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
+          <span v-if="projectStore && projectStore.pps && projectStore.pps.processStepName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
             <router-link class="breadcrumb albatross-body-2"
-                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
-              {{ $store.state.project.pps.processStepName }}
+                         :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}`">
+              {{ projectStore.pps.processStepName }}
             </router-link>
           </span>
-          <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
+          <span v-if="projectStore && projectStore.ppsEvent && projectStore.ppsEvent.eventName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
             <router-link class="breadcrumb albatross-body-2"
-                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
-              {{ $store.state.project.ppsEvent.eventName }} Event
+                         :to="`/project/${project.id}/processStep/${projectStore.pps.projectProcessStepId}/event/${projectStore.ppsEvent.id}`">
+              {{ projectStore.ppsEvent.eventName }} Event
             </router-link>
           </span>
         </div>
@@ -176,14 +176,14 @@
     <v-row class="project-split-container" :class="{'split-container-no-tags': project && !project.tags || project.tags.length === 0,
                                                     'split-container-with-tags': project && project.tags && project.tags.length > 0}">
       <div class="white-bg project-section px-0 left-panel"
-           :class="{'col-2': !$store.state.project.leftSideSplit, 'collapse-left': $store.state.project.leftSideSplit}">
-        <div class="left-expander-button ml-3" :class="{'title-collapsed': $store.state.project.leftSideSplit}"
+           :class="{'col-2': !projectStore.leftSideSplit, 'collapse-left': projectStore.leftSideSplit}">
+        <div class="left-expander-button ml-3" :class="{'title-collapsed': projectStore.leftSideSplit}"
              @click="endNotesTimer('Clicked outside right panel')">
           <v-btn small text color="primary" @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
-        <div v-if="!$store.state.project.leftSideSplit && project && project.id"
+        <div v-if="!projectStore.leftSideSplit && project && project.id"
              class="left-panel-scrollable-area overflow-y-auto">
           <PageOverview
             page-name="Project"
@@ -203,10 +203,10 @@
           <v-divider class="mb-3"/>
         </div>
       </div>
-      <div class="project-section center-panel pt-0 px-0" :class="{'col-5': !$store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
-                                                                 'center-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
-                                                                 'center-width-right-side-collapse': !$store.state.project.leftSideSplit && $store.state.project.rightSideSplit,
-                                                                 'center-width-both-collapse': $store.state.project.leftSideSplit && $store.state.project.rightSideSplit}"
+      <div class="project-section center-panel pt-0 px-0" :class="{'col-5': !projectStore.leftSideSplit && !projectStore.rightSideSplit,
+                                                                 'center-width-left-side-collapse': projectStore.leftSideSplit && !projectStore.rightSideSplit,
+                                                                 'center-width-right-side-collapse': !projectStore.leftSideSplit && projectStore.rightSideSplit,
+                                                                 'center-width-both-collapse': projectStore.leftSideSplit && projectStore.rightSideSplit}"
            @click="endNotesTimer('Clicked outside right panel')">
         <router-view @refresh-upcoming-events="updateEventKey++"
                      @refresh-upcoming-pps="updatePpsKey++"
@@ -219,11 +219,11 @@
         />
       </div>
       <div class="project-section px-0 white-bg "
-           :class="{'col-5': !$store.state.project.rightSideSplit && !$store.state.project.leftSideSplit,
-                    'right-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
-                    'collapse-right text-center': $store.state.project.rightSideSplit}">
+           :class="{'col-5': !projectStore.rightSideSplit && !projectStore.leftSideSplit,
+                    'right-width-left-side-collapse': projectStore.leftSideSplit && !projectStore.rightSideSplit,
+                    'collapse-right text-center': projectStore.rightSideSplit}">
         <ProjectActivity v-if="!projectLoading" :show-sms-tab="true"
-                         @openRight="$store.state.project.rightSideSplit = false"/>
+                         @openRight="projectStore.rightSideSplit = false"/>
       </div>
     </v-row>
   </div>
@@ -248,14 +248,12 @@ import ProjectTabs from '@/views/flow/project/ProjectTabs'
 import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
 import ActiveEvents from '@/views/flow/project/ActiveEvents'
 import {
-  getCompanyProjectStatusType,
   getCompanyProjectStatusTypes,
   getStatusColorClass
 } from "@/services/projectStatusTypeService"
 import constants from "@/helpers/constants";
 import {getActiveStates} from "@/services/stateService";
 import {getCountries} from "@/services/countryService";
-import {ProjectMutations} from "@/stores/ProjectStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 import {NotificationActions} from "@/plugins/notifications/NotificationStore";
@@ -265,6 +263,7 @@ import StatusTrackerItem from "@/views/flow/project/StatusTrackerItem";
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 export default {
   name: 'Project',
@@ -311,7 +310,7 @@ export default {
   },
   created() {
     //have to reset this on creation in case there is already a state then they go to the project url directly
-    this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
+    this.projectStore.resetProjectState()
     this.getProject()
     if(this.is7oaksAdmin) {
       this.getMilestones()
@@ -320,10 +319,10 @@ export default {
   watch: {
     '$route.params.processStepId': async function () {
       //when changing pps, the pps AND ppsEvent state need to be reset so we'll call the project reset for now
-      this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
+      this.projectStore.resetProjectState()
     },
     '$route.params.ppsEventId': function () {
-      this.$store.commit(ProjectMutations.RESET_PPS_EVENT_STATE)
+      this.projectStore.resetPpsEventState()
     },
     projectTagEvents: async function () {
       if (this.projectTagEvents?.length > 0) {
@@ -337,7 +336,7 @@ export default {
     next();
   },
   computed: {
-    ...mapStores(useUserStore, useAppStore),
+    ...mapStores(useUserStore, useAppStore, useProjectStore),
     userCanEdit() {
       return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
     },
@@ -420,9 +419,9 @@ export default {
     },
     collapseSide(side) {
       if (side === 'left') {
-        this.$store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
+        this.projectStore.leftSideSplit = !this.projectStore.leftSideSplit
       } else {
-        this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
+        this.projectStore.rightSideSplit = !this.projectStore.rightSideSplit
       }
     },
     async showEditModal() {
