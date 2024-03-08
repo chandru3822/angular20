@@ -1,10 +1,11 @@
 <template>
   <v-container id="proposals-container" v-if="proposalExists">
-
     <v-row>
       <v-col cols="12" class="py-0">
-        <router-link v-if="proposal && proposal.projectId"
-                     :to="`/proposalDesigns/${proposal.projectId}`">Back
+        <router-link
+          v-if="proposal && proposal.projectId"
+          :to="`/proposalDesigns/${proposal.projectId}`"
+          >Back
         </router-link>
 
         <v-row align="center" justify="center" no-gutters>
@@ -23,28 +24,42 @@
 
         <v-toolbar dense flat color="transparent">
           <v-toolbar-title class="new-proposal-header">
-            <editable-input :editable="!proposal.locked"
-                            :display-text="proposal.displayName"
-                            :value="defaultProposalName"
-                            @input="handleNameChange"/>
-
+            <editable-input
+              :editable="!proposal.locked"
+              :display-text="proposal.displayName"
+              :value="defaultProposalName"
+              @input="handleNameChange"
+            />
           </v-toolbar-title>
-          <v-chip v-if="proposal.locked" small color="error" dark class="ml-2 text-uppercase">
+          <v-chip
+            v-if="proposal.locked"
+            small
+            color="error"
+            dark
+            class="ml-2 text-uppercase"
+          >
             <v-icon small>mdi-lock</v-icon>
             Locked
           </v-chip>
-          <v-spacer/>
+          <v-spacer />
           <v-toolbar-items>
-            <v-menu v-model="versionMenu"
-                    v-if="proposal && proposal.projectId"
-                    transition="slide-x-transition"
-                    :close-on-content-click="false"
-                    :offset-y="true"
-                    :z-index="250"
-                    :max-width="375">
-              <template #activator="{on, attrs }">
-                <v-btn text v-on="on" v-bind="attrs" :disabled="!userIsAdmin && !userCanManage"
-                       @click="loadProposalVersions()">
+            <v-menu
+              v-model="versionMenu"
+              v-if="proposal && proposal.projectId"
+              transition="slide-x-transition"
+              :close-on-content-click="false"
+              :offset-y="true"
+              :z-index="250"
+              :max-width="375"
+            >
+              <template #activator="{ on, attrs }">
+                <v-btn
+                  text
+                  v-on="on"
+                  v-bind="attrs"
+                  :disabled="!userIsAdmin && !userCanManage"
+                  @click="loadProposalVersions()"
+                >
                   v.{{ proposal.version }}
                 </v-btn>
               </template>
@@ -59,16 +74,25 @@
                   label="Select a version..."
                   v-model="proposal.proposalVersionId"
                 />
-                <v-btn color="primary" class="mt-3" :disabled="(!userIsAdmin && !userCanManage) || !proposal.proposalVersionId"
-                       @click="updateProposalVersion()">
+                <v-btn
+                  color="primary"
+                  class="mt-3"
+                  :disabled="
+                    (!userIsAdmin && !userCanManage) ||
+                    !proposal.proposalVersionId
+                  "
+                  @click="updateProposalVersion()"
+                >
                   Save
                 </v-btn>
               </v-card>
             </v-menu>
-            <next-step-menu v-if="proposal.id"
-                            :disabled="dirtyCfvs.length > 0"
-                            :proposal="proposal"
-                            @update="handleStepChange"/>
+            <next-step-menu
+              v-if="proposal.id"
+              :disabled="dirtyCfvs.length > 0"
+              :proposal="proposal"
+              @update="handleStepChange"
+            />
           </v-toolbar-items>
         </v-toolbar>
       </v-col>
@@ -82,46 +106,61 @@
               <div class="proposal-container-header">
                 <div class="proposal-title">Configurations</div>
               </div>
-              <div
-                v-for="(cfg, index) in sortedCustomFieldGroups"
-                :key="index"
-              >
+              <div v-for="(cfg, index) in sortedCustomFieldGroups" :key="index">
                 <div class="configuration-group-title">{{ cfg.groupName }}</div>
-                <div class="cf-container"
-                  v-for="(field, idx) in filterBy(cfg.customFieldValues, f => userHasWhiteListedPosition(f, 'hidden'))"
-                  :key="idx">
+                <div
+                  class="cf-container"
+                  v-for="(field, idx) in filterBy(cfg.customFieldValues, (f) =>
+                    userHasWhiteListedPosition(f, 'hidden')
+                  )"
+                  :key="idx"
+                >
                   <CustomValueInput
                     :required="field.required"
                     :callback="populateDirtyCfvs"
-                    :readonly="!canEdit || proposal.locked || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || !userHasWhiteListedPosition(field, 'readonly') || field.ancillaryCustomFieldGroupAssignmentId !== null"
+                    :readonly="
+                      !canEdit ||
+                      proposal.locked ||
+                      !isConditionalFieldPopulated(field) ||
+                      (field.conditionalOnId && loading) ||
+                      !userHasWhiteListedPosition(field, 'readonly') ||
+                      field.ancillaryCustomFieldGroupAssignmentId !== null
+                    "
                     :field="field"
                     :show-field-name="false"
                     :list-of-value-filter="filters[field.customFieldId]"
                     :hint="getHint(field)"
                   />
-                  <CommissionDetailsMenu v-if="field.customFieldGroupAssignmentId === 454"
-                                         :custom-field-groups="sortedCustomFieldGroups"
-                                         :proposal-id="proposalId"/>
+                  <CommissionDetailsMenu
+                    v-if="field.customFieldGroupAssignmentId === 454"
+                    :custom-field-groups="sortedCustomFieldGroups"
+                    :proposal-id="proposalId"
+                  />
                 </div>
               </div>
             </div>
-            <div class="configuration-save-container" v-if="canEdit && !proposal.locked">
-              <v-btn depressed
-                     text
-                     color="primary"
-                     :disabled="dirtyCfvs.length === 0"
-                     class="text-capitalize"
-                     @click="resetToDefault"
+            <div
+              class="configuration-save-container"
+              v-if="canEdit && !proposal.locked"
+            >
+              <v-btn
+                depressed
+                text
+                color="primary"
+                :disabled="dirtyCfvs.length === 0"
+                class="text-capitalize"
+                @click="resetToDefault"
               >
                 Reset to Default
               </v-btn>
-              <v-spacer/>
-              <v-btn color="primary"
-                     depressed
-                     :dark="dirtyCfvs.length !== 0"
-                     :disabled="dirtyCfvs.length === 0"
-                     @click="validateForm()"
-                     class="text-capitalize font-weight-bold"
+              <v-spacer />
+              <v-btn
+                color="primary"
+                depressed
+                :dark="dirtyCfvs.length !== 0"
+                :disabled="dirtyCfvs.length === 0"
+                @click="validateForm()"
+                class="text-capitalize font-weight-bold"
               >
                 Save
               </v-btn>
@@ -130,8 +169,14 @@
         </v-col>
         <v-col cols="12" sm="8">
           <v-card class="proposal-container" v-if="!hideProposalSection">
-            <div class="proposal-container-header sticky-header" :class="isIntersecting ? 'is-pinned' : ''"
-                 v-intersect="{handler: onStickyHeader, options: { threshold: [1]}}">
+            <div
+              class="proposal-container-header sticky-header"
+              :class="isIntersecting ? 'is-pinned' : ''"
+              v-intersect="{
+                handler: onStickyHeader,
+                options: { threshold: [1] }
+              }"
+            >
               <v-alert
                 class="text-center"
                 v-if="isIntersecting"
@@ -145,54 +190,63 @@
               </v-alert>
 
               <div class="d-flex align-center">
-                <div class="proposal-title">Proposal <span>#{{ proposal.proposalNbr }}</span></div>
-                <v-spacer/>
-                <v-btn v-if="canEdit && !proposal.locked"
-                       color="grey lighten-4"
-                       class="proposal-container-buttons text-capitalize primary--text"
-                       @click="deleteProposal">
+                <div class="proposal-title">
+                  Proposal <span>#{{ proposal.proposalNbr }}</span>
+                </div>
+                <v-spacer />
+                <v-btn
+                  v-if="canEdit && !proposal.locked"
+                  color="grey lighten-4"
+                  class="proposal-container-buttons text-capitalize primary--text"
+                  @click="deleteProposal"
+                >
                   Delete
                 </v-btn>
-                <v-btn v-if="canEdit && pages && pages.length"
-                       color="grey lighten-4"
-                       class="proposal-container-buttons text-capitalize primary--text"
-                       :disabled="dirtyCfvs.length > 0"
-                       @click="duplicate">
+                <v-btn
+                  v-if="canEdit && pages && pages.length"
+                  color="grey lighten-4"
+                  class="proposal-container-buttons text-capitalize primary--text"
+                  :disabled="dirtyCfvs.length > 0"
+                  @click="duplicate"
+                >
                   Duplicate
                 </v-btn>
-                <v-btn v-if="pages && pages.length"
-                       color="grey lighten-4"
-                       :disabled="dirtyCfvs.length > 0"
-                       class="proposal-container-buttons text-capitalize primary--text"
-                       @click="downloadPdf">
+                <v-btn
+                  v-if="pages && pages.length"
+                  color="grey lighten-4"
+                  :disabled="dirtyCfvs.length > 0"
+                  class="proposal-container-buttons text-capitalize primary--text"
+                  @click="downloadPdf"
+                >
                   Download
                 </v-btn>
               </div>
             </div>
-            <div class="proposal-zoom-lock">
-              <proposal-template v-if="pages && pages.length > 0"
-                                 :children="pages"
-                                 :debug="false"
-                                 :editable="false"/>
+            <div class="proposal-zoom-lock" v-if="pages && pages.length > 0">
+              <proposal-template
+                :children="pages"
+                :debug="false"
+                :editable="false"
+              />
             </div>
+            <v-alert prominent v-else type="error">
+              <v-row>
+                <v-col class="grow"> Error generating proposal </v-col>
+              </v-row>
+            </v-alert>
           </v-card>
         </v-col>
       </v-row>
     </v-form>
-    <confirm-dialog ref="confirmDialog"/>
+    <confirm-dialog ref="confirmDialog" />
     <confirm-dialog ref="deleteConfirmDialog">
       <p>Are you sure you want to delete this proposal?</p>
     </confirm-dialog>
   </v-container>
   <v-container v-else>
-    <v-alert
-      prominent
-      type="error"
-    >
+    <v-alert prominent type="error">
       <v-row align="center">
-        <v-col class="grow">
-          Proposal #{{ proposalId }} does not exist.
-        </v-col>
+        <v-col class="grow"> Proposal #{{ proposalId }} does not exist. </v-col>
         <v-col class="shrink">
           <router-link
             v-if="proposal && proposal.projectId"
@@ -209,7 +263,6 @@
 </template>
 
 <script>
-
 import {
   apiRequest,
   deleteRequest,
@@ -220,17 +273,17 @@ import {
   postRequest,
   putRequest
 } from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
+import { AppMutations } from '@/stores/AppStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import ProposalTemplate from '@/views/blueraven/settings/proposalDesigner/ProposalTemplate'
-import {ProposalActions} from '@/views/blueraven/settings/proposalDesigner/store'
+import { ProposalActions } from '@/views/blueraven/settings/proposalDesigner/store'
 import ConfirmDialog from '@/views/blueraven/proposals/ConfirmDialog'
 import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
 import EditableInput from '@/views/blueraven/proposals/EditableInput'
-import {mapState} from 'vuex'
+import { mapState } from 'vuex'
 import Vue2Filters from 'vue2-filters'
-import CommissionDetailsMenu from "@/views/blueraven/proposals/CommissionDetailsMenu.vue";
-import ResidualDetailModal from "@/views/blueraven/commissionManagement/ResidualDetailModal.vue";
+import CommissionDetailsMenu from '@/views/blueraven/proposals/CommissionDetailsMenu.vue'
+import ResidualDetailModal from '@/views/blueraven/commissionManagement/ResidualDetailModal.vue'
 
 const { VITE_HIDE_PROPOSAL } = import.meta.env
 
@@ -238,8 +291,8 @@ const autoSelectFieldIds = [407, 102, 81]
 
 const USD = new Intl.NumberFormat('en-US', {
   style: 'currency',
-  currency: 'USD',
-});
+  currency: 'USD'
+})
 
 export default {
   name: 'Proposal',
@@ -259,8 +312,14 @@ export default {
       isIntersecting: false,
       loading: false,
       hideProposalSection: VITE_HIDE_PROPOSAL || false,
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN'),
-      userCanManage: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'MANAGE'),
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel(
+        'PROPOSALS',
+        'ADMIN'
+      ),
+      userCanManage: this.$store.getters.userHasFeatureAccessLevel(
+        'PROPOSALS',
+        'MANAGE'
+      ),
       proposalId: parseInt(this.$route.params.proposalId),
       versionMenu: false,
       loadingVersions: true,
@@ -279,7 +338,9 @@ export default {
   },
   created() {
     this.getProposalDetails()
-    this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, {proposalId: this.proposalId})
+    this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, {
+      proposalId: this.proposalId
+    })
     window.addEventListener('beforeunload', this.beforeWindowUnload)
   },
   beforeDestroy() {
@@ -287,9 +348,15 @@ export default {
   },
   computed: {
     canEdit() {
-      const hasAdmin = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
-      const hasEdit = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'EDIT')
-      return (hasAdmin || hasEdit)
+      const hasAdmin = this.$store.getters.userHasFeatureAccessLevel(
+        'PROPOSALS',
+        'ADMIN'
+      )
+      const hasEdit = this.$store.getters.userHasFeatureAccessLevel(
+        'PROPOSALS',
+        'EDIT'
+      )
+      return hasAdmin || hasEdit
     },
     defaultProposalName() {
       if (this.proposal?.name) {
@@ -298,10 +365,10 @@ export default {
       return 'New Proposal'
     },
     pages() {
-      return this.template?.filter(x => x.parentId === undefined)
+      return this.template?.filter((x) => x.parentId === undefined)
     },
     sortedCustomFieldGroups() {
-      const customFieldGroups = [...this?.proposal?.customFieldGroups ?? []]
+      const customFieldGroups = [...(this?.proposal?.customFieldGroups ?? [])]
       return customFieldGroups.sort((cfg1, cfg2) => {
         if (cfg1.groupOrder < cfg2.groupOrder) {
           return -1
@@ -325,13 +392,21 @@ export default {
       if (field.customFieldGroupAssignmentId === 167) {
         const maxDiscountAmount = this.proposal.maxDiscountAmount
         if (maxDiscountAmount) {
-          return `Max discount allowed is ${USD.format(this.proposal.maxDiscountAmount)}`
+          return `Max discount allowed is ${USD.format(
+            this.proposal.maxDiscountAmount
+          )}`
         }
       }
     },
     userHasWhiteListedPosition(cf, arg = 'readonly') {
-      const wlAttr = arg === 'readonly' ? 'whiteListedPositions' : 'hiddenWhiteListedPositions'
-      const prAttr = arg === 'readonly' ? 'customFieldGroupAssignmentReadOnly' : 'customFieldGroupAssignmentHidden'
+      const wlAttr =
+        arg === 'readonly'
+          ? 'whiteListedPositions'
+          : 'hiddenWhiteListedPositions'
+      const prAttr =
+        arg === 'readonly'
+          ? 'customFieldGroupAssignmentReadOnly'
+          : 'customFieldGroupAssignmentHidden'
 
       //field doesn't require a white listed position
       if (!cf[prAttr]) {
@@ -339,22 +414,30 @@ export default {
       }
 
       //positions required for user
-      const positions = cf[wlAttr]?.map(wlp => wlp.positionId) ?? []
+      const positions = cf[wlAttr]?.map((wlp) => wlp.positionId) ?? []
       return this.$store.getters.userHasAnyPosition(positions)
     },
     onStickyHeader(entries) {
       const ratio = entries[0].intersectionRatio
       this.isIntersecting = ratio < 1
     },
-    async handleNameChange({save, value}) {
+    async handleNameChange({ save, value }) {
       const hasChanged = this.proposal?.name !== value
-      this.proposal = {...this.proposal, name: value}
+      this.proposal = { ...this.proposal, name: value }
       if (save && hasChanged) {
         try {
-          const {data: proposal} = await postRequest(`/proposal/${this.proposalId}/name`, {name: value}, 'blueraven', {})
+          const { data: proposal } = await postRequest(
+            `/proposal/${this.proposalId}/name`,
+            { name: value },
+            'blueraven',
+            {}
+          )
           this.proposal = proposal
         } catch (e) {
-          this.$snackbar('ERROR', e?.data?.message || 'Error updating proposal name')
+          this.$snackbar(
+            'ERROR',
+            e?.data?.message || 'Error updating proposal name'
+          )
         }
       }
     },
@@ -368,20 +451,25 @@ export default {
         //reset cfvs
         this.dirtyCfvs = []
 
-        const {data, status} = await getRequest(`/proposal/${this.proposalId}`, 'blueraven')
+        const { data, status } = await getRequest(
+          `/proposal/${this.proposalId}`,
+          'blueraven'
+        )
         this.proposal = data
 
         // build filters on load for any field with a conditional property
         const fields = this.proposal?.customFieldGroups
-          ?.map(cfg => cfg.customFieldValues)
+          ?.map((cfg) => cfg.customFieldValues)
           ?.flat()
 
         const conditionalOnFields = fields
-          ?.filter(f => f.conditionalOnId !== null)
-          ?.map(f => f.conditionalOnId)
+          ?.filter((f) => f.conditionalOnId !== null)
+          ?.map((f) => f.conditionalOnId)
 
         const filters = fields
-          ?.filter(f => conditionalOnFields.includes(f.customFieldGroupAssignmentId))
+          ?.filter((f) =>
+            conditionalOnFields.includes(f.customFieldGroupAssignmentId)
+          )
           ?.map(this.buildFilters)
 
         //wait for all the filters to run initially
@@ -390,22 +478,26 @@ export default {
         //preselect certain fields _after_ we've built the filters
         //todo order might matter at some point
         fields
-          .filter(f => autoSelectFieldIds.includes(f.customFieldId))
-          .filter(f => f.listOfValues?.length > 0)
-          .filter(f => f.intValue === null || f.intValue === undefined)
-          .filter(f => {
+          .filter((f) => autoSelectFieldIds.includes(f.customFieldId))
+          .filter((f) => f.listOfValues?.length > 0)
+          .filter((f) => f.intValue === null || f.intValue === undefined)
+          .filter((f) => {
             //if we don't have a conditional field don't filter it out
             if (!f.conditionalOnId) {
               return true
             }
             //if we do we need to have a value set
             return fields
-              ?.filter(x => x?.customFieldGroupAssignmentId === f.conditionalOnId)
-              ?.every(x => x.intValue !== null)
+              ?.filter(
+                (x) => x?.customFieldGroupAssignmentId === f.conditionalOnId
+              )
+              ?.every((x) => x.intValue !== null)
           })
-          .forEach(field => {
+          .forEach((field) => {
             const filter = this.filters[field.customFieldId]
-            const listOfValues = (filter) ? field.listOfValues.filter(filter) : field.listOfValues
+            const listOfValues = filter
+              ? field.listOfValues.filter(filter)
+              : field.listOfValues
             const initialValue = listOfValues[0]
 
             //only pre-select if we have one option available
@@ -439,7 +531,10 @@ export default {
     async loadProposalVersions() {
       try {
         this.loadingVersions = true
-        const {data} = await getRequest(`/proposal/versions?published=true&size=50&page=0`, 'blueraven')
+        const { data } = await getRequest(
+          `/proposal/versions?published=true&size=50&page=0`,
+          'blueraven'
+        )
         this.versions = data.content
       } catch (e) {
         this.$snackbar('ERROR', 'Error loading proposal versions')
@@ -451,7 +546,11 @@ export default {
     async updateProposalVersion() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/proposal/${this.proposalId}/version/${this.proposal.proposalVersionId}`, {}, 'blueraven')
+        await putRequest(
+          `/proposal/${this.proposalId}/version/${this.proposal.proposalVersionId}`,
+          {},
+          'blueraven'
+        )
         //fully reload page due to implications of changing a proposals version
         //todo: probably should put in a v-dialog warning thing when they try to save
         window.location.reload()
@@ -465,11 +564,17 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
-        const {data, status} = await postRequest(`/proposal/${this.proposalId}`, this.dirtyCfvs, 'blueraven')
+        const { data, status } = await postRequest(
+          `/proposal/${this.proposalId}`,
+          this.dirtyCfvs,
+          'blueraven'
+        )
         this.proposal = data
         this.dirtyCfvs = []
         this.$snackbar('SUCCESS', 'Proposal Updated')
-        await this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, {proposalId: this.proposalId})
+        await this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, {
+          proposalId: this.proposalId
+        })
 
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -481,17 +586,25 @@ export default {
     },
     async populateDirtyCfvs(field, remove = false) {
       //some fields are for unique behavior and they dont need to be saved. this check should filter them out
-      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+      let match = this.dirtyCfvs.find(
+        (f) =>
+          (null !== f.id && f.id === field.id) ||
+          f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId
+      )
 
       if (match && remove) {
         //remove any from the array where the selected field is a marked as conditional field
         const removeIds = this.proposal?.customFieldGroups
-          ?.flatMap(cfg => cfg.customFieldValues)
-          ?.filter(f => f.conditionalOnId === field.customFieldGroupAssignmentId)
-          ?.map(f => f.customFieldGroupAssignmentId)
+          ?.flatMap((cfg) => cfg.customFieldValues)
+          ?.filter(
+            (f) => f.conditionalOnId === field.customFieldGroupAssignmentId
+          )
+          ?.map((f) => f.customFieldGroupAssignmentId)
 
         removeIds.push(match.customFieldGroupAssignmentId)
-        this.dirtyCfvs = this.dirtyCfvs.filter(x => !removeIds.includes(x.customFieldGroupAssignmentId))
+        this.dirtyCfvs = this.dirtyCfvs.filter(
+          (x) => !removeIds.includes(x.customFieldGroupAssignmentId)
+        )
       }
 
       if (!match) {
@@ -502,16 +615,25 @@ export default {
 
     async deleteProposal() {
       try {
-        const {ok} = await this.$refs.deleteConfirmDialog.open()
+        const { ok } = await this.$refs.deleteConfirmDialog.open()
         if (!ok) {
           return
         }
 
-        const {status} = await deleteRequest(`/proposal/${this.proposalId}`, 'blueraven')
+        const { status } = await deleteRequest(
+          `/proposal/${this.proposalId}`,
+          'blueraven'
+        )
         this.proposalExists = false
-        this.$snackbar('SUCCESS', `Deleted proposal #${this?.proposal?.proposalNbr}`)
+        this.$snackbar(
+          'SUCCESS',
+          `Deleted proposal #${this?.proposal?.proposalNbr}`
+        )
         handleHidingGlobalLoader(this, status)
-        await this.$router.push({name: 'proposalDesigns', params: {projectId: this?.proposal?.projectId}})
+        await this.$router.push({
+          name: 'proposalDesigns',
+          params: { projectId: this?.proposal?.projectId }
+        })
       } catch (e) {
         this.$snackbar('ERROR', e?.data?.message || 'Error deleting proposal')
       } finally {
@@ -524,19 +646,26 @@ export default {
       }
 
       try {
-        const {data, status} = await postRequest(`/proposal/${this.proposalId}/duplicate`, {}, 'blueraven')
+        const { data, status } = await postRequest(
+          `/proposal/${this.proposalId}/duplicate`,
+          {},
+          'blueraven'
+        )
         if (data?.id) {
-          const {href} = this.$router.resolve({
+          const { href } = this.$router.resolve({
             name: 'proposal',
-            params: {proposalId: data.id}
+            params: { proposalId: data.id }
           })
-          this.$snackbar('SUCCESS', `Duplicate proposal #${data?.proposalNbr} created in new tab. <br/> <a href="${href}">Click to open again</a>`, true)
+          this.$snackbar(
+            'SUCCESS',
+            `Duplicate proposal #${data?.proposalNbr} created in new tab. <br/> <a href="${href}">Click to open again</a>`,
+            true
+          )
           window.open(href, '_blank')
         }
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.$snackbar('ERROR', e?.data?.message || 'Error creating duplicate')
-
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -545,16 +674,20 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
-        const {data, headers} = await apiRequest('blueraven', {
+        const { data, headers } = await apiRequest('blueraven', {
           method: 'get',
           url: `/proposal/${this.proposalId}/pdf`,
           responseType: 'blob'
         })
-        const contentDisposition = headers['content-disposition'];
-        const filename = contentDisposition.substring(contentDisposition.indexOf('filename=') + 9).replace(/['"]+/g, '');
+        const contentDisposition = headers['content-disposition']
+        const filename = contentDisposition
+          .substring(contentDisposition.indexOf('filename=') + 9)
+          .replace(/['"]+/g, '')
 
         if (data) {
-          const pdfFile = URL.createObjectURL(new Blob([data], {type: 'application/pdf'}))
+          const pdfFile = URL.createObjectURL(
+            new Blob([data], { type: 'application/pdf' })
+          )
           const docUrl = document.createElement('a')
           docUrl.href = pdfFile
           docUrl.setAttribute('download', filename)
@@ -577,63 +710,84 @@ export default {
       }
 
       try {
-        const fields = this.proposal?.customFieldGroups
-          ?.flatMap(cfg => cfg.customFieldValues)
+        const fields = this.proposal?.customFieldGroups?.flatMap(
+          (cfg) => cfg.customFieldValues
+        )
 
         //value is either going to come from a local change
-        const dirtyCfvValue = this.dirtyCfvs.find(cfv => cfv.customFieldId === field.customFieldId)?.intValue
+        const dirtyCfvValue = this.dirtyCfvs.find(
+          (cfv) => cfv.customFieldId === field.customFieldId
+        )?.intValue
 
         //or it's coming from the server
-        const prePopulatedValue = fields.find(f => f.customFieldId === field.customFieldId)?.intValue
+        const prePopulatedValue = fields.find(
+          (f) => f.customFieldId === field.customFieldId
+        )?.intValue
 
         //local changes take precedence over server
         const selectedFieldValue = dirtyCfvValue || prePopulatedValue || null
 
-        const conditionalOn = fields?.filter(f => f?.conditionalOnId === field.customFieldGroupAssignmentId)
+        const conditionalOn = fields?.filter(
+          (f) => f?.conditionalOnId === field.customFieldGroupAssignmentId
+        )
 
         if (conditionalOn.length > 0) {
-
           //clear out any already selected fields when data changes for conditional fields
           //unless there was already a saved value then we still need to clear it out
-          const existingFieldIds = conditionalOn.map(c => c.customFieldId)
-          this.dirtyCfvs = this.dirtyCfvs.filter(cfv => (!existingFieldIds.includes(cfv.customFieldId) || cfv.id != null))
+          const existingFieldIds = conditionalOn.map((c) => c.customFieldId)
+          this.dirtyCfvs = this.dirtyCfvs.filter(
+            (cfv) =>
+              !existingFieldIds.includes(cfv.customFieldId) || cfv.id != null
+          )
 
           this.loading = true
-          const allFilters = conditionalOn.map(({customFieldId, flowCustomFieldId}) => {
+          const allFilters = conditionalOn.map(
+            ({ customFieldId, flowCustomFieldId }) => {
+              //reset filter for customFieldId
+              this.filters[customFieldId] = undefined
 
-            //reset filter for customFieldId
-            this.filters[customFieldId] = undefined
+              if (selectedFieldValue != null) {
+                const params = {
+                  targetFieldId: customFieldId,
+                  //used when the custom field ids don't match but are tied to the same backing flow custom field
+                  targetFlowCustomFieldId: flowCustomFieldId,
+                  parentFieldId: field.customFieldId,
+                  parentFieldValue: selectedFieldValue
+                }
 
-            if (selectedFieldValue != null) {
-              const params = {
-                targetFieldId: customFieldId,
-                //used when the custom field ids don't match but are tied to the same backing flow custom field
-                targetFlowCustomFieldId: flowCustomFieldId,
-                parentFieldId: field.customFieldId,
-                parentFieldValue: selectedFieldValue
-              }
+                return getRequestWithParams(
+                  `/proposal/${this.proposalId}/filter`,
+                  { params },
+                  'blueraven'
+                ).then(({ data }) => {
+                  const { ids: filterValues } = data
+                  this.filters[customFieldId] = (val) =>
+                    filterValues?.indexOf(val?.id) > -1
 
-              return getRequestWithParams(`/proposal/${this.proposalId}/filter`, {params}, 'blueraven')
-                .then(({data}) => {
-                  const {ids: filterValues} = data
-                  this.filters[customFieldId] = (val) => filterValues?.indexOf(val?.id) > -1
-
-                  conditionalOn.forEach(c => {
-                    if (c.customFieldId === customFieldId && c.intValue != null && !filterValues.includes(c.intValue)) {
+                  conditionalOn.forEach((c) => {
+                    if (
+                      c.customFieldId === customFieldId &&
+                      c.intValue != null &&
+                      !filterValues.includes(c.intValue)
+                    ) {
                       //if one of the conditional fields has a selected value that is now an unavailable value, unset it and add to dirty fields
                       c.intValue = null
-                      const match = this.dirtyCfvs.find(f => (null !== f.customFieldId && f.customFieldId === customFieldId))
+                      const match = this.dirtyCfvs.find(
+                        (f) =>
+                          null !== f.customFieldId &&
+                          f.customFieldId === customFieldId
+                      )
                       if (!match) {
                         this.dirtyCfvs.push(c)
                       }
                     }
                   })
                 })
+              }
 
+              return Promise.resolve()
             }
-
-            return Promise.resolve()
-          })
+          )
 
           await Promise.allSettled(allFilters)
         }
@@ -644,28 +798,31 @@ export default {
         this.loading = false
       }
     },
-    isConditionalFieldPopulated({conditionalOnId}) {
+    isConditionalFieldPopulated({ conditionalOnId }) {
       if (conditionalOnId === null || conditionalOnId === undefined) {
         return true
       }
 
       const cfg = this.proposal?.customFieldGroups
-        ?.map(cfg => cfg.customFieldValues)
+        ?.map((cfg) => cfg.customFieldValues)
         ?.flat()
-        ?.find(f => f.customFieldGroupAssignmentId === conditionalOnId)
+        ?.find((f) => f.customFieldGroupAssignmentId === conditionalOnId)
 
       //does it come back from the server prepopulated
-      const isPrepopulated = cfg?.intValue !== undefined && cfg?.intValue !== null
+      const isPrepopulated =
+        cfg?.intValue !== undefined && cfg?.intValue !== null
 
       //has it been changed in this session
-      const dirtyCfv = this.dirtyCfvs.find(cfv => cfv.customFieldGroupAssignmentId === conditionalOnId)
+      const dirtyCfv = this.dirtyCfvs.find(
+        (cfv) => cfv.customFieldGroupAssignmentId === conditionalOnId
+      )
       if (dirtyCfv !== undefined) {
         return dirtyCfv.intValue !== null
       }
       return isPrepopulated
     },
     handleStepChange(updated) {
-      this.proposal = {...updated}
+      this.proposal = { ...updated }
     },
     beforeWindowUnload(e) {
       if (this.dirtyCfvs?.length > 0) {
@@ -678,7 +835,7 @@ export default {
   },
   async beforeRouteLeave(to, from, next) {
     if (this.dirtyCfvs?.length > 0) {
-      const {ok} = await this.$refs.confirmDialog.open()
+      const { ok } = await this.$refs.confirmDialog.open()
       return ok ? next() : false
     }
     next()
@@ -704,6 +861,7 @@ export default {
   display: flex;
   align-items: center;
 }
+
 .cf-container div {
   width: 100%;
 }
