@@ -218,7 +218,7 @@ export default {
     async getAllBatches() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest('/rebate/getBatches/', 'blueraven')
+        const {data, status} = await getRequest('/rebate/getBatches', 'blueraven')
         this.batches = data
 
         this.batches.forEach(b => {
