@@ -257,7 +257,7 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import moment from 'moment'
 import cloneDeep from 'lodash.clonedeep'
 import {getSchedulingOrgTypes} from '@/services/orgService'
@@ -272,332 +272,268 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
 import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
+import {computed, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue";
 
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const vuetify = vueInstance.$vuetify
+const refs = vueInstance.$refs
+const filters = vueInstance.$filters
 
-  export default {
-    name: 'ScheduleCalendar',
-    components: {
-      ConfirmationDialog,
-      FullCalendar,
-    },
-    props: {
+const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
+
+    const props = defineProps({
       mapOpen:Boolean,
       mapResources: {type: Array},
       callback: Function,
       dateCallback: Function,
       states: {type: Array},
       preselectedEvent: {type:Object, required: false}
-    },
-    computed: {
-      //states
-      sortedStates() {
-        const selectedStates = this.states.filter(state => this.selectedStates.includes(state))
-        const unselectedStates = this.states.filter(state => !this.selectedStates.includes(state))
-        return selectedStates.concat(unselectedStates)
-      },
-      selectAllStates () {
-        return this.states.length === this.selectedStates.length
-      },
-      selectSomeStates () {
-        return this.selectedStates.length > 0 && !this.selectAllStates
-      },
-      iconStates () {
-        if (this.states.length === this.selectedStates.length) {
-          return 'check_box'
-        }
-        if (this.selectSomeStates) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      //org Types
-      sortedOrgTypes() {
-        const selectedOrgTypes = this.orgTypes.filter(orgType => this.selectedOrgTypes.includes(orgType))
-        const unselectedOrgTypes = this.orgTypes.filter(orgType => !this.selectedOrgTypes.includes(orgType))
-        return selectedOrgTypes.concat(unselectedOrgTypes)
-      },
-      selectAllOrgTypes () {
-        return this.orgTypes.length === this.selectedOrgTypes.length
-      },
-      selectSomeOrgTypes () {
-        return this.selectedOrgTypes.length > 0 && !this.selectAllOrgTypes
-      },
-      iconOrgTypes () {
-        if (this.orgTypes.length === this.selectedOrgTypes.length) {
-          return 'check_box'
-        }
-        if (this.selectSomeOrgTypes) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      //positions
-      sortedPositions(){
-        const selectedPositions = this.positions.filter(position => this.selectedPositions.includes(position));
-        const unselectedPositions = this.positions.filter(position => !this.selectedPositions.includes(position));
-        return selectedPositions.concat(unselectedPositions)
+    })
 
-      },
-      selectAllPositions () {
-        return this.positions.length === this.selectedPositions.length
-      },
-      selectSomePositions () {
-        return this.selectedPositions.length > 0 && !this.selectAllPositions
-      },
-      iconPositions () {
-        if (this.positions.length === this.selectedPositions.length) {
-          return 'check_box'
+const calendarOptions = ref({
+  plugins: [
+    resourceTimelinePlugin, interaction, momentTimezonePlugin
+  ],
+      initialView: 'resourceTimelineDay',
+      resources: [],
+      resourceAreaWidth: 300,
+      eventSources:[
+    (info, successCallback, failureCallback) => goGetEventsNow(info, successCallback, failureCallback)
+  ],
+      eventClick: (eventClickInfo) => handleEventClick(eventClickInfo),
+      navLinks: true,
+      navLinkDayClick: "resourceTimeline",
+      slotLabelDidMount:function ({el, date, view, level}) {
+    //this is a workaround because the day headers on the week view take you to the wrong view,
+    // and they don't trigger navLinkDayClick
+    if(view.type === "resourceTimelineWeek" && level === 0) {
+      let elA = el.querySelector('a')
+      if(elA.dataset.navlink === ''){
+        elA.onclick = () => {
+          view.calendar.changeView("resourceTimelineDay", date);
         }
-        if (this.selectSomePositions) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      //orgs
-      sortedOrgs(){
-        const selectedOrgs = this.orgs.filter(org => this.selectedOrgs.includes(org));
-        const unselectedOrgs = this.orgs.filter(org => !this.selectedOrgs.includes(org));
-        return selectedOrgs.concat(unselectedOrgs)
-      },
-      //users
-      sortedUsers(){
-        const selectedUsers = this.users.filter(user => this.selectedUsers.includes(user));
-        const unselectedUsers = this.users.filter(user => !this.selectedUsers.includes(user));
-        return selectedUsers.concat(unselectedUsers)
-      },
-      firstDayOption(){
-        return moment.utc(this.calendarStartTime).format('dddd MMM Do, YYYY')
-      },
-      isMobile(){
-        return this.$vuetify.breakpoint.smAndDown
+      }
+    }
+  },
+  headerToolbar:{
+    left: 'prev,customToday,next',
+        center: 'title',
+        right: 'resourceTimelineDay,resourceTimelineWeek'
+  },
+  titleFormat:{ month: 'long',
+      year: 'numeric',
+      day: 'numeric',
+      weekday: 'long'
+  },
+  height: '100%',
+      timeZone: store.state.schedule.timezone.value || {},
+
+      customButtons: {
+    customToday: {
+      text: 'Today',
+          click: async () => {
+        let calendarApi = refs.eventCalendar.getApi()
+        calendarApi.gotoDate(new Date)
+        handlePinsOnDayChange()
       }
     },
-    mounted () {
-      this.calendarApi = this.$refs.eventCalendar.getApi()
-      this.calendarStart = this.calendarApi.getDate()
-      this.setCalendarStartAndEndTimes()
-      //when getEvents was placed in the calendar it loaded before the calendar dates were set: :view-skeleton-render="getEvents"
-      //placing here seems to have solved that
-      // this.getEvents()
-    },
-    watch: {
-      '$store.state.schedule.timezone.value': function (value) {
+  }
+})
+const snackbar = ref({})
+const calendarLoading = ref(false)
+    const includeCancelled = ref(false)
+    const calendarInitialRender = ref(true)
+    const calendarApi = ref(null)
+    const calendarStart = ref(null)
+    const calendarView = ref(null)
+    const calendarStartTime = ref(null)
+    const calendarEndTime = ref(null)
+    const countSelected = ref(0)
+    const maxSelectionAllowed = ref(10)
+    const countErrorMessage = ref('Maximum Selection Reached')
+    //filters
+    const selectedStates = ref([])
+    const masterOrgs = ref([])
+    const orgValuesChanged = ref(false)
+    const orgs = ref([])
+    const selectedOrgs = ref([])
+    const orgsLoading = ref(true)
+    const usersLoading = ref(true)
+    const userValuesChanged = ref(false)
+    const masterUsers = ref([])
+    const users = ref([])
+    const selectedUsers = ref([])
+    const orgTypes = ref([])
+    const orgTypeValuesChanged = ref(false)
+    const selectedOrgTypes = ref([])
+    const orgTypesLoading = ref(true)
+    const positions = ref([])
+    const positionValuesChanged = ref(false)
+    const selectedPositions =  ref([])
+    const previousStateCount =  ref(0)
+    const previousTypeCount =  ref(0)
+    const previousPositionCount =  ref(0)
+    const positionsLoading =  ref(true)
+
+    const mapResourceEvents =  ref([])
+    const checkedResources =  ref([])
+    const licenseKey =  ref('GPL-My-Project-Is-Open-Source')
+    const daySelector =  ref(false)
+    const dayOptions =  ref([])
+    const timezone =  ref(store.state.schedule.timezone.value)
+const timezones = ref([
+  { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
+  { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
+  { friendlyValue: 'US/Arizona', value: 'America/Phoenix'},
+  { friendlyValue: 'US/Central', value: 'America/Chicago'},
+  { friendlyValue: 'US/Hawaii', value: 'Pacific/Honolulu'},
+  { friendlyValue: 'US/Eastern', value: 'America/New_York'},
+  { friendlyValue: 'US/Mountain', value: 'America/Denver'}
+])
+
+
+      //states
+const sortedStates = computed(() => {
+        const sStates = props.states.filter(state => selectedStates.value.includes(state))
+        const uStates = props.states.filter(state => !selectedStates.value.includes(state))
+        return sStates.concat(uStates)
+      })
+      const selectAllStates = computed( () => {
+        return props.states.length === selectedStates.value.length
+      })
+      const selectSomeStates = computed(() => {
+        return selectedStates.value.length > 0 && !selectAllStates
+      })
+      const iconStates = computed(() => {
+        if (props.states.length === selectedStates.value.length) {
+          return 'check_box'
+        }
+        if (selectSomeStates) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      })
+      //org Types
+      const sortedOrgTypes = computed(() =>  {
+        const sots = orgTypes.value.filter(orgType => selectedOrgTypes.value.includes(orgType))
+        const usots = orgTypes.value.filter(orgType => !selectedOrgTypes.value.includes(orgType))
+        return sots.concat(usots)
+      })
+      const selectAllOrgTypes =  computed(() => {
+        return orgTypes.value.length === selectedOrgTypes.value.length
+      })
+      const selectSomeOrgTypes =  computed(() => {
+        return selectedOrgTypes.value.length > 0 && !selectAllOrgTypes.value
+      })
+      const iconOrgTypes =  computed(() => {
+        if (orgTypes.value.length === selectedOrgTypes.value.length) {
+          return 'check_box'
+        }
+        if (selectSomeOrgTypes.value) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      })
+      //positions
+      const sortedPositions = computed(() => {
+        const sp = positions.value.filter(position => selectedPositions.value.includes(position));
+        const up = positions.value.filter(position => !selectedPositions.value.includes(position));
+        return sp.concat(up)
+
+      })
+      const selectAllPositions =  computed(() => {
+        return positions.value.length === selectedPositions.value.length
+      })
+      const selectSomePositions =  computed(() => {
+        return selectedPositions.value.length > 0 && !selectAllPositions.value
+      })
+      const iconPositions =  computed(() => {
+        if (positions.value.length === selectedPositions.value.length) {
+          return 'check_box'
+        }
+        if (selectSomePositions.value) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      })
+      //orgs
+      const sortedOrgs = computed(() => {
+        const sOrgs = orgs.value.filter(org => selectedOrgs.value.includes(org));
+        const usOrgs = orgs.value.filter(org => !selectedOrgs.value.includes(org));
+        return sOrgs.concat(usOrgs)
+      })
+      //users
+      const sortedUsers = computed(() => {
+        const sUsers = users.value.filter(user => selectedUsers.value.includes(user));
+        const usUsers = users.value.filter(user => !selectedUsers.value.includes(user));
+        return sUsers.concat(usUsers)
+      })
+      const firstDayOption = computed(() => {
+        return moment.utc(calendarStartTime.value).format('dddd MMM Do, YYYY')
+      })
+      const isMobile = computed(() => {
+        return vuetify.breakpoint.smAndDown
+      })
+
+    onMounted (async () => {
+      calendarApi.value = refs.eventCalendar.getApi()
+      calendarStart.value = calendarApi.value.getDate()
+      setCalendarStartAndEndTimes()
+      countSelected.value = selectedOrgs.value?.length + selectedUsers.value?.length
+      await getSchedulingOrgs()
+      await getSchedulingUsers()
+      await fetchSchedulingOrgTypes()
+      await getPositions()
+      if(props.preselectedEvent){
+        filterOrgsAndUsers()
+      }
+    })
+    watch(() => store.state.schedule.timezone.value, (value) => {
         //when the schedule timezone value changes, update the calendar plugin's timezone
-        let calendarApi = this.$refs.eventCalendar.getApi()
-        calendarApi.setOption('timeZone', this.$store.state.schedule.timezone.value)
-      },
-      '$store.state.user.details.timezone': function(){
+        let calendarApi = refs.eventCalendar.getApi()
+        calendarApi.setOption('timeZone', store.state.schedule.timezone.value)
+      })
+      watch(() => store.state.user.details.timezone, () => {
         //when the app timezone changes, update the schedule timezone to match
-        this.timezone = this.$store.state.user.details.timezone
-      },
-      timezone : function () {
+        timezone.value = store.state.user.details.timezone
+      })
+      watch(timezone, () => {
         //when the value of the timezone changes (either via the time zone dropdown selector or a change in the user store timezone value),
         // update the timezone for the schedule page
-        this.changeTimezone(this.timezone)
-      },
+        changeTimezone(timezone.value)
+      })
       // whenever selectedUsers or selectedOrgs changes, concat them both into resources
-      'selectedUsers': function () {
-        this.calendarOptions.resources = this.selectedOrgs.concat(this.selectedUsers)
-        // //temp for dev:
-        // if(this.calendarOptions.resources.length === 0){
-        //   this.calendarOptions.resources =  [
-        //     {id: 123, title: "Default User1 with a really long name to test clip",}, {id: 456, title: "Default User2"}
-        //   ]
-        // }
-        // //end temp
-        this.handleResourceColors()
-      },
-      'selectedOrgs': function () {
-        this.calendarOptions.resources = this.selectedOrgs.concat(this.selectedUsers)
-        this.handleResourceColors()
-        this.$refs.orgSelector.setSearch('')//prevents weird scroll bug
-      },
-      calendarStartTime: function (newStartTime, oldStartTime){
+    watch(selectedUsers, () => {
+        calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
+        handleResourceColors()
+      })
+      watch(selectedOrgs, () => {
+        calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
+        handleResourceColors()
+        refs.orgSelector.setSearch('')//prevents weird scroll bug
+      })
+      watch(calendarStartTime, (newStartTime, oldStartTime) => {
         if(newStartTime !== oldStartTime) {
-          this.getDayOptions()
+          getDayOptions()
         }
-      },
-      calendarEndTime: function (newEndTime, oldEndTime){
+      })
+      watch(calendarEndTime, (newEndTime, oldEndTime) => {
         if(newEndTime !== oldEndTime) {
-          this.getDayOptions()
+          getDayOptions()
         }
-      },
+      })
 
-    },
-    async created() {
-      // this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
-      // this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
-      this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
-      await this.getSchedulingOrgs()
-      await this.getSchedulingUsers()
-      await this.getSchedulingOrgTypes()
-      await this.getPositions()
-      if(this.preselectedEvent){
-        this.filterOrgsAndUsers()
-      }
-    },
-    data() {
-      return {
-        calendarOptions: {
-          plugins: [
-              resourceTimelinePlugin, interaction, momentTimezonePlugin
-          ],
-          initialView: 'resourceTimelineDay',
-          resources: [],
-          resourceAreaWidth: 300,
-          eventSources:[
-            (info, successCallback, failureCallback) => this.goGetEventsNow(info, successCallback, failureCallback)
-          ],
-          eventClick: (eventClickInfo) => this.handleEventClick(eventClickInfo),
-          navLinks: true,
-          navLinkDayClick: "resourceTimeline",
-          slotLabelDidMount:function ({el, date, view, level}) {
-            //this is a workaround because the day headers on the week view take you to the wrong view,
-            // and they don't trigger navLinkDayClick
-            if(view.type === "resourceTimelineWeek" && level === 0) {
-              let elA = el.querySelector('a')
-              if(elA.dataset.navlink === ''){
-                elA.onclick = () => {
-                  view.calendar.changeView("resourceTimelineDay", date);
-                }
-              }
-            }
-          },
-          headerToolbar:{
-            left: 'prev,customToday,next',
-            center: 'title',
-            right: 'resourceTimelineDay,resourceTimelineWeek'
-          },
-          titleFormat:{ month: 'long',
-            year: 'numeric',
-            day: 'numeric',
-            weekday: 'long'
-          },
-          height: '100%',
-          timeZone: this.$store.state.schedule.timezone.value || {},
-
-          customButtons: {
-            customToday: {
-              text: 'Today',
-              click: async () => {
-                let calendarApi = this.$refs.eventCalendar.getApi()
-                calendarApi.gotoDate(new Date)
-                this.handlePinsOnDayChange()
-              }
-            },
-            // customTimelineDay: {
-            //   text: 'day',
-            //   id:'customTimelineDay',
-            //   click: () => {
-            //     let calendarApi = this.$refs.eventCalendar.getApi()
-            //     if(calendarApi.view.type !== 'resourceTimelineDay') {
-            //       this.$refs.daySelectionbtn.$el.click()
-            //       //this is very hacky; it would be way better if we could update the library to the version where the weekday header
-            //       //click works instead of doing this wacky work around, but that requires a major refactor
-            //     } else {
-            //       this.switchToDayView()
-            //     }
-            //   }
-            // },
-            // customTimelineWeek: {
-            //   text: 'week',
-            //   click: async () => {
-            //     this.calendar.options.minTime = '06:00:00'
-            //     this.calendar.options.maxTime = '22:00:00'
-            //     this.calendar.options.slotDuration = '01:00:00'
-            //     this.calendar.options.slotLabelInterval = '02:00:00'
-            //     this.calendar.options.slotWidth = 25
-            //     this.calendar.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric'}
-            //
-            //     let calendarApi = this.$refs.eventCalendar.getApi()
-            //     calendarApi.changeView('resourceTimelineWeek')
-            //     // await this.getEvents(false, true)
-            //     this.dateCallback(this.calendarStartTime, this.calendarEndTime)
-            //     this.handlePinsOnDayChange()
-            //   }
-            // },
-          }
-
-        },
-        snackbar: {},
-        calendarLoading: false,
-        includeCancelled: false,
-        calendarInitialRender: true,
-        calendarApi: null,
-        calendarStart: null,
-        calendarView: null,
-        calendarStartTime: null,
-        calendarEndTime: null,
-        countSelected: 0,
-        maxSelectionAllowed: 10,
-        countErrorMessage: 'Maximum Selection Reached',
-        //filters
-        selectedStates: [],
-        masterOrgs: [],
-        orgValuesChanged: false,
-        orgs: [],
-        selectedOrgs: [],
-        orgsLoading: true,
-        usersLoading: true,
-        userValuesChanged: false,
-        masterUsers: [],
-        users: [],
-        selectedUsers: [],
-        orgTypes: [],
-        orgTypeValuesChanged: false,
-        selectedOrgTypes: [],
-        orgTypesLoading: true,
-        positions: [],
-        positionValuesChanged: false,
-        selectedPositions: [],
-        previousStateCount: 0,
-        previousTypeCount: 0,
-        previousPositionCount: 0,
-        positionsLoading: true,
-
-        mapResourceEvents: [],
-        checkedResources: [],
-        licenseKey: 'GPL-My-Project-Is-Open-Source',
-        daySelector: false,
-        dayOptions: [],
-        timezone: this.$store.state.schedule.timezone.value,
-        calendar: {
-          options: {
-            slotDuration: '00:30:00',
-            slotLabelInterval: '01:00:00',
-            slotWidth: 45,
-            scrollTime: moment().tz(this.$store.state.schedule.timezone.value).startOf('hour').format('HH:mm:ss'),
-            hiddenDays: [],
-            minTime: '02:00:00',
-            maxTime: '23:00:00',
-            height: 'parent',
-            firstDay: 1,
-            editable: true,
-            timezone: this.$store.state.schedule.timezone.value || {},
-          }
-        },
-        timezones: [
-          { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
-          { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
-          { friendlyValue: 'US/Arizona', value: 'America/Phoenix'},
-          { friendlyValue: 'US/Central', value: 'America/Chicago'},
-          { friendlyValue: 'US/Hawaii', value: 'Pacific/Honolulu'},
-          { friendlyValue: 'US/Eastern', value: 'America/New_York'},
-          { friendlyValue: 'US/Mountain', value: 'America/Denver'}
-        ],
-      }
-    },
-    methods: {
-      reloadCalendar(){
-        let calendarApi = this.$refs.eventCalendar.getApi()
+      const reloadCalendar = () =>{
+        let calendarApi = refs.eventCalendar.getApi()
         calendarApi.refetchEvents()
-      },
-      isResourceOnMap(resource){
-        return this.mapResources.findIndex(mr => resource.id === mr.id) >=0
-      },
-      isAssignedResource(resource){
+      }
+      const isResourceOnMap = (resource) => {
+        return props.mapResources.findIndex(mr => resource.id === mr.id) >=0
+      }
+      const isAssignedResource = (resource) => {
         let result = false
-        const selectedResourceId = this.$store.state.schedule.selectedResourceId
+        const selectedResourceId = store.state.schedule.selectedResourceId
         if(!selectedResourceId || selectedResourceId < 0){
           return false
         }
@@ -608,106 +544,13 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
           result = positions?.length > 0
         }
         return result
-      },
-      // testEvents(){
-      //   this.calendarApi.addEventSource( [
-      //     {
-      //       resourceId: 123,
-      //       companyId: null,
-      //       systemListId: null,
-      //       processStepId: 1,
-      //       systemListTypeId: 2,
-      //       projectId: 928254,
-      //       projectProcessStepId: 7756519,
-      //       stateId: null,
-      //       processStepStatusTypeId: 1,
-      //       companyProcessStepStatusTypeId: 76,
-      //       startCustomFieldValueId: null,
-      //       startCustomFieldGroupAssignmentId: null,
-      //       endCustomFieldValueId: null,
-      //       endCustomFieldGroupAssignmentId: null,
-      //       resourceCustomFieldValueId: null,
-      //       resourceCustomFieldGroupAssignmentId: null,
-      //       contactId: 3137606,
-      //       eventId: 14,
-      //       projectProcessStepEventId: 1946171,
-      //       processStepEventId: 14,
-      //       companyEventStatusTypeId: null,
-      //       eventStatusTypeId: 1,
-      //       saveVersion: 1,
-      //       customFieldDisplayValueGroupAssignmentId: null,
-      //       userId: 2453218,
-      //       resourceName: "Aaron Jacobson",
-      //       groupName: null,
-      //       contactFirstName: "Ibrahim",
-      //       contactLastName: "Hassen",
-      //       contactFullName: null,
-      //       projectName: "Ibrahim Hassen",
-      //       processStepName: "Closer Appointment",
-      //       state: "Minnesota",
-      //       processStepStatusType: "Pending Event",
-      //       startFieldName: null,
-      //       endFieldName: null,
-      //       resourceFieldName: null,
-      //       street1: "412 egret Blvd nw coonrapids",
-      //       city: "MINNEAPOLIS",
-      //       stateAbbreviation: "MN",
-      //       postalCode: "55448",
-      //       phone: "+16129900659",
-      //       mobile: null,
-      //       eventName: "Closer Appointment",
-      //       eventStatusType: null,
-      //       companyEventStatusType: null,
-      //       archived: null,
-      //       startFieldReadOnly: null,
-      //       endFieldReadOnly: null,
-      //       resourceFieldReadOnly: null,
-      //       forceSave: null,
-      //       latitude: 45.1636,
-      //       longitude: -93.27732,
-      //       start: "2024-02-01T20:00:00.000+00:00",
-      //       end: "2024-02-01T21:30:00.000+00:00",
-      //       resources: null,
-      //       systemListOptionIds: null,
-      //       customFieldDisplayValue: null,
-      //       title: `<b>Ibrahim Hassen</b> <br/> Closer Appointment`,
-      //       hoverTitle: "Ibrahim Hassen \n Closer Appointment \n 2:00 pm - 3:30 pm",
-      //       colorForBorder: "#e7211b",
-      //       textColor: "var(--v-primary-base)",
-      //       classNames:['event-tile', 'event-tile-red']
-      //               },
-      //     {
-      //       allDay: false,
-      //       dayOfWeekId: 5,
-      //       daylightSavings: null,
-      //       end: "2024-01-29T21:30:00+00:00",
-      //       isSlotTime:true,
-      //       display: "inverse-background",
-      //       backgroundColor: 'lightpink',
-      //       resourceId: 123,
-      //       groupId: 123,
-      //       start: "2024-01-29T20:00:00+00:00",
-      //       systemListTypeId: 2,
-      //     }, {
-      //       allDay: false,
-      //       dayOfWeekId: 5,
-      //       daylightSavings: null,
-      //       end: "2024-01-29T21:30:00+00:00",
-      //       isSlotTime:true,
-      //       display: "background",
-      //       backgroundColor: 'purple',
-      //       resourceId: 123,
-      //       groupId: 123,
-      //       start: "2024-01-29T20:00:00+00:00",
-      //       systemListTypeId: 2,
-      //     }
-      //   ])
-      // },
-      handleResourceColors() {
-        this.calendarOptions.resources.forEach((r, index) => {
+      }
+
+      const handleResourceColors = () => {
+        calendarOptions.value.resources.forEach((r, index) => {
           r.eventBackgroundColor = '#FFFFFF'
           r.eventBorderColor = '#919191'
-          r.eventColorClass = this.getColorClass(index)
+          r.eventColorClass = getColorClass(index)
 
           //the event will come get this later
           if(index <= 19) {
@@ -722,11 +565,11 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
             r.color = '#'+hexColorCode
           }
         })
-      },
-      getDayOptions(){
-        let dayOptions = []
-        const startDate = this.calendarApi?.view.activeStart
-        const endDate = this.calendarApi?.view.activeEnd
+      }
+      const getDayOptions = () => {
+        let options = []
+        const startDate = calendarApi.value?.view.activeStart
+        const endDate = calendarApi.value?.view.activeEnd
 
         if(startDate && endDate) {
           let i = startDate
@@ -735,59 +578,59 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
               rawDate: i,
               formattedDate: moment.utc(i).format('dddd MMM Do, YYYY')
             }
-            dayOptions.push(dayOption)
+            options.push(dayOption)
             i = moment(i).add(1, 'days')
           }
         }
-        this.dayOptions = dayOptions
-      },
+        dayOptions.value = options
+      }
 
 
       //filter functions
-      toggleSelectAllStates () {
-        this.$nextTick(() => {
-          if (this.selectAllStates) {
-            this.selectedStates = []
+      const toggleSelectAllStates =  async() => {
+        await nextTick(() => {
+          if (selectAllStates) {
+            selectedStates.value = []
           } else {
-            this.selectedStates = cloneDeep(this.states)
+            selectedStates.value = cloneDeep(states.value)
           }
         })
-      },
-      toggleSelectAllOrgTypes () {
-        this.$nextTick(() => {
-          if (this.selectAllOrgTypes) {
-            this.selectedOrgTypes = []
+      }
+      const toggleSelectAllOrgTypes =  () => {
+        nextTick(() => {
+          if (selectAllOrgTypes.value) {
+            selectedOrgTypes.value = []
           } else {
-            this.selectedOrgTypes = cloneDeep(this.orgTypes)
+            selectedOrgTypes.value = cloneDeep(orgTypes.value)
           }
         })
-      },
-      toggleSelectAllPositions () {
-        this.$nextTick(() => {
-          if (this.selectAllPositions) {
-            this.selectedPositions = []
+      }
+      const toggleSelectAllPositions =  () => {
+        nextTick(() => {
+          if (selectAllPositions) {
+            selectedPositions.value = []
           } else {
-            this.selectedPositions = cloneDeep(this.positions)
+            selectedPositions.value = cloneDeep(positions.value)
           }
         })
-      },
-      showScheduleBtnForResource(resource) {
-        if(this.preselectedEvent) {
-          if (this.preselectedEvent.systemListId === 2) {
-            const allowedPositions = resource.extendedProps?.userPositions?.filter(p => this.preselectedEvent.systemListOptionIds.includes(p.positionId))
+      }
+      const showScheduleBtnForResource = (resource) => {
+        if(props.preselectedEvent) {
+          if (props.preselectedEvent.systemListId === 2) {
+            const allowedPositions = resource.extendedProps?.userPositions?.filter(p => props.preselectedEvent.systemListOptionIds.includes(p.positionId))
             return allowedPositions?.length > 0
-          } else if (this.preselectedEvent.systemListId === 3) {
-            return this.preselectedEvent.systemListOptionIds.includes(resource.extendedProps.orgTypeId)
+          } else if (props.preselectedEvent.systemListId === 3) {
+            return props.preselectedEvent.systemListOptionIds.includes(resource.extendedProps.orgTypeId)
           }
         }
         return false
-      },
-      async getSchedulingOrgs() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const getSchedulingOrgs = async() => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
             params: {
-              stateId: this.state?.id ?? null,
+              stateId: null, //?
               isSchedulingTool: true
             }
           }, null, [])
@@ -796,68 +639,68 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
             d.masterId = d.id
             d.id = `${1}${d.id}`
           })
-          this.orgs = data
-          this.masterOrgs = cloneDeep(this.orgs)
-          this.orgsLoading = false
-          this.selectedOrgs = this.selectedOrgs.filter(so => {
-            return this.orgs.some(o => o.id === so.id)
+          orgs.value = data
+          masterOrgs.value = cloneDeep(orgs.value)
+          orgsLoading.value = false
+          selectedOrgs.value = selectedOrgs.value.filter(so => {
+            return orgs.value.some(o => o.id === so.id)
           })
-          handleHidingGlobalLoader(this, status)
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Orgs')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Orgs')
+          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async getSchedulingOrgTypes () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const fetchSchedulingOrgTypes = async() => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getSchedulingOrgTypes()
-          this.orgTypes = data
+          orgTypes.value = data
 
           //if we came from an event, preselect the correct Resource TYPES
-          if(this.preselectedEvent){
-            if(this.preselectedEvent.systemListId === 3){
-              this.selectedOrgTypes = this.orgTypes.filter(ot => this.preselectedEvent.systemListOptionIds.includes(ot.id))
+          if(props.preselectedEvent){
+            if(props.preselectedEvent.systemListId === 3){
+              selectedOrgTypes.value = orgTypes.value.filter(ot => props.preselectedEvent.systemListOptionIds.includes(ot.id))
             }
           }
 
-          this.orgTypesLoading = false
-          handleHidingGlobalLoader(this, status)
+          orgTypesLoading.value = false
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Org Types')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async getPositions() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const getPositions = async() => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/position/schedulable`, null, [])
-          this.positions = data
+          positions.value = data
           //if we came from an event, preselect the correct Resource TYPES
-          if(this.preselectedEvent){
-            if(this.preselectedEvent.systemListId === 2){
-              this.selectedPositions = this.positions.filter(p => this.preselectedEvent.systemListOptionIds.includes(p.id))
+          if(props.preselectedEvent){
+            if(props.preselectedEvent.systemListId === 2){
+              selectedPositions.value = positions.value.filter(p => props.preselectedEvent.systemListOptionIds.includes(p.id))
             }
           }
-          this.positionsLoading = false
-          handleHidingGlobalLoader(this, status)
+          positionsLoading.value = false
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Positions')
+          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async getSchedulingUsers() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const getSchedulingUsers = async() => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequestWithParams(`/user/getSchedulingUsers`, {
             params: {
-              stateId: this.state?.id ?? null,
+              stateId: null, //?
               isSchedulingTool: true
             }
           }, null, [])
@@ -866,59 +709,59 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
             d.masterId = d.id
             d.id = `${2}${d.id}`
           })
-          this.users = data
-          this.masterUsers = cloneDeep(this.users)
-          this.usersLoading = false
-          this.selectedUsers = this.selectedUsers.filter(su => {
-            return this.users.some(u => u.id === su.id)
+          users.value = data
+          masterUsers.value = cloneDeep(users.value)
+          usersLoading.value = false
+          selectedUsers.value = selectedUsers.value.filter(su => {
+            return users.value.some(u => u.id === su.id)
           })
-          handleHidingGlobalLoader(this, status)
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Users')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      limiter() {
-        this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
-        this.orgs.forEach(o => {
-          let match = this.selectedOrgs.find(so => so.id === o.id)
-          o.disabled = !match && this.countSelected >= this.maxSelectionAllowed
+      }
+      const limiter = () => {
+        countSelected.value = selectedOrgs.value?.length + selectedUsers.value?.length
+        orgs.value.forEach(o => {
+          let match = selectedOrgs.value.find(so => so.id === o.id)
+          o.disabled = !match && countSelected.value >= maxSelectionAllowed.value
         })
-        this.users.forEach(u => {
-          let match = this.selectedUsers.find(su => su.id === u.id)
-          u.disabled = !match && this.countSelected >= this.maxSelectionAllowed
+        users.value.forEach(u => {
+          let match = selectedUsers.value.find(su => su.id === u.id)
+          u.disabled = !match && countSelected.value >= maxSelectionAllowed.value
         })
-      },
-      filterOrgsAndUsers() {
+      }
+      const filterOrgsAndUsers = () => {
         //only filter if something is selected or deselected back down to 0 length - cant watch these values because we don't want to call the function on the change but only on blur
-        let stateFilterRequired = this.selectedStates?.length > 0
-        let stateReset = this.previousStateCount > 0 && this.selectedStates?.length === 0
-        this.previousStateCount = this.selectedStates?.length
-        let orgTypeFilterRequired = this.selectedOrgTypes?.length > 0
-        let typeReset = this.previousTypeCount > 0 && this.selectedOrgTypes?.length === 0
-        this.previousTypeCount = this.selectedOrgTypes?.length
-        let positionFilterRequired = this.selectedPositions?.length > 0
-        let positionReset = this.previousPositionCount > 0 && this.selectedOrgTypes?.length === 0
-        this.previousPositionCount = this.selectedPositions?.length
+        let stateFilterRequired = selectedStates.value?.length > 0
+        let stateReset = previousStateCount.value > 0 && selectedStates.value?.length === 0
+        previousStateCount.value = selectedStates.value?.length
+        let orgTypeFilterRequired = selectedOrgTypes.value?.length > 0
+        let typeReset = previousTypeCount.value > 0 && selectedOrgTypes.value?.length === 0
+        previousTypeCount.value = selectedOrgTypes.value?.length
+        let positionFilterRequired = selectedPositions.value?.length > 0
+        let positionReset = previousPositionCount.value > 0 && selectedOrgTypes.value?.length === 0
+        previousPositionCount.value = selectedPositions.value?.length
         if(stateFilterRequired || orgTypeFilterRequired || positionFilterRequired || stateReset || typeReset || positionReset) {
-          this.orgs = this.masterOrgs.filter(mo => {
+          orgs.value = masterOrgs.value.filter(mo => {
             let stateMatch = true
             let orgTypeMatch = true
             if(stateFilterRequired) {
-              let match = this.selectedStates.find(ss => ss.stateId === mo.stateId)
+              let match = selectedStates.value.find(ss => ss.stateId === mo.stateId)
               stateMatch = match !== null && match !== undefined
             }
             if(orgTypeFilterRequired) {
-              let match = this.selectedOrgTypes.find(sot => sot.id === mo.orgTypeId)
+              let match = selectedOrgTypes.value.find(sot => sot.id === mo.orgTypeId)
               orgTypeMatch = match !== null && match !== undefined
             }
             return stateMatch && orgTypeMatch
           })
-          let selectedPositionIds = this.selectedPositions.map(p => p.id)
-          let selectedStateIds = this.selectedStates.map(s => s.stateId)
-          this.users = this.masterUsers.filter(mo => {
+          let selectedPositionIds = selectedPositions.value.map(p => p.id)
+          let selectedStateIds = selectedStates.value.map(s => s.stateId)
+          users.value = masterUsers.value.filter(mo => {
             let stateMatch = true
             let positionMatch = true
             if(stateFilterRequired) {
@@ -934,45 +777,44 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
             return stateMatch && positionMatch
           })
         }
-      },
+      }
 
-      closeResource(resource){
+      const closeResource = (resource) => {
         //todo: are there any cases where a user resource and an org resource could end up with the same id??
-        let index = this.selectedUsers.findIndex(r => r.id === resource.id)
+        let index = selectedUsers.value.findIndex(r => r.id === resource.id)
         if(index >= 0){
-          this.selectedUsers.splice(index, 1)
+          selectedUsers.value.splice(index, 1)
         } else {
-          index = this.selectedOrgs.findIndex(r => r.id === resource.id)
-          this.selectedOrgs.splice(index,1)
+          index = selectedOrgs.value.findIndex(r => r.id === resource.id)
+          selectedOrgs.value.splice(index,1)
         }
 
-        if(this.isResourceOnMap(resource)){
-          this.toggleMapPinForResource(resource)
+        if(isResourceOnMap(resource)){
+          toggleMapPinForResource(resource)
         }
-      },
-
-      toggleScheduleResource(resource){
-        if(!this.isAssignedResource(resource)){
-          this.$emit('scheduleResource', resource)
+      }
+      const toggleScheduleResource = (resource) =>{
+        if(!isAssignedResource(resource)){
+          emit('scheduleResource', resource)
         } else {
-          this.$emit('unscheduleResource')
+          emit('unscheduleResource')
         }
-      },
+      }
 
       //map functions
-      toggleMapPinForResource(resource){
-        this.handlePopulatingMapPins(!this.isResourceOnMap(resource), resource, true)
-      },
+      const toggleMapPinForResource = (resource) => {
+        handlePopulatingMapPins(!isResourceOnMap(resource), resource, true)
+      }
 
-      handlePinsOnDayChange() {
-        this.mapResourceEvents = []
-        this.checkedResources.forEach((r, idx) => {
-          this.handlePopulatingMapPins(true, r, false, idx === this.checkedResources.length - 1)
+      const handlePinsOnDayChange = () => {
+        mapResourceEvents.value = []
+        checkedResources.value.forEach((r, idx) => {
+          handlePopulatingMapPins(true, r, false, idx === checkedResources.value.length - 1)
         })
-      },
-      handlePopulatingMapPins(isChecked, resource, doCallback) {
+      }
+      const handlePopulatingMapPins = (isChecked, resource, doCallback) => {
         if(isChecked) {
-          let calendarApi = this.$refs.eventCalendar.getApi()
+          let calendarApi = refs.eventCalendar.getApi()
 
           let resourceEvents = calendarApi.getEvents().filter(e => {
             return e.display !== 'inverse-background' && e.display !== 'background' && e._def.resourceIds.indexOf(resource.id) >= 0
@@ -991,29 +833,29 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
               color: resource.extendedProps.color,
               coordinates: [ re.extendedProps.longitude, re.extendedProps.latitude]
             }
-            this.mapResourceEvents.push(eventObj)
+            mapResourceEvents.value.push(eventObj)
           })
         } else {
-          this.mapResourceEvents = this.mapResourceEvents.filter(r => {
+          mapResourceEvents.value = mapResourceEvents.value.filter(r => {
             return r.id !== resource?.id
           })
         }
         if(doCallback) {
-          this.callback(this.mapResourceEvents, isChecked)
+          props.callback(mapResourceEvents.value, isChecked)
         }
-        let calendarApi = this.$refs.eventCalendar.getApi()
-      },
+        let calendarApi = refs.eventCalendar.getApi()
+      }
 
 
       //calendar event functions
-      async getAvailability(info) {
+      const getAvailability = async(info) => {
         try {
           let params = {
-            orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
-            userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
+            orgIds: selectedOrgs.value?.length > 0 ? selectedOrgs.value.map(o => o.masterId) : [],
+            userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
             startTime: info.start,
             endTime: info.end,
-            timezone: this.timezone.value
+            timezone: timezone.value.value
           }
           const {data} = await postRequest(`/schedule/availability`, params)
 
@@ -1059,7 +901,7 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
           //we do this for every resource, regardless of if they already have an availability or not
           // if they already have one it still works as it should and doesn't block out the time, but if they
           // dont already have one then this will block/grey out the day so it doesn't look like they are available
-          this.calendarOptions.resources.forEach(r => {
+          calendarOptions.value.resources.forEach(r => {
             data.push({
               start: moment.utc(info.start).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
               end: moment.utc(info.end).endOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
@@ -1076,26 +918,26 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
 
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Availability')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Availability')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async goGetEventsNow(info, successCallback, failureCallback){
-        if (this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
+      }
+      const goGetEventsNow = async (info, successCallback, failureCallback) => {
+        if (selectedOrgs.value.length > 0 || selectedUsers.value.length > 0) {
           //i do this here instead of on its own because all of the code above here has to happen for get availability as well
-          this.calendarLoading = true
-         const availabilityData = await this.getAvailability(info);
+          calendarLoading.value = true
+         const availabilityData = await getAvailability(info);
 
           try {
             let params = {
-              orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
+              orgIds: selectedOrgs.value?.length > 0 ? selectedOrgs.value.map(o => o.masterId) : [],
               // this was the old way. leaving here in case
               // userPositionIds: this.getUserPositionIds(),
-              userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
+              userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
               startTime: info.start,
               endTime: info.end,
-              includeCancelled: this.includeCancelled
+              includeCancelled: includeCancelled.value
             }
             const {data} = await postRequest(`/schedule`, params)
             data.forEach(d => {
@@ -1104,8 +946,8 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
               // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
               d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
               d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName}`
-              d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${this.getFormattedDate(d.start)} - ${this.getFormattedDate(d.end)}`
-              let matchingResource = this.calendarOptions.resources.find(r => r.id === d.resourceId)
+              d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
+              let matchingResource = calendarOptions.value.resources.find(r => r.id === d.resourceId)
               if(d.eventStatusTypeId === 3) {
                 d.colorForBorder = '#919191'
                 d.textColor = '#919191'
@@ -1119,30 +961,29 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
             let events = cloneDeep(data)
             events = events.concat(availabilityData)
             successCallback(events)
-            this.calendarLoading = false
+            calendarLoading.value = false
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Events')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            snackbar.value = getSnackbar('ERROR', 'Error Retrieving Events')
+            store.commit(AppMutations.SHOW_SNACK, snackbar.value)
             failureCallback(e)
-            this.calendarLoading = false
+            calendarLoading.value = false
           } finally {
-            this.orgValuesChanged = false
-            this.userValuesChanged = false
+            orgValuesChanged.value = false
+            userValuesChanged.value = false
           }
         }
         successCallback([])
-      },
-      handleEventClick (info) {
+      }
+      const handleEventClick = (info) => {
         if(info.event.title && info.event.display === 'auto') {
           let props = info.event.extendedProps
           //open event clicks in new window every time so they dont have to keep reloading the calendar
-          let routerData = this.$router.resolve({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}/event/${props.projectProcessStepEventId}`})
+          let routerData = router.resolve({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}/event/${props.projectProcessStepEventId}`})
           window.open(routerData.href, '_blank')
-          // this.$router.push({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}`})
         }
-      },
-      getColorClass(index){
+      }
+      const getColorClass = (index) => {
         const colorClassList = [
           'event-tile-red', 'event-tile-light-green', 'event-tile-teal', 'event-tile-yellow',
           'event-tile-sky-blue', 'event-tile-purple', 'event-tile-grey', 'event-tile-orange',
@@ -1151,38 +992,34 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
           'event-tile-dark-grey', 'event-tile-maroon', 'event-tile-navy', 'event-tile-olive'
         ]
         return colorClassList[index%20]
-      },
-      async changeTimezone (tz) {
+      }
+      const changeTimezone = async (tz) => {
         //update the timezone in the schedule store
-        await this.$store.dispatch(ScheduleActions.CHANGE_TIMEZONE, tz)
-      },
+        await store.dispatch(ScheduleActions.CHANGE_TIMEZONE, tz)
+      }
 
-
-
-      getFormattedDate(date) {
+      const getFormattedDate = (date) => {
         //used for formatting the start/end for the hoverTitle
-        return this.$filters.formatDate(date, 'timestamp', 'h:mm a')
-      },
-      setCalendarStartAndEndTimes () {
-        this.calendarStart = this.calendarApi.getDate()
-        this.calendarView = this.calendarApi.view?.type
-        if(this.calendarView === 'resourceTimelineDay') {
-          this.calendarStartTime = moment(this.calendarStart).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
-          this.calendarEndTime = moment(this.calendarStart).add(1, 'd').startOf('d').subtract(1, 's').utc().format('YYYY-MM-DD HH:mm:ss')
-          // this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+        return filters.formatDate(date, 'timestamp', 'h:mm a')
+      }
+      const setCalendarStartAndEndTimes = () => {
+        calendarStart.value = calendarApi.value.getDate()
+        calendarView.value = calendarApi.value.view?.type
+        if(calendarView.value === 'resourceTimelineDay') {
+          calendarStartTime.value = moment(calendarStart.value).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
+          calendarEndTime.value = moment(calendarStart.value).add(1, 'd').startOf('d').subtract(1, 's').utc().format('YYYY-MM-DD HH:mm:ss')
         } else {
           //moment starts on sunday, isoWeek starts on monday
-          this.calendarStartTime = moment(this.calendarStart).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
-          this.calendarEndTime = moment(this.calendarStart).endOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
+          calendarStartTime.value = moment(calendarStart.value).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
+          calendarEndTime.value = moment(calendarStart.value).endOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
         }
-        this.$store.commit(ScheduleMutations.SET_START_TIME, this.calendarStartTime)
-        this.$store.commit(ScheduleMutations.SET_END_TIME, this.calendarEndTime)
-        this.dateCallback(this.calendarStartTime, this.calendarEndTime)
-      },
+        store.commit(ScheduleMutations.SET_START_TIME, calendarStartTime.value)
+        store.commit(ScheduleMutations.SET_END_TIME, calendarEndTime.value)
+        props.dateCallback(calendarStartTime.value, calendarEndTime.value)
+      }
 
       //todo: determine if these are used now
-      handleEventRender (info) {
+      const handleEventRender = (info) => {
         console.log('handleEventRender')
         //3 types of display. null = regular scheduled events,
         // background = blocked out from start to end, (resource_appointments)
@@ -1199,15 +1036,15 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
           //this gives normal events a hover
           info.el.title = info.event.extendedProps.hoverTitle
         }
-      },
-      handleResourceRender (renderInfo) {
+      }
+      const handleResourceRender = (renderInfo) => {
         console.log('handleResourceRender')
         let checkbox = document.createElement('INPUT');
         checkbox.setAttribute('type', 'checkbox')
         checkbox.setAttribute('class', 'mr-2')
 
         checkbox.onchange = (event) => {
-          this.handlePopulatingMapPins(event.target.checked, renderInfo.resource, true, true)
+          handlePopulatingMapPins(event.target.checked, renderInfo.resource, true, true)
         }
 
         //if this is an org (first char === 1) then make it a hyperlink to the org screen
@@ -1224,62 +1061,61 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
           "<span>" + renderInfo.resource.title + "</span>"
         renderInfo.el.querySelector('.fc-cell-text').prepend(checkbox)
 
-      },
+      }
 
 
 
       /*Functions that will probably go away*/
-      async switchToDayView(dayOption){
-        let calendarApi = this.$refs.eventCalendar.getApi()
-        this.calendar.options.slotDuration = '00:30:00'
-        this.calendar.options.minTime = '02:00:00'
-        this.calendar.options.maxTime = '23:00:00'
-        this.calendar.options.slotLabelInterval = '01:00:00'
-        this.calendar.options.slotWidth = 45
-        this.calendar.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric', weekday: 'long'}
+      const switchToDayView = (dayOption) => {
+        let calendarApi = refs.eventCalendar.getApi()
+        calendar.value.options.slotDuration = '00:30:00'
+        calendar.value.options.minTime = '02:00:00'
+        calendar.value.options.maxTime = '23:00:00'
+        calendar.value.options.slotLabelInterval = '01:00:00'
+        calendar.value.options.slotWidth = 45
+        calendar.value.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric', weekday: 'long'}
         let day = dayOption ? moment.utc(dayOption.rawDate).format('YYYY-MM-DD') : null
         calendarApi.changeView('resourceTimelineDay', day)
-        // await this.getEvents(false, true)
-        this.dateCallback(this.calendarStartTime, this.calendarEndTime)
-        this.handlePinsOnDayChange()
-      },
-      async getEvents(isOrgs, reload) {
+        props.dateCallback(calendarStartTime.value, calendarEndTime.value)
+        handlePinsOnDayChange()
+      }
+      const getEvents = async(isOrgs, reload) => {
         //if `isOrgs` is not passed in, it is because we don't know it (came from v-switch change)
         if(null == isOrgs) {
-          isOrgs = this.selectedOrgs?.length > 0
-          this.orgValuesChanged = true
-          this.userValuesChanged = true
+          isOrgs = selectedOrgs.value?.length > 0
+          orgValuesChanged.value = true
+          userValuesChanged.value = true
         }
 
         //dont reload events if they deselected all of one type and only load if the selected values changed
-        if(reload || (isOrgs && this.selectedOrgs?.length > 0 && (this.orgValuesChanged || this.calendarInitialRender))
-            || (!isOrgs && this.selectedUsers?.length > 0 && (this.userValuesChanged || this.calendarInitialRender))) {
-          if (reload || !this.calendarInitialRender) {
-            this.setCalendarStartAndEndTimes()
+        if(reload || (isOrgs && selectedOrgs.value?.length > 0 && (orgValuesChanged.value || calendarInitialRender.value))
+            || (!isOrgs && selectedUsers.value?.length > 0 && (userValuesChanged.value || calendarInitialRender.value))) {
+          if (reload || !calendarInitialRender.value) {
+            setCalendarStartAndEndTimes()
           }
-          this.calendarInitialRender = false
-          if (this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
+          calendarInitialRender.value = false
+          if (selectedOrgs.value.length > 0 || selectedUsers.value.length > 0) {
             //i do this here instead of on its own because all of the code above here has to happen for get availability as well
-            this.calendarLoading = true
-            await this.getAvailability()
+            calendarLoading.value = true
+            await getAvailability()
 
             try {
               let params = {
-                orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
+                orgIds: selectedOrgs.value?.length > 0 ? selectedOrgs.value.map(o => o.masterId) : [],
                 // this was the old way. leaving here in case
                 // userPositionIds: this.getUserPositionIds(),
-                userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
-                startTime: this.calendarStartTime,
-                endTime: this.calendarEndTime,
-                includeCancelled: this.includeCancelled
+                userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
+                startTime: calendarStartTime.value,
+                endTime: calendarEndTime.value,
+                includeCancelled: includeCancelled.value
               }
               const {data} = await postRequest(`/schedule`, params)
               data.forEach(d => {
                 // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
                 d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
                 d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName}`
-                d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${this.getFormattedDate(d.start)} - ${this.getFormattedDate(d.end)}`
-                let matchingResource = this.calendarOptions.resources.find(r => r.id === d.resourceId)
+                d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
+                let matchingResource = calendarOptions.value.resources.find(r => r.id === d.resourceId)
                 if(d.eventStatusTypeId === 3) {
                   d.colorForBorder = '#919191'
                   d.textColor = '#919191'
@@ -1289,37 +1125,21 @@ import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
                   d.classNames=['event-tile', matchingResource?.eventColorClass]
                 }
               })
-              // console.log('the events: ',data)
               let events = cloneDeep(data)
-              // this.calendarApi.addEventSource(events)
 
-              this.calendarLoading = false
+              calendarLoading.value = false
             } catch (e) {
               console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error Retrieving Events')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.calendarLoading = false
+              snackbar.value = getSnackbar('ERROR', 'Error Retrieving Events')
+              store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+              calendarLoading.value = false
             } finally {
-              this.orgValuesChanged = false
-              this.userValuesChanged = false
+              orgValuesChanged.value = false
+              userValuesChanged.value = false
             }
           }
         }
-      },
-      // getUserPositionIds () {
-      //   let userPositionIds = []
-      //   this.selectedUsers?.forEach(su => {
-      //     su.userPositions.forEach(up => {
-      //       //up.id = userPositionId
-      //       userPositionIds.push(up.id)
-      //     })
-      //   })
-      //   return userPositionIds
-      // },
-
-
-    }
-  }
+      }
 </script>
 
 <style lang="scss">

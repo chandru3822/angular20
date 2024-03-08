@@ -14,7 +14,7 @@
               :close-on-click="false"
               :close-on-content-click="false">
         <template v-slot:activator="{ on }">
-          <v-btn fab tile outlined v-on="on" @click="searchMenuOpen = false" small color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></v-btn>
+          <v-btn fab tile outlined v-on="on" small color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></v-btn>
         </template>
         < id="drive-time-card" color="white" class="square-card pa-4">
           <div class="d-flex justify-space-between">
