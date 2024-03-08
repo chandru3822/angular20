@@ -229,11 +229,13 @@
                 :editable="false"
               />
             </div>
-            <v-alert prominent v-else type="error">
-              <v-row>
-                <v-col class="grow"> Error generating proposal </v-col>
-              </v-row>
-            </v-alert>
+            <div v-else>
+              <v-alert prominent type="error">
+                <v-row>
+                  <v-col class="grow"> Error generating proposal </v-col>
+                </v-row>
+              </v-alert>
+            </div>
           </v-card>
         </v-col>
       </v-row>
