@@ -36,11 +36,11 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -477,10 +477,8 @@ public class BlueravenProposalService {
         "currentUserId", securityService.getCurrentUser().trueUserId());
 
       context = sqlCache.queryForMapBySql(ProposalQuery.getCalculatedProposalValues, params);
-    } catch (UncategorizedSQLException sqlException) {
-      String errorMessage = sqlException.getSQLException()
-        .getMessage()
-        .split("\n")[0];
+    } catch (DataAccessException dataAccessException) {
+      String errorMessage = dataAccessException.getCause().getMessage().split("\n")[0];
       errorMessage = errorMessage.replace("ERROR: ", "").trim();
       log.error("[Proposal] SQL Error generating calculated values for proposalId={}, msg={}", proposalId, errorMessage);
       throw new ApiException("Unable to generate proposal: " + errorMessage);
@@ -510,6 +508,8 @@ public class BlueravenProposalService {
   @Transactional
   public Optional<Proposal> lockProposal(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
     Proposal unlockedProposal = getUnlockedProposal(proposalId, currentUser.getId());
+
+    var calculatedProposalValues = getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, false);
 
     //check to see if the proposal has a discount amount added
     getCustomFieldValue(unlockedProposal, DISCOUNT_AMOUNT_CFGA_ID)
