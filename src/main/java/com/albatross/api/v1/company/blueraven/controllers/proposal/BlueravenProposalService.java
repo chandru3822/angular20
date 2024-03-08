@@ -40,6 +40,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -194,7 +195,6 @@ public class BlueravenProposalService {
   }
 
   private static final Long excludedStateCustomFieldId = 405L;
-  private static final Long allowedOrgFieldId = 413L;
   private static final Long dealerFieldId = 407L;
   private static final Long financialProductFieldId = 128L;
   private static final Long rebatesFieldId = 415L;
@@ -441,8 +441,10 @@ public class BlueravenProposalService {
     try {
       Map<String, Object> context = getCalculatedProposalValues(proposalId, generatedType, false);
       return Optional.of(proposalTemplateService.getTemplateById(templateId, context, generatedType, isDebug));
+    } catch (ApiException apiException) {
+      throw apiException;
     } catch (Exception e) {
-      log.error("[Proposal] Error generating proposal", e);
+      log.error("[Proposal] Unknown error generating proposal", e);
       throw new ApiException("Error generating proposal template");
     }
   }
@@ -454,9 +456,11 @@ public class BlueravenProposalService {
           final var context = getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, false);
           Resource pdf = proposalTemplateService.generatePdf(templateId, context, false);
           return Optional.of(new ProposalResource(pdf, proposal, context));
+        } catch (ApiException apiException) {
+          throw apiException;
         } catch (Exception e) {
           log.error("[Proposal] Error generating proposal", e);
-          throw new ApiException("Error generating proposal");
+          throw new ApiException("Unknown error generating proposal");
         }
       });
   }
@@ -473,6 +477,13 @@ public class BlueravenProposalService {
         "currentUserId", securityService.getCurrentUser().trueUserId());
 
       context = sqlCache.queryForMapBySql(ProposalQuery.getCalculatedProposalValues, params);
+    } catch (UncategorizedSQLException sqlException) {
+      String errorMessage = sqlException.getSQLException()
+        .getMessage()
+        .split("\n")[0];
+      errorMessage = errorMessage.replace("ERROR: ", "").trim();
+      log.error("[Proposal] SQL Error generating calculated values for proposalId={}, msg={}", proposalId, errorMessage);
+      throw new ApiException("Unable to generate proposal: " + errorMessage);
     } catch (Exception e) {
       log.error("[Proposal] Error generating calculated values for proposalId={}, msg={}", proposalId, e.getMessage());
     }
