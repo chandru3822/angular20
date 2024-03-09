@@ -31,9 +31,11 @@ import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequestWithReques
 import {AppMutations} from '@/stores/AppStore'
 import {getCurrentInstance, onMounted, ref} from "vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import {useRouter, useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
-const router = vueInstance.$router
+const route = useRoute()
+const router = useRouter()
 const snackbar = vueInstance.$snackbar
 
 const isMobile = ref(false)
@@ -44,7 +46,7 @@ onMounted(() => {
   isMobile.value = userAgent.value && userAgent.value && ['Android', 'iPhone', 'iPad'].some(v => userAgent.value.includes(v))
 
   //success check is just a dumb little thing to prevent them from refresh the success screen a bunch and making us re-GET the session from stripe each time
-  if (null != vueInstance.$route.query.sessionId && vueInstance.$route.query.success !== 'true') {
+  if (null != route.query.sessionId && route.query.success !== 'true') {
     setStripePaymentId()
   }
 })
@@ -60,13 +62,13 @@ const doAppLaunch = () => {
 const setStripePaymentId = async() => {
   try {
     let params = {
-      stripeSessionId: vueInstance.$route.query.sessionId,
-      projectId: parseInt(vueInstance.$route.query.projectId),
+      stripeSessionId: route.query.sessionId,
+      projectId: parseInt(route.query.projectId),
     }
 
     const {data, status} = await postRequestWithRequestParams('/stripe/setPaymentId', [], params, 'blueraven')
     //success check is just a dumb little thing to prevent them from refresh the success screen a bunch and making us re-GET the session from stripe each time
-    router.replace(vueInstance.$route.fullPath + `&success=true`)
+    router.replace(route.fullPath + `&success=true`)
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)

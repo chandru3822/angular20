@@ -109,6 +109,7 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 const route = useRoute()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 const userStore = useUserStore()
 
 
@@ -159,7 +160,7 @@ const getScheduleByUsers = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -172,7 +173,7 @@ const deleteUserFromRoundRobin = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Removing User')
+    snackbar('ERROR', 'Error Removing User')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -190,7 +191,7 @@ const addUserToRoundRobin = async (selected) => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Adding User')
+    snackbar('ERROR', 'Error Adding User')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -203,7 +204,7 @@ const getSchedulers = async () => {
       schedulersLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Loading Users')
+      snackbar('ERROR', 'Error Loading Users')
     }
   }
 }

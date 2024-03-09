@@ -42,7 +42,6 @@ const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
 const fileStore = useFileStore()
-const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
 const logoLoaded = ref(false)

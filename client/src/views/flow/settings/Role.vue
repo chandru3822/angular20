@@ -104,7 +104,7 @@
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Saving Role')
+      snackbar('ERROR', 'Error Saving Role')
       store.commit(AppMutations.SET_LOADING, false)
     }
 
@@ -128,7 +128,7 @@
       handleHidingGlobalLoader(vueInstance, status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Retrieving Features')
+      snackbar('ERROR', 'Error Retrieving Features')
       store.commit(AppMutations.SET_LOADING, false)
     }
   }
@@ -141,7 +141,7 @@
       handleHidingGlobalLoader(vueInstance, status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Retrieving Role')
+      snackbar('ERROR', 'Error Retrieving Role')
       store.commit(AppMutations.SET_LOADING, false)
     }
   }

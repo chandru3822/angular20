@@ -65,13 +65,14 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 import {computed, defineProps, getCurrentInstance, onMounted, ref} from 'vue'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import {useRouter, useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const projectStore = useProjectStore()
 const appStore = useProjectStore()
-const router = vueInstance.$router
-const route = vueInstance.$route
+const route = useRoute()
+const router = useRouter()
 const snackbar = vueInstance.$snackbar
 
 const props = defineProps({

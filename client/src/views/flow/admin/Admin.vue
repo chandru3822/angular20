@@ -28,7 +28,7 @@
                   v-else
                   :key="item.title"
                   :to="item.path"
-                  :class="{'shaded-row': item.pathMatch ? vueInstance.$route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
+                  :class="{'shaded-row': item.pathMatch ? route.path.includes(`${item.pathMatch}`) : route.path === item.path}"
                   @click="menuOpen = false"
               >
                 <v-list-item-content>
@@ -48,7 +48,7 @@
                   :key="item.title"
                   @click="title = item.title"
                   :to="item.path"
-                  :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
+                  :class="{'shaded-row': item.pathMatch ? route.path.includes(`${item.pathMatch}`) : route.path === item.path}"
               >
                 <v-list-item-content>
                   <v-list-item-title>{{item.title}}</v-list-item-title>
@@ -73,12 +73,15 @@ import constants from '@/helpers/constants'
 import {getCurrentInstance, computed, ref} from 'vue'
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
+const route = useRoute()
 
 const menuOpen = ref(false)
+const title = ref(null)
 
 const items = computed(() => {
   return [

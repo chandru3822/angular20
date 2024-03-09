@@ -422,9 +422,8 @@
                               @click="copyToClipBoard(item.id)"
                               v-bind="attrs"
                               :activation-handler="on"
-                              round
+                              icon
                               prepend-icon="mdi-information"/>
-
                           </template>
                           <span>ID: {{childField.id}}</span>
                           <div class="text-center">(click to copy)</div>
@@ -465,7 +464,7 @@
                         color="primary"
                         :activation-handler="on"
                         @click="copyToClipBoard(item.id)" v-bind="attrs"
-                        round
+                        icon
                         prepend-icon="mdi-information"
                         ></AlbatrossButton>
                   </template>
@@ -509,13 +508,14 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 import {getCurrentInstance, computed, onMounted, ref} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
-import {useRouter} from "vue-router/composables"
+import {useRouter, useRoute} from "vue-router/composables"
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const userStore = useUserStore()
 const vuetify = vueInstance.$vuetify
 const router = useRouter()
+const route = useRoute()
 
 const showMenu = ref(false)
 const childField = ref({})
@@ -628,7 +628,7 @@ const resetAllFields = () => {
   vueInstance.$set(newField.value, 'updateFirstValueOnly', false)
   vueInstance.$set(newField.value, 'resetOnNew', false)
   vueInstance.$set(newField.value, 'resetValuesOnMain', false)
-  vueInstance.$set(newField,value, 'ignoreIfNull', false)
+  vueInstance.$set(newField.value, 'ignoreIfNull', false)
   cfgaParentObject.value = {}
   newField.value.processStepEventId = null
   newField.value.processStepId = null

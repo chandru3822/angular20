@@ -45,6 +45,7 @@ import {useRoute} from "vue-router/composables";
 const route = useRoute()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 const statusId = computed(() => {
   return route.params.id
@@ -81,7 +82,7 @@ const getStatusInfo = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }

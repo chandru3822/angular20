@@ -90,12 +90,13 @@ import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSna
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-import {useUserStore} from '@/stores/UserStorePinia.js'
+const snackbar = vueInstance.$snackbar
 const userStore = useUserStore()
-import {useRoute} from "vue-router/composables";
 const route = useRoute()
 
 
@@ -157,7 +158,7 @@ const getAvailablePostalCodes = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -170,7 +171,7 @@ const getCodesAssignedToRoundRobin = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -184,7 +185,7 @@ const deleteCodeFromRoundRobin = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Removing Postal Code')
+    snackbar('ERROR', 'Error Removing Postal Code')
     store.commit(AppMutations.SET_LOADING, false)
   }
   closeDeleteDialog()
@@ -208,7 +209,7 @@ const addCodeToRoundRobin = async () => {
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = e.data?.message?.includes('Postal Code Already In Use') ? e.data.message : 'Error Adding Postal Code'
-      getSnackbar('ERROR', msg)
+      snackbar('ERROR', msg)
       store.commit(AppMutations.SET_LOADING, false)
     }
   } else {

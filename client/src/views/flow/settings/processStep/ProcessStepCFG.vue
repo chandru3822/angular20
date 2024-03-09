@@ -21,6 +21,7 @@
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
 
         const loading = ref( true)
         const processStep = ref( {})
@@ -60,7 +61,7 @@
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Retrieving Data')
+          snackbar('ERROR', 'Error Retrieving Data')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }

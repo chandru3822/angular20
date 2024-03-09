@@ -165,6 +165,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
       const addNew = ref(false)
       const search = ref(null)
@@ -239,7 +240,7 @@ onMounted(() => {
           states.value = data
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Retrieving Data')
+          snackbar('ERROR', 'Error Retrieving Data')
         }
       }
     }
@@ -255,7 +256,7 @@ onMounted(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         dataLoading.value = false
-        getSnackbar('ERROR', 'Error Retrieving Data')
+        snackbar('ERROR', 'Error Retrieving Data')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -265,11 +266,11 @@ onMounted(() => {
       store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await deleteRequest(`/postalCode/${postalCodeId}`)
-        getSnackbar('SUCCESS', 'Postal Code Deleted')
+        snackbar('SUCCESS', 'Postal Code Deleted')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Deleting Postal Code')
+        snackbar('ERROR', 'Error Deleting Postal Code')
         store.commit(AppMutations.SET_LOADING, false)
       }
       closeDeleteDialog()
@@ -279,12 +280,12 @@ onMounted(() => {
       try {
         const {data, status} = await postRequest(`/postalCode`, newPostalCode.value)
         router.push({path: `/settings/zip/postalCode/${data.id}`})
-        getSnackbar('SUCCESS', 'Postal Code Added')
+        snackbar('SUCCESS', 'Postal Code Added')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         let msg = e?.data?.message ? e.data.message : 'Error Adding Postal Code'
-        getSnackbar('ERROR', msg)
+        snackbar('ERROR', msg)
         store.commit(AppMutations.SET_LOADING, false)
       }
     }

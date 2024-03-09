@@ -45,7 +45,6 @@
               />
             </div>
             <AlbatrossButton
-              variant="text"
               color="primary"
               class="mt-4"
               :disabled="!newLink.link || !newLink.url"

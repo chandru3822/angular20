@@ -143,6 +143,7 @@ import {useUserStore} from '@/stores/UserStorePinia.js'
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   selectedActionIndex: Number,
@@ -174,7 +175,7 @@ const loadChildTemplates = async () => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Loading Templates')
+    snackbar('ERROR', 'Error Loading Templates')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -191,11 +192,11 @@ const saveSmsToAction = async () => {
     addSmsCallback(action.id, data)
     selectedTemplate.value = {}
     selectedTeams.value = []
-    getSnackbar('SUCCESS', 'SMS Template Added To Action')
+    snackbar('SUCCESS', 'SMS Template Added To Action')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Adding SMS Template to Action')
+    snackbar('ERROR', 'Error Adding SMS Template to Action')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -204,11 +205,11 @@ const deleteSmsFromAction = async (id) => {
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId}/action/${action.id}/deleteSms/${id}`)
     deleteSmsCallback(action.id, id)
-    getSnackbar('SUCCESS', 'SMS Template Deleted From Action')
+    snackbar('SUCCESS', 'SMS Template Deleted From Action')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting SMS Template From Action')
+    snackbar('ERROR', 'Error Deleting SMS Template From Action')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }

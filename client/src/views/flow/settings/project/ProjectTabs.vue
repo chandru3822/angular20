@@ -132,6 +132,7 @@
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
 
   onMounted(() => {
     let table = document.querySelector('tbody')
@@ -202,7 +203,7 @@
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Retrieving Tabs')
+          snackbar('ERROR', 'Error Retrieving Tabs')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -211,11 +212,11 @@
         store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/objectTypeTab/${tabId}`)
-          getSnackbar('SUCCESS', 'Successfully Deleted Tab')
+          snackbar('SUCCESS', 'Successfully Deleted Tab')
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Deleting Tab')
+          snackbar('ERROR', 'Error Deleting Tab')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -223,7 +224,7 @@
         store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await postRequest(`/objectTypeTab/project`, tab)
-          getSnackbar('SUCCESS', 'Tab Saved')
+          snackbar('SUCCESS', 'Tab Saved')
           selectedTabId.value = null
           if(!tab.id) {
             // add it to the records already on the screen
@@ -237,7 +238,7 @@
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Adding Tab')
+          snackbar('ERROR', 'Error Adding Tab')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -246,11 +247,11 @@
           store.commit(AppMutations.SET_LOADING, true)
           try {
             const {status} = await putRequest(`/objectTypeTab/order`, rows)
-            getSnackbar('SUCCESS', 'Tab Order Saved')
+            snackbar('SUCCESS', 'Tab Order Saved')
             handleHidingGlobalLoader(vueInstance, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            getSnackbar('ERROR', 'Error Saving Tab Order')
+            snackbar('ERROR', 'Error Saving Tab Order')
             store.commit(AppMutations.SET_LOADING, false)
           }
         }

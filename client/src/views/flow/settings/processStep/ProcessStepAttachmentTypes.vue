@@ -126,6 +126,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
       const expandTypes = ref(true)
       const addNewType = ref(false)
@@ -166,11 +167,11 @@ onMounted(async() => {
       try {
         store.commit(AppMutations.SET_LOADING, true)
         const {status} = await putRequest(`/processStep/${processStepId.value}/attachmentType/update`, item)
-        getSnackbar('SUCCESS', 'Attachment Type Updated')
+        snackbar('SUCCESS', 'Attachment Type Updated')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Saving Attachment Type')
+        snackbar('ERROR', 'Error Saving Attachment Type')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -182,7 +183,7 @@ onMounted(async() => {
         store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Data')
+        snackbar('ERROR', 'Error Retrieving Data')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -195,7 +196,7 @@ onMounted(async() => {
           store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Retrieving Data')
+          snackbar('ERROR', 'Error Retrieving Data')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -213,7 +214,7 @@ onMounted(async() => {
         store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Adding Attachment Type')
+        snackbar('ERROR', 'Error Adding Attachment Type')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -223,11 +224,11 @@ onMounted(async() => {
       try {
         await deleteRequest(`/processStep/${processStepId.value}/attachmentType/${item.id}`)
         item.archived = true
-        getSnackbar('SUCCESS', 'Attachment Type Deleted')
+        snackbar('SUCCESS', 'Attachment Type Deleted')
         store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Deleting Attachment Type')
+        snackbar('ERROR', 'Error Deleting Attachment Type')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -236,11 +237,11 @@ onMounted(async() => {
         store.commit(AppMutations.SET_LOADING, true)
         try {
           await putRequest(`/processStep/${processStepId.value}/attachmentType/order`, rows)
-          getSnackbar('SUCCESS', 'Attachment Type Order Saved')
+          snackbar('SUCCESS', 'Attachment Type Order Saved')
           store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Saving Attachment Type Order')
+          snackbar('ERROR', 'Error Saving Attachment Type Order')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }

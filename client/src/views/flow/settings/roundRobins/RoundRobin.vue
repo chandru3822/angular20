@@ -119,7 +119,7 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 const route = useRoute()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-
+const snackbar = vueInstance.$snackbar
 
 const roundRobinId = computed(() => {
   return route.params.id
@@ -168,11 +168,11 @@ onMounted(async () => {
       try {
         const {status} = await postRequest(`/roundRobin`, roundRobin.value)
         editRoundRobin.value = false
-        getSnackbar('SUCCESS', 'Round Robin Name Saved')
+        snackbar('SUCCESS', 'Round Robin Name Saved')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Saving Round Robin Name')
+        snackbar('ERROR', 'Error Saving Round Robin Name')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -184,7 +184,7 @@ onMounted(async () => {
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Timezones')
+        snackbar('ERROR', 'Error Retrieving Timezones')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -197,7 +197,7 @@ onMounted(async () => {
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Data')
+        snackbar('ERROR', 'Error Retrieving Data')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }

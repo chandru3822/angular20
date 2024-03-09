@@ -181,6 +181,7 @@ import {useUserStore} from '@/stores/UserStorePinia.js'
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 const filteredProjectStatuses = computed(() => {
   return statusTypes.value.filter(s => {
@@ -243,11 +244,11 @@ const saveOrderChanges = async (types) => {
   store.commit(AppMutations.SET_LOADING, true)
   try {
     const {status} = await putRequest(`/projectStatus/companyStatuses`, types)
-    getSnackbar('SUCCESS', 'Status Types Updated')
+    snackbar('SUCCESS', 'Status Types Updated')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving Status Type Changes')
+    snackbar('ERROR', 'Error Saving Status Type Changes')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -261,7 +262,7 @@ const getCompanyStatusTypes = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -278,11 +279,11 @@ const saveNewType = async (type) => {
     addNew.value = false
     newType.value = {}
 
-    getSnackbar('SUCCESS', 'Project Status Saved')
+    snackbar('SUCCESS', 'Project Status Saved')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving Project Status')
+    snackbar('ERROR', 'Error Saving Project Status')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -294,7 +295,7 @@ const getTheseProjectStatusTypes = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -304,17 +305,17 @@ const deleteType = async () => {
   try {
     const {status} = await deleteRequest(`/projectStatus/companyStatus/${item.id}`)
     item.archived = true
-    getSnackbar('SUCCESS', 'Status Deleted')
+    snackbar('SUCCESS', 'Status Deleted')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     if (e.status === 400) {
       deleteError.value = true;
       fieldsInUse.value = e.data;
-      getSnackbar("ERROR", "Error Deleting Status");
+      snackbar("ERROR", "Error Deleting Status");
       store.commit(AppMutations.SET_LOADING, false)
     } else {
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Deleting Status')
+      snackbar('ERROR', 'Error Deleting Status')
       store.commit(AppMutations.SET_LOADING, false)
     }
   }
@@ -323,7 +324,7 @@ const deleteType = async () => {
 
 const copyToClipBoard = (textValue) => {
   navigator.clipboard.writeText(textValue);
-  getSnackbar('SUCCESS', 'Copied text to clipboard')
+  snackbar('SUCCESS', 'Copied text to clipboard')
 }
 const closeDeleteDialog = () => {
   showDeleteDialog.value = false

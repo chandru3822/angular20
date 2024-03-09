@@ -234,21 +234,21 @@
       } else {
         if (clonePositionId.value) {
           const {data, status} = await postRequest('/position/clone/' + clonePositionId.value, position.value)
-          positionId.value = data.id
           clonePositionId.value = ''
           position.value = data
           accessControlKey.value++
-          handleHidingGlobalLoader(vueInstance, status)
           dirtyFields.value = false
+          await router.push(`/settings/position/${data.id}`)
+          handleHidingGlobalLoader(vueInstance, status)
           // window.location.reload()
         }
         else {
           const {data, status} = await postRequest(`/position`, position.value)
-          positionId.value = data.id
           position.value = data
           accessControlKey.value++
-          handleHidingGlobalLoader(vueInstance, status)
           dirtyFields.value = false
+          await router.push(`/settings/position/${data.id}`)
+          handleHidingGlobalLoader(vueInstance, status)
         }
       }
     } catch (e) {
@@ -273,7 +273,7 @@
   }
   const getPositions = async () => {
     try {
-      const {data, status} = await getRequest(`/position/`)
+      const {data, status} = await getRequest(`/position`)
       positions.value = data
       // dataLoading.value = false
       handleHidingGlobalLoader(vueInstance, status)

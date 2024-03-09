@@ -74,6 +74,7 @@ import {useUserStore} from '@/stores/UserStorePinia.js'
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 
 const positions = ref([])
@@ -140,7 +141,7 @@ const getPositions = async () => {
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Retrieving Positions')
+      snackbar('ERROR', 'Error Retrieving Positions')
       store.commit(AppMutations.SET_LOADING, false)
     }
   }
@@ -154,7 +155,7 @@ const saveReadOnlyAndWhiteList = async () => {
     if (!projectObjectType.value.statusReadOnly) {
       statusReadOnlyWhiteListedPositions.value = []
     }
-    getSnackbar('SUCCESS', 'Saved Successfully')
+    snackbar('SUCCESS', 'Saved Successfully')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -169,7 +170,7 @@ const saveOwnerReadOnlyAndWhiteList = async () => {
     if (!projectObjectType.value.ownerReadOnly) {
       ownerReadOnlyWhiteListedPositions.value = []
     }
-    getSnackbar('SUCCESS', 'Saved Successfully')
+    snackbar('SUCCESS', 'Saved Successfully')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -186,7 +187,7 @@ const getObjectTypeDetails = async () => {
     objectTypeDetailsLoading.value = false;
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Details')
+    snackbar('ERROR', 'Error Retrieving Details')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }

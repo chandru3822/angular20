@@ -722,7 +722,7 @@ import {
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog"
 import constants from "@/helpers/constants";
-import {getCurrentInstance, watch, computed, ref, onMounted} from 'vue'
+import {getCurrentInstance, watch, toRefs, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables";
 
@@ -730,6 +730,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 import {defineProps} from 'vue'
 
@@ -737,7 +738,8 @@ const props = defineProps({
   eventRequirements: Boolean,
   callback: Function
 })
-const {eventRequirements, callback} = props
+const { eventRequirements } = toRefs(props)
+
 
 const expandRequirements = ref(true)
 const expanded = ref([])
@@ -789,7 +791,9 @@ const newRequirement = ref({
 
 watch(() => requirements.value, () => {
   //any time the requirements change, send back to parent component
-  callback(requirements.value)
+  if(props.callback) {
+    props.callback(requirements.value)
+  }
 })
 const processStepEventId = computed(() => {
   return route.params.eventId
@@ -830,7 +834,7 @@ const getRequirements = async () => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -846,7 +850,7 @@ const getRequirementTypes = async () => {
       store.commit(AppMutations.SET_LOADING, false)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Retrieving Data')
+      snackbar('ERROR', 'Error Retrieving Data')
       store.commit(AppMutations.SET_LOADING, false)
     }
   }
@@ -889,7 +893,7 @@ const selectRequirementType = async () => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -901,7 +905,7 @@ const loadParentObjects = async () => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -913,7 +917,7 @@ const loadDataViews = async () => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -925,7 +929,7 @@ const getDataViewFields = async () => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -953,7 +957,7 @@ const getCompanyStatusesAssignedToProcessStep = async (parent) => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -966,7 +970,7 @@ const getStatusesAssignedToProcessStep = async (parent) => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -978,7 +982,7 @@ const getProjectStatuses = async () => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -991,7 +995,7 @@ const getEventStatuses = async () => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -1003,7 +1007,7 @@ const getCompanyProjectStatuses = async () => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -1021,7 +1025,7 @@ const loadFieldsByParent = async (parent) => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -1037,7 +1041,7 @@ const loadCustomFieldsByObjectType = async (objectTypeId) => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -1053,7 +1057,7 @@ const loadFunctionParams = async (dbFunctionId, isRequirement) => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -1069,7 +1073,7 @@ const loadOperatorTypes = async (dataTypeId, processStepRequirementTypeId) => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -1081,7 +1085,7 @@ const loadDataTypeRequirements = async (dataTypeId) => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -1219,10 +1223,12 @@ const saveNewRequirement = async () => {
     selectedDataTypeRequirement.value = {}
     parent.value = {}
     availableFunctions.value = []
-    getSnackbar('SUCCESS', 'Requirement Added')
+    snackbar('SUCCESS', 'Requirement Added')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Adding Requirement')
+    snackbar('ERROR', 'Error Adding Requirement')
+  } finally {
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
 const updateRequirement = async (requirement) => {
@@ -1258,11 +1264,11 @@ const updateRequirement = async (requirement) => {
     expanded.value = []
     // this forces the list to update the operator displayed ... using requirement = data did not work
     requirement.operatorType = data.operatorType
-    getSnackbar('SUCCESS', 'Requirement Updated')
+    snackbar('SUCCESS', 'Requirement Updated')
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Updating Requirement')
+    snackbar('ERROR', 'Error Updating Requirement')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -1287,7 +1293,7 @@ const showActionsUsingLogic = async (requirementId) => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Fetching Requirement Info')
+    snackbar('ERROR', 'Error Fetching Requirement Info')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -1300,16 +1306,16 @@ const deleteRequirement = async () => {
     if (actionsUsingLogic.value?.length > 0) {
       deleteError.value = true //opens the delete error dialog
       item.deleteConfirm = false
-      getSnackbar('ERROR', 'Error Deleting Requirement')
+      snackbar('ERROR', 'Error Deleting Requirement')
     } else {
       item.archived = true
       requirements.value = requirements.value.filter(r => !r.archived)
-      getSnackbar('SUCCESS', 'Requirement Deleted')
+      snackbar('SUCCESS', 'Requirement Deleted')
     }
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting Requirement')
+    snackbar('ERROR', 'Error Deleting Requirement')
     store.commit(AppMutations.SET_LOADING, false)
   }
   closeDeleteDialog()

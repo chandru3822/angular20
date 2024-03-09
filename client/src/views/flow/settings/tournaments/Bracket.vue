@@ -247,6 +247,7 @@ import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 import {useRoute} from "vue-router/composables";
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import constants from "@/helpers/constants.js";
@@ -342,7 +343,7 @@ const replicateBracket = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving Bracket')
+    snackbar('ERROR', 'Error Saving Bracket')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -355,7 +356,7 @@ const getTournamentOwnerTypes = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -371,7 +372,7 @@ const getTournament = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Loading Tournament')
+    snackbar('ERROR', 'Error Loading Tournament')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -384,7 +385,7 @@ const updateTournament = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving Tournament')
+    snackbar('ERROR', 'Error Saving Tournament')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -407,7 +408,7 @@ const addNewBracket = async () => {
       handleHidingGlobalLoader(vueInstance, status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Saving Bracket')
+      snackbar('ERROR', 'Error Saving Bracket')
       store.commit(AppMutations.SET_LOADING, false)
     }
   } else {
@@ -420,12 +421,12 @@ const deleteBracket = async () => {
   store.commit(AppMutations.SET_LOADING, true)
   try {
     const {status} = await deleteRequest(`/tournament/bracket/${id}`, 'blueraven')
-    getSnackbar('SUCCESS', 'Bracket Deleted')
+    snackbar('SUCCESS', 'Bracket Deleted')
     tournament.value.brackets.splice(tournament.value.brackets.indexOf(bracketToDelete.value))
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting Bracket')
+    snackbar('ERROR', 'Error Deleting Bracket')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -449,7 +450,7 @@ const saveRound = async (bracket, round) => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving Round')
+    snackbar('ERROR', 'Error Saving Round')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -466,11 +467,11 @@ const deleteRound = async () => {
     bracket.rounds = data.rounds
     // this is dumb but i am getting an infinite loop error if i try to use the increment render key solution
     bracket.maxRounds = false
-    getSnackbar('SUCCESS', 'Round Deleted')
+    snackbar('SUCCESS', 'Round Deleted')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting Round')
+    snackbar('ERROR', 'Error Deleting Round')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -481,11 +482,11 @@ const generateMatches = async () => {
     const {status} = await putRequest(`/tournament/bracket/${bracket.id}/generateMatches`, {}, 'blueraven')
     //disable the button
     bracket.matchesGenerated = true
-    getSnackbar('SUCCESS', 'Matches Generated')
+    snackbar('SUCCESS', 'Matches Generated')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Generating Matches')
+    snackbar('ERROR', 'Error Generating Matches')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }

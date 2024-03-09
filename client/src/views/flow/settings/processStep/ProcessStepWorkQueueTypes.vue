@@ -382,6 +382,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 import {defineProps} from 'vue'
 const props = defineProps({
@@ -604,7 +605,7 @@ onMounted(() => {
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Project Status Types')
+        snackbar('ERROR', 'Error Retrieving Project Status Types')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -711,7 +712,7 @@ onMounted(() => {
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
+        snackbar('ERROR', 'Error Retrieving Process Step Status Types')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -838,7 +839,7 @@ onMounted(() => {
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Retrieving Event Status Types')
+          snackbar('ERROR', 'Error Retrieving Event Status Types')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -856,7 +857,7 @@ onMounted(() => {
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
+        snackbar('ERROR', 'Error Retrieving Work Queue Types')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -876,11 +877,11 @@ onMounted(() => {
         // reset fields
         addNewWorkQueueType.value = false
         newWorkQueueType.value = {projectStatuses: [], processStepStatuses: [], eventStatuses: []}
-        getSnackbar('SUCCESS', 'Work Queue Type Added')
+        snackbar('SUCCESS', 'Work Queue Type Added')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Adding Work Queue Type')
+        snackbar('ERROR', 'Error Adding Work Queue Type')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -894,11 +895,11 @@ onMounted(() => {
         item.processStepStatuses = data.processStepStatuses
         item.eventStatuses = data.eventStatuses || []
         expanded.value = []
-        getSnackbar('SUCCESS', 'Status Types Saved')
+        snackbar('SUCCESS', 'Status Types Saved')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Adding Status Types')
+        snackbar('ERROR', 'Error Adding Status Types')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -910,11 +911,11 @@ onMounted(() => {
         let url = showEventFields.value ? `/workQueueType/event/${item.id}` : `/workQueueType/processStep/${item.id}`
         const {status} = await deleteRequest(url)
         item.archived = true
-        getSnackbar('SUCCESS', 'Work Queue Type Deleted')
+        snackbar('SUCCESS', 'Work Queue Type Deleted')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Deleting Link')
+        snackbar('ERROR', 'Error Deleting Link')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }

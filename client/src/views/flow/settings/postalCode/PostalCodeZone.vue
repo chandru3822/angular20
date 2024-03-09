@@ -107,6 +107,7 @@
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
 
         const dataLoading = ref(true)
         const itemToDelete = ref({})
@@ -140,7 +141,7 @@
           metroAreas.value = data?.listOfValues
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Retrieving Data')
+          snackbar('ERROR', 'Error Retrieving Data')
         }
       }
       const getPostalCodeZone = async() => {
@@ -154,7 +155,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
-          getSnackbar('ERROR', 'Error Retrieving Data')
+          snackbar('ERROR', 'Error Retrieving Data')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -167,7 +168,7 @@
             handleHidingGlobalLoader(vueInstance, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            getSnackbar('ERROR', 'Error Retrieving Data')
+            snackbar('ERROR', 'Error Retrieving Data')
             store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -176,11 +177,11 @@
         store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await postRequest(`/postalCode/zone`, postalCodeZone.value)
-          getSnackbar('SUCCESS', 'Postal Code Zone Saved')
+          snackbar('SUCCESS', 'Postal Code Zone Saved')
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Saving Postal Code Zone')
+          snackbar('ERROR', 'Error Saving Postal Code Zone')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -191,11 +192,11 @@
           postalCodeZone.value.postalCodes.push(data)
           availablePostalCodes.value = availablePostalCodes.value.filter(apc => apc.id !== data.id)
           selectedPostalCode.value = {}
-          getSnackbar('SUCCESS', 'Postal Code Saved to Zone')
+          snackbar('SUCCESS', 'Postal Code Saved to Zone')
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Saving Postal Code to Zone')
+          snackbar('ERROR', 'Error Saving Postal Code to Zone')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -204,11 +205,11 @@
         try {
           await deleteRequest(`/postalCode/zone/${postalCodeZoneId.value}/postalCode/${itemToDelete.value.id}`)
           itemToDelete.value.archived = true
-          getSnackbar('SUCCESS', 'Postal Code Removed from Zone')
+          snackbar('SUCCESS', 'Postal Code Removed from Zone')
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Removing Postal Code from Zone')
+          snackbar('ERROR', 'Error Removing Postal Code from Zone')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }

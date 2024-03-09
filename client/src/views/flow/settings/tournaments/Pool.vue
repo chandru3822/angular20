@@ -290,6 +290,7 @@ import { useFileStore } from '@/stores/FileStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 const fileStore = useFileStore()
 const route = useRoute()
 const userStore = useUserStore()
@@ -370,11 +371,11 @@ const savePoolDates = async () => {
   try {
     const {status} = await putRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}`, pool.value, 'blueraven')
     editPool.value = false
-    getSnackbar('SUCCESS', 'Pool Changes Saved')
+    snackbar('SUCCESS', 'Pool Changes Saved')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Updating Pool')
+    snackbar('ERROR', 'Error Updating Pool')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -385,7 +386,7 @@ const getPositions = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Positions')
+    snackbar('ERROR', 'Error Retrieving Positions')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -396,7 +397,7 @@ const getUsers = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Users')
+    snackbar('ERROR', 'Error Retrieving Users')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -413,7 +414,7 @@ const getTournamentPool = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Loading Tournament')
+    snackbar('ERROR', 'Error Loading Tournament')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -430,7 +431,7 @@ const addPositionToPool = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Adding Position')
+    snackbar('ERROR', 'Error Adding Position')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -444,7 +445,7 @@ const deletePositionFromPool = async () => {
     positionToDelete.value = null
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting Position')
+    snackbar('ERROR', 'Error Deleting Position')
     store.commit(AppMutations.SET_LOADING, false)
     positionToDelete.value = null
   }
@@ -463,7 +464,7 @@ const addUserToPool = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Adding User')
+    snackbar('ERROR', 'Error Adding User')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -476,7 +477,7 @@ const deleteUserFromPool = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting User')
+    snackbar('ERROR', 'Error Deleting User')
     store.commit(AppMutations.SET_LOADING, false)
   }
   userToDelete.value = null
@@ -494,20 +495,20 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
       displayName: file.name.substr(0, file.name.lastIndexOf('.')),
       callback: async (img, error) => {
         if (error?.error) {
-          getSnackbar('ERROR', error.errorMsg)
+          snackbar('ERROR', error.errorMsg)
           store.commit(AppMutations.SET_LOADING, false)
         } else {
           pool.value.backgroundAttachmentPresignedUrl = img.presignedUrl
           pool.value.backgroundAttachmentId = img.id
           addImage.value = false
-          getSnackbar('SUCCESS', 'Image Uploaded')
+          snackbar('SUCCESS', 'Image Uploaded')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Uploading File')
+    snackbar('ERROR', 'Error Uploading File')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -520,13 +521,13 @@ const deleteAttachment = async (id) => {
         pool.value.backgroundAttachmentId = null
         pool.value.backgroundAttachmentPresignedUrl = null
         // store.commit(UserMutations.SET_USER_IMAGE, {})
-        getSnackbar('SUCCESS', 'Image Deleted')
+        snackbar('SUCCESS', 'Image Deleted')
         store.commit(AppMutations.SET_LOADING, false)
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting File')
+    snackbar('ERROR', 'Error Deleting File')
     store.commit(AppMutations.SET_LOADING, false)
   }
   deleteWinnerBackgroundDialog.value = false

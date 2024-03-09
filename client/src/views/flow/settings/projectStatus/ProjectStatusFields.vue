@@ -125,12 +125,12 @@ import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 onMounted(() => {
 
@@ -193,11 +193,11 @@ const filteredAssignedFields = computed(() => {
       store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await putRequest(`/projectStatus/company/${statusId.value}/fields`, fields)
-        getSnackbar('SUCCESS', 'Field Order Updated')
+        snackbar('SUCCESS', 'Field Order Updated')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Saving Field Order')
+        snackbar('ERROR', 'Error Saving Field Order')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -215,7 +215,7 @@ const filteredAssignedFields = computed(() => {
           store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Retrieving Data')
+          snackbar('ERROR', 'Error Retrieving Data')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -230,7 +230,7 @@ const filteredAssignedFields = computed(() => {
           store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Retrieving Data')
+          snackbar('ERROR', 'Error Retrieving Data')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -241,11 +241,11 @@ const filteredAssignedFields = computed(() => {
         let id = itemToDelete.value.id
         const {status} = await deleteRequest(`/projectStatus/field/${id}`)
         assignedFields.value = assignedFields.value.filter(af => af.id !== id)
-        getSnackbar('SUCCESS', 'Field Removed')
+        snackbar('SUCCESS', 'Field Removed')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Removing Field')
+        snackbar('ERROR', 'Error Removing Field')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -263,7 +263,7 @@ const filteredAssignedFields = computed(() => {
         store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Data')
+        snackbar('ERROR', 'Error Retrieving Data')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -275,7 +275,7 @@ const filteredAssignedFields = computed(() => {
         fieldsLoading.value = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Data')
+        snackbar('ERROR', 'Error Retrieving Data')
         fieldsLoading.value = false
       }
     }

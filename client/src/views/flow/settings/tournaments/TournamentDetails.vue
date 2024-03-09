@@ -169,6 +169,7 @@ const route = useRoute()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 const fileStore = useFileStore()
 
 const userCanEdit = computed(() => {
@@ -221,7 +222,7 @@ const getTournamentOwnerTypes = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -237,7 +238,7 @@ const getTournamentFormulas = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -249,7 +250,7 @@ const getTournament = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Loading Tournament')
+    snackbar('ERROR', 'Error Loading Tournament')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -265,7 +266,7 @@ const updateTournament = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving Tournament')
+    snackbar('ERROR', 'Error Saving Tournament')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -281,20 +282,20 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
       displayName: file.name.substr(0, file.name.lastIndexOf('.')),
       callback: async (img, error) => {
         if (error?.error) {
-          getSnackbar('ERROR', error.errorMsg)
+          snackbar('ERROR', error.errorMsg)
           store.commit(AppMutations.SET_LOADING, false)
         } else {
           tournament.value.backgroundAttachmentPresignedUrl = img.presignedUrl
           tournament.value.backgroundAttachmentId = img.id
           addImage.value = false
-          getSnackbar('SUCCESS', 'Image Uploaded')
+          snackbar('SUCCESS', 'Image Uploaded')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Uploading File')
+    snackbar('ERROR', 'Error Uploading File')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -306,13 +307,13 @@ const deleteAttachment = async (id) => {
       callback: async () => {
         tournament.value.backgroundAttachmentId = null
         tournament.value.backgroundAttachmentPresignedUrl = null
-        getSnackbar('SUCCESS', 'Image Deleted')
+        snackbar('SUCCESS', 'Image Deleted')
         store.commit(AppMutations.SET_LOADING, false)
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting File')
+    snackbar('ERROR', 'Error Deleting File')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }

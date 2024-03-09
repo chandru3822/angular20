@@ -63,7 +63,7 @@ const validate = async () => {
       email.value = null
       handleHidingGlobalLoader(vueInstance, status)
       snackbar('SUCCESS', 'An email has been sent.')
-      router.push('/login')
+      await router.push('/login')
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = e?.data?.message ?? 'Error Retrieving Account Details'

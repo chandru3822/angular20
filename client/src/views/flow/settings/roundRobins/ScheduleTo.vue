@@ -223,6 +223,7 @@ import {useRoute} from "vue-router/composables";
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 const userStore = useUserStore()
 const route = useRoute()
 
@@ -305,7 +306,7 @@ const getCompanyTimezones = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Timezones')
+    snackbar('ERROR', 'Error Retrieving Timezones')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -336,7 +337,7 @@ const getScheduleToUsers = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -358,7 +359,7 @@ const saveAllocationChanges = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving Allocation Changes')
+    snackbar('ERROR', 'Error Saving Allocation Changes')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -375,7 +376,7 @@ const deleteUserFromRoundRobin = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Removing User')
+    snackbar('ERROR', 'Error Removing User')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -399,7 +400,7 @@ const addUserToRoundRobin = async (selected) => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Adding User')
+    snackbar('ERROR', 'Error Adding User')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -412,7 +413,7 @@ const getUsers = async () => {
       usersLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Loading Users')
+      snackbar('ERROR', 'Error Loading Users')
     }
   }
 }
@@ -425,7 +426,7 @@ const getRoundRobinDetails = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -435,10 +436,10 @@ const saveUserTimezone = async (user) => {
     const {data, status} = await putRequest(`/roundRobin/user/${user.roundRobinUserId}`, user)
     user.timezone = data.timezone
     user.edit = false
-    getSnackbar('SUCCESS', 'User Updated')
+    snackbar('SUCCESS', 'User Updated')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Updating User')
+    snackbar('ERROR', 'Error Updating User')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }

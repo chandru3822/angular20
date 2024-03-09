@@ -148,6 +148,7 @@
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
   const userStore = useUserStore()
 
   const router = useRouter()
@@ -230,8 +231,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
-          snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          snackbar('ERROR', 'Error Retrieving Data')
           store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -246,8 +246,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             dataLoading.value = false
-            snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-            store.commit(AppMutations.SHOW_SNACK, snackbar)
+            snackbar('ERROR', 'Error Retrieving Data')
             store.commit(AppMutations.SET_LOADING, false)
           }
         },
@@ -260,8 +259,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
-          let snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          snackbar('ERROR', 'Error Retrieving Data')
           store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -276,8 +274,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
-          let snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          snackbar('ERROR', 'Error Retrieving Data')
           store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -285,14 +282,12 @@
         const id = tournamentToDelete.value.id
         store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await deleteRequest(`/tournaments/${id}`, 'blueraven')
-          let snackbar = getSnackbar('SUCCESS', 'Tournament Deleted')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          const {status} = await deleteRequest(`/tournament/${id}`, 'blueraven')
+          snackbar('SUCCESS', 'Tournament Deleted')
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          let snackbar = getSnackbar('ERROR', 'Error Deleting Tournament')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          snackbar('ERROR', 'Error Deleting Tournament')
           store.commit(AppMutations.SET_LOADING, false)
         }
         tournamentToDelete.value=null
@@ -303,13 +298,11 @@
         try {
           const {data, status} = await postRequest(`/tournament`, newTournament.value, 'blueraven')
           router.push({path: `/settings/tournaments/${data.id}/details`})
-          snackbar = getSnackbar('SUCCESS', 'Tournament Added')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          snackbar('SUCCESS', 'Tournament Added')
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar = getSnackbar('ERROR', 'Error Adding Tournament')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          snackbar('ERROR', 'Error Adding Tournament')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }

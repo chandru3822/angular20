@@ -118,7 +118,7 @@
                         @click="copyToClipBoard(item.id)" v-bind="attrs"
                         :activation-handler="on"
                         prepend-icon="mdi-information"
-                        round
+                        icon
                       />
                     </template>
                     <span>Event Status Id: {{item.id}}</span>
@@ -380,7 +380,7 @@ const getUsesForStatus = async (eventStatusId, eventStatusName) => {
   deleteError.value = false
   store.commit(AppMutations.SET_LOADING, true)
   try {
-    const {data, status} = await getRequest(`/event/companyStatusUses/${eventStatusId}`, this.apiPath, null, []);
+    const {data, status} = await getRequest(`/event/companyStatusUses/${eventStatusId}`);
     objectsUsingStatus.value = data
     objectsUsingStatus.value.fieldName = eventStatusName
     showInfoDialog.value = true

@@ -81,6 +81,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 const processStepId = computed(() => {
   return route.params.id
@@ -144,7 +145,7 @@ const getProcessStepDetails = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     let msg = e?.data?.message || 'Error Retrieving Data'
-    getSnackbar('ERROR', msg)
+    snackbar('ERROR', msg)
     store.commit(AppMutations.SET_LOADING, false)
     processStepLoading.value = false
   }
@@ -154,11 +155,11 @@ const saveProcessStep = async (closeEditor) => {
   try {
     const {status} = await putRequest(`/processStep?savePositions=${nonAdminAddWhiteListedPositionsChanged.value ?? false}`, processStep.value)
     editName.value = false
-    getSnackbar('SUCCESS', 'Process Step Updated')
+    snackbar('SUCCESS', 'Process Step Updated')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Updating Process Step')
+    snackbar('ERROR', 'Error Updating Process Step')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -173,7 +174,7 @@ const getPositions = async () => {
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Retrieving Positions')
+      snackbar('ERROR', 'Error Retrieving Positions')
       store.commit(AppMutations.SET_LOADING, false)
     }
   }

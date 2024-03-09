@@ -9,7 +9,7 @@
             <AlbatrossButton
               variant="text"
               color="primary"
-              @click="[addNew = !addNew, newProject = {}]"
+              @click="[addNew = !addNew, newProcess = {}]"
               v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               :hide-text-on-mobile="constants.IS_MOBILE"
               :prepend-icon="addNew ? 'add' : ''"
@@ -51,7 +51,7 @@
                   variant="text"
                   prepend-icon="delete"
               />
-              <ConfirmationDialog :open-dialog="!!processToDelete" @confirm="deleteProcess" @close-dialog="processToDelete = null">
+              <ConfirmationDialog :open-dialog="!!processToDelete" @confirm="[processToDelete.archived = true, deleteProcess()]" @close-dialog="processToDelete = null">
                 Are you sure you want to delete this process: <strong>{{ processToDeleteName }}</strong>?
 
               </ConfirmationDialog>
@@ -125,8 +125,6 @@ const deleteProcess = async () => {
     snackbar('ERROR', 'Error Deleting Process')
     store.commit(AppMutations.SET_LOADING, false)
   }
-  processToDelete.value.archived = true
-  processToDelete.value = null
 }
 const addNewProcess = async () => {
   store.commit(AppMutations.SET_LOADING, true)
@@ -138,7 +136,7 @@ const addNewProcess = async () => {
     const {data, status} = await postRequest(`/processes`, newProcess.value)
 
     handleHidingGlobalLoader(vueInstance, status)
-    router.push({name: 'process', params: {id: data.id}})
+    await router.push({name: 'process', params: {id: data.id}})
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Process')
@@ -146,7 +144,7 @@ const addNewProcess = async () => {
   }
 }
 
-onMounted(async () =>{
+onMounted(() =>{
   getProcesses()
 })
 

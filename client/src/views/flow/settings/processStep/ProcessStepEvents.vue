@@ -150,6 +150,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 onMounted(async () => {
   let table = document.querySelector('.event-table tbody')
@@ -224,7 +225,7 @@ const getEvents = async () => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -237,7 +238,7 @@ const getAvailableEvents = async () => {
       store.commit(AppMutations.SET_LOADING, false)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Retrieving Data')
+      snackbar('ERROR', 'Error Retrieving Data')
       store.commit(AppMutations.SET_LOADING, false)
     }
   }
@@ -257,7 +258,7 @@ const addEventToProcessStep = async () => {
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Adding Event')
+    snackbar('ERROR', 'Error Adding Event')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -267,11 +268,11 @@ const deleteEventFromStep = async () => {
   try {
     await deleteRequest(`/processStep/${processStepId.value}/event/${item.id}`)
     item.archived = true
-    getSnackbar('SUCCESS', 'Event Deleted')
+    snackbar('SUCCESS', 'Event Deleted')
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting Event')
+    snackbar('ERROR', 'Error Deleting Event')
     store.commit(AppMutations.SET_LOADING, false)
   }
   closeDeleteDialog()
@@ -281,11 +282,11 @@ const saveRowChanges = async (rows) => {
     store.commit(AppMutations.SET_LOADING, true)
     try {
       await putRequest(`/processStep/${processStepId.value}/event/order`, rows)
-      getSnackbar('SUCCESS', 'Event Order Saved')
+      snackbar('SUCCESS', 'Event Order Saved')
       store.commit(AppMutations.SET_LOADING, false)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Saving Event Order')
+      snackbar('ERROR', 'Error Saving Event Order')
       store.commit(AppMutations.SET_LOADING, false)
     }
   }

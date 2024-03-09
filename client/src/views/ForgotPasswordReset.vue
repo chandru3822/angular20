@@ -65,12 +65,14 @@
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   import {AppMutations} from '@/stores/AppStore'
-  import {getCurrentInstance, onMounted, ref} from 'vue'
+  import {getCurrentInstance, computed, onMounted, ref} from 'vue'
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+  import {useRouter, useRoute} from "vue-router/composables"
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const router = vueInstance.$router
+  const route = useRoute()
+  const router = useRouter()
   const snackbar = vueInstance.$snackbar
 
   const validForm = ref(false)
@@ -82,9 +84,11 @@
   const newPassword = ref(null)
   const newPasswordAgain = ref(null)
   const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
-  const uuid = ref(vueInstance.$route.params.uuid)
   const resetNewForm = ref(null)
 
+  const uuid = computed(() => {
+    return route.params.uuid
+  })
 
   onMounted(() => {
       validateResetRequest()

@@ -96,11 +96,12 @@ import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRouter} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
-const router = vueInstance.$router
+const router = useRouter()
 const snackbar = vueInstance.$snackbar
 
 const addNew = ref(false)

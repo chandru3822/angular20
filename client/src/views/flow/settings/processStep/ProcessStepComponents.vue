@@ -290,6 +290,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   nonAdminAdd: Boolean
@@ -404,7 +405,7 @@ onMounted(async () => {
         } catch (e) {
           positionsLoading.value = false
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Retrieving Positions')
+          snackbar('ERROR', 'Error Retrieving Positions')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -417,7 +418,7 @@ onMounted(async () => {
         if(!processStep.value.readonly) {
           processStep.value.whiteListedPositions = []
         }
-        getSnackbar('SUCCESS', 'Saved Successfully')
+        snackbar('SUCCESS', 'Saved Successfully')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -438,11 +439,11 @@ onMounted(async () => {
       store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await putRequest(`/processStep?savePositions=${nonAdminAddWhiteListedPositionsChanged.value ?? false}`, processStep.value)
-        getSnackbar('SUCCESS', 'Process Step Updated')
+        snackbar('SUCCESS', 'Process Step Updated')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Updating Process Step')
+        snackbar('ERROR', 'Error Updating Process Step')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -455,7 +456,7 @@ onMounted(async () => {
           companyStatusesLoading.value = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
+          snackbar('ERROR', 'Error Retrieving Process Step Status Types')
           companyStatusesLoading.value = false
         }
       }
@@ -468,7 +469,7 @@ onMounted(async () => {
         expanded.value = []
         const {status} = await putRequest(`/processStep/status/removeStatus/${item.id}/fromStep/${processStepId.value}`)
         item.archived = true
-        getSnackbar('SUCCESS', 'Status Type Deleted')
+        snackbar('SUCCESS', 'Status Type Deleted')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -478,7 +479,7 @@ onMounted(async () => {
           deleteError.value = true
           cannotDeleteReasons.value = e.data
         }
-        getSnackbar('ERROR', 'Error Deleting Status Type')
+        snackbar('ERROR', 'Error Deleting Status Type')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -489,11 +490,11 @@ onMounted(async () => {
           allowNonAdminUse: e.target.checked || false
         }
         const {data, status} = await putRequest(`/processStep/status/${item.id}/updateAllowNonAdminUse`, body)
-        getSnackbar('SUCCESS', 'Changes Saved')
+        snackbar('SUCCESS', 'Changes Saved')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Saving')
+        snackbar('ERROR', 'Error Saving')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -506,11 +507,11 @@ onMounted(async () => {
         // reset fields
         addNewProcessStepStatusType.value = false
         newProcessStepStatusTypeId.value = null
-        getSnackbar('SUCCESS', 'Status Type Added')
+        snackbar('SUCCESS', 'Status Type Added')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Adding Status Type')
+        snackbar('ERROR', 'Error Adding Status Type')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -524,7 +525,7 @@ onMounted(async () => {
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Data')
+        snackbar('ERROR', 'Error Retrieving Data')
         store.commit(AppMutations.SET_LOADING, false)
       } finally {
         psLoading.value = false
@@ -535,13 +536,13 @@ onMounted(async () => {
         addNewLink.value = !addNewLink.value
         if (addNewLink.value) {
           store.commit(AppMutations.SET_LOADING, true)
-          const {data, status} = await getRequest(`/links/processStep/${processStepId}/available`)
+          const {data, status} = await getRequest(`/links/processStep/${processStepId.value}/available`)
           availableLinks.value = data
           handleHidingGlobalLoader(vueInstance, status)
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Data')
+        snackbar('ERROR', 'Error Retrieving Data')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -554,11 +555,11 @@ onMounted(async () => {
         // reset fields
         addNewLink.value = false
         newLink.value = {}
-        getSnackbar('SUCCESS', 'Link Added')
+        snackbar('SUCCESS', 'Link Added')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Adding Link')
+        snackbar('ERROR', 'Error Adding Link')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -567,11 +568,11 @@ onMounted(async () => {
       try {
         addNewLink.value = false
         const {status} = await deleteRequest(`/links/processStep/${id}`)
-        getSnackbar('SUCCESS', 'Link Deleted')
+        snackbar('SUCCESS', 'Link Deleted')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Deleting Link')
+        snackbar('ERROR', 'Error Deleting Link')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -594,10 +595,10 @@ onMounted(async () => {
           const {status} = await putRequest(`/links/updateOrderInProcessStep`, linksToSave)
           handleHidingGlobalLoader(vueInstance, status)
         }
-        getSnackbar('SUCCESS', 'Links Updated')
+        snackbar('SUCCESS', 'Links Updated')
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Updating Links')
+        snackbar('ERROR', 'Error Updating Links')
         store.commit(AppMutations.SET_LOADING, false)
       }
     }

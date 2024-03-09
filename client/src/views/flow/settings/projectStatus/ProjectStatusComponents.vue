@@ -85,37 +85,6 @@
               <v-icon v-if="projectStatus.iconTag">{{ projectStatus.iconTag }}</v-icon>
             </div>
           </v-card>
-
-          <v-card class="fifty-cent mt-5">
-            <div class="my-2" v-if="projectStatus.icon && projectStatus.icon.id != null">
-              <label>Status Type Icon <br>(Obsolete, only used on mobile until Status Tracker release)</label>
-              <div class="flex-display ma-2">
-                <img class="status-icon" :src="projectStatus.icon.presignedUrl">
-                <AlbatrossButton
-                    size="x-small"
-                    variant="text"
-                    color="primary"
-                    @click="deleteAttachment(projectStatus)"
-                    prepend-icon="close"
-                ></AlbatrossButton>
-
-              </div>
-            </div>
-            <div class="my-2" v-else>
-              <label>Status Type Icon<br>(Obsolete, only used on mobile until Status Tracker release)</label>
-              <form enctype="multipart/form-data" novalidate>
-                <input
-                    type="file"
-                    :accept="acceptedFileTypes"
-                    class="file-input clickable"
-                    :disabled="savingTypeLogo"
-                    @change="uploadFile(projectStatus, $event.target.files, attachmentTypeId, projectStatus.id, 1048576)"
-                    name="avatar"
-                >
-                <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
-              </form>
-            </div>
-          </v-card>
         </div>
         
         <AlbatrossButton
@@ -150,6 +119,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 const fileStore = useFileStore()
 
 // const colorOptions = ref({
@@ -192,19 +162,19 @@ const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) =>
       displayName: file.name.substr(0, file.name.lastIndexOf('.')),
       callback: async (img, error) => {
         if (error?.error) {
-          getSnackbar('ERROR', error.errorMsg)
+          snackbar('ERROR', error.errorMsg)
           store.commit(AppMutations.SET_LOADING, false)
         } else {
           item.icon = img
 
-          getSnackbar('SUCCESS', 'Image Uploaded')
+          snackbar('SUCCESS', 'Image Uploaded')
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Uploading File')
+    snackbar('ERROR', 'Error Uploading File')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -215,13 +185,13 @@ const deleteAttachment = async (item) => {
       id: item.icon.id,
       callback: async () => {
         item.icon = {}
-        getSnackbar('SUCCESS', 'Image Deleted')
+        snackbar('SUCCESS', 'Image Deleted')
         store.commit(AppMutations.SET_LOADING, false)
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting File')
+    snackbar('ERROR', 'Error Deleting File')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -234,7 +204,7 @@ const getStatusInfo = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -246,7 +216,7 @@ const getTheseProjectStatusTypes = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -254,11 +224,11 @@ const saveType = async (type) => {
   store.commit(AppMutations.SET_LOADING, true)
   try {
     const {data, status} = await putRequest(`/projectStatus/company`, type)
-    getSnackbar('SUCCESS', 'Project Status Saved')
+    snackbar('SUCCESS', 'Project Status Saved')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving Project Status')
+    snackbar('ERROR', 'Error Saving Project Status')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -267,11 +237,11 @@ const setAsInitial = async (item) => {
   try {
     const {status} = await putRequest(`/projectStatus/company/initial/${item.id}`,)
     item.isDefault = true
-    getSnackbar('SUCCESS', 'Status Updated')
+    snackbar('SUCCESS', 'Status Updated')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Updating Status')
+    snackbar('ERROR', 'Error Updating Status')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }

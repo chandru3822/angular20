@@ -304,7 +304,7 @@
   const getUsesForStatus = async (processStepStatusId, processStepStatusName) => {
     store.commit(AppMutations.SET_LOADING, true)
     try {
-      const {data, status} = await getRequest(`/processStep/status/getObwjectsUsingStatus/${processStepStatusId}`, null, []);
+      const {data, status} = await getRequest(`/processStep/status/getObjectsUsingStatus/${processStepStatusId}`);
       objectsUsingStatus.value.steps = data
       objectsUsingStatus.value.fieldName = processStepStatusName
       showInfoDialog.value = true

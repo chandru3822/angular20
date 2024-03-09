@@ -33,6 +33,7 @@ import {useRoute} from "vue-router/composables";
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 const route = useRoute()
 
 const tournament = ref({})
@@ -85,7 +86,7 @@ const getTournament = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Loading Tournament')
+    snackbar('ERROR', 'Error Loading Tournament')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }

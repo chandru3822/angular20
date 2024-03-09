@@ -75,7 +75,7 @@
         <v-row>
           <v-col cols="12">
             <v-data-table
-                v-if="localCustomFieldGroups && localCustomFieldGroups.length > 0"
+
                 :key="componentKey"
                 :headers="headers"
                 :items="filteredCustomFieldGroups"
@@ -495,7 +495,7 @@ import Sortable from "sortablejs";
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from "lodash.orderby"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import {getCurrentInstance, computed, ref, onMounted} from 'vue'
+import {getCurrentInstance, toRefs, computed, ref, onMounted} from 'vue'
 import {useRoute} from "vue-router/composables";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {defineProps} from 'vue'
@@ -506,6 +506,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 import {useAppStore} from '@/stores/AppStorePinia.js'
 
 const appStore = useAppStore()
@@ -513,7 +514,9 @@ const appStore = useAppStore()
 const props = defineProps({
   customFieldGroups: Array
 })
-const {customFieldGroups} = props
+// const {customFieldGroups} = props
+const { customFieldGroups } = toRefs(props)
+
 
 onMounted(() => {
   let table = document.querySelector('.process-step-cfg-table tbody')
@@ -609,7 +612,7 @@ const filteredCustomFieldGroups = computed(() => {
 })
 
 const localCustomFieldGroups = computed({
-  get: () => customFieldGroups,
+  get: () => customFieldGroups.value,
   set: (val) => {
     val.forEach(v => {
       v.groupOrder = v.newGroupOrder ?? v.groupOrder
@@ -642,11 +645,11 @@ const saveFieldGroup = async () => {
     localCustomFieldGroups.value.push(data)
     newGroup.value = {}
     createNew.value = false
-    getSnackbar('SUCCESS', 'Group Saved')
+    snackbar('SUCCESS', 'Group Saved')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving Group')
+    snackbar('ERROR', 'Error Saving Group')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -677,17 +680,17 @@ const deleteWithChecks = async () => {
         deleteHeader.value = 'Error Deleting Custom Field from Group'
         deleteText.value = 'You cannot delete a field from a group that is in use by other groups or requirements.'
       }
-      getSnackbar('ERROR', errorMsg)
+      snackbar('ERROR', errorMsg)
       handleHidingGlobalLoader(vueInstance, status)
     } else {
       fieldsInUse.value = []
       item.archived = true
-      getSnackbar('SUCCESS', 'Item Deleted')
+      snackbar('SUCCESS', 'Item Deleted')
       handleHidingGlobalLoader(vueInstance, status)
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting')
+    snackbar('ERROR', 'Error Deleting')
     store.commit(AppMutations.SET_LOADING, false)
   }
   assignmentToDelete.value = null
@@ -697,11 +700,11 @@ const saveGroupName = async (group) => {
   store.commit(AppMutations.SET_LOADING, true)
   try {
     const {status} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
-    getSnackbar('SUCCESS', 'Group Name Updated')
+    snackbar('SUCCESS', 'Group Name Updated')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving Change')
+    snackbar('ERROR', 'Error Saving Change')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -709,12 +712,12 @@ const moveFieldToOtherGroup = async (field, newGroup) => {
   store.commit(AppMutations.SET_LOADING, true)
   try {
     await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
-    getSnackbar('SUCCESS', 'Field Moved')
+    snackbar('SUCCESS', 'Field Moved')
     //currently reloading the page because moving the field in the UI seems too hard (even though it isn't i just cant make myself do it right now)
     window.location.reload()
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Moving Field')
+    snackbar('ERROR', 'Error Moving Field')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -746,7 +749,7 @@ const fetchAvailableCustomFields = async (objectTypeId, groupId) => {
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Retrieving Data')
+      snackbar('ERROR', 'Error Retrieving Data')
       store.commit(AppMutations.SET_LOADING, false)
     }
   }
@@ -770,7 +773,7 @@ const loadFieldsByParent = async () => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -781,7 +784,7 @@ const saveUseParentData = async (field) => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving Field')
+    snackbar('ERROR', 'Error Saving Field')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -797,7 +800,7 @@ const saveReadOnlyAndWhiteList = async (field) => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving Field')
+    snackbar('ERROR', 'Error Saving Field')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -812,7 +815,7 @@ const saveHiddenAndWhiteList = async (field) => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving Field')
+    snackbar('ERROR', 'Error Saving Field')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -834,10 +837,10 @@ const saveFieldChanges = async (fields) => {
       const {status} = await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
       handleHidingGlobalLoader(vueInstance, status)
     }
-    getSnackbar('SUCCESS', 'Fields Updated')
+    snackbar('SUCCESS', 'Fields Updated')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Updating Fields')
+    snackbar('ERROR', 'Error Updating Fields')
     store.commit(AppMutations.SET_LOADING, false)
   }
 
@@ -853,11 +856,11 @@ const assignCustomField = async (cfg) => {
     const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, newField.value)
     cfg.customFields.push(data)
     newField.value = {}
-    getSnackbar('SUCCESS', 'Custom Field Assigned')
+    snackbar('SUCCESS', 'Custom Field Assigned')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Assigning Custom Field')
+    snackbar('ERROR', 'Error Assigning Custom Field')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -877,11 +880,11 @@ const assignAncillaryCustomField = async (cfg) => {
     selectedAncillaryField.value = {}
     addField.value = false
     parent.value = {}
-    getSnackbar('SUCCESS', 'Reference Field Assigned')
+    snackbar('SUCCESS', 'Reference Field Assigned')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Assigning Reference Field')
+    snackbar('ERROR', 'Error Assigning Reference Field')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -891,13 +894,13 @@ const saveRowChanges = async (rows) => {
     try {
       const {status} = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
       localCustomFieldGroups.value = orderBy(localCustomFieldGroups.value, 'groupOrder')
-      getSnackbar('SUCCESS', 'Group Order Saved')
+      snackbar('SUCCESS', 'Group Order Saved')
       // this componentKey forces the data-table component to re-render
       componentKey.value += 1
       handleHidingGlobalLoader(vueInstance, status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Saving Group Order')
+      snackbar('ERROR', 'Error Saving Group Order')
       store.commit(AppMutations.SET_LOADING, false)
     }
   }
@@ -913,7 +916,7 @@ const getPositions = async () => {
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Retrieving Positions')
+      snackbar('ERROR', 'Error Retrieving Positions')
       store.commit(AppMutations.SET_LOADING, false)
     }
   }
@@ -942,7 +945,7 @@ const toggleSelectAllPositions = (field) => {
 }
 const copyToClipBoard = (textValue) => {
   navigator.clipboard.writeText(textValue);
-  getSnackbar('SUCCESS', 'Copied text to clipboard')
+  snackbar('SUCCESS', 'Copied text to clipboard')
 }
 </script>
 

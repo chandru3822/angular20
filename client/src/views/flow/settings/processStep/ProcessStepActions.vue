@@ -741,6 +741,7 @@
                            :key="index">
                         <AlbatrossButton
                             size="small"
+                            color="unset"
                             class="ml-1 mr-1 mt-1"
                             :disabled="!userCanEdit"
                             @click="[l.archived = true, item.logicListChanged = true]"
@@ -974,6 +975,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 const appStore = useAppStore()
 
 onMounted(() => {
@@ -1165,11 +1167,11 @@ const processStepId = computed(() => {
         if (fnsToSave.length > 0) {
           await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateChildFunctionOrder`, fnsToSave)
         }
-        getSnackbar('SUCCESS', 'Function Order Updated')
+        snackbar('SUCCESS', 'Function Order Updated')
         appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Updating Function Order')
+        snackbar('ERROR', 'Error Updating Function Order')
         appStore.loading = false
       }
 
@@ -1205,12 +1207,12 @@ const processStepId = computed(() => {
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error fetching process step statuses')
+        snackbar('ERROR', 'Error fetching process step statuses')
       }
     }
     const copyToClipBoard = () => {
       navigator.clipboard.writeText(actionLogicString.value);
-      getSnackbar('SUCCESS', 'Copied text to clipboard')
+      snackbar('SUCCESS', 'Copied text to clipboard')
     }
     const getLogicMargin = (item, parentItem, index) => {
       parentItem.logicMargin = parentItem.logicMargin || 0
@@ -1303,7 +1305,7 @@ const processStepId = computed(() => {
         showLogicInfoDialog.value = true
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error fetching logic string')
+        snackbar('ERROR', 'Error fetching logic string')
       }
     }
     const getCancelledStatuses = async(item) => {
@@ -1316,7 +1318,7 @@ const processStepId = computed(() => {
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error fetching process step statuses')
+        snackbar('ERROR', 'Error fetching process step statuses')
       }
     }
     const getActions = async() => {
@@ -1327,7 +1329,7 @@ const processStepId = computed(() => {
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Data')
+        snackbar('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       }
     }
@@ -1339,7 +1341,7 @@ const processStepId = computed(() => {
         appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Loading Functions')
+        snackbar('ERROR', 'Error Loading Functions')
         appStore.loading = false
       }
     }
@@ -1372,11 +1374,11 @@ const processStepId = computed(() => {
         actions.value.push(data)
         addNewAction.value = false
         newAction.value = {}
-        getSnackbar('SUCCESS', 'Action Added')
+        snackbar('SUCCESS', 'Action Added')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Adding Action')
+        snackbar('ERROR', 'Error Adding Action')
         appStore.loading = false
       }
     }
@@ -1388,7 +1390,7 @@ const processStepId = computed(() => {
         appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Duplicating Action')
+        snackbar('ERROR', 'Error Duplicating Action')
         appStore.loading = false
       }
     }
@@ -1428,11 +1430,11 @@ const processStepId = computed(() => {
           })
         }
 
-        getSnackbar('SUCCESS', 'Action Updated')
+        snackbar('SUCCESS', 'Action Updated')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Updating Action')
+        snackbar('ERROR', 'Error Updating Action')
         appStore.loading = false
       }
     }
@@ -1448,7 +1450,7 @@ const processStepId = computed(() => {
         appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Data')
+        snackbar('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       }
     }
@@ -1460,7 +1462,7 @@ const processStepId = computed(() => {
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Data')
+        snackbar('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       }
     }
@@ -1472,7 +1474,7 @@ const processStepId = computed(() => {
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Data')
+        snackbar('ERROR', 'Error Retrieving Data')
         handleHidingGlobalLoader(vueInstance, status)
       }
     }
@@ -1484,7 +1486,7 @@ const processStepId = computed(() => {
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Data')
+        snackbar('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       }
     }
@@ -1494,11 +1496,11 @@ const processStepId = computed(() => {
       try {
         const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${item.id}`)
         item.archived = true
-        getSnackbar('SUCCESS', 'Action Deleted')
+        snackbar('SUCCESS', 'Action Deleted')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Deleting Action')
+        snackbar('ERROR', 'Error Deleting Action')
         appStore.loading = false
       }
       itemToDelete.value.archive = true
@@ -1522,11 +1524,11 @@ const processStepId = computed(() => {
         cpExpanded.value = []
         cp.existingProcessStepStatusType = data.existingProcessStepStatusType
         cp.initialProcessStepStatusType = data.initialProcessStepStatusType
-        getSnackbar('SUCCESS', 'Child Process Status Saved')
+        snackbar('SUCCESS', 'Child Process Status Saved')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Saving Child Process Status')
+        snackbar('ERROR', 'Error Saving Child Process Status')
         appStore.loading = false
       }
     }
@@ -1545,11 +1547,11 @@ const processStepId = computed(() => {
         action.processStepActionChildProcesses.push(data)
         newChildProcessStep.value = {}
         addChildProcess.value = false
-        getSnackbar('SUCCESS', 'Child Process Added To Action')
+        snackbar('SUCCESS', 'Child Process Added To Action')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Adding Child Process Action')
+        snackbar('ERROR', 'Error Adding Child Process Action')
         appStore.loading = false
       }
     }
@@ -1560,11 +1562,11 @@ const processStepId = computed(() => {
       appStore.loading = true
       try {
         const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildStep/${id}`)
-        getSnackbar('SUCCESS', 'Child Process Deleted From Action')
+        snackbar('SUCCESS', 'Child Process Deleted From Action')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Deleting Child Process From Action')
+        snackbar('ERROR', 'Error Deleting Child Process From Action')
         appStore.loading = false
       }
     }
@@ -1583,11 +1585,11 @@ const processStepId = computed(() => {
         selectedChildFunction.value = {}
         selectedChildRequirementParamDynamicValues.value = []
         addChildFunction.value = false
-        getSnackbar('SUCCESS', 'Child Function Added To Action')
+        snackbar('SUCCESS', 'Child Function Added To Action')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Adding Child Function Action')
+        snackbar('ERROR', 'Error Adding Child Function Action')
         appStore.loading = false
       }
     }
@@ -1598,11 +1600,11 @@ const processStepId = computed(() => {
       appStore.loading = true
       try {
         const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildFunction/${id}`)
-        getSnackbar('SUCCESS', 'Child Function Deleted From Action')
+        snackbar('SUCCESS', 'Child Function Deleted From Action')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Deleting Child Function From Action')
+        snackbar('ERROR', 'Error Deleting Child Function From Action')
         appStore.loading = false
       }
     }
@@ -1610,11 +1612,11 @@ const processStepId = computed(() => {
       appStore.loading = true
       try {
         const {status} = await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateActionChildFunction`, childFunction)
-        getSnackbar('SUCCESS', 'Child Process Updated')
+        snackbar('SUCCESS', 'Child Process Updated')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Updating Child Process')
+        snackbar('ERROR', 'Error Updating Child Process')
         appStore.loading = false
       }
     }
@@ -1627,7 +1629,7 @@ const processStepId = computed(() => {
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Retrieving Data')
+        snackbar('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       }
     }
@@ -1643,11 +1645,11 @@ const processStepId = computed(() => {
         action.processStepActionLinks.push(data)
         selectedLink.value = {}
         addChildLink.value = false
-        getSnackbar('SUCCESS', 'Link Added to Action')
+        snackbar('SUCCESS', 'Link Added to Action')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Adding Link to Action')
+        snackbar('ERROR', 'Error Adding Link to Action')
         appStore.loading = false
       }
     }
@@ -1658,11 +1660,11 @@ const processStepId = computed(() => {
       appStore.loading = true
       try {
         const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteLinkFromAction/${id}`)
-        getSnackbar('SUCCESS', 'Link Deleted From Action')
+        snackbar('SUCCESS', 'Link Deleted From Action')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        getSnackbar('ERROR', 'Error Deleting Link From Action')
+        snackbar('ERROR', 'Error Deleting Link From Action')
         appStore.loading = false
       }
     }
@@ -1677,11 +1679,11 @@ const processStepId = computed(() => {
         appStore.loading = true
         try {
           const {status} = await putRequest(`/processStep/${processStepId.value}/action/order`, rows)
-          getSnackbar('SUCCESS', 'Action Order Saved')
+          snackbar('SUCCESS', 'Action Order Saved')
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          getSnackbar('ERROR', 'Error Saving Action Order')
+          snackbar('ERROR', 'Error Saving Action Order')
           appStore.loading = false
         }
       }

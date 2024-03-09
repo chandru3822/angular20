@@ -151,6 +151,7 @@ import {useUserStore} from '@/stores/UserStorePinia.js'
 const router = useRouter()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 const userStore = useUserStore()
 
 
@@ -211,7 +212,7 @@ const getCompanyTimezones = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Timezones')
+    snackbar('ERROR', 'Error Retrieving Timezones')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -236,7 +237,7 @@ const getRoundRobins = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
@@ -246,11 +247,11 @@ const deleteRoundRobin = async () => {
   store.commit(AppMutations.SET_LOADING, true)
   try {
     const {status} = await deleteRequest(`/roundRobin/${roundRobinId}`)
-    getSnackbar('SUCCESS', 'Round Robin Deleted')
+    snackbar('SUCCESS', 'Round Robin Deleted')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting Round Robin')
+    snackbar('ERROR', 'Error Deleting Round Robin')
     store.commit(AppMutations.SET_LOADING, false)
   }
   closeDeleteDialog()
@@ -259,12 +260,12 @@ const addRoundRobin = async () => {
   store.commit(AppMutations.SET_LOADING, true)
   try {
     const {data, status} = await postRequest(`/roundRobin`, newRoundRobin.value)
-    getSnackbar('SUCCESS', 'Round Robin Added')
+    snackbar('SUCCESS', 'Round Robin Added')
     handleHidingGlobalLoader(vueInstance, status)
     await router.push({path: `/settings/roundRobin/${data.id}/scheduleTo`})
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Adding Round Robin')
+    snackbar('ERROR', 'Error Adding Round Robin')
     store.commit(AppMutations.SET_LOADING, false)
   }
 }

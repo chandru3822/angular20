@@ -50,12 +50,13 @@ import {handleHidingGlobalLoader, getRequest} from '@/helpers/helpers'
 import {getCurrentInstance, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
+import {useRouter} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
 const fileStore = useFileStore()
-const router = vueInstance.$router
+const router = useRouter()
 const snackbar = vueInstance.$snackbar
 
 const error = ref({})

@@ -71,7 +71,7 @@
                 @click="logicStringToggle = !logicStringToggle"
                 variant="text"
                 color="primary"
-                :prepend-icon="$vuetify.breakpoint.smAndDown && logicStringToggle ? 'mdi-numeric' : 'mdi-alphabetical'"
+                :prepend-icon="$vuetify.breakpoint.smAndDown && logicStringToggle ? 'mdi-numeric' : $vuetify.breakpoint.smAndDown ? 'mdi-alphabetical' : ''"
                 :text="$vuetify.breakpoint.smAndDown ? '' : logicStringToggle ? 'VIEW LOGIC AS NUMBERS' : 'VIEW LOGIC AS TEXT'">
             </AlbatrossButton>
             <AlbatrossButton
@@ -947,6 +947,7 @@ import { useAppStore } from '@/stores/AppStorePinia.js'
 const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const appStore = useAppStore()
 
@@ -1117,11 +1118,11 @@ const saveChildFunctionOrder = async (actionId, childFns) => {
     if (fnsToSave.length > 0) {
       await putRequest(`/processStep/${processStepId.value}/event/${eventId.value}/action/${actionId}/updateChildFunctionOrder`, fnsToSave)
     }
-    getSnackbar('SUCCESS', 'Function Order Updated')
+    snackbar('SUCCESS', 'Function Order Updated')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Updating Function Order')
+    snackbar('ERROR', 'Error Updating Function Order')
     appStore.loading = false
   }
 
@@ -1135,7 +1136,7 @@ const populateRequirements = (reqs) => {
 }
 const copyToClipBoard = () => {
   navigator.clipboard.writeText(actionLogicString.value);
-  getSnackbar('SUCCESS', 'Copied text to clipboard')
+  snackbar('SUCCESS', 'Copied text to clipboard')
 }
 const getLogicMargin = (item, parentItem, index) => {
   parentItem.logicMargin = parentItem.logicMargin || 0
@@ -1220,7 +1221,7 @@ const getActionLogicString = async (actionId) => {
     actionLogicString.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error fetching logic string')
+    snackbar('ERROR', 'Error fetching logic string')
   }
 }
 const getEventDetails = async () => {
@@ -1232,7 +1233,7 @@ const getEventDetails = async () => {
   } catch (e) {
     eventLoading.value = true
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Event Status Types')
+    snackbar('ERROR', 'Error Retrieving Event Status Types')
     companyStatusesLoading.value = false
   }
 }
@@ -1242,7 +1243,7 @@ const getAssignedEventStatusTypes = async () => {
     companyEventStatuses.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Event Status Types')
+    snackbar('ERROR', 'Error Retrieving Event Status Types')
     companyStatusesLoading.value = false
   }
 }
@@ -1251,7 +1252,7 @@ const getCompanyProcessStepStatuses = async () => {
     const {data} = await getCompanyAssignedToProcessStep(processStepId.value)
     processStepStatuses.value = data
   } catch (e) {
-    getSnackbar('ERROR', 'Error fetching available process step statuses')
+    snackbar('ERROR', 'Error fetching available process step statuses')
     logError(e)
   }
 }
@@ -1266,7 +1267,7 @@ const getPositions = async () => {
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Retrieving Positions')
+      snackbar('ERROR', 'Error Retrieving Positions')
       appStore.loading = false
     }
   }
@@ -1287,11 +1288,11 @@ const saveEventDetails = async (psEvent) => {
   appStore.loading = true
   try {
     await putRequest(`/processStep/${processStepId.value}/event/${psEvent.eventId}`, psEvent)
-    getSnackbar('SUCCESS', 'Event Updated')
+    snackbar('SUCCESS', 'Event Updated')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Adding Event')
+    snackbar('ERROR', 'Error Adding Event')
     appStore.loading = false
   }
 }
@@ -1302,11 +1303,11 @@ const saveReadOnlyWhiteList = async () => {
     const {status} = await putRequest(`/processStep/${processStepId.value}/event/${psEvent.eventId}/saveReadOnlyWhiteList?savePositions=${psEvent.positionsChanged ?? false}`, psEvent)
     psEvent.positionsChanged = false
     handleHidingGlobalLoader(vueInstance, status)
-    getSnackbar('SUCCESS', 'Event Updated')
+    snackbar('SUCCESS', 'Event Updated')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Updating Event')
+    snackbar('ERROR', 'Error Updating Event')
     appStore.loading = false
   }
 }
@@ -1316,11 +1317,11 @@ const deleteActionFromEvent = async () => {
   try {
     await deleteRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/${action.id}`)
     action.archived = true
-    getSnackbar('SUCCESS', 'Action Deleted')
+    snackbar('SUCCESS', 'Action Deleted')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting Action')
+    snackbar('ERROR', 'Error Deleting Action')
     appStore.loading = false
   }
   eventActionToDelete.value = null
@@ -1349,11 +1350,11 @@ const saveEventAction = async (action) => {
       action.eventStatusType = data.eventStatusType
       action.processStepStatusType = data.processStepStatusType
     }
-    getSnackbar('SUCCESS', 'Action Updated')
+    snackbar('SUCCESS', 'Action Updated')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Adding Action')
+    snackbar('ERROR', 'Error Adding Action')
     appStore.loading = false
   }
 }
@@ -1420,7 +1421,7 @@ const getOperationTypes = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1432,7 +1433,7 @@ const duplicateAction = async (actionId) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Duplicating Action')
+    snackbar('ERROR', 'Error Duplicating Action')
     appStore.loading = false
   }
 }
@@ -1454,7 +1455,7 @@ const updateAction = async (action) => {
     action.processStepStatusType = data.processStepStatusType
     action.processStepEventLogicList = data.processStepEventLogicList
     action.triggerAutomatically = data.triggerAutomatically
-    actionExpanded.value = []
+    // actionExpanded.value = []
 
     //update the necessary psr's to immutable
     if (psrListToUpdate.length > 0) {
@@ -1464,11 +1465,11 @@ const updateAction = async (action) => {
       })
     }
 
-    getSnackbar('SUCCESS', 'Action Updated')
-    appStore.loading = false
+    snackbar('SUCCESS', 'Action Updated')
+    // appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Updating Action')
+    snackbar('ERROR', 'Error Updating Action')
     appStore.loading = false
   }
 }
@@ -1486,11 +1487,11 @@ const alterRequiredFlag = async (requiredChanged, item, actionId) => {
     const {data} = await putRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/${actionId}`, item)
     //resetting the id in case it got archived/added a new one, etc. this will keep multiple updates to the same field working without refreshing the screen
     item.id = data
-    getSnackbar('SUCCESS', 'Saved')
+    snackbar('SUCCESS', 'Saved')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Saving')
+    snackbar('ERROR', 'Error Saving')
   }
 }
 const saveRowChanges = async (rows) => {
@@ -1498,11 +1499,11 @@ const saveRowChanges = async (rows) => {
     appStore.loading = true
     try {
       await putRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/order`, rows)
-      getSnackbar('SUCCESS', 'Action Order Saved')
+      snackbar('SUCCESS', 'Action Order Saved')
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      getSnackbar('ERROR', 'Error Saving Action Order')
+      snackbar('ERROR', 'Error Saving Action Order')
       appStore.loading = false
     }
   }
@@ -1515,7 +1516,7 @@ const loadFunctionParams = async (dbFunctionId) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1534,11 +1535,11 @@ const saveFunctionToAction = async (action) => {
     selectedChildFunction.value = {}
     selectedChildRequirementParamDynamicValues.value = []
     addChildFunction.value = false
-    getSnackbar('SUCCESS', 'Child Function Added To Action')
+    snackbar('SUCCESS', 'Child Function Added To Action')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Adding Child Function Action')
+    snackbar('ERROR', 'Error Adding Child Function Action')
     appStore.loading = false
   }
 }
@@ -1550,7 +1551,7 @@ const loadChildFunctions = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Loading Functions')
+    snackbar('ERROR', 'Error Loading Functions')
     appStore.loading = false
   }
 }
@@ -1558,11 +1559,11 @@ const updateChildFunction = async (actionId, childFunction) => {
   appStore.loading = true
   try {
     const {status} = await putRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/${actionId}/updateActionChildFunction`, childFunction)
-    getSnackbar('SUCCESS', 'Child Process Updated')
+    snackbar('SUCCESS', 'Child Process Updated')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Updating Child Process')
+    snackbar('ERROR', 'Error Updating Child Process')
     appStore.loading = false
   }
 }
@@ -1570,11 +1571,11 @@ const deleteChildFunctionFromAction = async (actionId, id) => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/${actionId}/deleteChildFunction/${id}`)
-    getSnackbar('SUCCESS', 'Child Function Deleted From Action')
+    snackbar('SUCCESS', 'Child Function Deleted From Action')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting Child Function From Action')
+    snackbar('ERROR', 'Error Deleting Child Function From Action')
     appStore.loading = false
   }
 }
@@ -1595,7 +1596,7 @@ const loadLinks = async (actionId) => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Retrieving Data')
+    snackbar('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1611,11 +1612,11 @@ const saveLinkToAction = async (action) => {
     action.childLinks.push(data)
     selectedLink.value = {}
     addChildLink.value = false
-    getSnackbar('SUCCESS', 'Link Added to Action')
+    snackbar('SUCCESS', 'Link Added to Action')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Adding Link to Action')
+    snackbar('ERROR', 'Error Adding Link to Action')
     appStore.loading = false
   }
 }
@@ -1623,11 +1624,11 @@ const deleteLinkFromAction = async (actionId, id) => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/${actionId}/deleteLinkFromAction/${id}`)
-    getSnackbar('SUCCESS', 'Link Deleted From Action')
+    snackbar('SUCCESS', 'Link Deleted From Action')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    getSnackbar('ERROR', 'Error Deleting Link From Action')
+    snackbar('ERROR', 'Error Deleting Link From Action')
     appStore.loading = false
   }
 }

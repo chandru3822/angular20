@@ -92,6 +92,7 @@ const ImageTypeEnum = ref({
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 const userStore = useUserStore()
 const fileStore = useFileStore()
 
@@ -137,14 +138,14 @@ const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit
       displayName: file.name.substr(0, file.name.lastIndexOf('.')),
       callback: async (img, error) => {
         if (error?.error) {
-          snackbar = getSnackbar('ERROR', error.errorMsg)
+          snackbar = snackbar('ERROR', error.errorMsg)
           store.commit(AppMutations.SHOW_SNACK, snackbar)
           store.commit(AppMutations.SET_LOADING, false)
         } else {
           ImageTypeEnum.value[imageType.key].image = img
           ImageTypeEnum.value[imageType.key].add = false
           ImageTypeEnum.value[imageType.key].saving = false
-          snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
+          snackbar = snackbar('SUCCESS', 'Image Uploaded')
           store.commit(AppMutations.SHOW_SNACK, snackbar)
           store.commit(AppMutations.SET_LOADING, false)
         }
@@ -152,7 +153,7 @@ const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar = getSnackbar('ERROR', 'Error Uploading File')
+    snackbar = snackbar('ERROR', 'Error Uploading File')
     store.commit(AppMutations.SHOW_SNACK, snackbar)
     store.commit(AppMutations.SET_LOADING, false)
   }
@@ -167,7 +168,7 @@ const deleteAttachment = async() => {
       id: imageToDelete?.value?.image?.id,
       callback: async () => {
         ImageTypeEnum.value[key].image = {}
-        snackbar = getSnackbar('SUCCESS', 'Image Deleted')
+        snackbar = snackbar('SUCCESS', 'Image Deleted')
         store.commit(AppMutations.SHOW_SNACK, snackbar)
         store.commit(AppMutations.SET_LOADING, false)
         imageToDelete.value = null
@@ -175,7 +176,7 @@ const deleteAttachment = async() => {
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar = getSnackbar('ERROR', 'Error Deleting File')
+    snackbar = snackbar('ERROR', 'Error Deleting File')
     store.commit(AppMutations.SHOW_SNACK, snackbar)
     store.commit(AppMutations.SET_LOADING, false)
     imageToDelete.value = null
