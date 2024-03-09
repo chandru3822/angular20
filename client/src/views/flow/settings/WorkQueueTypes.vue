@@ -53,9 +53,13 @@
               <input type="checkbox" class="ml-3" v-model="newType.useEventData">
               <span class="no-change-text">* This value cannot be changed after creation.</span>
             </div>
-            <v-btn color="primary" class="mt-2" :disabled="!newType.workQueueType || !newType.workQueueCategoryId"
-                   @click="addNewType">Save
-            </v-btn>
+            <AlbatrossButton
+                color="primary"
+                class="mt-2"
+                :disabled="!newType.workQueueType || !newType.workQueueCategoryId"
+                @click="addNewType"
+                text="Save"
+            ></AlbatrossButton>
           </div>
           <v-text-field
               v-model="search"
@@ -86,10 +90,15 @@
 
               <tr class="clickable" :class="{'shaded-row': workQueueTypes.indexOf(item) % 2}">
                 <td style="width: 50px" @click="goToDetails(item)">
-                  <v-btn v-if="(userCanEdit || userIsAdmin) && selectedWorkQueueCategoryId !== -1" text color="primary"
-                         icon small class="handle">
-                    <v-icon>drag_handle</v-icon>
-                  </v-btn>
+                  <AlbatrossButton
+                      v-if="(userCanEdit || userIsAdmin) && selectedWorkQueueCategoryId !== -1"
+                      variant="text"
+                      color="primary"
+                      icon
+                      size="small"
+                      class="handle"
+                      prepend-icon="drag_handle"
+                  ></AlbatrossButton>
                 </td>
                 <td class="text-left" @click="goToDetails(item)">
                   {{ item.workQueueType }}
@@ -102,12 +111,24 @@
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
-                    <v-btn class="clickable" small text color="primary" v-if="userCanEdit || userIsAdmin">
-                      <v-icon @click="goToDetails(item)">edit</v-icon>
-                    </v-btn>
-                    <v-btn class="clickable" small text color="primary" v-if="userCanDelete">
-                      <v-icon @click="workQueueToDelete=item">delete</v-icon>
-                    </v-btn>
+                    <AlbatrossButton
+                        @click="goToDetails(item)"
+                        class="clickable"
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        v-if="userCanEdit || userIsAdmin"
+                        prepend-icon="edit"
+                    ></AlbatrossButton>
+                    <AlbatrossButton
+                        class="clickable"
+                        @click="workQueueToDelete=item"
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        v-if="userCanDelete"
+                        prepend-icon="delete"
+                    ></AlbatrossButton>
                   </div>
                 </td>
               </tr>

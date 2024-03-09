@@ -116,7 +116,6 @@
                           return-object
                           attach
           ></v-autocomplete>
-<!--          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.orgId" @click="assignProcessStep">Save</v-btn>-->
           <!--  per scott: temporarily removing requirement for orgId        -->
           <AlbatrossButton
             color="primary"

@@ -6,10 +6,13 @@
           <v-toolbar-title class="title-large">Postal Code Zones</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newZone = {}]" v-if="userCanAdd">
-              <span v-if="!addNew">{{'Add New'}}</span>
-              <span v-else>{{'Cancel'}}</span>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="[addNew = !addNew, newZone = {}]"
+                v-if="userCanAdd"
+                :text="!addNew ? 'Add New' : 'Cancel'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -20,8 +23,13 @@
                 v-model="newZone.zoneName"
             ></v-text-field>
 
-            <v-btn color="primary" :disabled="!newZone.zoneName"
-                   @click="addPostalCodeZone" class="mb-3">Save</v-btn>
+            <AlbatrossButton
+                color="primary"
+                :disabled="!newZone.zoneName"
+                @click="addPostalCodeZone"
+                class="mb-3"
+                text="Save"
+            ></AlbatrossButton>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -56,11 +64,21 @@
                     {{ item.metroArea }}
                   </td>
                   <td class="text-right">
-                    <v-btn small icon @click="goToZone(item)"
-                           :large="$vuetify.breakpoint.smAndDown" color="primary">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                    <v-btn v-if="userCanDelete" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
+                    <AlbatrossButton
+                        icon
+                        @click="goToZone(item)"
+                        color="primary"
+                        prepend-icon="edit"
+                        :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
+                    ></AlbatrossButton>
+                    <AlbatrossButton
+                        v-if="userCanDelete"
+                        icon
+                        color="primary"
+                        @click="[itemToDelete=item, showDeleteDialog=true]"
+                        prepend-icon="delete"
+                        :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                    ></AlbatrossButton>
                   </td>
                 </tr>
               </template>
@@ -82,6 +100,7 @@
 
 <script setup>
   import {AppMutations} from '@/stores/AppStore'
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
   import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import constants from "@/helpers/constants";

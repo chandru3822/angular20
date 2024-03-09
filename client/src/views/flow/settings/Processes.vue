@@ -57,7 +57,6 @@
               </ConfirmationDialog>
             </v-list-item>
           </v-list>
-          <!--<v-btn v-else-if="groupOrderChanged" @click="saveGroupChanges">Save Changes</v-btn>-->
         </v-container>
       </v-col>
 

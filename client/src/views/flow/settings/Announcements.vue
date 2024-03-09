@@ -6,10 +6,14 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Announcements</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="goToPath()" v-if="userCanAdd">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="goToPath()"
+                v-if="userCanAdd"
+                prepend-icon="add"
+                :text="addNew ? 'Cancel' : 'Add New'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-tabs class="tabs-bar" id="default-settings-tabs">
@@ -41,13 +45,21 @@
                 <span v-else-if="item.showOnMobile">Mobile</span>
               </td>
               <td>
-                <v-btn small text color="primary"
-                       @click="goToPath(item.id)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="current && userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
-                  <v-icon >delete</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="goToPath(item.id)"
+                    prepend-icon="edit"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    v-if="current && userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                    @click.stop="[itemToDelete=item, showDeleteDialog=true]"
+                    prepend-icon="delete"
+                ></AlbatrossButton>
               </td>
             </tr>
           </template>
@@ -67,6 +79,7 @@
 
 <script setup>
 import constants from '@/helpers/constants'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {deleteRequest, getRequestWithParams, handleHidingGlobalLoader} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";

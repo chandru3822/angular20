@@ -6,12 +6,20 @@
           <v-toolbar-title class="title-large">Email Settings</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="addNew" @click="addEmail()" :disabled="!addFormValid">
-              <v-icon>save</v-icon>
-            </v-btn>
-            <v-btn text color="primary" @click="[addNew = !addNew, newEmail = {}]">
-              <span>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                v-if="addNew"
+                @click="addEmail()"
+                :disabled="!addFormValid"
+                prepend-icon="save"
+            ></AlbatrossButton>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="[addNew = !addNew, newEmail = {}]"
+                :text="addNew ? 'Cancel' : 'Add New'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
       </v-col>
@@ -80,16 +88,39 @@
                 <v-checkbox v-if="index == editIndex" v-model="item.checked" :value="item.isDefault" :disabled="item.isDefault" label="Default"></v-checkbox>
               </template>
               <template #item.icons="{item, index}">
-                <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="editIndex = index" v-if="index !== editIndex">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="updateEmailAddress(item)" :disabled="!isEditValid(item)" v-if="index === editIndex">
-                  <v-icon>save</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="index === editIndex" @click="clearChanges()">
-                  cancel
-                </v-btn>
-                <v-btn :disabled="item.isDefault" small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="emailToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <AlbatrossButton
+                    icon
+                    color="primary"
+                    @click="editIndex = index"
+                    v-if="index !== editIndex"
+                    prepend-icon="edit"
+                    :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    icon
+                    color="primary"
+                    @click="updateEmailAddress(item)"
+                    :disabled="!isEditValid(item)"
+                    v-if="index === editIndex"
+                    prepend-icon="save"
+                    :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    v-if="index === editIndex"
+                    @click="clearChanges()"
+                    text="cancel"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    :disabled="item.isDefault"
+                    icon
+                    color="primary"
+                    @click="emailToDelete=item"
+                    prepend-icon="delete"
+                    :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
+                ></AlbatrossButton>
               </template>
         </v-data-table>
       </v-col>
@@ -97,11 +128,14 @@
       Are you sure you want to delete this email address: <strong>{{emailToDeleteAddress}}</strong>?
     </ConfirmationDialog>
 
-    <v-btn v-if="is7oaksAdmin" class="mt-5"
-           :loading="emailQueueProcessing"
-           color="primary" @click="processEmailQueue()">
-      Force email queue processing
-    </v-btn>
+    <AlbatrossButton
+        v-if="is7oaksAdmin"
+        class="mt-5"
+        :loading="emailQueueProcessing"
+        color="primary"
+        @click="processEmailQueue()"
+        text="Force email queue processing"
+    ></AlbatrossButton>
   </v-container>
 </template>
 

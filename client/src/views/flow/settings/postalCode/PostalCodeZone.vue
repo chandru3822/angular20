@@ -6,11 +6,14 @@
           <v-toolbar-title class="title-large">{{postalCodeZone.zoneName}}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="savePostalCodeZone"
-                   color="primary" v-if="userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')">
-              <v-icon>save</v-icon>
-              Save
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                @click="savePostalCodeZone"
+                color="primary"
+                v-if="userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')"
+                prepend-icon="save"
+                text="Save"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -37,10 +40,13 @@
               type="number"
               hide-details
             ></v-text-field>
-            <v-btn class="my-3" @click="[addPostalCode = !addPostalCode, getAvailablePostalCodes()]"
-                   color="primary" v-if="userStore.userHasFeatureAccessLevel('USERS', 'EDIT')">
-              Add Postal Code to Zone
-            </v-btn>
+            <AlbatrossButton
+                class="my-3"
+                @click="[addPostalCode = !addPostalCode, getAvailablePostalCodes()]"
+                color="primary"
+                v-if="userStore.userHasFeatureAccessLevel('USERS', 'EDIT')"
+                text="Add Postal Code to Zone"
+            ></AlbatrossButton>
             <v-card v-if="addPostalCode" class="pa-3 mb-3">
               <v-autocomplete
                   :items="availablePostalCodes"
@@ -66,10 +72,13 @@
                     {{item.postalCode}}
                   </td>
                   <td class="text-right">
-                    <v-btn small text color="primary"
-                           @click="[itemToDelete = item, showDeleteDialog = true]">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
+                    <AlbatrossButton
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        @click="[itemToDelete = item, showDeleteDialog = true]"
+                        prepend-icon="delete"
+                    ></AlbatrossButton>
                   </td>
                 </tr>
               </template>
@@ -88,6 +97,7 @@
 
 <script setup>
   import {AppMutations} from '@/stores/AppStore'
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
   import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import { getCurrentInstance, computed, ref, onMounted } from 'vue'

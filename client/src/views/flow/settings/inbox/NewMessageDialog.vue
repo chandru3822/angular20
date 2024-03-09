@@ -172,25 +172,22 @@
         <v-spacer/>
         <v-card-actions class="pb-0 px-0 pt-6">
           <v-spacer/>
-          <v-btn
-            color="primary"
-            :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0)
-                          || (message.length == 0 && uploadedFiles.length == 0)"
-            @click="[assignAndSend = false, sendMessage()]"
-            class="send-button"
-            text
-          >
-            Send and don't assign
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0) || (message.length == 0 && uploadedFiles.length == 0)"
+              @click="[assignAndSend = false, sendMessage()]"
+              class="send-button"
+              variant="text"
+              text="Send and don't assign"
+          ></AlbatrossButton>
 
-          <v-btn
-            color="primary"
-            class="white--text send-button"
-            :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0)
-                          || (message.length == 0 && uploadedFiles.length == 0)"
-            @click="[assignAndSend = true, sendMessage()]">
-            Send
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              class="send-button"
+              :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0) || (message.length == 0 && uploadedFiles.length == 0)"
+              @click="[assignAndSend = true, sendMessage()]"
+              text="Send"
+          ></AlbatrossButton>
         </v-card-actions>
       </div>
     </v-card>
@@ -200,6 +197,7 @@
 
 <script setup>
 import { AppMutations } from '@/stores/AppStore'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getRequest, getRequestWithParams, putRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";

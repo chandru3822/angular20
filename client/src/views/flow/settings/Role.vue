@@ -9,10 +9,14 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text :disabled="!role.roleName" @click="saveRole" color="primary">
-              <v-icon>save</v-icon>
-              Save
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                :disabled="!role.roleName"
+                @click="saveRole"
+                color="primary"
+                prepend-icon="save"
+                text="Save"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat class="mt-2 pa-5">
@@ -56,7 +60,7 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
