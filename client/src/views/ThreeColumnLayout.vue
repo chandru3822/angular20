@@ -63,7 +63,7 @@ import {getRequest, handleHidingGlobalLoader, logError} from '@/helpers/helpers'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
-import {defineProps, getCurrentInstance, onMounted, ref} from 'vue'
+import {computed, defineProps, getCurrentInstance, onMounted, ref} from 'vue'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
@@ -101,10 +101,15 @@ const props = defineProps({
 
 const projectLoading = ref(false)
 const project = ref({})
-const projectId = ref(parseInt(vueInstance.$route.params.projectId) | null)
-const userId = ref(parseInt(vueInstance.$route.params.userId) | null)
 const rightHiddenMobile = ref(props.rightCollapsed)
 const emit = defineEmits(['closeRight', 'end-notes-timer'])
+
+const projectId = computed(() => {
+  return parseInt(route.params.projectId)
+})
+const userId = computed(() => {
+  return parseInt(route.params.userId)
+})
 
 // todo: note, i checked the code and these two values aren't being used...unless i am blind!
 // const leftWidth = computed(() => {

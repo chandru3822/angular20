@@ -44,7 +44,6 @@ const notificationStore = useNotificationStore()
 // change I can't see right now
 const hideHeader = ref(userStore.hideHeader || false)
 const userIsMasquerading = ref(userStore?.details?.masqueradingUserId != null)
-const userId = ref(userStore?.details?.id)
 const noNavRoutes = ref([
   'login',
   'forgotPassword',
@@ -53,6 +52,10 @@ const noNavRoutes = ref([
   'siteUnderMaintenance',
   'stripeSuccess'
 ])
+
+const userId = computed(() => {
+  return userStore.details.id
+})
 
 const revokeAccessEvents = computed(() => {
   return notificationStore.getEventsByTopic('revoke_access')?.filter((e) => e.userId === userId.value)

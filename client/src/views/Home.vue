@@ -31,7 +31,7 @@
 <script setup>
 
 import {handleHidingGlobalLoader, getRequest, putRequest} from "@/helpers/helpers";
-import {getCurrentInstance, onMounted, ref} from 'vue'
+import {computed, getCurrentInstance, onMounted, ref} from 'vue'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
@@ -49,9 +49,16 @@ const logoLoaded = ref(false)
 const homePages = ref([])
 const homePageLogo = ref({})
 const homePageAttachmentTypeId = 333
-const companyId = ref(userStore.details.companyId)
-const userIsAlbatross = ref(userStore.details.highestCompanyId === 1)
-const user = ref(userStore.details)
+
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const userIsAlbatross = computed(() => {
+  return userStore.details.highestCompanyId === 1
+})
+const user = computed(() => {
+  return userStore.details
+})
 
 onMounted(() => {
   loadHomePageLogo()
