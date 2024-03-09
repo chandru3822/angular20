@@ -76,7 +76,8 @@
                 </v-select>
                 <v-text-field text v-model="item.rank" type="number"
                               label="Rank"/>
-                <input type="checkbox" v-model="item.showType">
+                <label>Show Type:</label>
+                <input type="checkbox"  class="ml-3" v-model="item.showType">
               </div>
               <AlbatrossButton :disabled="!item.orgLevelId || !item.rank"
                      text="Save" class="mr-2"

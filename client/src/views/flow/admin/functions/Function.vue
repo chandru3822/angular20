@@ -234,12 +234,13 @@ import {handleHidingGlobalLoader, getRequest, postRequest, putRequest} from '@/h
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import {useRouter} from "vue-router/composables"
+import {useRouter, useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const appStore = useAppStore()
 const router = useRouter()
+const route = useRoute()
 const snackbar = vueInstance.$snackbar
 
 const addNew = ref(false)
@@ -271,7 +272,7 @@ const breadcrumbs = ref([
 ])
 
 const functionId = computed(() => {
-  return parseInt(route.params.projectId)
+  return parseInt(route.params.id)
 })
 
 onMounted(() => {

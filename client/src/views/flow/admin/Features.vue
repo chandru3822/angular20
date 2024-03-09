@@ -112,7 +112,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import orderBy from 'lodash.orderby'
@@ -125,7 +124,7 @@ import { useAppStore } from '@/stores/AppStorePinia.js'
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
-const appstore = useAppStore()
+const appStore = useAppStore()
 const snackbar = vueInstance.$snackbar
 
 const isCompanyRoot = ref(userStore.isCompanyRoot)

@@ -64,7 +64,7 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, putRequest} from '@/helpers/helpers'
 import {getUserStatusTypes} from '@/services/userService'
 import {getCurrentInstance, onMounted, ref} from 'vue'
-import AlbatrossButton from'"@/components/customVuetify/AlbatrossButton'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
