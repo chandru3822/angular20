@@ -13,12 +13,22 @@
               <v-icon v-else-if="$vuetify.breakpoint.smAndDown">mdi-alphabetical</v-icon>
               <span v-if="!$vuetify.breakpoint.smAndDown">{{ logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}</span>
             </v-btn>
-            <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']"
-                   text color="primary" v-if="userCanAdd">
-              <v-icon v-if="!addNewAction">add</v-icon>
-              <v-icon v-else-if="$vuetify.breakpoint.smAndDown">close</v-icon>
-              <span v-if="!$vuetify.breakpoint.smAndDown">{{ addNewAction ? 'Cancel' : 'Add Action' }}</span>
-            </v-btn>
+            <AlbatrossButton
+                @click="logicStringToggle = !logicStringToggle"
+                variant="text"
+                color="primary"
+                :prepend-icon="$vuetify.breakpoint.smAndDown && logicStringToggle ? 'mdi-numeric' : $vuetify.breakpoint.smAndDown ? 'mdi-alphabetical' : ''"
+                :text="logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text'">
+            </AlbatrossButton>
+            <AlbatrossButton
+                @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']"
+                variant="text"
+                color="primary"
+                v-if="userCanAdd"
+                :prepend-icon="!addNewAction ? 'add' : $vuetify.breakpoint.smAndDown ? 'close' : ''"
+                :text="addNewAction ? 'Cancel' : 'Add Action'"
+            ></AlbatrossButton>
+
             <v-btn text color="primary" @click="expandActions = !expandActions">
               <v-icon v-if="!expandActions">mdi-chevron-down</v-icon>
               <v-icon v-else>mdi-chevron-up</v-icon>
@@ -837,6 +847,7 @@
 
 <script setup>
 import cloneDeep from 'lodash.clonedeep'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import draggable from 'vuedraggable'
 import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {

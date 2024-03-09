@@ -48,14 +48,14 @@ const albatrossButtonValue = ref(null)
 const inputField = ref(null)
 
 //for testing
-// vBtnValue.value = '<v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll"> {{ expandedAll !== CollapseExpandEnum.COLLAPSED ? \'Minimize All\' : \'Expand All\' }} </v-btn>'
-// vBtnValue.value = ' <v-btn v-if="(userCanEdit || userIsAdmin) && selectedWorkQueueCategoryId !== -1" text color="primary"\n' +
-//     '                         icon small class="handle">\n' +
-//     '                    <v-icon>drag_handle</v-icon>\n' +
-//     '                  </v-btn>'
-// vBtnValue.value = '<v-btn v-on="on">\n' +
-//     '                  Set as Initial\n' +
-//     '                </v-btn>'
+// vBtnValue.value = '            <v-btn text color="primary" @click="expandActions = !expandActions">\n' +
+//     '              <v-icon v-if="!expandActions">mdi-chevron-down</v-icon>\n' +
+//     '              <v-icon v-else>mdi-chevron-up</v-icon>\n' +
+//     '            </v-btn>'
+
+onMounted(() => {
+  // processBtn()
+})
 
 const doClear = () => {
   vBtnValue.value = null
@@ -81,16 +81,19 @@ const processBtn = async () => {
   }
   tempString = tempString.replaceAll(' large ', ' size="large" ')
   tempString = tempString.replaceAll('v-on="on"', ':activation-handler="on"')
-  tempString = tempString.replaceAll('<v-icon', '\n<v-icon')
+  // tempString = tempString.replaceAll('<v-icon', '\n<v-icon')
 
+  //handle exactly 2 icons
+  tempString = handleTwoIcons(tempString)
 
   //handle complex button text
   tempString = handleComplexButtonText(tempString)
 
-  //handle exactly 2 icons
-  tempString = handleTwoIcons(tempString)
   //handle a single icon
-  tempString = handleSingleButtonIcon(tempString)
+  tempString = handleSingleButtonTag(tempString, 'v-icon', 'prepend-icon')
+
+  //handle a single span
+  tempString = handleSingleButtonTag(tempString, 'span', 'text')
 
   //handle a conditional size
   tempString = handleConditionalSize(tempString, 'large', hardcodedSize || 'default')
@@ -122,6 +125,8 @@ const processBtn = async () => {
   }
 
   albatrossButtonValue.value = formatted ? formatted : tempString
+
+  copyToClipboard()
 }
 
 const handleButtonText = (textString) => {
@@ -161,20 +166,30 @@ const handleComplexButtonText = (textString) => {
   return textString
 }
 
-const handleSingleButtonIcon = (textString) => {
-  const regExString = new RegExp(`(?<=>).*?(?=</v-icon>)`)
+const handleSingleButtonTag = (textString, htmlTag, newProperty) => {
+  let endHtmlTag = `</${htmlTag}>`
+  let startHtmlTag = `<${htmlTag}`
+  const regExString = new RegExp(`(?<=>).*?(?=${endHtmlTag})`)
   const iconBetween = regExString.exec(textString);
 
   //this will only have a value and refactor the icon if there is only 1 of them
   if(iconBetween && iconBetween[0]) {
-    let firstIndex = textString.indexOf('<v-icon')
-    let secondIndex = textString.indexOf('</v-icon>')
+    let firstIndex = textString.indexOf(`${startHtmlTag}`)
+    let secondIndex = textString.indexOf(`${endHtmlTag}`)
     let stringToReplace = textString.substring(firstIndex, secondIndex + 9)
     textString = textString.replace(stringToReplace, '')
 
     //"> to try and avoid greater than symbol in v-if or disabled prop
+    if(newProperty === 'text') {
+      let indexOfCurly = textString.indexOf('{')
+      if(indexOfCurly !== -1) {
+        newProperty = ':' + newProperty
+        iconBetween[0] = iconBetween[0].replaceAll('{', '')
+        iconBetween[0] = iconBetween[0].replaceAll('}', '')
+      }
+    }
     let index = textString.indexOf('">')
-    let value = `" prepend-icon="${iconBetween[0]}"`
+    let value = `" ${newProperty}="${iconBetween[0]}"`
     textString = textString.substring(0, index) + value + textString.substring(index + 1)
   }
   return textString

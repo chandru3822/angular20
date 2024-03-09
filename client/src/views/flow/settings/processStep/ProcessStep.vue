@@ -2,10 +2,15 @@
   <v-container class="custom-field-group-container" v-if="processStep && processStep.id">
     <v-row>
       <v-col cols="12">
-        <v-btn text color="primary" class="pl-1 pr-2" :to="'/settings/processSteps'">
-          <v-icon>arrow_left</v-icon>
-          <span>Back</span>
-        </v-btn>
+        <AlbatrossButton
+            variant="text"
+            color="primary"
+            class="pl-1 pr-2"
+            :to="'/settings/processSteps'"
+            prepend-icon="arrow_left"
+            text="Back"
+        ></AlbatrossButton>
+
         <div class="flex-display pt-3 px-3 mb-4" style="width: 100%">
           <div style="width: 100%">
             <span class="headline-small" v-if="!editName">{{ processStep.processStepName }}</span>
@@ -17,17 +22,33 @@
 
           </div>
           <div class="text-right" v-if="userCanEdit">
-            <v-btn text color="primary" v-if="!editName" class=""
-                   @click="[oldName = processStep.processStepName, editName = !editName]">
-              <v-icon>edit</v-icon>
-            </v-btn>
-            <v-btn text color="primary" class="" v-else @click="saveProcessStep($event,true)">
-              <v-icon>save</v-icon>
-            </v-btn>
-            <v-btn text color="primary" v-if="editName" class=""
-                   @click="[processStep.processStepName = oldName, editName = !editName]">
-              cancel
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                v-if="!editName"
+                class=""
+                @click="[oldName = processStep.processStepName, editName = !editName]"
+                prepend-icon="edit"
+            ></AlbatrossButton>
+
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                class=""
+                v-else
+                @click="saveProcessStep($event,true)"
+                prepend-icon="save"
+            ></AlbatrossButton>
+
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                v-if="editName"
+                class=""
+                @click="[processStep.processStepName = oldName, editName = !editName]"
+                text="cancel"
+            ></AlbatrossButton>
+
           </div>
         </div>
         <v-tabs class="tabs-bar">
@@ -50,6 +71,7 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
