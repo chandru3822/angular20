@@ -6,10 +6,14 @@
           <v-toolbar-title class="title-large">Postal Codes</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newPostalCode = {}, getAllStates()]" v-if="userCanAdd">
-              <span v-if="!addNew">{{ 'Add New' }}</span>
-              <span v-else>{{ 'Cancel' }}</span>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="[addNew = !addNew, newPostalCode = {}, getAllStates()]"
+                v-if="userCanAdd"
+                :text="!addNew ? 'AddNew' : 'Cancel'"
+            ></AlbatrossButton>
+
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -37,10 +41,14 @@
                 label="State"
                 v-model="newPostalCode.stateId"
               ></v-autocomplete>
-              <v-btn color="primary"
-                     :disabled="!newPostalCode.postalCode || !newPostalCode.placeName || !newPostalCode.stateId"
-                     @click="validateForm" class="mb-3">Save
-              </v-btn>
+              <AlbatrossButton
+                  color="primary"
+                  :disabled="!newPostalCode.postalCode || !newPostalCode.placeName || !newPostalCode.stateId"
+                  @click="validateForm"
+                  class="mb-3"
+                  text="Save"
+              ></AlbatrossButton>
+
             </v-form>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
@@ -100,14 +108,23 @@
                     <v-checkbox disabled readonly v-model="item.salesPartners"></v-checkbox>
                   </td>
                   <td class="text-right">
-                    <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                           :to="`/settings/zip/postalCode/${item.id}`">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                    <v-btn v-if="userCanDelete" icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                           @click="[itemToDelete=item, showDeleteDialog=true]">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
+                    <AlbatrossButton
+                        icon
+                        color="primary"
+                        :to="`/settings/zip/postalCode/${item.id}`"
+                        prepend-icon="edit"
+                        :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
+                    ></AlbatrossButton>
+
+                    <AlbatrossButton
+                        v-if="userCanDelete"
+                        icon
+                        color="primary"
+                        @click="[itemToDelete=item, showDeleteDialog=true]"
+                        prepend-icon="delete"
+                        :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                    ></AlbatrossButton>
+
                   </td>
                 </tr>
               </template>
@@ -129,6 +146,7 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {
   handleHidingGlobalLoader,
   isNumberOrHyphen,

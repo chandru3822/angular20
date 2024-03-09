@@ -6,10 +6,16 @@
           <v-toolbar-title class="title-large">Data View Fields</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="!addNew && userCanAdd" @click="[addNew = !addNew, loadDataViews()]">
-              <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE">Add Field</span>
-            </v-btn>
+
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                v-if="!addNew && userCanAdd"
+                @click="[addNew = !addNew, loadDataViews()]"
+                prepend-icon="add"
+                text="Add Field"
+            ></AlbatrossButton>
+
           </v-toolbar-items>
         </v-toolbar>
         <div class="px-5" v-if="addNew">
@@ -32,18 +38,22 @@
             attach
             item-text="fieldName"
           ></v-autocomplete>
-          <v-btn v-if="userCanEdit"
-                 :disabled="!selectedDataViewField.id"
-                 color="primary" class="d-inline-block"
-                 @click="saveFieldToMilestone()">
-            <v-icon class="mr-2">save</v-icon>
-            Save
-          </v-btn>
-          <v-btn
-            class="ml-3"
-            @click="[addNew = false, selectedDataViewField = {} ]">
-            cancel
-          </v-btn>
+          <AlbatrossButton
+              v-if="userCanEdit"
+              :disabled="!selectedDataViewField.id"
+              color="primary"
+              class="d-inline-block"
+              @click="saveFieldToMilestone()"
+              prepend-icon="save"
+              text="Save"
+          ></AlbatrossButton>
+
+          <AlbatrossButton
+              class="ml-3"
+              @click="[addNew = false, selectedDataViewField = {} ]"
+              text="cancel"
+          ></AlbatrossButton>
+
         </div>
         <v-divider class="my-3" v-if="addNew"></v-divider>
 
@@ -61,17 +71,28 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td style="width: 50px">
-                <v-btn text color="primary" icon small class="handle" v-if="userCanEdit">
-                  <v-icon>drag_handle</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    variant="text"
+                    color="primary"
+                    icon
+                    size="small"
+                    class="handle"
+                    v-if="userCanEdit"
+                    prepend-icon="drag_handle"
+                ></AlbatrossButton>
               </td>
               <td class="text-left">
                 {{item.fieldName}}
               </td>
               <td class="text-right">
-                <v-btn small text color="primary" v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
-                  <v-icon >delete</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                    @click.stop="[itemToDelete=item, showDeleteDialog=true]"
+                    prepend-icon="delete"
+                ></AlbatrossButton>
               </td>
 
             </tr>
@@ -93,6 +114,7 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
@@ -103,6 +125,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 const route = useRoute()
 const userStore = useUserStore()

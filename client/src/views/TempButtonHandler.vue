@@ -5,12 +5,13 @@
         <v-col cols="12">
           <h3 class="mb-5">Paste the v-btn code here</h3>
           <v-textarea v-model="vBtnValue" outlined @input="albatrossButtonValue = null"
+                      ref="inputField"
                       label="V-BTN Value" />
           <AlbatrossButton
               :disabled="!vBtnValue"
               @click="processBtn" text="Submit"></AlbatrossButton>
           <AlbatrossButton class="ml-4" variant="text"
-              @click="[vBtnValue = null, albatrossButtonValue = null]" text="Clear"></AlbatrossButton>
+              @click="doClear" text="Clear"></AlbatrossButton>
         </v-col>
       </v-row>
 
@@ -43,7 +44,8 @@ const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
 const vBtnValue = ref(null)
-const albatrossButtonValue = ref()
+const albatrossButtonValue = ref(null)
+const inputField = ref(null)
 
 //for testing
 // vBtnValue.value = '<v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll"> {{ expandedAll !== CollapseExpandEnum.COLLAPSED ? \'Minimize All\' : \'Expand All\' }} </v-btn>'
@@ -51,27 +53,42 @@ const albatrossButtonValue = ref()
 //     '                         icon small class="handle">\n' +
 //     '                    <v-icon>drag_handle</v-icon>\n' +
 //     '                  </v-btn>'
+// vBtnValue.value = '<v-btn v-on="on">\n' +
+//     '                  Set as Initial\n' +
+//     '                </v-btn>'
+
+const doClear = () => {
+  vBtnValue.value = null
+  albatrossButtonValue.value = null
+  inputField.value.focus()
+}
 
 const processBtn = async () => {
   let tempString = vBtnValue.value
   tempString = tempString.replaceAll('v-btn', 'AlbatrossButton')
   tempString = tempString.replaceAll(' text ', ' variant="text" ')
+  tempString = tempString.replaceAll(' text\n', ' variant="text" ')
   tempString = tempString.replaceAll(' outlined ', ' variant="outlined" ')
+  tempString = tempString.replaceAll(' outlined\n ', ' variant="outlined" ')
   tempString = tempString.replaceAll('white--text', '')
   tempString = tempString.replaceAll('style', 'html-style')
   tempString = tempString.replaceAll('type', 'btn-type')
+  tempString = tempString.replaceAll(' x-small ', ' size="x-small" ')
   let hardcodedSize = tempString.includes(' small ') ? 'small' : ''
   tempString = tempString.replaceAll(' small ', ' size="small" ')
   if(!hardcodedSize) {
     hardcodedSize = tempString.includes(' large ') ? 'large' : ''
   }
   tempString = tempString.replaceAll(' large ', ' size="large" ')
-  tempString = tempString.replaceAll(' v-on="on" ', ' :activation-handler="on" ')
+  tempString = tempString.replaceAll('v-on="on"', ':activation-handler="on"')
+  tempString = tempString.replaceAll('<v-icon', '\n<v-icon')
 
 
   //handle complex button text
   tempString = handleComplexButtonText(tempString)
 
+  //handle exactly 2 icons
+  tempString = handleTwoIcons(tempString)
   //handle a single icon
   tempString = handleSingleButtonIcon(tempString)
 
@@ -81,11 +98,17 @@ const processBtn = async () => {
   //handle normal button text
   tempString = handleButtonText(tempString)
 
+
   tempString = tempString.replace(/\s+/g, ' ')
   tempString = tempString.replace('> <', '><')
 
+  //todo: make cool matcher for multiples but i dont really care right now
   tempString = tempString.replaceAll('<span', '\n<span')
   tempString = tempString.replaceAll('</span></AlbatrossButton>', '</span>\n</AlbatrossButton>')
+
+  tempString = tempString.replaceAll('<v-icon', '\n<v-icon')
+  tempString = tempString.replaceAll('</v-icon></AlbatrossButton>', '</v-icon>\n</AlbatrossButton>')
+  tempString = tempString.replaceAll('</v-icon> </AlbatrossButton>', '</v-icon>\n</AlbatrossButton>')
 
   let formatted
   try{
@@ -107,13 +130,14 @@ const handleButtonText = (textString) => {
   const textBetween = regExString.exec(textString);
 
   if(textBetween && textBetween[0] && textBetween[0].replaceAll(' ', '').length > 0) {
+
     let onlyTextAndSpaces = textBetween[0].match(/^[-A-Za-z0-9().\/ ]+$/) ? true : false
     //only do button text if no special chars in the text
     if(onlyTextAndSpaces) {
       textString = textString.replace(textBetween[0], '')
 
       let index = textString.indexOf('>')
-      let value = ` text="${textBetween[0].replaceAll(' ', '')}"`
+      let value = ` text="${textBetween[0].trim()}"`
       textString = textString.substring(0, index) + value + textString.substring(index)
     }
   }
@@ -138,16 +162,20 @@ const handleComplexButtonText = (textString) => {
 }
 
 const handleSingleButtonIcon = (textString) => {
-  const regExString = new RegExp(`(?<=<v-icon>).*?(?=</v-icon>)`)
+  const regExString = new RegExp(`(?<=>).*?(?=</v-icon>)`)
   const iconBetween = regExString.exec(textString);
 
   //this will only have a value and refactor the icon if there is only 1 of them
   if(iconBetween && iconBetween[0]) {
-    textString = textString.replace(`<v-icon>${iconBetween[0]}</v-icon>`, '')
+    let firstIndex = textString.indexOf('<v-icon')
+    let secondIndex = textString.indexOf('</v-icon>')
+    let stringToReplace = textString.substring(firstIndex, secondIndex + 9)
+    textString = textString.replace(stringToReplace, '')
 
-    let index = textString.indexOf('>')
-    let value = ` prepend-icon="${iconBetween[0]}"`
-    textString = textString.substring(0, index) + value + textString.substring(index)
+    //"> to try and avoid greater than symbol in v-if or disabled prop
+    let index = textString.indexOf('">')
+    let value = `" prepend-icon="${iconBetween[0]}"`
+    textString = textString.substring(0, index) + value + textString.substring(index + 1)
   }
   return textString
 }
@@ -167,6 +195,63 @@ const handleConditionalSize = (textString, size, hardcodedSize) => {
     if(hardcodedSize !== 'default') {
       //if it was hardcoded to a specific size also then remove that
       textString = textString.replace(`size="${hardcodedSize}"`, '')
+    }
+  }
+
+  return textString
+}
+
+const handleTwoIcons = (textString) => {
+  //specifically only handle exactly two icons
+  const regExString = new RegExp(`(?<=>).*?(?=</AlbatrossButton>)`)
+  const myValue = regExString.exec(textString);
+  let vIf
+  let firstIcon, secondIcon
+  let stringToRemove, stringToRemove2
+
+  if(myValue && myValue[0]) {
+    //get the v-if (have to get the text in the icon first in case the btn itself has a v-if
+    const regExString1 = new RegExp(`(?<=<v-icon).*?(?=</v-icon>)`)
+    const regExString2 = new RegExp(`(?<=v-if=").*?(?=")`)
+    const myIfWrapper = regExString1.exec(textString);
+    if(myIfWrapper && myIfWrapper[0]) {
+      const myIfValue = regExString2.exec(myIfWrapper[0]);
+      if(myIfValue && myIfValue[0]) {
+        vIf = myIfValue[0]
+      }
+    }
+    //check if there are only 2
+    if((myValue[0].match(/<v-icon/g))?.length === 2) {
+      //get the first v-icon then remove it
+      let stringToTest = myValue[0]
+      const regExString3 = new RegExp(`(?<=>).*?(?=</v-icon>)`)
+      const iconValue = regExString3.exec(stringToTest);
+      if(iconValue && iconValue[0]) {
+        firstIcon = iconValue[0]
+        let firstIndex = stringToTest.indexOf('<v-icon')
+        let secondIndex = stringToTest.indexOf('</v-icon>')
+        stringToRemove = stringToTest.substring(firstIndex, secondIndex + 9)
+        stringToTest = stringToTest.replace(stringToRemove, '')
+
+        console.log('b',stringToTest)
+        const regExString4 = new RegExp(`(?<=>).*?(?=</v-icon>)`)
+        const iconValue2 = regExString4.exec(stringToTest);
+        if(iconValue2 && iconValue2[0]) {
+          secondIcon = iconValue2[0]
+          let firstIndex2 = stringToTest.indexOf('<v-icon')
+          let secondIndex2 = stringToTest.indexOf('</v-icon>')
+          stringToRemove2 = stringToTest.substring(firstIndex2, secondIndex2 + 9)
+
+        }
+      }
+    }
+
+
+      console.log('randalogger', vIf)
+    if(vIf && firstIcon && secondIcon) {
+      textString = textString.replace(stringToRemove, '')
+      textString = textString.replace(stringToRemove2, '')
+      textString = textString.replace('>', ` :prepend-icon="${vIf} ? '${firstIcon}' : '${secondIcon}'">`)
     }
   }
 

@@ -8,11 +8,15 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanAdd"
-                   @click="[addUser = !addUser, selectedUser = {}, getUsers()]">
-              <v-icon v-if="addUser">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                icon
+                color="primary"
+                v-if="userCanAdd"
+                @click="[addUser = !addUser, selectedUser = {}, getUsers()]"
+                :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                :prepend-icon="addUser ? 'remove' : 'add'"
+            ></AlbatrossButton>
+
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -35,10 +39,13 @@
                           item-value="id"
                           attach
           ></v-autocomplete>
-          <v-btn color="primary" class="mr-3 mt-5 white--text" @click="addUserToRoundRobin(selectedUser)"
-                 :disabled="!selectedUser.id">
-            Add
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              class="mr-3 mt-5"
+              @click="addUserToRoundRobin(selectedUser)"
+              :disabled="!selectedUser.id"
+              text="Add"
+          ></AlbatrossButton>
 
         </v-card>
         <v-divider v-if="addUser"></v-divider>
@@ -84,13 +91,23 @@
                             hide-details
                             attach
             ></v-autocomplete>
-            <v-btn class="d-inline-block" x-small text @click="item.edit = !item.edit">
-              <v-icon size="18" v-if="!item.edit">edit</v-icon>
-              <v-icon size="18" v-else>close</v-icon>
-            </v-btn>
-            <v-btn class="d-inline-block" x-small text v-if="item.edit" @click="saveUserTimezone(item)">
-              <v-icon size="18">save</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                class="d-inline-block"
+                size="x-small"
+                variant="text"
+                @click="item.edit = !item.edit"
+                :prepend-icon="!item.edit ? 'edit' : 'close'"
+            ></AlbatrossButton>
+
+            <AlbatrossButton
+                class="d-inline-block"
+                size="x-small"
+                variant="text"
+                v-if="item.edit"
+                @click="saveUserTimezone(item)"
+                prepend-icon="save"
+            ></AlbatrossButton>
+
           </template>
           <template #item.prescribedAllocation="{item}" class="text-left">
             <v-tooltip top>
@@ -131,10 +148,14 @@
             <span v-else>--</span>
           </template>
           <template #item.icons="{item}" class="text-right">
-            <v-btn v-if="userCanEdit" small icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                   @click="userToDelete = item">
-              <v-icon>delete</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                v-if="userCanEdit"
+                icon
+                color="primary"
+                @click="userToDelete = item"
+                prepend-icon="delete"
+                :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
+            ></AlbatrossButton>
           </template>
 
 
@@ -158,12 +179,14 @@
                 </div>
 
                 <div v-if="header.value === 'icons'">
-                  <v-btn @click="saveAllocationChanges"
-                         color="primary"
-                         icon
-                         :disabled="!userCanEdit || totalManualAllocation > 100 || !valuesUpdated">
-                    <v-icon>save</v-icon>
-                  </v-btn>
+                  <AlbatrossButton
+                      @click="saveAllocationChanges"
+                      color="primary"
+                      icon
+                      :disabled="!userCanEdit || totalManualAllocation > 100 || !valuesUpdated"
+                      prepend-icon="save"
+                  ></AlbatrossButton>
+
                 </div>
 
               </td>
@@ -182,6 +205,7 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {
   handleHidingGlobalLoader,
   getRequest,

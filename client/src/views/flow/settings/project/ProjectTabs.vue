@@ -6,10 +6,15 @@
           <v-toolbar-title class="title-large">Tabs</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newTab ={}]" v-if="userCanAdd">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="[addNew = !addNew, newTab ={}]"
+                v-if="userCanAdd"
+                prepend-icon="add"
+                :text="addNew ? 'Cancel' : 'Add New'"
+            ></AlbatrossButton>
+
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -18,7 +23,13 @@
                           placeholder=" "
                           label="Tab Label">
             </v-text-field>
-            <v-btn :disabled="!newTab.tabName" color="primary" @click="saveTab(newTab)">Save</v-btn>
+            <AlbatrossButton
+                :disabled="!newTab.tabName"
+                color="primary"
+                @click="saveTab(newTab)"
+                text="Save"
+            ></AlbatrossButton>
+
           </div>
           <v-data-table
               :headers="headers"
@@ -43,9 +54,15 @@
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': tabs.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <v-btn text v-if="userCanEdit" icon small color="primary" class="handle">
-                    <v-icon>drag_handle</v-icon>
-                  </v-btn>
+                  <AlbatrossButton
+                      variant="text"
+                      v-if="userCanEdit"
+                      icon
+                      size="small"
+                      color="primary"
+                      class="handle"
+                      prepend-icon="drag_handle"
+                  ></AlbatrossButton>
                 </td>
                 <td class="text-left">
                   <v-text-field class="one-hunned" v-if="selectedTabId === item.id" v-model="item.tabName"></v-text-field>
@@ -53,11 +70,36 @@
                 </td>
                 <td class="text-right" :class="{'one-hunned':$vuetify.breakpoint.mdAndDown && selectedTabId !== item.id}">
                   <div class="item-icons" :class="{'d-flex flex-column align-end': $vuetify.breakpoint.xsOnly}">
-                    <v-btn class="clickable" small text color="primary" v-if="userCanEdit">
-                      <v-icon v-if="selectedTabId === item.id" @click="saveTab(item)">save</v-icon>
-                      <v-icon v-else @click="selectedTabId = item.id">edit</v-icon>
-                    </v-btn>
-                    <v-btn class="clickable" small text color="primary" v-if="userCanEdit" @click="tabToDelete=item"><v-icon>delete</v-icon></v-btn>
+                    <AlbatrossButton
+                        class="clickable"
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        v-if="userCanEdit && selectedTabId === item.id"
+                        @click="saveTab(item)"
+                        prepend-icon="save"
+                    ></AlbatrossButton>
+
+                    <AlbatrossButton
+                        class="clickable"
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        v-if="userCanEdit && selectedTabId !== item.id"
+                        @click="selectedTabId = item.id"
+                        prepend-icon="edit"
+                    ></AlbatrossButton>
+
+                    <AlbatrossButton
+                        class="clickable"
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        v-if="userCanEdit"
+                        @click="tabToDelete=item"
+                        prepend-icon="delete"
+                    ></AlbatrossButton>
+
                   </div>
                 </td>
               </tr>
@@ -79,6 +121,7 @@
 
 <script setup>
   import {AppMutations} from '@/stores/AppStore'
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";

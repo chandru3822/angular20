@@ -8,11 +8,16 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanAdd"
-                   @click="[addScheduler = !addScheduler, selectedScheduler = {}, getSchedulers()]">
-              <v-icon v-if="addScheduler">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                icon
+                color="primary"
+                v-if="userCanAdd"
+                @click="[addScheduler = !addScheduler, selectedScheduler = {}, getSchedulers()]"
+                :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                :prepend-icon="addScheduler ? 'remove' : 'add'"
+            >
+            </AlbatrossButton>
+
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -27,10 +32,14 @@
                           autocomplete="off"
                           attach>
           </v-autocomplete>
-          <v-btn color="primary" class="mr-3 white--text" @click="addUserToRoundRobin(selectedScheduler)"
-                 :disabled="!selectedScheduler.id">
-            Add
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              class="mr-3"
+              @click="addUserToRoundRobin(selectedScheduler)"
+              :disabled="!selectedScheduler.id"
+              text="Add"
+          ></AlbatrossButton>
+
 
         </v-card>
         <v-divider v-if="addScheduler"></v-divider>
@@ -66,10 +75,15 @@
             <tr>
               <td class="text-left name-col">{{ item.fullName }}</td>
               <td :class="{'text-right': $vuetify.breakpoint.smAndDown}">
-                <v-btn v-if="userCanEdit" icon color="primary" :large="$vuetify.breakpoint.smAndDown"
-                       @click="userToDelete = item">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    v-if="userCanEdit"
+                    icon
+                    color="primary"
+                    @click="userToDelete = item"
+                    prepend-icon="delete"
+                    :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                ></AlbatrossButton>
+
               </td>
             </tr>
           </template>
@@ -90,6 +104,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useRoute} from "vue-router/composables";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 const route = useRoute()
 const vueInstance = getCurrentInstance().proxy

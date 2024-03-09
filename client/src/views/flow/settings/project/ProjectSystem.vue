@@ -27,7 +27,7 @@
         </v-btn>
       </v-card-text>
     </v-card>
-    <v-card flat color="primary lighten-9" class="square-card mt-5">
+    <v-card color="primary lighten-9" class="square-card mt-5">
       <v-card-text>
         <multi-select-group
             v-if="!objectTypeDetailsLoading"

@@ -35,9 +35,10 @@
                 v-model="projectStatus.setInitialConfirm"
                 width="500">
               <template #activator="{ on }">
-                <v-btn v-on="on">
-                  Set as Initial
-                </v-btn>
+                <AlbatrossButton
+                    :activation-handler="on"
+                    text="Set as Initial"
+                ></AlbatrossButton>
               </template>
               <v-card>
                 <v-card-title
@@ -55,16 +56,18 @@
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn
-                      @click="projectStatus.setInitialConfirm = false">
-                    No
-                  </v-btn>
-                  <v-btn
+                  <AlbatrossButton
+                      @click="projectStatus.setInitialConfirm = false"
+                      text="No"
+                  ></AlbatrossButton>
+
+                  <AlbatrossButton
                       color="primary"
-                      text
-                      @click="setAsInitial(projectStatus)">
-                    Yes
-                  </v-btn>
+                      variant="text"
+                      @click="setAsInitial(projectStatus)"
+                      text="Yes"
+                  ></AlbatrossButton>
+
                 </v-card-actions>
               </v-card>
             </v-dialog>
@@ -88,9 +91,14 @@
               <label>Status Type Icon <br>(Obsolete, only used on mobile until Status Tracker release)</label>
               <div class="flex-display ma-2">
                 <img class="status-icon" :src="projectStatus.icon.presignedUrl">
-                <v-btn x-small text color="primary" @click="deleteAttachment(projectStatus)">
-                  <v-icon>close</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    size="x-small"
+                    variant="text"
+                    color="primary"
+                    @click="deleteAttachment(projectStatus)"
+                    prepend-icon="close"
+                ></AlbatrossButton>
+
               </div>
             </div>
             <div class="my-2" v-else>
@@ -109,15 +117,17 @@
             </div>
           </v-card>
         </div>
+        
+        <AlbatrossButton
+            v-if="userCanEdit"
+            :disabled="!projectStatus.projectStatusType || !projectStatus.projectStatusTypeId"
+            color="primary"
+            class="d-inline-block mt-5"
+            @click="saveType(projectStatus)"
+            prepend-icon="save"
+            text="Save"
+        ></AlbatrossButton>
 
-        <v-btn v-if="userCanEdit"
-               :disabled="!projectStatus.projectStatusType || !projectStatus.projectStatusTypeId"
-               color="primary"
-               class="d-inline-block mt-5"
-               @click="saveType(projectStatus)">
-          <v-icon class="mr-2">save</v-icon>
-          Save
-        </v-btn>
       </v-col>
 
     </v-row>
@@ -127,6 +137,7 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getCompanyProjectStatusType, getProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {handleHidingGlobalLoader, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
