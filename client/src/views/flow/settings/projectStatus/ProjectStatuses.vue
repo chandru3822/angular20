@@ -168,14 +168,12 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {AppMutations} from '@/stores/AppStore'
 import draggable from 'vuedraggable'
 import constants from '@/helpers/constants'
-import cloneDeep from 'lodash.clonedeep'
-import Sortable from 'sortablejs'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 
 import orderBy from 'lodash.orderby'
 import {getCompanyProjectStatusTypes, getProjectStatusTypes} from '@/services/projectStatusTypeService'
-import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
-import {getCurrentInstance, computed, ref, onMounted} from 'vue'
+import {handleHidingGlobalLoader, deleteRequest, putRequest, defineSortableTable} from '@/helpers/helpers'
+import {getCurrentInstance, computed, ref, onMounted, onUpdated} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 
 const userStore = useUserStore()
@@ -202,20 +200,7 @@ const toDeleteStatusType = computed(() => {
 })
 
 onMounted(() => {
-  let table = document.querySelector('tbody')
-  const _self = vueInstance
-  Sortable.create(table, {
-    handle: '.handle',
-    onEnd({newIndex, oldIndex}) {
-      const rowSelected = _self.statusTypes.splice(oldIndex, 1)[0]
-      _self.statusTypes.splice(newIndex, 0, rowSelected)
-      let statusTypesClone = cloneDeep(_self.statusTypes)
-      statusTypesClone.forEach((g, idx) => {
-        g.displayOrder = idx
-      })
-      _self.saveOrderChanges(statusTypesClone)
-    }
-  })
+  defineSortableTable('tbody', statusTypes, 'displayOrder', saveOrderChanges)
 
   getCompanyStatusTypes()
   getTheseProjectStatusTypes()
@@ -238,7 +223,6 @@ const headers = ref([
   {text: 'Icon', value: 'icon', show: true},
   {text: '', value: 'icons', show: true},
 ])
-
 
 const saveOrderChanges = async (types) => {
   store.commit(AppMutations.SET_LOADING, true)

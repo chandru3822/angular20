@@ -116,11 +116,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import draggable from 'vuedraggable'
-import cloneDeep from 'lodash.clonedeep'
-import Sortable from 'sortablejs'
-
-import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar, getRequest, postRequest} from '@/helpers/helpers'
-import constants from '@/helpers/constants'
+import {handleHidingGlobalLoader, deleteRequest, putRequest, defineSortableTable, getRequest, postRequest} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
@@ -133,21 +129,8 @@ const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 
 onMounted(() => {
+  defineSortableTable('tbody', assignedFields, 'displayOrder', saveOrderChanges)
 
-  let table = document.querySelector('tbody')
-  const _self = vueInstance
-  Sortable.create(table, {
-    handle: '.handle',
-    onEnd({ newIndex, oldIndex }) {
-      const rowSelected = _self.assignedFields.splice(oldIndex, 1)[0]
-      _self.assignedFields.splice(newIndex, 0, rowSelected)
-      let assignedFieldsClone = cloneDeep(_self.assignedFields)
-      assignedFieldsClone.forEach((g, idx) => {
-        g.displayOrder = idx
-      })
-      _self.saveOrderChanges(assignedFieldsClone)
-    }
-  })
   loadFields()
 })
 

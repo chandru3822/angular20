@@ -42,7 +42,7 @@ const props = defineProps({
 })
 const activeTab = computed({
   get() {
-    return route?.path?.includes('/objectType') ? `/settings/objectType/${companyObjectTypeId}/attachmentTypes?objectType=${objectType}` : null
+    return route?.path?.includes('/objectType') ?       `/settings/objectType/${companyObjectTypeId}/attachmentTypes?objectType=${objectType}` : null
   },
   set(val) {
     return val
@@ -53,12 +53,12 @@ const tabs = computed(() => {
     {
       id: 1,
       label: 'Custom Field Groups',
-      path: `/settings/objectType/${companyObjectTypeId}/customFieldGroups?objectType=${objectType}`,
+      path: `/settings/objectType/${companyObjectTypeId.value}/customFieldGroups?objectType=${objectType.value}`,
     },
     {
       id: 2,
       label: 'Attachment Types',
-      path: `/settings/objectType/${companyObjectTypeId}/attachmentTypes?objectType=${objectType}`,
+      path: `/settings/objectType/${companyObjectTypeId.value}/attachmentTypes?objectType=${objectType.value}`,
     }
   ]
 })

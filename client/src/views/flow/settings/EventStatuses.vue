@@ -224,12 +224,10 @@
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
 import draggable from 'vuedraggable'
-import cloneDeep from 'lodash.clonedeep'
-import Sortable from 'sortablejs'
 
 import orderBy from 'lodash.orderby'
 import {getCompanyEventStatusTypes, getEventStatusTypes} from '@/services/eventStatusTypeService'
-import {getRequest, deleteRequest, putRequest} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, defineSortableTable} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 
@@ -268,20 +266,8 @@ const objectsUsingStatus = ref([])
 const deleteError = ref(false)
 
 onMounted(() => {
-  let table = document.querySelector('tbody')
-  const _self = vueInstance
-  Sortable.create(table, {
-    handle: '.handle',
-    onEnd({newIndex, oldIndex}) {
-      const rowSelected = _self.statusTypes.splice(oldIndex, 1)[0]
-      _self.statusTypes.splice(newIndex, 0, rowSelected)
-      let statusTypesClone = cloneDeep(_self.statusTypes)
-      statusTypesClone.forEach((g, idx) => {
-        g.displayOrder = idx
-      })
-      _self.saveOrderChanges(statusTypesClone)
-    }
-  })
+  defineSortableTable('tbody', statusTypes, 'displayOrder', saveOrderChanges)
+
   getCompanyStatusTypes()
   getAllEventStatusTypes()
 })

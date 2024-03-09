@@ -147,7 +147,6 @@
                           v-bind="attrs"
                           :activation-handler="on"
                           prepend-icon="mdi-information"
-                          round
                         />
                       </template>
                       <span>Process Step Status ID: {{item.id}}</span>

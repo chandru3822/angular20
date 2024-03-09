@@ -122,10 +122,7 @@
 <script setup>
   import {AppMutations} from '@/stores/AppStore'
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import Sortable from "sortablejs";
-  import cloneDeep from "lodash.clonedeep";
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, defineSortableTable} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import { getCurrentInstance, computed, ref, onMounted } from 'vue'
   import {useUserStore} from '@/stores/UserStorePinia.js'
@@ -135,31 +132,8 @@
   const snackbar = vueInstance.$snackbar
 
   onMounted(() => {
-    let table = document.querySelector('tbody')
-    const _self = vueInstance
-    Sortable.create(table, {
-      handle: '.handle',
-      onEnd({ newIndex, oldIndex }) {
-        const rowSelected = _self.tabs.splice(oldIndex, 1)[0]
-        _self.tabs.splice(newIndex, 0, rowSelected)
-        let rowsClone = cloneDeep(_self.tabs)
+    defineSortableTable('tbody', tabs, 'displayOrder', saveRowChanges)
 
-        let rowsToSave = []
-        rowsClone.forEach((r, idx) => {
-          //check if the row needs to be saved before updating display order
-          //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-          let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-          //update display order
-          r.displayOrder = idx
-          //save only rows that changed
-          if(save) {
-            _self.tabs[idx].newDisplayOrder = idx
-            rowsToSave.push(r)
-          }
-        })
-        _self.saveRowChanges(rowsToSave)
-      }
-    })
     getTabs()
   })
     

@@ -174,7 +174,6 @@
                       color="primary"
                       @click="cfgToDelete=item"
                       prepend-icon="delete"
-                      :text="`id: ${item.id}`"
                     />
                   </div>
                 </td>
@@ -451,9 +450,8 @@
 import {AppMutations} from '@/stores/AppStore'
 import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
-import Sortable from 'sortablejs'
 
-import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getRequestWithParams, defineSortableTable } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
@@ -498,7 +496,7 @@ const newGroup = ref({
 })
 //ugh! is this a good idea? projects is a custom view that calls this but orgs/users/contacts do too and i dont want to add a view for each of those
 const typeId = computed(() => {
-  return route.params.id ?? route.query.companyObjectTypeid
+  return route.params.id ?? route.query.companyObjectTypeId
 })
 
 const addField = ref(false)
@@ -544,19 +542,8 @@ const filterCustomFields = (cuf) => {
   return cuf?.customFields?.filter((c) => c.archived === false)
 }
 onMounted(() => {
-  let table = document.querySelector('tbody')
-  Sortable.create(table, {
-    handle: '.handle',
-    onEnd({ newIndex, oldIndex }) {
-      const rowSelected = vueInstance.customFieldGroups.splice(oldIndex, 1)[0]
-      vueInstance.customFieldGroups.splice(newIndex, 0, rowSelected)
-      let fieldGroupsClone = cloneDeep(vueInstance.customFieldGroups)
-      fieldGroupsClone.forEach((g, idx) => {
-        g.groupOrder = idx
-      })
-      vueInstance.saveGroupChanges(fieldGroupsClone)
-    }
-  })
+  defineSortableTable('tbody', customFieldGroups, 'groupOrder', saveGroupChanges)
+
   getCustomFieldGroups()
   getObjectTypeTabs()
   getPositions()
@@ -573,8 +560,6 @@ watch(() => typeId.value, () => {
   getCustomFieldGroups()
 })
 
-
-watch
 const selectAll = (f) => {
   return f.whiteListedPositions?.length === positions.value?.length
 }

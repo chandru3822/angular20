@@ -226,15 +226,13 @@ import {AppMutations} from '@/stores/AppStore'
 import {
   getRequest,
   getRequestWithParams,
-  getSnackbar,
+  defineSortableTable,
   handleHidingGlobalLoader,
   postRequest,
   putRequest
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import orderBy from 'lodash.orderby'
-import Sortable from "sortablejs"
-import cloneDeep from 'lodash.clonedeep'
 import draggable from 'vuedraggable'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
@@ -308,33 +306,7 @@ onMounted(async () => {
   await getTypeDetails()
 })
 onUpdated(() => {
-  // this had to be in updated vs mounted so that after the re-render the dragging still works
-  let table = document.querySelector('.attachment-cfg-table tbody')
-  Sortable.create(table, {
-    handle: '.handle',
-    onEnd({newIndex, oldIndex}) {
-      if (vueInstance.localCustomFieldGroups?.length > 0) {
-        const rowSelected = vueInstance.localCustomFieldGroups.splice(oldIndex, 1)[0]
-        vueInstance.localCustomFieldGroups.splice(newIndex, 0, rowSelected)
-        let rowsClone = cloneDeep(vueInstance.localCustomFieldGroups)
-
-        let rowsToSave = []
-        rowsClone.forEach((r, idx) => {
-          //check if the row needs to be saved before updating display order
-          //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-          let save = r.newGroupOrder === undefined ? r.groupOrder !== idx : r.newGroupOrder !== idx
-          //update display order
-          r.groupOrder = idx
-          //save only rows that changed
-          if (save) {
-            vueInstance.localCustomFieldGroups[idx].newGroupOrder = idx
-            rowsToSave.push(r)
-          }
-        })
-        vueInstance.saveRowChanges(rowsToSave)
-      }
-    }
-  })
+  defineSortableTable('.attachment-cfg-table tbody', localCustomFieldGroups, 'groupOrder', saveRowChanges)
 })
 
 const getTypeDetails = async () => {

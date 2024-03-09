@@ -234,9 +234,8 @@ import {
   getRequest,
   putRequest,
   postRequest,
-  getRequestWithParams, handleHidingGlobalLoader
+  getRequestWithParams, handleHidingGlobalLoader, defineSortableTable
 } from '@/helpers/helpers'
-import Sortable from "sortablejs";
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from "lodash.orderby"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -298,39 +297,6 @@ const userCanEdit = computed(() => {
 const companyId = computed(() => {
   return userStore.details.companyId
 })
-
-onMounted(async () => {
-  // this had to be in updated vs mounted so that after the re-render the dragging still works
-  let table = document.querySelector('.attachment-cfg-table tbody')
-  Sortable.create(table, {
-    handle: '.handle',
-    onEnd({newIndex, oldIndex}) {
-      if (localCustomFieldGroups?.length > 0) {
-        const rowSelected = _self.localCustomFieldGroups.splice(oldIndex, 1)[0]
-        localCustomFieldGroups.splice(newIndex, 0, rowSelected)
-        let rowsClone = cloneDeep(localCustomFieldGroups)
-
-        let rowsToSave = []
-        rowsClone.forEach((r, idx) => {
-          //check if the row needs to be saved before updating display order
-          //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-          let save = r.newGroupOrder === undefined ? r.groupOrder !== idx : r.newGroupOrder !== idx
-          //update display order
-          r.groupOrder = idx
-          //save only rows that changed
-          if (save) {
-            localCustomFieldGroups[idx].newGroupOrder = idx
-            rowsToSave.push(r)
-          }
-        })
-        saveRowChanges(rowsToSave)
-      }
-    }
-  })
-  await getAttachment()
-})
-
-
 const localCustomFieldGroups = computed({
   get() {
     return attachmentType.value?.customFieldGroups
@@ -342,6 +308,15 @@ const localCustomFieldGroups = computed({
     return orderBy(val, v => v.groupOrder)
   },
 })
+
+onMounted(async () => {
+  defineSortableTable('.attachment-cfg-table tbody', localCustomFieldGroups, 'groupOrder', saveRowChanges)
+
+  await getAttachment()
+})
+
+
+
 
 const groupToDeleteName = computed(() => {
   return cfGroupToDelete.value ? cfGroupToDelete.value.groupName : ''

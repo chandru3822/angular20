@@ -154,9 +154,7 @@ import cloneDeep from 'lodash.clonedeep'
 import {getWorkQueueTypes, getWorkQueueCategories} from '@/services/workQueueService'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
-import {handleHidingGlobalLoader, putRequest, postRequest} from '@/helpers/helpers'
-import constants from '@/helpers/constants'
-import Sortable from "sortablejs";
+import {handleHidingGlobalLoader, putRequest, postRequest, defineSortableTable} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
@@ -208,30 +206,7 @@ onMounted(async () => {
   getAllWorkQueueCategories()
   await getAllWorkQueueTypes()
 
-  let table = document.querySelector('tbody')
-  Sortable.create(table, {
-    handle: '.handle',
-    onEnd({newIndex, oldIndex}) {
-      const rowSelected = workQueueTypes.value.splice(oldIndex, 1)[0]
-      workQueueTypes.value.splice(newIndex, 0, rowSelected)
-      let rowsClone = cloneDeep(workQueueTypes.value)
-
-      let rowsToSave = []
-      rowsClone.forEach((r, idx) => {
-        //check if the row needs to be saved before updating display order
-        //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-        let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-        //update display order
-        r.displayOrder = idx
-        //save only rows that changed
-        if (save) {
-          workQueueTypes.value[idx].newDisplayOrder = idx
-          rowsToSave.push(r)
-        }
-      })
-      saveRowChanges(rowsToSave)
-    }
-  })
+  defineSortableTable('tbody', workQueueTypes, 'displayOrder', saveRowChanges)
 })
 
 

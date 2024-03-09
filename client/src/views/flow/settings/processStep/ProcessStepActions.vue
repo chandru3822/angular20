@@ -62,46 +62,46 @@
                       item-value="id"
             ></v-select>
             <v-checkbox
-              dense
-              hide-details
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              v-model="newAction.removeProcessStepOwner"
-              label="Clear Process Step Owner"
+                dense
+                hide-details
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                v-model="newAction.removeProcessStepOwner"
+                label="Clear Process Step Owner"
             />
             <v-checkbox
-              dense
-              hide-details
-              v-model="newAction.multipleUses"
-              @change="newAction.triggerAutomatically = false"
-              label="Allow Multiple Uses"
+                dense
+                hide-details
+                v-model="newAction.multipleUses"
+                @change="newAction.triggerAutomatically = false"
+                label="Allow Multiple Uses"
             />
             <v-checkbox
-              dense
-              hide-details
-              v-model="newAction.hideFromMobile"
-              label="Hide From Mobile"
+                dense
+                hide-details
+                v-model="newAction.hideFromMobile"
+                label="Hide From Mobile"
             />
             <v-checkbox
-              dense
-              hide-details
-              v-model="newAction.hideFromWeb"
-              label="Hide From Web"
+                dense
+                hide-details
+                v-model="newAction.hideFromWeb"
+                label="Hide From Web"
             />
             <v-checkbox
-              dense
-              hide-details
-              v-model="newAction.triggerAutomatically"
-              @change="newAction.multipleUses = false"
-              label="Trigger Automatically"
+                dense
+                hide-details
+                v-model="newAction.triggerAutomatically"
+                @change="newAction.multipleUses = false"
+                label="Trigger Automatically"
             />
             <v-checkbox
-              class="pl-3 pt-0"
-              dense
-              v-if="newAction.triggerAutomatically"
-              hide-details
-              v-model="newAction.timeBasedTrigger"
-              label="Time Based"
+                class="pl-3 pt-0"
+                dense
+                v-if="newAction.triggerAutomatically"
+                hide-details
+                v-model="newAction.timeBasedTrigger"
+                label="Time Based"
             />
           </div>
           <div v-else-if="newAction.actionTypeId">
@@ -141,15 +141,15 @@
         </v-card>
         <v-card flat v-if="expandActions">
           <v-data-table
-            :headers="actionHeaders"
-            :items="filteredActions"
-            :items-per-page="-1"
-            single-expand
-            :sort-desc="[false]"
-            :sort-by="['displayOrder']"
-            :expanded.sync="actionExpanded"
-            hide-default-footer
-            class="action-table elevation-1 expanded-row-flatten table-striped"
+              :headers="actionHeaders"
+              :items="filteredActions"
+              :items-per-page="-1"
+              single-expand
+              :sort-desc="[false]"
+              :sort-by="['displayOrder']"
+              :expanded.sync="actionExpanded"
+              hide-default-footer
+              class="action-table elevation-1 expanded-row-flatten table-striped"
           >
             <template #no-data>
               <span class="default-text-color">No actions for this process step</span>
@@ -194,56 +194,56 @@
                               item-value="id"
                     ></v-select>
                     <v-checkbox
-                      dense
-                      hide-details
-                      :readonly="!userCanEdit"
-                      :disabled="!userCanEdit"
-                      v-model="item.removeProcessStepOwner"
-                      label="Clear Process Step Owner"
+                        dense
+                        hide-details
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        v-model="item.removeProcessStepOwner"
+                        label="Clear Process Step Owner"
                     />
                     <v-checkbox
-                      dense
-                      hide-details
-                      :readonly="!userCanEdit"
-                      :disabled="!userCanEdit"
-                      v-model="item.multipleUses"
-                      @change="item.triggerAutomatically = false"
-                      label="Allow Multiple Uses"
+                        dense
+                        hide-details
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        v-model="item.multipleUses"
+                        @change="item.triggerAutomatically = false"
+                        label="Allow Multiple Uses"
                     />
                     <v-checkbox
-                      dense
-                      :readonly="!userCanEdit"
-                      :disabled="!userCanEdit"
-                      hide-details
-                      v-model="item.hideFromMobile"
-                      label="Hide From Mobile"
+                        dense
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        hide-details
+                        v-model="item.hideFromMobile"
+                        label="Hide From Mobile"
                     />
                     <v-checkbox
-                      dense
-                      :readonly="!userCanEdit"
-                      :disabled="!userCanEdit"
-                      hide-details
-                      v-model="item.hideFromWeb"
-                      label="Hide From Web"
+                        dense
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        hide-details
+                        v-model="item.hideFromWeb"
+                        label="Hide From Web"
                     />
                     <v-checkbox
-                      dense
-                      hide-details
-                      :readonly="!userCanEdit"
-                      :disabled="!userCanEdit"
-                      v-model="item.triggerAutomatically"
-                      @change="item.multipleUses = false"
-                      label="Trigger Automatically"
+                        dense
+                        hide-details
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        v-model="item.triggerAutomatically"
+                        @change="item.multipleUses = false"
+                        label="Trigger Automatically"
                     />
                     <v-checkbox
-                      class="pl-3 pt-0 pb-3"
-                      dense
-                      :readonly="!userCanEdit"
-                      :disabled="!userCanEdit"
-                      v-if="item.triggerAutomatically"
-                      hide-details
-                      v-model="item.timeBasedTrigger"
-                      label="Time Based"
+                        class="pl-3 pt-0 pb-3"
+                        dense
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        v-if="item.triggerAutomatically"
+                        hide-details
+                        v-model="item.timeBasedTrigger"
+                        label="Time Based"
                     />
 
                     <!-- LINK -->
@@ -325,7 +325,8 @@
                         <v-list-item-content class="text-left">
                           {{ al.link }}
                         </v-list-item-content>
-                        <v-list-item-action class="clickable" @click="[linkToDelete=al, parentActionForChildToDelete=item]">
+                        <v-list-item-action class="clickable"
+                                            @click="[linkToDelete=al, parentActionForChildToDelete=item]">
                           <v-icon color="primary">delete</v-icon>
                         </v-list-item-action>
                       </v-list-item>
@@ -406,15 +407,15 @@
                        v-if="item.actionTypeId === 2 && item.processStepActionChildProcesses && item.processStepActionChildProcesses.length > 0">
                   <v-col cols="12" class="pt-0">
                     <v-data-table
-                      :headers="childProcessStepHeaders"
-                      :items="filterItems(item.processStepActionChildProcesses)"
-                      :fixed-header="true"
-                      :items-per-page="100"
-                      hide-default-footer
-                      disable-sort
-                      single-expand
-                      :expanded.sync="cpExpanded"
-                      class="elevation-1"
+                        :headers="childProcessStepHeaders"
+                        :items="filterItems(item.processStepActionChildProcesses)"
+                        :fixed-header="true"
+                        :items-per-page="100"
+                        hide-default-footer
+                        disable-sort
+                        single-expand
+                        :expanded.sync="cpExpanded"
+                        class="elevation-1"
                     >
 
                       <template #expanded-item="{ headers, item:cp }">
@@ -449,31 +450,37 @@
                         </tr>
                       </template>
 
-                          <template #item.processStepName="{item:cp}" class="text-left"><a :href="`/settings/processStep/${cp.processStepId}/components`">{{ cp.processStepName }}</a></template>
-                          <template #item.initialProcessStepStatusType="{item:cp}" class="text-left">{{ cp.initialProcessStepStatusType }}</template>
-                          <template #item.existingProcessStepStatusType="{item:cp}" class="text-left">{{ cp.existingProcessStepStatusType }}</template>
-                          <template #item.icons="{item:cp}" class="text-right">
-                            <AlbatrossButton
-                                variant="text"
-                                color="primary"
-                                v-if="!cpExpanded.includes(cp)"
-                                @click="[ cpExpanded = [cp], getStatusesAssignedToStep(cp), getCancelledStatuses(cp)]"
-                                prepend-icon="edit"
-                            ></AlbatrossButton>
-                            <AlbatrossButton
-                                size="small"
-                                variant="text"
-                                v-if="cpExpanded.includes(cp)"
-                                @click="cpExpanded = []"
-                                text="cancel"
-                            ></AlbatrossButton>
-                            <AlbatrossButton
-                                variant="text"
-                                color="primary"
-                                @click="[childProcessToDelete = cp, parentActionForChildToDelete = item]"
-                                prepend-icon="delete"
-                            ></AlbatrossButton>
-                          </template>
+                      <template #item.processStepName="{item:cp}" class="text-left"><a
+                          :href="`/settings/processStep/${cp.processStepId}/components`">{{ cp.processStepName }}</a>
+                      </template>
+                      <template #item.initialProcessStepStatusType="{item:cp}" class="text-left">
+                        {{ cp.initialProcessStepStatusType }}
+                      </template>
+                      <template #item.existingProcessStepStatusType="{item:cp}" class="text-left">
+                        {{ cp.existingProcessStepStatusType }}
+                      </template>
+                      <template #item.icons="{item:cp}" class="text-right">
+                        <AlbatrossButton
+                            variant="text"
+                            color="primary"
+                            v-if="!cpExpanded.includes(cp)"
+                            @click="[ cpExpanded = [cp], getStatusesAssignedToStep(cp), getCancelledStatuses(cp)]"
+                            prepend-icon="edit"
+                        ></AlbatrossButton>
+                        <AlbatrossButton
+                            size="small"
+                            variant="text"
+                            v-if="cpExpanded.includes(cp)"
+                            @click="cpExpanded = []"
+                            text="cancel"
+                        ></AlbatrossButton>
+                        <AlbatrossButton
+                            variant="text"
+                            color="primary"
+                            @click="[childProcessToDelete = cp, parentActionForChildToDelete = item]"
+                            prepend-icon="delete"
+                        ></AlbatrossButton>
+                      </template>
                     </v-data-table>
 
                   </v-col>
@@ -513,10 +520,10 @@
                       <v-card flat color="transparent">
                         <div v-for="(fp, index) in selectedChildRequirementParamDynamicValues">
                           <v-tooltip
-                            v-if="fp.description != null"
-                            content-class="full-opacity-tooltip"
-                            :max-width="300"
-                            top
+                              v-if="fp.description != null"
+                              content-class="full-opacity-tooltip"
+                              :max-width="300"
+                              top
                           >
                             <template v-slot:activator="{ on, attrs }">
                               <AlbatrossButton
@@ -531,28 +538,28 @@
                           </v-tooltip>
                           <div class="dynamic-field-container">
                             <v-text-field
-                              v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
-                              type="number"
-                              :key="index"
-                              placeholder="Enter a dynamic value (number)"
-                              v-model="fp.dynamicValue"
-                              :label="fp.parameterName"></v-text-field>
+                                v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
+                                type="number"
+                                :key="index"
+                                placeholder="Enter a dynamic value (number)"
+                                v-model="fp.dynamicValue"
+                                :label="fp.parameterName"></v-text-field>
                             <v-checkbox
-                              v-else-if="fp.dataTypeId === 3"
-                              type="checkbox"
-                              :value-comparator="function (a, b) {
+                                v-else-if="fp.dataTypeId === 3"
+                                type="checkbox"
+                                :value-comparator="function (a, b) {
                                       return fp.dynamicValue === 'true'
                                     }"
-                              :value="fp.dynamicValue === 'true'"
-                              @change="changeBooleanValue($event, fp)"
-                              :label="fp.parameterName"
+                                :value="fp.dynamicValue === 'true'"
+                                @change="changeBooleanValue($event, fp)"
+                                :label="fp.parameterName"
                             />
                             <v-text-field
-                              v-else
-                              :key="index"
-                              placeholder="Enter a dynamic value"
-                              v-model="fp.dynamicValue"
-                              :label="fp.parameterName"></v-text-field>
+                                v-else
+                                :key="index"
+                                placeholder="Enter a dynamic value"
+                                v-model="fp.dynamicValue"
+                                :label="fp.parameterName"></v-text-field>
                           </div>
                         </div>
                       </v-card>
@@ -579,120 +586,122 @@
                 <v-row justify="center" class="pl-3 pr-3"
                        v-if="item.actionTypeId === 2 && item.processStepActionChildFunctions && item.processStepActionChildFunctions.length > 0">
                   <v-col cols="12" class="pt-0">
-                    <draggable v-model="item.processStepActionChildFunctions" v-if="item.processStepActionChildFunctions && item.processStepActionChildFunctions.length > 0"
+                    <draggable v-model="item.processStepActionChildFunctions"
+                               v-if="item.processStepActionChildFunctions && item.processStepActionChildFunctions.length > 0"
                                :disabled="!userCanEdit"
                                group="customFields" @start="drag=true" @end="drag=false"
                                @change="saveChildFunctionOrder(item.id, item.processStepActionChildFunctions)">
-                    <v-list v-for="(cp, index) in item.processStepActionChildFunctions.filter(a => !a.archived)"
-                            :key="index"
-                            :class="{ 'shaded-row': index % 2 }">
-                      <v-list-item class="grab">
-                        <v-list-item-action>
-                          <v-icon v-if="userCanEdit">drag_handle</v-icon>
-                        </v-list-item-action>
-                        <v-list-item-content class="text-left">
-                          <v-list-item-title>{{ cp.companyFunctionName }}</v-list-item-title>
-                          <div class="mt-2"
-                               v-if="cp.actionParamDynamicValues && cp.actionParamDynamicValues.length > 0">
-                            <h5 class="text-left">Dynamic Function Parameters</h5>
-                            <v-card flat color="transparent">
-                              <div v-for="(fp, index) in cp.actionParamDynamicValues" :key="index">
-                                <v-tooltip
-                                  v-if="fp.description != null"
-                                  content-class="full-opacity-tooltip"
-                                  :max-width="300"
-                                  top
-                                >
-                                  <template v-slot:activator="{ on, attrs }">
-                                    <AlbatrossButton
-                                        variant="text"
-                                        class="d-inline-block"
-                                        v-bind="attrs"
-                                        :activation-handler="on"
-                                        prepend-icon="mdi-information"
-                                    ></AlbatrossButton>
-                                  </template>
-                                  <pre class="app-pre-wrapper">{{ fp.description }}</pre>
-                                </v-tooltip>
-                                <div class="dynamic-field-container">
-                                  <v-text-field
-                                    v-if="fp.dataTypeId === 1"
-                                    placeholder="Enter a date"
-                                    type="date"
-                                    :readonly="!cp.edit || !userCanEdit"
-                                    :disabled="!cp.edit || !userCanEdit"
-                                    v-model="fp.dynamicValue"
-                                    :label="fp.parameterName"></v-text-field>
-                                  <v-text-field
-                                    v-else-if="fp.dataTypeId === 2"
-                                    placeholder="Enter a timestamp"
-                                    :readonly="!cp.edit || !userCanEdit"
-                                    :disabled="!cp.edit || !userCanEdit"
-                                    v-model="fp.dynamicValue"
-                                    :label="fp.parameterName"></v-text-field>
-                                  <v-checkbox
-                                    v-else-if="fp.dataTypeId === 3"
-                                    :readonly="!cp.edit || !userCanEdit"
-                                    :disabled="!cp.edit || !userCanEdit"
-                                    type="checkbox"
-                                    :value-comparator="function (a, b) {
+                      <v-list v-for="(cp, index) in item.processStepActionChildFunctions.filter(a => !a.archived)"
+                              :key="index"
+                              :class="{ 'shaded-row': index % 2 }">
+                        <v-list-item class="grab">
+                          <v-list-item-action>
+                            <v-icon v-if="userCanEdit">drag_handle</v-icon>
+                          </v-list-item-action>
+                          <v-list-item-content class="text-left">
+                            <v-list-item-title>{{ cp.companyFunctionName }}</v-list-item-title>
+                            <div class="mt-2"
+                                 v-if="cp.actionParamDynamicValues && cp.actionParamDynamicValues.length > 0">
+                              <h5 class="text-left">Dynamic Function Parameters</h5>
+                              <v-card flat color="transparent">
+                                <div v-for="(fp, index) in cp.actionParamDynamicValues" :key="index">
+                                  <v-tooltip
+                                      v-if="fp.description != null"
+                                      content-class="full-opacity-tooltip"
+                                      :max-width="300"
+                                      top
+                                  >
+                                    <template v-slot:activator="{ on, attrs }">
+                                      <AlbatrossButton
+                                          variant="text"
+                                          class="d-inline-block"
+                                          v-bind="attrs"
+                                          :activation-handler="on"
+                                          prepend-icon="mdi-information"
+                                      ></AlbatrossButton>
+                                    </template>
+                                    <pre class="app-pre-wrapper">{{ fp.description }}</pre>
+                                  </v-tooltip>
+                                  <div class="dynamic-field-container">
+                                    <v-text-field
+                                        v-if="fp.dataTypeId === 1"
+                                        placeholder="Enter a date"
+                                        type="date"
+                                        :readonly="!cp.edit || !userCanEdit"
+                                        :disabled="!cp.edit || !userCanEdit"
+                                        v-model="fp.dynamicValue"
+                                        :label="fp.parameterName"></v-text-field>
+                                    <v-text-field
+                                        v-else-if="fp.dataTypeId === 2"
+                                        placeholder="Enter a timestamp"
+                                        :readonly="!cp.edit || !userCanEdit"
+                                        :disabled="!cp.edit || !userCanEdit"
+                                        v-model="fp.dynamicValue"
+                                        :label="fp.parameterName"></v-text-field>
+                                    <v-checkbox
+                                        v-else-if="fp.dataTypeId === 3"
+                                        :readonly="!cp.edit || !userCanEdit"
+                                        :disabled="!cp.edit || !userCanEdit"
+                                        type="checkbox"
+                                        :value-comparator="function (a, b) {
                                       return fp.dynamicValue === 'true'
                                     }"
-                                    :value="fp.dynamicValue === 'true'"
-                                    @change="changeBooleanValue($event, fp)"
-                                    :label="fp.parameterName"
-                                  />
-                                  <v-text-field
-                                    v-else-if="fp.dataTypeId === 4"
-                                    type="number"
-                                    :readonly="!cp.edit || !userCanEdit"
-                                    :disabled="!cp.edit || !userCanEdit"
-                                    placeholder="Enter a number"
-                                    v-model.number="fp.dynamicValue"
-                                    :label="fp.parameterName"></v-text-field>
-                                  <v-text-field
-                                    v-else-if="fp.dataTypeId === 6"
-                                    :readonly="!cp.edit || !userCanEdit"
-                                    :disabled="!cp.edit || !userCanEdit"
-                                    placeholder="Enter an integer"
-                                    type="number"
-                                    step="1"
-                                    v-model.number="fp.dynamicValue"
-                                    :label="fp.parameterName"></v-text-field>
-                                  <v-text-field
-                                    v-else
-                                    :readonly="!cp.edit || !userCanEdit"
-                                    :disabled="!cp.edit || !userCanEdit"
-                                    placeholder="Enter a dynamic value"
-                                    v-model="fp.dynamicValue"
-                                    :label="fp.parameterName"></v-text-field>
+                                        :value="fp.dynamicValue === 'true'"
+                                        @change="changeBooleanValue($event, fp)"
+                                        :label="fp.parameterName"
+                                    />
+                                    <v-text-field
+                                        v-else-if="fp.dataTypeId === 4"
+                                        type="number"
+                                        :readonly="!cp.edit || !userCanEdit"
+                                        :disabled="!cp.edit || !userCanEdit"
+                                        placeholder="Enter a number"
+                                        v-model.number="fp.dynamicValue"
+                                        :label="fp.parameterName"></v-text-field>
+                                    <v-text-field
+                                        v-else-if="fp.dataTypeId === 6"
+                                        :readonly="!cp.edit || !userCanEdit"
+                                        :disabled="!cp.edit || !userCanEdit"
+                                        placeholder="Enter an integer"
+                                        type="number"
+                                        step="1"
+                                        v-model.number="fp.dynamicValue"
+                                        :label="fp.parameterName"></v-text-field>
+                                    <v-text-field
+                                        v-else
+                                        :readonly="!cp.edit || !userCanEdit"
+                                        :disabled="!cp.edit || !userCanEdit"
+                                        placeholder="Enter a dynamic value"
+                                        v-model="fp.dynamicValue"
+                                        :label="fp.parameterName"></v-text-field>
+                                  </div>
                                 </div>
-                              </div>
-                            </v-card>
-                          </div>
-                          <v-list-item-subtitle>
-                            <AlbatrossButton
-                                color="primary"
-                                class=""
-                                v-if="cp.edit && userCanEdit"
-                                @click="updateChildFunction(item.id, cp)"
-                                text="Save"
-                            ></AlbatrossButton>
-                          </v-list-item-subtitle>
-                        </v-list-item-content>
-                        <AlbatrossButton
-                            variant="text"
-                            color="primary"
-                            class=""
-                            v-if="userCanEdit"
-                            @click="cp.edit = !cp.edit"
-                            :prepend-icon="cp.edit ? 'remove' : 'edit'"
-                        ></AlbatrossButton>
-                        <v-list-item-action class="clickable" @click="[childFunctionToDelete = cp, parentActionForChildToDelete = item]">
-                          <v-icon>delete</v-icon>
-                        </v-list-item-action>
-                      </v-list-item>
-                    </v-list>
+                              </v-card>
+                            </div>
+                            <v-list-item-subtitle>
+                              <AlbatrossButton
+                                  color="primary"
+                                  class=""
+                                  v-if="cp.edit && userCanEdit"
+                                  @click="updateChildFunction(item.id, cp)"
+                                  text="Save"
+                              ></AlbatrossButton>
+                            </v-list-item-subtitle>
+                          </v-list-item-content>
+                          <AlbatrossButton
+                              variant="text"
+                              color="primary"
+                              class=""
+                              v-if="userCanEdit"
+                              @click="cp.edit = !cp.edit"
+                              :prepend-icon="cp.edit ? 'remove' : 'edit'"
+                          ></AlbatrossButton>
+                          <v-list-item-action class="clickable"
+                                              @click="[childFunctionToDelete = cp, parentActionForChildToDelete = item]">
+                            <v-icon>delete</v-icon>
+                          </v-list-item-action>
+                        </v-list-item>
+                      </v-list>
                     </draggable>
                   </v-col>
                 </v-row>
@@ -720,7 +729,7 @@
                   </v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items
-                    v-if="((item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled) && userCanEdit">
+                      v-if="((item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled) && userCanEdit">
                     <AlbatrossButton
                         variant="text"
                         color="primary"
@@ -755,9 +764,9 @@
                                group="processStepLogicList" @start="drag=true" @end="drag=false"
                                @change="actionLogicOrderChanged(item)">
                       <span v-for="(l, idx) in item.processStepLogicList.filter(a => !a.archived)"
-                           :key="idx">
+                            :key="idx">
                         <v-tooltip top max-width="300px"
-                                   >
+                        >
                           <template v-slot:activator="{ on:tooltip }">
 
                             <AlbatrossButton
@@ -768,7 +777,7 @@
                                 v-on="{ ...tooltip }"
                                 :disabled="!userCanEdit"
                                 @click="[l.archived = true, item.logicListChanged = true]"
-                            >{{l.processStepRequirementId ? l.requirementNbr : l.operationType}}</AlbatrossButton>
+                            >{{ l.processStepRequirementId ? l.requirementNbr : l.operationType }}</AlbatrossButton>
 
 
                           </template>
@@ -826,7 +835,8 @@
                           v-on="{ ...tooltip }"
                           @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false, logicString: r.logicString, sqlOrder: (item.processStepLogicList[item.processStepLogicList?.length - 1]?.sqlOrder + 1) }), actionLogicOrderChanged(item)]"
                           color="unset"
-                      > {{ logicStringToggle ? getLogicButtonText(r) : r.requirementNbr }} </AlbatrossButton>
+                      > {{ logicStringToggle ? getLogicButtonText(r) : r.requirementNbr }}
+                      </AlbatrossButton>
                     </template>
                     <span>{{ getLogicButtonText(r) }}</span>
                   </v-tooltip>
@@ -846,25 +856,31 @@
               </td>
             </template>
 
-                <template #item.draggable="{item}" style="width: 50px">
-                  <AlbatrossButton
-                      variant="text"
-                      v-if="userCanEdit"
-                      icon
-                      size="small"
-                      class="handle"
-                      color="primary"
-                      prepend-icon="drag_handle"
-                  ></AlbatrossButton>
-                </template>
-                <template #item.actionName="{item}" class="text-left">{{ item.actionName }}</template>
-                <template #item.actionType="{item}" class="text-left">{{ item.actionType }}</template>
-                <template #item.processStepStatusType="{item}" class="text-left">{{ item.processStepStatusType || 'N/A' }}</template>
-                <template #item.projectStatusType="{item}" class="text-left">{{ item.projectStatusType || 'N/A' }}</template>
-                <template #item.icons="{item, index}">
-                  <div style="display: flex; float: right;">
-                    <v-tooltip left small>
-                      <template v-slot:activator="{on, attrs}">
+            <template #item.draggable="{item}" style="width: 50px">
+              <AlbatrossButton
+                  variant="text"
+                  v-if="userCanEdit"
+                  icon
+                  size="small"
+                  class="handle"
+                  color="primary"
+                  prepend-icon="drag_handle"
+              ></AlbatrossButton>
+            </template>
+            <template #item.actionName="{item}" class="text-left">{{ item.actionName }}</template>
+            <template #item.actionType="{item}" class="text-left">{{ item.actionType }}</template>
+            <template #item.processStepStatusType="{item}" class="text-left">{{
+                item.processStepStatusType || 'N/A'
+              }}
+            </template>
+            <template #item.projectStatusType="{item}" class="text-left">{{
+                item.projectStatusType || 'N/A'
+              }}
+            </template>
+            <template #item.icons="{item, index}">
+              <div style="display: flex; float: right;">
+                <v-tooltip left small>
+                  <template v-slot:activator="{on, attrs}">
                     <AlbatrossButton
                         size="small"
                         variant="text"
@@ -876,39 +892,39 @@
                         @click="duplicateAction(item.id)"
                         prepend-icon="mdi-content-copy"
                     ></AlbatrossButton>
-                      </template>
-                      <span class="label-small">Duplicate action</span>
-                    </v-tooltip>
-                    <AlbatrossButton
-                        size="small"
-                        variant="text"
-                        color="primary"
-                        :class="{'squished-btn':$vuetify.breakpoint.smAndDown}"
-                        @click="[validateActionLogicString(item), actionExpanded = [item], selectedActionIndex = index]"
-                        v-if="!actionExpanded.includes(item)"
-                        prepend-icon="edit"
-                    ></AlbatrossButton>
-                    <AlbatrossButton
-                        size="small"
-                        variant="text"
-                        color="primary"
-                        :class="{'squished-btn':$vuetify.breakpoint.smAndDown}"
-                        @click="[actionExpanded = [], selectedActionIndex = index]"
-                        v-if="actionExpanded.includes(item)"
-                        :prepend-icon="$vuetify.breakpoint.smAndDown ? 'close' : ''"
-                        :text="!$vuetify.breakpoint.smAndDown ? 'Cancel' : ''"
-                    ></AlbatrossButton>
-                    <AlbatrossButton
-                        v-if="userCanEdit"
-                        :class="{'squished-btn':$vuetify.breakpoint.smAndDown}"
-                        size="small"
-                        variant="text"
-                        color="primary"
-                        @click="[itemToDelete=item, showDeleteDialog=true]"
-                        prepend-icon="delete"
-                    ></AlbatrossButton>
-                  </div>
-                </template>
+                  </template>
+                  <span class="label-small">Duplicate action</span>
+                </v-tooltip>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    :class="{'squished-btn':$vuetify.breakpoint.smAndDown}"
+                    @click="[validateActionLogicString(item), actionExpanded = [item], selectedActionIndex = index]"
+                    v-if="!actionExpanded.includes(item)"
+                    prepend-icon="edit"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    :class="{'squished-btn':$vuetify.breakpoint.smAndDown}"
+                    @click="[actionExpanded = [], selectedActionIndex = index]"
+                    v-if="actionExpanded.includes(item)"
+                    :prepend-icon="$vuetify.breakpoint.smAndDown ? 'close' : ''"
+                    :text="!$vuetify.breakpoint.smAndDown ? 'Cancel' : ''"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    v-if="userCanEdit"
+                    :class="{'squished-btn':$vuetify.breakpoint.smAndDown}"
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="[itemToDelete=item, showDeleteDialog=true]"
+                    prepend-icon="delete"
+                ></AlbatrossButton>
+              </div>
+            </template>
 
           </v-data-table>
         </v-card>
@@ -916,25 +932,29 @@
     </v-row>
     <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteAction" @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this action?
-      <div class="pt-2"><b>Action Name:</b> {{itemToDelete?.actionName}}</div>
+      <div class="pt-2"><b>Action Name:</b> {{ itemToDelete?.actionName }}</div>
       <div><b>Type:</b> {{ itemToDelete?.actionType }}</div>
       <div><b>Parent Status Change:</b> {{ itemToDelete?.processStepStatusType || 'N/A' }}</div>
       <div><b>Project Status Change:</b> {{ itemToDelete?.projectStatusType || 'N/A' }}</div>
     </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="!!linkToDelete" @confirm="deleteLinkFromAction" @close-dialog="closeLinkDeleteDialog">
+    <ConfirmationDialog :open-dialog="!!linkToDelete" @confirm="deleteLinkFromAction"
+                        @close-dialog="closeLinkDeleteDialog">
       Are you sure you want to delete <strong>{{ linkToDelete?.link }}</strong> from <strong>{{
         parentActionForChildToDelete?.actionName
       }}</strong>?
     </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="!!childProcessToDelete" @confirm="deleteChildProcessFromAction" @close-dialog="closeChildProcessDialog">
+    <ConfirmationDialog :open-dialog="!!childProcessToDelete" @confirm="deleteChildProcessFromAction"
+                        @close-dialog="closeChildProcessDialog">
       Are you sure you want to delete <strong>{{ childProcessToDelete?.processStepName }}</strong> from
-      <strong>{{parentActionForChildToDelete?.actionName }}</strong>?
+      <strong>{{ parentActionForChildToDelete?.actionName }}</strong>?
     </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="!!childFunctionToDelete" @confirm="deleteChildFunctionFromAction" @close-dialog="closeChildFunctionDialog">
+    <ConfirmationDialog :open-dialog="!!childFunctionToDelete" @confirm="deleteChildFunctionFromAction"
+                        @close-dialog="closeChildFunctionDialog">
       Are you sure you want to delete <strong>{{ childFunctionToDelete?.companyFunctionName }}</strong> from
-      <strong>{{parentActionForChildToDelete?.actionName }}</strong>?
+      <strong>{{ parentActionForChildToDelete?.actionName }}</strong>?
     </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="showLogicInfoDialog" @confirm="copyToClipBoard" @close-dialog="closeLogicInfoDialog">
+    <ConfirmationDialog :open-dialog="showLogicInfoDialog" @confirm="copyToClipBoard"
+                        @close-dialog="closeLogicInfoDialog">
       <template v-slot:title>Action Logic String</template>
       {{ actionLogicString }}
       <template v-slot:yes>Copy</template>
@@ -959,18 +979,18 @@ import {
   deleteRequest,
   putRequest,
   postRequest,
-  getSnackbar
+  defineSortableTable
 } from '@/helpers/helpers'
 import orderBy from 'lodash.orderby'
-import Sortable from "sortablejs"
 import ProcessStepRequirements from './ProcessStepRequirements'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ActionChildSms from "@/views/flow/settings/processStep/ActionChildSms";
 
-import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import {useAppStore} from '@/stores/AppStorePinia.js'
+
 const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
@@ -978,158 +998,125 @@ const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 const appStore = useAppStore()
 
-onMounted(() => {
-  let table = document.querySelector('.action-table tbody')
-  const _self = vueInstance
-  Sortable.create(table, {
-    handle: '.handle',
-    onEnd({newIndex, oldIndex}) {
-      const rowSelected = _self.actions.splice(oldIndex, 1)[0]
-      _self.actions.splice(newIndex, 0, rowSelected)
-      let rowsClone = cloneDeep(_self.actions)
-
-      let rowsToSave = []
-      rowsClone.forEach((r, idx) => {
-        //check if the row needs to be saved before updating display order
-        //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-        let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-        //update display order
-        r.displayOrder = idx
-        //save only rows that changed
-        if (save) {
-          _self.actions[idx].newDisplayOrder = idx
-          rowsToSave.push(r)
-        }
-      })
-      _self.saveRowChanges(rowsToSave)
-    }
-  })
-
-  getActions()
-  getStatusTypes()
-  getTheseCompanyProjectStatusTypes()
-  getOperationTypes()
+const expandRequirements = ref(true)
+const expandActions = ref(true)
+const deleteError = ref(false)
+const dragging = ref(false)
+const actionsUsingLogic = ref([])
+const invalidRequirement = ref(true)
+const headers = ref([
+  {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
+  {text: 'Type', value: 'processStepRequirementType', show: true},
+  {text: 'Details', value: 'custom', show: true},
+  {text: 'Operator', value: 'operatorType', show: true},
+  {text: 'Value', value: 'requirementValue', show: true},
+  {text: null, value: 'icons', show: true}
+])
+const actionHeaders = ref([
+  {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
+  {text: 'Name', value: 'actionName', show: true},
+  {text: 'Type', value: 'actionType', show: true},
+  {text: 'Parent Status Change', value: 'processStepStatusType', show: true},
+  {text: 'Project Status Change', value: 'projectStatusType', show: true},
+  {text: null, value: 'icons', show: true}
+])
+const childProcessStepHeaders = ref([
+  {text: 'Child Step', value: 'processStepName', show: true},
+  {text: 'Initial Status', value: 'initialProcessStepStatusType', show: true},
+  {text: 'Status for any Existing Active', value: 'existingProcessStepStatusType', show: true},
+  {text: null, value: 'icons', show: true}
+])
+const addNewRequirement = ref(false)
+const newRequirement = ref({
+  requirementParamDynamicValues: [],
+  customValue: false
 })
-
-      const expandRequirements = ref(true)
-      const expandActions = ref(true)
-      const deleteError = ref(false)
-      const dragging = ref(false)
-      const actionsUsingLogic = ref([])
-      const invalidRequirement = ref(true)
-      const headers = ref([
-        {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
-        {text: 'Type', value: 'processStepRequirementType', show: true},
-        {text: 'Details', value: 'custom', show: true},
-        {text: 'Operator', value: 'operatorType', show: true},
-        {text: 'Value', value: 'requirementValue', show: true},
-        {text: null, value: 'icons', show: true}
-      ])
-      const actionHeaders = ref([
-        {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
-        {text: 'Name', value: 'actionName', show: true},
-        {text: 'Type', value: 'actionType', show: true},
-        {text: 'Parent Status Change', value: 'processStepStatusType', show: true},
-        {text: 'Project Status Change', value: 'projectStatusType', show: true},
-        {text: null, value: 'icons', show: true}
-      ])
-      const childProcessStepHeaders = ref([
-        {text: 'Child Step', value: 'processStepName', show: true},
-        {text: 'Initial Status', value: 'initialProcessStepStatusType', show: true},
-        {text: 'Status for any Existing Active', value: 'existingProcessStepStatusType', show: true},
-        {text: null, value: 'icons', show: true}
-      ])
-      const addNewRequirement = ref(false)
-      const newRequirement = ref({
-        requirementParamDynamicValues: [],
-        customValue: false
-      })
-      const colorOptions = ref({
-        canvasHeight: 75,
-        width: 200,
-        mode: 'hexa',
-        hideModeSwitch: true
-      })
-      const dataTypeRequirements = ref([])
-      const selectedDataTypeRequirement = ref({})
-      const selectedCustomField = ref({})
-      const listOfValues = ref([])
-      const selectedListOfValues = ref([])
-      const selectedListValue = ref({})
-      const selectedFunction = ref({})
-      const showActionLogicString = ref(false)
-      const actionLogicString = ref(null)
-      const selectedRequirementIndex = ref(null)
-      const selectedActionIndex = ref(null)
-      const availableRequirementTypes = ref([])
-      const parentObjects = ref([])
-      const parent = ref({})
-      const customFields = ref([])
-      const operatorTypes = ref([])
-      const operationTypes = ref([])
-      const selectedProcessStepStatus = ref({})
-      const processStepStatuses = ref([])
-      const requirements = ref([])
-      const availableFunctions = ref([])
-      const logicStringToggle = ref(false)
-      const addNewAction = ref(false)
-      const newAction = ref({})
-      const actions = ref([])
-      const statusTypes = ref([])
-      const companyProjectStatusTypes = ref([])
-      const expanded = ref([])
-      const cpExpanded = ref([])
-      const actionExpanded = ref([])
-      const actionTypes = ref([
-        {id: 1, actionType: 'Link'},
-        {id: 2, actionType: 'Button'},
-        {id: 3, actionType: 'Banner'}
-      ])
-      const addChildProcess = ref(false)
-      const addChildFunction = ref(false)
-      const actionLogicError = ref(false)
-      const actionLogicErrorMsg = ref('')
-      const actionSearch = ref('')
-      const newChildProcessStep = ref({})
-      const cancelledCompanyStatuses = ref([])
-      const activeStatusesAssignedToStep = ref([])
-      const selectedChildFunction = ref({})
-      const selectedChildRequirementParamDynamicValues = ref([])
-      const childProcessSteps = ref([])
-      const childFunctions = ref([])
-      const addChildLink = ref(false)
-      const selectedLink = ref({})
-      const availableLinks = ref([])
-      const invalidTypeCombos = ref([
-        '1,2', // open and close paren next to each other
-        '2,1', // close then open paren next to each other -- right, this isn't valid? `(8)(17)`
-        '2,0', // close paren then requirement next to it
-        '0,0', // two requirements right next to each other
-        '0,1', // requirement then open paren next to each other like 1 (3)
-        '3,4', // AND OR next to each other
-        '1,3', // open paren then AND
-        '1,4', // open paren then OR
-        '5,2', // not then close paren
-        '5,3', // not then and
-        '5,4', // not then or
-        '4,2', // OR then close parent
-        '5,2', // NOT then close parent
-        '3,2', // AND then close parent
-        '3,3', // and and
-        '4,4', // or or
-        '5,5', // not not
-        '0,5', // requirement then not ...needs and/or in between
-      ])
-      //doing these as strings since the filtered list will be too
-      const invalidFirsts = ref (['2', '3', '4'])
-      const invalidLasts = ref (['1', '3', '4', '5'])
-      const showDeleteDialog = ref (false)
-      const itemToDelete = ref (null)
-      const linkToDelete = ref (null)
-      const parentActionForChildToDelete = ref (null)
-      const childProcessToDelete = ref (null)
-      const childFunctionToDelete = ref (null)
-      const showLogicInfoDialog = ref (false)
+const colorOptions = ref({
+  canvasHeight: 75,
+  width: 200,
+  mode: 'hexa',
+  hideModeSwitch: true
+})
+const dataTypeRequirements = ref([])
+const selectedDataTypeRequirement = ref({})
+const selectedCustomField = ref({})
+const listOfValues = ref([])
+const selectedListOfValues = ref([])
+const selectedListValue = ref({})
+const selectedFunction = ref({})
+const showActionLogicString = ref(false)
+const actionLogicString = ref(null)
+const selectedRequirementIndex = ref(null)
+const selectedActionIndex = ref(null)
+const availableRequirementTypes = ref([])
+const parentObjects = ref([])
+const parent = ref({})
+const customFields = ref([])
+const operatorTypes = ref([])
+const operationTypes = ref([])
+const selectedProcessStepStatus = ref({})
+const processStepStatuses = ref([])
+const requirements = ref([])
+const availableFunctions = ref([])
+const logicStringToggle = ref(false)
+const addNewAction = ref(false)
+const newAction = ref({})
+const actions = ref([])
+const statusTypes = ref([])
+const companyProjectStatusTypes = ref([])
+const expanded = ref([])
+const cpExpanded = ref([])
+const actionExpanded = ref([])
+const actionTypes = ref([
+  {id: 1, actionType: 'Link'},
+  {id: 2, actionType: 'Button'},
+  {id: 3, actionType: 'Banner'}
+])
+const addChildProcess = ref(false)
+const addChildFunction = ref(false)
+const actionLogicError = ref(false)
+const actionLogicErrorMsg = ref('')
+const actionSearch = ref('')
+const newChildProcessStep = ref({})
+const cancelledCompanyStatuses = ref([])
+const activeStatusesAssignedToStep = ref([])
+const selectedChildFunction = ref({})
+const selectedChildRequirementParamDynamicValues = ref([])
+const childProcessSteps = ref([])
+const childFunctions = ref([])
+const addChildLink = ref(false)
+const selectedLink = ref({})
+const availableLinks = ref([])
+const invalidTypeCombos = ref([
+  '1,2', // open and close paren next to each other
+  '2,1', // close then open paren next to each other -- right, this isn't valid? `(8)(17)`
+  '2,0', // close paren then requirement next to it
+  '0,0', // two requirements right next to each other
+  '0,1', // requirement then open paren next to each other like 1 (3)
+  '3,4', // AND OR next to each other
+  '1,3', // open paren then AND
+  '1,4', // open paren then OR
+  '5,2', // not then close paren
+  '5,3', // not then and
+  '5,4', // not then or
+  '4,2', // OR then close parent
+  '5,2', // NOT then close parent
+  '3,2', // AND then close parent
+  '3,3', // and and
+  '4,4', // or or
+  '5,5', // not not
+  '0,5', // requirement then not ...needs and/or in between
+])
+//doing these as strings since the filtered list will be too
+const invalidFirsts = ref(['2', '3', '4'])
+const invalidLasts = ref(['1', '3', '4', '5'])
+const showDeleteDialog = ref(false)
+const itemToDelete = ref(null)
+const linkToDelete = ref(null)
+const parentActionForChildToDelete = ref(null)
+const childProcessToDelete = ref(null)
+const childFunctionToDelete = ref(null)
+const showLogicInfoDialog = ref(false)
 
 const userCanAdd = computed(() => {
   return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD')
@@ -1147,622 +1134,629 @@ const processStepId = computed(() => {
   return parseInt(route.params.id)
 })
 
-  
+onMounted(() => {
+  defineSortableTable('.action-table tbody', actions, 'displayOrder', saveRowChanges)
 
-    const saveChildFunctionOrder = async(actionId, childFns) => {
-      appStore.loading = true
-      try {
-        // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
-        // pull those needing to be saved out of list
-        let fnsToSave = []
-        childFns.forEach((f, idx) => {
-          let order = idx + 1
-          if (f.displayOrder !== order) {
-            f.displayOrder = order
-            fnsToSave.push(f)
+  getActions()
+  getStatusTypes()
+  getTheseCompanyProjectStatusTypes()
+  getOperationTypes()
+})
+
+const saveChildFunctionOrder = async (actionId, childFns) => {
+  appStore.loading = true
+  try {
+    // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+    // pull those needing to be saved out of list
+    let fnsToSave = []
+    childFns.forEach((f, idx) => {
+      let order = idx + 1
+      if (f.displayOrder !== order) {
+        f.displayOrder = order
+        fnsToSave.push(f)
+      }
+    })
+
+    // save them here
+    if (fnsToSave.length > 0) {
+      await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateChildFunctionOrder`, fnsToSave)
+    }
+    snackbar('SUCCESS', 'Function Order Updated')
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating Function Order')
+    appStore.loading = false
+  }
+
+}
+const actionLogicOrderChanged = (item) => {
+  item.processStepLogicList = item.processStepLogicList.filter(psl => !psl.archived)
+  item.processStepLogicList?.forEach((f, idx) => {
+    let order = idx + 1
+    if (f.sqlOrder !== order) {
+      f.sqlOrder = order
+    }
+  })
+  item.logicListChanged = true
+}
+const changeBooleanValue = (e, fp) => {
+  vueInstance.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
+}
+//populate requirements so that actions can use them any time they change from the requirements component
+const populateRequirements = (reqs) => {
+  requirements.value = reqs
+}
+//ACTIONS
+const filterItems = (items) => {
+  return items.filter(i => !i.archived)
+}
+const getStatusesAssignedToStep = async (item) => {
+  activeStatusesAssignedToStep.value = []
+  try {
+    const {data} = await getActiveAssignedToProcessStep(item.processStepId)
+    activeStatusesAssignedToStep.value = data
+    if (data?.length === 1) {
+      item.initialCompanyProcessStepStatusTypeId = data[0].id
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error fetching process step statuses')
+  }
+}
+const copyToClipBoard = () => {
+  navigator.clipboard.writeText(actionLogicString.value);
+  snackbar('SUCCESS', 'Copied text to clipboard')
+}
+const getLogicMargin = (item, parentItem, index) => {
+  parentItem.logicMargin = parentItem.logicMargin || 0
+  if (item.operationTypeId === 1) {
+    if (parentItem.indexOfPreviousAdd !== undefined && parentItem.indexOfPreviousAdd === index - 1) {
+      parentItem.logicMargin += 25
+    }
+    parentItem.indexOfPreviousAdd = index
+    return parentItem.logicMargin + 'px'
+  } else if (item.operationTypeId === 2) {
+    parentItem.indexOfPreviousSubtract = index
+    let placeholder = parentItem.logicMargin - 25
+    parentItem.logicMargin -= 25
+    return placeholder + 'px'
+  } else {
+    if (parentItem.indexOfPreviousAdd === index - 1) {
+      parentItem.logicMargin += 25
+    }
+    return parentItem.logicMargin + 'px'
+  }
+}
+const getLogicButtonText = (item) => {
+  if (item.logicString) {
+    //this part make it work when clicking a requirement and adding to the current logic section, otherwise unused
+    return item.logicString
+  } else {
+    if (null != item.requirementNbr) {
+      //if not a system requirement (like AND, NOT, OR, etc)
+      let value = ''
+      if (item.dataTypeRequirement?.dataTypeValue) {
+        value = item.dataTypeRequirement?.dataTypeValue
+      } else if (item.listOfValue?.name) {
+        value = item.listOfValue?.name
+      } else if (item.listOfValues?.length > 0) {
+        item.listOfValues.forEach((lv, idx) => {
+          if (idx !== 0) {
+            value = value + ', '
           }
+          value = value + lv.name
         })
-
-        // save them here
-        if (fnsToSave.length > 0) {
-          await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateChildFunctionOrder`, fnsToSave)
-        }
-        snackbar('SUCCESS', 'Function Order Updated')
-        appStore.loading = false
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Updating Function Order')
-        appStore.loading = false
-      }
-
-    }
-    const actionLogicOrderChanged = (item) => {
-      item.processStepLogicList = item.processStepLogicList.filter(psl => !psl.archived)
-      item.processStepLogicList?.forEach((f, idx) => {
-        let order = idx + 1
-        if (f.sqlOrder !== order) {
-          f.sqlOrder = order
-        }
-      })
-      item.logicListChanged = true
-    }
-    const changeBooleanValue = (e, fp) => {
-      vueInstance.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
-    }
-    //populate requirements so that actions can use them any time they change from the requirements component
-    const populateRequirements = (reqs) => {
-      requirements.value = reqs
-    }
-    //ACTIONS
-    const filterItems = (items) => {
-      return items.filter(i => !i.archived)
-    }
-    const getStatusesAssignedToStep = async(item) => {
-      activeStatusesAssignedToStep.value = []
-      try {
-        const {data} = await getActiveAssignedToProcessStep(item.processStepId)
-        activeStatusesAssignedToStep.value = data
-        if (data?.length === 1) {
-          item.initialCompanyProcessStepStatusTypeId = data[0].id
-        }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error fetching process step statuses')
-      }
-    }
-    const copyToClipBoard = () => {
-      navigator.clipboard.writeText(actionLogicString.value);
-      snackbar('SUCCESS', 'Copied text to clipboard')
-    }
-    const getLogicMargin = (item, parentItem, index) => {
-      parentItem.logicMargin = parentItem.logicMargin || 0
-      if (item.operationTypeId === 1) {
-        if (parentItem.indexOfPreviousAdd !== undefined && parentItem.indexOfPreviousAdd === index - 1) {
-          parentItem.logicMargin += 25
-        }
-        parentItem.indexOfPreviousAdd = index
-        return parentItem.logicMargin + 'px'
-      } else if (item.operationTypeId === 2) {
-        parentItem.indexOfPreviousSubtract = index
-        let placeholder = parentItem.logicMargin - 25
-        parentItem.logicMargin -= 25
-        return placeholder + 'px'
+      } else if (item.requirementValue) {
+        value = item.requirementValue
       } else {
-        if (parentItem.indexOfPreviousAdd === index - 1) {
-          parentItem.logicMargin += 25
-        }
-        return parentItem.logicMargin + 'px'
+        value = 'UNKNOWN CONTACT ADMIN'
       }
-    }
-    const getLogicButtonText = (item) => {
-      if (item.logicString) {
-        //this part make it work when clicking a requirement and adding to the current logic section, otherwise unused
-        return item.logicString
-      } else {
-        if (null != item.requirementNbr) {
-          //if not a system requirement (like AND, NOT, OR, etc)
-          let value = ''
-          if (item.dataTypeRequirement?.dataTypeValue) {
-            value = item.dataTypeRequirement?.dataTypeValue
-          } else if (item.listOfValue?.name) {
-            value = item.listOfValue?.name
-          } else if (item.listOfValues?.length > 0) {
-            item.listOfValues.forEach((lv, idx) => {
-              if (idx !== 0) {
-                value = value + ', '
-              }
-              value = value + lv.name
-            })
-          } else if (item.requirementValue) {
-            value = item.requirementValue
-          } else {
-            value = 'UNKNOWN CONTACT ADMIN'
-          }
-          if (null != item.secondaryRequirementValue) {
-            value = value + ` (${item.secondaryRequirementValue})`
-          }
-          if ([1, 3, 4].includes(item.processStepRequirementTypeId)) {
-            //custom field
-            let textStart = item.processStepRequirementTypeId === 1 ? item.parentName : item.processStepRequirementType
-            let logicString = textStart + ' - ' + item.fieldName + ' ' + item.operatorType + ' ' + value
-            item.logicString = logicString
-            return logicString
-          } else if (item.processStepRequirementTypeId === 2) {
-            //function
-            let logicString = item.processStepRequirementType + ' - ' + item.companyFunctionName + ' ' + item.operatorType + ' ' + value
-            item.logicString = logicString
-            return logicString
-          } else if (item.processStepRequirementTypeId === 12) {
-            //function
-            let logicString = item.processStepRequirementType + ' - ' + item.dataViewFieldName + ' ' + item.operatorType + ' ' + value
-            item.logicString = logicString
-            return logicString
-          } else if ([7, 8, 9, 10].includes(item.processStepRequirementTypeId)) {
-            //status (project or process step)
-            let referenceText = item.referenceProcessStepName ? ` - ${item.referenceProcessStepName}` : ''
-            let logicString = item.processStepRequirementType + referenceText + ' ' + item.operatorType + ' ' + value
-            item.logicString = logicString
-            return logicString
-          }
-        } else {
-          //this returns if AND, OR, NOT, etc
-          return item.operationType
-        }
+      if (null != item.secondaryRequirementValue) {
+        value = value + ` (${item.secondaryRequirementValue})`
       }
+      if ([1, 3, 4].includes(item.processStepRequirementTypeId)) {
+        //custom field
+        let textStart = item.processStepRequirementTypeId === 1 ? item.parentName : item.processStepRequirementType
+        let logicString = textStart + ' - ' + item.fieldName + ' ' + item.operatorType + ' ' + value
+        item.logicString = logicString
+        return logicString
+      } else if (item.processStepRequirementTypeId === 2) {
+        //function
+        let logicString = item.processStepRequirementType + ' - ' + item.companyFunctionName + ' ' + item.operatorType + ' ' + value
+        item.logicString = logicString
+        return logicString
+      } else if (item.processStepRequirementTypeId === 12) {
+        //function
+        let logicString = item.processStepRequirementType + ' - ' + item.dataViewFieldName + ' ' + item.operatorType + ' ' + value
+        item.logicString = logicString
+        return logicString
+      } else if ([7, 8, 9, 10].includes(item.processStepRequirementTypeId)) {
+        //status (project or process step)
+        let referenceText = item.referenceProcessStepName ? ` - ${item.referenceProcessStepName}` : ''
+        let logicString = item.processStepRequirementType + referenceText + ' ' + item.operatorType + ' ' + value
+        item.logicString = logicString
+        return logicString
+      }
+    } else {
+      //this returns if AND, OR, NOT, etc
+      return item.operationType
     }
-    const addSms = (actionId, smsItem) => {
-      actions.value.find(a => a.id === actionId).processStepActionChildSmsTemplates.push(smsItem)
+  }
+}
+const addSms = (actionId, smsItem) => {
+  actions.value.find(a => a.id === actionId).processStepActionChildSmsTemplates.push(smsItem)
+}
+const deleteSms = (actionId, id) => {
+  actions.value.find(a => a.id === actionId).processStepActionChildSmsTemplates = actions.value.find(a => a.id === actionId).processStepActionChildSmsTemplates.filter(st => {
+    return st.id !== id
+  })
+}
+const getActionLogicString = async (actionId) => {
+  try {
+    const {data} = await getRequest(`/processStep/${processStepId.value}/action/${actionId}/logicString`)
+    actionLogicString.value = data
+    showLogicInfoDialog.value = true
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error fetching logic string')
+  }
+}
+const getCancelledStatuses = async (item) => {
+  cancelledCompanyStatuses.value = []
+  try {
+    const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(item.processStepId)
+    cancelledCompanyStatuses.value = data
+    if (data?.length === 1) {
+      item.existingCompanyProcessStepStatusTypeId = data[0].id
     }
-    const deleteSms = (actionId, id) => {
-      actions.value.find(a => a.id === actionId).processStepActionChildSmsTemplates = actions.value.find(a => a.id === actionId).processStepActionChildSmsTemplates.filter(st => {
-        return st.id !== id
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error fetching process step statuses')
+  }
+}
+const getActions = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/processStep/${processStepId.value}/action`)
+    actions.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
+  }
+}
+const loadChildFunctions = async () => {
+  appStore.loading = true
+  try {
+    const {data} = await getRequest(`/function/action/4`)
+    childFunctions.value = data
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Functions')
+    appStore.loading = false
+  }
+}
+const saveNewAction = async () => {
+  appStore.loading = true
+  try {
+    if (!newAction.value.triggerAutomatically) {
+      //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
+      newAction.value.timeBasedTrigger = false
+    }
+    //if action is a banner then null out all the regular action fields (in case they changed type a bunch)
+    if (newAction.value.actionTypeId === 3) {
+      newAction.value.companyProcessStepStatusTypeId = null
+      newAction.value.companyProjectStatusTypeId = null
+      newAction.value.companyProjectStatusTypeId = null
+      newAction.value.removeProcessStepOwner = null
+      newAction.value.triggerAutomatically = null
+      newAction.value.hideFromMobile = null
+      newAction.value.hideFromWeb = null
+      newAction.value.triggerAutomatically = null
+      newAction.value.timeBasedTrigger = null
+    } else {
+      //otherwise null out the banner fields
+      newAction.value.content = null
+      newAction.value.color = null
+      newAction.value.bgColor = null
+    }
+    newAction.value.processStepId = processStepId.value
+    const {data, status} = await postRequest(`/processStep/${processStepId.value}/action`, newAction.value)
+    actions.value.push(data)
+    addNewAction.value = false
+    newAction.value = {}
+    snackbar('SUCCESS', 'Action Added')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Action')
+    appStore.loading = false
+  }
+}
+const duplicateAction = async (actionId) => {
+  appStore.loading = true
+  try {
+    const {data} = await putRequest(`/processStep/${processStepId.value}/action/${actionId}/duplicate`)
+    actions.value.push(data)
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Duplicating Action')
+    appStore.loading = false
+  }
+}
+const updateAction = async (action) => {
+  appStore.loading = true
+  try {
+    action.processStepLogicList = action.processStepLogicList.filter(l => {
+      return !l.archived
+    })
+    if (!action.triggerAutomatically) {
+      //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
+      action.timeBasedTrigger = false
+    }
+
+    // build the list of psr's that need to be set to immutable  do that if the save is successful
+    const psrListToUpdate = action.processStepLogicList.filter(l => {
+      return l.processStepRequirementId && !l.processStepRequirementImmutable
+    })
+
+    const {data, status} = await putRequest(`/processStep/${processStepId.value}/action`, action)
+    // this forces the list to update the values displayed ... using action = data did not work
+    action.actionType = data.actionType
+    action.logicListChanged = false
+    action.processStepStatusType = data.processStepStatusType
+    action.projectStatusType = data.projectStatusType
+    action.processStepActionChildProcesses = data.processStepActionChildProcesses
+    action.processStepActionLinks = data.processStepActionLinks
+    action.processStepLogicList = data.processStepLogicList
+    action.triggerAutomatically = data.triggerAutomatically
+    actionExpanded.value = []
+
+    //update the necessary psr's to immutable
+    if (psrListToUpdate.length > 0) {
+      psrListToUpdate.forEach(psr => {
+        let match = requirements.value.find(r => r.id === psr.processStepRequirementId)
+        match.immutable = true
       })
     }
-    const getActionLogicString = async(actionId) => {
-      try {
-        const {data} = await getRequest(`/processStep/${processStepId.value}/action/${actionId}/logicString`)
-        actionLogicString.value = data
-        showLogicInfoDialog.value = true
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error fetching logic string')
-      }
-    }
-    const getCancelledStatuses = async(item) => {
-      cancelledCompanyStatuses.value = []
-      try {
-        const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(item.processStepId)
-        cancelledCompanyStatuses.value = data
-        if (data?.length === 1) {
-          item.existingCompanyProcessStepStatusTypeId = data[0].id
-        }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error fetching process step statuses')
-      }
-    }
-    const getActions = async() => {
-      appStore.loading = true
-      try {
-        const {data, status} = await getRequest(`/processStep/${processStepId.value}/action`)
-        actions.value = data
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
-        appStore.loading = false
-      }
-    }
-    const loadChildFunctions = async() => {
-      appStore.loading = true
-      try {
-        const {data} = await getRequest(`/function/action/4`)
-        childFunctions.value = data
-        appStore.loading = false
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Loading Functions')
-        appStore.loading = false
-      }
-    }
-    const saveNewAction = async() => {
-      appStore.loading = true
-      try {
-        if (!newAction.value.triggerAutomatically) {
-          //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
-          newAction.value.timeBasedTrigger = false
-        }
-        //if action is a banner then null out all the regular action fields (in case they changed type a bunch)
-        if (newAction.value.actionTypeId === 3) {
-          newAction.value.companyProcessStepStatusTypeId = null
-          newAction.value.companyProjectStatusTypeId = null
-          newAction.value.companyProjectStatusTypeId = null
-          newAction.value.removeProcessStepOwner = null
-          newAction.value.triggerAutomatically = null
-          newAction.value.hideFromMobile = null
-          newAction.value.hideFromWeb = null
-          newAction.value.triggerAutomatically = null
-          newAction.value.timeBasedTrigger = null
-        } else {
-          //otherwise null out the banner fields
-          newAction.value.content = null
-          newAction.value.color = null
-          newAction.value.bgColor = null
-        }
-        newAction.value.processStepId = processStepId.value
-        const {data, status} = await postRequest(`/processStep/${processStepId.value}/action`, newAction.value)
-        actions.value.push(data)
-        addNewAction.value = false
-        newAction.value = {}
-        snackbar('SUCCESS', 'Action Added')
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Adding Action')
-        appStore.loading = false
-      }
-    }
-    const duplicateAction = async(actionId) => {
-      appStore.loading = true
-      try {
-        const {data} = await putRequest(`/processStep/${processStepId.value}/action/${actionId}/duplicate`)
-        actions.value.push(data)
-        appStore.loading = false
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Duplicating Action')
-        appStore.loading = false
-      }
-    }
-    const updateAction = async(action) => {
-      appStore.loading = true
-      try {
-        action.processStepLogicList = action.processStepLogicList.filter(l => {
-          return !l.archived
-        })
-        if (!action.triggerAutomatically) {
-          //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
-          action.timeBasedTrigger = false
-        }
 
-        // build the list of psr's that need to be set to immutable  do that if the save is successful
-        const psrListToUpdate = action.processStepLogicList.filter(l => {
-          return l.processStepRequirementId && !l.processStepRequirementImmutable
-        })
+    snackbar('SUCCESS', 'Action Updated')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating Action')
+    appStore.loading = false
+  }
+}
+const loadFunctionParams = async (dbFunctionId, isRequirement) => {
+  appStore.loading = true
+  try {
+    const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
+    if (isRequirement) {
+      newRequirement.value.requirementParamDynamicValues = data
+    } else {
+      selectedChildRequirementParamDynamicValues.value = data
+    }
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
+  }
+}
+const getStatusTypes = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getCompanyAssignedToProcessStep(processStepId.value)
+    statusTypes.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
+  }
+}
+const getTheseCompanyProjectStatusTypes = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getCompanyProjectStatusTypes(null, true)
+    companyProjectStatusTypes.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    handleHidingGlobalLoader(vueInstance, status)
+  }
+}
+const getOperationTypes = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/operation`)
+    operationTypes.value = orderBy(data, [o => o.operationType.toLowerCase()])
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
+  }
+}
+const deleteAction = async () => {
+  const item = itemToDelete.value
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${item.id}`)
+    item.archived = true
+    snackbar('SUCCESS', 'Action Deleted')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Action')
+    appStore.loading = false
+  }
+  itemToDelete.value.archive = true
+  closeDeleteDialog()
+}
+//child process steps
+const loadChildProcessSteps = async (actionId) => {
+  const {data} = await getRequest(`/processStep/${processStepId.value}/action/${actionId}/childProcessSteps`)
+  childProcessSteps.value = data
+}
+const saveChildProcessCancelledStatus = async (action, cp) => {
+  appStore.loading = true
+  try {
+    const {
+      data,
+      status
+    } = await putRequest(`/processStep/${processStepId.value}/action/${action.id}/child/${cp.id}/status`, {
+      existingCompanyProcessStepStatusTypeId: cp.existingCompanyProcessStepStatusTypeId,
+      initialCompanyProcessStepStatusTypeId: cp.initialCompanyProcessStepStatusTypeId,
+    })
+    cpExpanded.value = []
+    cp.existingProcessStepStatusType = data.existingProcessStepStatusType
+    cp.initialProcessStepStatusType = data.initialProcessStepStatusType
+    snackbar('SUCCESS', 'Child Process Status Saved')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Child Process Status')
+    appStore.loading = false
+  }
+}
+const saveProcessStepToAction = async (action) => {
+  appStore.loading = true
+  try {
+    const {
+      data,
+      status
+    } = await postRequest(`/processStep/${processStepId.value}/action/${action.id}/addChildStepToAction`, {
+      processStepId: newChildProcessStep.value.processStepId,
+      existingCompanyProcessStepStatusTypeId: newChildProcessStep.value.existingCompanyProcessStepStatusTypeId,
+      initialCompanyProcessStepStatusTypeId: newChildProcessStep.value.initialCompanyProcessStepStatusTypeId,
+      displayOrder: 0
+    })
+    action.processStepActionChildProcesses.push(data)
+    newChildProcessStep.value = {}
+    addChildProcess.value = false
+    snackbar('SUCCESS', 'Child Process Added To Action')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Child Process Action')
+    appStore.loading = false
+  }
+}
+const deleteChildProcessFromAction = async () => {
+  childProcessToDelete.value.archived = true
+  const actionId = parentActionForChildToDelete.value.id
+  const id = childProcessToDelete.value.id
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildStep/${id}`)
+    snackbar('SUCCESS', 'Child Process Deleted From Action')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Child Process From Action')
+    appStore.loading = false
+  }
+}
+const saveFunctionToAction = async (action) => {
+  appStore.loading = true
+  try {
+    const {
+      data,
+      status
+    } = await postRequest(`/processStep/${processStepId.value}/action/${action.id}/addChildFunctionToAction`, {
+      companyFunctionId: selectedChildFunction.value.id,
+      displayOrder: 0,
+      actionParamDynamicValues: selectedChildRequirementParamDynamicValues.value
+    })
+    action.processStepActionChildFunctions.push(data)
+    selectedChildFunction.value = {}
+    selectedChildRequirementParamDynamicValues.value = []
+    addChildFunction.value = false
+    snackbar('SUCCESS', 'Child Function Added To Action')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Child Function Action')
+    appStore.loading = false
+  }
+}
+const deleteChildFunctionFromAction = async () => {
+  childFunctionToDelete.value.archived = true
+  const actionId = parentActionForChildToDelete.value.id
+  const id = childFunctionToDelete.value.id
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildFunction/${id}`)
+    snackbar('SUCCESS', 'Child Function Deleted From Action')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Child Function From Action')
+    appStore.loading = false
+  }
+}
+const updateChildFunction = async (actionId, childFunction) => {
+  appStore.loading = true
+  try {
+    const {status} = await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateActionChildFunction`, childFunction)
+    snackbar('SUCCESS', 'Child Process Updated')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating Child Process')
+    appStore.loading = false
+  }
+}
+// child links
+const loadLinks = async (actionId) => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/links/action/${actionId}`)
+    availableLinks.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
+  }
+}
+const saveLinkToAction = async (action) => {
+  appStore.loading = true
+  try {
+    const {
+      data,
+      status
+    } = await postRequest(`/processStep/${processStepId.value}/action/${action.id}/addLinkToAction`, {
+      linkId: selectedLink.value.id
+    })
+    action.processStepActionLinks.push(data)
+    selectedLink.value = {}
+    addChildLink.value = false
+    snackbar('SUCCESS', 'Link Added to Action')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Link to Action')
+    appStore.loading = false
+  }
+}
+const deleteLinkFromAction = async () => {
+  linkToDelete.value.archived = true
+  const actionId = parentActionForChildToDelete.value.id
+  const id = linkToDelete.value.id
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteLinkFromAction/${id}`)
+    snackbar('SUCCESS', 'Link Deleted From Action')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Link From Action')
+    appStore.loading = false
+  }
+}
+const getListValueName = (item) => {
+  let idToUse = item.customSqlOptionId ? item.customSqlOptionId :
+      item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
+  let match = item.availableListOfValues.find(i => i.id === idToUse)
+  return match ? match.name : 'unknown'
+}
+const saveRowChanges = async (rows) => {
+  if (rows?.length > 0) {
+    appStore.loading = true
+    try {
+      const {status} = await putRequest(`/processStep/${processStepId.value}/action/order`, rows)
+      snackbar('SUCCESS', 'Action Order Saved')
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Action Order')
+      appStore.loading = false
+    }
+  }
+}
 
-        const {data, status} = await putRequest(`/processStep/${processStepId.value}/action`, action)
-        // this forces the list to update the values displayed ... using action = data did not work
-        action.actionType = data.actionType
-        action.logicListChanged = false
-        action.processStepStatusType = data.processStepStatusType
-        action.projectStatusType = data.projectStatusType
-        action.processStepActionChildProcesses = data.processStepActionChildProcesses
-        action.processStepActionLinks = data.processStepActionLinks
-        action.processStepLogicList = data.processStepLogicList
-        action.triggerAutomatically = data.triggerAutomatically
-        actionExpanded.value = []
+const validateActionLogicString = (item, saveChanges) => {
+  // using 0 to represent a logic item using a requirement
+  // 1 = (  2 = )  3 = AND  4 = OR  5 = NOT
 
-        //update the necessary psr's to immutable
-        if (psrListToUpdate.length > 0) {
-          psrListToUpdate.forEach(psr => {
-            let match = requirements.value.find(r => r.id === psr.processStepRequirementId)
-            match.immutable = true
-          })
-        }
+  //filter the logic list to exclude any archived
+  let nonArchivedLogic = item.processStepLogicList?.filter(l => !l.archived)
 
-        snackbar('SUCCESS', 'Action Updated')
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Updating Action')
-        appStore.loading = false
-      }
-    }
-    const loadFunctionParams = async(dbFunctionId, isRequirement) => {
-      appStore.loading = true
-      try {
-        const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
-        if (isRequirement) {
-          newRequirement.value.requirementParamDynamicValues = data
-        } else {
-          selectedChildRequirementParamDynamicValues.value = data
-        }
-        appStore.loading = false
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
-        appStore.loading = false
-      }
-    }
-    const getStatusTypes = async() => {
-      appStore.loading = true
-      try {
-        const {data, status} = await getCompanyAssignedToProcessStep(processStepId.value)
-        statusTypes.value = data
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
-        appStore.loading = false
-      }
-    }
-    const getTheseCompanyProjectStatusTypes = async() => {
-      appStore.loading = true
-      try {
-        const {data, status} = await getCompanyProjectStatusTypes(null, true)
-        companyProjectStatusTypes.value = data
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
-        handleHidingGlobalLoader(vueInstance, status)
-      }
-    }
-    const getOperationTypes = async() => {
-      appStore.loading = true
-      try {
-        const {data, status} = await getRequest(`/operation`)
-        operationTypes.value = orderBy(data, [o => o.operationType.toLowerCase()])
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
-        appStore.loading = false
-      }
-    }
-    const deleteAction = async() => {
-      const item = itemToDelete.value
-      appStore.loading = true
-      try {
-        const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${item.id}`)
-        item.archived = true
-        snackbar('SUCCESS', 'Action Deleted')
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Deleting Action')
-        appStore.loading = false
-      }
-      itemToDelete.value.archive = true
-      closeDeleteDialog()
-    }
-    //child process steps
-    const loadChildProcessSteps = async(actionId) => {
-      const {data} = await getRequest(`/processStep/${processStepId.value}/action/${actionId}/childProcessSteps`)
-      childProcessSteps.value = data
-    }
-    const saveChildProcessCancelledStatus = async(action, cp) => {
-      appStore.loading = true
-      try {
-        const {
-          data,
-          status
-        } = await putRequest(`/processStep/${processStepId.value}/action/${action.id}/child/${cp.id}/status`, {
-          existingCompanyProcessStepStatusTypeId: cp.existingCompanyProcessStepStatusTypeId,
-          initialCompanyProcessStepStatusTypeId: cp.initialCompanyProcessStepStatusTypeId,
-        })
-        cpExpanded.value = []
-        cp.existingProcessStepStatusType = data.existingProcessStepStatusType
-        cp.initialProcessStepStatusType = data.initialProcessStepStatusType
-        snackbar('SUCCESS', 'Child Process Status Saved')
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving Child Process Status')
-        appStore.loading = false
-      }
-    }
-    const saveProcessStepToAction = async(action) => {
-      appStore.loading = true
-      try {
-        const {
-          data,
-          status
-        } = await postRequest(`/processStep/${processStepId.value}/action/${action.id}/addChildStepToAction`, {
-          processStepId: newChildProcessStep.value.processStepId,
-          existingCompanyProcessStepStatusTypeId: newChildProcessStep.value.existingCompanyProcessStepStatusTypeId,
-          initialCompanyProcessStepStatusTypeId: newChildProcessStep.value.initialCompanyProcessStepStatusTypeId,
-          displayOrder: 0
-        })
-        action.processStepActionChildProcesses.push(data)
-        newChildProcessStep.value = {}
-        addChildProcess.value = false
-        snackbar('SUCCESS', 'Child Process Added To Action')
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Adding Child Process Action')
-        appStore.loading = false
-      }
-    }
-    const deleteChildProcessFromAction = async() => {
-      childProcessToDelete.value.archived = true
-      const actionId = parentActionForChildToDelete.value.id
-      const id = childProcessToDelete.value.id
-      appStore.loading = true
-      try {
-        const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildStep/${id}`)
-        snackbar('SUCCESS', 'Child Process Deleted From Action')
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Deleting Child Process From Action')
-        appStore.loading = false
-      }
-    }
-    const saveFunctionToAction = async(action) => {
-      appStore.loading = true
-      try {
-        const {
-          data,
-          status
-        } = await postRequest(`/processStep/${processStepId.value}/action/${action.id}/addChildFunctionToAction`, {
-          companyFunctionId: selectedChildFunction.value.id,
-          displayOrder: 0,
-          actionParamDynamicValues: selectedChildRequirementParamDynamicValues.value
-        })
-        action.processStepActionChildFunctions.push(data)
-        selectedChildFunction.value = {}
-        selectedChildRequirementParamDynamicValues.value = []
-        addChildFunction.value = false
-        snackbar('SUCCESS', 'Child Function Added To Action')
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Adding Child Function Action')
-        appStore.loading = false
-      }
-    }
-    const deleteChildFunctionFromAction = async() => {
-      childFunctionToDelete.value.archived = true
-      const actionId = parentActionForChildToDelete.value.id
-      const id = childFunctionToDelete.value.id
-      appStore.loading = true
-      try {
-        const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildFunction/${id}`)
-        snackbar('SUCCESS', 'Child Function Deleted From Action')
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Deleting Child Function From Action')
-        appStore.loading = false
-      }
-    }
-    const updateChildFunction = async(actionId, childFunction) => {
-      appStore.loading = true
-      try {
-        const {status} = await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateActionChildFunction`, childFunction)
-        snackbar('SUCCESS', 'Child Process Updated')
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Updating Child Process')
-        appStore.loading = false
-      }
-    }
-    // child links
-    const loadLinks = async(actionId) => {
-      appStore.loading = true
-      try {
-        const {data, status} = await getRequest(`/links/action/${actionId}`)
-        availableLinks.value = data
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
-        appStore.loading = false
-      }
-    }
-    const saveLinkToAction = async(action) => {
-      appStore.loading = true
-      try {
-        const {
-          data,
-          status
-        } = await postRequest(`/processStep/${processStepId.value}/action/${action.id}/addLinkToAction`, {
-          linkId: selectedLink.value.id
-        })
-        action.processStepActionLinks.push(data)
-        selectedLink.value = {}
-        addChildLink.value = false
-        snackbar('SUCCESS', 'Link Added to Action')
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Adding Link to Action')
-        appStore.loading = false
-      }
-    }
-    const deleteLinkFromAction = async() => {
-      linkToDelete.value.archived = true
-      const actionId = parentActionForChildToDelete.value.id
-      const id = linkToDelete.value.id
-      appStore.loading = true
-      try {
-        const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteLinkFromAction/${id}`)
-        snackbar('SUCCESS', 'Link Deleted From Action')
-        handleHidingGlobalLoader(vueInstance, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Deleting Link From Action')
-        appStore.loading = false
-      }
-    }
-    const getListValueName = (item) => {
-      let idToUse = item.customSqlOptionId ? item.customSqlOptionId :
-        item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
-      let match = item.availableListOfValues.find(i => i.id === idToUse)
-      return match ? match.name : 'unknown'
-    }
-    const saveRowChanges = async(rows) => {
-      if (rows?.length > 0) {
-        appStore.loading = true
-        try {
-          const {status} = await putRequest(`/processStep/${processStepId.value}/action/order`, rows)
-          snackbar('SUCCESS', 'Action Order Saved')
-          handleHidingGlobalLoader(vueInstance, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Saving Action Order')
-          appStore.loading = false
-        }
-      }
-    }
+  //compare number of open vs closing paren (probably not a perfect check but catches a lot)
+  let countOpenParen = nonArchivedLogic?.filter(l => l.operationTypeId === 1)?.length
+  let countCloseParen = nonArchivedLogic?.filter(l => l.operationTypeId === 2)?.length
 
-    const validateActionLogicString = (item, saveChanges) => {
-      // using 0 to represent a logic item using a requirement
-      // 1 = (  2 = )  3 = AND  4 = OR  5 = NOT
+  //get the type ids so we can loop through them and count parens as we go
+  let operationTypeIds = nonArchivedLogic?.map(l => l.operationTypeId ?? 0)
+  let openCount = 0, closeCount = 0, parenProblem = false
 
-      //filter the logic list to exclude any archived
-      let nonArchivedLogic = item.processStepLogicList?.filter(l => !l.archived)
-
-      //compare number of open vs closing paren (probably not a perfect check but catches a lot)
-      let countOpenParen = nonArchivedLogic?.filter(l => l.operationTypeId === 1)?.length
-      let countCloseParen = nonArchivedLogic?.filter(l => l.operationTypeId === 2)?.length
-
-      //get the type ids so we can loop through them and count parens as we go
-      let operationTypeIds = nonArchivedLogic?.map(l => l.operationTypeId ?? 0)
-      let openCount = 0, closeCount = 0, parenProblem = false
-
-      //this part checks the parens more closely based on the order they appear in
-      operationTypeIds?.forEach(id => {
-        if (id === 1) {
-          openCount++
-        } else if (id === 2) {
-          closeCount++
-        }
-        //after each id, check if close > open. if so, there is a problem
-        if (closeCount > openCount) {
-          parenProblem = true
-        }
-      })
-
-      // turn the operation type ids into a string we can compare to invalid sequences
-      let operationTypeString = operationTypeIds?.toString()
-
-      // get the first and last operations to compare to invalid first and last options
-      let firstOperationTypeId = operationTypeString?.charAt(0)
-      let lastOperationTypeId = operationTypeString?.slice(-1)
-
-      if (countOpenParen !== countCloseParen || parenProblem) {
-        actionLogicError.value = true
-        actionLogicErrorMsg.value = 'Logic is missing opening or closing parenthesis.'
-      } else if (invalidTypeCombos.value.some(v => operationTypeString?.includes(v))) {
-        actionLogicError.value = true
-        actionLogicErrorMsg.value = 'Logic is invalid.'
-      } else if (invalidFirsts.value.includes(firstOperationTypeId)) {
-        actionLogicError.value = true
-        actionLogicErrorMsg.value = 'Invalid first logic operation.'
-      } else if (invalidLasts.value.includes(lastOperationTypeId)) {
-        actionLogicError.value = true
-        actionLogicErrorMsg.value = 'Invalid last logic operation.'
-      } else {
-        actionLogicError.value = false
-        actionLogicErrorMsg.value = ''
-        if (saveChanges) {
-          updateAction(item)
-        }
-      }
+  //this part checks the parens more closely based on the order they appear in
+  operationTypeIds?.forEach(id => {
+    if (id === 1) {
+      openCount++
+    } else if (id === 2) {
+      closeCount++
     }
-    const closeDeleteDialog = () => {
-      showDeleteDialog.value = false
-      itemToDelete.value = null
+    //after each id, check if close > open. if so, there is a problem
+    if (closeCount > openCount) {
+      parenProblem = true
     }
-    const closeLinkDeleteDialog = () => {
-      linkToDelete.value = null
-      parentActionForChildToDelete.value = null
+  })
+
+  // turn the operation type ids into a string we can compare to invalid sequences
+  let operationTypeString = operationTypeIds?.toString()
+
+  // get the first and last operations to compare to invalid first and last options
+  let firstOperationTypeId = operationTypeString?.charAt(0)
+  let lastOperationTypeId = operationTypeString?.slice(-1)
+
+  if (countOpenParen !== countCloseParen || parenProblem) {
+    actionLogicError.value = true
+    actionLogicErrorMsg.value = 'Logic is missing opening or closing parenthesis.'
+  } else if (invalidTypeCombos.value.some(v => operationTypeString?.includes(v))) {
+    actionLogicError.value = true
+    actionLogicErrorMsg.value = 'Logic is invalid.'
+  } else if (invalidFirsts.value.includes(firstOperationTypeId)) {
+    actionLogicError.value = true
+    actionLogicErrorMsg.value = 'Invalid first logic operation.'
+  } else if (invalidLasts.value.includes(lastOperationTypeId)) {
+    actionLogicError.value = true
+    actionLogicErrorMsg.value = 'Invalid last logic operation.'
+  } else {
+    actionLogicError.value = false
+    actionLogicErrorMsg.value = ''
+    if (saveChanges) {
+      updateAction(item)
     }
-    const closeChildProcessDialog = () => {
-      childProcessToDelete.value = null
-      parentActionForChildToDelete.value = null
-    }
-    const closeChildFunctionDialog = () => {
-      childFunctionToDelete.value = null
-      parentActionForChildToDelete.value = null
-    }
-    const closeLogicInfoDialog = () => {
-      showLogicInfoDialog.value = false
-    }
+  }
+}
+const closeDeleteDialog = () => {
+  showDeleteDialog.value = false
+  itemToDelete.value = null
+}
+const closeLinkDeleteDialog = () => {
+  linkToDelete.value = null
+  parentActionForChildToDelete.value = null
+}
+const closeChildProcessDialog = () => {
+  childProcessToDelete.value = null
+  parentActionForChildToDelete.value = null
+}
+const closeChildFunctionDialog = () => {
+  childFunctionToDelete.value = null
+  parentActionForChildToDelete.value = null
+}
+const closeLogicInfoDialog = () => {
+  showLogicInfoDialog.value = false
+}
 </script>
 
 <style scoped lang="scss">

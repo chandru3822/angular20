@@ -488,14 +488,13 @@ import {
   putRequest,
   postRequest,
   getRequestWithParams,
-  getSnackbar
+  defineSortableTable
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import Sortable from "sortablejs";
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from "lodash.orderby"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import {getCurrentInstance, toRefs, computed, ref, onMounted} from 'vue'
+import {getCurrentInstance, toRefs, computed, ref, onMounted, onUpdated} from 'vue'
 import {useRoute} from "vue-router/composables";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {defineProps} from 'vue'
@@ -519,42 +518,9 @@ const { customFieldGroups } = toRefs(props)
 
 
 onMounted(() => {
-  let table = document.querySelector('.process-step-cfg-table tbody')
-  const _self = vueInstance
-  Sortable.create(table, {
-    handle: '.handle',
-    onEnd({newIndex, oldIndex}) {
-      if (_self.localCustomFieldGroups?.length > 0) {
-        const rowSelected = _self.localCustomFieldGroups.splice(oldIndex, 1)[0]
-        _self.localCustomFieldGroups.splice(newIndex, 0, rowSelected)
-        let rowsClone = cloneDeep(_self.localCustomFieldGroups)
 
-        let rowsToSave = []
-        rowsClone.forEach((r, idx) => {
-          //check if the row needs to be saved before updating display order
-          //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-          let save = r.newGroupOrder === undefined ? r.groupOrder !== idx : r.newGroupOrder !== idx
-          //update display order
-          r.groupOrder = idx
-          //save only rows that changed
-          if (save) {
-            _self.localCustomFieldGroups[idx].newGroupOrder = idx
-            rowsToSave.push(r)
-          }
-        })
-        _self.saveRowChanges(rowsToSave)
-      }
-    }
-  })
+  defineSortableTable('.process-step-cfg-table tbody', localCustomFieldGroups, 'groupOrder', saveRowChanges)
 })
-
-
-//todo: figure out if this is still necessary
-//   updated() {
-// this had to be in updated vs mounted so that after the re-render the dragging still works
-//was the table code from mounted
-// },
-
 
 const componentKey = ref(0)
 const deleteError = ref(false)

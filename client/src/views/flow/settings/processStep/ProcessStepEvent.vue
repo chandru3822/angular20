@@ -929,12 +929,11 @@ import {
   deleteRequest,
   putRequest,
   postRequest,
-  getSnackbar, logError, handleHidingGlobalLoader
+  defineSortableTable, logError, handleHidingGlobalLoader
 } from '@/helpers/helpers'
 import {getCompanyAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import ProcessStepRequirements from "@/views/flow/settings/processStep/ProcessStepRequirements";
 import orderBy from 'lodash.orderby'
-import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
 import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -950,42 +949,6 @@ const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const appStore = useAppStore()
-
-onMounted(async () => {
-
-  getCompanyProcessStepStatuses()
-  getPositions()
-  await getEventDetails()
-  getAssignedEventStatusTypes()
-  getOperationTypes()
-
-  let table = document.querySelector('.event-actions-table tbody')
-  const _self = vueInstance
-  Sortable.create(table, {
-    handle: '.handle',
-    onEnd({newIndex, oldIndex}) {
-      const rowSelected = _self.selectedEvent?.processStepEventActions.splice(oldIndex, 1)[0]
-      _self.selectedEvent?.processStepEventActions.splice(newIndex, 0, rowSelected)
-      let rowsClone = cloneDeep(_self.selectedEvent?.processStepEventActions)
-
-      let rowsToSave = []
-      rowsClone.forEach((r, idx) => {
-        //check if the row needs to be saved before updating display order
-        //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-        let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-        //update display order
-        r.displayOrder = idx
-        //save only rows that changed
-        if (save) {
-          let rows = _self.selectedEvent?.processStepEventActions
-          rows[idx].newDisplayOrder = idx
-          rowsToSave.push(r)
-        }
-      })
-      _self.saveRowChanges(rowsToSave)
-    }
-  })
-})
 
 const companyEventStatuses = ref([])
 const processStepStatuses = ref([])
@@ -1098,6 +1061,17 @@ const icon = computed(() => {
     return 'indeterminate_check_box'
   }
   return 'check_box_outline_blank'
+})
+
+onMounted(async () => {
+  getCompanyProcessStepStatuses()
+  getPositions()
+  await getEventDetails()
+  getAssignedEventStatusTypes()
+  getOperationTypes()
+
+  defineSortableTable('.event-actions-table tbody', selectedEvent.value.processStepEventActions, 'displayOrder', saveRowChanges, null, true)
+
 })
 
 const saveChildFunctionOrder = async (actionId, childFns) => {

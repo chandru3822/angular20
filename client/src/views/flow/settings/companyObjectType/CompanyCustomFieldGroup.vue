@@ -481,7 +481,6 @@
 import {AppMutations} from '@/stores/AppStore'
 import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
-import Sortable from 'sortablejs'
 
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
@@ -498,7 +497,7 @@ import {
   deleteRequest,
   getRequest,
   getRequestWithParams,
-  getSnackbar,
+  defineSortableTable,
   handleHidingGlobalLoader,
   postRequest,
   putRequest
@@ -829,7 +828,6 @@ const filterCustomFieldGroups = computed(() => {
   return props.customFieldGroups.filter(cfgt => !cfgt.archived)
 })
 const getGroupsByCol = (colNumber) => {
-  console.log("Getting Groups by col")
   if (props.objectType && props.objectType.customColumns) {
     return filterCustomFieldGroups.value
       .filter(cfg => cfg.columnNumber === colNumber)
@@ -965,32 +963,8 @@ onMounted(() => {
   groupsByColumn.value = [undefined, getGroupsByCol(1), getGroupsByCol(2)]
   for (let i = 1; i <= numberOfCols.value; i++) {
     let selectorString = `#column${i}Table tbody`
-    let table = document.querySelector(selectorString)
-    Sortable.create(table, {
-      handle: '.handle',
-      onEnd({newIndex, oldIndex}) {
-        if (groupsByColumn.value[i]?.length > 0) {
-          const rowSelected = groupsByColumn.value[i].splice(oldIndex, 1)[0]
-          groupsByColumn[i].splice(newIndex, 0, rowSelected)
-          let rowsClone = cloneDeep(groupsByColumn[i])
 
-          let rowsToSave = []
-          rowsClone.forEach((r, idx) => {
-            //check if the row needs to be saved before updating display order
-            //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-            let save = r.newGroupOrder === undefined ? r.groupOrder !== idx : r.newGroupOrder !== idx
-            //update display order
-            r.groupOrder = idx
-            //save only rows that changed
-            if (save) {
-              groupsByColumn[i][idx].newGroupOrder = idx
-              rowsToSave.push(r)
-            }
-          })
-          saveGroupChanges(rowsToSave)
-        }
-      }
-    })
+    defineSortableTable(selectorString, groupsByColumn, 'groupOrder', saveGroupChanges, i)
   }
 })
 

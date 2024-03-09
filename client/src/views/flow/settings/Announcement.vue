@@ -2,7 +2,7 @@
   <v-container>
     <v-row class="pt-0" v-if="!dataLoading">
       <v-col cols="12" class="pt-0">
-        <AlbatrossButton variant="text" round @click="cancel()"
+        <AlbatrossButton variant="text" icon @click="cancel()"
                          custom-classes="back-button">
           <template v-slot:default>
             <v-icon x-large>mdi-chevron-left</v-icon>
