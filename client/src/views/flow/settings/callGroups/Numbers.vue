@@ -107,10 +107,6 @@
   const phoneNumbers = ref([])
   const showError = ref(false)
   const errorMsg = ref('')
-  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD'))
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'))
-  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE'))
-  const callGroupId = ref(route.params.id)
   const dataLoading = ref(true)
   const addNumber = ref(false)
   const newNumber = ref('')
@@ -131,6 +127,19 @@
   const phoneNumberToDeleteNumber = computed(() => {
     return phoneNumberToDelete.value ? phoneNumberToDelete.value.phoneNumber : ''
   })
+  const callGroupId = computed(() => {
+    return route.params.id
+  })
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE')
+  })
+
 
   onMounted (() => {
     getNumbersForGroup()

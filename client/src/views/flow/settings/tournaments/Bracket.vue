@@ -267,8 +267,6 @@ const bracketErrorMsg = ref('')
 const newRound = ref({})
 const addRound = ref(false)
 const ownerTypes = ref([])
-const tournamentId = ref(route.params?.id)
-const userId = ref(store.state.user.details.id)
 const bracketToDelete = ref(null)
 const bracketToCopy = ref(null)
 const bracketForMatches = ref(null)
@@ -283,6 +281,13 @@ const headers = ref([
   {text: null, value: 'notes', show: true},
   {text: null, value: 'icons', show: true}
 ])
+
+const tournamentId = computed(() => {
+  return route.params.id
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
 
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')

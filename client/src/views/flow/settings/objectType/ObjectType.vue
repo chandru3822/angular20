@@ -70,7 +70,11 @@ const isMobile = computed(() => {
 const companyObjectTypeId = computed(() => {
   return route.params.id
 })
-const objectType = ref(route.query.objectType)
+
+const objectType = computed(() => {
+  return route.query.objectType
+})
+
 
 watch(() => companyObjectTypeId.value, () => {
   // whenever objectTypeId changes, this function will run

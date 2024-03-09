@@ -78,9 +78,17 @@ const vuetify = vueInstance.$vuetify
 const editName = ref(false)
 const oldName = ref(null)
 const event = ref({})
-const eventId = ref(route.params.id)
-const companyId = ref(userStore.details.companyId)
-const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+
+const eventId = computed(() => {
+  return route.params.id
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+
 
 const activeTab = computed({
   get() {

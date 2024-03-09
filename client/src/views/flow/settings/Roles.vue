@@ -17,7 +17,7 @@
         </v-toolbar>
         <v-data-table
             :headers="headers"
-            :items="filterRoles()"
+            :items="filteredRoles"
             :fixed-header="true"
             disable-sort
             :items-per-page="-1"
@@ -114,6 +114,9 @@
     { text: 'Role Name', value: 'roleName', show: true},
     { text: null, value: 'icons', show: true }
   ])
+  const filteredRoles = computed(() => {
+    return roles.value.filter(r => { return !r.archived})
+  })
 
   onMounted(() => {
     getRoles()
@@ -143,9 +146,6 @@
       snackbar('ERROR', 'Error Deleting Role')
       store.commit(AppMutations.SET_LOADING, false)
     }
-  }
-  const filterRoles = () => {
-    return roles.value.filter(r => { return !r.archived})
   }
 
 </script>

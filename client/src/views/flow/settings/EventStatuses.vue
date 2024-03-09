@@ -47,7 +47,7 @@
           </v-card-title>
           <v-data-table
             :headers="headers"
-            :items="filterEventStatuses()"
+            :items="filteredEventStatuses"
             :fixed-header="true"
             :expanded.sync="expanded"
             single-expand
@@ -289,6 +289,9 @@ onMounted(() => {
 const itemToDeleteEventStatusType = computed(() =>{
   return itemToDelete.value ? itemToDelete.value.eventStatusType : ''
 })
+const filteredEventStatuses = computed(() =>{
+  return statusTypes.value.filter(s => !s.archived)
+})
 
 const saveOrderChanges = async (types) => {
   store.commit(AppMutations.SET_LOADING, true)
@@ -448,12 +451,6 @@ const saveType = async (type, isNew) => {
     snackbar('ERROR', 'Error Saving Event Status')
     store.commit(AppMutations.SET_LOADING, false)
   }
-}
-
-const filterEventStatuses = () => {
-  return statusTypes.value.filter(s => {
-    return !s.archived
-  })
 }
 
 const copyToClipBoard = (textValue) =>{

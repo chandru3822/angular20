@@ -42,7 +42,7 @@
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-  import {getCurrentInstance, onMounted, ref} from "vue";
+  import {getCurrentInstance, computed, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
@@ -66,8 +66,6 @@
   ])
   const editGroup = ref(false)
   const group = ref({})
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'))
-  const callGroupId = ref(route.params.id)
   const dataLoading = ref(true)
   const breadcrumbs = ref([
     {
@@ -77,6 +75,14 @@
       to: `/settings/callGroups`
     },
   ])
+
+  const callGroupId = computed(() => {
+    return route.params.id
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT')
+  })
+
   onMounted(() => {
     getCallGroupDetails()
   })

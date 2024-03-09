@@ -274,10 +274,6 @@ const addField = ref(false)
 const selectedGroupId = ref(null)
 const availableCustomFields = ref([])
 const parent = ref({})
-const attachmentTypeId = ref(route.params.id)
-const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-const companyId = ref(userStore.details.companyId)
 const parentObjects = ref([])
 const headers = ref([
   {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
@@ -288,6 +284,19 @@ const expanded = ref([])
 const cfGroupToDelete = ref(null)
 const customFieldToDelete = ref(null)
 const ancillaryCustomFields = ref([])
+
+const attachmentTypeId = computed(() => {
+  return route.params.id
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
 
 onMounted(async () => {
   // this had to be in updated vs mounted so that after the re-render the dragging still works
@@ -624,6 +633,7 @@ const assignAncillaryCustomField = async (cfg) => {
   }
 }
 const filterCustomFieldGroups = () => {
+  //i tried making this a computed property and stuff broke. so test if changing again
   return localCustomFieldGroups.value?.filter(cfg => {
     return !cfg.archived
   })

@@ -54,14 +54,19 @@ const store = vueInstance.$store
 const userStore = useUserStore()
 const route = vueInstance.$route
 
-const companyObjectTypeId = ref(route.params.id)
 const objectType = ref({})
 const customFieldGroups = ref([])
 const addNew = ref(false)
 const newGroup = ref({
   groupName: null
 })
-const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+
+const companyObjectTypeId = computed(() => {
+  return route.params.id
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
 
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown

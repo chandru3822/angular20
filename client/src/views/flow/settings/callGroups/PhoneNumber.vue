@@ -64,8 +64,6 @@
   const model = ref('')
   const editGroup = ref(false)
   const group = ref({})
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'))
-  const callGroupId = ref(route.params.id)
   const dataLoading = ref(true)
   const breadcrumbs = ref([
     {
@@ -75,6 +73,14 @@
       to: `/settings/callGroups`
     },
   ])
+
+  const callGroupId = computed(() => {
+    return route.params.id
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT')
+  })
+
   onMounted(() => {
     getCallGroupDetails()
   })

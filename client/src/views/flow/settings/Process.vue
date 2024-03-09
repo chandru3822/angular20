@@ -269,7 +269,6 @@ const newProcessStep = ref({})
 const availableProcessSteps = ref([])
 const processStepStatusTypes = ref([])
 const owningPositions = ref([])
-const processId = ref(route.params.id)
 const changesMade = ref(false)
 const statusesLoading = ref(false)
 const process = ref({
@@ -298,9 +297,19 @@ const footerProps = ref({
 const expanded = ref([])
 const selectedIndex = ref(null)
 const processStepToDelete = ref(null)
-const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
+
+const processId = computed(() => {
+  return route.params.id
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const userCanDelete = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+})
 
 onMounted(() => {
   getPositions()

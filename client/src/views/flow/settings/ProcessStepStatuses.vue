@@ -84,7 +84,7 @@
             </v-card-title>
             <v-data-table
               :headers="headers"
-              :items="filterProcessStepStatuses()"
+              :items="filteredProcessStepStatuses"
               :fixed-header="true"
               :expanded.sync="expanded"
               single-expand
@@ -274,6 +274,9 @@
   const filteredRootStatuses = computed(() => {
     return rootStatusTypes.value.filter(rst => rst.id !== 3)
   })
+  const filteredProcessStepStatuses = computed(() => {
+    return statusTypes.value.filter(s => { return !s.archived})
+  })
   const getAllCompanyStatusTypes = async () => {
     store.commit(AppMutations.SET_LOADING, true)
     try {
@@ -376,9 +379,7 @@
       store.commit(AppMutations.SET_LOADING, false)
     }
   }
-  const filterProcessStepStatuses =  () => {
-    return statusTypes.value.filter(s => { return !s.archived})
-  }
+
   const copyToClipBoard = (textValue)=> {
     navigator.clipboard.writeText(textValue);
     snackbar('SUCCESS', 'Copied id to clipboard')

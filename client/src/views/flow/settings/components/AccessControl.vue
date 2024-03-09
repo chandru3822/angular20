@@ -76,12 +76,12 @@ const props = defineProps({
   userCanEdit: Boolean,
   showSecondary: Boolean
 })
+
 watch('selectedRows', (newVal, oldVal, blah) => {
   alterEnabledFlagForRows(newVal, oldVal, blah)
 })
 
 const selectedRows = ref([])
-const userId = ref(route.params.id)
 const companyFeatureList = ref(cloneDeep(props.companyFeatures))
 const features = ref([])
 const secondaryFeatureAccess = ref([])
@@ -90,6 +90,11 @@ const parentId = ref(userStore.details.parentCompanyId)
 const headers = ref([
   { text: 'Feature', value: 'featureName', show: true },
 ])
+
+const userId = computed(() => {
+  return route.params.id
+})
+
 onMounted(() => {
   getFeatures()
   if (showSecondary.value) {

@@ -127,12 +127,9 @@ const route = vueInstance.$route
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 
-const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
 const addNewType = ref(false)
 const expandEsst = ref(true)
 const event = ref({})
-const eventId = ref(route.params.id)
 const availableCompanyEventStatusTypes = ref([])
 const companyStatusesLoading = ref(false)
 const addNewEventStatusType = ref(false)
@@ -152,6 +149,16 @@ const positions = ref([])
 const positionsLoading = ref(false)
 const hiddenPositionsChanged = ref(false)
 const eventLoading = ref(false)
+
+const eventId = computed(() => {
+  return route.params.id
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
 
 const eventStatusTypeToDeleteName = computed(() => {
   return eventStatusTypeToDelete.value ? eventStatusTypeToDelete.value.eventStatusType : ''

@@ -131,7 +131,7 @@
   import { handleHidingGlobalLoader, getRequest, postRequest } from '@/helpers/helpers'
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-  import {getCurrentInstance, onMounted, ref} from "vue";
+  import {getCurrentInstance, computed, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
@@ -155,16 +155,25 @@
       to: `/settings/functions`
     },
   ])
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-  const companyId = ref(userStore.details.companyId)
-  const functionId = ref(route.params.id)
-  const userId = ref(userStore.details.id)
   const systemValues = ref([])
   const details = ref({})
   const parentObjects = ref([])
   const availableCustomFields = ref([])
   const selectedField = ref({})
   const expanded = ref([])
+
+  const functionId = computed(() => {
+    return route.params.id
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
+  const userId = computed(() => {
+    return userStore.details.id
+  })
 
   const getFunctionDetails = async () => {
     store.commit(AppMutations.SET_LOADING, true)

@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="title-large">{{postalCode.postalCode}}</v-toolbar-title>
+          <v-toolbar-title class="title-large">{{ postalCode.postalCode }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <AlbatrossButton variant="text"
@@ -18,31 +18,31 @@
         <v-container>
           <v-card class="square-card" elevation="0">
             <v-text-field
-              v-model="postalCode.placeName"
-              label="Place Name"
-              :rules="requiredRules"
-              hide-details
+                v-model="postalCode.placeName"
+                label="Place Name"
+                :rules="requiredRules"
+                hide-details
             ></v-text-field>
             <v-autocomplete
-              :items="zones"
-              item-value="id"
-              item-text="zoneName"
-              clearable
-              hide-details
-              class="mt-5"
-              label="Postal Code Zone"
-              v-model="postalCode.postalCodeZoneId"
+                :items="zones"
+                item-value="id"
+                item-text="zoneName"
+                clearable
+                hide-details
+                class="mt-5"
+                label="Postal Code Zone"
+                v-model="postalCode.postalCodeZoneId"
             ></v-autocomplete>
             <v-autocomplete
-              :items="states"
-              item-value="id"
-              item-text="state"
-              clearable
-              :rules="requiredRules"
-              hide-details
-              class="mt-5"
-              label="State"
-              v-model="postalCode.stateId"
+                :items="states"
+                item-value="id"
+                item-text="state"
+                clearable
+                :rules="requiredRules"
+                hide-details
+                class="mt-5"
+                label="State"
+                v-model="postalCode.stateId"
             ></v-autocomplete>
             <v-autocomplete
                 :items="roundRobins"
@@ -55,13 +55,13 @@
                 v-model="postalCode.roundRobinId"
             ></v-autocomplete>
             <v-autocomplete
-              :items="callGroups"
-              item-value="id"
-              item-text="callGroupName"
-              clearable
-              class="mt-5"
-              label="Call Group"
-              v-model="postalCode.callGroupId"
+                :items="callGroups"
+                item-value="id"
+                item-text="callGroupName"
+                clearable
+                class="mt-5"
+                label="Call Group"
+                v-model="postalCode.callGroupId"
             ></v-autocomplete>
             <v-checkbox label="Disqualified"
                         class="default-text-color"
@@ -88,130 +88,132 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
-  import {getStates} from '@/services/stateService'
-  import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
-  import constants from "@/helpers/constants";
-  import { useUserStore } from '@/stores/UserStorePinia.js'
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-  import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
+import {AppMutations} from '@/stores/AppStore'
+import {getStates} from '@/services/stateService'
+import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import constants from "@/helpers/constants";
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 
-  const vueInstance = getCurrentInstance().proxy
-  const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
-  const route = vueInstance.$route
-  const router = vueInstance.$router
-  const vuetify = vueInstance.$vuetify
-  const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const route = vueInstance.$route
+const router = vueInstance.$router
+const vuetify = vueInstance.$vuetify
+const userStore = useUserStore()
 
-        const dataLoading = ref(true)
-        const postalCodeId = ref(route.params.id)
-        const postalCode = ref({})
-        const zones = ref([])
-        const states = ref([])
-        const roundRobins = ref([])
-        const callGroups = ref([])
-        const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const dataLoading = ref(true)
+const postalCode = ref({})
+const zones = ref([])
+const states = ref([])
+const roundRobins = ref([])
+const callGroups = ref([])
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+
+const postalCodeId = computed(() => {
+  return route.params.id
+})
 
 
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
 
-      const userCanEdit = computed(() => {
-        return userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')
-      })
-      const companyId = computed(() => {
-        return userStore.details.companyId
-      })
-      const userId = computed(() => {
-        return userStore.details.id
-      })
+onMounted(() => {
+  store.commit(AppMutations.SET_LOADING, true)
+  dataLoading.value = true
+  Promise.all([
+    getPostalCode(),
+    getRoundRobins(),
+    getZones(),
+    getAllStates(),
+    getCallGroups()
+  ]).then(() => {
+    store.commit(AppMutations.SET_LOADING, false);
+    dataLoading.value = false;
+  })
+})
+const getPostalCode = async () => {
+  try {
+    const {data, status} = await getRequest(`/postalCode/${postalCodeId.value}`)
+    postalCode.value = data
+    dataLoading.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    dataLoading.value = false
+    snackbar('ERROR', 'Error Retrieving Data')
 
-    onMounted(() => {
-      store.commit(AppMutations.SET_LOADING, true)
-      dataLoading.value = true
-      Promise.all([
-        getPostalCode(),
-        getRoundRobins(),
-        getZones(),
-        getAllStates(),
-        getCallGroups()
-      ]).then(() => {
-        store.commit(AppMutations.SET_LOADING, false);
-        dataLoading.value = false;
-      })
-    })
-      const getPostalCode = async () => {
-        try {
-          const {data, status} = await getRequest(`/postalCode/${postalCodeId.value}`)
-          postalCode.value = data
-          dataLoading.value = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          dataLoading.value = false
-          snackbar('ERROR', 'Error Retrieving Data')
+  }
+}
+const getAllStates = async () => {
+  try {
+    const {data, status} = await getStates()
+    states.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
 
-        }
-      }
-      const getAllStates = async () => {
-        try {
-          const {data, status} = await getStates()
-          states.value = data
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Data')
+  }
+}
+const getRoundRobins = async () => {
+  try {
+    const {data, status} = await getRequest(`/roundRobin`)
+    roundRobins.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
 
-        }
-      }
-      const getRoundRobins = async () => {
-        try {
-          const {data, status} = await getRequest(`/roundRobin`)
-          roundRobins.value = data
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Data')
+  }
+}
+const getZones = async () => {
+  try {
+    const {data, status} = await getRequest(`/postalCode/zones`)
+    zones.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
 
-        }
-      }
-      const getZones = async () => {
-        try {
-          const {data, status} = await getRequest(`/postalCode/zones`)
-          zones.value = data
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Data')
+  }
+}
+const getCallGroups = async () => {
+  try {
+    const {data, status} = await getRequest(`/callGroup`, 'blueraven')
+    callGroups.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
 
-        }
-      }
-      const getCallGroups = async () => {
-        try {
-          const {data, status} = await getRequest(`/callGroup`, 'blueraven')
-          callGroups.value = data
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Data')
+  }
+}
+const savePostalCode = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await postRequest(`/postalCode`, postalCode.value)
+    snackbar('SUCCESS', 'Postal Code Saved')
 
-        }
-      }
-      const savePostalCode = async () => {
-        store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/postalCode`, postalCode.value)
-          snackbar('SUCCESS', 'Postal Code Saved')
-
-          handleHidingGlobalLoader(vueInstance, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Saving Postal Code')
-          store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Postal Code')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
 </script>
 
 <style lang="scss">
-  #postal-codes .v-data-table__wrapper {
-    height: calc(100vh - 300px);
-    min-height: 300px;
-    border-top: solid 1px #E0E0E0;
-  }
+#postal-codes .v-data-table__wrapper {
+  height: calc(100vh - 300px);
+  min-height: 300px;
+  border-top: solid 1px #E0E0E0;
+}
 </style>
 

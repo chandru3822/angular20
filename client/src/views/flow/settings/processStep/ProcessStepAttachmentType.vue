@@ -256,8 +256,6 @@ const selectedAttachment = ref({})
 const attachmentLoading = ref(true)
 // selectedIndex is a dumb work around because `index` is not available in the `expanded-item` slot yet.
 const selectedIndex = ref(null)
-const processStepId = ref(route.params.id)
-const attachmentTypeId = ref(parseInt(route.params.attachmentTypeId))
 const componentKey = ref(0)
 const newGroup = ref({})
 const expanded = ref([])
@@ -271,6 +269,12 @@ const headers = ref([
 const cfGroupToDelete = ref(null)
 const customFieldToDelete = ref(null)
 
+const attachmentTypeId = computed(() => {
+  return parseInt(route.params.attachmentTypeId)
+})
+const processStepId = computed(() => {
+  return route.params.id
+})
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
 })

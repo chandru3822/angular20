@@ -307,7 +307,6 @@ const router = vueInstance.$router
 const props = defineProps({
   apiPath: {type: String}
 })
-const customFieldId = ref(route.params.id)
 const customField = ref({})
 const fieldLoading = ref(false)
 const customFieldQuery = ref("")
@@ -315,12 +314,7 @@ const systemLists = ref([])
 const systemListOptions = ref([])
 const companyDataTypes = ref([])
 const availableCustomFields = ref([])
-const companyId = ref(userStore.details.companyId)
 const usesForField = ref([])
-const userIsSystemAdmin = ref(userStore.userHasFeature("SYSTEM"))
-const userCanEdit = ref(userStore.userHasFeatureAccessLevel("SETTINGS", "EDIT"))
-const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
-
 
 const selectedSystemListTypeIsUsers = computed(() => {
   let selectedSystemList = systemLists.value.find(sl => sl.id === customField.value.companySystemListId)
@@ -329,6 +323,23 @@ const selectedSystemListTypeIsUsers = computed(() => {
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
 })
+
+const customFieldId = computed(() => {
+  return route.params.id
+})
+const userIsSystemAdmin = computed(() => {
+  return userStore.userStore.userHasFeature("SYSTEM")
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const userCanDelete = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+
 onMounted(async () => {
   fieldLoading.value = true
   Promise.all([

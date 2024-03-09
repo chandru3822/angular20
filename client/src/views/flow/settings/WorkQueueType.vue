@@ -275,7 +275,6 @@ const workQueueCategories = ref([])
 const companyObjectTypes = ref([])
 const durationTypes = ref([])
 const expectedTargetRule = ref(getMinMaxRule(0, 1))
-const workQueueTypeId = ref(route.params.id)
 const workQueueType = ref({})
 const workQueueLoading = ref(false)
 const positions = ref([])
@@ -283,13 +282,6 @@ const itemsUsingType = ref([])
 const positionsLoading = ref(false)
 const hiddenPositionsChanged = ref(false)
 const sql = ref('')
-const is7oaksAdmin = ref(userStore.isSystemAdmin)
-const userId = ref(userStore.details.id)
-const companyId = ref(userStore.details.companyId)
-const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
-const userIsAdmin = ref(userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN'))
 const allowedMinutesStep = ref(m => m % 60 === 0)
 const noScheduleDefault = ref([
   {day: 'Sunday', startTime: null, endTime: null, selected: false},
@@ -328,6 +320,31 @@ const filteredCompanyObjectTypes = computed(() =>{
     objectTypeIds = [1, 2, 4]
   }
   return companyObjectTypes.value.filter(t => objectTypeIds.includes(t.objectTypeId))
+})
+
+const workQueueTypeId = computed(() => {
+  return route.params.id
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'EDIT')
+})
+const userCanDelete = computed(() => {
+  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'DELETE')
+})
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'Admin')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
+const is7oaksAdmin = computed(() => {
+  return userStore.isSystemAdmin
 })
 
 onMounted( async () => {

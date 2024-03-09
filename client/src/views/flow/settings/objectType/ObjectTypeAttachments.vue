@@ -27,7 +27,7 @@
 
           <v-data-table
             :headers="visibleHeaders"
-            :items="filterTypes()"
+            :items="filteredTypes"
             :items-per-page="-1"
             :sort-desc="[false]"
             :sort-by="['displayOrder']"
@@ -160,6 +160,9 @@ const userStore = useUserStore()
   const attachmentTypeToDeleteName = computed(() =>{
     return attachmentTypeToDelete.value ? attachmentTypeToDelete.value.attachmentType : ''
   })
+  const filteredTypes = computed(() =>{
+    return orderBy(attachmentTypes.value.filter(e => { return !e.archived}), [e => e.attachmentType])
+  })
   const headers = computed(() =>{
     return [
       // {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
@@ -172,12 +175,16 @@ const userStore = useUserStore()
   })
 
   const addNewType = ref(false)
-  const companyObjectTypeId = ref(route.query.companyObjectTypeId)
   const objectType = ref(props.objectTypeValue || route?.query?.objectType?.toLowerCase())
   const newType = ref({})
   const availableAttachmentTypes = ref([])
   const attachmentTypes = ref([])
   const attachmentTypeToDelete = ref(null)
+
+const companyObjectTypeId = computed(() => {
+  return route.query.companyObjectTypeId
+})
+
 
   onMounted (() => {
     getAssignedAttachmentTypes()
@@ -292,7 +299,4 @@ const userStore = useUserStore()
     }
     attachmentTypeToDelete.value = null
   }
-  const filterTypes = computed(() => {
-    return orderBy(attachmentTypes.value.filter(e => { return !e.archived}), [e => e.attachmentType])
-  })
 </script>
