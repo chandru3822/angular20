@@ -232,7 +232,6 @@ create type brs.excluded_proposal_value as
   storage_type_id                                bigint,
   financier                                      varchar,
   financier_id                                   bigint,
-  storage_cost_with_fees                             numeric,
   cash_price_storage                             numeric,
   total_amount_to_be_financed       numeric,
   zone_adder                                     numeric,
