@@ -6,17 +6,20 @@
         <v-toolbar-title class="title-large">Work Queue Types</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text color="primary"
-                 @click="[newWorkQueueType = { projectStatuses: [], processStepStatuses: [], eventStatuses: [] }, getWorkQueueTypesForItem(), prepTempStatuses(newWorkQueueType, false), prepTempProcessStepStatuses(newWorkQueueType, false), prepTempEventStatuses(newWorkQueueType, false)]"
-                 v-if="userCanAdd">
-            <v-icon v-if="!addNewWorkQueueType">add</v-icon>
-            <v-icon v-else-if="$vuetify.breakpoint.smAndDown">close</v-icon>
-            <span v-if="!$vuetify.breakpoint.smAndDown">{{ addNewWorkQueueType ? 'Cancel' : 'Add Work Queue Type' }}</span>
-          </v-btn>
-          <v-btn text @click="expandWqt = !expandWqt">
-            <v-icon v-if="!expandWqt">mdi-chevron-down</v-icon>
-            <v-icon v-else>mdi-chevron-up</v-icon>
-          </v-btn>
+          <AlbatrossButton
+              variant="text"
+              color="primary"
+              @click="[newWorkQueueType = { projectStatuses: [], processStepStatuses: [], eventStatuses: [] }, getWorkQueueTypesForItem(), prepTempStatuses(newWorkQueueType, false), prepTempProcessStepStatuses(newWorkQueueType, false), prepTempEventStatuses(newWorkQueueType, false)]"
+              v-if="userCanAdd"
+              :prepend-icon="!addNewWorkQueueType ? 'add' : 'close'"
+              :text="$vuetify.breakpoint.smAndDown ? '' : addNewWorkQueueType ? 'Cancel' : 'Add Work Queue Type' "
+          ></AlbatrossButton>
+          <AlbatrossButton
+              variant="text"
+              @click="expandWqt = !expandWqt"
+              color="unset"
+              :prepend-icon="!expandWqt ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+          ></AlbatrossButton>
         </v-toolbar-items>
       </v-toolbar>
       <div>
@@ -145,13 +148,12 @@
               </template>
             </template>
           </v-autocomplete>
-          <v-btn color="primary"
-            :disabled="!newWorkQueueType.workQueueTypeId || (!newWorkQueueType.projectStatuses || newWorkQueueType.projectStatuses.length === 0)
-          || (!newWorkQueueType.processStepStatuses || newWorkQueueType.processStepStatuses.length === 0)
-           || (showEventFields && (!newWorkQueueType.eventStatuses || newWorkQueueType.eventStatuses.length === 0))"
-            @click="assignNewWorkQueueType">
-            Save
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              :disabled="!newWorkQueueType.workQueueTypeId || (!newWorkQueueType.projectStatuses || newWorkQueueType.projectStatuses.length === 0) || (!newWorkQueueType.processStepStatuses || newWorkQueueType.processStepStatuses.length === 0) || (showEventFields && (!newWorkQueueType.eventStatuses || newWorkQueueType.eventStatuses.length === 0))"
+              @click="assignNewWorkQueueType"
+              text="Save"
+          ></AlbatrossButton>
         </v-card>
         <v-card flat v-if="((processStep && processStep.workQueueTypes && processStep.workQueueTypes.length > 0)
                           || event && event.workQueueTypes && event.workQueueTypes.length > 0) && expandWqt">
@@ -289,13 +291,13 @@
                   </template>
                 </v-autocomplete>
 
-                <v-btn class="mt-3" v-if="userCanEdit" color="primary"
-                       :disabled="(!item.projectStatuses || item.projectStatuses.filter(ps => !ps.archived).length === 0)
-                                    || (!item.processStepStatuses || item.processStepStatuses.filter(ps => !ps.archived).length === 0)
-                                    || (showEventFields && (!item.eventStatuses || item.eventStatuses.filter(ps => !ps.archived).length === 0))"
-                       @click="saveStatusesToWorkQueueType(item)">
-                  Save
-                </v-btn>
+                <AlbatrossButton
+                    class="mt-3"
+                    v-if="userCanEdit"
+                    color="primary"
+                    :disabled="(!item.projectStatuses || item.projectStatuses.filter(ps => !ps.archived).length === 0) || (!item.processStepStatuses || item.processStepStatuses.filter(ps => !ps.archived).length === 0) || (showEventFields && (!item.eventStatuses || item.eventStatuses.filter(ps => !ps.archived).length === 0))"
+                    @click="saveStatusesToWorkQueueType(item)"
+                > Save </AlbatrossButton>
               </td>
             </template>
 
@@ -324,14 +326,27 @@
                 </template>
                 <template #item.icons="{item}" class="clickable text-right">
                   <div class="flex-display">
-                    <v-btn text color="primary"
-                           @click="[expanded = [item], prepTempStatuses(item, true), prepTempProcessStepStatuses(item, true), prepTempEventStatuses(item, true)]"
-                           v-if="!expanded.includes(item)">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                    <v-btn text color="primary" @click="expanded = []" v-else>cancel
-                    </v-btn>
-                    <v-btn v-if="userCanEdit" text color="primary" @click="workQueueTypeToDelete=item"><v-icon>delete</v-icon></v-btn>
+                    <AlbatrossButton
+                        variant="text"
+                        color="primary"
+                        @click="[expanded = [item], prepTempStatuses(item, true), prepTempProcessStepStatuses(item, true), prepTempEventStatuses(item, true)]"
+                        v-if="!expanded.includes(item)"
+                        prepend-icon="edit"
+                    ></AlbatrossButton>
+                    <AlbatrossButton
+                        variant="text"
+                        color="primary"
+                        @click="expanded = []"
+                        v-else
+                        text="cancel"
+                    ></AlbatrossButton>
+                    <AlbatrossButton
+                        v-if="userCanEdit"
+                        variant="text"
+                        color="primary"
+                        @click="workQueueTypeToDelete=item"
+                        prepend-icon="delete"
+                    ></AlbatrossButton>
                   </div>
                 </template>
           </v-data-table>
@@ -347,6 +362,7 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import cloneDeep from 'lodash.clonedeep'
 
 import {

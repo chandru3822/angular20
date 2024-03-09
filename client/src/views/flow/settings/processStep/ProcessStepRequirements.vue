@@ -22,15 +22,13 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <v-btn
+          <AlbatrossButton
               color="primary"
-              text
-              dark
-              class="white--text"
+              variant="text"
+              class=""
               @click="deleteError = false"
-          >
-            OK
-          </v-btn>
+              text="OK"
+          ></AlbatrossButton>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -40,16 +38,20 @@
           <v-toolbar-title class="title-large">Requirements</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="[getRequirementTypes(), selectedDataTypeRequirement = {}]" text color="primary"
-                   v-if="userCanAdd">
-              <v-icon v-if="!addNewRequirement">add</v-icon>
-              <v-icon v-else-if="$vuetify.breakpoint.smAndDown">close</v-icon>
-              <span v-if="!$vuetify.breakpoint.smAndDown">{{ addNewRequirement ? 'Cancel' : 'Add Requirement' }}</span>
-            </v-btn>
-            <v-btn color="primary" text @click="expandRequirements = !expandRequirements">
-              <v-icon v-if="!expandRequirements">mdi-chevron-down</v-icon>
-              <v-icon v-else>mdi-chevron-up</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                @click="[getRequirementTypes(), selectedDataTypeRequirement = {}]"
+                variant="text"
+                color="primary"
+                v-if="userCanAdd"
+                :prepend-icon="!addNewRequirement ? 'add' : 'close'"
+                :text="$vuetify.breakpoint.smAndDown ? '' : addNewRequirement ? 'Cancel' : 'Add Requirement' "
+            ></AlbatrossButton>
+            <AlbatrossButton
+                color="primary"
+                variant="text"
+                @click="expandRequirements = !expandRequirements"
+                :prepend-icon="!expandRequirements ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-row v-if="addNewRequirement">
@@ -140,16 +142,14 @@
                       top
                   >
                     <template v-slot:activator="{ on, attrs }">
-                      <v-btn
-                          text
+                      <AlbatrossButton
+                          variant="text"
                           class="d-inline-block"
                           v-bind="attrs"
-                          v-on="on"
-                      >
-                        <v-icon>
-                          mdi-information
-                        </v-icon>
-                      </v-btn>
+                          :activation-handler="on"
+                          color="unset"
+                          prepend-icon="mdi-information"
+                      ></AlbatrossButton>
                     </template>
                     <span>{{ fp.description }}</span>
                   </v-tooltip>
@@ -313,11 +313,13 @@
                      :readonly="!userCanEdit"
                      :disabled="!userCanEdit">
             </div>
-            <v-btn :disabled="invalidRequirement" color="primary"
-                   @click="saveNewRequirement">
-              <v-icon>save</v-icon>
-              Save
-            </v-btn>
+            <AlbatrossButton
+                :disabled="invalidRequirement"
+                color="primary"
+                @click="saveNewRequirement"
+                prepend-icon="save"
+                text="Save"
+            ></AlbatrossButton>
           </v-col>
         </v-row>
         <v-row v-if="expandRequirements">
@@ -356,16 +358,14 @@
                             top
                         >
                           <template v-slot:activator="{ on, attrs }">
-                            <v-btn
-                                text
+                            <AlbatrossButton
+                                variant="text"
                                 class="d-inline-block"
                                 v-bind="attrs"
-                                v-on="on"
-                            >
-                              <v-icon>
-                                mdi-information
-                              </v-icon>
-                            </v-btn>
+                                :activation-handler="on"
+                                color="unset"
+                                prepend-icon="mdi-information"
+                            ></AlbatrossButton>
                           </template>
                           <span>{{ fp.description }}</span>
                         </v-tooltip>
@@ -532,10 +532,13 @@
                            :readonly="requirementIsReadonly(item)"
                            :disabled="requirementIsReadonly(item)">
                   </div>
-                  <v-btn v-if="!requirementIsReadonly(item)" @click="updateRequirement(item)" color="primary">
-                    <v-icon>save</v-icon>
-                    Save
-                  </v-btn>
+                  <AlbatrossButton
+                      v-if="!requirementIsReadonly(item)"
+                      @click="updateRequirement(item)"
+                      color="primary"
+                      prepend-icon="save"
+                      text="Save"
+                  ></AlbatrossButton>
                 </td>
               </template>
 
@@ -588,24 +591,38 @@
               </template>
               <template #item.icons="{item, index}">
                 <div style="display: flex;">
-                  <v-btn small text color="primary" @click="[loadOperatorTypes(item.dataTypeId, item.processStepRequirementTypeId),
-                                    loadDataTypeRequirements(item.dataTypeId), selectedRequirementIndex = index, expanded = [item]]"
-                         v-if="!expanded.includes(item)">
-                    <v-icon v-if="item.immutable">expand_more</v-icon>
-                    <v-icon v-else>edit</v-icon>
-                  </v-btn>
-                  <v-btn small text color="primary" @click="[selectedRequirementIndex = index, expanded = []]"
-                         v-if="expanded.includes(item)">
-                    <v-icon v-if="item.immutable">expand_less</v-icon>
-                    <span v-else>cancel</span>
-                  </v-btn>
-                  <v-btn small text color="primary" v-if="userCanEdit"
-                         @click="[itemToDelete=item, showDeleteDialog=true]">
-                    <v-icon>delete</v-icon>
-                  </v-btn>
-                  <v-btn small text color="primary" @click="showActionsUsingLogic(item.id)">
-                    <v-icon>mdi-information</v-icon>
-                  </v-btn>
+                  <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="[loadOperatorTypes(item.dataTypeId, item.processStepRequirementTypeId), loadDataTypeRequirements(item.dataTypeId), selectedRequirementIndex = index, expanded = [item]]"
+                      v-if="!expanded.includes(item)"
+                      :prepend-icon="item.immutable ? 'expand_more' : 'edit'"
+                  ></AlbatrossButton>
+                  <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="[selectedRequirementIndex = index, expanded = []]"
+                      v-if="expanded.includes(item)"
+                      :prepend-icon="item.immutable ? 'expand_less' : ''"
+                      :text="item.immutable ? '' : 'cancel'"
+                  ></AlbatrossButton>
+                  <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      v-if="userCanEdit"
+                      @click="[itemToDelete=item, showDeleteDialog=true]"
+                      prepend-icon="delete"
+                  ></AlbatrossButton>
+                  <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="showActionsUsingLogic(item.id)"
+                      prepend-icon="mdi-information"
+                  ></AlbatrossButton>
                 </div>
               </template>
             </v-data-table>
@@ -693,6 +710,7 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getCompanyAssignedToProcessStep, getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import {getProjectStatusTypes, getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {

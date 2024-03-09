@@ -22,10 +22,11 @@
               {{ data.item.eventStatusType }} ({{ data.item.rootEventStatusType }})
             </template>
           </v-autocomplete>
-          <v-btn color="primary"
-                 @click="saveEventDetails(selectedEvent)"
-          >Save
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              @click="saveEventDetails(selectedEvent)"
+              text="Save"
+          ></AlbatrossButton>
         </v-card>
         <v-card class="pa-4 mt-4">
           <!--          <v-card-title class="title-medium pa-0 mb-4" style="height: 40px">Readonly-->
@@ -66,20 +67,21 @@
           <v-toolbar-title class="title-large">Event Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="logicStringToggle = !logicStringToggle" text color="primary">
-              <v-icon v-if="$vuetify.breakpoint.smAndDown && logicStringToggle">mdi-numeric</v-icon>
-              <v-icon v-else-if="$vuetify.breakpoint.smAndDown">mdi-alphabetical</v-icon>
-              <span v-if="!$vuetify.breakpoint.smAndDown">{{
-                  logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text'
-                }}</span>
-            </v-btn>
-            <v-btn text color="primary"
-                   @click="[addNewEventAction = !addNewEventAction, newEventAction.color = '#1F3C73', newEventAction.bgColor = '#878787']"
-                   v-if="userCanAdd">
-              <v-icon v-if="!addNewEventAction">add</v-icon>
-              <v-icon v-else-if="$vuetify.breakpoint.smAndDown">close</v-icon>
-              <span v-if="!$vuetify.breakpoint.smAndDown">{{ addNewEventAction ? 'Cancel' : 'Add Action' }}</span>
-            </v-btn>
+            <AlbatrossButton
+                @click="logicStringToggle = !logicStringToggle"
+                variant="text"
+                color="primary"
+                :prepend-icon="$vuetify.breakpoint.smAndDown && logicStringToggle ? 'mdi-numeric' : 'mdi-alphabetical'"
+                :text="$vuetify.breakpoint.smAndDown ? '' : logicStringToggle ? 'VIEW LOGIC AS NUMBERS' : 'VIEW LOGIC AS TEXT'">
+            </AlbatrossButton>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="[addNewEventAction = !addNewEventAction, newEventAction.color = '#1F3C73', newEventAction.bgColor = '#878787']"
+                v-if="userCanAdd"
+                :prepend-icon="!addNewEventAction ? 'add' : 'close'"
+                :text="$vuetify.breakpoint.smAndDown ? '' : addNewEventAction ? 'Cancel' : 'Add Action'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat v-if="addNewEventAction">
@@ -142,11 +144,12 @@
               </v-color-picker>
             </div>
           </div>
-          <v-btn color="primary"
-                 @click="saveEventAction(newEventAction)"
-                 :disabled="!newEventAction.actionName || !newEventAction.actionTypeId"
-          >Add Action
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              @click="saveEventAction(newEventAction)"
+              :disabled="!newEventAction.actionName || !newEventAction.actionTypeId"
+              text="Add Action"
+          ></AlbatrossButton>
         </v-card>
         <v-data-table
             v-show="!addNewEventAction"
@@ -272,11 +275,6 @@
                     </v-col>
                   </v-row>
                 </v-card>
-
-                <!--              <v-btn class="white&#45;&#45;text"-->
-                <!--                     color="primary"-->
-                <!--                     @click="saveEventAction(action)"-->
-                <!--              >Save Action</v-btn>-->
                 <div v-if="action.actionTypeId === 1">
                   <v-divider></v-divider>
                   <v-toolbar flat color="transparent">
@@ -285,10 +283,13 @@
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                      <v-btn v-if="!addChildLink && userCanEdit" color="primary" text
-                             @click="[addChildLink = true, loadLinks(action.id)]">
-                        <v-icon>add</v-icon>
-                      </v-btn>
+                      <AlbatrossButton
+                          v-if="!addChildLink && userCanEdit"
+                          color="primary"
+                          variant="text"
+                          @click="[addChildLink = true, loadLinks(action.id)]"
+                          prepend-icon="add"
+                      ></AlbatrossButton>
                     </v-toolbar-items>
                   </v-toolbar>
                   <v-card class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
@@ -301,10 +302,13 @@
                               return-object
                               @input="saveLinkToAction(action)"
                     ></v-select>
-                    <v-btn @click="addChildLink = false" text color="primary">
-                      <v-icon>remove</v-icon>
-                      Cancel
-                    </v-btn>
+                    <AlbatrossButton
+                        @click="addChildLink = false"
+                        variant="text"
+                        color="primary"
+                        prepend-icon="remove"
+                        text="Cancel"
+                    ></AlbatrossButton>
                   </v-card>
                 </div>
                 <v-row justify="center" class="pl-3 pr-3"
@@ -344,16 +348,17 @@
 
                             <v-card-actions>
                               <v-spacer></v-spacer>
-                              <v-btn
-                                  @click="al.deleteConfirm = false">
-                                No
-                              </v-btn>
-                              <v-btn
+                              <AlbatrossButton
+                                  @click="al.deleteConfirm = false"
+                                  color="unset"
+                                  text="No"
+                              ></AlbatrossButton>
+                              <AlbatrossButton
                                   color="primary"
-                                  text
-                                  @click="[al.archived = true, deleteLinkFromAction(action.id, al.id)]">
-                                Yes
-                              </v-btn>
+                                  variant="text"
+                                  @click="[al.archived = true, deleteLinkFromAction(action.id, al.id)]"
+                                  text="Yes"
+                              ></AlbatrossButton>
                             </v-card-actions>
                           </v-card>
                         </v-dialog>
@@ -370,10 +375,13 @@
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                      <v-btn text color="primary" v-if="!addChildFunction && userCanAdd"
-                             @click="[addChildFunction = true, loadChildFunctions(action.id)]">
-                        <v-icon>add</v-icon>
-                      </v-btn>
+                      <AlbatrossButton
+                          variant="text"
+                          color="primary"
+                          v-if="!addChildFunction && userCanAdd"
+                          @click="[addChildFunction = true, loadChildFunctions(action.id)]"
+                          prepend-icon="add"
+                      ></AlbatrossButton>
                     </v-toolbar-items>
                   </v-toolbar>
                   <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
@@ -398,16 +406,14 @@
                               top
                           >
                             <template v-slot:activator="{ on, attrs }">
-                              <v-btn
-                                  text color="primary"
+                              <AlbatrossButton
+                                  variant="text"
+                                  color="primary"
                                   class="d-inline-block"
                                   v-bind="attrs"
-                                  v-on="on"
-                              >
-                                <v-icon>
-                                  mdi-information
-                                </v-icon>
-                              </v-btn>
+                                  :activation-handler="on"
+                                  prepend-icon="mdi-information"
+                              ></AlbatrossButton>
                             </template>
                             <span>{{ fp.description }}</span>
                           </v-tooltip>
@@ -440,15 +446,21 @@
                       </v-card>
                     </div>
                     <div class="mt-3">
-                      <v-btn :disabled="!selectedChildFunction.id" color="primary"
-                             @click="saveFunctionToAction(action)">
-                        <v-icon>save</v-icon>
-                        Save
-                      </v-btn>
-                      <v-btn class="ml-3" @click="addChildFunction = false" text color="primary">
-                        <v-icon>remove</v-icon>
-                        Cancel
-                      </v-btn>
+                      <AlbatrossButton
+                          :disabled="!selectedChildFunction.id"
+                          color="primary"
+                          @click="saveFunctionToAction(action)"
+                          prepend-icon="save"
+                          text="Save"
+                      ></AlbatrossButton>
+                      <AlbatrossButton
+                          class="ml-3"
+                          @click="addChildFunction = false"
+                          variant="text"
+                          color="primary"
+                          prepend-icon="remove"
+                          text="Cancel"
+                      ></AlbatrossButton>
                     </div>
                   </v-card>
                   <v-divider/>
@@ -488,16 +500,14 @@
                                       top
                                   >
                                     <template v-slot:activator="{ on, attrs }">
-                                      <v-btn
-                                          text
+                                      <AlbatrossButton
+                                          variant="text"
                                           class="d-inline-block"
                                           v-bind="attrs"
-                                          v-on="on"
-                                      >
-                                        <v-icon>
-                                          mdi-information
-                                        </v-icon>
-                                      </v-btn>
+                                          :activation-handler="on"
+                                          color="unset"
+                                          prepend-icon="mdi-information"
+                                      ></AlbatrossButton>
                                     </template>
                                     <span>{{ fp.description }}</span>
                                   </v-tooltip>
@@ -556,17 +566,22 @@
                               </v-card>
                             </div>
                             <v-list-item-subtitle>
-                              <v-btn color="primary" v-if="cp.edit && userCanEdit"
-                                     @click="updateChildFunction(action.id, cp)">
-                                Save
-                              </v-btn>
+                              <AlbatrossButton
+                                  color="primary"
+                                  v-if="cp.edit && userCanEdit"
+                                  @click="updateChildFunction(action.id, cp)"
+                                  text="Save"
+                              ></AlbatrossButton>
                             </v-list-item-subtitle>
                           </v-list-item-content>
-                          <v-btn text color="primary" class="white--text" v-if="userCanEdit"
-                                 @click="cp.edit = !cp.edit">
-                            <v-icon v-if="cp.edit">remove</v-icon>
-                            <v-icon v-else>edit</v-icon>
-                          </v-btn>
+                          <AlbatrossButton
+                              variant="text"
+                              color="primary"
+                              class=""
+                              v-if="userCanEdit"
+                              @click="cp.edit = !cp.edit"
+                              :prepend-icon="cp.edit ? 'remove' : 'edit'"
+                          ></AlbatrossButton>
                           <v-dialog
                               v-if="userCanEdit"
                               v-model="cp.deleteConfirm"
@@ -594,16 +609,17 @@
 
                               <v-card-actions>
                                 <v-spacer></v-spacer>
-                                <v-btn
-                                    @click="cp.deleteConfirm = false">
-                                  No
-                                </v-btn>
-                                <v-btn
+                                <AlbatrossButton
+                                    @click="cp.deleteConfirm = false"
+                                    color="unset"
+                                    text="No"
+                                ></AlbatrossButton>
+                                <AlbatrossButton
                                     color="primary"
-                                    text
-                                    @click="[cp.archived = true, deleteChildFunctionFromAction(action.id, cp.id)]">
-                                  Yes
-                                </v-btn>
+                                    variant="text"
+                                    @click="[cp.archived = true, deleteChildFunctionFromAction(action.id, cp.id)]"
+                                    text="Yes"
+                                ></AlbatrossButton>
                               </v-card-actions>
                             </v-card>
                           </v-dialog>
@@ -648,9 +664,14 @@
                       v-model="showActionLogicString"
                       width="500">
                     <template #activator="{ on }">
-                      <v-btn text class="d-inline-block" @click="getActionLogicString(action.id)" v-on="on">
-                        <v-icon>mdi-information</v-icon>
-                      </v-btn>
+                      <AlbatrossButton
+                          variant="text"
+                          class="d-inline-block"
+                          @click="getActionLogicString(action.id)"
+                          :activation-handler="on"
+                          color="unset"
+                          prepend-icon="mdi-information"
+                      ></AlbatrossButton>
                     </template>
                     <v-card>
                       <v-card-title
@@ -666,14 +687,17 @@
                       <v-divider></v-divider>
 
                       <v-card-actions>
-                        <v-btn @click="copyToClipBoard()">
-                          Copy
-                        </v-btn>
+                        <AlbatrossButton
+                            @click="copyToClipBoard()"
+                            color="unset"
+                            text="Copy"
+                        ></AlbatrossButton>
                         <v-spacer></v-spacer>
-                        <v-btn
-                            @click="showActionLogicString = false">
-                          OK
-                        </v-btn>
+                        <AlbatrossButton
+                            @click="showActionLogicString = false"
+                            color="unset"
+                            text="OK"
+                        ></AlbatrossButton>
                       </v-card-actions>
                     </v-card>
                   </v-dialog>
@@ -681,11 +705,13 @@
                 <v-spacer></v-spacer>
                 <v-toolbar-items
                     v-if="((action.processStepEventLogicList && action.processStepEventLogicList.length > 0) || action.alwaysEnabled) && userCanEdit">
-                  <v-btn text color="primary"
-                         @click="[action.logicListChanged = true, action.logicMargin = 0, action.processStepEventLogicList = [], action.alwaysEnabled = false]">
-                    <v-icon>clear</v-icon>
-                    Clear All
-                  </v-btn>
+                  <AlbatrossButton
+                      variant="text"
+                      color="primary"
+                      @click="[action.logicListChanged = true, action.logicMargin = 0, action.processStepEventLogicList = [], action.alwaysEnabled = false]"
+                      prepend-icon="clear"
+                      text="Clear All"
+                  ></AlbatrossButton>
                 </v-toolbar-items>
               </v-toolbar>
               <v-card flat class="text-left px-3 primary--text" color="transparent">
@@ -693,11 +719,14 @@
                   <div v-for="(l, index) in action.processStepEventLogicList.filter(a => !a.archived)"
                        :style="{'margin-left': getLogicMargin(l, action, index)}"
                        :key="index">
-                    <v-btn small class="ml-1 mr-1 mt-1"
-                           :disabled="!userCanEdit"
-                           @click="[l.archived = true, action.logicListChanged = true]">
-                      {{ getLogicButtonText(l) }}
-                    </v-btn>
+                    <AlbatrossButton
+                        size="small"
+                        class="ml-1 mr-1 mt-1"
+                        :disabled="!userCanEdit"
+                        @click="[l.archived = true, action.logicListChanged = true]"
+                        color="unset"
+                        :text=" getLogicButtonText(l) "
+                    ></AlbatrossButton>
                   </div>
                 </div>
                 <div v-else>
@@ -705,36 +734,51 @@
                              v-for="(l, idx) in action.processStepEventLogicList.filter(a => !a.archived)"
                              :key="idx">
                     <template v-slot:activator="{ on:tooltip }">
-                      <v-btn small class="ml-1 mr-1 mt-1"
-                             v-on="{ ...tooltip }"
-                             :disabled="!userCanEdit"
-                             @click="[l.archived = true, action.logicListChanged = true]">
-                        {{ l.requirementNbr || l.operationType }}
-                      </v-btn>
+                      <AlbatrossButton
+                          size="small"
+                          class="ml-1 mr-1 mt-1"
+                          :activation-handler="{ ...tooltip }"
+                          :disabled="!userCanEdit"
+                          @click="[l.archived = true, action.logicListChanged = true]"
+                          color="unset"> {
+                        { l.requirementNbr || l.operationType }}
+                      </AlbatrossButton>
                     </template>
                     <span>{{ getLogicButtonText(l) }}</span>
                   </v-tooltip>
                 </div>
-                <v-btn small class="ml-1 mr-1 mt-1 primary--text" v-if="action.alwaysEnabled"
-                       :disabled="!userCanEdit"
-                       @click="[action.logicListChanged = true, action.alwaysEnabled = !action.alwaysEnabled]">
-                  Always Enabled
-                </v-btn>
+                <AlbatrossButton
+                    size="small"
+                    class="ml-1 mr-1 mt-1 primary--text"
+                    v-if="action.alwaysEnabled"
+                    :disabled="!userCanEdit"
+                    @click="[action.logicListChanged = true, action.alwaysEnabled = !action.alwaysEnabled]"
+                    color="unset"
+                    text="ALWAYS ENABLED"
+                ></AlbatrossButton>
               </v-card>
               <v-toolbar flat dense color="transparent">
                 <v-toolbar-title class="title-large">Available Operations</v-toolbar-title>
               </v-toolbar>
               <v-card flat class="text-left px-3" color="transparent">
-                <v-btn small class="ml-1 mr-1 mt-1 primary--text" v-for="(ot, index) in operationTypes" :key="index"
-                       :disabled="!userCanEdit"
-                       @click="[action.logicListChanged = true, action.alwaysEnabled = false, action.processStepEventLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})]">
-                  {{ ot.operationType }}
-                </v-btn>
-                <v-btn small class="ml-1 mr-1 mt-1 primary--text"
-                       :disabled="!userCanEdit"
-                       @click="[action.logicListChanged = true, action.processStepEventLogicList = [], action.alwaysEnabled = true]">
-                  Always Enabled
-                </v-btn>
+                <AlbatrossButton
+                    size="small"
+                    class="ml-1 mr-1 mt-1 primary--text"
+                    v-for="(ot, index) in operationTypes"
+                    :key="index"
+                    :disabled="!userCanEdit"
+                    @click="[action.logicListChanged = true, action.alwaysEnabled = false, action.processStepEventLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})]"
+                    color="unset"
+                    :text=" ot.operationType "
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    class="ml-1 mr-1 mt-1 primary--text"
+                    :disabled="!userCanEdit"
+                    @click="[action.logicListChanged = true, action.processStepEventLogicList = [], action.alwaysEnabled = true]"
+                    color="unset"
+                    text="ALWAYS ENABLED"
+                ></AlbatrossButton>
               </v-card>
               <v-toolbar flat dense color="transparent">
                 <v-toolbar-title class="title-large">Requirements</v-toolbar-title>
@@ -744,13 +788,15 @@
                            :disabled="logicStringToggle"
                            v-for="r in selectedEventRequirements" :key="r.id">
                   <template v-slot:activator="{ on:tooltip }">
-                    <v-btn :class="{'d-block': logicStringToggle}"
-                           small class="ml-1 mr-1 mt-1 primary--text"
-                           :disabled="!userCanEdit"
-                           v-on="{ ...tooltip }"
-                           @click="[action.logicListChanged = true, action.alwaysEnabled = false, action.processStepEventLogicList.push({ requirementNbr: r.requirementNbr, processStepEventRequirementId: r.id, archived: false, logicString: r.logicString })]">
-                      {{ logicStringToggle ? getLogicButtonText(r) : r.requirementNbr }}
-                    </v-btn>
+                    <AlbatrossButton
+                        :class="{'d-block': logicStringToggle}"
+                        size="small"
+                        class="ml-1 mr-1 mt-1 primary--text"
+                        :disabled="!userCanEdit"
+                        :activation-handler="{ ...tooltip }"
+                        @click="[action.logicListChanged = true, action.alwaysEnabled = false, action.processStepEventLogicList.push({ requirementNbr: r.requirementNbr, processStepEventRequirementId: r.id, archived: false, logicString: r.logicString })]"
+                        color="unset"
+                    > {{ logicStringToggle ? getLogicButtonText(r) : r.requirementNbr }} </AlbatrossButton>
                   </template>
                   <span>{{ getLogicButtonText(r) }}</span>
                 </v-tooltip>
@@ -759,12 +805,15 @@
               <div v-if="actionLogicError" class="error-text ml-3 mt-3">
                 <strong>* ERROR: </strong>{{ actionLogicErrorMsg }}
               </div>
-              <v-btn v-if="userCanEdit" class="mt-4 ml-3 mb-4"
-                     :disabled="!action.actionName" color="primary"
-                     @click="validateActionLogicString(action, true)">
-                <v-icon class="mr-2">save</v-icon>
-                Save Changes
-              </v-btn>
+              <AlbatrossButton
+                  v-if="userCanEdit"
+                  class="mt-4 ml-3 mb-4"
+                  :disabled="!action.actionName"
+                  color="primary"
+                  @click="validateActionLogicString(action, true)"
+                  prepend-icon="save"
+                  text="Save Changes"
+              ></AlbatrossButton>
 
               <v-toolbar flat>
                 <v-toolbar-title class="title-large">Event Custom Fields</v-toolbar-title>
@@ -807,9 +856,15 @@
 
 
           <template #item.draggable="{item}" style="width: 50px">
-            <v-btn text v-if="userCanEdit" icon small color="primary" class="handle">
-              <v-icon>drag_handle</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                v-if="userCanEdit"
+                icon
+                size="small"
+                color="primary"
+                class="handle"
+                prepend-icon="drag_handle"
+            ></AlbatrossButton>
           </template>
           <template #item.actionName="{item: action}" class="text-left">{{ action.actionName }}</template>
           <template #item.actionType="{item: action}" class="text-left">{{ action.actionType }}</template>
@@ -822,20 +877,36 @@
           </template>
           <template #item.icons="{item: action}">
             <div style="display: flex; justify-content: flex-end">
-              <v-btn text color="primary" v-if="userCanEdit"
-                     @click="duplicateAction(action.id)">
-                <v-icon>mdi-content-copy</v-icon>
-              </v-btn>
-              <v-btn text color="primary" @click="[expanded = [action]]" v-if="!expanded.includes(action)">
-                <v-icon>edit</v-icon>
-              </v-btn>
-              <v-btn text color="primary" @click="expanded = []" v-else>
-                <v-icon v-if="$vuetify.breakpoint.smAndDown">close</v-icon>
-                <span v-else>cancel</span>
-              </v-btn>
-              <v-btn small text color="primary" @click="eventActionToDelete = action">
-                <v-icon>delete</v-icon>
-              </v-btn>
+              <AlbatrossButton
+                  variant="text"
+                  color="primary"
+                  v-if="userCanEdit"
+                  @click="duplicateAction(action.id)"
+                  prepend-icon="mdi-content-copy"
+              ></AlbatrossButton>
+              <AlbatrossButton
+                  variant="text"
+                  color="primary"
+                  @click="[expanded = [action]]"
+                  v-if="!expanded.includes(action)"
+                  prepend-icon="edit"
+              ></AlbatrossButton>
+              <AlbatrossButton
+                  variant="text"
+                  color="primary"
+                  @click="expanded = []"
+                  v-else
+                  :prepend-icon="$vuetify.breakpoint.smAndDown ? 'close' : ''"
+                  :text="$vuetify.breakpoint.smAndDown ? '' : 'cancel'"
+              ></AlbatrossButton>
+
+              <AlbatrossButton
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  @click="eventActionToDelete = action"
+                  prepend-icon="delete"
+              ></AlbatrossButton>
             </div>
           </template>
 
@@ -851,6 +922,7 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import draggable from 'vuedraggable'
 import {
   getRequest,

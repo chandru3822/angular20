@@ -39,14 +39,12 @@
           <v-card-actions>
             <v-spacer></v-spacer>
 
-            <v-btn
-              color="primary"
-              dark
-              class="white--text"
-              @click="deleteError = false"
-            >
-              OK
-            </v-btn>
+            <AlbatrossButton
+                color="primary"
+                class=""
+                @click="deleteError = false"
+                text="OK"
+            ></AlbatrossButton>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -59,17 +57,20 @@
               <v-toolbar-title class="title-large">Process Step Status Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text color="primary"
-                       @click="[addNewProcessStepStatusType = !addNewProcessStepStatusType, expanded = [], getCompanyProcessStepStatusTypes()]"
-                       v-if="userCanAdd">
-                  <v-icon v-if="!addNewProcessStepStatusType">add</v-icon>
-                  <v-icon v-else-if="$vuetify.breakpoint.smAndDown">close</v-icon>
-                  <span v-if="!$vuetify.breakpoint.smAndDown">{{ addNewProcessStepStatusType ? 'Cancel' : 'Add Process Step Status Type' }}</span>
-                </v-btn>
-                <v-btn text color="primary" @click="expandPsst = !expandPsst">
-                  <v-icon v-if="!expandPsst">mdi-chevron-down</v-icon>
-                  <v-icon v-else>mdi-chevron-up</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    variant="text"
+                    color="primary"
+                    @click="[addNewProcessStepStatusType = !addNewProcessStepStatusType, expanded = [], getCompanyProcessStepStatusTypes()]"
+                    v-if="userCanAdd"
+                    :prepend-icon="!addNewProcessStepStatusType ? 'add' : 'close'"
+                    :text="$vuetify.breakpoint.smAndDown ? '' : addNewProcessStepStatusType ? 'Cancel' : 'Add Process Step Status Type'"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    variant="text"
+                    color="primary"
+                    @click="expandPsst = !expandPsst"
+                    :prepend-icon="!expandPsst ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+                ></AlbatrossButton>
               </v-toolbar-items>
             </v-toolbar>
             <div class="mb-4">
@@ -117,7 +118,14 @@
                     </template>
                     <template #item.icons="{item}" class="text-right">
                       <div class="flex-display">
-                        <v-btn v-if="userCanEdit" small text color="primary" @click="deleteProcessStepStatusType=item"><v-icon>delete</v-icon></v-btn>
+                        <AlbatrossButton
+                            v-if="userCanEdit"
+                            size="small"
+                            variant="text"
+                            color="primary"
+                            @click="deleteProcessStepStatusType=item"
+                            prepend-icon="delete"
+                        ></AlbatrossButton>
                       </div>
                     </template>
               </v-data-table>
@@ -131,15 +139,20 @@
               <v-toolbar-title class="title-large">Links</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text color="primary" @click="getLinksForProcessStep" v-if="userCanAdd">
-                  <v-icon v-if="!addNewLink">add</v-icon>
-                  <v-icon v-else-if="$vuetify.breakpoint.smAndDown">close</v-icon>
-                  <span v-if="!$vuetify.breakpoint.smAndDown">{{ addNewLink ? 'Cancel' : 'Add Link' }}</span>
-                </v-btn>
-                <v-btn text color="primary" @click="expandLinks = !expandLinks">
-                  <v-icon v-if="!expandLinks">mdi-chevron-down</v-icon>
-                  <v-icon v-else>mdi-chevron-up</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    variant="text"
+                    color="primary"
+                    @click="getLinksForProcessStep"
+                    v-if="userCanAdd"
+                    :prepend-icon="!addNewLink ? 'add' : 'close'"
+                    :text="$vuetify.breakpoint.smAndDown ? '' : addNewLink ? 'Cancel' : 'Add Link'"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    variant="text"
+                    color="primary"
+                    @click="expandLinks = !expandLinks"
+                    :prepend-icon="!expandLinks ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+                ></AlbatrossButton>
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="square-card pa-2" color="primary lighten-9" v-if="addNewLink">
@@ -167,7 +180,14 @@
                     <v-list-item-content>
                       {{ a.link }}
                     </v-list-item-content>
-                    <v-btn v-if="userCanEdit" small text color="primary" @click="deleteLink=a"><v-icon>delete</v-icon></v-btn>
+                    <AlbatrossButton
+                        v-if="userCanEdit"
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        @click="deleteLink=a"
+                        prepend-icon="delete"
+                    ></AlbatrossButton>
                   </v-list-item>
                 </v-list>
               </draggable>
@@ -245,6 +265,7 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import draggable from 'vuedraggable'
 import {getAvailableForProcessStep} from '@/services/processStepStatusTypeService'
 import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
@@ -277,6 +298,7 @@ const props = defineProps({
 const {nonAdminAdd} = props;
 
 
+      const nonAdminAddWhiteListedPositionsChanged = ref(false)
       const psLoading = ref(true)
       const expandPsst = ref(true)
       const expandLinks = ref(true)
@@ -416,7 +438,6 @@ onMounted(async () => {
       store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await putRequest(`/processStep?savePositions=${nonAdminAddWhiteListedPositionsChanged.value ?? false}`, processStep.value)
-        editName.value = false
         getSnackbar('SUCCESS', 'Process Step Updated')
         handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {

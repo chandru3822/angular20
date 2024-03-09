@@ -6,15 +6,20 @@
           <v-toolbar-title class="title-large">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="[addNewType = !addNewType, getAvailableTypes()]" text v-if="userCanAdd" color="primary">
-              <v-icon v-if="!addNewType">add</v-icon>
-              <v-icon v-else-if="$vuetify.breakpoint.smAndDown">close</v-icon>
-              <span v-if="!$vuetify.breakpoint.smAndDown">{{ addNewType ? 'Cancel' : 'Add Attachment Type'}}</span>
-            </v-btn>
-            <v-btn text @click="expandTypes = !expandTypes">
-              <v-icon v-if="!expandTypes">mdi-chevron-down</v-icon>
-              <v-icon v-else>mdi-chevron-up</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                @click="[addNewType = !addNewType, getAvailableTypes()]"
+                variant="text"
+                v-if="userCanAdd"
+                color="primary"
+                :prepend-icon="!addNewType ? 'add' : 'close'"
+                :text="addNewType ? 'Cancel' : 'Add Attachment Type'"
+            ></AlbatrossButton>
+            <AlbatrossButton
+                variant="text"
+                @click="expandTypes = !expandTypes"
+                color="unset"
+                :prepend-icon="!expandTypes ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-row v-if="addNewType">
@@ -26,11 +31,12 @@
                             item-text="attachmentType"
                             return-object
             ></v-autocomplete>
-            <v-btn color="primary"
-                   :disabled="!newType.id"
-                   @click="addTypeToProcessStep">
-              Save
-            </v-btn>
+            <AlbatrossButton
+                color="primary"
+                :disabled="!newType.id"
+                @click="addTypeToProcessStep"
+                text="Save"
+            ></AlbatrossButton>
           </v-col>
         </v-row>
         <v-row v-if="expandTypes">
@@ -53,12 +59,6 @@
                 No attachment types for this process step
               </template>
 
-
-<!--                  <td style="width: 50px">-->
-<!--                    <v-btn text v-if="userCanEdit" icon small class="handle">-->
-<!--                      <v-icon>drag_handle</v-icon>-->
-<!--                    </v-btn>-->
-<!--                  </td>-->
                   <template #item.attachmentType="{item}" class="text-left">{{item.attachmentType}}</template>
                   <template #item.allowUpload="{item}">
                     <v-checkbox type="checkbox" class="ml-3" v-model="item.allowUpload"
@@ -79,11 +79,20 @@
                     <div style="display: flex; justify-content: flex-end">
                       <router-link class="no-text-decoration pr-3"
                                    :to="`/settings/processStep/${processStepId}/attachmentType/${item.id}`">
-                        <v-btn small text color="primary">
-                          <v-icon>edit</v-icon>
-                        </v-btn>
+                        <AlbatrossButton
+                            size="small"
+                            variant="text"
+                            color="primary"
+                            prepend-icon="edit"
+                        ></AlbatrossButton>
                       </router-link>
-                      <v-btn small color="primary" text @click="attachmentTypeToDelete = item"><v-icon>delete</v-icon></v-btn>
+                      <AlbatrossButton
+                          size="small"
+                          color="primary"
+                          variant="text"
+                          @click="attachmentTypeToDelete = item"
+                          prepend-icon="delete"
+                      ></AlbatrossButton>
                     </div>
                   </template>
 
@@ -100,6 +109,7 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import orderBy from 'lodash.orderby'
 import {
   getRequest,

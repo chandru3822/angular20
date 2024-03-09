@@ -23,16 +23,13 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-
-          <v-btn
+          <AlbatrossButton
               color="primary"
-              text
-              dark
-              class="white--text"
+              variant="text"
+              class=""
               @click="deleteError = false"
-          >
-            OK
-          </v-btn>
+              text="OK"
+          ></AlbatrossButton>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -42,10 +39,14 @@
           <v-toolbar-title class="title-large">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="!createNew && userCanAdd" @click="createNew = !createNew">
-              <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE">Create Group</span>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                v-if="!createNew && userCanAdd"
+                @click="createNew = !createNew"
+                prepend-icon="add"
+                text="Create Group"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="createNew" text class="text-left one-hunned pa-3 square-card add-new" flat
@@ -57,18 +58,19 @@
                 v-model="newGroup.groupName"
             ></v-text-field>
           </div>
-          <v-btn
+          <AlbatrossButton
               color="primary"
-              class="white--text mr-2"
+              class="mr-2"
               :disabled="!newGroup.groupName"
-              @click="saveFieldGroup()">
-            Save
-          </v-btn>
-          <v-btn
-              text color="primary"
-              @click="[newGroup = {}, createNew = false]">
-            Cancel
-          </v-btn>
+              @click="saveFieldGroup()"
+              text="Save"
+          ></AlbatrossButton>
+          <AlbatrossButton
+              variant="text"
+              color="primary"
+              @click="[newGroup = {}, createNew = false]"
+              text="Cancel"
+          ></AlbatrossButton>
         </v-card>
         <v-row>
           <v-col cols="12">
@@ -97,9 +99,15 @@
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
                   <td style="width: 50px">
-                    <v-btn text color="primary" icon small class="handle" v-if="userCanEdit">
-                      <v-icon>drag_handle</v-icon>
-                    </v-btn>
+                    <AlbatrossButton
+                        variant="text"
+                        color="primary"
+                        icon
+                        size="small"
+                        class="handle"
+                        v-if="userCanEdit"
+                        prepend-icon="drag_handle"
+                    ></AlbatrossButton>
                   </td>
                   <td class="text-left">
                     <div v-if="userCanEdit">
@@ -122,27 +130,42 @@
                     <div class="item-icons">
                       <v-tooltip left>
                         <template v-slot:activator="{ on, attrs }">
-                          <v-btn small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
-                                 v-on="on">
-                            <v-icon>mdi-information</v-icon>
-                          </v-btn>
+                          <AlbatrossButton
+                              size="small"
+                              icon
+                              color="primary"
+                              @click="copyToClipBoard(item.id)"
+                              v-bind="attrs"
+                              :activation-handler="on"
+                              prepend-icon="mdi-information"
+                          ></AlbatrossButton>
                         </template>
                         <span>Custom Field Group Id: {{ item.id }}</span>
                         <div class="text-center">(click to copy)</div>
                       </v-tooltip>
-                      <v-btn v-if="userCanAdd" small text color="primary"
-                             @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
-                        <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
-                        <v-icon v-else>add</v-icon>
-                      </v-btn>
-                      <v-btn small text color="primary"
-                             @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
-                        <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
-                        <v-icon v-else>expand_more</v-icon>
-                      </v-btn>
-                      <v-btn v-if="userCanEdit" small text color="primary" @click="customFieldGroupToDelete=item">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
+                      <AlbatrossButton
+                          v-if="userCanAdd"
+                          size="small"
+                          variant="text"
+                          color="primary"
+                          @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]"
+                          :prepend-icon="addField && expanded.includes(item) ? 'remove' : 'add'"
+                      ></AlbatrossButton>
+                      <AlbatrossButton
+                          size="small"
+                          variant="text"
+                          color="primary"
+                          @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]"
+                          :prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
+                      ></AlbatrossButton>
+                      <AlbatrossButton
+                          v-if="userCanEdit"
+                          size="small"
+                          variant="text"
+                          color="primary"
+                          @click="customFieldGroupToDelete=item"
+                          prepend-icon="delete"
+                      ></AlbatrossButton>
                       <span v-if="item.showGroupId" class="flex-align-items-center">id: {{ item.id }}</span>
                     </div>
                   </td>
@@ -209,7 +232,11 @@
                         {{ item.fieldName }}
                       </template>
                     </v-autocomplete>
-                    <v-btn color="primary" @click="addField = false">Cancel</v-btn>
+                    <AlbatrossButton
+                        color="primary"
+                        @click="addField = false"
+                        text="Cancel"
+                    ></AlbatrossButton>
                   </v-col>
                   <v-col cols="12" class="px-3 py-0 pt-2 justify"
                          v-if="!addField && (!item.customFields || item.customFields.length === 0)">
@@ -264,11 +291,13 @@
                                             @allow-changed="cf.customFieldGroupAssignmentReadOnlyAllow = ($event === 0); cf.positionsChanged = true"
                                             @checkbox-changed="cf.customFieldGroupAssignmentReadOnly = $event; cf.positionsChanged = true"></MultiSelectGroup>
                                         <br/>
-                                        <v-btn color="primary" dark class="d-inline-block white--text"
-                                               @click="saveReadOnlyAndWhiteList(cf)">
-                                          <v-icon class="mr-2">save</v-icon>
-                                          Save Read Only
-                                        </v-btn>
+                                        <AlbatrossButton
+                                            color="primary"
+                                            class="d-inline-block"
+                                            @click="saveReadOnlyAndWhiteList(cf)"
+                                            prepend-icon="save"
+                                            text="Save Read Only"
+                                        ></AlbatrossButton>
                                       </v-card-text>
                                     </v-card>
                                   </v-col>
@@ -300,11 +329,13 @@
                                             @allow-changed="cf.customFieldGroupAssignmentHiddenAllow = ($event === 0); cf.hiddenPositionsChanged = true"
                                             @checkbox-changed="cf.customFieldGroupAssignmentHidden = $event; cf.hiddenPositionsChanged = true"></MultiSelectGroup>
                                         <br/>
-                                        <v-btn color="primary" dark class="white--text d-inline-block"
-                                               @click="saveHiddenAndWhiteList(cf)">
-                                          <v-icon class="mr-2">save</v-icon>
-                                          Save Hidden
-                                        </v-btn>
+                                        <AlbatrossButton
+                                            color="primary"
+                                            class="d-inline-block"
+                                            @click="saveHiddenAndWhiteList(cf)"
+                                            prepend-icon="save"
+                                            text="Save Hidden"
+                                        ></AlbatrossButton>
                                       </v-card-text>
                                     </v-card>
                                   </v-col>
@@ -352,11 +383,13 @@
                                           @allow-changed="cf.customFieldGroupAssignmentHiddenAllow = ($event === 0); cf.hiddenPositionsChanged = true"
                                           @checkbox-changed="cf.customFieldGroupAssignmentHidden = $event; cf.hiddenPositionsChanged = true"></MultiSelectGroup>
                                       <br/>
-                                      <v-btn color="primary" dark class="white--text d-inline-block"
-                                             @click="saveHiddenAndWhiteList(cf)">
-                                        <v-icon class="mr-2">save</v-icon>
-                                        Save Hidden
-                                      </v-btn>
+                                      <AlbatrossButton
+                                          color="primary"
+                                          class="d-inline-block"
+                                          @click="saveHiddenAndWhiteList(cf)"
+                                          prepend-icon="save"
+                                          text="Save Hidden"
+                                      ></AlbatrossButton>
                                     </v-card-text>
                                   </v-card>
                                 </v-col>
@@ -365,11 +398,14 @@
                           </v-list-item-content>
                           <v-tooltip left>
                             <template v-slot:activator="{ on, attrs }">
-                              <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)"
-                                     v-bind="attrs"
-                                     v-on="on">
-                                <v-icon>mdi-information</v-icon>
-                              </v-btn>
+                              <AlbatrossButton
+                                  icon
+                                  color="primary"
+                                  @click="copyToClipBoard(cf.customFieldGroupAssignmentId)"
+                                  v-bind="attrs"
+                                  :activation-handler="on"
+                                  prepend-icon="mdi-information"
+                              ></AlbatrossButton>
                             </template>
                             <span>Custom Field Group Assignment Id: {{ cf.customFieldGroupAssignmentId }}</span>
                             <div class="text-center">(click to copy)</div>
@@ -379,10 +415,14 @@
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
-                                  <v-btn text small color="primary" v-on="{...tooltip, ...menu}"
-                                         v-if="!cf.ancillaryCustomFieldGroupAssignmentId">
-                                    <v-icon>mdi-cursor-move</v-icon>
-                                  </v-btn>
+                                  <AlbatrossButton
+                                      variant="text"
+                                      size="small"
+                                      color="primary"
+                                      :activation-handler="{...tooltip, ...menu}"
+                                      v-if="!cf.ancillaryCustomFieldGroupAssignmentId"
+                                      prepend-icon="mdi-cursor-move"
+                                  ></AlbatrossButton>
                                 </template>
                                 <span>Move to Other Group</span>
                               </v-tooltip>
@@ -395,15 +435,22 @@
                               </v-list-item>
                             </v-list>
                           </v-menu>
-                          <v-btn text color="primary" small @click="[$set(cf, 'edit', !cf.edit), getPositions()]"
-                                 v-if="userCanEdit && !cf.dataViewFieldConfigId && !cf.dataViewChildFieldConfigId">
-                            <v-icon v-if="!cf.edit">edit</v-icon>
-                            <v-icon v-else>close</v-icon>
-                          </v-btn>
-                          <v-btn v-if="userCanEdit" text color="primary" small
-                                 @click="[assignmentToDelete=cf, customFieldGroupToDelete=item]">
-                            <v-icon>delete</v-icon>
-                          </v-btn>
+                          <AlbatrossButton
+                              variant="text"
+                              color="primary"
+                              size="small"
+                              @click="[$set(cf, 'edit', !cf.edit), getPositions()]"
+                              v-if="userCanEdit && !cf.dataViewFieldConfigId && !cf.dataViewChildFieldConfigId"
+                              :prepend-icon="!cf.edit ? 'edit' : 'close'"
+                          ></AlbatrossButton>
+                          <AlbatrossButton
+                              v-if="userCanEdit"
+                              variant="text"
+                              color="primary"
+                              small
+                              @click="[assignmentToDelete=cf, customFieldGroupToDelete=item]"
+                              prepend-icon="delete"
+                          ></AlbatrossButton>
                         </v-list-item>
                         <v-divider v-if="cf.edit"></v-divider>
                       </v-list>
@@ -432,6 +479,7 @@
 
 <script setup>
 import draggable from 'vuedraggable'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {AppMutations} from '@/stores/AppStore'
 
 import {

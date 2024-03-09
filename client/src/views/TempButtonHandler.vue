@@ -2,16 +2,23 @@
   <v-main>
     <v-container>
       <v-row>
-        <v-col cols="12">
+        <v-col cols="6">
           <h3 class="mb-5">Paste the v-btn code here</h3>
-          <v-textarea v-model="vBtnValue" outlined @input="albatrossButtonValue = null"
-                      ref="inputField"
+          <v-textarea v-model="vBtnValue" outlined @input="vBtnInput()"
+                      ref="inputField" auto-grow
                       label="V-BTN Value" />
           <AlbatrossButton
               :disabled="!vBtnValue"
               @click="processBtn" text="Submit"></AlbatrossButton>
           <AlbatrossButton class="ml-4" variant="text"
               @click="doClear" text="Clear"></AlbatrossButton>
+        </v-col>
+        <v-col cols="6" class="mt-9">
+          <v-checkbox dense hide-details label="Auto copy to clipboard?" v-model="autoCopyToClipboard"></v-checkbox>
+          <v-checkbox dense hide-details label="Reset and Refocus on Paste?" v-model="resetFieldsOnPaste"></v-checkbox>
+          <div>
+            When doing a lot of buttons without irregular behavior this will copy to clipboard and reset the fields fast & easy copy paste.
+          </div>
         </v-col>
       </v-row>
 
@@ -46,12 +53,20 @@ const snackbar = vueInstance.$snackbar
 const vBtnValue = ref(null)
 const albatrossButtonValue = ref(null)
 const inputField = ref(null)
+const autoCopyToClipboard = ref(false)
+const resetFieldsOnPaste = ref(false)
 
 //for testing
-// vBtnValue.value = '            <v-btn text color="primary" @click="expandActions = !expandActions">\n' +
-//     '              <v-icon v-if="!expandActions">mdi-chevron-down</v-icon>\n' +
-//     '              <v-icon v-else>mdi-chevron-up</v-icon>\n' +
-//     '            </v-btn>'
+// vBtnValue.value = '<v-btn\n' +
+//     '                                text\n' +
+//     '                                class="d-inline-block"\n' +
+//     '                                v-bind="attrs"\n' +
+//     '                                v-on="on"\n' +
+//     '                              >\n' +
+//     '                                <v-icon>\n' +
+//     '                                  mdi-information\n' +
+//     '                                </v-icon>\n' +
+//     '                              </v-btn>'
 
 onMounted(() => {
   // processBtn()
@@ -66,6 +81,8 @@ const doClear = () => {
 const processBtn = async () => {
   let tempString = vBtnValue.value
   tempString = tempString.replaceAll('v-btn', 'AlbatrossButton')
+  tempString = tempString.replaceAll(' dark ', ' ')
+  tempString = tempString.replaceAll(' dark\n', ' ')
   tempString = tempString.replaceAll(' text ', ' variant="text" ')
   tempString = tempString.replaceAll(' text\n', ' variant="text" ')
   tempString = tempString.replaceAll(' outlined ', ' variant="outlined" ')
@@ -81,7 +98,11 @@ const processBtn = async () => {
   }
   tempString = tempString.replaceAll(' large ', ' size="large" ')
   tempString = tempString.replaceAll('v-on="on"', ':activation-handler="on"')
-  // tempString = tempString.replaceAll('<v-icon', '\n<v-icon')
+  tempString = tempString.replaceAll('<v-icon', '\n<v-icon')
+
+  //handle no color
+  //if there is no color then it needs to be set to 'unset' as we default to color = primary since that is the most commonly used
+  tempString = handleNoColor(tempString)
 
   //handle exactly 2 icons
   tempString = handleTwoIcons(tempString)
@@ -124,11 +145,25 @@ const processBtn = async () => {
     console.error("SORRY - Couldn't Format", e)
   }
 
-  albatrossButtonValue.value = formatted ? formatted : tempString
+  let finalValue = formatted ? formatted : tempString
+  finalValue = finalValue.replace('</AlbatrossButton>\n', '</AlbatrossButton>')
+  albatrossButtonValue.value = finalValue
 
-  copyToClipboard()
+  if(autoCopyToClipboard.value) {
+    copyToClipboard()
+  }
+  if(resetFieldsOnPaste.value) {
+    doClear()
+  }
 }
 
+const vBtnInput = () => {
+  albatrossButtonValue.value = null
+  if(resetFieldsOnPaste.value) {
+    processBtn()
+    // doClear()
+  }
+}
 const handleButtonText = (textString) => {
   const regExString = new RegExp(`(?<=>).*?(?=</AlbatrossButton>)`)
   textString = textString.replaceAll('\n', '')
@@ -145,6 +180,14 @@ const handleButtonText = (textString) => {
       let value = ` text="${textBetween[0].trim()}"`
       textString = textString.substring(0, index) + value + textString.substring(index)
     }
+  }
+  return textString
+}
+
+const handleNoColor = (textString) => {
+  let indexOfColor = textString.indexOf('color')
+  if(indexOfColor === -1) {
+    textString = textString.replace('>', ` color="unset">`)
   }
   return textString
 }
@@ -170,7 +213,7 @@ const handleSingleButtonTag = (textString, htmlTag, newProperty) => {
   let endHtmlTag = `</${htmlTag}>`
   let startHtmlTag = `<${htmlTag}`
   const regExString = new RegExp(`(?<=>).*?(?=${endHtmlTag})`)
-  const iconBetween = regExString.exec(textString);
+  let iconBetween = regExString.exec(textString);
 
   //this will only have a value and refactor the icon if there is only 1 of them
   if(iconBetween && iconBetween[0]) {
@@ -218,13 +261,10 @@ const handleConditionalSize = (textString, size, hardcodedSize) => {
 
 const handleTwoIcons = (textString) => {
   //specifically only handle exactly two icons
-  const regExString = new RegExp(`(?<=>).*?(?=</AlbatrossButton>)`)
-  const myValue = regExString.exec(textString);
   let vIf
   let firstIcon, secondIcon
   let stringToRemove, stringToRemove2
 
-  if(myValue && myValue[0]) {
     //get the v-if (have to get the text in the icon first in case the btn itself has a v-if
     const regExString1 = new RegExp(`(?<=<v-icon).*?(?=</v-icon>)`)
     const regExString2 = new RegExp(`(?<=v-if=").*?(?=")`)
@@ -236,9 +276,9 @@ const handleTwoIcons = (textString) => {
       }
     }
     //check if there are only 2
-    if((myValue[0].match(/<v-icon/g))?.length === 2) {
+    if((textString.match(/<v-icon/g))?.length === 2) {
       //get the first v-icon then remove it
-      let stringToTest = myValue[0]
+      let stringToTest = String(textString)
       const regExString3 = new RegExp(`(?<=>).*?(?=</v-icon>)`)
       const iconValue = regExString3.exec(stringToTest);
       if(iconValue && iconValue[0]) {
@@ -248,7 +288,6 @@ const handleTwoIcons = (textString) => {
         stringToRemove = stringToTest.substring(firstIndex, secondIndex + 9)
         stringToTest = stringToTest.replace(stringToRemove, '')
 
-        console.log('b',stringToTest)
         const regExString4 = new RegExp(`(?<=>).*?(?=</v-icon>)`)
         const iconValue2 = regExString4.exec(stringToTest);
         if(iconValue2 && iconValue2[0]) {
@@ -262,13 +301,11 @@ const handleTwoIcons = (textString) => {
     }
 
 
-      console.log('randalogger', vIf)
     if(vIf && firstIcon && secondIcon) {
       textString = textString.replace(stringToRemove, '')
       textString = textString.replace(stringToRemove2, '')
       textString = textString.replace('>', ` :prepend-icon="${vIf} ? '${firstIcon}' : '${secondIcon}'">`)
     }
-  }
 
   return textString
 }

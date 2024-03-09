@@ -17,10 +17,14 @@
           <v-toolbar-title class="title-large">Ancillary Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="!createNew && userCanAdd" @click="createNew = !createNew">
-              <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE">Create Group</span>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                v-if="!createNew && userCanAdd"
+                @click="createNew = !createNew"
+                prepend-icon="add"
+                :text="!constants.IS_MOBILE ? 'Create Group' : ''"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="createNew" text class="text-left one-hunned pa-3 square-card add-new" flat
@@ -32,18 +36,19 @@
               v-model="newGroup.groupName"
             ></v-text-field>
           </div>
-          <v-btn
-            color="primary"
-            class="mr-2"
-            :disabled="!newGroup.groupName"
-            @click="saveFieldGroup()">
-            Save
-          </v-btn>
-          <v-btn
-              color="primary" text
-            @click="[newGroup = {}, createNew = false]">
-            Cancel
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              class="mr-2"
+              :disabled="!newGroup.groupName"
+              @click="saveFieldGroup()"
+              text="Save"
+          ></AlbatrossButton>
+          <AlbatrossButton
+              color="primary"
+              variant="text"
+              @click="[newGroup = {}, createNew = false]"
+              text="Cancel"
+          ></AlbatrossButton>
         </v-card>
         <v-row>
           <v-col cols="12">
@@ -73,9 +78,15 @@
               <template #item="{ item, index }">
                 <tr  :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
                   <td style="width: 50px">
-                    <v-btn text icon small class="handle" v-if="userCanEdit">
-                      <v-icon>drag_handle</v-icon>
-                    </v-btn>
+                    <AlbatrossButton
+                        variant="text"
+                        icon
+                        size="small"
+                        class="handle"
+                        v-if="userCanEdit"
+                        color="unset"
+                        prepend-icon="drag_handle"
+                    ></AlbatrossButton>
                   </td>
                   <td class="text-left">
                     <div v-if="userCanEdit">
@@ -95,19 +106,28 @@
                   </td>
                   <td class="text-right">
                     <div class="item-icons d-flex justify-end">
-                      <v-btn v-if="userCanAdd" small text
-                             @click="[addField = !addField, selectedIndex = index, expanded = [item], loadFieldsByParent()]">
-                        <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
-                        <v-icon v-else>add</v-icon>
-                      </v-btn>
-                      <v-btn small text
-                             @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
-                        <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
-                        <v-icon v-else>expand_more</v-icon>
-                      </v-btn>
-                      <v-btn small color="primary" text @click="cfGroupToDelete = item">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
+                      <AlbatrossButton
+                          v-if="userCanAdd"
+                          size="small"
+                          variant="text"
+                          @click="[addField = !addField, selectedIndex = index, expanded = [item], loadFieldsByParent()]"
+                          color="unset"
+                          :prepend-icon="addField && expanded.includes(item) ? 'remove' : 'add'"
+                      ></AlbatrossButton>
+                      <AlbatrossButton
+                          size="small"
+                          variant="text"
+                          @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]"
+                          color="unset"
+                          :prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
+                      ></AlbatrossButton>
+                      <AlbatrossButton
+                          size="small"
+                          color="primary"
+                          variant="text"
+                          @click="cfGroupToDelete = item"
+                          prepend-icon="delete"
+                      ></AlbatrossButton>
                     </div>
                   </td>
                 </tr>
@@ -129,7 +149,12 @@
                         {{ item.fieldName }}
                       </template>
                     </v-autocomplete>
-                    <v-btn text color="primary" @click="addField = false">Cancel</v-btn>
+                    <AlbatrossButton
+                        variant="text"
+                        color="primary"
+                        @click="addField = false"
+                        text="Cancel"
+                    ></AlbatrossButton>
                   </v-col>
                   <v-col cols="12" class="px-3 py-0 pt-2 justify"
                          v-if="!addField && (!item.customFields || item.customFields.length === 0)">
@@ -141,7 +166,7 @@
                                :disabled="!userCanEdit"
                                group="customFields" @start="drag=true" @end="drag=false"
                                @change="saveFieldChanges(item.customFields)">
-                      <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
+                      <v-list v-for="(cf, index) in item.customFields.filter(a => !a.archived)"
                               :key="index" class="pa-0" color="transparent">
                         <v-list-item :class="{grab: !item.attachmentTypeId}">
                           <v-list-item-action>
@@ -153,21 +178,10 @@
                           </v-list-item-content>
                           <v-menu offset-y
                                   v-if="localCustomFieldGroups.length > 1 && userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                            <template v-slot:activator="{ on: menu }">
-                              <v-tooltip bottom>
-                                <template v-slot:activator="{ on: tooltip }">
-                                  <v-btn text small v-on="{...tooltip, ...menu}"
-                                         v-if="!cf.ancillaryCustomFieldGroupAssignmentId">
-                                    <v-icon>mdi-cursor-move</v-icon>
-                                  </v-btn>
-                                </template>
-                                <span>Move to Other Group</span>
-                              </v-tooltip>
-                            </template>
                             <v-list>
                               <v-list-item
-                                v-for="(cfg, index) in filterBy(localCustomFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.attachmentTypeId })"
-                                :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
+                                v-for="(cfg, index) in localCustomFieldGroups.filter((g) => { return g.id !== cf.customFieldGroupId && !g.attachmentTypeId })"
+                                :key="index">
                                 <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
                               </v-list-item>
                             </v-list>
@@ -195,7 +209,7 @@
       Are you sure you want to delete this Custom Field Group: <strong>{{ groupToDeleteName }}</strong>?<br/>
     </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="!!customFieldToDelete"
-                        @confirm="[deleteWithChecks(), addField=false, newField={}]"
+                        @confirm="[deleteWithChecks(), addField=false]"
                         @close-dialog="customFieldToDelete=null">
       <span class="error--text">WARNING:</span>
       By deleting a field you will lose all data associated with the field. If you meant to
@@ -418,7 +432,6 @@ const deleteWithChecks = async () => {
     if (data?.length > 0) {
       deleteError.value = true
       item.deleteConfirm = false
-      fieldsInUse.value = data
       let errorMsg = 'Group Cannot Be Deleted'
       deleteHeader.value = 'Error Deleting Custom Field Group'
       deleteText.value = 'You cannot delete a group that has a field in use by other groups or requirements.'
@@ -430,7 +443,6 @@ const deleteWithChecks = async () => {
       snackbar('ERROR', errorMsg)
 
     } else {
-      fieldsInUse.value = []
       item.archived = true
       snackbar('SUCCESS', 'Item Deleted')
 
@@ -449,7 +461,7 @@ const loadFieldsByParent = async () => {
   try {
     const {data, status} = await getRequest(`/customField/getByParentProcessStep/${processStepId.value}`)
     ancillaryCustomFields.value = data
-    handleHidingGlobalLoader(this, status)
+    handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
@@ -467,13 +479,12 @@ const assignAncillaryCustomField = async (item) => {
     }
     const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
     item.customFields.push(data)
-    newField.value = {}
     selectedAncillaryField.value = {}
     parent.value = {}
     addField.value = false
     snackbar('SUCCESS', 'Field Added to Group')
 
-    handleHidingGlobalLoader(this, status)
+    handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Field to Group')

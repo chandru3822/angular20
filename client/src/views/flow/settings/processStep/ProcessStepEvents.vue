@@ -6,15 +6,20 @@
           <v-toolbar-title class="title-large">Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="[addNewEvent = !addNewEvent, getAvailableEvents()]" text color="primary" v-if="userCanAdd">
-              <v-icon v-if="!addNewEvent">add</v-icon>
-              <v-icon v-else-if="$vuetify.breakpoint.smAndDown">close</v-icon>
-              <span v-if="!$vuetify.breakpoint.smAndDown">{{ addNewEvent ? 'Cancel' : 'Add Event' }}</span>
-            </v-btn>
-            <v-btn text color="primary" @click="expandEvents = !expandEvents">
-              <v-icon v-if="!expandEvents">mdi-chevron-down</v-icon>
-              <v-icon v-else>mdi-chevron-up</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                @click="[addNewEvent = !addNewEvent, getAvailableEvents()]"
+                variant="text"
+                color="primary"
+                v-if="userCanAdd"
+                :prepend-icon="!addNewEvent ? 'add' : 'close'"
+                :text="$vuetify.breakpoint.smAndDown ? '' : addNewEvent ? 'Cancel' : 'Add Event'"
+            ></AlbatrossButton>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="expandEvents = !expandEvents"
+                :prepend-icon="!expandEvents ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-row v-if="addNewEvent">
@@ -33,11 +38,12 @@
                       item-value="id"
                       item-text="eventStatusType"
             ></v-select>
-            <v-btn color="primary"
-                   :disabled="!newEvent.id || !newEvent.initialCompanyEventStatusTypeId"
-                   @click="addEventToProcessStep">
-              Save
-            </v-btn>
+            <AlbatrossButton
+                color="primary"
+                :disabled="!newEvent.id || !newEvent.initialCompanyEventStatusTypeId"
+                @click="addEventToProcessStep"
+                text="Save"
+            ></AlbatrossButton>
           </v-col>
         </v-row>
         <v-row v-if="expandEvents">
@@ -64,26 +70,45 @@
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
                   <td style="width: 50px">
-                    <v-btn text color="primary" v-if="userCanEdit" icon small class="handle">
-                      <v-icon>drag_handle</v-icon>
-                    </v-btn>
+                    <AlbatrossButton
+                        variant="text"
+                        color="primary"
+                        v-if="userCanEdit"
+                        icon
+                        size="small"
+                        class="handle"
+                        prepend-icon="drag_handle"
+                    ></AlbatrossButton>
                   </td>
                   <td class="text-left">{{ item.eventName }}</td>
                   <td class="text-left">{{ item.initialEventStatusType }}</td>
                   <td>
                     <div class="d-flex justify-end" :class="{'flex-column' : $vuetify.breakpoint.smAndDown}">
-                      <v-btn small text :to="`/settings/event/${item.eventId}/components`" target="_blank"
-                             :style="{'text-decoration': 'none'}">
-                        <v-icon color="primary">mdi-cogs</v-icon>
-                      </v-btn>
-                      <v-btn :disabled="!userCanEdit" small text color="primary"
-                             @click="$router.push({ path: `/settings/processStep/${processStepId}/event/${item.id}` })">
-                        <v-icon>edit</v-icon>
-                      </v-btn>
-                      <v-btn :disabled="!userCanDelete" small text color="primary"
-                             @click="[itemToDelete=item, showDeleteDialog=true]">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
+                      <AlbatrossButton
+                          size="small"
+                          variant="text"
+                          :to="`/settings/event/${item.eventId}/components`"
+                          target="_blank"
+                          :html-html-style="{'text-decoration': 'none'}"
+                          prepend-icon="mdi-cogs"
+                          color="primary"
+                      ></AlbatrossButton>
+                      <AlbatrossButton
+                          :disabled="!userCanEdit"
+                          size="small"
+                          variant="text"
+                          color="primary"
+                          @click="router.push({ path: `/settings/processStep/${processStepId}/event/${item.id}` })"
+                          prepend-icon="edit"
+                      ></AlbatrossButton>
+                      <AlbatrossButton
+                          :disabled="!userCanDelete"
+                          size="small"
+                          variant="text"
+                          color="primary"
+                          @click="[itemToDelete=item, showDeleteDialog=true]"
+                          prepend-icon="delete"
+                      ></AlbatrossButton>
                     </div>
                   </td>
                 </tr>
@@ -104,6 +129,7 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
