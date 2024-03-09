@@ -66,13 +66,14 @@
 import {AppMutations} from "@/stores/AppStore";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getRequest, putRequest} from "@/helpers/helpers";
+import {useRoute} from "vue-router/composables"
 
 import {ref, computed, onMounted, getCurrentInstance} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
-const route = vueInstance.$route
+const route = useRoute()
 const vuetify = vueInstance.$vuetify
 
 const editName = ref(false)

@@ -197,17 +197,17 @@
 
 <script setup>
 import { AppMutations } from '@/stores/AppStore'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getRequest, getRequestWithParams, putRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
 import {useUserStore} from "@/stores/UserStorePinia.js";
+import {useRouter, useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
-const route = vueInstance.$route
-const router = vueInstance.$router
+const route = useRoute()
+const router = useRouter()
 const vuetify = vueInstance.$vuetify
 
 const userStore = useUserStore()

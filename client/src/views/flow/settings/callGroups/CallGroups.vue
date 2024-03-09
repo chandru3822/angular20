@@ -131,16 +131,18 @@
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
-
+  import {useRouter} from "vue-router/composables"
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
-  const router = vueInstance.$router
+  const router = useRouter()
 
   const addNew = ref(false)
   const search = ref(null)
+  const showError = ref(null)
+  const errorMsg = ref(null)
   const newCallGroup = ref({})
   const dataLoading = ref(true)
   const editGroup = ref(false)
@@ -169,11 +171,11 @@
     return callGroupToDelete.value ? callGroupToDelete.value.callGroupName : ''
   })
 
-  const debounceSearch = (debounce(() => {
+  const debounceSearch = debounce(() => {
     //don't allow search to be null - causes issues
     // search.value = search.value || ''
     getCallGroups()
-    }, 500))
+    }, 500)
 
   const filterCallGroups = computed(() => {
     return CallGroups.value.filter(cg => { return !cg.archived})
@@ -237,7 +239,7 @@
     errorMsg.value = ''
     store.commit(AppMutations.SET_LOADING, true)
     try {
-      const {status} = await postRequest(`/callGroup/`, item, 'blueraven')
+      const {status} = await postRequest(`/callGroup`, item, 'blueraven')
       handleHidingGlobalLoader(vueInstance, status)
     } catch (e) {
       console.error('*** ERROR ***', e)

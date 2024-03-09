@@ -71,6 +71,7 @@ const store = vueInstance.$store
 const projectStore = useProjectStore()
 const appStore = useProjectStore()
 const router = vueInstance.$router
+const route = vueInstance.$route
 const snackbar = vueInstance.$snackbar
 
 const props = defineProps({

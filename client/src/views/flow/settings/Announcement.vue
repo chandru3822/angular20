@@ -180,11 +180,11 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
-
+import {useRouter, useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
-const route = vueInstance.$route
-const router = vueInstance.$router
+const route = useRoute()
+const router = useRouter()
 const snackbar = vueInstance.$snackbar
 
 const store = vueInstance.$store

@@ -131,11 +131,12 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 import {computed, getCurrentInstance, ref, onMounted} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRouter} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
-const router = vueInstance.$router
+const router = useRouter()
 const userStore = useUserStore()
 
 const addNew = ref(false)
@@ -179,11 +180,9 @@ const filterEvents = computed(() => {
   })
 })
 
-const debounceGetSteps = () => {
-  debounce(function () {
-    getEvents()
-  }, 500)
-}
+const debounceGetSteps = debounce(() => {
+  getEvents()
+}, 500)
 
 const getResourceFields = async () => {
   if(addNew.value) {

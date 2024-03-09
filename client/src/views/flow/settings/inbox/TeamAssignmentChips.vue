@@ -33,7 +33,7 @@
               class="white--text text-capitalize clickable"
               :ripple="false"
               :class="unassignedTeamExits ? 'unassigned-join-button' : 'assigned-join-button'"
-              @click.stop="$emit('joinConversation')">
+              @click.native.stop="$emit('joinConversation')">
         <span>Join</span>
       </v-chip>
       <span v-if="readOnly">This user is either no longer active or the user’s position cannot receive SMS from Albatross</span>
@@ -152,14 +152,14 @@ import AddTeamDropdown from "@/views/flow/settings/inbox/AddTeamDropdown";
 import {AppMutations} from "@/stores/AppStore";
 
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-import {ref, onMounted, getCurrentInstance, watch, defineProps} from "vue";
+import {ref, computed, onMounted, getCurrentInstance, watch, defineProps} from "vue";
 import {useUserStore} from "@/stores/UserStorePinia.js";
-
+import {useRouter, useRoute} from "vue-router/composables"
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
-const route = vueInstance.$route
-const router = vueInstance.$router
+const route = useRoute()
+const router = useRouter()
 const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
 const props = defineProps({
@@ -183,28 +183,26 @@ const teamToRemove = ref({})
 const removeOption = ref(0)
 const teamsMenuOpen = ref(false)
 const unassignedTeamMenuOpen = ref(false)
-const selectedProjectId = ref(null)
-const selectedUserId = ref(null)
 const readOnly = ref(false)
 
 const emit = defineEmits(['updateOwner'])
 
+const selectedProjectId = computed(() => {
+  return parseInt(route.params.projectId)
+})
+
+const selectedUserId = computed(() => {
+  return parseInt(route.params.userId)
+})
 
 
 onMounted(() => {
-  selectedProjectId.value = parseInt(route.params.projectId) | null
-  selectedUserId.value = parseInt(route.params.userId) | null
 
   if (props.userId) {
     getSmsAccess()
   }
 })
-watch(vueInstance.$route.params.projectId, () => {
-  selectedProjectId.value = parseInt(route.params.projectId) | null
-})
-watch(vueInstance.$route.params.userId, () => {
-  selectedUserId.value = parseInt(route.params.userId) | null
-})
+
 const teamAdded = () => {
   teamsMenuOpen.value = false
   unassignedTeamMenuOpen.value = false

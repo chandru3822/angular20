@@ -26,7 +26,7 @@
   <v-time-picker
     v-model="localValue"
     :allowed-minutes="allowedMinutes"
-    @change="change"
+    @change="doChange"
     :ampm-in-title="true"
   >
     <v-spacer></v-spacer>
@@ -48,7 +48,7 @@
 
 
 <script setup>
-import {onMounted, ref, computed, watch, defineProps} from "vue";
+import {onMounted, ref, toRefs, computed, watch, defineProps} from "vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 const props = defineProps({
@@ -64,6 +64,7 @@ const props = defineProps({
   },
 })
 
+const { value: propsValue } = toRefs(props)
 
 const date = ref(null)
 const testValue = ref(null)
@@ -74,16 +75,23 @@ onMounted(() => {
   init()
 })
 
-watch('props.value', () => {
-  if (null == props.value) {
+watch(propsValue, () => {
+  if (null == propsValue.value) {
     //re-init if the field ever gets nulled out
     init()
   }
 })
+
+const doChange = () => {
+  if(props.change) {
+    props.change()
+  }
+}
+
 //cannot edit value from parent component, need a local copy to manipulate
 const localValue = computed({
   get() {
-    return props.value
+    return propsValue.value
   },
   set(date) {
     //this is so dumb.  if I just return date the localValue never changes. so i have to use this test value garbage
@@ -99,7 +107,7 @@ const cancel = () => {
   menu.value = false
 }
 const init = () => {
-  testValue.value = props.value
+  testValue.value = propsValue.value
 }
 const clearInput = () => {
   emit('input', null)

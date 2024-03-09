@@ -175,6 +175,7 @@ import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 import {getCurrentInstance, onMounted, ref, computed} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
+import {useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -182,7 +183,7 @@ const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
 const fileStore = useFileStore()
-const route = vueInstance.$route
+const route = useRoute()
 
 const LogoTypeEnum = ref({
   COMPANY: {
@@ -323,7 +324,7 @@ const logoToDeleteId = computed(() => {
         await fileStore.deleteFile({
           id: logoToDelete.image?.id,
           callback: async () => {
-            LogoTypeEnum[logoToDelete.key].image = {}
+            LogoTypeEnum.value[logoToDelete.key].image = {}
             snackbar('SUCCESS', 'Image Deleted')
 
             store.commit(AppMutations.SET_LOADING, false)
@@ -352,9 +353,9 @@ const logoToDeleteId = computed(() => {
 
               store.commit(AppMutations.SET_LOADING, false)
             } else {
-              LogoTypeEnum[logoType.key].image = img
-              LogoTypeEnum[logoType.key].add = false
-              LogoTypeEnum[logoType.key].saving = false
+              LogoTypeEnum.value[logoType.key].image = img
+              LogoTypeEnum.value[logoType.key].add = false
+              LogoTypeEnum.value[logoType.key].saving = false
               snackbar('SUCCESS', 'Image Uploaded')
 
               store.commit(AppMutations.SET_LOADING, false)
@@ -371,6 +372,7 @@ const logoToDeleteId = computed(() => {
     const loadImage = async (logoType) => {
       try {
         store.commit(AppMutations.SET_LOADING, true)
+        console.log('why o why', logoType.attachmentTypeId)
         await fileStore.getOne({
           attachmentTypeId: logoType.attachmentTypeId,
           sourceId: companyId.value,
@@ -388,7 +390,7 @@ const logoToDeleteId = computed(() => {
   onMounted(() => {
     loadCompany()
     //load each image for
-    Object.entries(LogoTypeEnum).forEach( ([key, value], idx) => {
+    Object.entries(LogoTypeEnum.value).forEach( ([key, value], idx) => {
       loadImage(value)
     })
   })

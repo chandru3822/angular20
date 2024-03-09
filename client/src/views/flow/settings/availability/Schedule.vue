@@ -356,7 +356,7 @@
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-  import {getCurrentInstance, onMounted, ref, computed, watch, defineProps} from "vue";
+  import {getCurrentInstance, onMounted, ref, toRefs, computed, watch, defineProps} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
@@ -369,6 +369,9 @@
     userId: Number,
     useSlotSchedule: Boolean
   })
+  const { orgId, userId } = toRefs(props)
+
+
   const addNew = ref(false)
   const userCanAdd = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADD'))
   const userCanEdit = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
@@ -407,9 +410,9 @@
     }
   })
 
-  watch('orgId', () => {
+  watch(orgId, () => {
     //without these if statements the schedule will get reloaded twice when switching between org and user
-    if(props.orgId != null) {
+    if(orgId.value != null) {
       // reset the schedule when new org selected
       schedules.value =  []
       newSchedule.value = {}
@@ -417,8 +420,8 @@
       getSchedules()
     }
   })
-  watch('userId', () => {
-    if(props.userId != null) {
+  watch(userId, () => {
+    if(userId.value != null) {
       // reset the schedule when new user selected
       schedules.value = []
       newSchedule.value = {}
@@ -450,12 +453,12 @@
     return timeString
   }
   const getSchedules = async () => {
-    if(props.orgId || props.userId) {
+    if(orgId.value || userId.value) {
       store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequestWithParams(`/availability`, { params: {
-            userId: props.userId,
-            orgId: props.orgId,
+            userId: userId.value,
+            orgId: orgId.value,
           }}, null, [])
         data?.forEach(sched => {
           sched?.resourceScheduleAvailability?.forEach(day => {
@@ -598,8 +601,8 @@
             })
             let params = {
               id: s.id,
-              orgId: props.orgId,
-              userId: props.userId,
+              orgId: orgId.value,
+              userId: userId.value,
               startDate: s.startDate,
               endDate: s.endDate,
               resourceScheduleAvailability: formattedTimestamps

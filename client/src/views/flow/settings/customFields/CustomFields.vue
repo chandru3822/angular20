@@ -122,13 +122,13 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
-
+import {useRouter} from "vue-router/composables"
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
-const router = vueInstance.$router
+const router = useRouter()
 
 const props = defineProps({
   apiPath: {type: String}
@@ -139,8 +139,6 @@ const fieldsInUse = ref([])
 const search = ref("")
 const customFields = ref([])
 const fieldsLoading = ref(true)
-const userIsSystemAdmin = ref(userStore.userHasFeature("SYSTEM"))
-const userCanEdit = ref(userStore.userHasFeatureAccessLevel("SETTINGS", "EDIT"))
 const showDeleteDialog = ref(false)
 const itemToDelete = ref(null)
 const usesForField = ref([])
@@ -153,6 +151,13 @@ const footerProps = ref({
   "items-per-page-options": [25, 50]
 })
 
+const userIsSystemAdmin = computed(() => {
+  return userStore.userHasFeature("SYSTEM")
+})
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel("SETTINGS", "EDIT")
+})
 
     const itemToDeleteName = computed(() => {
       return itemToDelete.value ? itemToDelete.value.fieldName : ''

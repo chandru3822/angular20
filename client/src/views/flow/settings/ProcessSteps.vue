@@ -145,12 +145,13 @@
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import {useRouter} from "vue-router/composables"
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
-  const router = vueInstance.$router
+  const router = useRouter()
 
   const addNew = ref(false)
   const deleteError = ref(false)
@@ -177,11 +178,9 @@
   const isMobile = computed(() => {
     return vuetify.breakpoint.smAndDown
   })
-  const debounceGetSteps = () => {
-    debounce(function () {
-      getProcessSteps()
-    }, 500)
-  }
+  const debounceGetSteps = debounce(() => {
+    getProcessSteps()
+  }, 500)
   const getProcessSteps = async () => {
     store.commit(AppMutations.SET_LOADING, true)
     try {

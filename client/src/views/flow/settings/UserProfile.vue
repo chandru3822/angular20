@@ -221,14 +221,14 @@ import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
-
+import {useRouter} from "vue-router/composables"
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
 const fileStore = useFileStore()
-const router = vueInstance.$router
+const router = useRouter()
 
 const { registered, getNotificationToken, removeNotificationToken } = useFirebase()
 

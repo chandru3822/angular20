@@ -116,6 +116,7 @@ import orderBy from "lodash.orderby"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import cloneDeep from "lodash.clonedeep";
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
+import {useRoute} from "vue-router/composables"
 
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, computed, onMounted, getCurrentInstance} from "vue";
@@ -123,7 +124,7 @@ import { useUserStore } from '@/stores/UserStorePinia.js'
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
-const route = vueInstance.$route
+const route = useRoute()
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 

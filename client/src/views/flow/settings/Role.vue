@@ -65,52 +65,54 @@
   import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-
+  import {useRouter} from "vue-router/composables"
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
-  const router = vueInstance.$router
+  const router = useRouter()
 
   const role = ref({})
-  const roleId = ref(this.$route.params.id)
   const features = ref([])
   const accessControlList = ref([])
   const headers = ref([
     { text: 'Feature', value: 'featureName', show: true },
   ])
 
+  const roleId = computed(() => {
+    return route.params.id
+  })
+
   onMounted(() =>{
-    if(this.roleId) {
-      this.getRole()
+    if(roleId.value) {
+      getRole()
     } else {
-      this.getFeatures()
+      getFeatures()
     }
   })
   const saveRole = async () => {
-    this.$store.commit(AppMutations.SET_LOADING, true)
+    store.commit(AppMutations.SET_LOADING, true)
     try {
-      if(this.roleId) {
-        const {status} = await putRequest(`/role/`, this.role)
-        this.$router.push({name: 'role', params: {id: this.roleId}})
-        handleHidingGlobalLoader(this, status)
+      if(roleId.value) {
+        const {status} = await putRequest(`/role/`, role.value)
+        router.push({name: 'role', params: {id: roleId.value}})
+        handleHidingGlobalLoader(vueInstance, status)
       } else {
-        const {data, status} = await postRequest(`/role/`, this.role)
-        this.roleId = data.id
-        this.$router.push({name: 'role', params: {id: this.roleId}})
-        handleHidingGlobalLoader(this, status)
+        const {data, status} = await postRequest(`/role/`, role.value)
+        roleId.value = data.id
+        router.push({name: 'role', params: {id: roleId.value}})
+        handleHidingGlobalLoader(vueInstance, status)
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
-      this.snackbar = getSnackbar('ERROR', 'Error Saving Role')
-      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      this.$store.commit(AppMutations.SET_LOADING, false)
+      getSnackbar('ERROR', 'Error Saving Role')
+      store.commit(AppMutations.SET_LOADING, false)
     }
 
   }
   const populateHeaders = () => {
     //todo. not my favorite
-    this.role.companyFeatures[0]?.accessControl?.forEach(acl => {
-      this.headers.push({
+    role.value.companyFeatures[0]?.accessControl?.forEach(acl => {
+      headers.value.push({
         text: acl.accessLevel,
         value: acl.accessCode,
         show: true
@@ -118,31 +120,29 @@
     })
   }
   const getFeatures = async () => {
-    this.$store.commit(AppMutations.SET_LOADING, true)
+    store.commit(AppMutations.SET_LOADING, true)
     try {
       const {data, status} = await getRequest(`/feature/withAccess`)
-      this.role.companyFeatures = data
-      this.populateHeaders()
-      handleHidingGlobalLoader(this, status)
+      role.value.companyFeatures = data
+      populateHeaders()
+      handleHidingGlobalLoader(vueInstance, status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      this.snackbar = getSnackbar('ERROR', 'Error Retrieving Features')
-      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      this.$store.commit(AppMutations.SET_LOADING, false)
+      getSnackbar('ERROR', 'Error Retrieving Features')
+      store.commit(AppMutations.SET_LOADING, false)
     }
   }
   const getRole = async () => {
-    this.$store.commit(AppMutations.SET_LOADING, true)
+    store.commit(AppMutations.SET_LOADING, true)
     try {
-      const {data, status} = await getRequest(`/role/${this.roleId}`)
-      this.role = data
-      this.populateHeaders()
-      handleHidingGlobalLoader(this, status)
+      const {data, status} = await getRequest(`/role/${roleId.value}`)
+      role.value = data
+      populateHeaders()
+      handleHidingGlobalLoader(vueInstance, status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      this.snackbar = getSnackbar('ERROR', 'Error Retrieving Role')
-      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      this.$store.commit(AppMutations.SET_LOADING, false)
+      getSnackbar('ERROR', 'Error Retrieving Role')
+      store.commit(AppMutations.SET_LOADING, false)
     }
   }
 

@@ -582,11 +582,12 @@ import MultiSelectGroup from "../../../../components/MultiSelectGroup";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables"
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
 const snackbar = vueInstance.$snackbar
-const route = vueInstance.$route
+const route = useRoute()
 const vuetify = vueInstance.$vuetify
 
 const WhiteListTypeEnum = Object.freeze({

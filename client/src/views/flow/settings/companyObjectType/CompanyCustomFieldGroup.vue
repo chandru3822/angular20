@@ -485,13 +485,14 @@ import Sortable from 'sortablejs'
 
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+import {useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
-const route = vueInstance.$route
+const route = useRoute()
 
 import {
   deleteRequest,

@@ -7,8 +7,9 @@
 <script setup>
 import ObjectTypeAttachment from "@/views/flow/settings/objectType/ObjectTypeAttachment";
 import {ref,getCurrentInstance} from "vue";
+import {useRoute} from "vue-router/composables"
 const vueInstance = getCurrentInstance().proxy
-const route = vueInstance.$route
+const route = useRoute()
 const eventId = ref(parseInt(route.params.id))
 </script>
 

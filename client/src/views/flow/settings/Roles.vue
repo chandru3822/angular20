@@ -99,11 +99,12 @@
 
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import {useRouter} from "vue-router/composables"
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
-  const router = vueInstance.$router
+  const router = useRouter()
 
   const delay = ref(500)
   const dialog = ref(false)

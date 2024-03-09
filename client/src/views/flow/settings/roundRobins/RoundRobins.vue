@@ -97,7 +97,7 @@
                     <AlbatrossButton
                         icon
                         color="primary"
-                        @click.stop="goToRoundRobin(item)"
+                        prevent-default
                         prepend-icon="edit"
                         :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
                     ></AlbatrossButton>
@@ -106,7 +106,8 @@
                         v-if="userCanDelete"
                         icon
                         color="primary"
-                        @click.stop="[itemToDelete=item, showDeleteDialog=true]"
+                        @click.native.stop="[itemToDelete=item, showDeleteDialog=true]"
+                        prevent-default
                         prepend-icon="delete"
                         :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                     ></AlbatrossButton>
@@ -215,11 +216,9 @@ const getCompanyTimezones = async () => {
   }
 }
 
-const debounceSearch = () => {
-  debounce(function () {
-    getRoundRobins()
+const debounceSearch = debounce(() => {
+  getRoundRobins()
   }, 500)
-}
 
 const goToRoundRobin = (rr) => {
   router.push({path: `/settings/roundRobin/${rr.id}/scheduleTo`})

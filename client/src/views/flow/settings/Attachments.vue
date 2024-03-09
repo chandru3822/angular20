@@ -125,12 +125,12 @@
   import constants from '@/helpers/constants'
   import ConfirmationDialog from '@/components/ConfirmationDialog'
   import { useUserStore } from '@/stores/UserStorePinia.js'
-
+  import {useRouter} from "vue-router/composables"
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
   const userStore = useUserStore()
-  const router = vueInstance.$router
+  const router = useRouter()
   const vuetify = vueInstance.$vuetify
   const attachmentTypes = ref([])
   const search = ref('')

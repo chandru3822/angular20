@@ -91,6 +91,7 @@
 
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import {useRouter} from "vue-router/composables"
 
 
   const vueInstance = getCurrentInstance().proxy
@@ -98,7 +99,8 @@
   const store = vueInstance.$store
   const userStore = useUserStore()
   const vuetify = vueInstance.$vuetify
-  const router = vueInstance.$router
+  const router = useRouter()
+
 
   const delay = ref(500)
   const addNew = ref(false)

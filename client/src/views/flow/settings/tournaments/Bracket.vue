@@ -66,7 +66,6 @@
                   v-else-if="!b.matchesGenerated"
                   variant="text"
                   color="primary"
-                  :disabled="b.matchesGenerated || b.rounds.length === 0"
                   @click="[b.addRound = !b.addRound, rerenderBracket()]">
                 <template v-slot:default>
                   <v-icon large v-if="!b.addRound && $vuetify.breakpoint.smAndDown">add</v-icon>

@@ -507,15 +507,15 @@ import constants from '@/helpers/constants'
 import cloneDeep from 'lodash.clonedeep'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-import {getCurrentInstance, onMounted, ref} from "vue";
+import {getCurrentInstance, computed, onMounted, ref} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
-
+import {useRouter} from "vue-router/composables"
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const userStore = useUserStore()
 const vuetify = vueInstance.$vuetify
-const router = vueInstance.$router
+const router = useRouter()
 
 const showMenu = ref(false)
 const childField = ref({})
@@ -562,17 +562,24 @@ const addNew = ref(false)
 const childSaveError = ref(false)
 const childSaveErrorMsg = ref('')
 const newField = ref({})
-const viewId = ref(parseInt(vueInstance.$route.params.id))
 const dataView = ref({})
-const userId = ref(userStore.details.id)
-const companyId = ref(userStore.details.companyId)
 const headers = ref([
   {text: 'Field Name', value: 'displayName', show: true},
   {text: 'Field to Update', value: 'fieldToUpdate', show: true},
   {text: null, value: 'icons', show: true, sortable: false, width: 150}
 ])
 
-onMounted(async () => {
+const viewId = computed(() => {
+  return route.params.id
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+
+onMounted(() => {
   getDataView()
   getParentObjects()
 })

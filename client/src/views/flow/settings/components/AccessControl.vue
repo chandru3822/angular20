@@ -24,7 +24,8 @@
       </template>
 
       <template v-slot:header.data-table-select="{ on, props }">
-        <v-simple-checkbox color="primary" v-bind="props" :ripple="false" v-on="on" v-if="userCanEdit" @input="dirtyFieldsCallback()"></v-simple-checkbox>
+        <v-simple-checkbox color="primary" v-bind="props" :ripple="false" v-on="on"
+                           v-if="userCanEdit" @input="dirtyFieldsCallback()"></v-simple-checkbox>
       </template>
 
       <template #item="{ item, index, isSelected, select }">
@@ -60,14 +61,15 @@ import cloneDeep from 'lodash.clonedeep'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+import {getCurrentInstance, onMounted, ref, toRefs, computed, watch} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const userStore = useUserStore()
-const route = vueInstance.$route
+const route = useRoute()
 
 const props = defineProps({
   companyFeatures: {type: Array},
@@ -77,9 +79,7 @@ const props = defineProps({
   showSecondary: Boolean
 })
 
-watch('selectedRows', (newVal, oldVal, blah) => {
-  alterEnabledFlagForRows(newVal, oldVal, blah)
-})
+const { showSecondary, userCanEdit } = toRefs(props)
 
 const selectedRows = ref([])
 const companyFeatureList = ref(cloneDeep(props.companyFeatures))
@@ -93,6 +93,10 @@ const headers = ref([
 
 const userId = computed(() => {
   return route.params.id
+})
+
+watch(selectedRows, (newVal, oldVal, blah) => {
+  alterEnabledFlagForRows(newVal, oldVal, blah)
 })
 
 onMounted(() => {
@@ -166,7 +170,9 @@ const alterEnabledFlagForColumns = (header) => {
         }
       })
     })
-    callback(companyFeatureList.value)
+    if(props.callback) {
+      props.callback(companyFeatureList.value)
+    }
   }
 }
 const alterEnabledFlagForRows = (newList, oldList) => {
@@ -219,8 +225,9 @@ const alterEnabledFlagForRows = (newList, oldList) => {
       }
     })
   }
-
-  callback(companyFeatureList.value)
+  if(props.callback) {
+    props.callback(companyFeatureList.value)
+  }
 }
 const getFeatures = async () => {
   if (companyFeatureList.value?.length === 0) {

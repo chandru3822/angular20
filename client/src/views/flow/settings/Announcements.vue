@@ -57,7 +57,7 @@
                     variant="text"
                     color="primary"
                     v-if="current && userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                    @click.stop="[itemToDelete=item, showDeleteDialog=true]"
+                    @click.native.stop="[itemToDelete=item, showDeleteDialog=true]"
                     prepend-icon="delete"
                 ></AlbatrossButton>
               </td>
@@ -85,16 +85,19 @@ import {AppMutations} from "@/stores/AppStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCurrentInstance, ref, computed, onMounted, watch} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
 
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
 const snackbar = vueInstance.$snackbar
-const router = vueInstance.$router
+const router = useRouter()
+const route = useRoute()
+
 
 const current = computed(() => {
-  return vueInstance.$route.path.includes('current')
+  return route.path.includes('current')
 })
 
 const options = ref({

@@ -129,6 +129,8 @@ export default {
     },
     localTime: {
       get: function() {
+        console.log('prop val',this.$props.value)
+        console.log('tz',this.timezone)
         return this.$props.value
           ? moment.utc(this.$props.value, (this.inputFormat ?? this.defaultTimeFormat)).tz(this.timezone).format('HH:mm')
           : moment().startOf('hour').format('HH:mm')

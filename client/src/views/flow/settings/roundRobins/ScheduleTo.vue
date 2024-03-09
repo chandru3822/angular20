@@ -294,7 +294,7 @@ const userToDeleteName = computed(() => {
 const getAllocationValue = (value) => {
   //4 = leading '0.' + 2 more digits it being a % number (0.0132)
   let valueLength = value.toString().length - 4
-  return valueLength <= 0 || value === 0 || value === null ? value : this.$filters.percent(value, valueLength)
+  return valueLength <= 0 || value === 0 || value === null ? value : vueInstance.$filters.percent(value, valueLength)
 }
 
 const getCompanyTimezones = async () => {
@@ -351,7 +351,7 @@ const saveAllocationChanges = async () => {
       const {data} = await putRequest(`/roundRobin/${roundRobinId.value}/userAllocation`, updatedRows)
       scheduleToUsers.value = data
       getTotalManualAllocation()
-      if (this.is7oaksAdmin) {
+      if (is7oaksAdmin.value) {
         getOtherTotals()
       }
     }
@@ -363,7 +363,7 @@ const saveAllocationChanges = async () => {
   }
 }
 const deleteUserFromRoundRobin = async () => {
-  const user = this.userToDelete
+  const user = userToDelete.value
   store.commit(AppMutations.SET_LOADING, true)
   try {
     const {data, status} = await putRequest(`/roundRobin/${roundRobinId.value}/user/${user.roundRobinUserId}/delete`)

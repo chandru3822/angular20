@@ -273,15 +273,16 @@ import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-import AlbatrossButton from "../../../components/customVuetify/AlbatrossButton.vue";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
-const route = vueInstance.$route
+const route = useRoute()
 
 const DeleteTypeEnum = ref(Object.freeze({
   TEAM: 'deleteTeam',

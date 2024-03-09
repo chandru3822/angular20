@@ -26,7 +26,7 @@
                 attach
             ></v-autocomplete>
           </div>
-          <AlbatrossButton :disabled="!selectedState"
+          <AlbatrossButton :disabled="!selectedState || !selectedState.id"
                  color="primary" class="white--text mr-2"
                  @click="saveCompanyState(selectedState, true)" text="SAVE"/>
           <AlbatrossButton variant="text" color="primary" @click="[addNew = !addNew, selectedState = {}]" text="CANCEL"/>

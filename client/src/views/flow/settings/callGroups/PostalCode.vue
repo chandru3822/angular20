@@ -44,12 +44,13 @@
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {getCurrentInstance, computed, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import {useRoute} from "vue-router/composables"
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
   const userStore = useUserStore()
-  const route = vueInstance.$route
+  const route = useRoute()
 
   const model = ref('')
   const tabs = ref([

@@ -189,7 +189,7 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "../../../components/customVuetify/AlbatrossButton.vue";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 import { computed, getCurrentInstance, ref, onMounted } from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'

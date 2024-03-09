@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import theme from '@/helpers/defaultTheme.js'
+import { shadeColorByPercent } from '@/helpers/helpers'
 
 const defaultState = {
   loading: false,

@@ -295,14 +295,14 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-
+import {useRouter, useRoute} from "vue-router/composables"
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
-const route = vueInstance.$route
-const router = vueInstance.$router
+const route = useRoute()
+const router = useRouter()
 
 const props = defineProps({
   apiPath: {type: String}
@@ -328,7 +328,7 @@ const customFieldId = computed(() => {
   return route.params.id
 })
 const userIsSystemAdmin = computed(() => {
-  return userStore.userStore.userHasFeature("SYSTEM")
+  return userStore.userHasFeature("SYSTEM")
 })
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
@@ -358,9 +358,10 @@ onMounted(async () => {
 watch(customFieldQuery, (val) => {
   val && debounceFindCustomFields(val)
 })
-    const debounceFindCustomFields =  debounce(function (query) {
-      findCustomFields(query)
-    }, 250)
+
+const debounceFindCustomFields = debounce((query) => {
+  findCustomFields(query)
+}, 250)
 
     const findCustomFields = async (query) => {
       try {
@@ -485,12 +486,10 @@ watch(customFieldQuery, (val) => {
         data.companyDataType = companyDataTypes.value.find(dt => dt.id === data.companyDataTypeId);
         vueInstance.$set(object, "listOfValues", data.listOfValues);
 
-        // if it was a new field, add the id to the object and the url
+        // if it was a new field, add the id to the url
         if (undefined === customFieldId.value || null === customFieldId.value) {
-          customFieldId.value = data.id
-          customField.value.id = data.id
           let path = null == props.apiPath ? `/settings/customField/${data.id}` : `/settings/companyCustomField/${data.id}`
-          router.push(path)
+          await router.push(path)
         }
 
         // re-sort in case the fieldName changed

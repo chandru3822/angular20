@@ -96,12 +96,12 @@ import constants from "@/helpers/constants";
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
-
+import {useRouter, useRoute} from "vue-router/composables"
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
-const route = vueInstance.$route
-const router = vueInstance.$router
+const route = useRoute()
+const router = useRouter()
 const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
 

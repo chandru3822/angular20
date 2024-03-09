@@ -100,12 +100,13 @@
   import { getCurrentInstance, ref, onMounted } from 'vue'
   import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import {useRouter} from "vue-router/composables"
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
   const userStore = useUserStore()
-  const router = vueInstance.$router
+  const router = useRouter()
 
   const addNew = ref(false)
   const saveError = ref(false)

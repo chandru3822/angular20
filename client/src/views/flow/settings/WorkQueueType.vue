@@ -199,7 +199,7 @@
 
                   <ZonelessTimePickerInput
                     v-model="item.startTime"
-                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId == 1 || !item.selected"
+                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId === 1 || !item.selected"
                     :allowed-minutes="allowedMinutesStep"
                     :hide-details="true"
                     @click="item.invalid = false"
@@ -207,7 +207,7 @@
                   />
                   <ZonelessTimePickerInput
                     v-model="item.endTime"
-                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId == 1 || !item.selected"
+                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId === 1 || !item.selected"
                     :allowed-minutes="allowedMinutesStep"
                     :hide-details="true"
                     @click="item.invalid = false"
@@ -262,12 +262,13 @@ import cloneDeep from 'lodash.clonedeep'
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const userStore = useUserStore()
-const route = vueInstance.$route
+const route = useRoute()
 
 const editType = ref(false)
 const editSchedule = ref(false)

@@ -138,18 +138,18 @@
   import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
   import {handleHidingGlobalLoader, getRequest, putRequest, postRequest} from '@/helpers/helpers'
   import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
-  import {getCurrentInstance, onMounted, ref, watch} from 'vue'
+  import {getCurrentInstance, onMounted, ref, computed, watch} from 'vue'
   import {onBeforeRouteLeave} from 'vue-router/composables'
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
   import { useUserStore } from '@/stores/UserStorePinia.js'
-
+  import {useRouter, useRoute} from "vue-router/composables"
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
   const userStore = useUserStore()
-  const router = vueInstance.$router
-  const route = vueInstance.$route
+  const route = useRoute()
+  const router = useRouter()
   const position = ref({
     companyFeatures: []
   })
@@ -159,7 +159,6 @@
   const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
   const userCanEditAccessControl = ref(userStore.userHasFeatureAccessLevel('ACCESS_CONTROL', 'EDIT'))
   const orgTypes = ref([])
-  const positionId = ref(vueInstance.$route.params.id)
   const clonePositionId = ref('')
   const features = ref([])
   const accessControlList = ref([])
@@ -172,7 +171,11 @@
     { text: 'Feature', value: 'featureName', show: true },
   ])
 
-  watch(() => selectedRows, () => {
+  const positionId = computed(() => {
+    return route.params.id
+  })
+
+  watch(selectedRows, () => {
     alterEnabledFlagForRows()
   })
 
@@ -226,8 +229,6 @@
         const {data, status} = await putRequest(`/position`, position.value)
         position.value = data
         accessControlKey.value++
-        // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
-        // this.$router.push({name: 'position', params: {id: this.positionId}})
         handleHidingGlobalLoader(vueInstance, status)
         dirtyFields.value = false
       } else {
@@ -237,8 +238,6 @@
           clonePositionId.value = ''
           position.value = data
           accessControlKey.value++
-          // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
-          // this.$router.push({name: 'position', params: {id: this.positionId}})
           handleHidingGlobalLoader(vueInstance, status)
           dirtyFields.value = false
           // window.location.reload()
@@ -248,8 +247,6 @@
           positionId.value = data.id
           position.value = data
           accessControlKey.value++
-          // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
-          // this.$router.push({name: 'position', params: {id: this.positionId}})
           handleHidingGlobalLoader(vueInstance, status)
           dirtyFields.value = false
         }

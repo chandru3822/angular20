@@ -74,12 +74,12 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
-
+import {useRouter} from "vue-router/composables"
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const userStore = useUserStore()
-const router = vueInstance.$router
+const router = useRouter()
 
 const addNew = ref(false)
 const selectedProcessId = ref(null)

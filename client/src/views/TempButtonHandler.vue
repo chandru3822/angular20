@@ -17,7 +17,7 @@
           <v-checkbox dense hide-details label="Auto copy to clipboard?" v-model="autoCopyToClipboard"></v-checkbox>
           <v-checkbox dense hide-details label="Reset and Refocus on Paste?" v-model="resetFieldsOnPaste"></v-checkbox>
           <div>
-            When doing a lot of buttons without irregular behavior this will copy to clipboard and reset the fields fast & easy copy paste.
+            When doing a lot of buttons without irregular behavior this will copy to clipboard, reset the fields, and re-focus for fast & easy copy paste.
           </div>
         </v-col>
       </v-row>

@@ -8,7 +8,7 @@
             variant="text"
             custom-classes="px-0"
             html-style="max-width: 34px"
-            @click.stop="$emit('clickEdit')"
+            @click.native.stop="$emit('clickEdit')"
             v-if="props.showEditBtn">
           <template v-slot:default>
             <v-icon :size="20">edit</v-icon>

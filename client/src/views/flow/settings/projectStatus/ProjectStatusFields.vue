@@ -90,7 +90,7 @@
                     variant="text"
                     color="primary"
                     v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                    @click.stop="[itemToDelete=item, showDeleteDialog=true]"
+                    @click.native.stop="[itemToDelete=item, showDeleteDialog=true]"
                     prepend-icon="delete"
                 ></AlbatrossButton>
               </td>
