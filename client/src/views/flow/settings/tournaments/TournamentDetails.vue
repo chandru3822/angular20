@@ -101,7 +101,7 @@
                 <AlbatrossButton
                     :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                     v-if="userCanEdit && !savingImage && !tournament.backgroundAttachmentPresignedUrl"
-                    :round="true"
+                    icon
                     color="primary"
                     :prepend-icon="addImage ? 'remove' : 'add'"
                     @click="addImage = !addImage">
@@ -110,7 +110,7 @@
                 <AlbatrossButton
                     v-else-if="userCanEdit"
                     :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
-                    :round="true"
+                    icon
                     class="mr-2"
                     color="primary"
                     prepend-icon="delete"

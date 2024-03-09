@@ -351,7 +351,7 @@
                                :disabled="!userCanEdit"
                                group="customFields" @start="drag=true" @end="drag=false"
                                @change="saveFieldChanges(item.customFields)">
-                      <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
+                      <v-list v-for="(cf, index) in item.customFields.filter(a => !a.archived)"
                               :key="index" class="pa-0" color="transparent">
                         <v-list-item :class="{grab: !item.eventId}">
                           <v-list-item-action>
@@ -482,7 +482,7 @@
                             </template>
                             <v-list>
                               <v-list-item
-                                v-for="(cfg, index) in filterBy(localCustomFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.eventId })"
+                                v-for="(cfg, index) in localCustomFieldGroups.filter((g) => { return g.id !== cf.customFieldGroupId && !g.eventId })"
                                 :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
                                 <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
                               </v-list-item>

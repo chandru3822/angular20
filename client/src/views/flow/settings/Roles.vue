@@ -93,7 +93,7 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
 

@@ -105,7 +105,7 @@
               <template #item.icons="{item}" class="text-right">
                 <AlbatrossButton
                     :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
-                    :round="true"
+                    icon
                     color="primary"
                     prepend-icon="edit"
                     @click="goToTournament(item.id)">

@@ -6,7 +6,7 @@
           <v-toolbar-title class="title-large">{{ pool.customName || pool.poolType + ' Pool' }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <AlbatrossButton
-              :round="true"
+              icon
               color="primary"
               @click="editPool = !editPool"
               :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
@@ -60,7 +60,7 @@
               <AlbatrossButton
                   v-if="userCanEdit && !savingImage && !pool.backgroundAttachmentPresignedUrl"
                   :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
-                  :round="true"
+                  icon
                   color="primary"
                   :prepend-icon="addImage ? 'remove' : 'add'"
                   @click="addImage = !addImage">
@@ -69,7 +69,7 @@
               <AlbatrossButton
                   v-else-if="userCanEdit"
                   :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
-                  :round="true"
+                  icon
                   color="primary"
                   prepend-icon="delete"
                   @click="deleteWinnerBackgroundDialog = true">
@@ -112,7 +112,7 @@
             <v-spacer></v-spacer>
             <AlbatrossButton
                 :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
-                :round="true"
+                icon
                 color="primary"
                 prepend-icon="add"
                 @click="addPosition = !addPosition">
@@ -166,7 +166,7 @@
                 <td class="text-right">
                   <AlbatrossButton
                       :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
-                      :round="true"
+                      icon
                       color="primary"
                       prepend-icon="delete"
                       @click="positionToDelete=item">
@@ -184,7 +184,7 @@
             <v-spacer></v-spacer>
             <AlbatrossButton
                 :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
-                :round="true"
+                icon
                 color="primary"
                 prepend-icon="add"
                 @click="addUser = !addUser">
@@ -245,7 +245,7 @@
                 <td class="text-right">
                   <AlbatrossButton
                       :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
-                      :round="true"
+                      icon
                       color="primary"
                       prepend-icon="delete"
                       @click="userToDelete=item">

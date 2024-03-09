@@ -192,7 +192,7 @@
                             </template>
                             <v-list>
                               <v-list-item
-                                v-for="(cfg, index) in filterBy(localCustomFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.attachmentTypeId })"
+                                v-for="(cfg, index) in localCustomFieldGroups.filter((g) => { return g.id !== cf.customFieldGroupId && !g.attachmentTypeId })"
                                 :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
                                 <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
                               </v-list-item>

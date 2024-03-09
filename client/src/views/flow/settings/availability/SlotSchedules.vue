@@ -58,7 +58,7 @@
                   dark @click="item.slotTimes.push({id: null, startTime: null, endTime: null, archived: false})"
                   text="ADD SLOT"
                 />
-                <v-list v-for="(st, index) in filterBy(item.slotTimes, false, 'archived')"
+                <v-list v-for="(st, index) in item.slotTimes.filter(a => !a.archived)"
                         :key="index"  class="pa-0">
                   <v-list-item :class="{'shaded-row': index % 2}">
                     <v-list-item-content class="text-left">

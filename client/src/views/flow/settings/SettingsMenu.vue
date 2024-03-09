@@ -64,7 +64,6 @@ const filteredMenu = computed(() => {
 })
 
 const filteredCompanyObjects = computed(() => {
-  // filterBy(companyObjectItems, (cot) => { return [1,3,4,5].includes(cot.flowTypeId) })
   return props.companyObjectItems.filter((c) => [1,3,4,5].includes(c.flowTypeId))
 })
 

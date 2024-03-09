@@ -6,7 +6,7 @@
           <v-toolbar-title class="title-large">Brackets</v-toolbar-title>
           <v-spacer></v-spacer>
           <AlbatrossButton
-              :round="true"
+              icon
               color="primary"
               @click="addBracket = !addBracket"
               :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
@@ -79,7 +79,7 @@
                   v-if="userCanEdit"
                   :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
                   class="mx-3"
-                  :round="true"
+                  icon
                   color="primary"
                   prepend-icon="mdi-content-copy"
                   @click="bracketToCopy=b">
@@ -89,7 +89,7 @@
                   v-if="userCanDelete"
                   :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
                   class="mx-3"
-                  :round="true"
+                  icon
                   color="primary"
                   prepend-icon="delete"
                   @click="bracketToDelete=b">
@@ -182,7 +182,7 @@
                 <AlbatrossButton
                     v-if="item.edit"
                     variant="text"
-                    :round="true"
+                    icon
                     size="small"
                     :class="{'mx-4': $vuetify.breakpoint.smAndDown}"
                     color="primary"
@@ -195,7 +195,7 @@
                 <AlbatrossButton
                     v-if="!b.matchesGenerated && userCanDelete"
                     variant="text"
-                    :round="true"
+                    icon
                     :class="{'mx-4': $vuetify.breakpoint.smAndDown}"
                     color="primary"
                     prepend-icon="delete"

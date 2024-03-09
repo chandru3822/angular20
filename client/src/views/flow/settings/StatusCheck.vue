@@ -34,7 +34,7 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import constants from '@/helpers/constants'
 
 import {ref, onMounted} from "vue";

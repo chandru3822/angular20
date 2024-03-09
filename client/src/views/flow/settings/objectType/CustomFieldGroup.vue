@@ -398,7 +398,7 @@
                           </template>
                             <v-list>
                               <v-list-item
-                                v-for="(cfg, index) in filterBy(customFieldGroups, (g) => { return g.id !== cf.customFieldGroupId })"
+                                v-for="(cfg, index) in customFieldGroups.filter((g) => { return g.id !== cf.customFieldGroupId })"
                                 :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
                                 <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
                               </v-list-item>

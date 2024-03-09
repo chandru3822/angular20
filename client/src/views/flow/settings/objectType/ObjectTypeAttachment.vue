@@ -157,7 +157,7 @@
                                  :disabled="!userCanEdit"
                                  group="customFields" @start="drag=true" @end="drag=false"
                                  @change="saveFieldChanges(item.customFields)">
-                        <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
+                        <v-list v-for="(cf, index) in item.customFields.filter(a => !a.archived)"
                                 :key="index" class="pa-0" color="transparent">
                           <v-list-item :class="{grab: !item.attachmentTypeId}">
                             <v-list-item-action>
@@ -201,7 +201,7 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from "@/stores/AppStore";
 import draggable from 'vuedraggable'
 import {
