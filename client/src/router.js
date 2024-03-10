@@ -23,6 +23,11 @@ const router = new Router({
       props: true
     },
     {
+      path: '/tempButtonHandler',
+      name: 'tempButtonHandler',
+      component: () => import('./views/TempButtonHandler.vue')
+    },
+    {
       path: '/forgotPassword',
       name: 'forgotPassword',
       component: () => import('./views/ForgotPassword.vue')
