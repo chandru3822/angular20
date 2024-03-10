@@ -5,7 +5,7 @@
          :disabled="props.disabled"
          :color="props.color"
          :elevation="props.elevation"
-         :icon="props.round"
+         :icon="props.icon"
          v-on="activationHandler"
          :style="props.htmlStyle"
          :target="props.target"
@@ -64,7 +64,7 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  round: {
+  icon: {
     type: Boolean,
     default: false
   },
