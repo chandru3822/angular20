@@ -8,7 +8,7 @@
           :class="{ 'extra-banner': userIsMasquerading }"
       >
         <Spinner
-            v-if="store.state.app.loading"
+            v-if="appStore.loading"
             spinnerColor="primary"
             :size="100"
         />

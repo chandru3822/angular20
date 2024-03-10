@@ -38,7 +38,6 @@ const route = useRoute()
 
 const tournament = ref({})
 const tournamentId = ref(parseInt(route.params.id))
-const userId = ref(store.state.user.details.id)
 const tabs = ref([
   {
     label: 'Details',
@@ -74,6 +73,9 @@ onMounted(() => {
   getTournament()
 })
 
+const userId = computed(() => {
+  return userStore.details.id
+})
 const timezone = computed(() => {
   return userStore.details.timezone?.value
 })
