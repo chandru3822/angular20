@@ -109,13 +109,16 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 const userStore = useUserStore()
 import {useRoute} from "vue-router/composables";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+
 const route = useRoute()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -164,41 +167,41 @@ onMounted(async () => {
 })
 
     const saveRoundRobinInfo = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await postRequest(`/roundRobin`, roundRobin.value)
         editRoundRobin.value = false
         snackbar('SUCCESS', 'Round Robin Name Saved')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Saving Round Robin Name')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const getCompanyTimezones = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await getRequestWithParams(`/timezone`)
         companyTimezones.value = data
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Timezones')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const getRoundRobinDetails = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await getRequest(`/roundRobin/${roundRobinId.value}`)
         roundRobin.value = data
         dataLoading.value = false
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Data')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
 </script>

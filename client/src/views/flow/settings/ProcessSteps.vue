@@ -134,7 +134,7 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
 
   import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import debounce from "lodash.debounce";
@@ -146,6 +146,8 @@
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRouter} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
@@ -182,15 +184,15 @@
     getProcessSteps()
   }, 500)
   const getProcessSteps = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/processStep`)
       processSteps.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const getDeleteTooltip = (item) => {
@@ -202,7 +204,7 @@
   }
   const deleteProcessStep = async () => {
    const processStep = psToDelete.value
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await putRequest(`/processStep/delete/${processStep.id}`, null, null, [])
       if (data?.length > 0) {
@@ -215,25 +217,25 @@
         processStep.archived = true
         snackbar('SUCCESS', 'Process Step Deleted')
       }
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Deleting Process Step')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     psToDelete.value = null
   }
   const addProcessStep = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await postRequest(`/processStep`, newStep.value)
       router.push({path: `/settings/processStep/${data.id}/components`})
       snackbar('SUCCESS', 'Process Step Added')
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Adding Process Step')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const filterProcessSteps = computed(() => {

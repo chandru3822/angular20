@@ -70,6 +70,8 @@ import {useRoute} from "vue-router/composables"
 
 import {ref, computed, onMounted, getCurrentInstance} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
@@ -122,28 +124,28 @@ onMounted(async () => {
   await getEvent()
 })
 const getEvent = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/event/${eventId.value}`)
     event.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveEventName = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await putRequest(`/event`, event.value)
     editName.value = false
     snackbar('SUCCESS', 'Event Updated')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating Event')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

@@ -98,13 +98,15 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useRoute} from "vue-router/composables";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const route = useRoute()
 const vueInstance = getCurrentInstance().proxy
@@ -152,33 +154,33 @@ onMounted(() => {
 })
 
 const getScheduleByUsers = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/roundRobin/${roundRobinId.value}/scheduleBy`)
     scheduleByUsers.value = data
     dataLoading.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteUserFromRoundRobin = async () => {
   const user = userToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/roundRobin/user/${user.id}`)
     user.archived = true
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Removing User')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const addUserToRoundRobin = async (selected) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     let params = {
       roundRobinId: roundRobinId.value,
@@ -188,11 +190,11 @@ const addUserToRoundRobin = async (selected) => {
     scheduleByUsers.value.push(data)
     addScheduler.value = false
     selectedScheduler.value = {}
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding User')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getSchedulers = async () => {

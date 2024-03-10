@@ -165,7 +165,7 @@
 
 <script setup>
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
-import {AppMutations} from '@/stores/AppStore'
+
 import draggable from 'vuedraggable'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
@@ -175,6 +175,8 @@ import {getCompanyProjectStatusTypes, getProjectStatusTypes} from '@/services/pr
 import {handleHidingGlobalLoader, deleteRequest, putRequest, defineSortableTable} from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted, onUpdated} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
@@ -225,33 +227,33 @@ const headers = ref([
 ])
 
 const saveOrderChanges = async (types) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/projectStatus/companyStatuses`, types)
     snackbar('SUCCESS', 'Status Types Updated')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Status Type Changes')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getCompanyStatusTypes = async () => {
   companyStatusesLoading.value = true
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getCompanyProjectStatusTypes()
     statusTypes.value = data
     companyStatusesLoading.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveNewType = async (type) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await putRequest(`/projectStatus/company`, type)
 
@@ -264,43 +266,43 @@ const saveNewType = async (type) => {
     newType.value = {}
 
     snackbar('SUCCESS', 'Project Status Saved')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Project Status')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getTheseProjectStatusTypes = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getProjectStatusTypes()
     rootStatusTypes.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteType = async () => {
   const item = itemToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/projectStatus/companyStatus/${item.id}`)
     item.archived = true
     snackbar('SUCCESS', 'Status Deleted')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     if (e.status === 400) {
       deleteError.value = true;
       fieldsInUse.value = e.data;
       snackbar("ERROR", "Error Deleting Status");
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     } else {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Deleting Status')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   closeDeleteDialog()

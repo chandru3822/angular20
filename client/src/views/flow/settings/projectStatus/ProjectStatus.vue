@@ -34,13 +34,15 @@
 
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getCompanyProjectStatusType} from '@/services/projectStatusTypeService'
 import {handleHidingGlobalLoader, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
-import {useRoute} from "vue-router/composables";
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const route = useRoute()
 const vueInstance = getCurrentInstance().proxy
@@ -75,15 +77,15 @@ onMounted(() => {
 })
 
 const getStatusInfo = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getCompanyProjectStatusType(statusId.value)
     projectStatus.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

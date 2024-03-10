@@ -170,9 +170,7 @@ import {
   handleHidingGlobalLoader,
   postRequest
 } from '@/helpers/helpers'
-import {AppMutations} from "@/stores/AppStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import {Actions} from "@/store";
 import moment from 'moment'
 import cloneDeep from 'lodash.clonedeep'
 import isEqual from 'lodash.isequal'
@@ -347,16 +345,16 @@ const validate = async () => {
 }
 const getAnnouncement = async () => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     const {data, status} = await getRequest(`/announcements/${announcementId.value}`)
     announcement.value = data
     announcementCopy.value = cloneDeep(data)
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
   } finally {
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     dataLoading.value = false
   }
 }
@@ -399,7 +397,7 @@ const uploadFile = async (uploadedFile, existingFile) => {
         callback: async (img, error) => {
           if (error?.error) {
             snackbar('ERROR', error.errorMsg)
-            store.commit(AppMutations.SET_LOADING, false)
+            appStore.loading = false
           } else {
             announcement.value.presignedUrl = img.presignedUrl
             announcementLogo.value.image = img

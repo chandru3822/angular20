@@ -94,14 +94,16 @@
 
 <script setup>
 import {AppMutations} from "@/stores/AppStore";
-import draggable from 'vuedraggable'
 import {handleHidingGlobalLoader, deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
 import orderBy from 'lodash.orderby'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
@@ -191,14 +193,14 @@ const companyObjectTypeId = computed(() => {
   })
   const updateType = async (item) => {
     try {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       const {status} = await putRequest(`/attachmentType/${objectType.value}/update`, item)
       snackbar('SUCCESS', 'Attachment Type Updated')
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Attachment Type')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const visibleHeaders = computed(() => {
@@ -215,7 +217,7 @@ const companyObjectTypeId = computed(() => {
     }
   }
   const assignNewType = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       if(null != props.primaryId) {
         newType.value.primaryId = props.primaryId
@@ -227,16 +229,16 @@ const companyObjectTypeId = computed(() => {
       newType.value = {}
       snackbar('SUCCESS', 'Attachment Type Added')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Adding Attachment Type')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const getAvailableAttachmentTypes = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       addNewType.value = !addNewType.value
       if (addNewType.value) {
@@ -244,58 +246,58 @@ const companyObjectTypeId = computed(() => {
         const {data} = await getRequest(url)
         availableAttachmentTypes.value = data
       }
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     }
   }
   const getAssignedAttachmentTypes = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       let url = props.primaryId ? `/attachmentType/${objectType.value}/${props.primaryId}` : `/attachmentType/${objectType.value}`
       const {data, status} = await getRequest(url)
       attachmentTypes.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const saveAttachmentTypeOrder = async (rows) => {
     if(rows?.length > 0) {
       try {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         const {status} = await putRequest(`/attachmentType/${objectType.value}/order`, rows)
         snackbar('SUCCESS', 'Attachment Type Order Saved')
 
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Saving Attachment Type Order')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
   }
   const deleteTypeFromObject = async () => {
     const id = attachmentTypeToDelete.value.id
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       addNewType.value = false
       const {status} = await deleteRequest(`/attachmentType/${objectType.value}/${id}`)
       snackbar('SUCCESS', 'Attachment Type Deleted')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Deleting Attachment Type')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     attachmentTypeToDelete.value = null
   }

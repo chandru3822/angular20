@@ -207,7 +207,7 @@
 <script setup>
 import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
-import {AppMutations} from '@/stores/AppStore'
+
 import moment from 'moment'
 import {getUserProfileDefaultFields} from '@/services/userService'
 
@@ -222,6 +222,9 @@ import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
 import {useRouter} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
@@ -333,61 +336,61 @@ const showOnUserProfile = (fieldName) => {
 }
 const getUserProfileCustomFields = async () => {
   loadingUserProfileCustomFields.value = true
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/customFieldValues/getUserProfileFields`)
     userProfileCustomFields.value = data
     loadingUserProfileCustomFields.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Custom Fields')
     loadingUserProfileCustomFields.value = false
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getAllUserProfileDefaultFields = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getUserProfileDefaultFields()
     userProfileDefaultFields.value = data.filter(d => d.showOnUserProfile)
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Default Fields')
     loadingUserProfileCustomFields.value = false
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getHomePages = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/feature/homePages`, null, [])
     homePages.value = data.filter(d => {
       return userStore.userHasFeature(d.featureCode)
     })
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Home Pages')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getUser = async (userIsAlbatross) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/user/${userId.value}?userIsAlbatross=${userIsAlbatross}`)
     user.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving User')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveUser = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await putRequest(`/user?userIsAlbatross=${userIsAlbatross.value}`, user.value)
     if(data && data.id && dirtyCfvs.value?.length > 0) {
@@ -400,35 +403,35 @@ const saveUser = async () => {
     user.value.newPasswordConfirm = null
     snackbar('SUCCESS', 'Saved Changes')
     dirtyFields.value = false;
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let errorMsg = e?.message ? 'Error Saving User: ' + e.message : e?.data?.message ? 'Error Saving User: ' + e.data.message :'Error Saving User'
     snackbar('ERROR', errorMsg)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteAttachment = async (id) => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     await fileStore.deleteFile({
       id,
       callback: async () => {
         profileImage.value = {}
         userStore.userImage = {}
         snackbar('SUCCESS', 'Image Deleted')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     })
   } catch(e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting File')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     let file = files[0]
     await fileStore.uploadFile({
       file: file,
@@ -440,37 +443,37 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
         if(error?.error) {
           snackbar('ERROR', error.errorMsg)
 
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         } else {
           profileImage.value = img
           userStore.userImage = img
           addImage.value = false
           snackbar('SUCCESS', 'Image Uploaded')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     })
   } catch(e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Uploading File')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const loadProfileImage = async () =>{
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     await fileStore.getOne({
       attachmentTypeId: attachmentTypeId.value,
       sourceId: userId.value,
       callback: async (img) => {
         profileImage.value = img
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     })
   } catch(e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Image')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const populateDirtyCfvs = (field) => {
@@ -484,15 +487,15 @@ const setFieldsDirty = () => {
   dirtyFields.value = true;
 }
 const getSmsTeams = async () =>{
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const { data, status } = await getRequest(`/user/getTeamsForUser/${userId.value}`)
     smsTeams.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving User')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const checkForDeselect = (item) => {

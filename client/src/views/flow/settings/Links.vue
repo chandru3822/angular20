@@ -132,19 +132,19 @@
 
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
   import orderBy from 'lodash.orderby'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest} from '@/helpers/helpers'
   import ConfirmationDialog from '@/components/ConfirmationDialog'
   import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
   import {computed, getCurrentInstance, onMounted, ref} from 'vue'
   import { useUserStore } from '@/stores/UserStorePinia.js'
-
+  import { useAppStore } from '@/stores/AppStorePinia.js'
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
+  const appStore = useAppStore()
 
   const links = ref([])
   const addNew = ref(false)
@@ -177,37 +177,37 @@
     item.url == null ? item.url = code : item.url += code
   }
   const getLinks = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/links`)
       links.value = orderBy(data, [a => a.link.toLowerCase()])
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const deleteLink = async () => {
     const link = linkToDelete.value
     const typeId= linkToDelete.value.id
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await deleteRequest(`/links/${typeId}`)
       snackbar('SUCCESS', 'Link Deleted')
 
       link.archived = true
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Deleting Link')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     linkToDelete.value = null
   }
   const addNewLink = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       newLink.value.companyId = companyId.value
       // this.newProcess.createdById = this.userId
@@ -222,27 +222,27 @@
       newLink.value = { url: ''}
       snackbar('SUCCESS', 'Link Added')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Adding Link')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const saveLink = async (a)  => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       selectedLinkId.value = null
       a.modifiedById = userId.value
       const {status} = await putRequest(`/links`, a)
       snackbar('SUCCESS', 'Link Updated')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Updating Link')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 

@@ -88,7 +88,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import {getOrgLevels} from '@/services/orgService'
 import {handleHidingGlobalLoader, deleteRequest, putRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
@@ -97,6 +96,8 @@ import {getCurrentInstance, onMounted, computed, ref} from 'vue'
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRouter} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -126,7 +127,7 @@ const headers = ref([
   })
 
       const saveOrgLevel = async(ol, isNew) => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await putRequest(`/orgType/level`, ol)
           if(isNew){
@@ -138,39 +139,39 @@ const headers = ref([
             expanded.value = []
             snackbar('SUCCESS', 'Org Level Updated')
           }
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', isNew ? 'Error Adding Org Level' : 'Error Updating Org Level')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
       const getOrganizationLevels = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getOrgLevels()
           orgLevels.value = data
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Loading Org Levels')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
       const deleteOrgLevel = async() => {
         const level = levelToDelete.value
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {status} = await deleteRequest(`/orgType/level/${level.id}`)
           orgLevels.value = orgLevels.value.filter(ol => {
             return ol.id !== level.id
           })
           snackbar('SUCCESS', 'Org Level Deleted')
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Deleting Org Level')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
 </script>

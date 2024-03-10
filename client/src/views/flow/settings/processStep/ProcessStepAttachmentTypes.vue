@@ -108,7 +108,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import orderBy from 'lodash.orderby'
 import {
@@ -121,7 +121,10 @@ import {
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute} from "vue-router/composables";
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+
 const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
@@ -165,44 +168,44 @@ onMounted(async() => {
 
     const updateType = async(item) => {
       try {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         const {status} = await putRequest(`/processStep/${processStepId.value}/attachmentType/update`, item)
         snackbar('SUCCESS', 'Attachment Type Updated')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Saving Attachment Type')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const getAttachmentTypes = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data} = await getRequest(`/processStep/${processStepId.value}/attachmentType`)
         attachmentTypes.value = data
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Data')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const getAvailableTypes = async() => {
       if(addNewType.value) {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data} = await getRequest(`/processStep/${processStepId.value}/attachmentType/available`)
           availableTypes.value = data
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     }
     const addTypeToProcessStep = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         let params = {
           attachmentTypeId: newType.value.id
@@ -211,38 +214,38 @@ onMounted(async() => {
         attachmentTypes.value.push(data)
         newType.value = {}
         addNewType.value = false
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Adding Attachment Type')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const deleteTypeFromStep = async() => {
       let item = attachmentTypeToDelete.value
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         await deleteRequest(`/processStep/${processStepId.value}/attachmentType/${item.id}`)
         item.archived = true
         snackbar('SUCCESS', 'Attachment Type Deleted')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Deleting Attachment Type')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveRowChanges = async(rows) => {
       if (rows?.length > 0) {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           await putRequest(`/processStep/${processStepId.value}/attachmentType/order`, rows)
           snackbar('SUCCESS', 'Attachment Type Order Saved')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Saving Attachment Type Order')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     }

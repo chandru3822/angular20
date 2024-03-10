@@ -264,14 +264,13 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import draggable from 'vuedraggable'
 import {getAvailableForProcessStep} from '@/services/processStepStatusTypeService'
 import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
 import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
 import orderBy from "lodash.orderby"
-import cloneDeep from 'lodash.clonedeep'
 
 import {
   handleHidingGlobalLoader,
@@ -286,6 +285,9 @@ import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables";
 import {defineProps} from 'vue'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+
 const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
@@ -401,17 +403,17 @@ onMounted(async () => {
           const {data, status} = await getRequest(`/position/withParent`)
           positions.value = data
           positionsLoading.value = false
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           positionsLoading.value = false
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Retrieving Positions')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     }
     const saveReadOnlyAndWhiteList = async  () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await putRequest(`/processStep/saveReadOnlyAndWhiteList?savePositions=${readOnlyPositionsChanged.value ?? false}`, processStep.value)
         readOnlyPositionsChanged.value = false
@@ -419,10 +421,10 @@ onMounted(async () => {
           processStep.value.whiteListedPositions = []
         }
         snackbar('SUCCESS', 'Saved Successfully')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const nonAdminWBLPositionsSelectionChange = (e) => {
@@ -436,15 +438,15 @@ onMounted(async () => {
       processStep.value.nonAdminAdd = e
     }
     const saveProcessStep = async () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await putRequest(`/processStep?savePositions=${nonAdminAddWhiteListedPositionsChanged.value ?? false}`, processStep.value)
         snackbar('SUCCESS', 'Process Step Updated')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Updating Process Step')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const getCompanyProcessStepStatusTypes = async () => {
@@ -462,7 +464,7 @@ onMounted(async () => {
       }
     }
     const deleteStatusTypeFromStep = async (item) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         //have to close the work queue editor to for the component to refresh available values
         addNewWorkQueueType.value = false
@@ -470,7 +472,7 @@ onMounted(async () => {
         const {status} = await putRequest(`/processStep/status/removeStatus/${item.id}/fromStep/${processStepId.value}`)
         item.archived = true
         snackbar('SUCCESS', 'Status Type Deleted')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
 
@@ -480,26 +482,26 @@ onMounted(async () => {
           cannotDeleteReasons.value = e.data
         }
         snackbar('ERROR', 'Error Deleting Status Type')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveNonAdminUse = async (e, item) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         let body = {
           allowNonAdminUse: e.target.checked || false
         }
         const {data, status} = await putRequest(`/processStep/status/${item.id}/updateAllowNonAdminUse`, body)
         snackbar('SUCCESS', 'Changes Saved')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Saving')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const assignStatusTypeToProcessStep = async () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         newType.value.processStepId = processStepId
         const {data, status} = await postRequest(`/processStep/status/assignCompanyStatus/${newProcessStepStatusTypeId.value}/toProcessStep/${processStepId.value}`)
@@ -508,25 +510,25 @@ onMounted(async () => {
         addNewProcessStepStatusType.value = false
         newProcessStepStatusTypeId.value = null
         snackbar('SUCCESS', 'Status Type Added')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Adding Status Type')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const getProcessStepDetails = async () => {
       psLoading.value = true
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         const {data, status} = await getRequest(`/processStep/${processStepId.value}`)
         processStep.value = data
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Data')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       } finally {
         psLoading.value = false
       }
@@ -535,19 +537,19 @@ onMounted(async () => {
       try {
         addNewLink.value = !addNewLink.value
         if (addNewLink.value) {
-          store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           const {data, status} = await getRequest(`/links/processStep/${processStepId.value}/available`)
           availableLinks.value = data
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Data')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const assignNewLink = async () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         newLink.value.processStepId = processStepId.value
         const {data, status} = await postRequest(`/links/processStep`, newLink.value)
@@ -556,24 +558,24 @@ onMounted(async () => {
         addNewLink.value = false
         newLink.value = {}
         snackbar('SUCCESS', 'Link Added')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Adding Link')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const deleteLinkFromStep = async (id) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         addNewLink.value = false
         const {status} = await deleteRequest(`/links/processStep/${id}`)
         snackbar('SUCCESS', 'Link Deleted')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Deleting Link')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
 
@@ -591,15 +593,15 @@ onMounted(async () => {
         })
         // save them here
         if (linksToSave.length > 0) {
-          store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           const {status} = await putRequest(`/links/updateOrderInProcessStep`, linksToSave)
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         }
         snackbar('SUCCESS', 'Links Updated')
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Updating Links')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const confirmDelete = () => {

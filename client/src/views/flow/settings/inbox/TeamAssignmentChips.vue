@@ -155,6 +155,8 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, computed, onMounted, getCurrentInstance, watch, defineProps} from "vue";
 import {useUserStore} from "@/stores/UserStorePinia.js";
 import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
@@ -313,7 +315,7 @@ const getSmsAccess = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving SMS Access')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 

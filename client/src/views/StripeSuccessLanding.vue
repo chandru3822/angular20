@@ -26,9 +26,7 @@
 </template>
 
 <script setup>
-import constants from '@/helpers/constants'
-import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequestWithRequestParams} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
+import {handleHidingGlobalLoader, postRequestWithRequestParams} from '@/helpers/helpers'
 import {getCurrentInstance, onMounted, ref} from "vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {useRouter, useRoute} from "vue-router/composables"
@@ -69,7 +67,7 @@ const setStripePaymentId = async() => {
     const {data, status} = await postRequestWithRequestParams('/stripe/setPaymentId', [], params, 'blueraven')
     //success check is just a dumb little thing to prevent them from refresh the success screen a bunch and making us re-GET the session from stripe each time
     router.replace(route.fullPath + `&success=true`)
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error saving payment ID to process step')

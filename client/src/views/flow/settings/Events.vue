@@ -121,16 +121,13 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
-
-import {getRequest, putRequest, postRequest, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
-import debounce from "lodash.debounce";
+import {getRequest, putRequest, postRequest, handleHidingGlobalLoader} from '@/helpers/helpers'
 import { getEventResourceFields } from "@/services/eventService"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-
 import {computed, getCurrentInstance, ref, onMounted} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 import {useRouter} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
@@ -138,6 +135,7 @@ const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const router = useRouter()
 const userStore = useUserStore()
+const appStore = useAppStore()
 
 const addNew = ref(false)
 const deleteError = ref(false)
@@ -180,46 +178,42 @@ const filterEvents = computed(() => {
   })
 })
 
-const debounceGetSteps = debounce(() => {
-  getEvents()
-}, 500)
-
 const getResourceFields = async () => {
   if(addNew.value) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data} = await getEventResourceFields()
       eventResourceFields.value = data
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 
 const getEvents = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/event`)
     events.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
 const deleteEvent =  async () => {
   const event = eventToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/event/delete/${event.id}`)
     event.archived = true
     snackbar('SUCCESS', 'Event Deleted')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     if (e.status === 400) {
@@ -228,22 +222,22 @@ const deleteEvent =  async () => {
       cannotDeleteReasons.value = e.data
     }
     snackbar('ERROR', 'Error Deleting Event')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
   eventToDelete.value = null
 }
 
 const addEvent = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await postRequest(`/event`, newEvent.value)
     router.push({path: `/settings/event/${data.id}/customFieldGroups`})
     snackbar('SUCCESS', 'Event Added')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Event')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 

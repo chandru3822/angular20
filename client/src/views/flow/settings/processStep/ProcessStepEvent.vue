@@ -929,7 +929,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import draggable from 'vuedraggable'
 import {
@@ -1245,7 +1244,7 @@ const getPositions = async () => {
       const {data, status} = await getRequest(`/position/withParent`)
       positions.value = data
       positionsLoading.value = false
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
@@ -1284,7 +1283,7 @@ const saveReadOnlyWhiteList = async () => {
   try {
     const {status} = await putRequest(`/processStep/${processStepId.value}/event/${psEvent.eventId}/saveReadOnlyWhiteList?savePositions=${psEvent.positionsChanged ?? false}`, psEvent)
     psEvent.positionsChanged = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
     snackbar('SUCCESS', 'Event Updated')
     appStore.loading = false
   } catch (e) {
@@ -1518,7 +1517,7 @@ const saveFunctionToAction = async (action) => {
     selectedChildRequirementParamDynamicValues.value = []
     addChildFunction.value = false
     snackbar('SUCCESS', 'Child Function Added To Action')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Child Function Action')
@@ -1542,7 +1541,7 @@ const updateChildFunction = async (actionId, childFunction) => {
   try {
     const {status} = await putRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/${actionId}/updateActionChildFunction`, childFunction)
     snackbar('SUCCESS', 'Child Process Updated')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating Child Process')
@@ -1554,7 +1553,7 @@ const deleteChildFunctionFromAction = async (actionId, id) => {
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/${actionId}/deleteChildFunction/${id}`)
     snackbar('SUCCESS', 'Child Function Deleted From Action')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Child Function From Action')
@@ -1575,7 +1574,7 @@ const loadLinks = async (actionId) => {
   try {
     const {data, status} = await getRequest(`/links/eventAction/${actionId}`)
     availableLinks.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
@@ -1595,7 +1594,7 @@ const saveLinkToAction = async (action) => {
     selectedLink.value = {}
     addChildLink.value = false
     snackbar('SUCCESS', 'Link Added to Action')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Link to Action')
@@ -1607,7 +1606,7 @@ const deleteLinkFromAction = async (actionId, id) => {
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/event/${selectedEvent.value.id}/action/${actionId}/deleteLinkFromAction/${id}`)
     snackbar('SUCCESS', 'Link Deleted From Action')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Link From Action')

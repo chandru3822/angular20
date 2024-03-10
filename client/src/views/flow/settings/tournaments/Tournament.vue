@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import {
   handleHidingGlobalLoader,
   getRequest,
@@ -30,6 +30,8 @@ import {
 } from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useRoute} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -81,15 +83,15 @@ const timezone = computed(() => {
 })
 
 const getTournament = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/tournament/${tournamentId.value}`, 'blueraven')
     tournament.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Tournament')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 

@@ -222,7 +222,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import {
   getRequest,
   getRequestWithParams,
@@ -237,9 +237,12 @@ import draggable from 'vuedraggable'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
+
+const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
@@ -323,7 +326,7 @@ const getTypeDetails = async () => {
   }
 }
 const saveFieldGroup = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     newGroup.value.processStepAttachmentTypeId = route.params.attachmentTypeId
     const {data} = await postRequest(`/customFieldGroup/addAttachmentCustomFieldGroup`, newGroup.value)
@@ -331,15 +334,15 @@ const saveFieldGroup = async () => {
     newGroup.value = {}
     createNew.value = false
     snackbar('SUCCESS', 'Group Saved')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Group')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveFieldChanges = async (fields) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
     // pull those needing to be saved out of list
@@ -357,46 +360,46 @@ const saveFieldChanges = async (fields) => {
     }
     snackbar('SUCCESS', 'Fields Updated')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating Fields')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 
 }
 const saveGroupName = async (group) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
     snackbar('SUCCESS', 'Group Name Updated')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Change')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const fetchAvailableCustomFields = async (objectTypeId, groupId) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     availableCustomFields.value = []
     const {data} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, {params: {id: processStepId.value}})
     selectedAncillaryField.value = {}
     parentObjects.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteWithChecks = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   let item = cfGroupToDelete.value ? cfGroupToDelete.value : customFieldToDelete.value ? customFieldToDelete.value : null
   let customFieldGroupId = cfGroupToDelete.value ? cfGroupToDelete.value.id : null
   let customFieldGroupAssignmentId = customFieldToDelete.value ? customFieldToDelete.value.id : null
@@ -422,31 +425,31 @@ const deleteWithChecks = async () => {
       item.archived = true
       snackbar('SUCCESS', 'Item Deleted')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const loadFieldsByParent = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/customField/getByParentProcessStep/${processStepId.value}`)
     ancillaryCustomFields.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const assignAncillaryCustomField = async (item) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const params = {
       customFieldGroupId: item.id,
@@ -460,17 +463,17 @@ const assignAncillaryCustomField = async (item) => {
     addField.value = false
     snackbar('SUCCESS', 'Field Added to Group')
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Field to Group')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveRowChanges = async (rows) => {
   if (rows?.length > 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
       localCustomFieldGroups.value = orderBy(localCustomFieldGroups.value, 'groupOrder')
@@ -478,12 +481,12 @@ const saveRowChanges = async (rows) => {
 
       // this componentKey forces the data-table component to re-render
       componentKey.value += 1
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Group Order')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }

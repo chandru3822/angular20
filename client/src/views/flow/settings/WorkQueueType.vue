@@ -283,7 +283,7 @@
 
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import orderBy from 'lodash.orderby'
 import {getWorkQueueCategories} from '@/services/workQueueService'
 import {
@@ -305,6 +305,8 @@ import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -394,7 +396,7 @@ const is7oaksAdmin = computed(() => {
 })
 
 onMounted( async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   let requests = [
     getAllWorkQueueCategories(),
     getCompanyObjectTypes(),
@@ -404,7 +406,7 @@ onMounted( async () => {
     getWorkQueueType()
   ]
   await Promise.all(requests).then(async () => {
-    store.commit(AppMutations.SET_LOADING, false);
+    appStore.loading = false;
   })
 })
 
@@ -446,12 +448,12 @@ const getPositions = async () => {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Positions')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 const saveHiddenAndWhiteList = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/workQueueType/saveHiddenAndWhiteList?savePositions=${workQueueType.value.hiddenWhiteListedPositionsChanged ?? false}`, workQueueType.value)
     hiddenPositionsChanged.value = false
@@ -460,10 +462,10 @@ const saveHiddenAndWhiteList = async () => {
     }
     snackbar('SUCCESS', 'Saved Successfully')
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const buildSql = async () => {
@@ -507,7 +509,7 @@ const getPsAndEventsUsingWqt = async () => {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Work Queue Types')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getWorkQueueType = async () => {
@@ -524,7 +526,7 @@ const getWorkQueueType = async () => {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Work Queue Types')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getAllWorkQueueCategories = async () => {
@@ -535,23 +537,23 @@ const getAllWorkQueueCategories = async () => {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Work Queue Types')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveType = async () => {
   if (vueInstance.$refs.wqtForm.validate() && validateSchedule()) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await putRequest(`/workQueueType/type`, workQueueType.value)
       workQueueType.value = data
       editType.value = false
       editSchedule.value = false
       snackbar('SUCCESS', 'Work Queue Type Saved')
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Work Queue Type')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }

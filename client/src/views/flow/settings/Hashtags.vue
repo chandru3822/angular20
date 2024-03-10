@@ -177,7 +177,6 @@
 
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import orderBy from 'lodash.orderby'
 import { getHashtags } from "@/services/activityService"
 import {
@@ -193,11 +192,13 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 import { computed, getCurrentInstance, ref, onMounted } from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const userStore = useUserStore()
+const appStore = useAppStore()
 
 const tags = ref([])
 const addNew = ref(false)
@@ -245,36 +246,36 @@ const validateExisting = async (item) => {
     }
 }
 const getTags = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getHashtags()
     tags.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (pe) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
 const deleteTag = async () =>{
   const tag = tagToDelete.value
   const hashtagId = tagToDelete.value.id
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/hashtag/${hashtagId}`)
     snackbar('SUCCESS', 'Hashtag Deleted')
     tag.archived = true
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Tag')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
   tagToDelete.value = null
 }
 const saveTag = async (hashtag, isNew) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     //yes this is hardcoded. im just trying to prep for future requests
     hashtag.hashtagTypeId = 2  //2 = Notes, this is the only type they can add for now
@@ -288,11 +289,11 @@ const saveTag = async (hashtag, isNew) => {
       selectedTagId.value = null
     }
     snackbar('SUCCESS', 'Hashtag Saved')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Hashtag')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const closeSaveDialog = () => {

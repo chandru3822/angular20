@@ -148,7 +148,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import constants from '@/helpers/constants'
 import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
@@ -214,48 +214,48 @@ const validateCustomFields = () => {
   return invalid
 }
 const getTournamentOwnerTypes = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
     ownerTypes.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getTournamentFormulas = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {
       data,
       status
     } = await getRequest(`/tournament/formulas/${tournament.value.tournamentOwnerTypeId}`, 'blueraven')
     formulas.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getTournament = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/tournament/${tournamentId.value}`, 'blueraven')
     tournament.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Tournament')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const updateTournament = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     //they cannot archive a field from here so when we send these up we will only update/insert those that changed
     tournament.value.tournamentFormulaFields = dirtyCfvs.value
@@ -263,16 +263,16 @@ const updateTournament = async () => {
     tournament.value = data
     dirtyCfvs.value = []
     edit.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Tournament')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     let file = files[0]
     await fileStore.uploadFile({
       file: file,
@@ -283,38 +283,38 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
       callback: async (img, error) => {
         if (error?.error) {
           snackbar('ERROR', error.errorMsg)
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         } else {
           tournament.value.backgroundAttachmentPresignedUrl = img.presignedUrl
           tournament.value.backgroundAttachmentId = img.id
           addImage.value = false
           snackbar('SUCCESS', 'Image Uploaded')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Uploading File')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteAttachment = async (id) => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     await fileStore.deleteFile({
       id,
       callback: async () => {
         tournament.value.backgroundAttachmentId = null
         tournament.value.backgroundAttachmentPresignedUrl = null
         snackbar('SUCCESS', 'Image Deleted')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting File')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const populateDirtyCfvs = (field) => {

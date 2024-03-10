@@ -70,12 +70,14 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute} from "vue-router/composables";
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -136,31 +138,31 @@ onMounted(() => {
 
 const getProcessStepDetails = async () => {
   processStepLoading.value = true
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/processStep/${processStepId.value}`)
     processStep.value = data
     processStepLoading.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let msg = e?.data?.message || 'Error Retrieving Data'
     snackbar('ERROR', msg)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     processStepLoading.value = false
   }
 }
 const saveProcessStep = async (closeEditor) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/processStep?savePositions=${nonAdminAddWhiteListedPositionsChanged.value ?? false}`, processStep.value)
     editName.value = false
     snackbar('SUCCESS', 'Process Step Updated')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating Process Step')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getPositions = async () => {
@@ -170,12 +172,12 @@ const getPositions = async () => {
       const {data, status} = await getRequest(`/position/withParent`)
       positions.value = data
       positionsLoading.value = false
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Positions')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }

@@ -64,12 +64,14 @@
 
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import cloneDeep from 'lodash.clonedeep'
 import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
@@ -137,18 +139,18 @@ const getPositions = async () => {
       const {data, status} = await getRequest(`/position/withParent`)
       positions.value = data
       positionsLoading.value = false
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Positions')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 
 const saveReadOnlyAndWhiteList = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/objectType/saveStatusReadOnlyAndWhiteList?savePositions=${statusReadOnlyPositionsChanged.value ?? false}`, projectObjectType.value)
     statusReadOnlyPositionsChanged.value = false
@@ -156,14 +158,14 @@ const saveReadOnlyAndWhiteList = async () => {
       statusReadOnlyWhiteListedPositions.value = []
     }
     snackbar('SUCCESS', 'Saved Successfully')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveOwnerReadOnlyAndWhiteList = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/objectType/saveOwnerReadOnlyAndWhiteList?savePositions=${ownerReadOnlyPositionsChanged.value ?? false}`, projectObjectType.value)
     ownerReadOnlyPositionsChanged.value = false
@@ -171,24 +173,24 @@ const saveOwnerReadOnlyAndWhiteList = async () => {
       ownerReadOnlyWhiteListedPositions.value = []
     }
     snackbar('SUCCESS', 'Saved Successfully')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getObjectTypeDetails = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     objectTypeDetailsLoading.value = true;
     const {data, status} = await getRequest(`/objectType/getByType/1`)
     projectObjectType.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
     objectTypeDetailsLoading.value = false;
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Details')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const statusReadOnlySelectedEventListener = (e) => {

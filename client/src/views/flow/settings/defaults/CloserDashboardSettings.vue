@@ -60,11 +60,10 @@
 import {computed, getCurrentInstance, onMounted, ref} from "vue";
 import constants from "@/helpers/constants";
 import {AppMutations} from "@/stores/AppStore";
-import {getSnackbar} from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
-
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 import { useFileStore } from '@/stores/FileStore.js'
 
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
@@ -111,26 +110,26 @@ const deleteImageDialogText = computed(() => {
 
 const loadImage = async(logoType) => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     await fileStore.getOne({
       attachmentTypeId: logoType.attachmentTypeId,
       sourceId: companyId,
       callback: async (img) => {
         logoType.image = img
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Image')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
 const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit) => {
   let snackbar
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     let file = files[0]
     await fileStore.uploadFile({
       file: file,
@@ -142,14 +141,14 @@ const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit
         if (error?.error) {
           snackbar = snackbar('ERROR', error.errorMsg)
           store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         } else {
           ImageTypeEnum.value[imageType.key].image = img
           ImageTypeEnum.value[imageType.key].add = false
           ImageTypeEnum.value[imageType.key].saving = false
           snackbar = snackbar('SUCCESS', 'Image Uploaded')
           store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     })
@@ -157,14 +156,14 @@ const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit
     console.error('*** ERROR ***', e)
     snackbar = snackbar('ERROR', 'Error Uploading File')
     store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
 const deleteAttachment = async() => {
   let snackbar
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     let key = imageToDelete?.value?.key
     await fileStore.deleteFile({
       id: imageToDelete?.value?.image?.id,
@@ -172,7 +171,7 @@ const deleteAttachment = async() => {
         ImageTypeEnum.value[key].image = {}
         snackbar = snackbar('SUCCESS', 'Image Deleted')
         store.commit(AppMutations.SHOW_SNACK, snackbar)
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
         imageToDelete.value = null
       }
     })
@@ -180,7 +179,7 @@ const deleteAttachment = async() => {
     console.error('*** ERROR ***', e)
     snackbar = snackbar('ERROR', 'Error Deleting File')
     store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     imageToDelete.value = null
   }
 }

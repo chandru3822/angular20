@@ -202,6 +202,8 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
 import {useUserStore} from "@/stores/UserStorePinia.js";
 import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -300,7 +302,7 @@ const getProjectDebounced = (val) => {
   }, 500) /* 500ms throttle */
 }
 const sendMessage = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   if (selectedProjectIds.value.length > 0) {
     for (let selectedProjectId of selectedProjectIds.value) {
       attachmentUrl.value = `/project/` + selectedProjectId + `/attachment`
@@ -341,7 +343,7 @@ const sendMessage = async () => {
 
   if (messageSuccess.value) {
     exitDialogue()
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     if (assignAndSend.value) {
       snackbar('SUCCESS', 'Message sent and conversation assigned')
       if (props.isInbox && !route.path.includes(inboxUrl.value)) {
@@ -350,7 +352,7 @@ const sendMessage = async () => {
     }
     else {
       snackbar('SUCCESS', 'Message sent')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
 
     }
   }
@@ -361,7 +363,7 @@ const onMessageWasSent = async () => {
     snackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
 
     messageSuccess.value = false
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     return;
   }
 
@@ -371,7 +373,7 @@ const onMessageWasSent = async () => {
   if (!smsTeamId) {
     snackbar('ERROR', 'Error: No SMS Team found')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     return
   }
 
@@ -425,7 +427,7 @@ const onMessageWasSent = async () => {
       e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
     snackbar('ERROR', message)
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     return;
   }
 }
@@ -434,7 +436,7 @@ const sendMessageAndAssign = async () => {
   if (!smsTeamId) {
     snackbar('ERROR', 'Error: No SMS Team found')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     return
   }
 
@@ -491,14 +493,14 @@ const fetchTeamsForUser = async () => {
   try {
     conversationIsLoading.value = true
     const { data, status } = await getRequest(`/smsTeam/getTeamsForUser`)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     teamsAssociatedToUser.value = data
     if (teamsAssociatedToUser.value && teamsAssociatedToUser.value.length > 0) {
       for (let team of teamsAssociatedToUser.value){
         templateTeams.value.push(team.id);
       }
     }
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
     await getSmsTeamTemplates();
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -530,7 +532,7 @@ const uploadTextAttachment = async (file) => {
     }
     uploadedFiles.value.push(file);
   } catch(e) {
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     logError(e)
     snackbar('ERROR', 'Error Uploading File')
 

@@ -204,7 +204,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {
   handleHidingGlobalLoader,
@@ -219,7 +219,9 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {mapStores} from 'pinia'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute} from "vue-router/composables";
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -299,15 +301,15 @@ const getAllocationValue = (value) => {
 }
 
 const getCompanyTimezones = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequestWithParams(`/timezone`)
     companyTimezones.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Timezones')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
@@ -325,7 +327,7 @@ const getOtherTotals = () => {
   })
 }
 const getScheduleToUsers = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/roundRobin/${roundRobinId.value}/scheduleTo`)
     scheduleToUsers.value = data
@@ -334,15 +336,15 @@ const getScheduleToUsers = async () => {
     if (is7oaksAdmin.value) {
       getOtherTotals()
     }
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveAllocationChanges = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     let updatedRows = scheduleToUsers.value.filter(u => u.dirty)
     updatedRows.forEach(r => {
@@ -356,16 +358,16 @@ const saveAllocationChanges = async () => {
         getOtherTotals()
       }
     }
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Allocation Changes')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteUserFromRoundRobin = async () => {
   const user = userToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await putRequest(`/roundRobin/${roundRobinId.value}/user/${user.roundRobinUserId}/delete`)
     scheduleToUsers.value = data
@@ -373,15 +375,15 @@ const deleteUserFromRoundRobin = async () => {
     if (is7oaksAdmin.value) {
       getOtherTotals()
     }
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Removing User')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const addUserToRoundRobin = async (selected) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     let params = {
       roundRobinId: roundRobinId.value,
@@ -397,11 +399,11 @@ const addUserToRoundRobin = async (selected) => {
     }
     addUser.value = false
     selectedUser.value = {}
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding User')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getUsers = async () => {
@@ -418,20 +420,20 @@ const getUsers = async () => {
   }
 }
 const getRoundRobinDetails = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/roundRobin/${roundRobinId.value}`)
     roundRobin.value = data
     dataLoading.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveUserTimezone = async (user) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await putRequest(`/roundRobin/user/${user.roundRobinUserId}`, user)
     user.timezone = data.timezone
@@ -440,7 +442,7 @@ const saveUserTimezone = async (user) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating User')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

@@ -1320,7 +1320,7 @@ const getActions = async () => {
   try {
     const {data, status} = await getRequest(`/processStep/${processStepId.value}/action`)
     actions.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
@@ -1369,7 +1369,7 @@ const saveNewAction = async () => {
     addNewAction.value = false
     newAction.value = {}
     snackbar('SUCCESS', 'Action Added')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Action')
@@ -1425,7 +1425,7 @@ const updateAction = async (action) => {
     }
 
     snackbar('SUCCESS', 'Action Updated')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating Action')
@@ -1453,7 +1453,7 @@ const getStatusTypes = async () => {
   try {
     const {data, status} = await getCompanyAssignedToProcessStep(processStepId.value)
     statusTypes.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
@@ -1465,11 +1465,11 @@ const getTheseCompanyProjectStatusTypes = async () => {
   try {
     const {data, status} = await getCompanyProjectStatusTypes(null, true)
     companyProjectStatusTypes.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   }
 }
 const getOperationTypes = async () => {
@@ -1477,7 +1477,7 @@ const getOperationTypes = async () => {
   try {
     const {data, status} = await getRequest(`/operation`)
     operationTypes.value = orderBy(data, [o => o.operationType.toLowerCase()])
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
@@ -1491,7 +1491,7 @@ const deleteAction = async () => {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${item.id}`)
     item.archived = true
     snackbar('SUCCESS', 'Action Deleted')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Action')
@@ -1519,7 +1519,7 @@ const saveChildProcessCancelledStatus = async (action, cp) => {
     cp.existingProcessStepStatusType = data.existingProcessStepStatusType
     cp.initialProcessStepStatusType = data.initialProcessStepStatusType
     snackbar('SUCCESS', 'Child Process Status Saved')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Child Process Status')
@@ -1542,7 +1542,7 @@ const saveProcessStepToAction = async (action) => {
     newChildProcessStep.value = {}
     addChildProcess.value = false
     snackbar('SUCCESS', 'Child Process Added To Action')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Child Process Action')
@@ -1557,7 +1557,7 @@ const deleteChildProcessFromAction = async () => {
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildStep/${id}`)
     snackbar('SUCCESS', 'Child Process Deleted From Action')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Child Process From Action')
@@ -1580,7 +1580,7 @@ const saveFunctionToAction = async (action) => {
     selectedChildRequirementParamDynamicValues.value = []
     addChildFunction.value = false
     snackbar('SUCCESS', 'Child Function Added To Action')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Child Function Action')
@@ -1595,7 +1595,7 @@ const deleteChildFunctionFromAction = async () => {
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildFunction/${id}`)
     snackbar('SUCCESS', 'Child Function Deleted From Action')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Child Function From Action')
@@ -1607,7 +1607,7 @@ const updateChildFunction = async (actionId, childFunction) => {
   try {
     const {status} = await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateActionChildFunction`, childFunction)
     snackbar('SUCCESS', 'Child Process Updated')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating Child Process')
@@ -1620,7 +1620,7 @@ const loadLinks = async (actionId) => {
   try {
     const {data, status} = await getRequest(`/links/action/${actionId}`)
     availableLinks.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
@@ -1640,7 +1640,7 @@ const saveLinkToAction = async (action) => {
     selectedLink.value = {}
     addChildLink.value = false
     snackbar('SUCCESS', 'Link Added to Action')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Link to Action')
@@ -1655,7 +1655,7 @@ const deleteLinkFromAction = async () => {
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteLinkFromAction/${id}`)
     snackbar('SUCCESS', 'Link Deleted From Action')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Link From Action')
@@ -1674,7 +1674,7 @@ const saveRowChanges = async (rows) => {
     try {
       const {status} = await putRequest(`/processStep/${processStepId.value}/action/order`, rows)
       snackbar('SUCCESS', 'Action Order Saved')
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Action Order')

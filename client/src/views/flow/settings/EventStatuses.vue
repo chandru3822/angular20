@@ -222,7 +222,6 @@
 
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import draggable from 'vuedraggable'
 
 import orderBy from 'lodash.orderby'
@@ -230,16 +229,17 @@ import {getCompanyEventStatusTypes, getEventStatusTypes} from '@/services/eventS
 import {getRequest, deleteRequest, putRequest, defineSortableTable} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
-
 import {computed, getCurrentInstance, ref, onMounted} from "vue";
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const userStore = useUserStore()
+const appStore = useAppStore()
 const fileStore = useFileStore()
 
 const search = ref('')
@@ -283,20 +283,20 @@ const filteredEventStatuses = computed(() =>{
 })
 
 const saveOrderChanges = async (types) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await putRequest(`/event/companyStatuses`, types)
     snackbar('SUCCESS', 'Status Types Updated')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Status Type Changes')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     let file = files[0]
     await fileStore.uploadFile({
       file: file,
@@ -307,90 +307,90 @@ const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) =>
       callback: async (img, error) => {
         if (error?.error) {
           snackbar('ERROR', error.errorMsg)
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         } else {
           item.icon = img
           snackbar('SUCCESS', 'Image Uploaded')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Uploading File')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
 const deleteAttachment = async (item) => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     await fileStore.deleteFile({
       id: item.icon.id,
       callback: async (status) => {
         item.icon = {}
         snackbar('SUCCESS', 'Image Deleted')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting File')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
 const getCompanyStatusTypes = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getCompanyEventStatusTypes()
     statusTypes.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
 const getAllEventStatusTypes = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getEventStatusTypes()
     rootStatusTypes.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getUsesForStatus = async (eventStatusId, eventStatusName) => {
   deleteError.value = false
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/event/companyStatusUses/${eventStatusId}`);
     objectsUsingStatus.value = data
     objectsUsingStatus.value.fieldName = eventStatusName
     showInfoDialog.value = true
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
 const deleteType = async () => {
   deleteError.value = false
   const item = itemToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await deleteRequest(`/event/companyStatus/${item.id}`)
     fieldsInUse.value = [];
     snackbar('SUCCESS', 'Status Deleted')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     item.archived = true
     //it makes no sense why this didn't work and why the code isn't yelling that i am editing a const variable... ? oh well
     // this.itemToDelete.archived = true
@@ -401,12 +401,12 @@ const deleteType = async () => {
       objectsUsingStatus.value = e.data;
       objectsUsingStatus.value.fieldName = item.eventStatusType
       snackbar("ERROR", "Error Deleting Status");
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     else {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Deleting Status')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   } finally {
     closeDeleteDialog()
@@ -414,7 +414,7 @@ const deleteType = async () => {
 }
 
 const saveType = async (type, isNew) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await putRequest(`/event/companyStatus`, type)
 
@@ -434,11 +434,11 @@ const saveType = async (type, isNew) => {
     expanded.value = []
     selectedStatusTypeId.value = null
     snackbar('SUCCESS', 'Event Status Saved')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Event Status')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 

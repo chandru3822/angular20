@@ -61,11 +61,13 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
   import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {useRouter} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
@@ -90,22 +92,22 @@
     }
   })
   const saveRole = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       if(roleId.value) {
         const {status} = await putRequest(`/role/`, role.value)
         router.push({name: 'role', params: {id: roleId.value}})
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } else {
         const {data, status} = await postRequest(`/role/`, role.value)
         roleId.value = data.id
         router.push({name: 'role', params: {id: roleId.value}})
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Role')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
 
   }
@@ -120,29 +122,29 @@
     })
   }
   const getFeatures = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/feature/withAccess`)
       role.value.companyFeatures = data
       populateHeaders()
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Features')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const getRole = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/role/${roleId.value}`)
       role.value = data
       populateHeaders()
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Role')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 

@@ -241,8 +241,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
-
 import orderBy from 'lodash.orderby'
 import cloneDeep from 'lodash.clonedeep'
 
@@ -255,6 +253,8 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
@@ -343,16 +343,16 @@ const filterProcesses = computed(() => {
   return process.value.processStepProcesses.filter(psp => { return !psp.archived})
 })
 const getProcessDetails = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/processes/${processId.value}`)
     process.value = cloneDeep(data)
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
@@ -369,37 +369,37 @@ const toggleSelectAllPositions = () => {
   })
 }
 const saveDeniedPositions = async() => {
-  store.commit(AppMutations.SET_LOADING, true);
+  appStore.loading = true;
   try {
     const {status} = await putRequest(`/processes/saveDenyListPositions`, process.value)
     snackbar('SUCCESS', 'Denied Positions Saved')
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Field')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveRowChanges = async (rows) => {
   if(rows?.length > 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await putRequest(`/processes/${processId.value}/processStepProcesses`, rows)
       snackbar('SUCCESS', 'Order Updated')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Order Changes')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 const saveProcessStepProcess = async (item) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     item.companyProcessStepStatusTypeId = item.initialStep ? item.companyProcessStepStatusTypeId : null
     const {data, status} = await putRequest(`/processes/${processId.value}/processStepProcess`, item)
@@ -409,33 +409,33 @@ const saveProcessStepProcess = async (item) => {
     expanded.value = []
     snackbar('SUCCESS', 'Process Saved')
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Process')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveProcess = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     editName.value = false
     const {status} = await putRequest(`/processes`, process.value)
     snackbar('SUCCESS', 'Process Updated')
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating Process')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteStepFromProcess = async () => {
   const id = processStepToDelete.value.id
   // reset the addNew field in case they delete one while it is open
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     addNew.value = false
     const {status} = await deleteRequest(`/processes/processStepProcess/${id}`)
@@ -444,24 +444,24 @@ const deleteStepFromProcess = async () => {
     })
     snackbar('SUCCESS', 'Step Deleted from Process')
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Step From Process')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getPositions = async() => {
   try {
     const {data, status} = await getRequest(`/position/withParent`)
     owningPositions.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Positions')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getAvailableProcessSteps = async () => {
@@ -470,19 +470,19 @@ const getAvailableProcessSteps = async () => {
     newProcessStep.value = {}
     addNew.value = !addNew.value
     if(addNew.value) {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       const {data, status} = await getRequest(`/processes/${processId.value}/availableProcessSteps`)
       availableProcessSteps.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const assignProcessStep = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await postRequest(`/processes/${processId.value}/processStep`, newProcessStep.value)
     process.value.processStepProcesses.push(data)
@@ -491,11 +491,11 @@ const assignProcessStep = async () => {
     addNew.value = false
     newProcessStep.value = {}
     snackbar('SUCCESS', 'Process Step Assigned')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Assigning Process Step')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getActiveProcessAssignedToProcessStep = async (item) => {

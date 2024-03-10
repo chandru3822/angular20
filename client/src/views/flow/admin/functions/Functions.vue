@@ -117,7 +117,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest} from '@/helpers/helpers'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
@@ -164,7 +163,7 @@ const getFunctions = async () => {
   try {
     const {data, status} = await getRequest(`/dbFunction`)
     functions.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Functions')
@@ -177,7 +176,7 @@ const getDataTypes = async () => {
     try {
       const {data, status} = await getRequest(`/dataType/getSystem`)
       dataTypes.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Data Types')
@@ -191,7 +190,7 @@ const getFunctionTypes = async () => {
     try {
       const {data, status} = await getRequest(`/dbFunction/types`)
       dbFunctionTypes.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Functions')
@@ -206,7 +205,7 @@ const addFunction = async () => {
     newFunction.value.returnDataTypeId = newFunction.value.dbFunctionTypeId !== 1 ? null : newFunction.value.returnDataTypeId
     const {data, status} = await postRequest(`/dbFunction`, newFunction.value)
     goToFunction(data.id)
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Functions')
@@ -219,7 +218,7 @@ const deleteFunction = async () => {
   try {
     const {status} = await deleteRequest(`/dbFunction/${item.id}`)
     item.archived = true
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
     snackbar('SUCCESS', 'Function Deleted')
     appStore.loading = false
   } catch (e) {

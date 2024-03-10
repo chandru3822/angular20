@@ -264,6 +264,8 @@ import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
 import {useUserStore} from "@/stores/UserStorePinia.js";
 import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
 import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -457,13 +459,13 @@ const hasUnassignedNotifications = computed(() => {
 const showLoading = (isLoading) => {
   if (isLoading) {
     if (thingsLoading.value == 0) {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
     }
     thingsLoading.value++
   } else {
     thingsLoading.value--
     if (thingsLoading.value == 0) {
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
@@ -515,7 +517,7 @@ const fetchConversations = async () => {
         })
       })
     }
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
     showLoading(false)
     initialLoad.value = false
   } catch (e) {
@@ -585,7 +587,7 @@ const reloadConversations = async () => {
       })
     }
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
     showLoading(false)
     reloadInProgress.value = false
   } catch (e) {
@@ -707,7 +709,7 @@ const onResize = () => {
   viewWidth.value = window.innerWidth
 }
 const getAvailableTeams = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const { data, status } = await getRequest(`/smsTeam/users`)
     selectableTeams.value = data
@@ -763,12 +765,12 @@ const getAvailableTeams = async () => {
     if (selectedOwnerFilters.value && !selectedOwnerFilters.value.includes(-1) && hasUnassignedNotifications.value) {
       selectedOwnerFilters.value.push(-1)
     }
-    handleHidingGlobalLoader(vueInstance, status)
-    store.commit(AppMutations.SET_LOADING, false)
+    handleHidingGlobalLoader(status)
+    appStore.loading = false
     await fetchConversations()
   } catch (e) {
     console.error('*** ERROR ***', e)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     snackbar('ERROR', 'Error retrieving teams')
   }
 }
@@ -839,7 +841,7 @@ watch(smsOwnershipEvents, debounce(async function() {
     await reloadConversations();
   } catch (e) {
     console.error('*** ERROR ***', e)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     snackbar('ERROR', 'Error reloading conversations')
 
   } finally {

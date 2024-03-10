@@ -133,7 +133,6 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
   import {getOrgTypes} from '@/services/orgService'
   import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
   import {handleHidingGlobalLoader, getRequest, putRequest, postRequest} from '@/helpers/helpers'
@@ -143,7 +142,8 @@
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRouter, useRoute} from "vue-router/composables"
-
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
@@ -209,20 +209,20 @@
       return position.value?.companyFeatures?.filter(cf => !cf.hidden) || []
   }
   const getAllOrgTypes = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getOrgTypes()
       orgTypes.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Org Types')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const savePosition = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       if(positionId.value) {
         //we do this temp so that we only send up the values that need to be saved
@@ -234,7 +234,7 @@
         const {data, status} = await putRequest(`/position`, position.value)
         position.value = data
         accessControlKey.value++
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
         dirtyFields.value = false
       } else {
         if (clonePositionId.value) {
@@ -244,7 +244,7 @@
           accessControlKey.value++
           dirtyFields.value = false
           await router.push(`/settings/position/${data.id}`)
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
           // window.location.reload()
         }
         else {
@@ -253,27 +253,27 @@
           accessControlKey.value++
           dirtyFields.value = false
           await router.push(`/settings/position/${data.id}`)
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         }
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Position')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const getPosition = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/position/${positionId.value}`)
       position.value = data
       positionLoaded.value = true
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Position')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const getPositions = async () => {
@@ -281,12 +281,12 @@
       const {data, status} = await getRequest(`/position`)
       positions.value = data
       // dataLoading.value = false
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Positions')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const companyFeatureCallback = (newValue) => {

@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 
 import cloneDeep from 'lodash.clonedeep'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
@@ -64,6 +64,8 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {getCurrentInstance, onMounted, ref, toRefs, computed, watch} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -107,18 +109,18 @@ onMounted(() => {
 })
 
 const loadSecondary = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequestWithParams(`/feature/access/allUserPositions`, { params: {
         userId: userId.value
       }})
     secondaryFeatureAccess.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Features')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const secondaryHasAccess = (item, acl) => {
@@ -231,18 +233,18 @@ const alterEnabledFlagForRows = (newList, oldList) => {
 }
 const getFeatures = async () => {
   if (companyFeatureList.value?.length === 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/feature/withAccess`)
       companyFeatureList.value = data
       populateHeaders()
       populateSelectedRows()
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Features')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   } else {
     populateHeaders()

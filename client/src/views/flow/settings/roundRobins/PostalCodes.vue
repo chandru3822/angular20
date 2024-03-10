@@ -85,13 +85,15 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -149,44 +151,44 @@ const reloadAvailable = () => {
 }
 
 const getAvailablePostalCodes = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/roundRobin/${roundRobinId.value}/availableCodes`)
     availablePostalCodes.value = data
     //this makes it reload the available list any time one has been deleted locally
     codeDeleted.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getCodesAssignedToRoundRobin = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/roundRobin/${roundRobinId.value}/codes`)
     postalCodes.value = data
     dataLoading.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteCodeFromRoundRobin = async () => {
   const code = itemToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/roundRobin/code/${code.id}`)
     code.archived = true
     codeDeleted.value = true
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Removing Postal Code')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
   closeDeleteDialog()
 }
@@ -194,7 +196,7 @@ const addCodeToRoundRobin = async () => {
   if (newCode.value.id) {
     showError.value = false
     errorMsg.value = ''
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       // let params = {
       //   postalCode:
@@ -205,12 +207,12 @@ const addCodeToRoundRobin = async () => {
       addCode.value = false
       availablePostalCodes.value = availablePostalCodes.value.filter(apc => apc.id !== newCode.value.id)
       newCode.value = {}
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = e.data?.message?.includes('Postal Code Already In Use') ? e.data.message : 'Error Adding Postal Code'
       snackbar('ERROR', msg)
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   } else {
     showError.value = true

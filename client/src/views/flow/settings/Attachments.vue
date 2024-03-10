@@ -113,7 +113,6 @@
 
 <script setup>
   import { getCurrentInstance, ref, computed, onMounted} from "vue";
-  import {AppMutations} from '@/stores/AppStore'
   import orderBy from 'lodash.orderby'
   import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
   import {
@@ -125,11 +124,14 @@
   import constants from '@/helpers/constants'
   import ConfirmationDialog from '@/components/ConfirmationDialog'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
   import {useRouter} from "vue-router/composables"
+
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
   const userStore = useUserStore()
+  const appStore = useAppStore()
   const router = useRouter()
   const vuetify = vueInstance.$vuetify
   const attachmentTypes = ref([])
@@ -168,26 +170,26 @@
     router.push({path: `/settings/attachment/${typeId}/customFieldGroups`})
   }
   const getAttachmentTypes = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/attachmentType/types`)
       attachmentTypes.value = orderBy(data, [a => a.attachmentType.toLowerCase()])
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Attachment Types')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const deleteType = async () => {
     const item = itemToDelete.value
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await deleteRequest(`/attachmentType/delete/${item.id}`)
       item.archived = true
       snackbar('SUCCESS', 'Successfully Deleted Attachment Type')
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       if (e.status === 400) {
@@ -196,13 +198,13 @@
         cannotDeleteReasons.value = e.data
       }
       snackbar('ERROR', 'Error Deleting Attachment Type')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     closeDeleteDialog()
   }
 
   const addNewType = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       newType.value.companyId = companyId.value
       const {data, status} = await postRequest(`/attachmentType/type`, newType.value, null, [])
@@ -217,11 +219,11 @@
       addNew.value = false
       newType.value = {}
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Adding Attachment Type')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const closeDeleteDialog = () => {

@@ -285,7 +285,7 @@ const getFunction = async() => {
   try {
     const {data, status} = await getRequest(`/dbFunction/${functionId.value}`)
     dbFunction.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Function')
@@ -297,7 +297,7 @@ const getCompanies = async() => {
   try {
     const {data, status} = await getRequest(`/dbFunction/${functionId.value}/availableCompanies`)
     companies.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Function')
@@ -310,7 +310,7 @@ const getDataTypes = async() => {
     try {
       const {data, status} = await getRequest(`/dataType/getSystem`)
       dataTypes.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Data Types')
@@ -324,7 +324,7 @@ const getParameterTypes = async() => {
     try {
       const {data, status} = await getRequest(`/dbFunction/parameterTypes`)
       parameterTypes.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Parameter Types')
@@ -337,7 +337,7 @@ const saveParam = async(item) => {
   try {
     const {data, status} = await putRequest(`/dbFunction/param`, item)
     expanded.value = []
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Function Param')
@@ -353,7 +353,7 @@ const addParam = async() => {
     const {data, status} = await postRequest(`/dbFunction/param`, newParam.value)
     dbFunction.value = data
     newParam.value = {}
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Function Param')
@@ -374,7 +374,7 @@ const pushToCompanies = async() => {
       return !match
     })
     selectedCompanies.value = []
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Function Param')
@@ -387,7 +387,7 @@ const getSystemValues = async() => {
     try {
       const {data, status} = await getRequest(`/dbFunction/systemValues`)
       systemValues.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')

@@ -128,19 +128,18 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {
   handleHidingGlobalLoader,
   getRequest,
   deleteRequest,
-  postRequest,
-  getSnackbar
+  postRequest
 } from '@/helpers/helpers'
-import ProcessStepRequirements from './ProcessStepRequirements'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
@@ -170,19 +169,19 @@ const userCanEdit = computed(() => {
 })
 
 const loadChildTemplates = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/messaging/templatesWithTeams`)
     childSmsTemplates.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Templates')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveSmsToAction = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {
       data,
@@ -199,11 +198,11 @@ const saveSmsToAction = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding SMS Template to Event Action')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteSmsFromAction = async (id) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId}/event/${action.id}/deleteSms/${id}`)
     deleteSmsCallback(action.id, id)
@@ -212,7 +211,7 @@ const deleteSmsFromAction = async (id) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting SMS Template From Event Action')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

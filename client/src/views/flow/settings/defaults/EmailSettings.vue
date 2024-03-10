@@ -146,15 +146,16 @@ import {
   postRequest,
   putRequestWithRequestParams,
   postRequestWithRequestParams,
-  getSnackbar,
   handleHidingGlobalLoader
 } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import constants from "@/helpers/constants";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-import {useUserStore} from "@/stores/UserStorePinia.js";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import {getCurrentInstance, onMounted, ref, computed, watch} from "vue"
+import {useUserStore} from "@/stores/UserStorePinia.js"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -189,17 +190,17 @@ onMounted(async () => {
 })
 
 const getEmailSenders = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/emailAddress/${companyId.value}`, null)
     emailValues.value = data;
     emailValues.value.map( email => email.checked = email.isDefault)
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Email Addresses')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const clearChanges = async () => {
@@ -219,7 +220,7 @@ const isEditValid = (item) => {
   } else return !!(item.senderName && item.emailAddress);
 }
 const updateEmailAddress = async (item) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     item.modifiedById = userId.value;
     item.companyId = companyId.value;
@@ -228,16 +229,16 @@ const updateEmailAddress = async (item) => {
     const {data, status} = await putRequestWithRequestParams('/emailAddress/updateEmailAddress', item, {updateDefault: confirmChangeDefault})
     emailValues.value = data;
     editIndex.value = null
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating Email Address')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const addEmail = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     vueInstance.$refs.emailSettingsForm.validate();
     if(!addFormValid.value) {
@@ -251,19 +252,19 @@ const addEmail = async () => {
     emailValues.value = data;
     newEmail.value = null;
     addNew.value = false;
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     if(e.data != false) {
       console.error('*** ERROR ***', e)
     }
     snackbar('ERROR', 'Error Adding Email Address')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteEmailAddress = async () => {
   const item = emailToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     if(item.isDefault){
       throw {data: false}
@@ -272,13 +273,13 @@ const deleteEmailAddress = async () => {
     const {status} = await putRequest('/emailAddress/archiveEmailAddress', item)
     emailValues.value.splice(emailValues.value.indexOf(item), 1);//remove deleted address from list
     editIndex.value = null
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     if(e.data != false) {
       console.error('*** ERROR ***', e)
     }
     snackbar('ERROR', 'Error Updating Email Address')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
   emailToDelete.value = null
 }

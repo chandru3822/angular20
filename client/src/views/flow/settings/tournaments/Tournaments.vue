@@ -134,7 +134,7 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
   import moment from 'moment'
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
   import orderBy from 'lodash.orderby'
@@ -145,6 +145,8 @@
   import {computed, getCurrentInstance, onMounted, ref} from 'vue'
   import {useRouter} from 'vue-router/composables'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
@@ -223,87 +225,87 @@
     let snackbar
         newTournament.value.tournamentFormulaId = null
         newTournament.value.tournamentFormulaFields = []
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/tournament/formulas/${newTournament.value.tournamentOwnerTypeId}`, 'blueraven')
           formulas.value = data
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
           snackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       },
         getTournamentFormulaFields = async() => {
           let snackbar
           newTournament.value.tournamentFormulaFields = []
-          store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           try {
             const {data, status} = await getRequest(`/tournament/formula/${newTournament.value.tournamentFormulaId}/fields`, 'blueraven')
             newTournament.value.tournamentFormulaFields = data
-            handleHidingGlobalLoader(vueInstance, status)
+            handleHidingGlobalLoader(status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             dataLoading.value = false
             snackbar('ERROR', 'Error Retrieving Data')
-            store.commit(AppMutations.SET_LOADING, false)
+            appStore.loading = false
           }
         },
       getTournamentOwnerTypes= async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
           ownerTypes.value = data
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
           snackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       },
       getTournaments = async() => {
         dataLoading.value = true
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/tournament`, 'blueraven')
           tournaments.value = data
           dataLoading.value = false
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
           snackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       },
       deleteTournament = async() => {
         const id = tournamentToDelete.value.id
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {status} = await deleteRequest(`/tournament/${id}`, 'blueraven')
           snackbar('SUCCESS', 'Tournament Deleted')
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Deleting Tournament')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
         tournamentToDelete.value=null
       },
       addTournament= async() => {
         let snackbar
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await postRequest(`/tournament`, newTournament.value, 'blueraven')
           router.push({path: `/settings/tournaments/${data.id}/details`})
           snackbar('SUCCESS', 'Tournament Added')
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Adding Tournament')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
 

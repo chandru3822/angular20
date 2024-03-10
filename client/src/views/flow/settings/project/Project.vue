@@ -25,7 +25,9 @@
 <script setup>
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute} from "vue-router/composables";
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const route = useRoute()
 const userStore = useUserStore()

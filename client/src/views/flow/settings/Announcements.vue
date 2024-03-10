@@ -81,16 +81,17 @@
 import constants from '@/helpers/constants'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {deleteRequest, getRequestWithParams, handleHidingGlobalLoader} from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCurrentInstance, ref, computed, onMounted, watch} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
+const appStore = useAppStore()
 const snackbar = vueInstance.$snackbar
 const router = useRouter()
 const route = useRoute()
@@ -170,13 +171,12 @@ const getAnnouncements = async () => {
         size: itemsPerPage
       }})
     announcements.value = data.content
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     snackbar('ERROR', 'Error Loading Announcements')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
   } finally {
     announcementsLoading.value = false
   }
@@ -187,26 +187,23 @@ const closeDeleteDialog = () => {
 }
 const deleteAnnouncement = async () => {
   const item = itemToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/announcements/${item.id}`)
     item.archived = true
     announcements.value = announcements.value.filter(a => a.id !== item.id)
     snackbar('SUCCESS', 'Announcement Deleted')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     if (e.status === 400) {
       deleteError.value = true;
       fieldsInUse.value = e.data;
       snackbar("ERROR", "Error Deleting Announcement");
-      store.commit(AppMutations.SHOW_SNACK, snackbar)
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     } else {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Deleting Status')
-      store.commit(AppMutations.SHOW_SNACK, snackbar)
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   closeDeleteDialog()

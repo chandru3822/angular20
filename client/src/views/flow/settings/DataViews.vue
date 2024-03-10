@@ -94,18 +94,19 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, postRequest} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import { getCurrentInstance, ref, onMounted } from 'vue'
   import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
   import {useRouter} from "vue-router/composables"
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
   const userStore = useUserStore()
+  const appStore = useAppStore()
   const router = useRouter()
 
   const addNew = ref(false)
@@ -140,15 +141,15 @@
   })
 
   const getCompanyProcesses = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/processes`)
       companyProcesses.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error loading processes')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const validateForm = (view, isNew) => {
@@ -162,10 +163,10 @@
     }
   }
   const goToView = async (id) => {
-    router.push(`/settings/dataView/${id}`)
+    await router.push(`/settings/dataView/${id}`)
   }
   const saveDataView = async (dv, isNew) => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       dv.companyProcessIds = selectedCompanyProcesses.value.map(cp => cp.id)
       const {data, status} = await postRequest(`/dataView`, dv)
@@ -178,23 +179,23 @@
       } else {
         snackbar('SUCCESS', 'Data View Updated')
       }
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', isNew ? 'Error Adding Data View' : 'Error Updating Data View')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const getDataViews = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/dataView`)
       dataViews.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Data Views')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 </script>

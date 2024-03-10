@@ -138,7 +138,6 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
   import { handleHidingGlobalLoader, putRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
@@ -147,11 +146,12 @@
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {computed, getCurrentInstance, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
-
+  import { useAppStore } from '@/stores/AppStorePinia.js'
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
   const userStore = useUserStore()
+  const appStore = useAppStore()
 
   const orgTypes = ref([])
   const newOrgType = ref({})
@@ -166,31 +166,31 @@
   ])
 
   const getAllOrgTypes = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getOrgTypes()
       orgTypes.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Org Types')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const getAllOrgLevels = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getOrgLevels()
       levels.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Org Levels')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const saveOrgType = async (ot, isNew) => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       ot.level = ot.level === 'n/a' ? null : ot.level
       const {data, status} = await putRequest(`/orgType`, ot)
@@ -205,11 +205,11 @@
         expanded.value = []
         snackbar('SUCCESS', 'Org Type Updated')
       }
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', isNew ? 'Error Adding Org Type' : 'Error Updating Org Type')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const filteredOrgTypes = (orgLevelId) => {

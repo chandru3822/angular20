@@ -17,10 +17,10 @@
 </template>
 
 <script setup>
-import constants from '@/helpers/constants'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-import {getCurrentInstance, ref, computed} from "vue";
-import {useUserStore} from "@/stores/UserStorePinia.js";
+import {getCurrentInstance, ref, computed} from "vue"
+import {useUserStore} from "@/stores/UserStorePinia.js"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const vuetify = vueInstance.$vuetify

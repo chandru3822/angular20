@@ -38,13 +38,15 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {getCurrentInstance, computed, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRoute} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
@@ -88,32 +90,32 @@
     getCallGroupDetails()
   })
       const saveGroupInfo = async () => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await postRequest(`/callGroup`, group.value, 'blueraven')
           group.value = data
           editGroup.value = false
           snackbar('SUCCESS', 'Call Group saved')
 
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Saving Call Group')
 
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
       const getCallGroupDetails = async () => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/callGroup/${callGroupId.value}`, 'blueraven')
           group.value = data
           dataLoading.value = false
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
 </script>

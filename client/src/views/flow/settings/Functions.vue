@@ -26,17 +26,17 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
   import { handleHidingGlobalLoader, getRequest } from '@/helpers/helpers'
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
   import {computed, getCurrentInstance, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
-
+  import { useAppStore } from '@/stores/AppStorePinia.js'
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
   const userStore = useUserStore()
+  const appStore = useAppStore()
 
   const companyId = ref(userStore.details.companyId)
   const userId = ref(userStore.details.id)
@@ -47,15 +47,15 @@
   })
 
   const getFunctions = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/function`)
       functions.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 

@@ -146,7 +146,7 @@
 
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import orderBy from 'lodash.orderby'
 
 import {
@@ -161,6 +161,8 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -188,39 +190,39 @@ const tagToDeleteValue = computed(() => {
   return tagToDelete.value ? tagToDelete.value.tagName : ''
 })
 const getTags = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     //for now this is just hardcoded to show project tags
     const {data, status} = await getRequest(`/tag/byType/1`)
     tags.value = orderBy(data, [a => a.tagName.toLowerCase()])
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteTag = async () => {
   const tag = tagToDelete.value
   const typeId = tagToDelete.value.id
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/tag/${typeId}`)
     snackbar('SUCCESS', 'Tag Deleted')
 
     tag.archived = true
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Tag')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
   tagToDelete.value = null
 }
 const saveTag = async (tag, isNew) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     //yes this is hardcoded. im just trying to prep for future requests
     tag.tagTypeId = 1
@@ -234,11 +236,11 @@ const saveTag = async (tag, isNew) => {
       selectedTagId.value = null
     }
     snackbar('SUCCESS', 'Tag Saved')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Tag')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 onMounted(()=> {

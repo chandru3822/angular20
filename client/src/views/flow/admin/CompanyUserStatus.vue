@@ -60,12 +60,13 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, putRequest} from '@/helpers/helpers'
 import {getUserStatusTypes} from '@/services/userService'
 import {getCurrentInstance, onMounted, ref} from 'vue'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -87,28 +88,28 @@ onMounted(() => {
 })
 
 const getCompanyUserStatusTypes = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getUserStatusTypes()
     statusTypes.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Company User Status Types')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveCompanyUserStatusType = async (type) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/user/statusType`, type)
     expanded.value = []
     snackbar('SUCCESS', 'User Status Type Updated')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating User Status')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

@@ -62,6 +62,8 @@ import { useUserStore } from '@/stores/UserStorePinia.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, onMounted, getCurrentInstance, computed, defineProps} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
@@ -102,7 +104,7 @@ const userId = computed(() => {
 })
 
 const getTeams = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/smsTeam/users`)
     selectableTeams.value = data.sort((a,b)=>{
@@ -114,10 +116,10 @@ const getTeams = async () => {
       }
       return 0
     })
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     snackbar('ERROR', 'Error retrieving teams')
 
   }

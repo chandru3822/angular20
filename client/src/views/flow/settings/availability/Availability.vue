@@ -79,11 +79,13 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
   import { handleHidingGlobalLoader, getRequestWithParams, postRequest} from '@/helpers/helpers'
   import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
   import {getCurrentInstance, onMounted, ref, computed} from 'vue'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
@@ -171,19 +173,19 @@
     }
   }
   const getUsers = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     usersLoading.value = true
     try {
       const {data, status} = await getRequestWithParams(`/user/getSchedulingUsers`, { params: {
         isSchedulingTool: false
       }})
       users.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
       usersLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Users')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const saveApptLength = async () => {
@@ -204,7 +206,7 @@
   }
   const getApptLength = async () => {
     if(orgId.value || userId.value) {
-      // store.commit(AppMutations.SET_LOADING, true)
+      // appStore.loading = true
       valueChanged.value = false
       try {
         const {data} = await getRequestWithParams(`/availability/appointments/length`, { params: {
@@ -212,12 +214,12 @@
             orgId: orgId.value,
           }})
         defaultAppointmentLength.value = data
-        // store.commit(AppMutations.SET_LOADING, false)
+        // appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         valueChanged.value = false
         defaultAppointmentLength.value = null
-        // store.commit(AppMutations.SET_LOADING, false)
+        // appStore.loading = false
         snackbar('ERROR', 'Error Loading Default Appointment Length')
 
       }

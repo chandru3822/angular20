@@ -119,7 +119,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import {
   handleHidingGlobalLoader,
   getRequest,
@@ -135,6 +134,8 @@ import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
 
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -172,7 +173,7 @@ onMounted(() => {
 })
 
 const saveCert = async (isNew, cert) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await putRequest(`/cert`, cert)
     if (isNew) {
@@ -184,54 +185,54 @@ const saveCert = async (isNew, cert) => {
       expanded.value = []
       snackbar('SUCCESS', 'Cert Updated')
     }
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', isNew ? 'Error Adding Cert' : 'Error Updating Cert')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const sendEmails = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await postRequest(`/cert/sendEmails`, {})
     snackbar('SUCCESS', 'Emails Sent')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Sending Emails')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getCerts = async () => {
 
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/cert`)
     certs.value = data
     certs.value.forEach(c => {
       c.daysToExpiration = moment(c.expirationDate).diff(moment(), 'days')
     })
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Certs')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteCert = async () => {
 
   const cert = certToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/cert/${cert.id}`)
     cert.archived = true
     snackbar('SUCCESS', 'Cert Deleted')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Cert')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 

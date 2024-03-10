@@ -113,14 +113,16 @@
 
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import draggable from 'vuedraggable'
 import {handleHidingGlobalLoader, deleteRequest, putRequest, defineSortableTable, getRequest, postRequest} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute} from "vue-router/composables";
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -173,15 +175,15 @@ const filteredAssignedFields = computed(() => {
 
 
     const saveOrderChanges = async (fields) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await putRequest(`/projectStatus/company/${statusId.value}/fields`, fields)
         snackbar('SUCCESS', 'Field Order Updated')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Saving Field Order')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const closeDeleteDialog = () => {
@@ -191,49 +193,49 @@ const filteredAssignedFields = computed(() => {
     const loadDataViews = async() => {
       //dont reload the list every time
       if(dataViews.value.length === 0) {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data} = await getRequest(`/dataView`, null, [])
           dataViews.value = data
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     }
     const getDataViewFields = async() => {
       //dont reload the list every time
       if(availableDataViewFields.value.length === 0) {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/customField/getByDataView/${selectedDataView.value.id}`)
           availableDataViewFields.value = data
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     }
     const deleteField = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         let id = itemToDelete.value.id
         const {status} = await deleteRequest(`/projectStatus/field/${id}`)
         assignedFields.value = assignedFields.value.filter(af => af.id !== id)
         snackbar('SUCCESS', 'Field Removed')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Removing Field')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveFieldToMilestone = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         let params = {
           dataViewFieldConfigId: !selectedDataViewField.value.dataViewChildFieldConfigId ? selectedDataViewField.value.dataViewFieldConfigId : null,
@@ -243,11 +245,11 @@ const filteredAssignedFields = computed(() => {
         assignedFields.value.push(data)
         selectedDataViewField.value = {}
         addNew.value = false
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Data')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const loadFields = async() => {

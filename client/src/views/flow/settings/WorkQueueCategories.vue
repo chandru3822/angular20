@@ -161,7 +161,7 @@
 
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
   import orderBy from 'lodash.orderby'
   import {getWorkQueueCategories} from '@/services/workQueueService'
 
@@ -180,6 +180,8 @@
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
@@ -276,18 +278,18 @@
         const {data, status} = await getRequest(`/position/withParent`)
         positions.value = data
         positionsLoading.value = false
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         positionsLoading.value = false
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Positions')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
   }
   const saveHiddenAndWhiteList = async (item) => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await putRequest(`/workQueueCategory/saveHiddenAndWhiteList?savePositions=${workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenPositionsChanged ?? false}`, workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value])
       hiddenPositionsChanged.value = false
@@ -296,10 +298,10 @@
       }
       snackbar('SUCCESS', 'Saved Successfully')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const updateItemValue = (item) => {
@@ -308,38 +310,38 @@
     }
   }
   const getAllWorkQueueCategories = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       workQueueLoading.value = true;
       const {data, status} = await getWorkQueueCategories(true)
       workQueueCategories.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
       workQueueLoading.value = false;
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Work Queue Categories')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const deleteCategory = async () => {
     const typeId = categoryToDelete.value.id
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await deleteRequest(`/workQueueCategory/${typeId}`)
       snackbar('SUCCESS', 'Successfully Deleted Work Queue Category')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Deleting Work Queue Category')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     categoryToDelete.value = null
   }
   const addNewCategory = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await postRequest(`/workQueueCategory`, newCategory.value)
 
@@ -354,42 +356,42 @@
       addNew.value = false
       newCategory.value = {color: null}
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Adding Work Queue Category')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const saveCategory = async (wqc) => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       selectedWorkQueueCategoryId.value = null
       const {status} = await putRequest(`/workQueueCategory`, wqc)
       wqc.showColor = false
       snackbar('SUCCESS', 'Work Queue Category Saved')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Work Queue Category')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const saveRowChanges = async (rows) => {
     if (rows?.length > 0) {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await putRequest(`/workQueueCategory/order`, rows)
         snackbar('SUCCESS', 'Work Queue Category Order Saved')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Saving Work Queue Order')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
   }

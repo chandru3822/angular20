@@ -161,7 +161,7 @@ const getProject = async () => {
     projectLoading.value = false
     appStore.loading = false
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     projectLoading.value = false
     appStore.loading = false

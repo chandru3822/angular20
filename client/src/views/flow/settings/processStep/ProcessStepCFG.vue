@@ -10,13 +10,16 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
 
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
   import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
   import { getCurrentInstance, computed, ref, onMounted } from 'vue'
   import {useUserStore} from '@/stores/UserStorePinia.js'
-  import {useRoute} from "vue-router/composables";
+  import {useRoute} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+
+  const appStore = useAppStore()
   const route = useRoute()
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
@@ -51,18 +54,18 @@
   })
     
       const getProcessStepDetails = async () => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         loading.value = true
         try {
-          store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           const {data, status} = await getRequest(`/processStep/${processStepId.value}`)
           processStep.value = data
           loading.value = false
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
 </script>

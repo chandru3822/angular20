@@ -56,7 +56,7 @@
 
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import {getUserProfileDefaultFields} from '@/services/userService'
 import {handleHidingGlobalLoader, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
@@ -64,6 +64,8 @@ import constants from '@/helpers/constants'
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -86,28 +88,28 @@ onMounted(async () => {
 })
 
 const getAllUserProfileDefaultFields = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getUserProfileDefaultFields()
     userProfileDefaultFields.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Default Fields')
     loadingUserProfileCustomFields.value = false
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const updateShowOnUserProfile = async (item) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/defaultField`, item)
     snackbar('SUCCESS', 'Saved Changes')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Changes')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

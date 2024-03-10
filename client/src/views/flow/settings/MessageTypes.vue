@@ -138,20 +138,19 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
-
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {computed, getCurrentInstance, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
-
+  import { useAppStore } from '@/stores/AppStorePinia.js'
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
+  const appStore = useAppStore()
 
   const addNew = ref(false)
   const levels = ref([])
@@ -211,7 +210,7 @@
     vueInstance.$set(item, 'content', ((item.content || '') + value))
   }
   const saveMessageType = async (ol, isNew) => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       let params = {
         ...ol
@@ -230,37 +229,37 @@
 
       tempItemContent.value = ''
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', isNew ? 'Error Adding Message Type' : 'Error Updating Message Type')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const getMessageTypes = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/messageType`, 'blueraven', [])
       messageTypes.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Company Types')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const deleteMessageType = async () => {
     const messageType = typeToDelete.value
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await deleteRequest(`/messageType/${messageType.id}`, 'blueraven')
       messageType.archived = true
       snackbar('SUCCESS', 'Message Type Deleted')
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Deleting Message Type')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     typeToDelete.value = null
   }

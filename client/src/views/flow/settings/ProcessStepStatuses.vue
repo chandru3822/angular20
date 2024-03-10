@@ -220,7 +220,7 @@
 
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
 
   import orderBy from 'lodash.orderby'
   import {getStatusTypes, getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
@@ -231,6 +231,8 @@
   import {getCurrentInstance, onMounted, ref, computed} from 'vue'
   import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
@@ -283,70 +285,70 @@
     return statusTypes.value.filter(s => { return !s.archived})
   })
   const getAllCompanyStatusTypes = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getCompanyStatusTypes()
       statusTypes.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const getAllStatusTypes = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getStatusTypes()
       rootStatusTypes.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const getUsesForStatus = async (processStepStatusId, processStepStatusName) => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/processStep/status/getObjectsUsingStatus/${processStepStatusId}`);
       objectsUsingStatus.value.steps = data
       objectsUsingStatus.value.fieldName = processStepStatusName
       showInfoDialog.value = true
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const deleteType = async () => {
     const type = itemToDelete.value
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await deleteRequest(`/processStep/status/${type.id}`)
       fieldsInUse.value = [];
       type.archived = true
       snackbar('SUCCESS', 'Status Deleted')
-      handleHidingGlobalLoader(vueInstance, status)
-      store.commit(AppMutations.SET_LOADING, false)
+      handleHidingGlobalLoader(status)
+      appStore.loading = false
     } catch (e) {
       if (e.status === 400) {
         deleteError.value = true;
         fieldsInUse.value = e.data;
         snackbar("ERROR", "Status Cannot Be Deleted");
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
       else {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Deleting Status')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     closeDeleteDialog()
   }
   const addNewType = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       newType.value.companyId = companyId.value
       const {data, status} = await postRequest(`/processStep/status`, newType.value)
@@ -360,28 +362,28 @@
       newType.value = {}
       snackbar('SUCCESS', 'Status Added')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Adding Status')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const saveType = async (s) => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await putRequest(`/processStep/status`, s)
       selectedStatusTypeId.value = null
       expanded.value = []
       snackbar('SUCCESS', 'Status Updated')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Updating Status')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 

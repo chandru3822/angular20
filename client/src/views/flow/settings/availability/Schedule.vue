@@ -348,7 +348,7 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
@@ -358,6 +358,8 @@
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import {getCurrentInstance, onMounted, ref, toRefs, computed, watch, defineProps} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
@@ -462,7 +464,7 @@
   }
   const getSchedules = async () => {
     if(orgId.value || userId.value) {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await getRequestWithParams(`/availability`, { params: {
             userId: userId.value,
@@ -482,30 +484,30 @@
           })
         })
         schedules.value = data
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
         snackbar('ERROR', 'Error Loading Schedules')
 
       }
     }
   }
   const getWorkDays = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequestWithParams(`/availability/workDays`)
       workDays.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
       snackbar('ERROR', 'Error Loading Work Days')
 
     }
   }
   const getSlotSchedules = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       let params = {
         userId: props.userId
@@ -513,10 +515,10 @@
       const {data, status} = await getRequestWithParams('/availability/slotSchedules', {params})
       slotSchedules.value = data
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
       snackbar('ERROR', 'Error Loading Schedules')
 
     }
@@ -600,7 +602,7 @@
         } else {
           saveError.value = false
           saveErrorMsg.value = ''
-          store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           try {
             let formattedTimestamps = cloneDeep(s.resourceScheduleAvailability)
             formattedTimestamps.forEach(ft => {
@@ -626,10 +628,10 @@
             newSchedule.value = {}
             addNew.value = false
             expanded.value = []
-            handleHidingGlobalLoader(vueInstance, status)
+            handleHidingGlobalLoader(status)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            store.commit(AppMutations.SET_LOADING, false)
+            appStore.loading = false
             snackbar('ERROR', 'Error Saving Schedule')
 
           }
@@ -672,7 +674,7 @@
   }
   const archiveSchedule = async () => {
     const item = itemToDelete.value
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
 
     try {
       const {status} = await deleteRequest(`/availability/${item.id}`)
@@ -681,12 +683,12 @@
       schedules.value = schedules.value.filter(s => { return s.id !== item.id })
       snackbar('SUCCESS', 'Schedule Deleted')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error deleting schedule')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     closeDeleteDialog()
   }

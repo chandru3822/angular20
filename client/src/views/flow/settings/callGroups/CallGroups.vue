@@ -123,7 +123,7 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
   import debounce from 'lodash.debounce'
   import { handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -132,6 +132,8 @@
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRouter} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
@@ -195,40 +197,40 @@
   }
   const getCallGroups = async () => {
     dataLoading.value = true
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequestWithParams(`/callGroup`, { params: { searchQuery: search.value}}, 'blueraven')
       CallGroups.value = data
       daysPerPeriod.value = data[0].daysPerPeriod
       maxCallCount.value = data[0].maxCallCount
       dataLoading.value = false
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       dataLoading.value = false
       snackbar('ERROR', 'Error Retrieving Data')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const deleteCallGroup = async () => {
     const groupId = callGroupToDelete.value.id
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await deleteRequest(`/callGroup/${groupId}`, 'blueraven')
       snackbar('SUCCESS', 'Call Group Deleted')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Deleting Call Group')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     callGroupToDelete.value = null
   }
   const addCallGroup = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       newCallGroup.value.maxCallCount = maxCallCount.value
       newCallGroup.value.daysPerPeriod = daysPerPeriod.value
@@ -236,31 +238,31 @@
       router.push({path: `/settings/callGroup/${data.id}/codes`})
       snackbar('SUCCESS', 'Call Group Added')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Adding Call Group')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const updateCallGroup = async (item) => {
     showError.value = false
     errorMsg.value = ''
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await postRequest(`/callGroup`, item, 'blueraven')
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = 'Error updating Call Group'
       snackbar('ERROR', msg)
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const saveGroupInfo = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const params = {
         maxCallCount: maxCallCount.value,
@@ -270,11 +272,11 @@
       editGroup.value = false
       snackbar('SUCCESS', 'Call Group settings saved')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Call Group')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   onMounted(async () => {

@@ -500,7 +500,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, postRequest, getRequestWithParams} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import cloneDeep from 'lodash.clonedeep'
@@ -508,11 +507,14 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 import {getCurrentInstance, computed, onMounted, ref} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 import {useRouter, useRoute} from "vue-router/composables"
+
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const userStore = useUserStore()
+const appStore = useAppStore()
 const vuetify = vueInstance.$vuetify
 const router = useRouter()
 const route = useRoute()
@@ -589,15 +591,15 @@ const copyToClipBoard = (textValue) => {
 }
 
 const getCompanyProcesses = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/processes`)
     companyProcesses.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error loading processes')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
@@ -606,18 +608,18 @@ const setObjectTypeId = (field) => {
 }
 
 const saveDataView = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     dataView.value.companyProcessIds = dataView.value.companyProcesses.map(cp => cp.id)
     const {data, status} = await postRequest(`/dataView`, dataView.value)
     oldCompanyProcessIds.value = cloneDeep(dataView.value.companyProcessIds)
     oldCompanyProcesses.value = cloneDeep(dataView.value.companyProcesses)
     snackbar('SUCCESS', 'Data View Updated')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating Data View')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const resetAllFields = () => {
@@ -663,15 +665,15 @@ const validateChildField = (item, newChildField, isNew) => {
 }
 const getUniqueBehaviorTypes = async () => {
   if (uniqueBehaviorTypes.value.length === 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/dataView/getUniqueBehaviorTypes`)
       uniqueBehaviorTypes.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Unique Behavior Types')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
@@ -680,22 +682,22 @@ const loadProcessStepEvents = async () => {
   if (cfgaParentObject.value?.isProcessStep) {
     parentProcessStepEvent.value = {}
     parentProcessStepEvents.value = []
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/processStep/${cfgaParentObject.value?.id}/event`)
       parentProcessStepEvents.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 const loadFieldsByParent = async (isEvent) => {
   newField.value.customFieldGroupAssignmentId = null
   customFields.value = []
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     if (isEvent) {
       const {
@@ -703,20 +705,20 @@ const loadFieldsByParent = async (isEvent) => {
         status
       } = await getRequest(`/customField/getByProcessStepEvent/${parentProcessStepEvent.value?.id}`)
       customFields.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } else if (cfgaParentObject.value?.isProcessStep) {
       const {data, status} = await getRequest(`/customField/getByParentProcessStep/${cfgaParentObject.value?.id}`)
       customFields.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } else {
       const {data, status} = await getRequest(`/customField/getByParentType/${cfgaParentObject.value?.id}`)
       customFields.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getParentObjects = async () => {
@@ -724,15 +726,15 @@ const getParentObjects = async () => {
   cfgaParentObject.value = {}
   customFields.value = []
   parentObjects.value = []
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`)
     parentObjects.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Details')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getProcessStepEventData = async () => {
@@ -740,18 +742,18 @@ const getProcessStepEventData = async () => {
   newField.value.processStepId = null
   processStepEvents.value = []
   if (selectedDefaultField.value?.objectTypeId === 6) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {
         data,
         status
       } = await getRequest(`/dataView/${viewId.value}/defaultFieldPsEvents/${selectedDefaultField.value.id}`)
       processStepEvents.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Details')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
@@ -760,33 +762,33 @@ const getProcessStepData = async () => {
   newField.value.processStepId = null
   processSteps.value = []
   if (selectedDefaultField.value?.objectTypeId === 4) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {
         data,
         status
       } = await getRequest(`/dataView/${viewId.value}/defaultFieldPs/${selectedDefaultField.value.id}`)
       processSteps.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Details')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 const getAvailableDefaultFields = async () =>{
   selectedDefaultField.value = {}
   defaultFields.value = []
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/dataView/${viewId.value}/getAvailableDefaultFields`)
     defaultFields.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Details')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const fixData = () => {
@@ -796,22 +798,22 @@ const fixData = () => {
 }
 
 const getDataView = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/dataView/${viewId.value}`)
     dataView.value = data
     oldCompanyProcessIds.value = cloneDeep(data?.companyProcessIds)
     oldCompanyProcesses.value = cloneDeep(data?.companyProcesses)
     viewLoaded.value = true
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Details')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveFieldConfig = async (field, isNew) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     //we have to use the whole object for selectedDefaultField because we need to use the data type in some other checks
     field.defaultFieldId = selectedDefaultField.value.id
@@ -836,17 +838,17 @@ const saveFieldConfig = async (field, isNew) => {
     } else {
       snackbar('SUCCESS', 'Data View Updated')
     }
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let msg = null != e.data?.message ? e.data?.message : isNew ? 'Error Adding Field' : 'Error Updating Field'
     snackbar('ERROR', msg)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
 const saveChildFieldConfig = async (primaryField, childField, isNew) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {
       data,
@@ -859,12 +861,12 @@ const saveChildFieldConfig = async (primaryField, childField, isNew) => {
     childField.value = {}
     childFieldExpanded.value = []
     snackbar('SUCCESS', 'Child Field Config Saved')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let msg = null != e.data?.message ? e.data?.message : 'Error Saving Field'
     snackbar('ERROR', msg)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

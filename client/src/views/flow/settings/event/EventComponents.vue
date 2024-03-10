@@ -117,6 +117,8 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import cloneDeep from "lodash.clonedeep";
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
 import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, computed, onMounted, getCurrentInstance} from "vue";
@@ -173,18 +175,18 @@ onMounted (() => {
   getPositions()
 })
 const getEvent = async  () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     eventLoading.value = true;
     const {data} = await getRequest(`/event/${eventId.value}`)
     event.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     eventLoading.value = false;
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const filterAssignedEventStatusTypes = computed(() => {
@@ -193,7 +195,7 @@ const filterAssignedEventStatusTypes = computed(() => {
   }), [f => f.eventStatusType])
 })
 const assignStatusTypeToEvent = async  () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     newType.value.eventId = route.params.id
     const {data} = await postRequest(`/event/status/assignCompanyStatus/${newEventStatusTypeId.value}/toEvent/${eventId.value}`)
@@ -203,12 +205,12 @@ const assignStatusTypeToEvent = async  () => {
     newEventStatusTypeId.value = null
     snackbar('SUCCESS', 'Status Type Added')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Status Type')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getCompanyEventStatusTypes = async () => {
@@ -229,18 +231,18 @@ const getCompanyEventStatusTypes = async () => {
 }
 const deleteStatusTypeFromEvent = async  () => {
   const item = eventStatusTypeToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     item.archived = true
     await deleteRequest(`/event/${eventId.value}/companyStatus/${item.id}`)
     snackbar('SUCCESS', 'Event Status Type Deleted')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Event Status Type')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
   eventStatusTypeToDelete.value = null
 }
@@ -277,17 +279,17 @@ const getPositions = async () => {
       const {data, status} = await getRequest(`/position/withParent`)
       positions.value = data
       positionsLoading.value = false
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Positions')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 const saveHiddenAndWhiteList = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/event/saveHiddenAndWhiteList?positionsChanged=${event.value.hiddenPositionsChanged ?? false}`, event.value)
     hiddenPositionsChanged.value = false
@@ -295,11 +297,11 @@ const saveHiddenAndWhiteList = async () => {
       event.value.hiddenWhiteListedPositions = []
     }
     snackbar('SUCCESS', 'Saved Successfully')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Event Access Control')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const hiddenSelectedEventListener = (e) => {

@@ -100,7 +100,7 @@ onMounted(() => {
       if(vueInstance.$route.query?.redirect) {
         rt = { path: vueInstance.$route.query?.redirect}
       }
-      router.push(rt)
+      await router.push(rt)
     }
 </script>
 

@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 
 import { handleHidingGlobalLoader, getRequest } from '@/helpers/helpers'
 import SettingsMenu from './SettingsMenu'
@@ -55,7 +55,8 @@ import {getCurrentInstance, onMounted, ref, computed} from 'vue'
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
-
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
@@ -241,16 +242,16 @@ const items = computed(() => {
 
 const getCompanyObjectTypes = async () => {
   if(hasSettingsAccess.value) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`, null,[])
       companyObjectTypes.value = data
       setTitle()
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }

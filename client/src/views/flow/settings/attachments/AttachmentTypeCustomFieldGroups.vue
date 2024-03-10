@@ -528,7 +528,7 @@ const updateRequired = async (cf) => {
     }
     const {status} = await putRequest(`/customFieldGroup/updateFieldShowOrRequire`, objectType)
     snackbar('SUCCESS', 'Updated Field')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Data')

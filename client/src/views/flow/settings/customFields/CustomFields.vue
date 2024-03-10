@@ -111,7 +111,6 @@
 import {AppMutations} from "@/stores/AppStore";
 import cloneDeep from "lodash.clonedeep";
 import orderBy from "lodash.orderby";
-import draggable from "vuedraggable";
 import {
   getRequest,
   getSnackbar,
@@ -123,6 +122,8 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRouter} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
@@ -195,23 +196,23 @@ const userCanEdit = computed(() => {
       }
     }
     const getUsesForField = async (customField) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await getRequest(`/customField/getUses/${customField.id}`, props.apiPath, null, []);
         usesForField.value = data;
         itemToDelete.value=customField
         showDeleteDialog.value=true
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       } catch (e) {
         console.error("*** ERROR ***", e);
         snackbar("ERROR", "Error Retrieving Data");
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const deleteField = async () => {
       const item = itemToDelete.value
-      store.commit(AppMutations.SET_LOADING, true);
+      appStore.loading = true;
       try {
         const {data, status} = await putRequest(`/customField/delete/${item.id}`, null, props.apiPath, []);
         if (data?.length > 0) {
@@ -229,11 +230,11 @@ const userCanEdit = computed(() => {
           snackbar("SUCCESS", "Field Deleted");
 
         }
-        handleHidingGlobalLoader(vueInstance, status);
+        handleHidingGlobalLoader(status);
       } catch (e) {
         console.error("*** ERROR ***", e);
         snackbar("ERROR", "Error Deleting Field");
-        store.commit(AppMutations.SET_LOADING, false);
+        appStore.loading = false;
       }
       closeDeleteDialog()
     }

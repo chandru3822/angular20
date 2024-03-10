@@ -231,7 +231,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {
@@ -244,6 +244,8 @@ import {
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -334,34 +336,34 @@ const getNumberOfMatches = (bracket, round) => {
 }
 const replicateBracket = async () => {
   let b = bracketToCopy.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await postRequest(`/tournament/bracket/replicate`, b, 'blueraven')
     // this is dumb but i am getting an infinite loop error if i try to use the increment render key solution
     data.maxRounds = false
     tournament.value.brackets.push(data)
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Bracket')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getTournamentOwnerTypes = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
     ownerTypes.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getTournament = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/tournament/${tournamentId.value}`, 'blueraven')
     // this is dumb but i am getting an infinite loop error if i try to use the increment render key solution
@@ -369,31 +371,31 @@ const getTournament = async () => {
       b.maxRounds = false
     })
     tournament.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Tournament')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const updateTournament = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await putRequest(`/tournament`, tournament.value, 'blueraven')
     tournament.value = data
     edit.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Tournament')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const addNewBracket = async () => {
   if (validNumUsers.includes(newBracket.value.numberOfUsers)) {
     bracketError.value = false
     bracketErrorMsg.value = ''
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       let param = {
         numberOfUsers: newBracket.value.numberOfUsers,
@@ -405,11 +407,11 @@ const addNewBracket = async () => {
       tournament.value.brackets.push(data)
       addBracket.value = false
       newBracket.value = {}
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Bracket')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   } else {
     bracketError.value = true
@@ -418,20 +420,20 @@ const addNewBracket = async () => {
 }
 const deleteBracket = async () => {
   let id = bracketToDelete.value.id
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/tournament/bracket/${id}`, 'blueraven')
     snackbar('SUCCESS', 'Bracket Deleted')
     tournament.value.brackets.splice(tournament.value.brackets.indexOf(bracketToDelete.value))
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Bracket')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveRound = async (bracket, round) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     let param = {
       id: round?.id,
@@ -447,17 +449,17 @@ const saveRound = async (bracket, round) => {
       bracket.addRound = false
       newRound.value = {}
     }
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Round')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteRound = async () => {
   let bracket = bracketToDeleteRoundFrom.value
   let roundId = roundToDelete.value.id
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     let param = {
       id: roundId,
@@ -468,26 +470,26 @@ const deleteRound = async () => {
     // this is dumb but i am getting an infinite loop error if i try to use the increment render key solution
     bracket.maxRounds = false
     snackbar('SUCCESS', 'Round Deleted')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Round')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const generateMatches = async () => {
   let bracket = bracketForMatches.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/tournament/bracket/${bracket.id}/generateMatches`, {}, 'blueraven')
     //disable the button
     bracket.matchesGenerated = true
     snackbar('SUCCESS', 'Matches Generated')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Generating Matches')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const filterRounds = (bracket) => {

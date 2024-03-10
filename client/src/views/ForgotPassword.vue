@@ -38,10 +38,11 @@
 
 <script setup>
 import constants from '@/helpers/constants'
-import {handleHidingGlobalLoader, postRequest, getSnackbar} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
+import {handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import {getCurrentInstance, onMounted, ref} from 'vue'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -54,21 +55,21 @@ const resetForm = ref(null)
 
 const validate = async () => {
   if (resetForm.value.validate()) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       let params = {
         usernameOrEmail: email.value
       }
       const {status} = await postRequest(`/user/forgotPassword`, params)
       email.value = null
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
       snackbar('SUCCESS', 'An email has been sent.')
       await router.push('/login')
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = e?.data?.message ?? 'Error Retrieving Account Details'
       snackbar('ERROR', msg)
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }

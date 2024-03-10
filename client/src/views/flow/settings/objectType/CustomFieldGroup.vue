@@ -447,7 +447,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 
@@ -460,6 +460,8 @@ import { useUserStore } from '@/stores/UserStorePinia.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, onMounted, getCurrentInstance, computed, defineProps, watch} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -591,22 +593,22 @@ const iconOwner = () => {
   return 'check_box_outline_blank'
 }
     const getObjectTypeTabs = async () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         //currently we only do this for projects.. will have to change if we allow custom tabs for other object types
         const {data, status} = await getRequest(`/objectTypeTab/project`)
         objectTypeTabs.value = data
 
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Tabs')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const getCustomFieldGroups = async  () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
           params: {
@@ -614,15 +616,15 @@ const iconOwner = () => {
           }
         })
         customFieldGroups.value = cloneDeep(data)
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Data')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const fetchAvailableCustomFields = async  (groupId) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         if(addField.value && newFieldType.value === 'native') {
           const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
@@ -640,16 +642,16 @@ const iconOwner = () => {
           parentObjects.value = data
           availableCustomFields.value = []
         }
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Data')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const addCustomFieldGroup = async  () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         newGroup.value.companyObjectTypeId = route.params.id ?? route.query.companyObjectTypeId
         const {data, status} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, newGroup.value)
@@ -659,16 +661,16 @@ const iconOwner = () => {
         customFieldGroups.value.push(data)
         snackbar('SUCCESS', 'Group Added')
 
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Adding Custom Field Group')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const assignCustomField = async  (item) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         addField.value = false
         newField.value.customFieldGroupId = item.id
@@ -681,16 +683,16 @@ const iconOwner = () => {
         snackbar
         snackbar('SUCCESS', 'Field Added to Group')
 
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Adding Field to Group')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const moveFieldToOtherGroup = async  (field, newGroup) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
         snackbar('SUCCESS', 'Field Moved')
@@ -701,11 +703,11 @@ const iconOwner = () => {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Moving Field')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const assignAncillaryCustomField = async  (item) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const params = {
           customFieldGroupId: item.id,
@@ -722,46 +724,46 @@ const iconOwner = () => {
         addField.value = false
         snackbar('SUCCESS', 'Field Added to Group')
 
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Adding Field to Group')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveGroupChanges = async  (groups) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups)
         snackbar('SUCCESS', 'Groups Updated')
 
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Saving Group Changes')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveGroup = async  (group) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
         group.tabName = data.tabName
         group.companyObjectTypeTabDisplayOrder = data.companyObjectTypeTabDisplayOrder
         snackbar('SUCCESS', 'Custom Field Group Updated')
 
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Saving Change')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const deleteWithChecks = async (item, customFieldGroupId, customFieldGroupAssignmentId) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         let params = {
           customFieldGroupId, customFieldGroupAssignmentId
@@ -781,19 +783,19 @@ const iconOwner = () => {
           }
           snackbar('ERROR', errorMsg)
 
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } else {
           fieldsInUse.value = []
           item.archived = true
           snackbar('SUCCESS', 'Item Deleted')
 
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Deleting')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
       cfgToDelete.value = null
       cFieldToDelete.value = null
@@ -809,7 +811,7 @@ const iconOwner = () => {
       customFieldGroupAssignmentHidden.value = null;
     }
     const saveReadOnlyAndWhiteList = async  (field) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         if(whiteListedPositionsChanged.value != null) {
           field.positionsChanged = whiteListedPositionsChanged.value;
@@ -830,14 +832,14 @@ const iconOwner = () => {
         }
         snackbar('SUCCESS', 'Field Updated')
 
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveHiddenAndWhiteList = async (field) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         if(hiddenWhiteListedPositionsChanged.value != null) {
           field.hiddenPositionsChanged = hiddenWhiteListedPositionsChanged.value;
@@ -856,32 +858,32 @@ const iconOwner = () => {
         if (!field.customFieldGroupAssignmentHidden) {
           vueInstance.$set(field, 'hiddenWhiteListedPositions', [])
         }
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
         snackbar('SUCCESS', 'Field Updated')
 
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Saving Field')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const getObjectTypeDetails = async  () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         objectTypeLoading.value = true
         const {data, status} = await getRequest(`/objectType/getByType/${typeId.value}`)
         objectType.value = data
         objectTypeLoading.value = false
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Details')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveOwnerReadOnlyAndWhiteList = async  () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await putRequest(`/objectType/saveOwnerReadOnlyAndWhiteList?savePositions=${ownerReadOnlyPositionsChanged.value ?? false}`, objectType.value)
         ownerReadOnlyPositionsChanged.value = false
@@ -890,10 +892,10 @@ const iconOwner = () => {
         }
         snackbar('SUCCESS', 'Saved Successfully')
 
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveFieldChanges = async  (fields) => {
@@ -910,17 +912,17 @@ const iconOwner = () => {
         })
         // save them here
         if(fieldsToSave.length > 0) {
-          store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           const {status} = await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
           snackbar('SUCCESS', 'Fields Updated')
 
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Updating Fields')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
 
     }
@@ -939,31 +941,31 @@ const iconOwner = () => {
         const {status} = await putRequest(`/customFieldGroup/updateFieldShowOrRequire`, objectType)
         snackbar('SUCCESS', 'Updated Field')
 
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Saving Data')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const loadFieldsByParent = async () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         if (parent.value.isProcessStep) {
           const {data, status} = await getRequest(`/customField/getByParentProcessStep/${parent.value.id}`)
           ancillaryCustomFields.value = data
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } else if (parent.value.objectTypeId === 8) {
           const {data, status} = await getRequest(`/customField/getByDataView/${parent.value.id}`)
           ancillaryCustomFields.value = data
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Data')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
 
@@ -974,13 +976,13 @@ const iconOwner = () => {
           const {data, status} = await getRequest(`/position/withParent`)
           positions.value = data
           positionsLoading.value = false
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           positionsLoading.value = false
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Retrieving Positions')
 
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     }

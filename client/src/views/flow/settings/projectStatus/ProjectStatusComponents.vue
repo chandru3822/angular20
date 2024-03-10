@@ -105,7 +105,7 @@
 
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getCompanyProjectStatusType, getProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {handleHidingGlobalLoader, putRequest, getSnackbar} from '@/helpers/helpers'
@@ -114,8 +114,10 @@ import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables";
 import { useFileStore } from '@/stores/FileStore.js'
-const route = useRoute()
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
+const appStore = useAppStore()
+const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -152,7 +154,7 @@ const initItemColor = (item) => {
 }
 const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     let file = files[0]
     await fileStore.uploadFile({
       file: file,
@@ -163,86 +165,86 @@ const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) =>
       callback: async (img, error) => {
         if (error?.error) {
           snackbar('ERROR', error.errorMsg)
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         } else {
           item.icon = img
 
           snackbar('SUCCESS', 'Image Uploaded')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Uploading File')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteAttachment = async (item) => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     await fileStore.deleteFile({
       id: item.icon.id,
       callback: async () => {
         item.icon = {}
         snackbar('SUCCESS', 'Image Deleted')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting File')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getStatusInfo = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getCompanyProjectStatusType(statusId.value)
     projectStatus.value = data
     initItemColor(projectStatus.value)
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getTheseProjectStatusTypes = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getProjectStatusTypes()
     rootStatusTypes.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveType = async (type) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await putRequest(`/projectStatus/company`, type)
     snackbar('SUCCESS', 'Project Status Saved')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Project Status')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const setAsInitial = async (item) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/projectStatus/company/initial/${item.id}`,)
     item.isDefault = true
     snackbar('SUCCESS', 'Status Updated')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating Status')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

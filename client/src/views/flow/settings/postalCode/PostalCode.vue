@@ -88,7 +88,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import {getStates} from '@/services/stateService'
 import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -97,6 +97,9 @@ import {useUserStore} from '@/stores/UserStorePinia.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
@@ -129,7 +132,7 @@ const userId = computed(() => {
 })
 
 onMounted(() => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   dataLoading.value = true
   Promise.all([
     getPostalCode(),
@@ -138,7 +141,7 @@ onMounted(() => {
     getAllStates(),
     getCallGroups()
   ]).then(() => {
-    store.commit(AppMutations.SET_LOADING, false);
+    appStore.loading = false;
     dataLoading.value = false;
   })
 })
@@ -195,16 +198,16 @@ const getCallGroups = async () => {
   }
 }
 const savePostalCode = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await postRequest(`/postalCode`, postalCode.value)
     snackbar('SUCCESS', 'Postal Code Saved')
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Postal Code')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

@@ -51,6 +51,8 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -76,28 +78,28 @@ onMounted(async () => {
   await getAttachmentType()
 })
     const getAttachmentType = async () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data} = await getRequest(`/attachmentType/type/${attachmentTypeId.value}`)
         attachment.value = data
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Data')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveAttachmentType = async () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await putRequest(`/attachmentType/type`, attachment.value)
         editName.value = false
         snackbar('SUCCESS', 'Attachment Type Updated')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Saving Attachment Type')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
 </script>

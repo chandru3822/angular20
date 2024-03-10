@@ -45,12 +45,13 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest} from '@/helpers/helpers'
 import {getCurrentInstance, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
 import {useRouter} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -71,15 +72,15 @@ onMounted(async () => {
 })
 
 const getAttachmentTypes = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/attachmentType/system`)
     attachmentTypes.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const addDragDocument = async (e) => {
@@ -88,7 +89,7 @@ const addDragDocument = async (e) => {
 }
 const uploadAttachment = async (files) => {
   if (files?.length > 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
 
     try {
       error.value = {}
@@ -108,7 +109,7 @@ const uploadAttachment = async (files) => {
               if (count === numFiles) {
                 selectedAttachmentTypeId.value = null
                 files = []
-                store.commit(AppMutations.SET_LOADING, false)
+                appStore.loading = false
               }
             }
           })
@@ -117,7 +118,7 @@ const uploadAttachment = async (files) => {
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error uploading document')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }

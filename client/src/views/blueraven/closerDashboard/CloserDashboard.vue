@@ -382,7 +382,7 @@ const loadRoundRobins = async () => {
     }
     roundRobinRanksLoading.value = false
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error retrieving list of round robins')

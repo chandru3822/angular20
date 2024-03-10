@@ -177,7 +177,7 @@ const saveFeature = async (isNew, feature) => {
       expanded.value = []
       snackbar('SUCCESS', 'Feature Updated')
     }
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', isNew ? 'Error Adding Feature' : 'Error Updating Feature')
@@ -189,7 +189,7 @@ const getCompanyFeatures = async () => {
   try {
     const {data, status} = await getRequest(`${apiUrl.value}`)
     companyFeatures.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Features')
@@ -201,7 +201,7 @@ const getFeatures = async () => {
   try {
     const {data, status} = await getRequest(`/feature`)
     features.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Features')
@@ -215,7 +215,7 @@ const deleteFeature = async () => {
     const {status} = await deleteRequest(`${apiUrl.value}/${feature.id}`)
     feature.archived = true
     snackbar('SUCCESS', 'Feature Deleted')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Feature')

@@ -162,7 +162,7 @@
 
 <script setup>
 import {Actions} from '@/store'
-import {AppMutations} from '@/stores/AppStore'
+
 import {
   handleHidingGlobalLoader,
   postRequestWithRequestParams,
@@ -176,6 +176,8 @@ import {getCurrentInstance, onMounted, ref, computed} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
 import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -280,22 +282,22 @@ const logoToDeleteId = computed(() => {
       }
     }
     const loadCompany = async () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await getRequest(`/companies/${companyId.value}`)
         company.value = data
 
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Company')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveTestUserPassword = async () => {
       if (vueInstance.$refs.companyForm.validate()) {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           let params = {
             password: testUserPassword.value
@@ -304,49 +306,49 @@ const logoToDeleteId = computed(() => {
           testUserPassword.value = ''
           snackbar('SUCCESS', 'Test User Password Saved')
 
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     }
     const saveCompany = async () => {
       if (vueInstance.$refs.companyForm.validate()) {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {status} = await putRequest(`/companies`, company.value)
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Saving Company')
 
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     }
     const deleteAttachment = async (logoToDelete) => {
       try {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         await fileStore.deleteFile({
           id: logoToDelete.image?.id,
           callback: async () => {
             LogoTypeEnum.value[logoToDelete.key].image = {}
             snackbar('SUCCESS', 'Image Deleted')
 
-            store.commit(AppMutations.SET_LOADING, false)
+            appStore.loading = false
           }
         })
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Deleting File')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const uploadFile = async (logoType, files, attachmentTypeId, sourceId, sizeLimit) => {
       try {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         let file = files[0]
         await fileStore.uploadFile({
           file: file,
@@ -358,14 +360,14 @@ const logoToDeleteId = computed(() => {
             if (error?.error) {
               snackbar('ERROR', error.errorMsg)
 
-              store.commit(AppMutations.SET_LOADING, false)
+              appStore.loading = false
             } else {
               LogoTypeEnum.value[logoType.key].image = img
               LogoTypeEnum.value[logoType.key].add = false
               LogoTypeEnum.value[logoType.key].saving = false
               snackbar('SUCCESS', 'Image Uploaded')
 
-              store.commit(AppMutations.SET_LOADING, false)
+              appStore.loading = false
             }
           }
         })
@@ -373,25 +375,24 @@ const logoToDeleteId = computed(() => {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Uploading File')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const loadImage = async (logoType) => {
       try {
-        store.commit(AppMutations.SET_LOADING, true)
-        console.log('why o why', logoType.attachmentTypeId)
+        appStore.loading = true
         await fileStore.getOne({
           attachmentTypeId: logoType.attachmentTypeId,
           sourceId: companyId.value,
           callback: async (img) => {
             logoType.image = img
-            store.commit(AppMutations.SET_LOADING, false)
+            appStore.loading = false
           }
         })
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Loading Image')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
   onMounted(() => {

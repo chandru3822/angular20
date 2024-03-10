@@ -148,7 +148,7 @@
 
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import orderBy from 'lodash.orderby'
 import cloneDeep from 'lodash.clonedeep'
 import {getWorkQueueTypes, getWorkQueueCategories} from '@/services/workQueueService'
@@ -159,6 +159,8 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRouter} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
@@ -224,44 +226,44 @@ onMounted(async () => {
 
 
 const getAllWorkQueueTypes = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getWorkQueueTypes()
     workQueueTypes.value = data
     //make copy so filtering works later
     masterWorkQueueTypes.value = cloneDeep(workQueueTypes.value)
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Work Queue Types')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getAllWorkQueueCategories = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getWorkQueueCategories()
     workQueueCategories.value = orderBy(data, [wt => wt.workQueueCategory.toLowerCase()])
     filteredCategories.value = cloneDeep(workQueueCategories.value)
     filteredCategories.value.unshift({id: -1, workQueueCategory: 'All'})
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Work Queue Types')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const filterCategories = () => {
   workQueueTypes.value = selectedWorkQueueCategoryId.value === -1 ? masterWorkQueueTypes.value : masterWorkQueueTypes.value.filter(wqt => wqt.workQueueCategoryId === selectedWorkQueueCategoryId.value)
 }
 const deleteType = async (item) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/workQueueType/delete/${item.id}`)
     snackbar('SUCCESS', 'Successfully Deleted Work Queue Type')
     item.archived = true
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
 
@@ -271,11 +273,11 @@ const deleteType = async (item) => {
       cannotDeleteReasons.value = e.data
     }
     snackbar('ERROR', 'Error Deleting Work Queue Type')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const addNewType = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await postRequest(`/workQueueType/type`, newType.value)
 
@@ -289,24 +291,24 @@ const addNewType = async () => {
     addNew.value = false
     newType.value = {}
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Work Queue Type')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveRowChanges = async (rows) => {
   if (rows?.length > 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await putRequest(`/workQueueType/order`, rows)
       snackbar('SUCCESS', 'Order Updated')
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Order Changes')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }

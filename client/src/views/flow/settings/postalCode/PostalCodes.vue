@@ -145,7 +145,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {
   handleHidingGlobalLoader,
@@ -160,7 +160,10 @@ import constants from "@/helpers/constants";
 import {getStates} from "@/services/stateService";
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRouter} from "vue-router/composables";
+import {useRouter} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+
 const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
@@ -247,46 +250,46 @@ onMounted(() => {
 
     const getPostalCodes = async () => {
       dataLoading.value = true
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await getRequest(`/postalCode`)
         postalCodes.value = data
         dataLoading.value = false
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         dataLoading.value = false
         snackbar('ERROR', 'Error Retrieving Data')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const deletePostalCode = async () => {
       itemToDelete.value.archived = true
       const postalCodeId = itemToDelete.value.id
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {status} = await deleteRequest(`/postalCode/${postalCodeId}`)
         snackbar('SUCCESS', 'Postal Code Deleted')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Deleting Postal Code')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
       closeDeleteDialog()
     }
     const addPostalCode = async () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await postRequest(`/postalCode`, newPostalCode.value)
         router.push({path: `/settings/zip/postalCode/${data.id}`})
         snackbar('SUCCESS', 'Postal Code Added')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         let msg = e?.data?.message ? e.data.message : 'Error Adding Postal Code'
         snackbar('ERROR', msg)
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const closeDeleteDialog = () => {

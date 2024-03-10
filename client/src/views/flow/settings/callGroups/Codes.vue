@@ -84,7 +84,7 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
@@ -92,6 +92,8 @@
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRoute} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
@@ -139,55 +141,55 @@
     }
   }
   const getAvailablePostalCodes = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/callGroup/${callGroupId.value}/availableCodes`, 'blueraven')
       availablePostalCodes.value = data
       //this makes it reload the available list any time one has been deleted locally
       codeDeleted.value = false
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const filterPostalCodes = computed(() =>{
     return postalCodes.value?.length ? postalCodes.value.filter(pc => { return !pc.archived}) : []
   })
   const getCodesForZone = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/callGroup/${callGroupId.value}/codes`, 'blueraven')
       postalCodes.value = data
       dataLoading.value = false
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const deleteCodeFromGroup = async () => {
     const code = postalCodeToDelete.value
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await deleteRequest(`/callGroup/code/${code.id}`, 'blueraven')
       code.archived = true
       codeDeleted.value = true
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Removing Postal Code')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     postalCodeToDelete.value = null
   }
   const addCodeToZone = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       newCode.value.callGroupId = callGroupId.value
       const {data, status} = await postRequest(`/callGroup/addCode`, newCode.value, 'blueraven')
@@ -195,13 +197,13 @@
       availablePostalCodes.value = availablePostalCodes.value.filter(apc => apc.id !== data.id)
       addCode.value = false
       newCode.value = {}
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = e.data?.message?.includes('Postal Code Already In Use') ? e.data.message : 'Error Adding Postal Code'
       snackbar('ERROR', msg)
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 

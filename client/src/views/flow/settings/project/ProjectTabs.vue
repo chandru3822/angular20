@@ -120,12 +120,14 @@
 
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, defineSortableTable} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import { getCurrentInstance, computed, ref, onMounted } from 'vue'
   import {useUserStore} from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
@@ -169,33 +171,33 @@
 
     
       const getTabs = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/objectTypeTab/project`)
           tabs.value = data
 
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Retrieving Tabs')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
       const deleteTab = async() => {
         const tabId= tabToDelete.value.id
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {status} = await deleteRequest(`/objectTypeTab/${tabId}`)
           snackbar('SUCCESS', 'Successfully Deleted Tab')
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Deleting Tab')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
       const saveTab = async(tab) => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await postRequest(`/objectTypeTab/project`, tab)
           snackbar('SUCCESS', 'Tab Saved')
@@ -209,24 +211,24 @@
           addNew.value = false
           newTab.value = {}
 
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Adding Tab')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
       const saveRowChanges = async(rows) => {
         if(rows?.length > 0) {
-          store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           try {
             const {status} = await putRequest(`/objectTypeTab/order`, rows)
             snackbar('SUCCESS', 'Tab Order Saved')
-            handleHidingGlobalLoader(vueInstance, status)
+            handleHidingGlobalLoader(status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             snackbar('ERROR', 'Error Saving Tab Order')
-            store.commit(AppMutations.SET_LOADING, false)
+            appStore.loading = false
           }
         }
       }

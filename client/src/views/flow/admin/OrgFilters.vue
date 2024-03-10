@@ -162,7 +162,7 @@ const getOrganizationFilters = async () => {
   try {
     const {data, status} = await getOrgFilters()
     orgFilters.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Org Filters')
@@ -182,7 +182,7 @@ const saveOrgFilter = async (of, isNew) => {
       expanded.value = []
       snackbar('SUCCESS', 'Org Filter Updated')
     }
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', isNew ? 'Error Adding Org Filter' : 'Error Updating Org Filter')
@@ -194,7 +194,7 @@ const getOrganizationLevels = async () => {
   try {
     const {data, status} = await getOrgLevels()
     levels.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Org Levels')
@@ -210,7 +210,7 @@ const deleteOrgFilter = async () => {
       return ol.id !== filter.id
     })
     snackbar('SUCCESS', 'Org Filter Deleted')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Org Filter')

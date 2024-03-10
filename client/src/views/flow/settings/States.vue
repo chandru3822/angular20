@@ -92,8 +92,6 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
-
   import {getAvailableStates} from '@/services/stateService'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
@@ -103,12 +101,14 @@
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
+  const appStore = useAppStore()
 
   const addNew = ref(false)
   const levels = ref([])
@@ -151,7 +151,7 @@
     await getStates()
   })
   const saveCompanyState = async (ol, isNew) => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       let params = {
         ...ol
@@ -168,49 +168,49 @@
         expanded.value = []
         snackbar('SUCCESS', 'State Updated')
       }
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', isNew ? 'Error Adding State' : 'Error Updating State')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const getCompanyStates = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/state/company`)
       companyStates.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Company States')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const getStates = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getAvailableStates()
       states.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading States')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const deleteCompanyState = async () => {
     const companyState = stateToDelete.value
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await deleteRequest(`/state/companyState/${companyState.id}`)
       companyState.archived = true
       snackbar('SUCCESS', 'State Deleted')
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Deleting State')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     stateToDelete.value = null
   }

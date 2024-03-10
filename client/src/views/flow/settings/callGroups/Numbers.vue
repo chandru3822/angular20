@@ -89,7 +89,7 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
@@ -97,6 +97,8 @@
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRoute} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
@@ -150,43 +152,43 @@
     return phoneNumbers.value?.length ? phoneNumbers.value.filter(pc => { return !pc.archived}) : []
   })
   const getNumbersForGroup = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/callGroup/${callGroupId.value}/numbers`, 'blueraven')
       phoneNumbers.value = data
       dataLoading.value = false
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const deleteNumber = async () => {
     const number = phoneNumberToDelete.value
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await deleteRequest(`/callGroup/number/${number.id}`, 'blueraven')
       number.archived = true
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Removing Phone Number')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const addNumberToGroup = async () => {
     showError.value = false
     errorMsg.value = ''
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
       if (!newNumber.value.match(phoneRegex) || newNumber.value.length > 20) {
         snackbar('ERROR', 'Error Adding Phone Number: Please reformat the Phone field with a valid phone number')
 
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
         return;
       }
 
@@ -198,31 +200,31 @@
       phoneNumbers.value.push(data)
       addNumber.value = false
       newNumber.value = {}
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = e.data?.message?.includes('Phone Number Already In Use') ? e.data.message : 'Error Adding Phone Number'
       snackbar('ERROR', msg)
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const updatePhoneNumber = async (item) => {
     showError.value = false
     errorMsg.value = ''
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       let params = {
         id: item.id,
         active: item.active
       }
       const {status} = await postRequest(`/callGroup/updateNumber`, params, 'blueraven')
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = 'Error updating Phone Number'
       snackbar('ERROR', msg)
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 </script>

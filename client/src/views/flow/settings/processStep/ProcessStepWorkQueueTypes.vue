@@ -361,7 +361,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import cloneDeep from 'lodash.clonedeep'
 
@@ -377,7 +377,10 @@ import {
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute} from "vue-router/composables";
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+
 const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
@@ -598,15 +601,15 @@ onMounted(() => {
       }
     }
     const getProjectStatusTypesForWorkQueue = async() => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data, status} = await getRequest(`/projectStatus/wqt`)
         combinedStatuses.value = data
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Project Status Types')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     // process step status repeat of all the project status stuff
@@ -704,16 +707,16 @@ onMounted(() => {
     }
     const getProcessStepStatusTypesForWorkQueue = async() => {
       try {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         const {data, status} = await getRequestWithParams(`/processStep/status/forWqt`, {
           params: {processStepId: processStepId.value}
         })
         combinedProcessStepStatuses.value = data
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Process Step Status Types')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     // event status repeat of all the project status stuff
@@ -831,16 +834,16 @@ onMounted(() => {
     const getEventStatusTypesForWorkQueue = async() => {
       if(showEventFields.value) {
         try {
-          store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           const {data, status} = await getRequestWithParams(`/event/statusesForWqt`, {
             params: {processStepId: processStepId.value, eventId: event.eventId}
           })
           combinedEventStatuses.value = data
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Retrieving Event Status Types')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     }
@@ -849,21 +852,21 @@ onMounted(() => {
       try {
         addNewWorkQueueType.value = !addNewWorkQueueType.value
         if (addNewWorkQueueType.value) {
-          store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           let url = showEventFields.value ? `/workQueueType/event/${eventId.value}` :  `/workQueueType/processStep/${processStepId.value}`
           const {data, status} = await getRequest(url, null, [])
           workQueueTypes.value = data
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Retrieving Work Queue Types')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const assignNewWorkQueueType = async() => {
       //todo make this work for both proj and process step types
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         newWorkQueueType.value.processStepId = processStepId.value
         newWorkQueueType.value.processStepEventId = eventId.value
@@ -878,16 +881,16 @@ onMounted(() => {
         addNewWorkQueueType.value = false
         newWorkQueueType.value = {projectStatuses: [], processStepStatuses: [], eventStatuses: []}
         snackbar('SUCCESS', 'Work Queue Type Added')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Adding Work Queue Type')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const saveStatusesToWorkQueueType = async(item) => {
       //todo: fix this to save both things
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         let url = showEventFields.value ? `/workQueueType/saveStatusTypesToProcessStepEventWorkQueueType` : `/workQueueType/saveStatusTypesToProcessStepWorkQueueType`
         const {data, status} = await putRequest(url, item)
@@ -896,27 +899,27 @@ onMounted(() => {
         item.eventStatuses = data.eventStatuses || []
         expanded.value = []
         snackbar('SUCCESS', 'Status Types Saved')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Adding Status Types')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const deleteWorkQueueTypeFromStep = async() => {
       const item = workQueueTypeToDelete.value
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         addNewWorkQueueType.value = false
         let url = showEventFields.value ? `/workQueueType/event/${item.id}` : `/workQueueType/processStep/${item.id}`
         const {status} = await deleteRequest(url)
         item.archived = true
         snackbar('SUCCESS', 'Work Queue Type Deleted')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         snackbar('ERROR', 'Error Deleting Link')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
 

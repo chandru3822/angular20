@@ -219,7 +219,7 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
 
   import RRule from '@/components/RRule.vue'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
@@ -234,6 +234,8 @@
   import {getCurrentInstance, onMounted, toRefs, ref, computed, watch, defineProps} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRoute} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
@@ -332,7 +334,7 @@
   const getAppointments = async () => {
     if(orgId.value || userId.value) {
       dataLoading.value = true
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       const { page, itemsPerPage } = options.value
       try {
         const {data, status} = await getRequestWithParams(`/availability/appointments`, { params: {
@@ -343,10 +345,10 @@
           }})
         appointments.value = data.content
         dataLoading.value = false
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
         snackbar('ERROR', 'Error Loading Appointments')
 
       }
@@ -371,7 +373,7 @@
         appt.recurringEventType = null
       }
       try {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
 
         if(appt.allDay) {
           appt.startTime = DateTime.fromISO(appt.startTime, {zone: 'utc'}).set({hour: 0, minute: 0, second: 0}).toISO()
@@ -402,10 +404,10 @@
           appointments.value.push(data)
           appointments.value = orderBy(appointments.value, [s => s.startDate])
         }
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
         snackbar('ERROR', 'Error Saving Appointment')
       }
     }
@@ -423,7 +425,7 @@
   })
   const deleteAppointment = async (deleteAllRecurring) => {
     const item = itemToDelete.value
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
 
     try {
       let url = deleteAllRecurring ? `/availability/appointment/recurrence/${item.recurringEventId}` : `/availability/appointment/${item.id}`
@@ -437,29 +439,29 @@
       }
       snackbar('SUCCESS', 'Appointment Deleted')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error deleting appointment')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     closeDeleteDialog()
   }
   const deleteRecurring = async (item) => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
 
     try {
       const {status} = await deleteRequest(`/availability/appointment/${item.id}`)
       item.archived = true
       snackbar('SUCCESS', 'Appointment Deleted')
 
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error deleting appointment')
 
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const recurrenceCallback =(recurrenceString, endDate, count, endsType) => {

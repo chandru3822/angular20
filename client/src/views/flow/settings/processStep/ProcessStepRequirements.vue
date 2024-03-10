@@ -709,7 +709,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getCompanyAssignedToProcessStep, getAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 import {getProjectStatusTypes, getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
@@ -724,7 +724,9 @@ import ConfirmationDialog from "@/components/ConfirmationDialog"
 import constants from "@/helpers/constants";
 import {getCurrentInstance, watch, toRefs, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute} from "vue-router/composables";
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -827,36 +829,36 @@ const changeBooleanValue = (e, fp) => {
   vueInstance.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
 }
 const getRequirements = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(apiUrl.value)
     requirements.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
 const getRequirementTypes = async () => {
   addNewRequirement.value = !addNewRequirement.value
   if (addNewRequirement.value) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       let url = eventRequirements.value ? `/processStep/${processStepId.value}/requirement/event/types` : `/processStep/${processStepId.value}/requirement/types`
       const {data} = await getRequest(url)
       availableRequirementTypes.value = data
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 const selectRequirementType = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     //1 == process step custom field, 2 == function,
     // 3 == project custom field, 4 == contact custom field
@@ -890,47 +892,47 @@ const selectRequirementType = async () => {
       const {data} = await getRequest(`/function/requirement/${objectTypeId}`)
       availableFunctions.value = data
     }
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const loadParentObjects = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequestWithParams(`/processStep/getParentObjects`, {params: {id: processStepId.value}})
     parentObjects.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const loadDataViews = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/dataView`, null, [])
     dataViews.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getDataViewFields = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/customField/getByDataView/${selectedDataView.value.id}`)
     availableDataViewFields.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const loadValues = async (parent) => {
@@ -949,70 +951,70 @@ const loadValues = async (parent) => {
   }
 }
 const getCompanyStatusesAssignedToProcessStep = async (parent) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getCompanyAssignedToProcessStep(parent.id)
     //if the selected process step is the same as the active process step being viewed, only allow active process step status types
     processStepStatuses.value = parent.id === parseInt(processStepId.value) ? data.filter(d => d.processStepStatusTypeId === 1) : data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getStatusesAssignedToProcessStep = async (parent) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getAssignedToProcessStep(parent.id)
     //if the selected process step is the same as the active process step being viewed, only allow active process step status types
     processStepStatuses.value = parent.id === parseInt(processStepId.value) ? data.filter(d => d.id === 1) : data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getProjectStatuses = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getProjectStatusTypes()
     projectStatuses.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getEventStatuses = async () => {
   //this has to load event statuses using the pseId
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/event/statusesForPsEvent/${processStepEventId.value}`)
     eventStatuses.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getCompanyProjectStatuses = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getCompanyProjectStatusTypes(null, true)
     projectStatuses.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const loadFieldsByParent = async (parent) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     //this exclusion is temporary until requirements/action can handle the new system readonly data type
     //could probably do this cleaner/more generically i just dont want to cuz it is temporary
@@ -1022,15 +1024,15 @@ const loadFieldsByParent = async (parent) => {
       }
     })
     customFields.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const loadCustomFieldsByObjectType = async (objectTypeId) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequestWithParams(`/customField/getByParentType/${objectTypeId}`, {
       params: {
@@ -1038,15 +1040,15 @@ const loadCustomFieldsByObjectType = async (objectTypeId) => {
       }
     })
     customFields.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const loadFunctionParams = async (dbFunctionId, isRequirement) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
     if (isRequirement) {
@@ -1054,15 +1056,15 @@ const loadFunctionParams = async (dbFunctionId, isRequirement) => {
     } else {
       selectedChildRequirementParamDynamicValues.value = data
     }
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const loadOperatorTypes = async (dataTypeId, processStepRequirementTypeId) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/operator/${dataTypeId}`)
     if ([7, 8, 9, 10, 11].includes(processStepRequirementTypeId)) {
@@ -1070,23 +1072,23 @@ const loadOperatorTypes = async (dataTypeId, processStepRequirementTypeId) => {
     } else {
       operatorTypes.value = data
     }
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const loadDataTypeRequirements = async (dataTypeId) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/dataType/getDataTypeRequirements/${dataTypeId}`)
     dataTypeRequirements.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const operatorDataTypeCheck = (item) => {
@@ -1132,7 +1134,7 @@ const validateRequirementForm = () => {
   invalidRequirement.value = invalidParams || invalidValue || invalidSecondaryValue
 }
 const saveNewRequirement = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     newRequirement.value.customFieldGroupAssignmentId = selectedCustomField.value.customFieldGroupAssignmentId
     newRequirement.value.companyFunctionId = selectedFunction.value.id
@@ -1228,11 +1230,11 @@ const saveNewRequirement = async () => {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Requirement')
   } finally {
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const updateRequirement = async (requirement) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     requirement.dataTypeRequirementId = requirement.customValue ? null : requirement.dataTypeRequirement.id
     requirement.dataTypeRequirement = requirement.customValue ? {} : requirement.dataTypeRequirement
@@ -1265,11 +1267,11 @@ const updateRequirement = async (requirement) => {
     // this forces the list to update the operator displayed ... using requirement = data did not work
     requirement.operatorType = data.operatorType
     snackbar('SUCCESS', 'Requirement Updated')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating Requirement')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
@@ -1286,21 +1288,21 @@ const getActionsUsingLogic = async (requirementId, andDelete = false) => {
 }
 
 const showActionsUsingLogic = async (requirementId) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await getActionsUsingLogic(requirementId)
     showInfoDialog.value = true
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Fetching Requirement Info')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
 const deleteRequirement = async () => {
   const item = itemToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await getActionsUsingLogic(item.id, true)
     if (actionsUsingLogic.value?.length > 0) {
@@ -1312,11 +1314,11 @@ const deleteRequirement = async () => {
       requirements.value = requirements.value.filter(r => !r.archived)
       snackbar('SUCCESS', 'Requirement Deleted')
     }
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Requirement')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
   closeDeleteDialog()
 }

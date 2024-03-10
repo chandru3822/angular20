@@ -163,7 +163,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
 import {
   handleHidingGlobalLoader,
   putRequest,
@@ -175,11 +174,12 @@ import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 
 import {computed, getCurrentInstance, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
-
+import { useAppStore } from '@/stores/AppStorePinia.js'
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const userStore = useUserStore()
+const appStore = useAppStore()
 
 const templates = ref([])
 const newTemplate = ref({})
@@ -214,19 +214,19 @@ const userCanEdit = computed(() => {
 })
 
 const getTemplates = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/messaging/templates`)
     templates.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Templates')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveTemplate = async (template, isNew) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await putRequest(`/messaging/template`, template)
     if(isNew){
@@ -238,12 +238,12 @@ const saveTemplate = async (template, isNew) => {
       expanded.value = []
       snackbar('SUCCESS', 'Template Updated')
     }
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', isNew ? 'Error Adding Template' : 'Error Updating Template')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteTemplate = async () => {
@@ -253,16 +253,16 @@ const deleteTemplate = async () => {
     showDeleteDialog.value = false
     template.archived = true
     snackbar('SUCCESS', 'Template Deleted')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Template')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getTeams = async () => {
   try {
-    const {data} = await getRequest(`/smsTeam/`)
+    const {data} = await getRequest(`/smsTeam`)
     selectableTeams.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)

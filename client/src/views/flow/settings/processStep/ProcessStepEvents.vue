@@ -128,7 +128,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import orderBy from 'lodash.orderby'
 import {
@@ -141,7 +141,9 @@ import {
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute, useRouter} from "vue-router/composables";
+import {useRoute, useRouter} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const route = useRoute()
 const router = useRouter()
@@ -192,34 +194,34 @@ const filteredEvents = computed(() => {
 })
 
 const getEvents = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/processStep/${processStepId.value}/event/admin`)
     events.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getAvailableEvents = async () => {
   if (addNewEvent.value) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data} = await getRequest(`/processStep/${processStepId.value}/event/available`)
       availableEvents.value = data
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
 
 const addEventToProcessStep = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     let params = {
       eventId: newEvent.value.id,
@@ -229,39 +231,39 @@ const addEventToProcessStep = async () => {
     events.value.push(data)
     newEvent.value = {}
     addNewEvent.value = false
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Event')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteEventFromStep = async () => {
   const item = itemToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     await deleteRequest(`/processStep/${processStepId.value}/event/${item.id}`)
     item.archived = true
     snackbar('SUCCESS', 'Event Deleted')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Event')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
   closeDeleteDialog()
 }
 const saveRowChanges = async (rows) => {
   if (rows?.length > 0) {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       await putRequest(`/processStep/${processStepId.value}/event/order`, rows)
       snackbar('SUCCESS', 'Event Order Saved')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Event Order')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }

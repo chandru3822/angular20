@@ -260,7 +260,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import {
   handleHidingGlobalLoader,
   putRequest,
@@ -276,6 +276,8 @@ import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -340,21 +342,21 @@ const selectablePositions = computed(() => {
   })
 })
 const getTeams = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/smsTeam/`)
     teams.value = data
     teams.value.map(team => team.checked = team.isDefault)
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Teams')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveTeam = async (team, isNew) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const confirmChangeDefault = (team.checked !== team.isDefault)
     if(confirmChangeDefault) {
@@ -378,13 +380,13 @@ const saveTeam = async (team, isNew) => {
       snackbar('SUCCESS', 'Team Updated')
 
     }
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
     await getTeams();
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', isNew ? 'Error Adding Team' : 'Error Updating Team')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteTeam = async (team) => {
@@ -394,12 +396,12 @@ const deleteTeam = async (team) => {
     snackbar('SUCCESS', 'Team Deleted')
     showDeleteDialog.value = false
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Team')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     await getTeams()
   }
 }
@@ -407,12 +409,12 @@ const getPositions = async () => {
   try {
     const {data, status} = await getRequest(`/position`)
     positions.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Positions')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const filterPositions = computed(() => {
@@ -422,119 +424,119 @@ const getUsers = async () => {
   try {
     const {data, status} = await getRequest(`/user/active`)
     users.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Users')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getOrgs = async () => {
   try {
     const {data, status} = await getRequest(`/org`)
     orgs.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Organizations')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const filterOrgs = computed(() => {
   return expandedItem.value?.orgs?.filter(o => { return !o.archived})
 })
 const addPositionToTeam = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await postRequest(`/smsTeam/${expandedItem.value.id}/position/${positionId.value}`, {})
     expandedItem.value.positions.push(data)
     positionId.value = null
     addPosition.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error adding Position')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const addUserToTeam = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await postRequest(`/smsTeam/${expandedItem.value.id}/user/${userId.value}`, {})
     expandedItem.value.users.push(data)
     userId.value = null
     addUser.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error adding User')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteUserFromTeam = async (user) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await deleteRequest(`/smsTeam/${expandedItem.value.id}/user/` + user.id)
     snackbar('SUCCESS', 'User removed')
     user.archived = true
     const userIndex = expandedItem.value.users.findIndex(u => u.id === user.id);
     expandedItem.value.users.splice(userIndex, 1)
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Unable to remove User')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deletePositionFromTeam = async (position) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await deleteRequest(`/smsTeam/${expandedItem.value.id}/position/` + position.positionId)
     position.archived = true
     const positionIndex = expandedItem.value.positions.findIndex(p => p.id === position.id);
     expandedItem.value.positions.splice(positionIndex, 1)
     snackbar('SUCCESS', 'Position removed')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Unable to removing Position')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const addOrgToTeam = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await postRequest(`/smsTeam/${expandedItem.value.id}/org/${orgId.value}`, {})
     expandedItem.value.orgs.push(data)
     orgId.value = null
     addOrg.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error adding Organization')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteOrgFromTeam = async (org) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await deleteRequest(`/smsTeam/${expandedItem.value.id}/org/` + org.orgId)
     snackbar('SUCCESS', 'Organization removed')
     org.archived = true
     const orgIndex = expandedItem.value.orgs.findIndex(o => o.id === org.id);
     expandedItem.value.orgs.splice(orgIndex, 1)
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error removing Organization')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const startDelete = (type, item) => {

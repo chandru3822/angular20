@@ -123,7 +123,7 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import moment from 'moment'
   import ZonelessTimePickerInput from "./ZonelessTimePickerInput";
@@ -133,6 +133,8 @@
   import {getCurrentInstance, onMounted, ref, computed, watch, defineProps} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRoute} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
@@ -203,7 +205,7 @@
         }
       })
       if(!saveError.value) {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         const {data, status} = await putRequest(`/availability/slotSchedule`, schedule)
         if(!schedule.id) {
           newSchedule.value = {}
@@ -211,38 +213,38 @@
           slotSchedules.value.push(data)
         }
         snackbar('SUCCESS', 'Schedule Saved')
-        handleHidingGlobalLoader(vueInstance, status)
+        handleHidingGlobalLoader(status)
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Saving Schedule')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const getSchedules = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/availability/slotSchedules`, null, [])
       slotSchedules.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Loading Slot Schedules')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const deleteSchedule = async () => {
     const schedule = itemToDelete.value
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {status} = await deleteRequest(`/availability/slotSchedule/${schedule.id}`)
       schedule.archived = true
       snackbar('SUCCESS', 'Schedule Deleted')
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Deleting Schedule')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     closeDeleteDialog()
   }

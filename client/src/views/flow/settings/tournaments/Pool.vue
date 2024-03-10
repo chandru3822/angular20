@@ -270,7 +270,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import constants from '@/helpers/constants'
 import {
@@ -287,6 +287,8 @@ import {useRoute} from "vue-router/composables";
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import { useFileStore } from '@/stores/FileStore.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -372,38 +374,38 @@ const savePoolDates = async () => {
     const {status} = await putRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}`, pool.value, 'blueraven')
     editPool.value = false
     snackbar('SUCCESS', 'Pool Changes Saved')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Updating Pool')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getPositions = async () => {
   try {
     const {data, status} = await getRequest(`/position`)
     positions.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Positions')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getUsers = async () => {
   try {
     const {data, status} = await getRequest(`/user/active`)
     users.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Users')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getTournamentPool = async () => {
   poolLoading.value = true
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {
       data,
@@ -411,15 +413,15 @@ const getTournamentPool = async () => {
     } = await getRequest(`/tournament/${tournamentId.value}/pool/byType/${poolTypeId.value}`, 'blueraven')
     pool.value = data
     poolLoading.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Tournament')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const addPositionToPool = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {
       data,
@@ -428,31 +430,31 @@ const addPositionToPool = async () => {
     pool.value.positions.push(data)
     positionId.value = null
     addPosition.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Position')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deletePositionFromPool = async () => {
   const position = positionToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/deletePosition/${position.id}`, 'blueraven')
     position.archived = true
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
     positionToDelete.value = null
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Position')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     positionToDelete.value = null
   }
 }
 
 const addUserToPool = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {
       data,
@@ -461,31 +463,31 @@ const addUserToPool = async () => {
     pool.value.users.push(data)
     userId.value = null
     addUser.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding User')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteUserFromPool = async () => {
   const user = userToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/deleteUser/${user.id}`, 'blueraven')
     user.archived = true
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting User')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
   userToDelete.value = null
 }
 
 const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     let file = files[0]
     await fileStore.uploadFile({
       file: file,
@@ -496,25 +498,25 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
       callback: async (img, error) => {
         if (error?.error) {
           snackbar('ERROR', error.errorMsg)
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         } else {
           pool.value.backgroundAttachmentPresignedUrl = img.presignedUrl
           pool.value.backgroundAttachmentId = img.id
           addImage.value = false
           snackbar('SUCCESS', 'Image Uploaded')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Uploading File')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteAttachment = async (id) => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     await fileStore.deleteFile({
       id,
       callback: async () => {
@@ -522,13 +524,13 @@ const deleteAttachment = async (id) => {
         pool.value.backgroundAttachmentPresignedUrl = null
         // store.commit(UserMutations.SET_USER_IMAGE, {})
         snackbar('SUCCESS', 'Image Deleted')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting File')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
   deleteWinnerBackgroundDialog.value = false
 }

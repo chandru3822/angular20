@@ -44,7 +44,7 @@
 
 <script setup>
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-  import { ref } from "vue";
+  import { ref } from "vue"
 
   const props = defineProps({
     conversationHistory: Array

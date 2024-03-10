@@ -72,7 +72,7 @@ const saveUserHomePage = async () => {
     }
     const {status} = await putRequest(`/user/homePage`, tempUsr)
     snackbar('SUCCESS', 'Default Home Page Saved')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Default Home Page')
@@ -87,7 +87,7 @@ const getHomePages = async () => {
         return userStore.userHasFeature(d.featureCode)
       })
     }
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Home Pages')

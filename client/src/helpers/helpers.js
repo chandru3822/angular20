@@ -4,6 +4,7 @@ import { AppMutations } from '@/stores/AppStore'
 import moment from 'moment'
 import Sortable from "sortablejs";
 import cloneDeep from "lodash.clonedeep";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 export function getSnackbar(type, text, displayMsgAsHtml) {
   //if you need a custom snackbar build it in your component
@@ -192,11 +193,13 @@ export function cleanPhoneNumberForCopying(phoneNumberString) {
     return null
 }
 
-export function handleHidingGlobalLoader(instance, status) {
+export function handleHidingGlobalLoader(status) {
   //if a request is cancelled we should not turn off the spinner because the route changed and may have already turned the spinner back on
   //if the status is null it means that the request was cancelled (otherwise it will have a success or error status)
   if (status != null) {
-    instance.$store.commit(AppMutations.SET_LOADING, false)
+    // instance.$store.commit(AppMutations.SET_LOADING, false)
+    const appStore = useAppStore()
+    appStore.loading = false
   }
 }
 

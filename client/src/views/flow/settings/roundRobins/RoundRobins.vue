@@ -132,7 +132,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
+
 import debounce from 'lodash.debounce'
 import cloneDeep from 'lodash.clonedeep'
 import {
@@ -147,6 +147,8 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useRouter} from "vue-router/composables";
 import {useUserStore} from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const router = useRouter()
 const vueInstance = getCurrentInstance().proxy
@@ -205,15 +207,15 @@ onMounted(() => {
 
 
 const getCompanyTimezones = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequestWithParams(`/timezone`)
     companyTimezones.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Timezones')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
@@ -227,46 +229,46 @@ const goToRoundRobin = (rr) => {
 
 const getRoundRobins = async () => {
   dataLoading.value = true
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequestWithParams(`/roundRobin`, {params: {searchQuery: search.value}})
     roundRobins.value = data
     masterRoundRobins.value = cloneDeep(data)
     dataLoading.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteRoundRobin = async () => {
   itemToDelete.value.archived = true
   const roundRobinId = itemToDelete.value.id
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/roundRobin/${roundRobinId}`)
     snackbar('SUCCESS', 'Round Robin Deleted')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting Round Robin')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
   closeDeleteDialog()
 }
 const addRoundRobin = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await postRequest(`/roundRobin`, newRoundRobin.value)
     snackbar('SUCCESS', 'Round Robin Added')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
     await router.push({path: `/settings/roundRobin/${data.id}/scheduleTo`})
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Round Robin')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const filterResults = () => {

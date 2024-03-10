@@ -129,7 +129,7 @@
 
 <script setup>
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
-import {AppMutations} from '@/stores/AppStore'
+
 import {
   handleHidingGlobalLoader,
   getRequest,
@@ -139,6 +139,8 @@ import {
 } from '@/helpers/helpers'
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
@@ -168,19 +170,19 @@ const userCanEdit = computed(() => {
 })
 
 const loadChildTemplates = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getRequest(`/messaging/templatesWithTeams`)
     childSmsTemplates.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Loading Templates')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const saveSmsToAction = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {
       data,
@@ -193,24 +195,24 @@ const saveSmsToAction = async () => {
     selectedTemplate.value = {}
     selectedTeams.value = []
     snackbar('SUCCESS', 'SMS Template Added To Action')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding SMS Template to Action')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const deleteSmsFromAction = async (id) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId}/action/${action.id}/deleteSms/${id}`)
     deleteSmsCallback(action.id, id)
     snackbar('SUCCESS', 'SMS Template Deleted From Action')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Deleting SMS Template From Action')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

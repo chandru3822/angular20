@@ -47,6 +47,8 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -74,19 +76,19 @@ const isMobile = computed(() => {
 })
 const getObjectType = async () => {
   //we have to get the object type details to determine if it can use ancillary fields
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const { data, status } = await getRequest(`/objectType/getByType/${route.params.id}`, 'blueraven')
     objectType.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const getCustomFieldGroups = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const { data, status } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
       params: {
@@ -97,11 +99,11 @@ const getCustomFieldGroups = async () => {
       d?.customFields?.forEach(cf => cf.hasConditionalOnId = !!cf.conditionalOnId)
       return d
     }))
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 onMounted(() => {
@@ -110,7 +112,7 @@ onMounted(() => {
 })
 
 const addCustomFieldGroup = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     newGroup.value.objectTypeId = parseInt(route.params.id)
     const { data, status } = await postRequest(`/customFieldGroup/addCustomFieldGroup`, newGroup.value, 'blueraven')
@@ -119,11 +121,11 @@ const addCustomFieldGroup = async () => {
     // add the new type to the list
     customFieldGroups.value.push(data)
     snackbar('SUCCESS', 'Group Added')
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Custom Field Group')
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 

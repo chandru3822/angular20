@@ -164,13 +164,14 @@
 import {formatPhoneNumber, cleanPhoneNumberForCopying, getRequest} from "@/helpers/helpers";
 import constants from '@/helpers/constants'
 import {getStatusColorClass} from "@/services/projectStatusTypeService";
-import {AppMutations} from "@/stores/AppStore";
 import NewMessageDialog from "./settings/inbox/NewMessageDialog";
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getCurrentInstance, onMounted, ref, defineProps} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -237,7 +238,7 @@ const fetchTeamsForUser = async () => {
   try {
     const {data, status} = await getRequest(`/smsTeam/getTeamsForUser`)
     teamsAssociatedToUser.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error fetching SMS Teams')

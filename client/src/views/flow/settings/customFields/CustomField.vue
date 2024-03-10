@@ -296,6 +296,8 @@ import { useUserStore } from '@/stores/UserStorePinia.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
@@ -438,7 +440,7 @@ const debounceFindCustomFields = debounce((query) => {
       let match = systemLists.value.find(sl => sl.companySystemListId === listId);
       if (listId && match?.hasSubOptions) {
 
-        store.commit(AppMutations.SET_LOADING, true);
+        appStore.loading = true;
         try {
           const {data, status} = await getRequestWithParams(`/systemList/${listId}/options`, {
             params: {
@@ -449,11 +451,11 @@ const debounceFindCustomFields = debounce((query) => {
             }
           });
           systemListOptions.value = data;
-          handleHidingGlobalLoader(vueInstance, status);
+          handleHidingGlobalLoader(status);
         } catch (e) {
           console.error("*** ERROR ***", e);
           snackbar("ERROR", "Error Retrieving Data");
-          store.commit(AppMutations.SET_LOADING, false);
+          appStore.loading = false;
         }
       }
     }
@@ -467,7 +469,7 @@ const debounceFindCustomFields = debounce((query) => {
       }
     }
     const saveChanges = async (object)  => {
-      store.commit(AppMutations.SET_LOADING, true);
+      appStore.loading = true;
       try {
         // set the display order to save to DB
         //this should have already been done by the getLovValues function, but it was in both places so i just left this one
@@ -494,11 +496,11 @@ const debounceFindCustomFields = debounce((query) => {
 
         // re-sort in case the fieldName changed
         snackbar("SUCCESS", "Saved Changes");
-        handleHidingGlobalLoader(vueInstance, status);
+        handleHidingGlobalLoader(status);
       } catch (e) {
         console.error("*** ERROR ***", e);
         snackbar("ERROR", "Error Saving Changes");
-        store.commit(AppMutations.SET_LOADING, false);
+        appStore.loading = false;
       }
     }
     const addOption = (options)  => {
@@ -527,15 +529,15 @@ const debounceFindCustomFields = debounce((query) => {
 
     }
     const getUsesForField = async () => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         const {data} = await getRequest(`/customField/getUses/${customFieldId.value}`, props.apiPath, null, []);
         usesForField.value = data;
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       } catch (e) {
         console.error("*** ERROR ***", e);
         snackbar("ERROR", "Error Retrieving Data");
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     }
     const copyToClipBoard = (textValue) => {

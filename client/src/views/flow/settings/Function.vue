@@ -127,18 +127,19 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
   import { handleHidingGlobalLoader, getRequest, postRequest } from '@/helpers/helpers'
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
   import {getCurrentInstance, computed, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRoute} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
   const userStore = useUserStore()
+  const appStore = useAppStore()
   const route = useRoute()
 
   const headers = ref([
@@ -177,40 +178,40 @@
   })
 
   const getFunctionDetails = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/function/${functionId.value}`)
       details.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 
   const loadParentObjects = async () => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/processStep/getParentObjects`)
       parentObjects.value = data
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const loadFieldsByParent = async (id, dataTypeId) => {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     try {
       const {data, status} = await getRequest(`/customField/getByParentProcessStep/${id}`)
       availableCustomFields.value = data.filter(d => {
         return d.dataTypeId === dataTypeId
       })
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Data')
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
   const handleExpand = async (item, expand) => {
@@ -226,18 +227,18 @@
   const saveParam = async (item) => {
 
     try {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       const {data, status} = await postRequest(`/function/${functionId.value}/param`, item)
       if(item.parameterTypeId === 3) {
         item.fieldName = data.fieldName
         item.processStepName = data.processStepName
       }
       expanded.value = []
-      handleHidingGlobalLoader(vueInstance, status)
+      handleHidingGlobalLoader(status)
       snackbar('SUCCESS', 'Parameter Updated')
 
     } catch (e) {
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
       snackbar('ERROR', 'Error Saving Parameter')
     }
 

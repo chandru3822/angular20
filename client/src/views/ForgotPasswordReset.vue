@@ -64,10 +64,11 @@
   import constants from '@/helpers/constants'
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
-  import {AppMutations} from '@/stores/AppStore'
   import {getCurrentInstance, computed, onMounted, ref} from 'vue'
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
   import {useRouter, useRoute} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
@@ -106,7 +107,7 @@
         }
       }
       const validateResetRequest = async () => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/user/forgotPassword/reset/${uuid.value}`)
           user.value = data
@@ -118,13 +119,13 @@
           requestValid.value = false
           console.error('*** ERROR ***', e)
           snackbar('ERROR', 'Error Validating This Request')
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
       const onSubmit = async () => {
         savingPassword.value = true
         if (resetNewForm.value.validate()) {
-          store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           try {
             let params = {
               newPassword: newPassword.value,
@@ -132,14 +133,14 @@
               userId: user.value.id
             }
             const {status} = await postRequest(`/user/forgotPassword/change/password`, params)
-            handleHidingGlobalLoader(vueInstance, status)
+            handleHidingGlobalLoader(status)
             snackbar('SUCCESS', 'Your password has been changed.')
-            router.push('/login')
+            await router.push('/login')
           } catch (e) {
             console.error('*** ERROR ***', e)
             let msg = e?.data?.message ?? 'Error Retrieving Account Details'
             snackbar('ERROR', msg)
-            store.commit(AppMutations.SET_LOADING, false)
+            appStore.loading = false
           }
         } else {
           savingPassword.value = false
