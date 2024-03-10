@@ -83,7 +83,10 @@
               <CompanyTools v-if="companyTools.length > 0" :is-mobile="isMobile" :company-tools="companyTools" />
 <!--            </div>-->
           </div>
-          <v-tabs v-else :optional="true" color="secondary" :background-color="headerColor" v-model="model" dark
+          <v-tabs v-else :optional="true" color="secondary" :background-color="headerColor"
+                  v-model="model" dark
+                  class="header-tab-container"
+                  :show-arrows="isBetween"
                   slider-color="secondary">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path" class="label-medium">
               {{ tab.label }}
@@ -253,6 +256,9 @@ export default {
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
     },
+    isBetween(){
+      return !this.$vuetify.breakpoint.smAndDown && !this.$vuetify.breakpoint.lgAndUp
+    },
     themeUpdateEvents() {
       return this.notificationStore.getEventsByTopic('theme_update').length
     },
@@ -382,6 +388,10 @@ export default {
 .header-logo {
   max-height: 45px;
   max-width: 45px;
+}
+
+.header-tab-container {
+  max-width: calc(100% - 170px);
 }
 
 .account-menu-button {
