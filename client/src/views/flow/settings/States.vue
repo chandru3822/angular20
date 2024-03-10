@@ -115,12 +115,7 @@
   const companyStates = ref([])
   const selectedState = ref({})
   const states = ref([])
-  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
   const selectedCompanyStateId = ref(null)
-  const userId = ref(userStore.details.id)
-  const companyId = ref(userStore.details.companyId)
   const headers = ref([
     { text: 'State', value: 'state', show: true },
     { text: 'Abbreviation', value: 'abbreviation', show: true },
@@ -134,6 +129,21 @@
   })
   const filterStates = computed(() => {
     return orderBy(companyStates.value.filter(cs => { return !cs.archived}), [cs => cs.state.toLowerCase()])
+  })
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+  })
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
+  const userId = computed(() => {
+    return userStore.details.id
   })
 
   onMounted(async () =>{

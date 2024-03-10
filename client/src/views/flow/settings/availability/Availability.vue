@@ -20,7 +20,7 @@
           </v-autocomplete>
           <v-autocomplete v-model="userId"
                     :items="users"
-                    v-if="showAllUsers"
+                    v-if="viewAll"
                     :readonly="!viewAll"
                     :disabled="!viewAll"
                     label="Select a User..."
@@ -93,15 +93,9 @@
   const defaultAppointmentLength = ref(null)
   const valueChanged = ref(false)
   const orgs = ref([])
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
   const orgId = ref(null)
   const orgsLoading = ref(false)
   const users = ref([])
-  const userIsAdmin = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'))
-  const viewAll = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'))
-  const userId = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL') ? null : userStore.details.id)
-  const showAllUsers = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'))
-  const currentUser = ref(userStore.details.fullName)
   // serId: 2410262
   const usersLoading = ref(false)
   const model = ref('')
@@ -118,6 +112,21 @@
     }])
   const displayedTabs = computed(() => {
     return tabs.value.filter(tab => tab.display)
+  })
+  const viewAll = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL')
+  })
+  const userIsAdmin = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT')
+  })
+  const userId = computed(() => {
+    return viewAll.value ? null : userStore.details.id
+  })
+  const currentUser = computed(() => {
+    return userStore.details.fullName
   })
   const resourceProps = computed(() =>{
     if (userId.value) {
@@ -137,7 +146,7 @@
 
   const useSlotSchedule = () => {
     if(userId.value) {
-      let user = showAllUsers.value ? users.value.find(u => u.id === userId.value) : userStore.details
+      let user = viewAll.value ? users.value.find(u => u.id === userId.value) : userStore.details
       let useSlots = false
       user?.userPositions?.forEach(up => {
         if(up.useSlotSchedule) {

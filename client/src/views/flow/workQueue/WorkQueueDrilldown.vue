@@ -72,7 +72,7 @@
 
           <template #item="{ item, index }">
             <tr class="clickable v-data-table-row" :class="{'shaded-row': index % 2}">
-              <td class="text-left pl-1" v-if="useProcessStepHeaders" :class="{'pt-2': item.tags && item.tags.length > 0}">
+              <td class="text-left pl-1" v-if="useProcessStepHeaders && item['Project Name']" :class="{'pt-2': item.tags && item.tags.length > 0}">
 <!--                <router-link class="router-link-td elevation-0 square-card"-->
 <!--                             :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">-->
 <!--                  {{ item['Project Name'] }}-->
@@ -96,27 +96,27 @@
                   </v-chip>
                 </div>
               </td>
-              <td class="text-left" v-if="useProcessStepHeaders">
+              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Process Step Name']">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Process Step Name'] }}
                 </router-link>
               </td>
-              <td class="text-left" v-if="useProcessStepHeaders">
+              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Process Step Status Type']">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Process Step Status Type'] }}
                 </router-link>
               </td>
-              <td class="text-left" v-if="useProcessStepHeaders">
+              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Days In Queue']">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Days In Queue'] }}
                 </router-link>
               </td>
-              <td class="text-left" v-if="useProcessStepHeaders">
+              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['State Abbreviation']">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['State Abbreviation'] }}
                 </router-link>
               </td>
-              <td class="text-left" v-if="useProcessStepHeaders">
+              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Owner']">
                 <router-link  v-if="item['Owner']" class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Owner'] }}
                 </router-link>
@@ -124,7 +124,7 @@
                   <a @click="assignToUser(item)">Assign to me</a>
                 </v-btn>
               </td>
-              <td class="text-left" v-if="useProcessStepHeaders">
+              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Active Process Steps']">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Active Process Steps'] }}
                 </router-link>
@@ -134,7 +134,7 @@
                      class="remove-left-margin"
                      :class="{'pt-2': item.tags && item.tags.length > 0}">
                   <a >
-                    <v-btn text small
+                    <v-btn v-if="item['Project Name']" text small
                            :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}/event/${item.projectProcessStepEventId}`">
                       {{ item['Project Name'] }}
                     </v-btn>
@@ -278,6 +278,7 @@ export default {
         itemsPerPage: 100
       },
       headers: [],
+      headerLinks: {},
     }
   },
   watch: {
@@ -321,6 +322,14 @@ export default {
       try {
         const {data, status} = await getRequest(`/workQueueType/${this.workQueueTypeId}`)
         this.workQueue = data
+        this.workQueue.defaultColumnDisplay.forEach((h) => {
+          this.headers.push({
+            text: h.text,
+            value: h.value,
+            show: h.show,
+          })
+          this.headerLinks[h.value] = h.show
+        })
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -415,9 +424,24 @@ export default {
         // this.totalItems = data.totalElements
         this.results = data?.data || []
 
+        console.log(this.workQueue.defaultColumnDisplay)
+        console.log(this.results)
+
+        this.workQueue.defaultColumnDisplay.forEach((dc) => {
+          if (dc.show === false) {
+            data?.data.forEach((r) => {
+              delete r[dc.value]
+              if (dc.value === 'Project Name') {
+                delete r['tags']
+              }
+            })
+          }
+        })
+
+
+
         this.noResults = this.results?.length === 0
         this.useProcessStepHeaders = this.results?.length > 0 && 'Owning Positions' in this.results[0]
-
 
         //due to the way smartlist loads and exports arrays we have to parse these for use on the frontend
         //for PS both Notes and Owning positions should exist,
@@ -445,17 +469,6 @@ export default {
 
         this.masterResults = cloneDeep(this.results)
         this.filteredResults = cloneDeep(this.results)
-        if (this.useProcessStepHeaders) {
-          this.headers = [
-            {text: 'Project', value: 'Project Name', show: true},
-            {text: 'Process Step', value: 'Process Step Name', show: true},
-            {text: 'Status', value: 'Process Step Status Type', show: true},
-            {text: 'Days In Queue', value: 'Days In Queue', show: true},
-            {text: 'State', value: 'State Abbreviation', show: true},
-            {text: 'Owner', value: 'Owner', show: true},
-            {text: 'Active Process Steps', value: 'Active Process Steps', show: true},
-          ]
-        }
 
         //all custom fields from smartlists already had a dataTypeId, I changed the event default fields to pass back dataTypeId on the necessary columns
         //process step default fields dont need it as they are treated differently
@@ -524,7 +537,20 @@ export default {
         //check for a cached search and filter results accordingly
         if (this.cachedFilters[this.workQueueTypeId]) {
           Object.keys(this.cachedFilters[this.workQueueTypeId]).forEach(key => {
-            this.filters[key] = this.cachedFilters[this.workQueueTypeId][key]
+            if (this.cachedFilters[this.workQueueTypeId][key] === "") {
+              delete this.cachedFilters[this.workQueueTypeId][key]
+            }
+          })
+        }
+
+        this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
+        if (this.cachedFilters[this.workQueueTypeId]) {
+          Object.keys(this.cachedFilters[this.workQueueTypeId]).forEach(key => {
+            this.workQueue.defaultColumnDisplay.forEach((dc) => {
+              if(dc.value === key && dc.show === true) {
+                this.filters[key] = this.cachedFilters[this.workQueueTypeId][key]
+              }
+            })
           })
           this.filterResults()
         }
@@ -586,7 +612,7 @@ export default {
         let numFiltersUsed = 0
         Object.keys(this.filters).forEach(key => {
           //trim the value to see if they just searched for a bunch of space characters
-          let value = this.filters[key].trim().length === 0 ? '' : this.filters[key]
+          let value = this.filters[key]?.trim().length === 0 ? '' : this.filters[key]
 
           //populate the cached filters with the user's search
           //if there is no cached search for this wqt then add a blank object for it
@@ -594,8 +620,12 @@ export default {
             this.cachedFilters[this.workQueueTypeId] = {}
           }
 
-          //then add the value
-          this.cachedFilters[this.workQueueTypeId][key] = value
+          // add the value if not blank
+          if (value !== '') {
+            this.cachedFilters[this.workQueueTypeId][key] = value
+          } else {
+            delete this.cachedFilters[this.workQueueTypeId][key]
+          }
 
           if (null != value && value !== '') {
             numFiltersUsed++
@@ -605,6 +635,7 @@ export default {
           }
         })
         localStorage.setItem('wqDrilldownFilters', JSON.stringify(this.cachedFilters))
+
         return matchCount === numFiltersUsed
       })
       //we populate this so that if they hide/unhide future after doing some filtering we can get back to the filtered state

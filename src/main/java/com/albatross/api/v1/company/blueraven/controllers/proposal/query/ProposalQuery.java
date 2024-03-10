@@ -564,6 +564,19 @@ where p.id = :proposalId
       limit 1
     """;
 
+  public static final String filterCommissionStrategiesByUser = """
+select unnest(int_array_value) as id
+from flow.user_custom_field_value ucfv
+         inner join flow.custom_field_group_assignment cfga on ucfv.custom_field_group_assignment_id = cfga.id
+         inner join
+     flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+         inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id
+where cfga.custom_field_id = 12855
+  and cfg.id = 97
+  and cot.object_type_id = 3 --user
+  and ucfv.user_id = :userId
+    """;
+
   public static final String filterProposalDealerOrgs = """
     select jsonb_path_query(a, '$.fields[*] ? (@.fieldId == 407).intValue')::integer
     from brs.get_proposal_version_value(:proposalVersionId, null::proposalfieldfilter[], 'PROPOSAL_DEALER_ORGS') a

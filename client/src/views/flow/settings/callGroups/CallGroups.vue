@@ -146,11 +146,6 @@
   const newCallGroup = ref({})
   const dataLoading = ref(true)
   const editGroup = ref(false)
-  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD'))
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'))
-  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE'))
-  const companyId = ref(userStore.details.companyId)
-  const userId = ref(userStore.details.id)
   const CallGroups = ref([])
   const maxCallCount = ref(20)
   const daysPerPeriod = ref(30)
@@ -167,6 +162,21 @@
   ])
   const callGroupToDelete = ref(null)
 
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE')
+  })
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
+  const userId = computed(() => {
+    return userStore.details.id
+  })
   const callGroupToDeleteName = computed(() => {
     return callGroupToDelete.value ? callGroupToDelete.value.callGroupName : ''
   })

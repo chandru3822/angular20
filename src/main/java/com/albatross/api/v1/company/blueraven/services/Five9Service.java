@@ -44,6 +44,7 @@ public class Five9Service {
   private final GenesysService genesysService;
 
   private final SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
+  private final SimpleDateFormat formatterCreatedDate = new SimpleDateFormat("MM/dd/yyyy");
   private final SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
 
   private Boolean referralValueSet = false;
@@ -55,6 +56,7 @@ public class Five9Service {
 
     String url = "";
     String contactListName = "";
+    formatterCreatedDate.setTimeZone(TimeZone.getTimeZone("US/Mountain"));
     try {
       GenesysService.CustomContact contact = genesysService.getContact(contactId, !false);
       String phone = contact.getPhone() != null ? contact.getPhone().replaceAll("[^0-9]", "") : "";
@@ -78,8 +80,9 @@ public class Five9Service {
       b.addParameter("zip", contact.getPostalCode() != null ? contact.getPostalCode() : "");
       b.addParameter("email", contact.getEmail() != null ? contact.getEmail() : "");
 
+      boolean isRetarget = five9ContactListName != null ? five9ContactListName.contains("retarget") : false;
       getCfvValues(b, values);
-      getAppointmentValues(contactId, b);
+      getAppointmentValues(contactId, b, isRetarget);
 
       // Only set the date/time created fields when Contact is created
       if (!isUpdate) {
@@ -88,6 +91,7 @@ public class Five9Service {
         ZonedDateTime zonedDateTime = contact.getDateCreated().toInstant().atZone(ZoneId.of("US/Mountain"));
         b.addParameter("time_created_mst", formatterTime.format(Date.from(zonedDateTime.toInstant())));
         b.addParameter("date_created_mst", formatterDate.format(new Date()));
+        b.addParameter("date_created", formatterCreatedDate.format(new Date()));
         b.addParameter("DNC", "false");
 
         if (!referralValueSet) {
@@ -113,7 +117,7 @@ public class Five9Service {
 
       url = b.build().toString().replaceAll("\\+", "%20");
       HttpResponse resp = POST(url, null);
-      log.info("FIVE9: Successfully posted contactId="+ contactId + ", url="+url);
+      //log.info("FIVE9: Successfully posted contactId="+ contactId + ", url="+url);
       return;
     } catch (Exception e) {
       String msg = "FIVE9: Error in posting contactId="+ contactId + ", msg=" +e.getMessage() + ", url="+url;
@@ -121,7 +125,7 @@ public class Five9Service {
     }
   }
 
-  private void getAppointmentValues(Long contactId, URIBuilder b) {
+  private void getAppointmentValues(Long contactId, URIBuilder b, boolean isRetarget) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
     Optional<String> appointmentDate =
@@ -131,10 +135,18 @@ public class Five9Service {
         new SingleColumnRowMapper<>(String.class));
 
     if (appointmentDate.isPresent()) {
-      b.addParameter("appointment_date", appointmentDate.get());
+      String appointmentDateString = appointmentDate.get();
+      b.addParameter("appointment_date", appointmentDateString);
+      try {
+        Date date = new SimpleDateFormat("yyyy-MM-dd").parse(appointmentDateString);
+        b.addParameter("primary_appointment_date", formatterCreatedDate.format(date));
+      } catch (ParseException e) {
+        log.warn("FIVE9: Invalid appointment date format for contactId=" + contactId);
+      }
     }
     else {
       b.addParameter("appointment_date", "");
+      b.addParameter("primary_appointment_date", "");
     }
 
     Optional<String> appointmentOutcome =
@@ -169,14 +181,19 @@ public class Five9Service {
       b.addParameter("booking_date", bookingDate.get());
     }
 
-    Optional<Boolean> retargetValue =
-      sqlCache.getBySql(
-        Five9Query.getRetargetValue, params, new SingleColumnRowMapper<>(Boolean.class));
-    if (retargetValue.isPresent()) {
-      b.addParameter("retargeted", retargetValue.get().toString());
+    if (isRetarget) {
+      b.addParameter("retargeted", "true");
     }
     else {
-      b.addParameter("retargeted", "false");
+      Optional<Boolean> retargetValue =
+        sqlCache.getBySql(
+          Five9Query.getRetargetValue, params, new SingleColumnRowMapper<>(Boolean.class));
+      if (retargetValue.isPresent()) {
+        b.addParameter("retargeted", retargetValue.get().toString());
+      }
+      else {
+        b.addParameter("retargeted", "false");
+      }
     }
   }
 

@@ -255,9 +255,6 @@
   const addNew = ref(false)
   const newType = ref({})
   const selectedStatusTypeId = ref(null)
-  const userId = ref(userStore.details.id)
-  const companyId = ref(userStore.details.companyId)
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
   const fieldsInUse = ref([])
   const deleteError = ref(false)
   const showDeleteDialog = ref(false)
@@ -266,6 +263,15 @@
   const objectsUsingStatus = ref({
     fieldName: null,
     steps: []
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
+  const userId = computed(() => {
+    return userStore.details.id
   })
   const toDeleteProcessStepStatusType = computed(() => {
     return itemToDelete.value ? itemToDelete.value.processStepStatusType : ''

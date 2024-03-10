@@ -231,7 +231,7 @@
   import { DateTime } from 'luxon'
 
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-  import {getCurrentInstance, onMounted, ref, computed, watch, defineProps} from "vue";
+  import {getCurrentInstance, onMounted, toRefs, ref, computed, watch, defineProps} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRoute} from "vue-router/composables"
 
@@ -247,9 +247,13 @@
     orgId: Number,
     userId: Number
   })
-  watch('orgId', () => {
+
+  const { orgId, userId } = toRefs(props)
+
+
+  watch(orgId, () => {
     //without these if statements the appointments will get reloaded twice when switching between org and user
-    if(props.orgId != null) {
+    if(orgId.value != null) {
       // reset the schedule when new org selected
       appointments.value = []
       addNew.value = false
@@ -257,8 +261,8 @@
       getAppointments()
     }
   })
-  watch('userId', () => {
-    if(props.userId != null) {
+  watch(userId, () => {
+    if(userId.value != null) {
       // reset the appointments when new user selected
       appointments.value = []
       addNew.value = false
@@ -268,7 +272,6 @@
   })
   const addNew = ref(false)
   const expanded = ref([])
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
   const newAppt = ref({})
   const appointments = ref([])
   const saveError = ref(false)
@@ -297,6 +300,10 @@
   const showDeleteDialog = ref(false)
   const itemToDelete = ref(null)
 
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT')
+  })
+
   const totalAppointments = computed(() => {
     return appointments.value.filter(a => { return !a.archived}).length;
   })
@@ -323,14 +330,14 @@
     getAppointments()
   })
   const getAppointments = async () => {
-    if(props.orgId || props.userId) {
+    if(orgId.value || userId.value) {
       dataLoading.value = true
       store.commit(AppMutations.SET_LOADING, true)
       const { page, itemsPerPage } = options.value
       try {
         const {data, status} = await getRequestWithParams(`/availability/appointments`, { params: {
-            userId: props.userId,
-            orgId: props.orgId,
+            userId: userId.value,
+            orgId: orgId.value,
             page: page - 1 || 0,
             size: itemsPerPage
           }})
@@ -378,8 +385,8 @@
         let localAndUtcSame = moment(moment(appt.startTime).format('YYYY-MM-DD')).isSame(moment(appt.startTime).utc().format('YYYY-MM-DD'))
 
         let params = {
-          orgId: props.orgId,
-          userId: props.userId,
+          orgId: orgId.value,
+          userId: userId.value,
           ...appt,
           startTimeOffsetDay: !localAndUtcSame && !appt.allDay,
         }

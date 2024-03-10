@@ -274,7 +274,6 @@ const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
 const notificationStore = useNotificationStore()
 
-const userCanViewAll = ref(userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW_ALL'))
 const conversations = ref([])
 const options = ref({
   itemsPerPage: 25
@@ -314,6 +313,10 @@ const userIdsSent = ref([])
 const messageTypeFilter = ref('All')
 const messageTypes = ref(['All', 'Internal', 'Customer'])
 const isSmsOwnershipEventsRunning = ref(false)
+
+const userCanViewAll = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW_ALL')
+})
 
 const inboxNotificationCount = computed(() => {
   let count = 0;

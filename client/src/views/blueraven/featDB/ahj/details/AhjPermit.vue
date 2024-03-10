@@ -97,7 +97,7 @@
                    class="cancel-link mr-2"
             >Cancel
             </v-btn>
-            <v-btn v-if="ahjPermit.updateAllInArea.length > 0"
+            <v-btn v-if="ahjPermit.updateAllInArea?.length > 0"
                    class="white--text mr-0 save-btn"
                    color="primary"
                    @click="saveConfirmDialog = true"

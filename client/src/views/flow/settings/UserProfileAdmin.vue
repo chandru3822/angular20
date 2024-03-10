@@ -71,11 +71,15 @@ const store = vueInstance.$store
 const userStore = useUserStore()
 
 const userProfileDefaultFields = ref([])
-const userIsAdmin = ref(userStore.userHasFeatureAccessLevel('USERS', 'ADMIN'))
 const headers = ref([
   {text: 'Field Name', value: 'fieldName'},
   {text: 'Show On User Profile', value: 'showOnUserProfile'},
 ])
+
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('USERS', 'ADMIN')
+})
+
 
 onMounted(async () => {
   getAllUserProfileDefaultFields()

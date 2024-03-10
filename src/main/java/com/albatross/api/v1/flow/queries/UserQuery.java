@@ -733,6 +733,16 @@ public class UserQuery {
       where (uc.company_id = :companyId or (c.parent_company_id = :parentCompanyId and :parentCompanyId != 1))
         and u.archived = false
         and ust.has_access is true
+      union all
+      select o.id,
+             o.org_name as first_name,
+             '' as last_name,
+             o.org_name as full_name,
+             o.org_name as value,
+             ocfv.text_value
+      from flow.org o
+               inner join flow.organization_custom_field_value ocfv on o.id = ocfv.org_id
+      where o.org_type_id = 10 and o.active_flag = true and o.archived = false and ocfv.custom_field_group_assignment_id = 484 and ocfv.text_value is not null
       order by last_name, first_name desc
     """;
 
@@ -926,5 +936,14 @@ public class UserQuery {
       and up.archived is not true
       and ust.has_access is true
     limit 1
+    """;
+
+  public final static String getNotificationEnabledUsers = """
+select distinct u.id, u.first_name, u.last_name
+from flow.user_notification_token unt
+         inner join flow.user u on u.id = unt.user_id
+where unt.archived is false
+  and case when :query::varchar is not null then user_full_name_search like lower(:query) || '%' else 1 = 1 end
+limit :limit offset :offset
     """;
 }

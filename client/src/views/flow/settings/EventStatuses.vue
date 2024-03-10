@@ -257,13 +257,16 @@ const headers = ref([
 const addNew = ref(false)
 const newType = ref({})
 const selectedStatusTypeId = ref(null)
-const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
 const fieldsInUse = ref([])
 const showDeleteDialog = ref(false)
 const itemToDelete = ref(null)
 const showInfoDialog = ref(false)
 const objectsUsingStatus = ref([])
 const deleteError = ref(false)
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
 
 onMounted(() => {
   defineSortableTable('tbody', statusTypes, 'displayOrder', saveOrderChanges)

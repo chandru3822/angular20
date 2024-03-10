@@ -10,6 +10,12 @@ import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,12 +33,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -110,8 +110,8 @@ public class BlueravenProposalController {
   @GetMapping(value = "/{proposalId}/commissionDetails")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public List<ProposalCommissionDetail> getProposalCommissionDetails(@PathVariable Long proposalId,
-                                                                   @RequestParam Long financialProductId,
-                                                                   @RequestParam Long brsProductId) {
+                                                                     @RequestParam Long financialProductId,
+                                                                     @RequestParam Long brsProductId) {
     return proposalService.getProposalCommissionDetails(proposalId, financialProductId, brsProductId);
   }
 
@@ -245,7 +245,9 @@ public class BlueravenProposalController {
                                                         @Parameter(hidden = true) @RequestParam(defaultValue = "1") Long templateId,
                                                         @Parameter(hidden = true) @RequestParam(value = "type", defaultValue = "MOBILE") ProposalGeneratedType proposalGeneratedType,
                                                         @Parameter(hidden = true) @RequestParam(value = "debug", defaultValue = "false") boolean isDebug) {
-    return proposalService.getProposalTemplate(proposalId, templateId, proposalGeneratedType, isDebug);
+    return proposalService.getSimpleProposal(proposalId)
+      .flatMap(proposal ->
+        proposalService.getProposalTemplate(proposal.getId(), templateId, proposalGeneratedType, isDebug));
   }
 
   @Timed
@@ -283,9 +285,9 @@ public class BlueravenProposalController {
     String cleanedFilename = getCleanFilename(proposal);
     return
       "%s; filename=\"%s%sproposal.pdf\"".formatted(
-      inline ? "inline" : "attachment",
-      cleanedFilename,
-      proposal.isLocked() ? "_" : "_DRAFT_");
+        inline ? "inline" : "attachment",
+        cleanedFilename,
+        proposal.isLocked() ? "_" : "_DRAFT_");
   }
 
   private String getCleanFilename(Proposal proposal) {

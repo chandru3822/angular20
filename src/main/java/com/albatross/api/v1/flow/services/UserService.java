@@ -681,6 +681,14 @@ public class UserService {
       .orElse(false);
   }
 
+  public List<BasicNotificationUser> getNotificationEnabledUsers(String query, Pageable pageable){
+    Map<String, Object> params = new HashMap<>();
+    params.put("query", query);
+    params.put("offset", pageable.getOffset());
+    params.put("limit", pageable.getPageSize());
+    return sqlCache.queryBySql(UserQuery.getNotificationEnabledUsers, params, new BeanPropertyRowMapper<>(BasicNotificationUser.class));
+  }
+
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 

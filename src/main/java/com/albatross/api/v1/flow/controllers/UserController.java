@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.albatross.api.v1.flow.services.CommunicationService;
 import com.albatross.api.v1.flow.services.SmsTeamService;
 import com.albatross.api.v1.flow.services.UserService;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -326,6 +327,19 @@ public class UserController {
   @GetMapping(value = "/smsAccess/{userId}")
   public boolean hasSmsAccess(@PathVariable Long userId) {
     return userService.hasSmsAccess(userId);
+  }
+
+
+  /**
+   *  Temporary: used for testing
+   * @param query
+   * @param pageable
+   * @return
+   */
+  @Hidden
+  @GetMapping(value="/notifications")
+  public List<BasicNotificationUser> getUsersWithNotificationAccess(@RequestParam(required = false) String query, Pageable pageable){
+    return userService.getNotificationEnabledUsers(query, pageable);
   }
 
   @Data

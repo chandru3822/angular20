@@ -89,6 +89,25 @@ jobs:
           service: albatross-dev-cron-service
           cluster: albatross-dev-cluster
 
+      - name: Checkout GitOps repository
+        uses: actions/checkout@v4
+        with:
+          repository: 7oaksgroup/ops-blueraven-albatross
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+      - name: Setup kustomize
+        uses: imranismail/setup-kustomize@v2
+      - name: Update Image Tag
+        env:
+          TARGET_IMAGE: ${{ steps.build-image.outputs.image }}
+        run: |
+          cd gitops/deploy/uat/api
+          kustomize edit set image api=${TARGET_IMAGE}
+          git config --global user.name "7 Oaks Group CI"
+          git config --global user.email "dev+ci@7oaksgroup.com"
+          git commit -am "${GITHUB_ACTOR}: set api image to ${TARGET_IMAGE}"
+          git push
+
   frontend-build:
     name: Build Front End
     runs-on: ubuntu-latest

@@ -1,10 +1,7 @@
 package com.albatross.api.v1.flow.model.processStep;
 
-import com.albatross.api.v1.flow.model.MessageTeam;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 /**
  * Created by randanunn on 2019-05-20.

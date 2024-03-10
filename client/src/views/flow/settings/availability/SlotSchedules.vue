@@ -140,10 +140,6 @@
   const userStore = useUserStore()
   const route = useRoute()
 
-  const itemToDeleteName = computed(() => {
-    return itemToDelete.value ? itemToDelete.value.scheduleName : ''
-  })
-
   const addNew = ref(false)
   const showTime = ref(false)
   const newSchedule = ref({})
@@ -152,8 +148,6 @@
   const selectedSlotId = ref(null)
   const allowedMinutesStep = ref(m => m % 5 === 0)
   const slotSchedules = ref([])
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
-  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE'))
   const expanded = ref([])
   const showDeleteDialog = ref(false)
   const itemToDelete = ref(null)
@@ -161,18 +155,29 @@
     {text: 'Schedule Name', value: 'scheduleName', show: true },
     {text: '', value: 'icons', show: true},
   ])
+  const emit = defineEmits(['input'])
 
-  onMounted(() => {
-    getSchedules()
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE')
   })
 
-  const emit = defineEmits(['input'])
+  const itemToDeleteName = computed(() => {
+    return itemToDelete.value ? itemToDelete.value.scheduleName : ''
+  })
   const clearInput = () => {
     emit('input', null)
   }
   const filterSchedules = computed(() => {
     return slotSchedules.value.filter(s => { return !s.archived})
   })
+
+  onMounted(() => {
+    getSchedules()
+  })
+
   const saveSchedule = async  (schedule) => {
     try {
       saveError.value = false

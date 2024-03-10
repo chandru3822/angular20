@@ -609,6 +609,10 @@ const router = new Router({
           children: [
             ProposalVersionSettingsRoutes,
             {
+              path: 'pushNotifications',
+              component: () => import('./views/flow/pushNotifications/Admin.vue')
+            },
+            {
               path: 'statusCheck',
               meta: {title: 'Albatross - Settings'},
               component: () => {

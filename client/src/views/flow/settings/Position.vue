@@ -156,8 +156,6 @@
   const positions = ref([])
   const selectedRows = ref([])
   const positionLoaded = ref(false)
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-  const userCanEditAccessControl = ref(userStore.userHasFeatureAccessLevel('ACCESS_CONTROL', 'EDIT'))
   const orgTypes = ref([])
   const clonePositionId = ref('')
   const features = ref([])
@@ -170,6 +168,13 @@
   const headers = ref([
     { text: 'Feature', value: 'featureName', show: true },
   ])
+
+  const userCanEditAccessControl = computed(() => {
+    return userStore.userHasFeatureAccessLevel('ACCESS_CONTROL', 'EDIT')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
 
   const positionId = computed(() => {
     return route.params.id

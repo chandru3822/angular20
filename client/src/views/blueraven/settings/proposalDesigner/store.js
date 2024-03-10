@@ -58,10 +58,14 @@ export default {
       template: [],
       theme: {},
       selectedId: undefined,
-      tags: []
+      tags: [],
+      loading: false
     }
   },
   mutations: {
+    setLoading(state, loading){
+      state.loading = loading
+    },
     setTemplate(state, {template, theme}) {
       //store a copy of the original
       state._template = cloneDeep(template)
@@ -143,11 +147,15 @@ export default {
     },
     [ProposalActions.FETCH_TEMPLATE_CONTEXT]: async ({commit}, {proposalId}) => {
       try {
+        commit('setLoading', true)
         const {data} = await getRequestWithParams(`/proposal/${proposalId}/template`, {}, 'blueraven', {})
         commit('setTemplate', {template: data?.blocks, theme: data?.theme?.themeStyle})
       } catch (e) {
         const snackbar = getSnackbar('ERROR', e?.data?.message || 'Error retrieving template')
+        commit('setTemplate', {template: [], theme: { } })
         commit(AppMutations.SHOW_SNACK, snackbar)
+      }finally {
+        commit('setLoading', false)
       }
     },
     //TODO: handle errors better

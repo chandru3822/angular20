@@ -80,7 +80,9 @@ public class BrsProcessStepActionFunctionService {
       "IQ7A-72-2-US (240V)", "Enphase IQ7A Microinverters",
       "IQ8PLUS-72-2-US", "Enphase IQ8+ Microinverters",
       "IQ7X-96-2-US (240V)", "Enphase IQ7X Microinverters",
-      "IQ8A-72-2-US", "Enphase IQ8A Microinverters"
+      "IQ8A-72-2-US", "Enphase IQ8A Microinverters",
+      "IQ8M-72-M-US", "Enphase IQ8M Microinverters",
+      "IQ8X-80-M-US (240V)", "Enphase IQ8X Microinverters"
     );
     return inverterMap.getOrDefault(inverter, null);
   }
@@ -598,7 +600,7 @@ public class BrsProcessStepActionFunctionService {
 
     } catch (Exception e) {
       if( !e.getMessage().equals("Not a valid phone number.") ) {
-        log.error("BRS:Action Function:sendBirdEyeCheckIn", e);
+        log.error("BRS:Action Function:sendBirdEyeCheckIn");
         throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
       }
     }

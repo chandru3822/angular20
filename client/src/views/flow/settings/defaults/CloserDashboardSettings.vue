@@ -67,6 +67,8 @@ import { useUserStore } from '@/stores/UserStorePinia.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import { useFileStore } from '@/stores/FileStore.js'
 
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 const ImageTypeEnum = ref({
   CLOSER_DASH_TOURNAMENT_HEADER_LOGO: {
     key: "CLOSER_DASH_TOURNAMENT_HEADER_LOGO", //this needs to match the key, cuz dumb

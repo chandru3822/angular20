@@ -2,47 +2,42 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Role;
 import com.albatross.api.v1.flow.services.RoleService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Created by randanunn 12/17/19
- * !Describe Purpose!
- */
-
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/role")
+@RequestMapping(value = "/api/v1/flow/role", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequiredArgsConstructor
 public class RoleController {
 
-  @Autowired
-  private RoleService roleService;
+  private final RoleService roleService;
 
-  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping
   public List<Role> getRolesForCompany() {
     return roleService.getRolesForCompany();
   }
 
-  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{id}")
   public Role getRole(@PathVariable Long id) {
     return roleService.getRole(id);
   }
 
-  @PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping
   public Role insertRole(@RequestBody Role role) {
     return roleService.insertRole(role);
   }
 
-  @PutMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping
   public Role updateRole(@RequestBody Role role) {
     return roleService.updateRole(role);
   }
 
-  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{id}")
   public void deleteRole(@PathVariable Long id) {
     roleService.deleteRole(id);
   }

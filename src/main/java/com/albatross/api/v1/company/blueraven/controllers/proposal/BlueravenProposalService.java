@@ -36,6 +36,7 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -194,10 +195,10 @@ public class BlueravenProposalService {
   }
 
   private static final Long excludedStateCustomFieldId = 405L;
-  private static final Long allowedOrgFieldId = 413L;
   private static final Long dealerFieldId = 407L;
   private static final Long financialProductFieldId = 128L;
   private static final Long rebatesFieldId = 415L;
+  private static final Long commissionStrategyFieldId = 467L;
 
 
   public Optional<Proposal> getProposal(@NonNull Long proposalId, Long userId) {
@@ -252,6 +253,16 @@ public class BlueravenProposalService {
 
             cfv.setListOfValues(listOfValues);
           }
+
+          if (commissionStrategyFieldId.equals(cfv.getCustomFieldId())) {
+            List<Long> ids = filterCommissionStrategiesByUser(proposal.getProposalVersionId(), userId);
+            List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
+              .filter(v -> ids.contains(v.getId()))
+              .sorted(Comparator.comparing(ListOfValue::getName))
+              .toList();
+
+            cfv.setListOfValues(listOfValues);
+          }
         })));
 
     //filter out any custom fields that _should_ have a list of values but don't (previously filtered)
@@ -270,6 +281,14 @@ public class BlueravenProposalService {
       }));
 
     return result;
+  }
+
+  private List<Long> filterCommissionStrategiesByUser(@NonNull Long proposalVersionId, @NonNull Long userId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalVersionId", proposalVersionId);
+    params.put("userId", userId);
+
+    return sqlCache.queryBySql(ProposalQuery.filterCommissionStrategiesByUser, params, new SingleColumnRowMapper<>(Long.class));
   }
 
   private List<Long> filterDealersByOrg(@NonNull Long proposalVersionId, Long orgId) {
@@ -422,8 +441,10 @@ public class BlueravenProposalService {
     try {
       Map<String, Object> context = getCalculatedProposalValues(proposalId, generatedType, false);
       return Optional.of(proposalTemplateService.getTemplateById(templateId, context, generatedType, isDebug));
+    } catch (ApiException apiException) {
+      throw apiException;
     } catch (Exception e) {
-      log.error("[Proposal] Error generating proposal", e);
+      log.error("[Proposal] Unknown error generating proposal", e);
       throw new ApiException("Error generating proposal template");
     }
   }
@@ -435,9 +456,11 @@ public class BlueravenProposalService {
           final var context = getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, false);
           Resource pdf = proposalTemplateService.generatePdf(templateId, context, false);
           return Optional.of(new ProposalResource(pdf, proposal, context));
+        } catch (ApiException apiException) {
+          throw apiException;
         } catch (Exception e) {
           log.error("[Proposal] Error generating proposal", e);
-          throw new ApiException("Error generating proposal");
+          throw new ApiException("Unknown error generating proposal");
         }
       });
   }
@@ -454,6 +477,11 @@ public class BlueravenProposalService {
         "currentUserId", securityService.getCurrentUser().trueUserId());
 
       context = sqlCache.queryForMapBySql(ProposalQuery.getCalculatedProposalValues, params);
+    } catch (DataAccessException dataAccessException) {
+      String errorMessage = dataAccessException.getCause().getMessage().split("\n")[0];
+      errorMessage = errorMessage.replace("ERROR: ", "").trim();
+      log.error("[Proposal] SQL Error generating calculated values for proposalId={}, msg={}", proposalId, errorMessage);
+      throw new ApiException("Unable to generate proposal: " + errorMessage);
     } catch (Exception e) {
       log.error("[Proposal] Error generating calculated values for proposalId={}, msg={}", proposalId, e.getMessage());
     }
@@ -480,6 +508,8 @@ public class BlueravenProposalService {
   @Transactional
   public Optional<Proposal> lockProposal(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
     Proposal unlockedProposal = getUnlockedProposal(proposalId, currentUser.getId());
+
+    var calculatedProposalValues = getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, false);
 
     //check to see if the proposal has a discount amount added
     getCustomFieldValue(unlockedProposal, DISCOUNT_AMOUNT_CFGA_ID)

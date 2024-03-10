@@ -187,7 +187,7 @@
           </v-toolbar-items>
         </v-toolbar>
 
-        <v-col class="text-left">
+        <v-col>
           <template>
             <v-row>
               <v-card flat tile v-for="item in workQueueType.schedule" class="flex-display  card-main"
@@ -221,6 +221,48 @@
         </v-col>
       </v-col>
     </v-row>
+    <!--    Default Columns-->
+    <v-row>
+      <v-col cols="12" class="pa-0 mt-4">
+        <v-toolbar flat class="wqt-header-bar">
+          <v-toolbar-title class="app-title">Default Column Visibility</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
+              <v-btn v-if="!editDefaultFields" text color="primary" @click="editDefaultFields = !editDefaultFields">
+                <v-icon>edit</v-icon>
+              </v-btn>
+              <v-btn v-else text color="primary" class="" @click="saveType()">
+                <v-icon>save</v-icon>
+              </v-btn>
+              <v-btn text color="primary" v-if="editDefaultFields" @click="editDefaultFields = false">
+                cancel
+              </v-btn>
+            </div>
+          </v-toolbar-items>
+        </v-toolbar>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12">
+        <v-data-table
+          :items="defaultFields"
+          :headers="defaultCheckboxHeaders"
+          class="table-striped pa-0 ma-0"
+          hide-default-footer
+        >
+          <template v-slot:item.show="{ item }">
+            <v-checkbox
+              :input-value="item.show"
+              :disabled="!editDefaultFields"
+              @change="updateDefaultFields(item)"
+            >
+            </v-checkbox>
+          </template>
+        </v-data-table>
+      </v-col>
+    </v-row>
+
     <v-row>
       <SmartlistColumn
         v-if="workQueueType.smartlistId"
@@ -283,6 +325,9 @@ const itemsUsingType = ref([])
 const positionsLoading = ref(false)
 const hiddenPositionsChanged = ref(false)
 const sql = ref('')
+const defaultFields = ref([])
+const defaultCheckboxHeaders = ref([{text: "Field Name", value: "value", show: true}, {text: "Show", value: "show", show: true}])
+const editDefaultFields = ref(false)
 const allowedMinutesStep = ref(m => m % 60 === 0)
 const noScheduleDefault = ref([
   {day: 'Sunday', startTime: null, endTime: null, selected: false},
@@ -470,6 +515,7 @@ const getWorkQueueType = async () => {
     workQueueLoading.value = true;
     const {data, status} = await getRequest(`/workQueueType/${workQueueTypeId.value}`)
     workQueueType.value = data
+    defaultFields.value = workQueueType.value?.defaultColumnDisplay
     if (workQueueType.value.schedule.length < 1) {
       workQueueType.value.schedule = noScheduleDefault.value;
     }
@@ -574,6 +620,18 @@ const workQueueTypeHiddenAllowEventListener = (e)=> {
 const workQueueTypeHiddenCheckboxEventListener = (e)=> {
   workQueueType.value.hidden = e;
 }
+const  updateDefaultFields = (fieldName) => {
+  let fName = fieldName.text
+  let fShow = fieldName.show
+
+  workQueueType.value.defaultColumnDisplay.forEach((c) => {
+    if (fName === c.text) {
+      c.show = !fShow
+      console.log(`Updated ${c.text} field from ${fShow} to ${c.show}`)
+    }
+  })
+  defaultFields.value = workQueueType.value?.defaultColumnDisplay
+}
 </script>
 
 <style scoped lang="scss">
@@ -612,8 +670,12 @@ const workQueueTypeHiddenCheckboxEventListener = (e)=> {
   border: 2px solid #DBE0E3;
 }
 
-.wqt-header-bar {
-  border-bottom: 1px solid #E6E6E6;
-  border-top: 1px solid #E6E6E6;
+.default-fields {
+  font-size: 12px;
+  color: var(--v-grey-base);
+  font-weight: 700; line-height: 18px;
+  text-align: left;
 }
+
+
 </style>

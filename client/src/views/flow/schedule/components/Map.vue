@@ -132,7 +132,6 @@
 <script>
 import 'mapbox-gl/dist/mapbox-gl.css'
 import '@7oaksgroup/v-mapbox/dist/v-mapbox.css'
-import Mapbox from 'mapbox-gl'
 import {MglMap, MglMarker, MglNavigationControl, MglPopup} from '@7oaksgroup/v-mapbox'
 import constants from '@/helpers/constants'
 import {getRequestWithParams, getSnackbar} from "@/helpers/helpers";
@@ -158,6 +157,7 @@ export default {
   watch: {
     'latitude': function () {
       // reset the selected group when the object type changes
+      console.log("firing watch")
       this.changeMapLocation()
     }
   },
@@ -194,25 +194,8 @@ export default {
       drivingDistance: 0
     }
   },
-  created() {
-    this.createMap()
-  },
+  created() {},
   methods: {
-    createMap() {
-
-      // this.mapboxOptions = {
-      //   api: 'https://api.mapbox.com/geocoding/v5/',
-      //   endpoint: 'mapbox.places',
-      //   access_token: constants.MAPBOX_ACCESS_TOKEN,
-      //   limit: 5,
-      //   types: 'address',
-      //   proximity: 'ip',
-      //   autocomplete: true,
-      //   fuzzyMatch: true,
-      //   language: 'en'
-      // }
-      this.mapbox = Mapbox
-    },
     selectAddress(suggestion, isFirst) {
       if (isFirst) {
         this.address1 = suggestion.label
@@ -237,7 +220,6 @@ export default {
             text = label.substring(index + this.address1.length)
             break
         }
-        // console.log(`Found ${searchtext.value} in ${label} at pos ${index} and ${part} part is ${text}`);
         return text
       } else if (part === 'start') {
         return label
@@ -289,8 +271,6 @@ export default {
             })
             this.suggestions = addresses
             // return addresses
-          } else {
-            // console.log(data.message)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -419,7 +399,7 @@ export default {
       }
     },
     async changeMapLocation() {
-      this.map.jumpTo({
+      this.asyncActions?.flyTo({
         center:[this.longitude, this.latitude],
         zoom: this.zoom,
         speed: 2
@@ -437,6 +417,7 @@ export default {
         speed: 2
       })
     },
+
   }
 
 }

@@ -172,9 +172,7 @@ const props = defineProps({
   reloading: Boolean,
   userId: Number
 })
-const userCanManage = ref(userStore.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE'))
-const userCanView = ref(userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'))
-const loggedInUserId = ref(userStore.details.id)
+
 const showRemoveDialog = ref(false)
 const showRemoveLastTeamDialog = ref(false)
 const showRemoveTeamDialog = ref(false)
@@ -193,6 +191,15 @@ const selectedProjectId = computed(() => {
 
 const selectedUserId = computed(() => {
   return parseInt(route.params.userId)
+})
+const loggedInUserId = computed(() => {
+  return userStore.details.id
+})
+const userCanView = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW')
+})
+const userCanManage = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE')
 })
 
 

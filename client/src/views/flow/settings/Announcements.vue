@@ -114,8 +114,6 @@ const footerProps = ref({
 })
 const announcements = ref([])
 const fieldsInUse = ref([])
-const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
 const headers = ref([
   { text: 'Title', value: 'title', show: true },
   { text: 'Start Time', value: 'startTime', show: true },
@@ -135,6 +133,13 @@ const tabs = ref([
     display: userStore.userHasFeature('SETTINGS')
   },
 ])
+
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
 
 const displayedTabs = computed(() => {
   return tabs.value.filter(tab => tab.display)

@@ -202,11 +202,6 @@
   const newCategory = ref({ color: '#ffffff'})
   const selectedWorkQueueCategoryId = ref(null)
   const selectedWorkQueueCategoryDisplayOrder = ref(null)
-  const userId = ref(userStore.details.id)
-  const companyId = ref(userStore.details.companyId)
-  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
   const expanded = ref([])
   const categoryToDelete = ref(null)
   const headers = ref([
@@ -216,6 +211,22 @@
     { text: null, value: 'hidden', show: true },
     { text: null, value: 'icons', show: true }
   ])
+
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+  })
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
+  const userId = computed(() => {
+    return userStore.details.id
+  })
 
   const categoryToDeleteName = computed(() => {
     return categoryToDelete.value ? categoryToDelete.value.workQueueCategory : ''

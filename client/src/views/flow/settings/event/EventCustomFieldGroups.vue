@@ -624,11 +624,6 @@ const addField = ref(false)
 const selectedGroupId = ref(null)
 const availableCustomFields = ref([])
 const parent = ref({})
-const eventId = ref(parseInt(route.params.id))
-const userIsAdmin = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADMIN'))
-const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-const companyId = ref(userStore.details.companyId)
 const parentObjects = ref([])
 const selectedAncillaryField = ref({})
 const ancillaryCustomFields = ref([])
@@ -661,11 +656,26 @@ const localCustomFieldGroups = computed( {
     return orderBy(val, v => v.groupOrder)
   }
 })
+const eventId = computed(() => {
+  return parseInt(route.params.id)
+})
 const cfgToDeleteName = computed(() => {
   return cfgToDelete.value ? cfgToDelete.value.groupName : ''
 })
 const cFieldToDeleteName = computed(() => {
   return cFieldToDelete.value ? cFieldToDelete.value.fieldName : ''
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
 })
 onMounted(async () => {
   await getResourceFields()

@@ -176,12 +176,6 @@ const addNew = ref(false)
 const newType = ref({})
 const selectedWorkQueueTypeId = ref(null)
 const selectedWorkQueueCategoryId = ref(-1)
-const userId = ref(userStore.details.id)
-const companyId = ref(userStore.details.companyId)
-const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
-const userIsAdmin = ref(userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN'))
 const expanded = ref([])
 const workQueueToDelete = ref(null)
 const headers = ref([
@@ -191,6 +185,25 @@ const headers = ref([
   {text: 'Uses Event Data', value: 'useEventData', show: true},
   {text: null, value: 'icons', show: true, width: 150}
 ])
+
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const userCanDelete = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+})
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
 
 const workQueueToDeleteType = computed(() => {
   return workQueueToDelete.value ? workQueueToDelete.value.workQueueType : ''

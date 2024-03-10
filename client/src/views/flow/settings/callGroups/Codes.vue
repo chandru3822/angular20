@@ -105,9 +105,6 @@
   const showError = ref(false)
   const codeDeleted = ref(false)
   const errorMsg = ref('')
-  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD'))
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'))
-  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE'))
   const callGroupId = ref(parseInt(route.params.id))
   const dataLoading = ref(true)
   const addCode = ref(false)
@@ -119,6 +116,15 @@
   ])
   const postalCodeToDelete = ref(null)
 
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE')
+  })
   const postalCodeToDeleteCode = computed(() => {
     return postalCodeToDelete.value ? postalCodeToDelete.value.postalCode : ''
   })

@@ -105,3 +105,10 @@ export default {
   }
 }
 </style>
+<style lang="scss">
+#ahj-details-container > div > div > div > div > div.permit-card.square-card.px-2.v-card.v-sheet.theme--light > form > div.row.mb-4.group-row.no-gutters > div > div > div > div > div.v-card__text.px-4.pt-4.pb-1 > div > div > div > div > div > div.quill-editor.rich-text-editor.albatross-body-2.rich-text-editor-readonly > div.ql-container.ql-snow.ql-disabled > div.ql-editor{
+  background-color: var(--v-grey-lighten3);
+  padding: 16px;
+
+}
+</style>

@@ -373,10 +373,6 @@
 
 
   const addNew = ref(false)
-  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADD'))
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
-  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE'))
-  const userIsAdmin = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'))
   const selectedIndex = ref(null)
   const newSchedule = ref({})
   const allowedMinutesStep = ref(m => m % 30 === 0)
@@ -399,6 +395,18 @@
     return itemToDelete.value ?
     `${vueInstance.$filters.formatDate(itemToDelete.value.startDate, 'date') || ''} - ${vueInstance.$filters.formatDate(itemToDelete.value.endDate, 'date') || ''}`
         : ''
+  })
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE')
+  })
+  const userIsAdmin = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')
   })
 
   onMounted(() =>{

@@ -231,13 +231,20 @@ const colorOptions = ref({
   hideModeSwitch: true
 })
 const validForm = ref(false)
-const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-const is7oaksAdmin = ref(userStore.isSystemAdmin)
 const testUserPassword = ref('')
-const companyId = ref(userStore.details.companyId)
 const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY)
 const damnKeyThing = ref(0)
 const logoToDelete = ref(null)
+
+const is7oaksAdmin = computed(() => {
+  return userStore.isSystemAdmin
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
 
 
 const deleteLogoDialogText = computed(() => {

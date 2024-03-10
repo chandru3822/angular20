@@ -158,9 +158,6 @@
   const messageTypes = ref([])
   const newType = ref({})
   const types = ref([])
-  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
 
   // stores the content when editing a message type. This way we can discard changes if the user presses 'cancel'
   const tempItemContent = ref('')
@@ -196,7 +193,17 @@
     return messageTypes.value.filter(cs => { return !cs.archived})
   })
 
-  onMounted (async () => {
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+  })
+
+  onMounted (() => {
     getMessageTypes()
   })
 

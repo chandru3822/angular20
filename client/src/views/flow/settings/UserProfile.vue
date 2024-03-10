@@ -248,7 +248,6 @@ const timeValue = ref(moment.utc().format('YYYY-MM-DDTHH:mm:ssZ'))
 const user = ref({})
 const homePages = ref([])
 const userIsAlbatross = ref(false)
-const userIsAdmin = ref(userStore.userHasFeatureAccessLevel('USERS', 'ADMIN'))
 const userIsMasquerading = ref(userStore.details?.masqueradingUserId != null)
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
 const emailRules = ref(constants.EMAIL_RULES)
@@ -275,6 +274,9 @@ const navigationOverride = ref(false)
 const toPath = ref(null)
 const dirtyFields = ref(false)
 
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('USERS', 'ADMIN')
+})
 const notificationsEnabled = computed(() => {
   return registered.value
 })

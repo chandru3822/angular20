@@ -109,9 +109,6 @@
   const dataLoading = ref(true)
   const search = ref('')
   const positionToDelete = ref(null)
-  const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-  const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-  const userCanDelete = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
   const headers = ref([
     {text: 'Position Name', value: 'position', show: true},
     {text: 'Org Type', value: 'orgType', show: true},
@@ -119,6 +116,19 @@
   ])
   const positionToDeleteName = computed(() =>{
     return positionToDelete.value ? positionToDelete.value.position : ''
+  })
+
+  const functionId = computed(() => {
+    return route.params.id
+  })
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
   })
 
   const filterPositions = computed(() =>{

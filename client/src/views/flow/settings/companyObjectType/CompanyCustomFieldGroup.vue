@@ -268,12 +268,12 @@
                               Conditional On
                             </label>
                             <v-select v-model="cf.conditionalOnId"
-                              v-if="cf.hasConditionalOnId"
-                              :items="filterAvailableCustomFields(cf)"
-                              item-value="customFieldGroupAssignmentId"
-                              item-text="fieldName"
-                              placeholder="Choose a field"
-                              @change="saveConditionalField(cf)"
+                                      v-if="cf.hasConditionalOnId"
+                                      :items="filterAvailableCustomFields(cf)"
+                                      item-value="customFieldGroupAssignmentId"
+                                      item-text="fieldName"
+                                      placeholder="Choose a field"
+                                      @change="saveConditionalField(cf)"
                             />
                           </div>
 
@@ -504,6 +504,7 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
+
 import { useUserStore } from '@/stores/UserStorePinia.js'
 const addNew = ref(false)
 const newFieldType = ref('native')
@@ -512,8 +513,6 @@ const deleteHeader = ref(null)
 const deleteText = ref(null)
 const fieldsInUse = ref([])
 const minMaxValueChanged = ref(false)
-const userCanAdd = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
-const userCanEdit = ref(userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
 const selectedIndex = ref(null)
 const fieldOrderChanged = ref(false)
 const groupOrderChanged = ref(false)
@@ -523,7 +522,6 @@ const newGroup = ref({
 const addField = ref(false)
 const newField = ref({})
 const availableCustomFields = ref([])
-const companyId = ref(userStore.details.companyId)
 //if you set this to a value it doesn't update when the route param changes
 // objectTypeId: route.params.id
 const headers = ref([
@@ -560,6 +558,16 @@ watch(props.objectType, () => {
 })
 watch(props.customFieldGroups, () => {
   groupsByColumn.value = [undefined, getGroupsByCol(1), getGroupsByCol(2)]
+})
+
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
 })
 const cfgToDeleteName = computed(() => {
   return cfgToDelete.value ? cfgToDelete.value.groupName : ''
@@ -997,7 +1005,7 @@ onMounted(() => {
   float: right;
   @media(max-width: 465px) {
     flex-direction: row;
-  div.row {
+    div.row {
 
       flex-direction: column;
     }
@@ -1010,6 +1018,6 @@ onMounted(() => {
 </style>
 <style lang="scss">
 #columnTables > div > div > div.v-data-table__wrapper > table > tbody {
-display: table-row-group;
+  display: table-row-group;
 }
 </style>
