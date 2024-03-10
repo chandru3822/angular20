@@ -91,6 +91,8 @@
   const userStore = useUserStore()
 
   const defaultAppointmentLength = ref(null)
+  //userId has to be a ref so that it can change
+  const userId = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL') ? null : userStore.details.id)
   const valueChanged = ref(false)
   const orgs = ref([])
   const orgId = ref(null)
@@ -122,15 +124,12 @@
   const userCanEdit = computed(() => {
     return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT')
   })
-  const userId = computed(() => {
-    return viewAll.value ? null : userStore.details.id
-  })
   const currentUser = computed(() => {
     return userStore.details.fullName
   })
   const resourceProps = computed(() =>{
     if (userId.value) {
-      return { userId: userId.value, useSlotSchedule: useSlotSchedule.value() }}
+      return { userId: userId.value, useSlotSchedule: useSlotSchedule() }}
     if (orgId.value) { return { orgId: orgId.value, useSlotSchedule: false }}
   })
 

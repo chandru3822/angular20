@@ -132,7 +132,7 @@
   })
 
   const filterPositions = computed(() =>{
-    return positions.value.filter(p => { return !p.archived})
+    return positions.value?.filter(p => { return !p.archived})
   })
 
   onMounted(() => {

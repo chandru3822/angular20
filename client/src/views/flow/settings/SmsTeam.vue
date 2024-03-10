@@ -335,7 +335,7 @@ const filterTeams = computed(() => {
   return teams.value.filter(tmp => !tmp.archived)
 })
 const selectablePositions = computed(() => {
-  return positions.value.filter(p => {
+  return positions.value?.filter(p => {
     return expandedItem.value?.positions?.find(po => po.positionId === p.positionId) == null
   })
 })
