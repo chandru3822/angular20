@@ -411,17 +411,6 @@ const router = new Router({
             }
           }
         }, {
-          path: '/companyDashboardTargets',
-          name: 'companyDashboardTargets',
-          meta: {title: 'Albatross - Company Dashboard Targets'},
-          component: () => {
-            if (userStore.userHasFeatureAccessLevel('COMPANY_DASHBOARD', 'ADMIN')) {
-              return import ( './views/blueraven/companyDashboard/CompanyDashboardTargets.vue')
-            } else {
-              return accessDenied()
-            }
-          }
-        }, {
           path: '/closerAvailability',
           name: 'closerAvailability',
           meta: {title: 'Albatross - Closer Availability'},

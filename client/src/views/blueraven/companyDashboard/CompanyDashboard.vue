@@ -12,7 +12,10 @@
 
           <v-checkbox label="Only View Major Milestones" v-model="viewMajorMilestones"></v-checkbox>
         </div>
-        <a class="export-button" @click="exportCsv"><v-icon class="export-icon">mdi-tray-arrow-down</v-icon>Export</a>
+        <a class="export-button" @click="exportCsv">
+          <v-icon class="export-icon mr-2">mdi-tray-arrow-down</v-icon>
+          Export
+        </a>
       </v-row>
     </v-card>
 
@@ -36,17 +39,17 @@
     </v-card>
     <br>
     <v-data-table
-      id="company-dash-table"
-      class="elevation-1"
-      :items="filteredDashValues"
-      :headers="headers"
-      ref="pageable-table"
-      disable-sort
-      :item-class="itemRowBackground"
-      :footer-props="footerProps"
-      :loading="isLoading"
-      :hide-default-footer="true"
-      :mobile-breakpoint="0"
+        id="company-dash-table"
+        class="elevation-1"
+        :items="filteredDashValues"
+        :headers="headers"
+        ref="pageable-table"
+        disable-sort
+        :item-class="itemRowBackground"
+        :footer-props="footerProps"
+        :loading="isLoading"
+        :hide-default-footer="true"
+        :mobile-breakpoint="0"
     >
 
       <template #no-data>
@@ -63,20 +66,21 @@
                 v-model="openFirstMenu"
                 :close-on-content-click="true">
           <template v-slot:activator="{ on }">
-            <v-btn class="dropdown-header body-small"
-                   v-on="on"
-            >
-              <span v-if="getDropdownById(firstDateRange)?.name === 'CUSTOM' && firstCustom.name != null" class="selected-option body-small">
-                      {{firstCustom.name}}</span>
-              <span v-else-if="getDropdownById(firstDateRange)?.name === 'PERIOD'" class="selected-option body-small">
-              {{ getDropdownById(firstDateRange).periodList[firstPeriod].shortLabel}}
-              </span>
-              <span v-else class="selected-option body-small">
-              {{ getDropdownById(firstDateRange)?.friendlyName}}
-              </span>
-              <v-spacer></v-spacer>
-              <v-icon>mdi-menu-down</v-icon>
-            </v-btn>
+            <AlbatrossButton class="dropdown-header body-small"
+                   :activation-handler="on">
+              <template v-slot:default>
+                <span v-if="getDropdownById(firstDateRange)?.name === 'CUSTOM' && firstCustom.name != null" class="selected-option body-small">
+                        {{firstCustom.name}}</span>
+                <span v-else-if="getDropdownById(firstDateRange)?.name === 'PERIOD'" class="selected-option body-small">
+                {{ getDropdownById(firstDateRange).periodList[firstPeriod].shortLabel}}
+                </span>
+                <span v-else class="selected-option body-small">
+                {{ getDropdownById(firstDateRange)?.friendlyName}}
+                </span>
+                <v-spacer></v-spacer>
+                <v-icon color="primary">mdi-menu-down</v-icon>
+              </template>
+            </AlbatrossButton>
           </template>
           <div>
             <v-list style="height: 400px; overflow-y:auto">
@@ -116,8 +120,8 @@
                 v-model="openSecondMenu"
                 :close-on-content-click="true">
           <template v-slot:activator="{ on }">
-            <v-btn class="dropdown-header body-small"
-                   v-on="on"
+            <AlbatrossButton class="dropdown-header body-small"
+                   :activation-handler="on"
             >
               <span v-if="getDropdownById(secondDateRange)?.name === 'CUSTOM' && secondCustom.name != null" class="selected-option body-small">
                       {{secondCustom.name}}</span>
@@ -131,8 +135,8 @@
                 Select Date Range
               </span>
               <v-spacer></v-spacer>
-              <v-icon>mdi-menu-down</v-icon>
-            </v-btn>
+              <v-icon color="primary">mdi-menu-down</v-icon>
+            </AlbatrossButton>
           </template>
           <div>
             <v-list style="height: 400px; overflow-y:auto">
@@ -171,8 +175,8 @@
                 v-model="openThirdMenu"
                 :close-on-content-click="true">
           <template v-slot:activator="{ on }">
-            <v-btn class="dropdown-header body-small"
-                   v-on="on"
+            <AlbatrossButton class="dropdown-header body-small"
+                   :activation-handler="on"
             >
               <span v-if="getDropdownById(thirdDateRange)?.name === 'CUSTOM' && thirdCustom.name != null" class="selected-option body-small">
                       {{thirdCustom.name}}</span>
@@ -186,8 +190,8 @@
                 Select Date Range
               </span>
               <v-spacer></v-spacer>
-              <v-icon>mdi-menu-down</v-icon>
-            </v-btn>
+              <v-icon color="primary">mdi-menu-down</v-icon>
+            </AlbatrossButton>
           </template>
           <div>
             <v-list style="height: 400px; overflow-y:auto">
@@ -224,12 +228,12 @@
       <template #item.actualTotal="{item, index}" class="milestone-col-td" >
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-              <span @click="openDrilldown(item, 1)">
-              {{ item.company_count?item.company_count:0 }}
-              <span v-if="getDropdownById(firstDateRange)?.name != 'ALL_TIME'" v-on="viewTrends?on:null">
-                <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">+{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
-                <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-                <span v-if="viewTrends && (item.trend_count ===null || item.trend_count===0)" class="neutral-percentage">{{item.trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+              <span @click="openDrilldown(item, 1)" class="clickable">
+                {{ item.company_count?item.company_count:0 }}
+                <span v-if="getDropdownById(firstDateRange)?.name != 'ALL_TIME'" v-on="viewTrends ? on : null">
+                  <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">+{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+                  <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
+                  <span v-if="viewTrends && (item.trend_count ===null || item.trend_count===0)" class="neutral-percentage">{{item.trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
                 </span>
               </span>
           </template>
@@ -242,7 +246,7 @@
       <template #item.actualTotal2="{item, index}" class="milestone-col-td" v-if="secondDateRange != null && filteredColumn2Values != null && filteredColumn2Values.length > 0">
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <span @click="openDrilldown(item, 2)">
+            <span @click="openDrilldown(item, 2)" class="clickable">
               {{filteredColumn2Values[index].company_count?filteredColumn2Values[index].company_count:0}}
               <span v-if="getDropdownById(secondDateRange)?.name != 'ALL_TIME'" v-on="viewTrends?on:null">
                 <span v-if="viewTrends && filteredColumn2Values[index].trend_count>0" class="positive-percentage">+{{filteredColumn2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
@@ -259,7 +263,7 @@
       <template #item.actualTotal3="{item, index}" class="milestone-col-td" v-if="thirdDateRange != null && filteredColumn3Values != null && filteredColumn3Values.length > 0">
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <span @click="openDrilldown(item, 3)">
+            <span @click="openDrilldown(item, 3)" class="clickable">
             {{filteredColumn3Values[index]?.company_count ? filteredColumn3Values[index].company_count : 0}}
               <span v-if="getDropdownById(thirdDateRange)?.name != 'ALL_TIME'" v-on="viewTrends?on:null">
                 <span v-if="viewTrends && filteredColumn3Values[index].trend_count>0" class="positive-percentage">+{{filteredColumn3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
@@ -278,20 +282,20 @@
       <template v-slot:title>Custom Date Range</template>
       <div>
         <DatetimePickerInput
-          v-model="customDate.startDate"
-          :timezone="timezone"
-          :type="'date'"
-          :format="'MMMM DD, YYYY'"
-          input-format="HH:mm:ss"
-          label="Start Date"
+            v-model="customDate.startDate"
+            :timezone="timezone"
+            :type="'date'"
+            :format="'MMMM DD, YYYY'"
+            input-format="HH:mm:ss"
+            label="Start Date"
         />
         <DatetimePickerInput
-          v-model="customDate.endDate"
-          :timezone="timezone"
-          :type="'date'"
-          :format="'MMMM DD, YYYY'"
-          input-format="HH:mm:ss"
-          label="End Date"
+            v-model="customDate.endDate"
+            :timezone="timezone"
+            :type="'date'"
+            :format="'MMMM DD, YYYY'"
+            input-format="HH:mm:ss"
+            label="End Date"
         />
       </div>
       <template v-slot:no>Cancel</template>
@@ -312,736 +316,688 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import constants from '@/helpers/constants'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 import moment from 'moment'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
-import Snackbar from '@/components/Snackbar.vue'
 import CompanyDashboardDrilldown from './CompanyDashboardDrilldown.vue'
-import { AppMutations } from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
+
+import {handleHidingGlobalLoader, getRequestWithParams,  logError, postRequest} from '@/helpers/helpers'
 import cloneDeep from 'lodash.clonedeep'
 import {DateTime} from "luxon";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const showDrilldown = ref(false)
+const openFirstPeriodMenu = ref(false)
+const openFirstMenu = ref(false)
+const openSecondMenu = ref(false)
+const openThirdMenu = ref(false)
+const selectedMilestone = ref({})
+const loadPartners = ref(false)
+const dividerForSingleDayTargets = ref(6)
+const headers = ref([])
+const timezone = ref('US/Mountain')
+const selectedDateRange = ref('Today')
+const startDate = ref(moment().format('YYYY-MM-DD'))
+const startDateColumn2 = ref(moment().format('YYYY-MM-DD'))
+const startDateColumn3 = ref(moment().format('YYYY-MM-DD'))
+const endDate = ref(moment().format('YYYY-MM-DD'))
+const endDateColumn2 = ref(moment().format('YYYY-MM-DD'))
+const endDateColumn3 = ref(moment().format('YYYY-MM-DD'))
+const weekNum = ref(1)
+const currentPeriod = ref(Math.ceil((moment().isoWeek() - (moment().isoWeek()%13 === 0)) / 4))
+const dateRanges = ref(['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Current Period', 'Last Week', 'Last 30 Days', 'Last Period', 'Custom', 'This Month', 'This Quarter', 'This Year', 'All Time'])
+const isLoading = ref(true)
+const loadingData = ref(false)
+const viewTrends = ref(false)
+const viewMajorMilestones = ref(false)
+const selectingCustomDates = ref(false)
+const drilldownIsLoading = ref(true)
+const dropdownValues = ref([])
+const dashValues = ref([])
+const column2Values = ref([])
+const column3Values = ref([])
+const drilldownData = ref([])
+const drilldownHeaders = ref([])
+const targetTypeId = ref(null)
+const customDate = ref({startDate: "",endDate: "",trendStart: "",trendEnd: ""})
+const firstDateRange = ref(2)
+const secondDateRange = ref(null)
+const thirdDateRange = ref(null)
+const previousSelection = ref(2)
+const secondColPreviousSelection = ref(null)
+const thirdColPreviousSelection = ref(null)
+const firstCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
+const secondCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: "",isActive: false})
+const thirdCustom = ref({startDate: "",endDate: "",trendStart: "",trendEnd: ""})
+const firstPeriod = ref(null)
+const secondPeriod = ref(null)
+const thirdPeriod = ref(null)
+const singleDateRange = ref(false)
+const singleDateRanges = ref(['Yesterday', 'Today', 'Tomorrow'])
+const loadTargetsRanges = ref(['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Last Week'])
+const footerProps = ref({showFirstLastPage: !constants.IS_MOBILE,firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',itemsPerPageText: constants.IS_MOBILE ? '' : 'Rows per page:',itemsPerPageOptions: [100, 500, 1000, 2000]})
+
+watch(firstDateRange, (value) => {
+  firstCustom.value.isActive = (getDropdownById(value)?.name === 'CUSTOM')
+  if(!firstCustom.value.isActive){
+    previousSelection.value = value;
+  }
+})
+watch(secondDateRange, (value) => {
+  secondCustom.value.isActive = (getDropdownById(value)?.name === 'CUSTOM')
+  if(!secondCustom.value.isActive){
+    secondColPreviousSelection.value = value;
+  }
+})
+watch(thirdDateRange, (value) => {
+  thirdCustom.value.isActive = (getDropdownById(value)?.name === 'CUSTOM')
+  if(!thirdCustom.value.isActive){
+    thirdColPreviousSelection.value = value;
+  }
+})
 
 
-export default {
-  name: 'CompanyDashboard',
-  components: {
-    DatetimePickerInput,
-    CompanyDashboardDrilldown,
-    Snackbar,
-    ConfirmationDialog
-  },
-  data () {
-    return {
-      snackbar: {},
-      constants,
-      showDrilldown: false,
-      openFirstPeriodMenu: false,
-      openFirstMenu: false,
-      openSecondMenu: false,
-      openThirdMenu: false,
-      selectedMilestone: {},
-      loadPartners: false,
-      dividerForSingleDayTargets: 6,
-      headers: [],
-      timezone: 'US/Mountain',
-      selectedDateRange: 'Today',
-      startDate: moment().format('YYYY-MM-DD'),
-      startDateColumn2: moment().format('YYYY-MM-DD'),
-      startDateColumn3: moment().format('YYYY-MM-DD'),
-      endDate: moment().format('YYYY-MM-DD'),
-      endDateColumn2: moment().format('YYYY-MM-DD'),
-      endDateColumn3: moment().format('YYYY-MM-DD'),
-      weekNum: 1,
-      currentPeriod: Math.ceil((moment().isoWeek() - (moment().isoWeek()%13 === 0)) / 4),
-      dateRanges: ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Current Period', 'Last Week', 'Last 30 Days', 'Last Period', 'Custom', 'This Month', 'This Quarter', 'This Year', 'All Time'],
-      isLoading: true,
-      loadingData: false,
-      viewTrends: false,
-      viewMajorMilestones: false,
-      selectingCustomDates: false,
-      drilldownIsLoading: true,
-      dropdownValues: [],
-      dashValues: [],
-      column2Values: [],
-      column3Values: [],
-      drilldownData: [],
-      drilldownHeaders: [],
-      customDate: {
-        startDate: "",
-        endDate: "",
-        trendStart: "",
-        trendEnd: ""
-      },
-      firstDateRange: 2,
-      secondDateRange: null,
-      thirdDateRange: null,
-      previousSelection: 2,
-      secondColPreviousSelection: null,
-      thirdColPreviousSelection: null,
-      firstCustom: {
-        startDate: "",
-        endDate: "",
-        trendStart: "",
-        trendEnd: "",
-        isActive: false
-      },
-      secondCustom: {
-        startDate: "",
-        endDate: "",
-        trendStart: "",
-        trendEnd: "",
-        isActive: false
-      },
-      thirdCustom: {
-        startDate: "",
-        endDate: "",
-        trendStart: "",
-        trendEnd: ""
-      },
-      firstPeriod: null,
-      secondPeriod: null,
-      thirdPeriod: null,
-      singleDateRange: false,
-      singleDateRanges: ['Yesterday', 'Today', 'Tomorrow'],
-      loadTargetsRanges:  ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Last Week'],
-      footerProps: {
-        showFirstLastPage: !constants.IS_MOBILE,
-        firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
-        lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
-        itemsPerPageText: constants.IS_MOBILE ? '' : 'Rows per page:',
-        itemsPerPageOptions: [100, 500, 1000, 2000]
+const isBrCorporateUser = computed(() => {
+  return userStore.details.companyId === 2
+})
+const is7oaksAdmin = computed(() => {
+  return userStore.isSystemAdmin
+})
+const filteredDashValues = computed(() => {
+  if(viewMajorMilestones.value){
+    return dashValues.value.filter(dv => dv.major_milestone)
+  }
+  return dashValues.value
+})
+const filteredColumn2Values = computed(() => {
+  if(viewMajorMilestones.value){
+    return column2Values.value.filter(dv => dv.major_milestone)
+  }
+  return column2Values.value
+})
+const filteredColumn3Values = computed(() => {
+  if(viewMajorMilestones.value){
+    return column3Values.value.filter(dv => dv.major_milestone)
+  }
+  return column3Values.value
+})
+const additionalStartWeek = computed( () => {
+  if (currentPeriod.value > 9) {
+    return 1;
+  }
+  return 0;
+})
+const additionalEndWeek = computed( () => {
+  if (currentPeriod.value % 3 === 0) {
+    return 1;
+  }
+  return 0;
+})
+const additionalStartWeekLastPeriod = computed( () => {
+  if (currentPeriod.value > 10) {
+    return 1;
+  }
+  return 0;
+})
+const additionalEndWeekLastPeriod = computed( () => {
+  if ((currentPeriod.value -1) % 3 === 0) {
+    return 1;
+  }
+  return 0;
+})
+const momentStartOfPeriod = computed( () => {
+  return moment().startOf('isoWeek').isoWeek((currentPeriod.value) * 4 - 3 + Math.floor((currentPeriod.value - 1) / 3))
+})
+const startOfPeriod = computed( () => {
+  return moment().startOf('isoWeek').isoWeek((currentPeriod.value) * 4 - 3 + Math.floor((currentPeriod.value - 1) / 3)).format('YYYY-MM-DD')
+})
+const endOfPeriod = computed( () => {
+  return moment(momentStartOfPeriod.value).clone().add(3 + additionalEndWeek.value, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+})
+const startOfQuarter = computed(() => {
+  return moment().startOf('isoWeek').isoWeek(Math.floor((moment().isoWeek()-1) / 13)*13 + 1).format('YYYY-MM-DD')
+})
+const endOfQuarter = computed(() => {
+  return moment().endOf('isoWeek').isoWeek(Math.floor((moment().isoWeek()-1) / 13)*13 + 13).format('YYYY-MM-DD')
+})
+const startOfWeek = computed( () => {
+  return moment().startOf('isoWeek').format('YYYY-MM-DD')
+})
+const endOfWeek = computed( () => {
+  return moment().endOf('week').add(1, 'days').format('YYYY-MM-DD')
+})
+
+onMounted(() => {
+  headers.value = [
+    { text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true, width: '25%' },
+    { text: 'Today', value: 'actualTotal', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
+    { text: 'Today2', value: 'actualTotal2', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
+    { text: 'Today3', value: 'actualTotal3', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
+  ]
+
+  if (userStore.details?.timezone?.value) {
+    timezone.value = userStore.details.timezone?.value
+  }
+
+  getWeekNum()
+  getWeekNum()
+  getDropdownValues()
+  getDashboardValues()
+})
+
+const getDropdownById =(id)=> {
+  return dropdownValues.value.find(x => x.id === id)
+}
+const getClass =(total) => {
+  let calcTotal = singleDateRange.value ? total / dividerForSingleDayTargets.value : total
+  return calcTotal < 0 ? 'neg_diff' : 'pos_diff'
+}
+const itemRowBackground =(item)=> {
+  return item.major_milestone ? 'shaded-row' : ''
+}
+const closeDrilldown =() => {
+  selectedMilestone.value = {}
+  drilldownData.value = []
+  loadPartners.value = false
+  drilldownIsLoading.value = false
+  showDrilldown.value = false
+}
+const openDrilldown = async(item, column) => {
+  if(column === 1){
+    if(dropdownValues.value.find(x => x.id === firstDateRange.value).name === 'PERIOD'){
+      startDate.value = moment(dropdownValues.value.find(x => x.id === firstDateRange.value).periodList[firstPeriod.value].startDate).format('YYYY-MM-DDTHH:mm:ss');
+      endDate.value = moment(dropdownValues.value.find(x => x.id === firstDateRange.value).periodList[firstPeriod.value].endDate).format('YYYY-MM-DDTHH:mm:ss');
+    }
+    else {
+      startDate.value = dropdownValues.value.find(x => x.id === firstDateRange.value).startDate ? dropdownValues.value.find(x => x.id === firstDateRange.value).startDate : moment(firstCustom.value.startDate).format('YYYY-MM-DDTHH:mm:ss')
+      endDate.value = dropdownValues.value.find(x => x.id === firstDateRange.value).endDate ? dropdownValues.value.find(x => x.id === firstDateRange.value).endDate : moment(firstCustom.value.endDate).format('YYYY-MM-DDTHH:mm:ss')
+    }
+  }
+  else if(column === 2){
+    if(dropdownValues.value.find(x => x.id === secondDateRange.value).name === 'PERIOD'){
+      startDate.value = moment(dropdownValues.value.find(x => x.id === secondDateRange.value).periodList[secondPeriod.value].startDate).format('YYYY-MM-DDTHH:mm:ss');
+      endDate.value = moment(dropdownValues.value.find(x => x.id === secondDateRange.value).periodList[secondPeriod.value].endDate).format('YYYY-MM-DDTHH:mm:ss');
+    }
+    else {
+      startDate.value = dropdownValues.value.find(x => x.id === secondDateRange.value).startDate ? dropdownValues.value.find(x => x.id === secondDateRange.value).startDate : moment(secondCustom.value.startDate).format('YYYY-MM-DDTHH:mm:ss')
+      endDate.value = dropdownValues.value.find(x => x.id === secondDateRange.value).endDate ? dropdownValues.value.find(x => x.id === secondDateRange.value).endDate : moment(secondCustom.value.endDate).format('YYYY-MM-DDTHH:mm:ss')
+    }
+  }
+  else if(column === 3){
+    if(dropdownValues.value.find(x => x.id === thirdDateRange.value).name === 'PERIOD'){
+      startDate.value = moment(dropdownValues.value.find(x => x.id === thirdDateRange.value).periodList[thirdPeriod.value].startDate).format('YYYY-MM-DDTHH:mm:ss');
+      endDate.value = moment(dropdownValues.value.find(x => x.id === thirdDateRange.value).periodList[thirdPeriod.value].endDate).format('YYYY-MM-DDTHH:mm:ss');
+    }
+    else {
+      startDate.value = dropdownValues.value.find(x => x.id === thirdDateRange.value).startDate ? dropdownValues.value.find(x => x.id === thirdDateRange.value).startDate : moment(thirdCustom.value.startDate).format('YYYY-MM-DDTHH:mm:ss')
+      endDate.value = dropdownValues.value.find(x => x.id === thirdDateRange.value).endDate ? dropdownValues.value.find(x => x.id === thirdDateRange.value).endDate : moment(thirdCustom.value.endDate).format('YYYY-MM-DDTHH:mm:ss')
+    }
+  }
+  if((moment(endDate.value).diff(moment(startDate.value), 'days')+1) > 100){
+    return;
+  }
+  selectedMilestone.value = item
+  await getDrilldownHeaders()
+  await getDrilldownData(column)
+  showDrilldown.value = true
+}
+const getDrilldownHeaders = async() => {
+  appStore.loading = true
+  try {
+    const params = {
+      milestoneTypeId: selectedMilestone.value.milestone_type_id,
+    }
+
+    const {data, status} = await getRequestWithParams('/companyDashboard/drilldownHeaders', {params}, 'blueraven', [])
+    drilldownHeaders.value = data;
+    drilldownIsLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving drilldown data')
+    drilldownIsLoading.value = false
+    appStore.loading = false
+  }
+}
+const getDrilldownData = async(column) => {
+  //i couldn't get the v-dialog to reload the data every time it opened so i load it here but this is dumb
+  drilldownIsLoading.value = true
+  appStore.loading = true
+  try {
+    const params = {
+      startDate: startDate.value,
+      endDate: endDate.value,
+      milestoneTypeId: selectedMilestone.value.milestone_type_id,
+    }
+
+    const {data, status} = await getRequestWithParams('/companyDashboard/drilldownData', {params}, 'blueraven', [])
+    drilldownData.value = data
+    drilldownIsLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving drilldown data')
+    drilldownIsLoading.value = false
+    appStore.loading = false
+  }
+}
+const getWeekNum = () => {
+  for (let i = 0; i <= 3; i++) {
+    let startOfWeek = moment(momentStartOfPeriod.value).clone().add(i, 'weeks').startOf('isoWeek').valueOf()
+    let endOfWeek = moment(momentStartOfPeriod.value).clone().add(i, 'weeks').endOf('isoWeek').valueOf()
+
+    if (moment().isBetween(startOfWeek, endOfWeek)) {
+      weekNum.value = i + 1
+    }
+  }
+}
+
+const setDateRange = () => {
+  switch (selectedDateRange.value) {
+    case 'Yesterday':
+      startDate.value = moment().startOf('day').add(-1, 'days').format('YYYY-MM-DD')
+      endDate.value = moment().endOf('day').add(-1, 'days').format('YYYY-MM-DD')
+      break
+    case 'Today':
+      startDate.value = moment().startOf('day').format('YYYY-MM-DD')
+      endDate.value = moment().endOf('day').format('YYYY-MM-DD')
+      break
+    case 'Tomorrow':
+      startDate.value = moment().startOf('day').add(1, 'days').format('YYYY-MM-DD')
+      endDate.value = moment().endOf('day').add(1, 'days').format('YYYY-MM-DD')
+      break
+    case 'Current Week':
+      startDate.value = startOfWeek.value
+      endDate.value = endOfWeek.value
+      break
+    case 'Current Period':
+      startDate.value = startOfPeriod.value
+      endDate.value = endOfPeriod.value
+      break
+    case 'Last Week':
+      startDate.value = moment().startOf('isoWeek').subtract(7, 'days').format('YYYY-MM-DD')
+      endDate.value = moment().startOf('isoWeek').subtract(1, 'days').format('YYYY-MM-DD')
+      break
+    case 'Last 30 Days':
+      startDate.value = moment().subtract(30, 'days').format('YYYY-MM-DD')
+      endDate.value = moment().format('YYYY-MM-DD')
+      break
+    case 'Last Period':
+      momentStartOfLastPeriod.value = moment().clone().startOf('isoWeek').isoWeek((currentPeriod.value - 1) * 4 - 3 + Math.floor((currentPeriod.value - 2) / 3))
+      startDate.value = moment().clone().startOf('isoWeek').isoWeek((currentPeriod.value - 1) * 4 - 3  + Math.floor((currentPeriod.value - 2) / 3)).format('YYYY-MM-DD')
+      endDate.value = moment(momentStartOfLastPeriod.value).clone().add(3 + additionalEndWeekLastPeriod.value, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+      break
+    case 'Custom':
+      startDate.value = moment(startDate.value).format('YYYY-MM-DD')
+      endDate.value = moment(startDate.value).format('YYYY-MM-DD')
+      break
+    case 'This Month':
+      startDate.value = moment().startOf('month').format('YYYY-MM-DD')
+      endDate.value = moment().endOf('month').format('YYYY-MM-DD')
+      break
+    case 'This Year':
+      startDate.value = moment().startOf('year').format('YYYY-MM-DD')
+      endDate.value = moment().format('YYYY-MM-DD')
+      break
+    case 'This Quarter':
+      startDate.value = startOfQuarter.value
+      endDate.value = endOfQuarter.value
+      break;
+    case 'All Time':
+      startDate.value = moment('2000-01-01').format('YYYY-MM-DD')
+      endDate.value = moment().format('YYYY-MM-DD')
+      break
+    default:
+      startDate.value = startOfWeek.value
+      endDate.value = endOfWeek.value
+      break
+  }
+}
+const resetFilters = async() => {
+  viewTrends.value = false;
+  firstDateRange.value = 2;
+  secondDateRange.value = null;
+  thirdDateRange.value = null;
+  await getDashboardValues();
+}
+const changeDropdownSelection = async (dropdown) => {
+  if (dropdown === 1) {
+    let result = cloneDeep(dropdownValues.value.find(x => x.id === firstDateRange.value))
+    if (result === null) {
+      return null;
+    }
+    if (result.startDate === null) {
+      if (!firstCustom.value.isActive) {
+        if (result.name === 'CUSTOM') {
+          customColumn.value = 1;
+          if (firstCustom.value.startDate.toString().length > 0) {
+            customDate.value.startDate = firstCustom.value.startDate.format('YYYY-MM-DD').toString();
+          }
+          if (firstCustom.value.endDate.toString().length > 0) {
+            customDate.value.endDate = firstCustom.value.endDate.format('YYYY-MM-DD').toString();
+          }
+          selectingCustomDates.value = true;
+          return;
+        } else if (result.name === 'PERIOD') {
+          result.startDate = result.periodList[firstPeriod.value].startDate;
+          result.endDate = result.periodList[firstPeriod.value].endDate;
+          if (firstPeriod.value != result.periodList.length - 1) {
+            result.trendStart = result.periodList[firstPeriod.value + 1].startDate;
+            result.trendEnd = result.periodList[firstPeriod.value + 1].endDate;
+          } else {
+            delete result.trendStart;
+            delete result.trendEnd;
+          }
+        }
+      } else {
+        result = cloneDeep(firstCustom.value);
+        resetCustomDate();
+        firstCustom.value.isActive = false;
       }
     }
-  },
-  watch: {
-    firstDateRange(value) {
-      this.firstCustom.isActive = (this.getDropdownById(value)?.name === 'CUSTOM')
-      if(!this.firstCustom.isActive){
-        this.previousSelection = value;
-      }
-    },
-    secondDateRange(value) {
-      this.secondCustom.isActive = (this.getDropdownById(value)?.name === 'CUSTOM')
-      if(!this.secondCustom.isActive){
-        this.secondColPreviousSelection = value;
-      }
-    },
-    thirdDateRange(value) {
-      this.thirdCustom.isActive = (this.getDropdownById(value)?.name === 'CUSTOM')
-      if(!this.thirdCustom.isActive){
-        this.thirdColPreviousSelection = value;
+    else if(result.name === 'ALL_TIME'){
+      delete result.trendStart;
+      delete result.trendEnd;
+    }
+    dashValues.value = await getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
+  } else if (dropdown === 2) {
+    let result = cloneDeep(dropdownValues.value.find(x => x.id === secondDateRange.value))
+    if (result === null) {
+      return null;
+    }
+    if (result.startDate === null) {
+      if (!secondCustom.value.isActive) {
+        if (result.name === 'CUSTOM') {
+          customColumn.value = 2;
+          if (secondCustom.value.startDate.toString().length > 0) {
+            customDate.value.startDate = secondCustom.value.startDate.format('YYYY-MM-DD').toString();
+          }
+          if (secondCustom.value.endDate.toString().length > 0) {
+            customDate.value.endDate = secondCustom.value.endDate.format('YYYY-MM-DD').toString();
+          }
+          selectingCustomDates.value = true;
+          return;
+        } else if (result.name === 'PERIOD') {
+          result.startDate = result.periodList[secondPeriod.value].startDate;
+          result.endDate = result.periodList[secondPeriod.value].endDate;
+          if (secondPeriod.value != result.periodList.length - 1) {
+            result.trendStart = result.periodList[secondPeriod.value + 1].startDate;
+            result.trendEnd = result.periodList[secondPeriod.value + 1].endDate;
+          } else {
+            delete result.trendStart;
+            delete result.trendEnd;
+          }
+        }
+      } else {
+        result = cloneDeep(secondCustom.value);
+        resetCustomDate();
+        secondCustom.value.isActive = false;
       }
     }
-  },
-  computed: {
-    ...mapStores(useUserStore),
-    isBrCorporateUser() {
-      return this.userStore.details.companyId === 2
-    },
-    is7oaksAdmin() {
-      return this.userStore.isSystemAdmin
-    },
-    // visibleHeaders () {
-    //   return this.headers.filter(header => header.show === true)
-    // },
-    filteredDashValues(){
-      if(this.viewMajorMilestones){
-        return this.dashValues.filter(dv => dv.major_milestone)
-      }
-      return this.dashValues
-    },
-    filteredColumn2Values(){
-      if(this.viewMajorMilestones){
-        return this.column2Values.filter(dv => dv.major_milestone)
-      }
-      return this.column2Values
-    },
-    filteredColumn3Values(){
-      if(this.viewMajorMilestones){
-        return this.column3Values.filter(dv => dv.major_milestone)
-      }
-      return this.column3Values
-    },
-    additionalStartWeek () {
-      if (this.currentPeriod > 9) {
-        return 1;
-      }
-      return 0;
-    },
-    additionalEndWeek () {
-      if (this.currentPeriod % 3 === 0) {
-        return 1;
-      }
-      return 0;
-    },
-    additionalStartWeekLastPeriod () {
-      if (this.currentPeriod > 10) {
-        return 1;
-      }
-      return 0;
-    },
-    additionalEndWeekLastPeriod () {
-      if ((this.currentPeriod -1) % 3 === 0) {
-        return 1;
-      }
-      return 0;
-    },
-    momentStartOfPeriod () {
-      return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 3 + Math.floor((this.currentPeriod - 1) / 3))
-    },
-    startOfPeriod () {
-      return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 3 + Math.floor((this.currentPeriod - 1) / 3)).format('YYYY-MM-DD')
-    },
-    endOfPeriod () {
-      return moment(this.momentStartOfPeriod).clone().add(3 + this.additionalEndWeek, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
-      return moment(this.momentStartOfPeriod).clone().add(3 + this.additionalEndWeek, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
-    },
-    startOfQuarter(){
-      return moment().startOf('isoWeek').isoWeek(Math.floor((moment().isoWeek()-1) / 13)*13 + 1).format('YYYY-MM-DD')
-    },
-    endOfQuarter(){
-      return moment().endOf('isoWeek').isoWeek(Math.floor((moment().isoWeek()-1) / 13)*13 + 13).format('YYYY-MM-DD')
-    },
-    startOfWeek () {
-      return moment().startOf('isoWeek').format('YYYY-MM-DD')
-    },
-    endOfWeek () {
-      return moment().endOf('week').add(1, 'days').format('YYYY-MM-DD')
+    else if(result.name === 'ALL_TIME'){
+      delete result.trendStart;
+      delete result.trendEnd;
     }
-  },
-  methods: {
-    getDropdownById(id){
-      return this.dropdownValues.find(x => x.id === id)
-    },
-    getClass(total) {
-      let calcTotal = this.singleDateRange ? total / this.dividerForSingleDayTargets : total
-      return calcTotal < 0 ? 'neg_diff' : 'pos_diff'
-    },
-    itemRowBackground(item){
-      return item.major_milestone ? 'shaded-row' : ''
-    },
-    closeDrilldown() {
-      this.selectedMilestone = {}
-      this.drilldownData = []
-      this.loadPartners = false
-      this.drilldownIsLoading = false
-      this.showDrilldown = false
-    },
-    async openDrilldown(item, column) {
-      if(column === 1){
-        if(this.dropdownValues.find(x => x.id === this.firstDateRange).name === 'PERIOD'){
-          this.startDate = moment(this.dropdownValues.find(x => x.id === this.firstDateRange).periodList[this.firstPeriod].startDate).format('YYYY-MM-DDTHH:mm:ss');
-          this.endDate = moment(this.dropdownValues.find(x => x.id === this.firstDateRange).periodList[this.firstPeriod].endDate).format('YYYY-MM-DDTHH:mm:ss');
-        }
-        else {
-          this.startDate = this.dropdownValues.find(x => x.id === this.firstDateRange).startDate ? this.dropdownValues.find(x => x.id === this.firstDateRange).startDate : moment(this.firstCustom.startDate).format('YYYY-MM-DDTHH:mm:ss')
-          this.endDate = this.dropdownValues.find(x => x.id === this.firstDateRange).endDate ? this.dropdownValues.find(x => x.id === this.firstDateRange).endDate : moment(this.firstCustom.endDate).format('YYYY-MM-DDTHH:mm:ss')
-        }
-      }
-      else if(column === 2){
-        if(this.dropdownValues.find(x => x.id === this.secondDateRange).name === 'PERIOD'){
-          this.startDate = moment(this.dropdownValues.find(x => x.id === this.secondDateRange).periodList[this.secondPeriod].startDate).format('YYYY-MM-DDTHH:mm:ss');
-          this.endDate = moment(this.dropdownValues.find(x => x.id === this.secondDateRange).periodList[this.secondPeriod].endDate).format('YYYY-MM-DDTHH:mm:ss');
-        }
-        else {
-          this.startDate = this.dropdownValues.find(x => x.id === this.secondDateRange).startDate ? this.dropdownValues.find(x => x.id === this.secondDateRange).startDate : moment(this.secondCustom.startDate).format('YYYY-MM-DDTHH:mm:ss')
-          this.endDate = this.dropdownValues.find(x => x.id === this.secondDateRange).endDate ? this.dropdownValues.find(x => x.id === this.secondDateRange).endDate : moment(this.secondCustom.endDate).format('YYYY-MM-DDTHH:mm:ss')
-        }
-      }
-      else if(column === 3){
-        if(this.dropdownValues.find(x => x.id === this.thirdDateRange).name === 'PERIOD'){
-          this.startDate = moment(this.dropdownValues.find(x => x.id === this.thirdDateRange).periodList[this.thirdPeriod].startDate).format('YYYY-MM-DDTHH:mm:ss');
-          this.endDate = moment(this.dropdownValues.find(x => x.id === this.thirdDateRange).periodList[this.thirdPeriod].endDate).format('YYYY-MM-DDTHH:mm:ss');
-        }
-        else {
-          this.startDate = this.dropdownValues.find(x => x.id === this.thirdDateRange).startDate ? this.dropdownValues.find(x => x.id === this.thirdDateRange).startDate : moment(this.thirdCustom.startDate).format('YYYY-MM-DDTHH:mm:ss')
-          this.endDate = this.dropdownValues.find(x => x.id === this.thirdDateRange).endDate ? this.dropdownValues.find(x => x.id === this.thirdDateRange).endDate : moment(this.thirdCustom.endDate).format('YYYY-MM-DDTHH:mm:ss')
-        }
-      }
-      if((moment(this.endDate).diff(moment(this.startDate), 'days')+1) > 100){
-        return;
-      }
-      this.selectedMilestone = item
-      await this.getDrilldownHeaders()
-      await this.getDrilldownData(column)
-      this.showDrilldown = true
-    },
-    async getDrilldownHeaders() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const params = {
-          milestoneTypeId: this.selectedMilestone.milestone_type_id,
-        }
-
-        const {data, status} = await getRequestWithParams('/companyDashboard/drilldownHeaders', {params}, 'blueraven', [])
-        this.drilldownHeaders = data;
-        this.drilldownIsLoading = false
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
-        this.drilldownIsLoading = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getDrilldownData(column) {
-      //i couldn't get the v-dialog to reload the data every time it opened so i load it here but this is dumb
-      this.drilldownIsLoading = true
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const params = {
-          startDate: this.startDate,
-          endDate: this.endDate,
-          milestoneTypeId: this.selectedMilestone.milestone_type_id,
-        }
-
-        const {data, status} = await getRequestWithParams('/companyDashboard/drilldownData', {params}, 'blueraven', [])
-        this.drilldownData = data
-        this.drilldownIsLoading = false
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
-        this.drilldownIsLoading = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getWeekNum () {
-      for (let i = 0; i <= 3; i++) {
-        let startOfWeek = moment(this.momentStartOfPeriod).clone().add(i, 'weeks').startOf('isoWeek').valueOf()
-        let endOfWeek = moment(this.momentStartOfPeriod).clone().add(i, 'weeks').endOf('isoWeek').valueOf()
-
-        if (moment().isBetween(startOfWeek, endOfWeek)) {
-          this.weekNum = i + 1
-        }
-      }
-    },
-
-    setDateRange: function () {
-      switch (this.selectedDateRange) {
-        case 'Yesterday':
-          this.startDate = moment().startOf('day').add(-1, 'days').format('YYYY-MM-DD')
-          this.endDate = moment().endOf('day').add(-1, 'days').format('YYYY-MM-DD')
-          break
-        case 'Today':
-          this.startDate = moment().startOf('day').format('YYYY-MM-DD')
-          this.endDate = moment().endOf('day').format('YYYY-MM-DD')
-          break
-        case 'Tomorrow':
-          this.startDate = moment().startOf('day').add(1, 'days').format('YYYY-MM-DD')
-          this.endDate = moment().endOf('day').add(1, 'days').format('YYYY-MM-DD')
-          break
-        case 'Current Week':
-          this.startDate = this.startOfWeek
-          this.endDate = this.endOfWeek
-          break
-        case 'Current Period':
-          this.startDate = this.startOfPeriod
-          this.endDate = this.endOfPeriod
-          break
-        case 'Last Week':
-          this.startDate = moment().startOf('isoWeek').subtract(7, 'days').format('YYYY-MM-DD')
-          this.endDate = moment().startOf('isoWeek').subtract(1, 'days').format('YYYY-MM-DD')
-          break
-        case 'Last 30 Days':
-          this.startDate = moment().subtract(30, 'days').format('YYYY-MM-DD')
-          this.endDate = moment().format('YYYY-MM-DD')
-          break
-        case 'Last Period':
-          this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 3 + Math.floor((this.currentPeriod - 2) / 3))
-          this.startDate = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 3  + Math.floor((this.currentPeriod - 2) / 3)).format('YYYY-MM-DD')
-          this.endDate = moment(this.momentStartOfLastPeriod).clone().add(3 + this.additionalEndWeekLastPeriod, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
-          break
-        case 'Custom':
-          this.startDate = moment(this.startDate).format('YYYY-MM-DD')
-          this.endDate = moment(this.startDate).format('YYYY-MM-DD')
-          break
-        case 'This Month':
-          this.startDate = moment().startOf('month').format('YYYY-MM-DD')
-          this.endDate = moment().endOf('month').format('YYYY-MM-DD')
-          break
-        case 'This Year':
-          this.startDate = moment().startOf('year').format('YYYY-MM-DD')
-          this.endDate = moment().format('YYYY-MM-DD')
-          break
-        case 'This Quarter':
-          this.startDate = this.startOfQuarter
-          this.endDate = this.endOfQuarter
-          break;
-        case 'All Time':
-          this.startDate = moment('2000-01-01').format('YYYY-MM-DD')
-          this.endDate = moment().format('YYYY-MM-DD')
-          break
-        default:
-          this.startDate = this.startOfWeek
-          this.endDate = this.endOfWeek
-          break
-      }
-    },
-    async resetFilters(){
-      this.viewTrends = false;
-      this.firstDateRange = 2;
-      this.secondDateRange = null;
-      this.thirdDateRange = null;
-      await this.getDashboardValues();
-    },
-    changeDropdownSelection: async function (dropdown) {
-      if (dropdown === 1) {
-        let result = cloneDeep(this.dropdownValues.find(x => x.id === this.firstDateRange))
-        if (result === null) {
-          return null;
-        }
-        if (result.startDate === null) {
-          if (!this.firstCustom.isActive) {
-            if (result.name === 'CUSTOM') {
-              this.customColumn = 1;
-              if (this.firstCustom.startDate.toString().length > 0) {
-                this.customDate.startDate = this.firstCustom.startDate.format('YYYY-MM-DD').toString();
-              }
-              if (this.firstCustom.endDate.toString().length > 0) {
-                this.customDate.endDate = this.firstCustom.endDate.format('YYYY-MM-DD').toString();
-              }
-              this.selectingCustomDates = true;
-              return;
-            } else if (result.name === 'PERIOD') {
-              result.startDate = result.periodList[this.firstPeriod].startDate;
-              result.endDate = result.periodList[this.firstPeriod].endDate;
-              if (this.firstPeriod != result.periodList.length - 1) {
-                result.trendStart = result.periodList[this.firstPeriod + 1].startDate;
-                result.trendEnd = result.periodList[this.firstPeriod + 1].endDate;
-              } else {
-                delete result.trendStart;
-                delete result.trendEnd;
-              }
-            }
+    column2Values.value = await getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
+  } else if (dropdown === 3) {
+    let result = cloneDeep(dropdownValues.value.find(x => x.id === thirdDateRange.value))
+    if (result == null) {
+      return null;
+    }
+    if (result.startDate === null) {
+      if (!thirdCustom.value.isActive) {
+        if (result.name === 'CUSTOM') {
+          customColumn.value = 3;
+          if (thirdCustom.value.startDate.toString().length > 0) {
+            customDate.value.startDate = thirdCustom.value.startDate.format('YYYY-MM-DD').toString();
+          }
+          if (thirdCustom.value.endDate.toString().length > 0) {
+            customDate.value.endDate = thirdCustom.value.endDate.format('YYYY-MM-DD').toString();
+          }
+          selectingCustomDates.value = true;
+          return;
+        } else if (result.name === 'PERIOD') {
+          result.startDate = result.periodList[thirdPeriod.value].startDate;
+          result.endDate = result.periodList[thirdPeriod.value].endDate;
+          if (thirdPeriod.value != result.periodList.length - 1) {
+            result.trendStart = result.periodList[thirdPeriod.value + 1].startDate;
+            result.trendEnd = result.periodList[thirdPeriod.value + 1].endDate;
           } else {
-            result = cloneDeep(this.firstCustom);
-            this.resetCustomDate();
-            this.firstCustom.isActive = false;
+            delete result.trendStart;
+            delete result.trendEnd;
           }
         }
-        else if(result.name === 'ALL_TIME'){
-          delete result.trendStart;
-          delete result.trendEnd;
-        }
-        this.dashValues = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
-      } else if (dropdown === 2) {
-        let result = cloneDeep(this.dropdownValues.find(x => x.id === this.secondDateRange))
-        if (result === null) {
-          return null;
-        }
-        if (result.startDate === null) {
-          if (!this.secondCustom.isActive) {
-            if (result.name === 'CUSTOM') {
-              this.customColumn = 2;
-              if (this.secondCustom.startDate.toString().length > 0) {
-                this.customDate.startDate = this.secondCustom.startDate.format('YYYY-MM-DD').toString();
-              }
-              if (this.secondCustom.endDate.toString().length > 0) {
-                this.customDate.endDate = this.secondCustom.endDate.format('YYYY-MM-DD').toString();
-              }
-              this.selectingCustomDates = true;
-              return;
-            } else if (result.name === 'PERIOD') {
-              result.startDate = result.periodList[this.secondPeriod].startDate;
-              result.endDate = result.periodList[this.secondPeriod].endDate;
-              if (this.secondPeriod != result.periodList.length - 1) {
-                result.trendStart = result.periodList[this.secondPeriod + 1].startDate;
-                result.trendEnd = result.periodList[this.secondPeriod + 1].endDate;
-              } else {
-                delete result.trendStart;
-                delete result.trendEnd;
-              }
-            }
-          } else {
-            result = cloneDeep(this.secondCustom);
-            this.resetCustomDate();
-            this.secondCustom.isActive = false;
-          }
-        }
-        else if(result.name === 'ALL_TIME'){
-          delete result.trendStart;
-          delete result.trendEnd;
-        }
-        this.column2Values = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
-      } else if (dropdown === 3) {
-        let result = cloneDeep(this.dropdownValues.find(x => x.id === this.thirdDateRange))
-        if (result == null) {
-          return null;
-        }
-        if (result.startDate === null) {
-          if (!this.thirdCustom.isActive) {
-            if (result.name === 'CUSTOM') {
-              this.customColumn = 3;
-              if (this.thirdCustom.startDate.toString().length > 0) {
-                this.customDate.startDate = this.thirdCustom.startDate.format('YYYY-MM-DD').toString();
-              }
-              if (this.thirdCustom.endDate.toString().length > 0) {
-                this.customDate.endDate = this.thirdCustom.endDate.format('YYYY-MM-DD').toString();
-              }
-              this.selectingCustomDates = true;
-              return;
-            } else if (result.name === 'PERIOD') {
-              result.startDate = result.periodList[this.thirdPeriod].startDate;
-              result.endDate = result.periodList[this.thirdPeriod].endDate;
-              if (this.thirdPeriod != result.periodList.length - 1) {
-                result.trendStart = result.periodList[this.thirdPeriod + 1].startDate;
-                result.trendEnd = result.periodList[this.thirdPeriod + 1].endDate;
-              } else {
-                delete result.trendStart;
-                delete result.trendEnd;
-              }
-            }
-          } else {
-            result = cloneDeep(this.thirdCustom);
-            this.resetCustomDate();
-          }
-        }
-        else if(result.name === 'ALL_TIME'){
-          delete result.trendStart;
-          delete result.trendEnd;
-        }
-        this.column3Values = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
+      } else {
+        result = cloneDeep(thirdCustom.value);
+        resetCustomDate();
       }
-    },
-    resetCustomDate(){
-      this.customDate.startDate = "";
-      this.customDate.endDate = "";
-      this.customDate.trendStart = "";
-      this.customDate.trendEnd = "";
-    },
-    async cancelCustomDialogue() {
-      if(this.customColumn === 1) {
-        this.firstDateRange = this.previousSelection
-      }
-      else if(this.customColumn === 2) {
-        this.secondDateRange = this.secondColPreviousSelection
-      }
-      else if(this.customColumn === 3) {
-        this.thirdDateRange = this.thirdColPreviousSelection
-      }
-    },
-    async applyCustomDates(){
-      if(this.customColumn === 1) {
-        this.firstCustom.startDate = moment(this.customDate.startDate);
-        this.firstCustom.endDate = moment(this.customDate.endDate);
-        let dateDiff = this.firstCustom.endDate.diff(this.firstCustom.startDate, 'days');
-        this.firstCustom.trendEnd = this.firstCustom.startDate.clone().subtract(1, 'days');
-        this.firstCustom.trendStart = this.firstCustom.trendEnd.clone().subtract(dateDiff, 'days');
-        this.getDropdownById(this.firstDateRange).trendText = moment(this.firstCustom.trendStart).format('MM/DD/YYYY') + ' - ' + moment(this.firstCustom.trendEnd).format('MM/DD/YYYY');
-        this.firstCustom.name=moment(this.firstCustom.startDate).format('MM/DD/YY') + '-' + moment(this.firstCustom.endDate).format('MM/DD/YY');
-      }
-      else if(this.customColumn === 2){
-        this.secondCustom.startDate = moment(this.customDate.startDate);
-        this.secondCustom.endDate = moment(this.customDate.endDate);
-        let dateDiff = this.secondCustom.endDate.diff(this.secondCustom.startDate, 'days');
-        this.secondCustom.trendEnd = this.secondCustom.startDate.clone().subtract(1, 'days');
-        this.secondCustom.trendStart = this.secondCustom.trendEnd.clone().subtract(dateDiff, 'days');
-        this.getDropdownById(this.secondDateRange).trendText = moment(this.secondCustom.trendStart).format('MM/DD/YYYY') + ' - ' + moment(this.secondCustom.trendEnd).format('MM/DD/YYYY');
-        this.secondCustom.name=moment(this.secondCustom.startDate).format('MM/DD/YY') + '-' + moment(this.secondCustom.endDate).format('MM/DD/YY');
-      }
-      else if(this.customColumn === 3){
-        this.thirdCustom.startDate = moment(this.customDate.startDate);
-        this.thirdCustom.endDate = moment(this.customDate.endDate);
-        let dateDiff = this.thirdCustom.endDate.diff(this.thirdCustom.startDate, 'days');
-        this.thirdCustom.trendEnd = this.thirdCustom.startDate.clone().subtract(1, 'days');
-        this.thirdCustom.trendStart = this.thirdCustom.trendEnd.clone().subtract(dateDiff, 'days');
-        this.getDropdownById(this.thirdDateRange).trendText = moment(this.thirdCustom.trendStart).format('MM/DD/YYYY') + ' - ' + moment(this.thirdCustom.trendEnd).format('MM/DD/YYYY');
-        this.thirdCustom.name=moment(this.thirdCustom.startDate).format('MM/DD/YY') + '-' + moment(this.thirdCustom.endDate).format('MM/DD/YY');
-      }
+    }
+    else if(result.name === 'ALL_TIME'){
+      delete result.trendStart;
+      delete result.trendEnd;
+    }
+    column3Values.value = await getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
+  }
+}
+const resetCustomDate = () => {
+  customDate.value.startDate = "";
+  customDate.value.endDate = "";
+  customDate.value.trendStart = "";
+  customDate.value.trendEnd = "";
+}
+const cancelCustomDialogue = async() => {
+  if(customColumn.value === 1) {
+    firstDateRange.value = previousSelection.value
+  }
+  else if(customColumn.value === 2) {
+    secondDateRange.value = secondColPreviousSelection.value
+  }
+  else if(customColumn.value === 3) {
+    thirdDateRange.value = thirdColPreviousSelection.value
+  }
+}
+const applyCustomDates = async()=> {
+  if(customColumn.value === 1) {
+    firstCustom.value.startDate = moment(customDate.value.startDate);
+    firstCustom.value.endDate = moment(customDate.value.endDate);
+    let dateDiff = firstCustom.value.endDate.diff(firstCustom.value.startDate, 'days');
+    firstCustom.value.trendEnd = firstCustom.value.startDate.clone().subtract(1, 'days');
+    firstCustom.value.trendStart = firstCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
+    getDropdownById(firstDateRange.value).trendText = moment(firstCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(firstCustom.value.trendEnd).format('MM/DD/YYYY');
+    firstCustom.value.name=moment(firstCustom.value.startDate).format('MM/DD/YY') + '-' + moment(firstCustom.value.endDate).format('MM/DD/YY');
+  }
+  else if(customColumn.value === 2){
+    secondCustom.value.startDate = moment(customDate.value.startDate);
+    secondCustom.value.endDate = moment(customDate.value.endDate);
+    let dateDiff = secondCustom.value.endDate.diff(secondCustom.value.startDate, 'days');
+    secondCustom.value.trendEnd = secondCustom.value.startDate.clone().subtract(1, 'days');
+    secondCustom.value.trendStart = secondCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
+    getDropdownById(secondDateRange.value).trendText = moment(secondCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(secondCustom.value.trendEnd).format('MM/DD/YYYY');
+    secondCustom.value.name=moment(secondCustom.value.startDate).format('MM/DD/YY') + '-' + moment(secondCustom.value.endDate).format('MM/DD/YY');
+  }
+  else if(customColumn.value === 3){
+    thirdCustom.value.startDate = moment(customDate.value.startDate);
+    thirdCustom.value.endDate = moment(customDate.value.endDate);
+    let dateDiff = thirdCustom.value.endDate.diff(thirdCustom.value.startDate, 'days');
+    thirdCustom.value.trendEnd = thirdCustom.value.startDate.clone().subtract(1, 'days');
+    thirdCustom.value.trendStart = thirdCustom.value.trendEnd.clone().subtract(dateDiff, 'days');
+    getDropdownById(thirdDateRange.value).trendText = moment(thirdCustom.value.trendStart).format('MM/DD/YYYY') + ' - ' + moment(thirdCustom.value.trendEnd).format('MM/DD/YYYY');
+    thirdCustom.value.name=moment(thirdCustom.value.startDate).format('MM/DD/YY') + '-' + moment(thirdCustom.value.endDate).format('MM/DD/YY');
+  }
 
-      await this.getDashboardValues();
-    },
-    async exportCsv () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let filename = 'CompanyDashboard.csv'
-        let csvData = ' , '
-        if(this.dropdownValues.find(x => x.id === this.firstDateRange).name==='PERIOD'){
-          csvData += this.dropdownValues.find(x => x.id === this.firstDateRange).periodList[this.firstPeriod].shortLabel;
+  await getDashboardValues();
+}
+const exportCsv = async () => {
+  appStore.loading = true
+  try {
+    let filename = 'CompanyDashboard.csv'
+    let csvData = ' , '
+    if(dropdownValues.value.find(x => x.id === firstDateRange.value).name==='PERIOD'){
+      csvData += dropdownValues.value.find(x => x.id === firstDateRange.value).periodList[firstPeriod.value].shortLabel;
+    }
+    else
+    {
+      csvData += ((dropdownValues.value.find(x => x.id === firstDateRange.value).name === 'CUSTOM') ? firstCustom.value.name : dropdownValues.value.find(x => x.id === firstDateRange.value).friendlyName);
+    }
+    if(viewTrends.value){
+      csvData += ', ' +  'Trend 1'
+    }
+    if(secondDateRange.value){
+      if(dropdownValues.value.find(x => x.id === secondDateRange.value).name==='PERIOD'){
+        csvData += ' , ' + dropdownValues.value.find(x => x.id === secondDateRange.value).periodList[secondPeriod.value].shortLabel;
+      }
+      else
+      {
+        csvData += ', ' + ((dropdownValues.value.find(x => x.id === secondDateRange.value).name === 'CUSTOM') ? secondCustom.value.name : dropdownValues.value.find(x => x.id === secondDateRange.value).friendlyName);
+      }
+      if(viewTrends.value){
+        csvData += ', ' +  'Trend 2'
+      }
+    }
+    if(thirdDateRange.value){
+      if(dropdownValues.value.find(x => x.id === thirdDateRange.value).name==='PERIOD'){
+        csvData += ' , ' + dropdownValues.value.find(x => x.id === thirdDateRange.value).periodList[thirdPeriod.value].shortLabel;
+      }
+      else
+      {
+        csvData += ', ' + ((dropdownValues.value.find(x => x.id === thirdDateRange.value).name === 'CUSTOM') ? thirdCustom.value.name : dropdownValues.value.find(x => x.id === thirdDateRange.value).friendlyName);
+      }
+      if(viewTrends.value){
+        csvData += ', ' +  'Trend 3'
+      }
+    }
+    csvData += '\n';
+
+    dashValues.value.forEach((p, i) => {
+      if (p.major_milestone || !viewMajorMilestones.value) {
+        csvData += p.name + ',' + (p.company_count ? p.company_count : 0);
+        if (viewTrends.value) {
+          csvData += ', ' + (p.trend_count ? p.trend_count : 0) + '%';
         }
-        else
-        {
-          csvData += ((this.dropdownValues.find(x => x.id === this.firstDateRange).name === 'CUSTOM') ? this.firstCustom.name : this.dropdownValues.find(x => x.id === this.firstDateRange).friendlyName);
-        }
-        if(this.viewTrends){
-          csvData += ', ' +  'Trend 1'
-        }
-        if(this.secondDateRange){
-          if(this.dropdownValues.find(x => x.id === this.secondDateRange).name==='PERIOD'){
-            csvData += ' , ' + this.dropdownValues.find(x => x.id === this.secondDateRange).periodList[this.secondPeriod].shortLabel;
-          }
-          else
-          {
-            csvData += ', ' + ((this.dropdownValues.find(x => x.id === this.secondDateRange).name === 'CUSTOM') ? this.secondCustom.name : this.dropdownValues.find(x => x.id === this.secondDateRange).friendlyName);
-          }
-          if(this.viewTrends){
-            csvData += ', ' +  'Trend 2'
+        if (secondDateRange.value) {
+          csvData += ', ' + (column2Values.value[i].company_count ? column2Values.value[i].company_count : 0)
+          if (viewTrends.value) {
+            csvData += ', ' + (column2Values.value[i].trend_count ? column2Values.value[i].trend_count : 0) + '%';
           }
         }
-        if(this.thirdDateRange){
-          if(this.dropdownValues.find(x => x.id === this.thirdDateRange).name==='PERIOD'){
-            csvData += ' , ' + this.dropdownValues.find(x => x.id === this.thirdDateRange).periodList[this.thirdPeriod].shortLabel;
-          }
-          else
-          {
-            csvData += ', ' + ((this.dropdownValues.find(x => x.id === this.thirdDateRange).name === 'CUSTOM') ? this.thirdCustom.name : this.dropdownValues.find(x => x.id === this.thirdDateRange).friendlyName);
-          }
-          if(this.viewTrends){
-            csvData += ', ' +  'Trend 3'
+        if (thirdDateRange.value) {
+          csvData += ', ' + (column3Values.value[i].company_count ? column3Values.value[i].company_count : 0)
+          if (viewTrends.value) {
+            csvData += ', ' + (column3Values.value[i].trend_count ? column3Values.value[i].trend_count : 0) + '%';
           }
         }
         csvData += '\n';
-
-        this.dashValues.forEach((p, i) => {
-          if (p.major_milestone || !this.viewMajorMilestones) {
-            csvData += p.name + ',' + (p.company_count ? p.company_count : 0);
-            if (this.viewTrends) {
-              csvData += ', ' + (p.trend_count ? p.trend_count : 0) + '%';
-            }
-            if (this.secondDateRange) {
-              csvData += ', ' + (this.column2Values[i].company_count ? this.column2Values[i].company_count : 0)
-              if (this.viewTrends) {
-                csvData += ', ' + (this.column2Values[i].trend_count ? this.column2Values[i].trend_count : 0) + '%';
-              }
-            }
-            if (this.thirdDateRange) {
-              csvData += ', ' + (this.column3Values[i].company_count ? this.column3Values[i].company_count : 0)
-              if (this.viewTrends) {
-                csvData += ', ' + (this.column3Values[i].trend_count ? this.column3Values[i].trend_count : 0) + '%';
-              }
-            }
-            csvData += '\n';
-          }
-        })
-
-
-        let blob = new Blob([csvData], {
-          type: 'text/csv;charset=utf-8'
-        });
-
-        saveAs(blob, filename);
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Exporting Residual Review')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async getDashBoardData(startDate, endDate, trendStart, trendEnd){
-      try {
-        // this.$store.commit(AppMutations.SET_LOADING, true)
-
-        let params = {
-          startDate: startDate,
-          endDate: endDate,
-          targetTypeId: this.targetTypeId,
-          trendStart: trendStart,
-          trendEnd: trendEnd
-        }
-
-        const {data, status} = await getRequestWithParams('/companyDashboard/dashboardValues', {params}, 'blueraven', [])
-        return data;
-
-        handleHidingGlobalLoader(this, status)
-
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving data')
-        this.isLoading = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      return null;
-    },
-
-    async getDashboardValues (dateWasManuallyEntered) {
-      if (dateWasManuallyEntered) {
-        this.selectedDateRange = 'Custom'
-      } else {
-        this.setDateRange()
-        if (this.selectedDateRange === 'Custom') return // wait for the user to enter a custom date
-      }
-
-      this.singleDateRange = this.singleDateRanges.includes(this.selectedDateRange)
-      this.targetTypeId = this.singleDateRange ? 1 :
-        this.loadTargetsRanges.includes(this.selectedDateRange) ? 2 : null
-
-      this.loadingData = true;
-      if(this.dropdownValues != null && this.dropdownValues.length > 0){
-        await this.changeDropdownSelection(1);
-      }
-      else {
-        this.dashValues = await this.getDashBoardData(this.startDate, this.endDate, moment().subtract(60, "days").format('YYYY-MM-DD'), moment().subtract(31, "days").format('YYYY-MM-DD'));
-      }
-      if(this.secondDateRange != null) {
-        await this.changeDropdownSelection(2);
-
-      }
-
-      if(this.thirdDateRange != null){
-        await this.changeDropdownSelection(3);
-      }
-
-      // this.startDate = moment().subtract(30, "days").format('YYYY-MM-DD');
-      // this.startDateColumn2 = moment().subtract(60, "days").format('YYYY-MM-DD');
-      // this.startDateColumn3 = moment().subtract(90, "days").format('YYYY-MM-DD');
-
-      this.loadingData = false;
-    },
-    async getDropdownValues() {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
-        const params = {
-          today: moment().format('YYYY-MM-DD')
-        }
-
-        const {data, status} = await getRequestWithParams('/companyDashboard/dropdownValues', {params}, 'blueraven', [])
-        this.dropdownValues = data;
-        this.isLoading = false
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving data')
-        this.isLoading = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    }
-  },
-  created () {
-    this.headers = [
-      { text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true, width: '25%' },
-      { text: 'Today', value: 'actualTotal', align: 'left', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser, width: '25%' },
-      { text: 'Today2', value: 'actualTotal2', align: 'left', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser, width: '25%' },
-      { text: 'Today3', value: 'actualTotal3', align: 'left', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser, width: '25%' },
-    ]
-
-    // { text: 'Total', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: this.isBrCorporateUser },
-    // { text: 'BRS', value: 'actualBrs', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser },
-    // { text: 'Partners', value: 'actualPartner', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser },
-    // { text: 'Total', value: 'plannedTotal', align: 'center', class: 'total-col-th data-col-th', show: this.isBrCorporateUser },
-    // { text: 'BRS', value: 'plannedBrs', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser },
-    // { text: 'Partners', value: 'plannedPartner', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser },
-    // { text: 'Total', value: 'differenceTotal', align: 'center', class: 'total-col-th data-col-th', show: this.isBrCorporateUser },
-    // { text: 'BRS', value: 'differenceBrs', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser },
-    // { text: 'Partners', value: 'differencePartner', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser }
+    })
 
 
-    if (this.userStore.details?.timezone?.value) {
-      this.timezone = this.userStore.details.timezone?.value
-    }
+    let blob = new Blob([csvData], {
+      type: 'text/csv;charset=utf-8'
+    });
 
-    this.getWeekNum()
-    this.getWeekNum()
-    this.getDropdownValues()
-    this.getDashboardValues()
+    saveAs(blob, filename);
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Exporting Residual Review')
+
+    appStore.loading = false
   }
+}
+const getDashBoardData = async(startDate, endDate, trendStart, trendEnd)=> {
+  try {
+    // appStore.loading = true
+
+    let params = {
+      startDate: startDate,
+      endDate: endDate,
+      targetTypeId: targetTypeId.value,
+      trendStart: trendStart,
+      trendEnd: trendEnd
+    }
+
+    const {data, status} = await getRequestWithParams('/companyDashboard/dashboardValues', {params}, 'blueraven', [])
+    return data;
+
+    handleHidingGlobalLoader( status)
+
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving data')
+    isLoading.value = false
+    appStore.loading = false
+  }
+  return null;
+}
+
+const getDashboardValues = async (dateWasManuallyEntered) => {
+  if (dateWasManuallyEntered) {
+    selectedDateRange.value = 'Custom'
+  } else {
+    setDateRange()
+    if (selectedDateRange.value === 'Custom') return // wait for the user to enter a custom date
+  }
+
+  singleDateRange.value = singleDateRanges.value.includes(selectedDateRange.value)
+  targetTypeId.value = singleDateRange.value ? 1 :
+      loadTargetsRanges.value.includes(selectedDateRange.value) ? 2 : null
+
+  loadingData.value = true;
+  if(dropdownValues.value != null && dropdownValues.value.length > 0){
+    await changeDropdownSelection(1);
+  }
+  else {
+    dashValues.value = await getDashBoardData(startDate.value, endDate.value, moment().subtract(60, "days").format('YYYY-MM-DD'), moment().subtract(31, "days").format('YYYY-MM-DD'));
+  }
+  if(secondDateRange.value != null) {
+    await changeDropdownSelection(2);
+
+  }
+
+  if(thirdDateRange.value != null){
+    await changeDropdownSelection(3);
+  }
+
+  // startDate.value = moment().subtract(30, "days").format('YYYY-MM-DD');
+  // startDateColumn2.value = moment().subtract(60, "days").format('YYYY-MM-DD');
+  // startDateColumn3.value = moment().subtract(90, "days").format('YYYY-MM-DD');
+
+  loadingData.value = false;
+}
+const getDropdownValues = async() => {
+  try {
+    appStore.loading = true
+
+    const params = {
+      today: moment().format('YYYY-MM-DD')
+    }
+
+    const {data, status} = await getRequestWithParams('/companyDashboard/dropdownValues', {params}, 'blueraven', [])
+    dropdownValues.value = data;
+    isLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving data')
+    isLoading.value = false
+    appStore.loading = false
+  }
+
+
 }
 </script>
 
