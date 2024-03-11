@@ -5,7 +5,7 @@
         <div>
           <v-app-bar dense tabs color="white" class="elevation-1">
             <v-tabs :optional="true" color="primary"
-                    background-color="white" v-model="model" slider-color="primary">
+                    background-color="white" v-model="tabModel" slider-color="primary">
               <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
                 {{tab.label}}
               </v-tab>
@@ -19,39 +19,31 @@
   </v-container>
 </template>
 
-<script>
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+  import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+  import {useUserStore} from '@/stores/UserStorePinia.js'
 
-  export default {
-    name: 'Accounting',
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
 
-    computed: {
-      ...mapStores(useUserStore),
-      tabs() {
-        return [ {
-          label: 'Current Payroll',
-          path: `/commissionManagement/accounting/current/`,
-          display: this.userStore.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Summary',
-          path: `/commissionManagement/accounting/summary/`,
-          display: this.userStore.userHasFeature('COMMISSIONS')
-        }]
-      },
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        model: ''
-      }
-    },
-    methods: {
-    }
-  }
+  const tabModel = ref('')
+
+  const tabs = computed(() => {
+    return [ {
+      label: 'Current Payroll',
+      path: `/commissionManagement/accounting/current/`,
+      display: userStore.userHasFeature('COMMISSIONS')
+    }, {
+      label: 'Summary',
+      path: `/commissionManagement/accounting/summary/`,
+      display: userStore.userHasFeature('COMMISSIONS')
+    }]
+  })
+  const displayedTabs = computed(() => {
+    return tabs.value.filter(tab => tab.display)
+  })
+
 </script>
 
 <style lang="scss" scoped>

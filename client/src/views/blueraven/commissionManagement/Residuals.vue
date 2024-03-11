@@ -15,9 +15,7 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <!--        <v-btn text @click="goToDetails({})">-->
-        <!--          <v-icon>add</v-icon>-->
-        <!--        </v-btn>-->
+
       </v-toolbar-items>
     </v-toolbar>
     <v-toolbar v-if="!payrollLoading && !additionalPayrollDataNeeded" :color="payrollStatus.color" class="mt-2">
@@ -27,24 +25,29 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="flex-display align-center" >
-          <v-btn v-if="payrollStatus.action && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')" :color="payrollStatus.actionColor"
-                 class="white--text" @click="submitForApproval(payrollStatus.action)">
-            {{payrollStatus.actionText}}
-          </v-btn>
+          <AlbatrossButton
+              v-if="payrollStatus.action && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')"
+              :color="payrollStatus.actionColor"
+              @click="submitForApproval(payrollStatus.action)"
+              :text="payrollStatus.actionText"
+          ></AlbatrossButton>
           <!-- currently only "Approve" has a secondary action which requires a dialog confirm. will have to update if that changes -->
           <v-dialog
-            v-if="payrollStatus.secondaryAction && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')"
-            v-model="approveConfirm"
-            width="500">
+              v-if="payrollStatus.secondaryAction && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')"
+              v-model="approveConfirm"
+              width="500">
             <template v-slot:activator="{ on }">
-              <v-btn v-on="on" :color="payrollStatus.secondaryActionColor" class="white--text ml-3">
-                {{payrollStatus.secondaryActionText}}
-              </v-btn>
+              <AlbatrossButton
+                  :activation-handler="on"
+                  :color="payrollStatus.secondaryActionColor"
+                  class="ml-3"
+                  :text="payrollStatus.secondaryActionText"
+              ></AlbatrossButton>
             </template>
             <v-card>
               <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title
+                  class="text-h5 grey lighten-2"
+                  primary-title
               >
                 Confirm
               </v-card-title>
@@ -53,11 +56,11 @@
                 Are you sure you want to approve this residual?
 
                 <DatetimePickerInput
-                  v-model="payDate"
-                  :timezone="this.timezone"
-                  :type="'date'"
-                  :format="'MMMM DD, YYYY'"
-                  label="Date Paid"
+                    v-model="payDate"
+                    :timezone="timezone"
+                    :type="'date'"
+                    :format="'MMMM DD, YYYY'"
+                    label="Date Paid"
                 />
               </v-card-text>
 
@@ -66,17 +69,17 @@
 
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn
-                  @click="approveConfirm = false">
-                  No
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  class="white--text"
-                  :disabled="null == payDate"
-                  @click="submitForApproval(payrollStatus.secondaryAction)">
-                  Yes
-                </v-btn>
+                <AlbatrossButton
+                    @click="approveConfirm = false"
+                    color="unset"
+                    text="No"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    color="primary"
+                    :disabled="null == payDate"
+                    @click="submitForApproval(payrollStatus.secondaryAction)"
+                    text="Yes"
+                ></AlbatrossButton>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -97,8 +100,18 @@
                             v-model="currentResidual.description"></v-text-field>
 
               <div class="text-left">
-                <v-btn color="primary" dark v-if="userCanEdit" @click="saveChangesToResidual()">Save Changes</v-btn>
-                <v-btn color="primary" class="ml-3" dark @click="exportResiduals()">Export</v-btn>
+                <AlbatrossButton
+                    color="primary"
+                    v-if="userCanEdit"
+                    @click="saveChangesToResidual()"
+                    text="Save Changes"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    color="primary"
+                    class="ml-3"
+                    @click="exportResiduals()"
+                    text="Export"
+                ></AlbatrossButton>
               </div>
             </v-card>
           </v-col>
@@ -124,20 +137,29 @@
                 </template>
               </v-autocomplete>
               <DatetimePickerInput
-                v-model="projectOverrideDate"
-                :timezone="this.timezone"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                :type="'date'"
-                :format="'MMMM DD, YYYY'"
-                label="Override Date"
+                  v-model="projectOverrideDate"
+                  :timezone="timezone"
+                  :readonly="!userCanEdit"
+                  :disabled="!userCanEdit"
+                  :type="'date'"
+                  :format="'MMMM DD, YYYY'"
+                  label="Override Date"
               />
 
               <div class="text-left">
-                <v-btn color="primary"
-                       :disabled="!projectId || !projectOverrideDate"
-                       @click="saveOverrideDate()">Save</v-btn>
-                <v-btn class="ml-3" text color="primary" @click="[projectId = null, projectSearch='', projects=[], projectOverrideDate = null]">Reset</v-btn>
+                <AlbatrossButton
+                    color="primary"
+                    :disabled="!projectId || !projectOverrideDate"
+                    @click="saveOverrideDate()"
+                    text="Save"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    class="ml-3"
+                    variant="text"
+                    color="primary"
+                    @click="[projectId = null, projectSearch='', projects=[], projectOverrideDate = null]"
+                    text="Reset"
+                ></AlbatrossButton>
               </div>
             </v-card>
           </v-col>
@@ -149,25 +171,25 @@
         <v-card>
           <v-card-title class="pt-0">
             <v-text-field
-              v-model="search"
-              prepend-inner-icon="search"
-              label="Search"
-              single-line
-              hide-details
+                v-model="search"
+                prepend-inner-icon="search"
+                label="Search"
+                single-line
+                hide-details
             ></v-text-field>
           </v-card-title>
           <v-divider></v-divider>
           <v-data-table
-            :headers="headers"
-            :items="residuals"
-            :fixed-header="true"
-            :search="search"
-            :footer-props="footerProps"
-            :mobile-breakpoint="0"
-            :show-select="payrollStatus.showSelect"
-            :loading="dataLoading"
-            :items-per-page="25"
-            class="elevation-1"
+              :headers="headers"
+              :items="residuals"
+              :fixed-header="true"
+              :search="search"
+              :footer-props="footerProps"
+              :mobile-breakpoint="0"
+              :show-select="payrollStatus.showSelect"
+              :loading="dataLoading"
+              :items-per-page="25"
+              class="elevation-1"
           >
             <template #no-data>
               No available residuals
@@ -229,14 +251,19 @@
                   {{item.adjustmentOverride | currency('$', 0)}}
 
                   <v-dialog
-                    v-if="userCanAdd"
-                    v-model="item.dialog"
-                    width="500">
+                      v-if="userCanAdd"
+                      v-model="item.dialog"
+                      width="500">
                     <template v-slot:activator="{ on }">
-                      <v-btn x-small color="primary" dark fab class="ml-2" v-on="on"
-                             @click="[delete item.adjustment, delete item.adjustmentNote]" >
-                        <v-icon>add</v-icon>
-                      </v-btn>
+                      <AlbatrossButton
+                          size="x-small"
+                          color="primary"
+                          fab
+                          class="ml-2"
+                          :activation-handler="on"
+                          @click="[delete item.adjustment, delete item.adjustmentNote]"
+                          prepend-icon="add"
+                      ></AlbatrossButton>
                     </template>
                     <v-card>
                       <v-card-title class="text-h5 grey lighten-2" primary-title>
@@ -252,21 +279,24 @@
                                       v-model.number="item.adjustment">
                         </v-text-field>
                         <v-textarea
-                          label="Notes"
-                          v-model="item.adjustmentNote"
+                            label="Notes"
+                            v-model="item.adjustmentNote"
                         ></v-textarea>
                       </v-card-text>
                       <v-divider></v-divider>
                       <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn @click="item.dialog = false">
-                          Cancel
-                        </v-btn>
-                        <v-btn color="primary" class="white--text"
-                               :disabled="!item.adjustment || item.adjustment === 0 || !item.adjustmentNote"
-                               @click="addAdjustment(item)">
-                          Add
-                        </v-btn>
+                        <AlbatrossButton
+                            @click="item.dialog = false"
+                            color="unset"
+                            text="Cancel"
+                        ></AlbatrossButton>
+                        <AlbatrossButton
+                            color="primary"
+                            :disabled="!item.adjustment || item.adjustment === 0 || !item.adjustmentNote"
+                            @click="addAdjustment(item)"
+                            text="Add"
+                        ></AlbatrossButton>
                       </v-card-actions>
                     </v-card>
                   </v-dialog>
@@ -297,417 +327,419 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, getSnackbar, postRequest} from '@/helpers/helpers'
-  import ResidualDetailModal from '@/views/blueraven/commissionManagement/ResidualDetailModal'
-  import { saveAs } from 'file-saver'
-  import sumBy from "lodash.sumby";
-  import cloneDeep from 'lodash.clonedeep'
-  import constants from "@/helpers/constants";
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import {handleHidingGlobalLoader, getRequest,  postRequest} from '@/helpers/helpers'
+import ResidualDetailModal from '@/views/blueraven/commissionManagement/ResidualDetailModal'
+import { saveAs } from 'file-saver'
+import sumBy from "lodash.sumby";
+import cloneDeep from 'lodash.clonedeep'
+import constants from "@/helpers/constants";
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import debounce from 'lodash.debounce'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useBrsStore } from '@/stores/BrsStorePinia.js'
+import { storeToRefs } from 'pinia'
 
-  export default {
-    name: 'Residuals',
-    components: {
-      ResidualDetailModal
-    },
-    async created() {
-      await this.getCurrentResidual()
-      this.getResiduals()
-    },
-    watch: {
-      projectSearch (val) {
-        if(val === '') {
-          this.projects = []
-          this.projectId = null
-          this.projectOverrideDate = null
-          return
-        } else if (val != null && !val.includes(' - ')) {
-          this.projects = []
-          this.getProjectsDebounced(val)
-        }
-      },
-    },
-    computed: {
-      ...mapStores(useUserStore),
-      userCanAdd() {
-        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
-      },
-      userCanEdit() {
-        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
-      },
-      timezone() {
-        return this.userStore.details.timezone?.value
-      },
-    },
-    data() {
-      return {
-        snackbar: {},
-        dataLoading: true,
-        search: '',
-        currentResidual: {},
-        payrollStatus: {},
-        footerProps: {
-          'items-per-page-options': [25, 50, 100, 500, 1000],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        projects: [],
-        projectId: null,
-        projectOverrideDate: null,
-        projectSearch: '',
-        projectsLoading: false,
-        selectAll: false,
-        approveConfirm: false,
-        payDate: null,
-        additionalPayrollDataNeeded: false,
-        payrollLoading: true,
-        masterSelectedUserIds: [],
-        showModal: false,
-        modalUserFullName: '',
-        modalData: [],
-        modalTitle: '',
-        modalTypeId: null,
-        totalPay: null,
-        headers: [
-          {text: 'User First Name', value: 'firstName', show: true},
-          {text: 'User Last Name', value: 'lastName', show: true},
-          {text: 'Employee ID', value: 'employeeId', show: true},
-          {text: 'Region', value: 'regionName', show: true},
-          {text: 'Org Name', value: 'officeName', show: true},
-          {text: 'Org State', value: 'officeState', show: true},
-          {text: 'User Position', value: 'userPositionName', show: true},
-          {text: 'User Status', value: 'userStatusType', show: true},
-          {text: 'Hire Date', value: 'hireDate', show: true},
-          {text: 'Usable Name', value: 'userFullName', show: true},
-          {text: 'Residual Plan', value: 'residualPlanName', show: true},
-          {text: 'Residual Start Date', value: 'residualStartDate', show: true},
-          {text: 'LTD Qualified FDC', value: 'lifetimeFdc', show: true},
-          {text: 'Qualified FDC This Period', value: 'qualifiedThisPeriodFdc', show: true},
-          {text: 'FDA Not Qualified This Period', value: 'fdsNotQualified', show: true},
-          {text: 'Required FDS for Month', value: 'requiredFdcPerMonth', show: true},
-          {text: 'Residual Earned', value: 'residualEarned', show: true},
-          {text: '% of Residual Earned', value: 'percentOfResidualEarned', show: true},
-          {text: 'Potential Residual', value: 'potentialResidual', show: true},
-          {text: 'Earned Residual', value: 'earnedResidual', show: true},
-          {text: 'Current Clawbacks', value: 'currentClawback', show: true},
-          {text: 'Existing Clawbacks', value: 'existingClawback', show: true},
-          {text: 'Total Clawbacks', value: 'totalClawbacks', show: true},
-          {text: 'Adjustment/Override', value: 'adjustmentOverride', show: true},
-          {text: 'Total', value: 'total', show: true},
-        ],
-        residuals: []
-      }
-    },
-    methods: {
-      toggleSelectAll () {
-        this.residuals.forEach(ad => {
-          ad.selected = this.selectAll
-        })
-        if(this.selectAll) {
-          this.currentResidual.selectedUserIds = this.residuals.map(ad => ad.userId)
-        } else {
-          this.currentResidual.selectedUserIds = []
-        }
-      },
-      toggleSingleSelect(item) {
-        if(item.selected) {
-          this.currentResidual.selectedUserIds.push(item.userId)
-        } else {
-          this.currentResidual.selectedUserIds = this.currentResidual.selectedUserIds.filter(p => p !== item.userId)
-        }
-      },
-      async getResiduals () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {}
-          if(this.currentResidual?.status !== 'PENDING' && this.currentResidual?.status !== 'REJECTED') {
-            params.selectedUserIds = this.currentResidual.selectedUserIds
-          }
+const brsStore = useBrsStore()
+const { commissionPositionId } = storeToRefs(brsStore)
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-          const {data, status} = await getRequest(`/commissionManagement/residuals`, 'blueraven')
-          this.residuals = data
-          this.residuals.forEach(d => {
-            d.selected = !!this.currentResidual.selectedUserIds?.includes(d.userId)
-          })
+onMounted(() => {
+  getCurrentResidual()
+  getResiduals()
+})
 
-          if(this.currentResidual?.selectedUserIds?.length === data.length) {
-            this.selectAll = true
-          }
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
+})
+const timezone = computed(() => {
+  return userStore.details.timezone?.value
+})
 
-          this.totalPay = sumBy(this.residuals,  function(o) { return o.selected ? o.total : 0 })
+const dataLoading = ref(true)
+const search = ref('')
+const currentResidual = ref({})
+const payrollStatus = ref({})
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 500, 1000],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const projects = ref([])
+const projectId = ref(null)
+const projectOverrideDate = ref(null)
+const projectSearch = ref('')
+const projectsLoading = ref(false)
+const selectAll = ref(false)
+const approveConfirm = ref(false)
+const payDate = ref(null)
+const additionalPayrollDataNeeded = ref(false)
+const payrollLoading = ref(true)
+const masterSelectedUserIds = ref([])
+const showModal = ref(false)
+const modalUserFullName = ref('')
+const modalData = ref([])
+const modalTitle = ref('')
+const modalTypeId = ref(null)
+const totalPay = ref(null)
+const headers = ref([
+  {text: 'User First Name', value: 'firstName', show: true},
+  {text: 'User Last Name', value: 'lastName', show: true},
+  {text: 'Employee ID', value: 'employeeId', show: true},
+  {text: 'Region', value: 'regionName', show: true},
+  {text: 'Org Name', value: 'officeName', show: true},
+  {text: 'Org State', value: 'officeState', show: true},
+  {text: 'User Position', value: 'userPositionName', show: true},
+  {text: 'User Status', value: 'userStatusType', show: true},
+  {text: 'Hire Date', value: 'hireDate', show: true},
+  {text: 'Usable Name', value: 'userFullName', show: true},
+  {text: 'Residual Plan', value: 'residualPlanName', show: true},
+  {text: 'Residual Start Date', value: 'residualStartDate', show: true},
+  {text: 'LTD Qualified FDC', value: 'lifetimeFdc', show: true},
+  {text: 'Qualified FDC This Period', value: 'qualifiedThisPeriodFdc', show: true},
+  {text: 'FDA Not Qualified This Period', value: 'fdsNotQualified', show: true},
+  {text: 'Required FDS for Month', value: 'requiredFdcPerMonth', show: true},
+  {text: 'Residual Earned', value: 'residualEarned', show: true},
+  {text: '% of Residual Earned', value: 'percentOfResidualEarned', show: true},
+  {text: 'Potential Residual', value: 'potentialResidual', show: true},
+  {text: 'Earned Residual', value: 'earnedResidual', show: true},
+  {text: 'Current Clawbacks', value: 'currentClawback', show: true},
+  {text: 'Existing Clawbacks', value: 'existingClawback', show: true},
+  {text: 'Total Clawbacks', value: 'totalClawbacks', show: true},
+  {text: 'Adjustment/Override', value: 'adjustmentOverride', show: true},
+  {text: 'Total', value: 'total', show: true},
+])
+const residuals = ref([])
 
-          this.residuals = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Residuals')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async addAdjustment (item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            userId: item.userId,
-            amount: item.adjustment,
-            note: item.adjustmentNote
-          }
-          await postRequest(`/payroll/residual/${this.currentResidual.id}/adjustments`, params, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Adjustment Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          await this.getResiduals()
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Adjustment')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      getProjectsDebounced(val) {
-        clearTimeout(this._searchTimerId)
-        this._searchTimerId = setTimeout(() => {
-          this.getProjects(val)
-        }, 500) /* 500ms throttle */
-      },
-      async getProjects (search) {
-        try {
-          const {data, status} = await getRequest(`/commissionManagement/residuals/projects?search=${search}`, 'blueraven')
-          this.projects = data
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveOverrideDate () {
-        try {
-          let params = {
-            overrideDate: this.projectOverrideDate,
-            projectId: this.projectId
-          }
-          const {data, status} = await postRequest(`/commissionManagement/residuals/projectOverride`, params, 'blueraven')
-          this.projectId = null
-          this.projectSearch = null
-          this.projects = []
-          this.projectOverrideDate = null
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          let msg = e?.data?.message || 'Error Loading Data'
-          this.snackbar = getSnackbar('ERROR', msg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async loadModalData (residualItem, typeId) {
-        //typeId: 1 = lifetime qualified,
-        // 2 = qualified fds in period,
-        // 3 = fds not qualified this period
-        // 4 = current clawbacks/cancelled projects
-        this.modalTypeId = typeId
-        this.showModal = false
-        this.modalData = []
-        this.modalTitle = typeId === 1 ? 'Lifetime Qualified FDC' :
-          typeId === 2 ? 'Qualified FDC in Period' :
+watch(projectSearch, (val) => {
+  if(val === '') {
+    projects.value = []
+    projectId.value = null
+    projectOverrideDate.value = null
+  } else if (val != null && !val.includes(' - ')) {
+    projects.value = []
+    getProjectsDebounced(val)
+  }
+})
+
+watch(commissionPositionId, () => {
+  getCurrentResidual()
+  getResiduals()
+})
+
+const toggleSelectAll = () => {
+  residuals.value.forEach(ad => {
+    ad.selected = selectAll.value
+  })
+  if(selectAll.value) {
+    currentResidual.value.selectedUserIds = residuals.value.map(ad => ad.userId)
+  } else {
+    currentResidual.value.selectedUserIds = []
+  }
+}
+const toggleSingleSelect =(item) => {
+  if(item.selected) {
+    currentResidual.value.selectedUserIds.push(item.userId)
+  } else {
+    currentResidual.value.selectedUserIds = currentResidual.value.selectedUserIds.filter(p => p !== item.userId)
+  }
+}
+const getResiduals = async () => {
+  appStore.loading = true
+  try {
+    let params = {}
+    if(currentResidual.value?.status !== 'PENDING' && currentResidual.value?.status !== 'REJECTED') {
+      params.selectedUserIds = currentResidual.value.selectedUserIds
+    }
+
+    const {data, status} = await getRequest(`/commissionManagement/residuals`, 'blueraven')
+    residuals.value = data
+    residuals.value.forEach(d => {
+      d.selected = !!currentResidual.value.selectedUserIds?.includes(d.userId)
+    })
+
+    if(currentResidual.value?.selectedUserIds?.length === data.length) {
+      selectAll.value = true
+    }
+
+    totalPay.value = sumBy(residuals.value,  function(o) { return o.selected ? o.total : 0 })
+
+    residuals.value = data
+    dataLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Residuals')
+
+    appStore.loading = false
+  }
+}
+const addAdjustment = async (item) => {
+  appStore.loading = true
+  try {
+    let params = {
+      userId: item.userId,
+      amount: item.adjustment,
+      note: item.adjustmentNote
+    }
+    await postRequest(`/payroll/residual/${currentResidual.value.id}/adjustments`, params, 'blueraven')
+    snackbar('SUCCESS', 'Adjustment Added')
+
+    await getResiduals()
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Adjustment')
+
+    appStore.loading = false
+  }
+}
+const getProjectsDebounced = debounce((val) => {
+  getProjects(val)
+}, 500)
+const getProjects = async (search) => {
+  try {
+    const {data, status} = await getRequest(`/commissionManagement/residuals/projects?search=${search}`, 'blueraven')
+    projects.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Data')
+
+    appStore.loading = false
+  }
+}
+const saveOverrideDate = async () => {
+  try {
+    let params = {
+      overrideDate: projectOverrideDate.value,
+      projectId: projectId.value
+    }
+    const {data, status} = await postRequest(`/commissionManagement/residuals/projectOverride`, params, 'blueraven')
+    projectId.value = null
+    projectSearch.value = null
+    projects.value = []
+    projectOverrideDate.value = null
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let msg = e?.data?.message || 'Error Loading Data'
+    snackbar('ERROR', msg)
+
+    appStore.loading = false
+  }
+}
+const loadModalData = async (residualItem, typeId) => {
+  //typeId: 1 = lifetime qualified,
+  // 2 = qualified fds in period,
+  // 3 = fds not qualified this period
+  // 4 = current clawbacks/cancelled projects
+  modalTypeId.value = typeId
+  showModal.value = false
+  modalData.value = []
+  modalTitle.value = typeId === 1 ? 'Lifetime Qualified FDC' :
+      typeId === 2 ? 'Qualified FDC in Period' :
           typeId === 3 ? 'FDA Not Qualified this Period'
-            : 'Cancelled Projects'
-        this.modalUserFullName = ''
-        try {
-          let url = typeId === 1 ? `/commissionManagement/residuals/qualifiedLifetime/${residualItem.userId}` :
-                    typeId === 2 ? `/commissionManagement/residuals/qualifiedPeriod/${residualItem.userId}` :
-                    typeId === 3 ? `/commissionManagement/residuals/notQualifiedPeriod/${residualItem.userId}`
-                      : `/commissionManagement/residuals/currentClawbacks/${residualItem.userId}`
+              : 'Cancelled Projects'
+  modalUserFullName.value = ''
+  try {
+    let url = typeId === 1 ? `/commissionManagement/residuals/qualifiedLifetime/${residualItem.userId}` :
+        typeId === 2 ? `/commissionManagement/residuals/qualifiedPeriod/${residualItem.userId}` :
+            typeId === 3 ? `/commissionManagement/residuals/notQualifiedPeriod/${residualItem.userId}`
+                : `/commissionManagement/residuals/currentClawbacks/${residualItem.userId}`
 
 
-          const {data, status} = await getRequest(url, 'blueraven')
-          this.modalData = data
-          this.modalUserFullName = residualItem.userFullName
-          this.showModal = true
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getCurrentResidual () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/payroll/residual/current`, 'blueraven', [])
-          this.currentResidual = data
+    const {data, status} = await getRequest(url, 'blueraven')
+    modalData.value = data
+    modalUserFullName.value = residualItem.userFullName
+    showModal.value = true
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Data')
 
-          this.masterSelectedUserIds = cloneDeep(this.currentResidual.userIds)
-          this.getStatusColor()
-          this.payrollLoading = false
-          this.additionalPayrollDataNeeded = null == this.currentResidual.description
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Current Payroll')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async submitForApproval (action) {
-        //to avoid any unsaved changes prior to approval we are just saving changes prior to submitting
-        const val = await this.saveChangesToResidual(true)
-        //dont submit for approval if the save changes request failed
-        if(val) {
-          this.totalPay = sumBy(this.residuals,  function(o) { return o.selected ? o.total : 0 })
-          let selectedIds = this.residuals.filter(ad => ad.selected).map(ad => ad.userId)
-          let params = {
-            payDate: this.payDate
-          }
-          if(this.payrollStatus.showSelect && (!selectedIds || selectedIds.length === 0)) {
-            this.snackbar = getSnackbar('WARNING', 'You must select at least one user.')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            this.$store.commit(AppMutations.SET_LOADING, true)
-            try {
-              await postRequest(`/payroll/residual/${this.currentResidual.id}/${action}`, params, 'blueraven')
-              this.snackbar = getSnackbar('SUCCESS', 'Successfully Updated')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              //todo: reload residuals after approving
-              await this.getCurrentResidual()
-            } catch (e) {
-              console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error Updating')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
-            }
-          }
-        }
-      },
-      getStatusColor () {
-        this.payrollStatus = {}
-        switch(this.currentResidual.status) {
-          case 'PENDING':
-            this.payrollStatus.message = 'This payroll is pending.'
-            this.payrollStatus.color = '#DCDCDC'
-            this.payrollStatus.showSelect = true
-            this.payrollStatus.action = 'submit'
-            this.payrollStatus.actionText = 'Submit For Approval'
-            this.payrollStatus.actionColor = 'primary'
-            break
-          case 'SUBMITTED':
-            this.payrollStatus.message = 'This payroll has been Submitted.'
-            this.payrollStatus.color = '#DCDCDC'
-            this.payrollStatus.showSelect = false
-            this.payrollStatus.action = 'reject'
-            this.payrollStatus.actionText = 'Reject'
-            this.payrollStatus.actionColor = 'error'
-            this.payrollStatus.secondaryAction = 'approve'
-            this.payrollStatus.secondaryActionText = 'Approve'
-            this.payrollStatus.secondaryActionColor = 'green'
-            break
-          case 'REJECTED':
-            this.payrollStatus.message = 'This payroll has been Rejected.'
-            this.payrollStatus.color = 'error'
-            this.payrollStatus.textColor = 'white'
-            this.payrollStatus.showSelect = true
-            this.payrollStatus.action = 'submit'
-            this.payrollStatus.actionText = 'Submit For Approval'
-            this.payrollStatus.actionColor = 'primary'
-            break
-          default:
-            this.payrollStatus = {}
-        }
-      },
-      async saveChangesToResidual (keepLoading) {
-        let params = {
-          description: this.currentResidual.description,
-          userIds: this.currentResidual.selectedUserIds
-        }
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await postRequest(`/payroll/residual/${this.currentResidual.id}`, params, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Successfully Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.currentResidual = data
-          this.additionalPayrollDataNeeded = null == this.currentResidual.description
-          this.getStatusColor()
-          this.getCurrentResidual()
-          await this.getResiduals()
+    appStore.loading = false
+  }
+}
+const getCurrentResidual = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/payroll/residual/current`, 'blueraven', [])
+    currentResidual.value = data
 
-          if(!keepLoading) {
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-          return true
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          return false
-        }
-      },
-      async exportResiduals () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let filename = 'Residuals.csv';
-          let csvData = 'User First Name,User Last Name,Employee ID,Region,Org Name,Org State,User Position,User Status,Hire Date,Usable Name,Residual Start Date,LTD Qualified FDC,Qualified FDC This Period,FDA Not Qualified This Period,Required FDS for Month,Residual Earned, % of Residual Earned,Potential Residual,Earned Residual,Current Clawback,Existing Clawback,Total Clawback,Adjustment/Override,Total';
-          csvData += '\n';
+    masterSelectedUserIds.value = cloneDeep(currentResidual.value.userIds)
+    getStatusColor()
+    payrollLoading.value = false
+    additionalPayrollDataNeeded.value = null == currentResidual.value.description
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Current Payroll')
 
-          this.residuals.forEach(p => {
-              csvData +=
-                p.firstName + ',"' +
-                p.lastName + '",' +
-                p.employeeId + ',"' +
-                p.regionName + '",' +
-                "\"" + p.officeName + '\",' +
-                p.officeState + ',' +
-                p.userPositionName + ',"' +
-                p.userStatusType + '",' +
-                p.hireDate + ',' +
-                p.userFullName + ',' +
-                p.residualStartDate + ',' +
-                p.lifetimeFdc + ',' +
-                p.qualifiedThisPeriodFdc + ',' +
-                p.fdsNotQualified + ',' +
-                p.requiredFdcPerMonth + ',' +
-                p.residualEarned + ',' +
-                p.percentOfResidualEarned + ',"' +
-                p.potentialResidual + '",' +
-                p.earnedResidual + ',' +
-                p.currentClawback + ',' +
-                p.existingClawback + ',' +
-                p.totalClawback + ',' +
-                p.adjustmentOverride + ',' +
-                p.total
-              csvData += '\n';
-          })
+    appStore.loading = false
+  }
+}
+const submitForApproval = async (action) => {
+  //to avoid any unsaved changes prior to approval we are just saving changes prior to submitting
+  const val = await saveChangesToResidual(true)
+  //dont submit for approval if the save changes request failed
+  if(val) {
+    totalPay.value = sumBy(residuals.value,  function(o) { return o.selected ? o.total : 0 })
+    let selectedIds = residuals.value.filter(ad => ad.selected).map(ad => ad.userId)
+    let params = {
+      payDate: payDate.value
+    }
+    if(payrollStatus.value.showSelect && (!selectedIds || selectedIds.length === 0)) {
+      snackbar('WARNING', 'You must select at least one user.')
 
-          let blob = new Blob([csvData], {
-            type: 'text/csv;charset=utf-8'
-          });
+    } else {
+      appStore.loading = true
+      try {
+        await postRequest(`/payroll/residual/${currentResidual.value.id}/${action}`, params, 'blueraven')
+        snackbar('SUCCESS', 'Successfully Updated')
 
-          saveAs(blob, filename);
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Exporting Residuals')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+        //todo: reload residuals after approving
+        await getCurrentResidual()
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'Error Updating')
+
+        appStore.loading = false
+      }
     }
   }
+}
+const getStatusColor = () => {
+  payrollStatus.value = {}
+  switch(currentResidual.value.status) {
+    case 'PENDING':
+      payrollStatus.value.message = 'This payroll is pending.'
+      payrollStatus.value.color = '#DCDCDC'
+      payrollStatus.value.showSelect = true
+      payrollStatus.value.action = 'submit'
+      payrollStatus.value.actionText = 'Submit For Approval'
+      payrollStatus.value.actionColor = 'primary'
+      break
+    case 'SUBMITTED':
+      payrollStatus.value.message = 'This payroll has been Submitted.'
+      payrollStatus.value.color = '#DCDCDC'
+      payrollStatus.value.showSelect = false
+      payrollStatus.value.action = 'reject'
+      payrollStatus.value.actionText = 'Reject'
+      payrollStatus.value.actionColor = 'error'
+      payrollStatus.value.secondaryAction = 'approve'
+      payrollStatus.value.secondaryActionText = 'Approve'
+      payrollStatus.value.secondaryActionColor = 'green'
+      break
+    case 'REJECTED':
+      payrollStatus.value.message = 'This payroll has been Rejected.'
+      payrollStatus.value.color = 'error'
+      payrollStatus.value.textColor = 'white'
+      payrollStatus.value.showSelect = true
+      payrollStatus.value.action = 'submit'
+      payrollStatus.value.actionText = 'Submit For Approval'
+      payrollStatus.value.actionColor = 'primary'
+      break
+    default:
+      payrollStatus.value = {}
+  }
+}
+const saveChangesToResidual = async (keepLoading) => {
+  let params = {
+    description: currentResidual.value.description,
+    userIds: currentResidual.value.selectedUserIds
+  }
+  appStore.loading = true
+  try {
+    const {data} = await postRequest(`/payroll/residual/${currentResidual.value.id}`, params, 'blueraven')
+    snackbar('SUCCESS', 'Successfully Updated')
+
+    currentResidual.value = data
+    additionalPayrollDataNeeded.value = null == currentResidual.value.description
+    getStatusColor()
+    getCurrentResidual()
+    await getResiduals()
+
+    if(!keepLoading) {
+      appStore.loading = false
+    }
+    return true
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating')
+
+    appStore.loading = false
+    return false
+  }
+}
+const exportResiduals = async () => {
+  appStore.loading = true
+  try {
+    let filename = 'Residuals.csv';
+    let csvData = 'User First Name,User Last Name,Employee ID,Region,Org Name,Org State,User Position,User Status,Hire Date,Usable Name,Residual Start Date,LTD Qualified FDC,Qualified FDC This Period,FDA Not Qualified This Period,Required FDS for Month,Residual Earned, % of Residual Earned,Potential Residual,Earned Residual,Current Clawback,Existing Clawback,Total Clawback,Adjustment/Override,Total';
+    csvData += '\n';
+
+    residuals.value.forEach(p => {
+      csvData +=
+          p.firstName + ',"' +
+          p.lastName + '",' +
+          p.employeeId + ',"' +
+          p.regionName + '",' +
+          "\"" + p.officeName + '\",' +
+          p.officeState + ',' +
+          p.userPositionName + ',"' +
+          p.userStatusType + '",' +
+          p.hireDate + ',' +
+          p.userFullName + ',' +
+          p.residualStartDate + ',' +
+          p.lifetimeFdc + ',' +
+          p.qualifiedThisPeriodFdc + ',' +
+          p.fdsNotQualified + ',' +
+          p.requiredFdcPerMonth + ',' +
+          p.residualEarned + ',' +
+          p.percentOfResidualEarned + ',"' +
+          p.potentialResidual + '",' +
+          p.earnedResidual + ',' +
+          p.currentClawback + ',' +
+          p.existingClawback + ',' +
+          p.totalClawback + ',' +
+          p.adjustmentOverride + ',' +
+          p.total
+      csvData += '\n';
+    })
+
+    let blob = new Blob([csvData], {
+      type: 'text/csv;charset=utf-8'
+    });
+
+    saveAs(blob, filename);
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Exporting Residuals')
+
+    appStore.loading = false
+  }
+}
 </script>
 
 <style lang="scss">
-  #residuals-container .v-data-table__wrapper {
-    height: calc(100vh - 350px);
-    min-height: 300px;
-  }
+#residuals-container .v-data-table__wrapper {
+  height: calc(100vh - 350px);
+  min-height: 300px;
+}
 </style>
 
 <style lang="scss" scoped>
-  .v-data-table {
-    border-radius: 0;
-  }
+.v-data-table {
+  border-radius: 0;
+}
 </style>
 

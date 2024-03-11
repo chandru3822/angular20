@@ -27,9 +27,27 @@ const router = new Router({
       props: true
     },
     {
-      path: '/tempButtonHandler',
-      name: 'tempButtonHandler',
-      component: () => import('./views/TempButtonHandler.vue')
+      path: '/vue3',
+      name: 'vue3',
+      redirect: '/vue3/vbtn',
+      component: () => import('./views/vue3/Vue3.vue'),
+      children: [
+        {
+          path: 'vbtn',
+          name: 'vbtn',
+          component: () => import('./views/vue3/VButtonHandler.vue')
+        },
+        {
+          path: 'data',
+          name: 'data',
+          component: () => import('./views/vue3/Data.vue')
+        },
+        {
+          path: 'file',
+          name: 'file',
+          component: () => import('./views/vue3/File.vue')
+        },
+      ]
     },
     {
       path: '/forgotPassword',

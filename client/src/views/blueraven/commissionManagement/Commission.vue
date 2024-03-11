@@ -2,59 +2,66 @@
   <v-container class="pa-0" id="commission-container">
     <v-dialog :width="600" v-model="showProjectAssignmentModal">
       <ProjectAssignmentModal @cancel="showProjectAssignmentModal = false"
-                           :plan-id="parseInt(planId)"
-                           :plan-name="commission.name"></ProjectAssignmentModal>
+                              :plan-id="parseInt(planId)"
+                              :plan-name="commission.name"></ProjectAssignmentModal>
     </v-dialog>
     <v-toolbar flat color="transparent">
       <v-toolbar-title>
-        <span v-if="planId">{{commission.name}}</span>
+        <span v-if="planId">{{ commission.name }}</span>
         <span v-else>New Commission Plan</span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
-          <v-btn color="primary" class="white--text mr-2"
-                 v-if="userIsAdmin && planId"
-                 @click="showProjectAssignmentModal = true">
-            Admin
-          </v-btn>
-          <v-btn color="primary" class="white--text mr-2"
-                 :disabled="!commission.name || !commission.positionId"
-                 v-if="userCanEdit"
-                 @click="savePlan()">
-            Save
-          </v-btn>
-          <v-btn color="success" class="white--text mr-2"
-                 v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && commission.statusType === 'PENDING'"
-                 :disabled="errorMessages.length > 0"
-                 @click="approvePlan()">
-            Approve
-          </v-btn>
-          <ConfirmationDialog :open-dialog="showDeleteConfirm" @confirm="[deleteConfirm = true, deletePlan()]" @close-dialog="showDeleteConfirm=false">
+          <AlbatrossButton
+              color="primary"
+              class="mr-2"
+              v-if="userIsAdmin && planId"
+              @click="showProjectAssignmentModal = true"
+              text="Admin"
+          ></AlbatrossButton>
+          <AlbatrossButton
+              color="primary"
+              class="mr-2"
+              :disabled="!commission.name || !commission.positionId"
+              v-if="userCanEdit"
+              @click="savePlan()"
+              text="Save"
+          ></AlbatrossButton>
+          <AlbatrossButton
+              color="success"
+              class="mr-2"
+              v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && commission.statusType === 'PENDING'"
+              :disabled="errorMessages.length > 0"
+              @click="approvePlan()"
+          > Approve </AlbatrossButton>
+          <ConfirmationDialog :open-dialog="showDeleteConfirm" @confirm="[deleteConfirm = true, deletePlan()]"
+                              @close-dialog="showDeleteConfirm=false">
             Are you sure you want to delete this plan?
           </ConfirmationDialog>
-          <v-btn v-if="planId && !commission.approved && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
-                 @click="showDeleteConfirm = true"
-                 color="error"
-          >
-            delete
-          </v-btn>
-          <v-btn v-else-if="planId && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
-                 @click="inactivateConfirm = true"
-                 color="error"
-                 class="mr-2"
-          >
-            inactivate
-          </v-btn>
-          <ConfirmationDialog :open-dialog="inactivateConfirm" :hide-confirm="planHasActiveUsers()" @confirm="inactivatePlan" @close-dialog="inactivateConfirm = false">
-              <template v-if="planHasActiveUsers()" v-slot:title>Error</template>
-              <template v-else v-slot:title>Confirm</template>
+          <AlbatrossButton
+              v-if="planId && !commission.approved && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+              @click="showDeleteConfirm = true"
+              color="error"
+              text="delete"
+          ></AlbatrossButton>
+          <AlbatrossButton
+              v-else-if="planId && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+              @click="inactivateConfirm = true"
+              color="error"
+              class="mr-2"
+              text="Inactivate"
+          ></AlbatrossButton>
+          <ConfirmationDialog :open-dialog="inactivateConfirm" :hide-confirm="planHasActiveUsers()"
+                              @confirm="inactivatePlan" @close-dialog="inactivateConfirm = false">
+            <template v-if="planHasActiveUsers()" v-slot:title>Error</template>
+            <template v-else v-slot:title>Confirm</template>
             <div v-if="planHasActiveUsers()">
-            You cannot set this plan to inactive with active users.
+              You cannot set this plan to inactive with active users.
               <table class="table mt-2">
-                <tr v-for="(u, idx) in activeUsers()" :key="idx">
-                  <td class="pr-3">{{u.name}}</td>
-                  <td>{{u.position}}</td>
+                <tr v-for="(u, idx) in activeUsers" :key="idx">
+                  <td class="pr-3">{{ u.name }}</td>
+                  <td>{{ u.position }}</td>
                 </tr>
               </table>
             </div>
@@ -63,27 +70,28 @@
             </div>
             <template v-if="!planHasActiveUsers()" v-slot:yes>Inactivate</template>
           </ConfirmationDialog>
-          <v-btn v-if="planId && commission && commission.users
-                        && userCanAdd
-                        && commission.users.filter(u => {return u.endDate == null}).length > 0"
-                 color="primary" class="ml-3" @click="cloneDialog = true">
-            Clone
-          </v-btn>
+          <AlbatrossButton
+              v-if="planId && commission && commission.users && userCanAdd && commission.users.filter(u => {return u.endDate == null}).length > 0"
+              color="primary"
+              class="ml-3"
+              @click="cloneDialog = true"
+              text="Clone"
+          > </AlbatrossButton>
           <ConfirmationDialog :open-dialog="cloneDialog"
                               :disable-confirm="(commission.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||
                               (commission.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"
                               @confirm="validateStartDates"
                               @close-dialog="[cloneDialog = false, cloneStartDate = null]"
           >
-            <template v-slot:title>Clone {{commission.name}}</template>
+            <template v-slot:title>Clone {{ commission.name }}</template>
             <div class="mb-2">
               This option allows you to copy an entire plan over. <br/>
               By default, no users are copied over.
             </div>
             Users to Copy:
-            <div v-for="u in filterBy(commission.users, (u) => { return u.endDate == null })">
+            <div v-for="u in commission.users.filter(u => u.endDate == null)">
               <input type="checkbox" class="mr-2" v-model="u.selected">
-              {{ u.name }}: {{u.startDate | formatDate('date')}}
+              {{ u.name }}: {{ u.startDate | formatDate('date') }}
             </div>
             <div class="mt-3" v-if="commission.users && commission.users.filter(u => u.selected).length > 0">
               <DatetimePickerInput
@@ -94,7 +102,8 @@
                   label="Start Date"
               />
               <div v-if="cloneStartDate">
-                * This will update the end date for all selected users to {{moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on their current plan.
+                * This will update the end date for all selected users to
+                {{ moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on their current plan.
               </div>
               <div v-if="cloneDateError" class="error--text">
                 You cannot select a start date that is before or equal to any other user's plan start date.
@@ -111,7 +120,7 @@
         <v-list v-for="(em, index) in errorMessages" :key="index" class="pa-0" color="transparent">
           <v-list-item>
             <v-list-item-content class="text-left error--text">
-              {{em}}
+              {{ em }}
             </v-list-item-content>
           </v-list-item>
         </v-list>
@@ -177,14 +186,17 @@
       <v-col>
         <v-toolbar flat>
           <v-toolbar-title>
-            {{levelText}}s
+            {{ levelText }}s
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="commission.statusType === 'PENDING'" @click="[selectedMilestone = {}, addMilestone = !addMilestone, getMilestones()]">
-              <v-icon v-if="addMilestone">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                v-if="commission.statusType === 'PENDING'"
+                @click="[selectedMilestone = {}, addMilestone = !addMilestone, getMilestones()]"
+                :prepend-icon="addMilestone ? 'remove' : 'add'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -207,42 +219,45 @@
                           @input="checkMinMaxMilestones(selectedMilestone)"
                           label="Minimum Pitches"
                           v-model.number="selectedMilestone.min">
-              </v-text-field>
-              <v-text-field text
-                            @input="checkMinMaxMilestones(selectedMilestone)"
-                            type="number"
-                            label="Maximum Pitches"
-                            v-model.number="selectedMilestone.max">
-              </v-text-field>
+            </v-text-field>
+            <v-text-field text
+                          @input="checkMinMaxMilestones(selectedMilestone)"
+                          type="number"
+                          label="Maximum Pitches"
+                          v-model.number="selectedMilestone.max">
+            </v-text-field>
           </div>
           <div class="error-text mb-3" v-if="milestoneError">
-            {{milestoneErrorMsg}}
+            {{ milestoneErrorMsg }}
           </div>
-          <v-btn color="primary" class="mr-3 white--text" @click="addMilestoneToPlan()"
-                 :disabled="!selectedMilestone.id || (!selectedMilestone.allocation && !selectedMilestone.min) || milestoneError">
-            Add
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              class="mr-3"
+              @click="addMilestoneToPlan()"
+              :disabled="!selectedMilestone.id || (!selectedMilestone.allocation && !selectedMilestone.min) || milestoneError"
+              text="Add"
+          ></AlbatrossButton>
         </v-card>
         <v-divider v-if="addMilestone"></v-divider>
         <v-data-table
-          :headers="displayedMilestoneHeaders"
-          :items="commission.milestones"
-          :fixed-header="true"
-          :items-per-page="-1"
-          disable-sort
-          :loading="dataLoading"
-          single-expand
-          item-key="commissionPlanAllocationId"
-          :expanded.sync="milestoneExpanded"
-          hide-default-footer
-          class="elevation-1"
+            :headers="displayedMilestoneHeaders"
+            :items="commission.milestones"
+            :fixed-header="true"
+            :items-per-page="-1"
+            disable-sort
+            :loading="dataLoading"
+            single-expand
+            item-key="commissionPlanAllocationId"
+            :expanded.sync="milestoneExpanded"
+            hide-default-footer
+            class="elevation-1"
         >
           <template #no-data>
-            <span class="default-text-color">No available {{levelText}}s</span>
+            <span class="default-text-color">No available {{ levelText }}s</span>
           </template>
 
           <template #no-results>
-            <span class="default-text-color">No available {{levelText}}s</span>
+            <span class="default-text-color">No available {{ levelText }}s</span>
           </template>
 
           <template #expanded-item="{ headers, item }">
@@ -267,28 +282,47 @@
                 </v-text-field>
               </div>
               <div class="error-text mb-3" v-if="milestoneError">
-                {{milestoneErrorMsg}}
+                {{ milestoneErrorMsg }}
               </div>
-              <v-btn :disabled="!item.allocation || (commission.positionId === 4 && !item.min) || milestoneError"
-                     @click="[milestoneExpanded = [], updateMilestone(item)]" color="primary">Save</v-btn>
+              <AlbatrossButton
+                  :disabled="!item.allocation || (commission.positionId === 4 && !item.min) || milestoneError"
+                  @click="[milestoneExpanded = [], updateMilestone(item)]"
+                  color="primary"
+                  text="Save"
+              ></AlbatrossButton>
             </td>
           </template>
 
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.milestoneType}}</td>
-              <td class="text-left" v-if="commission.positionId === 4">{{item.min}}</td>
-              <td class="text-left" v-if="commission.positionId === 4">{{item.max}}</td>
-              <td class="text-left">{{item.allocation}}</td>
+              <td class="text-left">{{ item.milestoneType }}</td>
+              <td class="text-left" v-if="commission.positionId === 4">{{ item.min }}</td>
+              <td class="text-left" v-if="commission.positionId === 4">{{ item.max }}</td>
+              <td class="text-left">{{ item.allocation }}</td>
               <td>
-                <v-btn small text color="primary" @click="milestoneExpanded = [item]"
-                       v-if="commission.statusType === 'PENDING' && !milestoneExpanded.includes(item)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" @click="milestoneExpanded = []"
-                       v-if="milestoneExpanded.includes(item)">cancel
-                </v-btn>
-                <v-btn small text color="primary" @click="milestoneToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="milestoneExpanded = [item]"
+                    v-if="commission.statusType === 'PENDING' && !milestoneExpanded.includes(item)"
+                    prepend-icon="edit"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="milestoneExpanded = []"
+                    v-if="milestoneExpanded.includes(item)"
+                    text="cancel"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="milestoneToDelete=item"
+                    prepend-icon="delete"
+                ></AlbatrossButton>
               </td>
             </tr>
           </template>
@@ -303,10 +337,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="commission.statusType === 'PENDING'" @click="[selectedSource = {}, addSource = !addSource, getSources()]">
-              <v-icon v-if="addSource">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                v-if="commission.statusType === 'PENDING'"
+                @click="[selectedSource = {}, addSource = !addSource, getSources()]"
+                :prepend-icon="addSource ? 'remove' : 'add'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -337,10 +374,13 @@
                       item-text="milestoneType"
                       item-value="milestoneId"
             ></v-select>
-            <v-btn color="primary" class="mr-3 white--text" @click="addSourceToPlan()"
-                   :disabled="!selectedSource.id || !selectedSource.feeTypeId || !selectedSource.feeAmount">
-              Add
-            </v-btn>
+            <AlbatrossButton
+                color="primary"
+                class="mr-3"
+                @click="addSourceToPlan()"
+                :disabled="!selectedSource.id || !selectedSource.feeTypeId || !selectedSource.feeAmount"
+                text="Add"
+            ></AlbatrossButton>
           </div>
         </v-card>
         <v-divider v-if="addSource"></v-divider>
@@ -381,30 +421,46 @@
                         item-text="milestoneType"
                         item-value="milestoneId"
               ></v-select>
-              <v-btn :disabled="!item.feeAmount || !item.feeTypeId || !item.milestoneId"
-                     @click="[sourceExpanded = [], updateSource(item)]" color="primary">Save</v-btn>
+              <AlbatrossButton
+                  :disabled="!item.feeAmount || !item.feeTypeId || !item.milestoneId"
+                  @click="[sourceExpanded = [], updateSource(item)]"
+                  color="primary"
+                  text="Save"
+              ></AlbatrossButton>
             </td>
           </template>
 
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.sourceName}}</td>
-              <td class="text-left">{{item.feeAmount}}</td>
-              <td class="text-left">{{item.feeType}}</td>
-              <td class="text-left">{{item.milestoneType}}</td>
+              <td class="text-left">{{ item.sourceName }}</td>
+              <td class="text-left">{{ item.feeAmount }}</td>
+              <td class="text-left">{{ item.feeType }}</td>
+              <td class="text-left">{{ item.milestoneType }}</td>
               <td>
-                <v-btn small text color="primary" @click="sourceExpanded = [item]"
-                       v-if="commission.statusType === 'PENDING' && !sourceExpanded.includes(item)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" @click="sourceExpanded = []"
-                       v-if="sourceExpanded.includes(item)">cancel
-                </v-btn>
-                <v-btn v-if="commission.statusType === 'PENDING'"
-                       small text color="primary"
-                       @click="sourceToDelete=item">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="sourceExpanded = [item]"
+                    v-if="commission.statusType === 'PENDING' && !sourceExpanded.includes(item)"
+                    prepend-icon="edit"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="sourceExpanded = []"
+                    v-if="sourceExpanded.includes(item)"
+                    text="cancel"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    v-if="commission.statusType === 'PENDING'"
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="sourceToDelete=item"
+                    prepend-icon="delete"
+                ></AlbatrossButton>
               </td>
             </tr>
           </template>
@@ -419,11 +475,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addUser = !addUser, newUser = {}, userHistory = []]"
-                   v-if="userCanAdd">
-              <v-icon v-if="addUser">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="[addUser = !addUser, newUser = {}, userHistory = []]"
+                v-if="userCanAdd"
+                :prepend-icon="addUser ? 'remove' : 'add'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -448,57 +506,61 @@
                 </template>
               </v-autocomplete>
               <DatetimePickerInput
-                v-model="newUser.startDate"
-                :timezone="timezone"
-                :type="'date'"
-                :format="'MMMM DD, YYYY'"
-                label="Start Date"
-                :readonly="!newUser.userId || errorLoadingUserHistory"
-                @input="checkDates(newUser.startDate, newUser.endDate, userHistory, newUser)"
+                  v-model="newUser.startDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :format="'MMMM DD, YYYY'"
+                  label="Start Date"
+                  :readonly="!newUser.userId || errorLoadingUserHistory"
+                  @input="checkDates(newUser.startDate, newUser.endDate, userHistory, newUser)"
               />
               <DatetimePickerInput
-                v-model="newUser.endDate"
-                :timezone="timezone"
-                :type="'date'"
-                :format="'MMMM DD, YYYY'"
-                label="End Date"
-                :readonly="!newUser.userId || errorLoadingUserHistory"
-                @input="checkDates(newUser.startDate, newUser.endDate, userHistory, newUser)"
+                  v-model="newUser.endDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :format="'MMMM DD, YYYY'"
+                  label="End Date"
+                  :readonly="!newUser.userId || errorLoadingUserHistory"
+                  @input="checkDates(newUser.startDate, newUser.endDate, userHistory, newUser)"
               />
             </v-col>
             <v-col cols="12" md="6">
               <v-data-table
-                :headers="historyHeaders"
-                :items="userHistory"
-                :fixed-header="true"
-                :items-per-page="-1"
-                disable-sort
-                hide-default-footer
-                class="elevation-1"
-                v-if="userHistory.length > 0"
+                  :headers="historyHeaders"
+                  :items="userHistory"
+                  :fixed-header="true"
+                  :items-per-page="-1"
+                  disable-sort
+                  hide-default-footer
+                  class="elevation-1"
+                  v-if="userHistory.length > 0"
               >
               </v-data-table>
               <div v-if="errorLoadingUserHistory" class="error--text">
-                We had a problem loading this user's plan history. Cannot add this user until their history can be checked.
+                We had a problem loading this user's plan history. Cannot add this user until their history can be
+                checked.
               </div>
             </v-col>
           </v-row>
 
           <div v-if="newUser.dateError" class="error--text mb-2">
-            * Error: {{newUser.dateErrorMsg}}
+            * Error: {{ newUser.dateErrorMsg }}
           </div>
           <div class="mb-2" v-else-if="newUser.showNote">
-            {{newUser.noteMsg}}
+            {{ newUser.noteMsg }}
           </div>
-          <v-btn color="primary" class="mr-3 white--text" @click="addUserToPlan()"
-                 :disabled="newUser.dateError || !newUser.userId || !newUser.startDate || errorLoadingUserHistory">
-            Add
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              class="mr-3"
+              @click="addUserToPlan()"
+              :disabled="newUser.dateError || !newUser.userId || !newUser.startDate || errorLoadingUserHistory"
+              text="Add"
+          ></AlbatrossButton>
         </v-card>
         <v-divider v-if="addUser"></v-divider>
         <v-data-table
             :headers="headers"
-            :items="filterCommissionUsers()"
+            :items="filteredCommissionUsers"
             :fixed-header="true"
             :items-per-page="-1"
             disable-sort
@@ -521,61 +583,80 @@
               <v-row>
                 <v-col cols="12" md="6">
                   <DatetimePickerInput
-                    v-model="item.endDate"
-                    :timezone="timezone"
-                    :type="'date'"
-                    :format="'MMMM DD, YYYY'"
-                    label="End Date"
-                    :readonly="errorLoadingUserHistory"
-                    @input="checkDates(item.startDate, item.endDate, userHistory, item, commission.id)"
+                      v-model="item.endDate"
+                      :timezone="timezone"
+                      :type="'date'"
+                      :format="'MMMM DD, YYYY'"
+                      label="End Date"
+                      :readonly="errorLoadingUserHistory"
+                      @input="checkDates(item.startDate, item.endDate, userHistory, item, commission.id)"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-data-table
-                    :headers="historyHeaders"
-                    :items="userHistory"
-                    :fixed-header="true"
-                    :items-per-page="-1"
-                    hide-default-footer
-                    class="elevation-1"
-                    v-if="userHistory.length > 0"
+                      :headers="historyHeaders"
+                      :items="userHistory"
+                      :fixed-header="true"
+                      :items-per-page="-1"
+                      hide-default-footer
+                      class="elevation-1"
+                      v-if="userHistory.length > 0"
                   >
                   </v-data-table>
                   <div v-if="errorLoadingUserHistory" class="error--text">
-                    We had a problem loading this user's plan history. Cannot add this user until their history can be checked.
+                    We had a problem loading this user's plan history. Cannot add this user until their history can be
+                    checked.
                   </div>
                 </v-col>
               </v-row>
               <div v-if="item.dateError" class="error--text mb-2">
-                * Error: {{item.dateErrorMsg}}
+                * Error: {{ item.dateErrorMsg }}
               </div>
               <div class="mb-2" v-else-if="item.showNote">
-                {{item.noteMsg}}
+                {{ item.noteMsg }}
               </div>
-              <v-btn color="primary" class="mr-3 white--text" @click="updateAssignedUser(item)"
-                     :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory">
-                Save
-              </v-btn>
+              <AlbatrossButton
+                  color="primary"
+                  class="mr-3"
+                  @click="updateAssignedUser(item)"
+                  :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory"
+                  text="Save"
+              ></AlbatrossButton>
             </td>
           </template>
 
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.name}}</td>
-              <td class="text-left">{{item.position}}</td>
-              <td class="text-left">{{item.employeeId}}</td>
-              <td class="text-left">{{item.startDate}}</td>
-              <td class="text-left">{{item.endDate}}</td>
+              <td class="text-left">{{ item.name }}</td>
+              <td class="text-left">{{ item.position }}</td>
+              <td class="text-left">{{ item.employeeId }}</td>
+              <td class="text-left">{{ item.startDate }}</td>
+              <td class="text-left">{{ item.endDate }}</td>
               <td>
-                <v-btn v-if="commission.statusType === 'PENDING' && !assignedUserExpanded.includes(item)"
-                       small text color="primary" @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
-                       >
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" @click="assignedUserExpanded = []"
-                       v-if="assignedUserExpanded.includes(item)">cancel
-                </v-btn>
-                <v-btn v-if="commission.statusType === 'PENDING'" small text color="primary" @click="userToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <AlbatrossButton
+                    v-if="commission.statusType === 'PENDING' && !assignedUserExpanded.includes(item)"
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    prepend-icon="edit"
+                    @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="assignedUserExpanded = []"
+                    v-if="assignedUserExpanded.includes(item)"
+                    text="cancel"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    v-if="commission.statusType === 'PENDING'"
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="userToDelete=item"
+                    prepend-icon="delete"
+                ></AlbatrossButton>
               </td>
             </tr>
           </template>
@@ -588,646 +669,638 @@
     <ConfirmationDialog :open-dialog="!!sourceToDelete" @confirm="deleteSource" @close-dialog="sourceToDelete=null">
       Are you sure you want to delete this source: <strong>{{ sourceToDeleteName }}</strong>??
     </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="!!milestoneToDelete" :hide-confirm="milestoneToDeleteIsUsed" @confirm="deleteMilestone" @close-dialog="milestoneToDelete=null">
+    <ConfirmationDialog :open-dialog="!!milestoneToDelete" :hide-confirm="milestoneToDeleteIsUsed"
+                        @confirm="deleteMilestone" @close-dialog="milestoneToDelete=null">
       <template v-slot:title v-if="milestoneToDeleteIsUsed">Error</template>
       <div v-if="milestoneToDeleteIsUsed">Cannot delete milestones that are in use by sources.</div>
       <div v-else-if="commission.positionId === 1">
-      Are you sure you want to delete this milestone: <strong>{{ milestoneToDeleteType }}</strong>?
+        Are you sure you want to delete this milestone: <strong>{{ milestoneToDeleteType }}</strong>?
       </div>
       <div v-else>
-        Are you sure you want to delete this tier: <strong>{{ milestoneToDeleteType }}: {{milestoneToDeleteMin}} - {{milestoneToDeleteMax}}</strong>?
+        Are you sure you want to delete this tier: <strong>{{ milestoneToDeleteType }}: {{ milestoneToDeleteMin }} -
+        {{ milestoneToDeleteMax }}</strong>?
       </div>
     </ConfirmationDialog>
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import moment from 'moment'
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
-  import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/ProjectAssignmentModal";
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+import moment from 'moment'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  deleteRequest,
+  putRequest,
+  postRequestWithRequestParams,
+  postRequest,
+  getSnackbar,
+  getRequestWithParams
+} from '@/helpers/helpers';
+import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/ProjectAssignmentModal";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { useBrsStore } from '@/stores/BrsStorePinia.js'
+import {getCurrentInstance, computed, ref, onMounted, watch} from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useAppStore} from '@/stores/AppStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables"
+import debounce from "lodash.debounce"
+import { storeToRefs } from 'pinia'
 
-  export default {
-    name: 'Commission',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      ConfirmationDialog,
-      ProjectAssignmentModal,
-      DatetimePickerInput
-    },
-    computed: {
-      ...mapStores(useUserStore),
-      userCanAdd() {
-        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
-      },
-      userCanEdit() {
-        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
-      },
-      userIsAdmin() {
-        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
-      },
-      timezone() {
-        return this.userStore.details.timezone?.value
-      },
-      displayedMilestoneHeaders () {
-        return this.milestoneHeaders.filter(h => h.show || h.positionId === this.commission?.positionId)
-      },
-      milestoneToDeleteType(){
-        return this.milestoneToDelete ? this.milestoneToDelete.milestoneType : ''
-      },
-      milestoneToDeleteIsUsed(){
-        if(this.milestoneToDelete){
-         return this.checkIfMilestoneUsed(this.milestoneToDelete.milestoneId)
-        }
-        return false
-      },
-      milestoneToDeleteMin(){
-        return this.milestoneToDelete ? this.milestoneToDelete.min : ''
-      },
-      milestoneToDeleteMax(){
-        return this.milestoneToDelete ? this.milestoneToDelete.max : ''
-      },
-      sourceToDeleteName(){
-        return this.sourceToDelete ? this.sourceToDelete.sourceName : ''
-      },
-      userToDeleteName(){
-        return this.userToDelete ? this.userToDelete.name : ''
-      }
-    },
-    created() {
-      if(this.planId) {
-        this.getCommissionDetails()
-      } else {
-        this.dataLoading = false
-      }
-    },
-    watch: {
-      '$store.state.brs.commissionPositionId': function () {
-        //they can't switch between Setter/Closer while on an actual commission plan
-        this.$router.push(`/commissionManagement/commissions`)
-      },
-      $route(to) {
-        // react to route changes...
-        this.planId = to.params.id
-        this.getCommissionDetails()
-      },
-      userSearch (val) {
-        if(!val) {
-          this.usersToAdd = []
-          this.newUser.userId = null
-          return
-        }
-        this.usersToAdd = []
-        this.getUsersToAddDebounced(val)
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        showProjectAssignmentModal: false,
-        cloneDialog: false,
-        payRateText: this.$store.state.brs.commissionPositionId === 4 ? 'Base Pay' : 'Rate per kW ($)',
-        levelText: this.$store.state.brs.commissionPositionId === 4 ? 'Tier' : 'Milestone',
-        addUser: false,
-        newUser: {},
-        usersToAdd: [],
-        userSearch: null,
-        userHistory: [],
-        usersLoading: false,
-        moment,
-        cloneStartDate: null,
-        dataLoading: true,
-        inactivateConfirm: false,
-        deleteConfirm: false,
-        planId: this.$route.params.id,
-        milestoneExpanded: [],
-        sourceExpanded: [],
-        errorLoadingUserHistory: false,
-        assignedUserExpanded: [],
-        headers: [
-          {text: 'Name', value: 'name', show: true},
-          {text: 'Position', value: 'Position', show: true},
-          {text: 'Employee ID', value: 'employeeId', show: true},
-          {text: 'Start Date', value: 'startDate', show: true},
-          {text: 'End Date', value: 'endDate', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        historyHeaders: [
-          {text: 'Name', value: 'name', show: true},
-          {text: 'Start Date', value: 'startDate', show: true},
-          {text: 'End Date', value: 'endDate', show: true},
-        ],
-        positions: [
-          {id: 1, label: 'Closer'},
-          {id: 4, label: 'Setter'}
-        ],
-        feeTypes: [
-          {id: 1, label: 'Per kW'},
-          {id: 2, label: 'Flat'}
-        ],
-        sourceHeaders: [
-          {text: 'Source', value: 'source', show: true},
-          {text: 'Fee Amount', value: 'feeAmount', show: true},
-          {text: 'Fee Type', value: 'feeType', show: true},
-          {text: 'Deduct at Milestone', value: 'deductAtMilestone', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        milestoneHeaders: [
-          {text: this.$store.state.brs.commissionPositionId === 4 ? 'Tier' : 'Milestone', value: 'milestoneType', show: true},
-          {text: 'Minimum Pitches', value: 'min', positionId: 4},
-          {text: 'Maximum Pitches', value: 'max', positionId: 4},
-          {text: this.$store.state.brs.commissionPositionId === 4 ? 'Tier Payment ($)' : 'Milestone Payment ($)', value: 'allocation', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        milestoneError: false,
-        milestoneErrorMsg: '',
-        addMilestone: false,
-        selectedMilestone: {},
-        milestones: [],
-        addSource: false,
-        selectedSource: {},
-        sources: [],
-        errorMessages: [],
-        cloneDateError: false,
-        commission: {
-          users: [],
-          positionId: null
-        },
-        showDeleteConfirm: false,
-        milestoneToDelete: null,
-        sourceToDelete: null,
-        userToDelete: null,
-      }
-    },
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const appStore = useAppStore()
+const brsStore = useBrsStore()
+const { commissionPositionId } = storeToRefs(brsStore)
 
-    methods: {
-      checkMinMaxMilestones (item) {
-        this.milestoneError = false
-        if(this.commission.positionId === 4) {
-          if(item.min === null || item.min === '') {
-            this.milestoneError = true
-            this.milestoneErrorMsg = 'All milestones must have a minimum.'
-          } else if(item.max && item.max < item.min) {
-            this.milestoneError = true
-            this.milestoneErrorMsg = 'Milestones minimum cannot be greater than the maximum.'
-          } else {
-            this.commission.milestones.forEach(m => {
-              if((m.max === null || m.max === '') && (item.max === null || item.max === '')) {
-                this.milestoneError = true
-                this.milestoneErrorMsg = 'Cannot have 2 milestones without a maximum.'
-              } else if(item.commissionPlanAllocationId !== m.commissionPlanAllocationId &&
-                ((item.min >= m.min && item.min <= m.max) ||
-                  (item.max >= m.min && item.max <= m.max) ||
-                    ((item.min >= m.min || item.max >= m.min) && (m.max === null || m.max === '')) )) {
-                this.milestoneError = true
-                this.milestoneErrorMsg = 'Milestones cannot overlap.'
-              }
-            })
-          }
-        }
-      },
-      async getCommissionDetails () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/commissionManagement/plan/${this.planId}`, 'blueraven')
-          this.commission = data
-          if([2,3].includes(this.commission.statusId)) {
-            this.commission.approved = true
-          }
-          // temporarily only allowing closers
-          this.commission.positionType = 'closers'
-          this.checkErrorMessages()
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Commission Details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      validateStartDates() {
-        //this is used when cloning users
-        this.cloneDateError = false
-        this.commission?.users?.forEach(u => {
-          if(u.selected && u.startDate >= this.cloneStartDate) {
-            this.cloneDateError = true
-          }
-        })
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-        if(!this.cloneDateError) {
-          this.clonePlan(this.commission.users, this.cloneStartDate)
-          this.cloneDialog = false;
-        }
-      },
-      checkDates(startDate, endDate, plans, item, existingId) {
-        //item = where to track the error
-        item.dateError = false
+const showProjectAssignmentModal = ref(false)
+const cloneDialog = ref(false)
+const payRateText = ref(commissionPositionId.value === 4 ? 'Base Pay' : 'Rate per kW ($)')
+const levelText = ref(commissionPositionId.value === 4 ? 'Tier' : 'Milestone')
+const addUser = ref(false)
+const newUser = ref({})
+const usersToAdd = ref([])
+const userSearch = ref(null)
+const userHistory = ref([])
+const usersLoading = ref(false)
+const cloneStartDate = ref(null)
+const dataLoading = ref(true)
+const inactivateConfirm = ref(false)
+const deleteConfirm = ref(false)
+const milestoneExpanded = ref([])
+const sourceExpanded = ref([])
+const errorLoadingUserHistory = ref(false)
+const assignedUserExpanded = ref([])
+const milestoneError = ref(false)
+const milestoneErrorMsg = ref('')
+const addMilestone = ref(false)
+const selectedMilestone = ref({})
+const milestones = ref([])
+const addSource = ref(false)
+const selectedSource = ref({})
+const sources = ref([])
+const errorMessages = ref([])
+const cloneDateError = ref(false)
+const showDeleteConfirm = ref(false)
+const milestoneToDelete = ref(null)
+const sourceToDelete = ref(null)
+const userToDelete = ref(null)
 
-        if(startDate > endDate) {
-          item.dateError = true
-          item.dateErrorMsg = 'End Date cannot be before Start Date'
-        } else {
-          let overlap = []
-          let hasActivePlan = false
-          plans.forEach(p => {
-            if(this.dateRangeOverlap(startDate, endDate, p, existingId)) {
-              overlap.push(p)
-            }
-            // if any plan doesn't have an end date, then there is an active plan
-            if(!p.endDate) {
-              hasActivePlan = true
-            }
-          })
-          if(overlap.length > 0) {
-            item.dateError = true
-            item.dateErrorMsg = 'Plans Cannot Overlap'
-          } else if(!existingId && startDate && hasActivePlan) {
-            item.showNote = true
-            item.noteMsg = `The Current plan's end date will be set to ${moment(startDate).subtract(1, 'd').format('MM/DD/YYYY')}.`
-          }
-        }
-      },
-      dateRangeOverlap(start, end, plan, existingId) {
-        //this will not allow them to go back in time to add plans before existing plans which seems to be ok
-        if(plan.id === existingId) {
-          // ignore overlap check for self on existing record
-          return false
-        } else {
-          //this is used when adding a new plan
-          return start <= plan.startDate || start <= plan.endDate
-        }
-      },
-      checkErrorMessages () {
-        this.errorMessages = []
-        if(this.commission.total === 0) {
-          this.errorMessages.push('The Rate per kW cannot be zero.')
-        }
-        //sum of m1 and m2 payment = rate per kw
-        if(this.commission?.positionId === 1) {
-          let sum = this.commission?.milestones?.reduce((a, b) => a + b.allocation, 0)
-          if(sum !== this.commission.total) {
-            this.errorMessages.push(`The sum of all milestone payment amounts must equal the ${this.payRateText}. `)
-          }
-        }
-      },
-      planHasActiveUsers () {
-        let hasActive = false
-        this.commission?.users?.forEach(u => {
-          if(u.endDate === null || u.endDate > new Date()){
-            hasActive = true
-          }
-        })
-        return hasActive
-      },
-      activeUsers () {
-        return this.commission?.users?.filter(u => {
-          return u.endDate === null || u.endDate > new Date()
-        })
-      },
-      async savePlan () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            id: this.commission.id,
-            name: this.commission.name,
-            description: this.commission.description,
-            positionId: this.commission.positionId,
-            total: this.commission.total
-          }
-          const {data, status} = await postRequest(`/commissionManagement`, params, 'blueraven')
-          if(!this.planId) {
-            //need to reload some stuff if this was a new plan
-            this.$router.push({name: 'commission', params: {id: data.id}})
-          }
-          this.checkErrorMessages()
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Commission Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async approvePlan () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/commissionManagement/${this.planId}/approve`, {}, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Commission Plan Approved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.commission = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Approving Commission Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async inactivatePlan () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await postRequest(`/commissionManagement/${this.planId}/inactivate`, {}, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Commission Plan Inactivated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$router.push({name: 'commissions'})
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Inactivating Commission Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deletePlan () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await deleteRequest(`/commissionManagement/${this.planId}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Commission Plan Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$router.push({name: 'commissions'})
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Commission Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async clonePlan (users, startDate) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            users: users ? users.filter(u => u.selected).map(u => u.userId) : [],
-            startDate: startDate ?? null,
-            backdateApprovalCreds: null
-          }
-          const {data, status} = await postRequest(`/commissionManagement/${this.planId}/clone`, params, 'blueraven')
-          this.$router.push({name: 'commission', params: {id: data.id}})
-          // temporarily only allowing closers
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Cloning Commission')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async updateAssignedUser(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await postRequest(`/commissionManagement/${this.planId}/updateUser`, item, 'blueraven')
-          this.assignedUserExpanded = []
-          this.userHistory = []
-          this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Assigned User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      getUsersToAddDebounced(val) {
-        clearTimeout(this._searchTimerId)
-        this._searchTimerId = setTimeout(() => {
-          this.getUsersToAdd(val)
-        }, 500) /* 500ms throttle */
-      },
-      async getUsersToAdd(query) {
-        if(this.addUser) {
-          this.usersLoading = true
-          try {
-            let positions = this.commission.positionId === 1 ? 'closers' : 'setters'
-            let params = {
-              positions,
-              query,
-              planId: this.planId
-            }
-            const {data} = await getRequestWithParams(`/commissionManagement/_search`, {params}, 'blueraven')
-            this.usersToAdd = data
-            this.usersLoading = false
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Commission Plan Users')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async addUserToPlan() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            userId: this.newUser.userId,
-            startDate: this.newUser.startDate,
-            endDate: this.newUser.endDate,
-            approvalCreds: null
-          }
-          const {data, status} = await postRequestWithRequestParams(`/commissionManagement/${this.planId}/users/${this.commission.positionId}`, params, { addUserToPlan: true }, 'blueraven')
-          this.commission.users = data
-          this.snackbar = getSnackbar('SUCCESS', 'Commission Plan User Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.addUser = false
-          this.newUser = {}
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Commission Plan User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteUserFromPlan() {
-        const commissionPlanUser = this.userToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/commissionManagement/${this.planId}/commissionUser/${commissionPlanUser.id}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Commission Plan User Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          commissionPlanUser.archived = true
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Commission Plan User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterCommissionUsers () {
-        return this.commission.users.filter(cu => { return !cu.archived})
-      },
-      async getMilestones() {
-        if(this.addMilestone) {
-          try {
-            const {data} = await getRequest(`/commissionManagement/${this.planId}/availableMilestones/${this.commission.positionId}`, 'blueraven')
-            this.milestones = data
-            // if(this.commission.positionId === 4) {
-            //   this.selectedMilestone.id = this.milestones[0].id
-            // }
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Milestones')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async updateMilestone(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await putRequest(`/commissionManagement/${this.planId}/milestone`, item, 'blueraven')
-          this.checkErrorMessages()
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Milestone')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async addMilestoneToPlan() {
-        try {
-          let params = {
-            milestoneTypeId: this.selectedMilestone.id,
-            allocation: this.selectedMilestone.allocation,
-            min: this.selectedMilestone.min,
-            max: this.selectedMilestone.max
-          }
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/milestone`, params, 'blueraven')
-          this.commission.milestones.push(data)
-          this.checkErrorMessages()
-          this.selectedMilestone = {}
-          this.addMilestone = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Milestone')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteMilestone () {
-        const commissionPlanAllocationId = this.milestoneToDelete.commissionPlanAllocationId
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/commissionManagement/${this.planId}/milestone/${commissionPlanAllocationId}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', `${levelText} Deleted`)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.commission.milestones = this.commission.milestones.filter(m => {
-            return m.commissionPlanAllocationId !== commissionPlanAllocationId
-          })
-          this.checkErrorMessages()
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', `Error Deleting ${levelText}`)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      checkIfMilestoneUsed(milestoneId) {
-        let used = false
-        this.commission.sources.forEach(s => {
-          if(s.milestoneId === milestoneId) {
-            used = true
-          }
-        })
+const headers = ref([
+  {text: 'Name', value: 'name', show: true},
+  {text: 'Position', value: 'Position', show: true},
+  {text: 'Employee ID', value: 'employeeId', show: true},
+  {text: 'Start Date', value: 'startDate', show: true},
+  {text: 'End Date', value: 'endDate', show: true},
+  {text: '', value: 'icons', show: true},
+])
+const historyHeaders = ref([
+  {text: 'Name', value: 'name', show: true},
+  {text: 'Start Date', value: 'startDate', show: true},
+  {text: 'End Date', value: 'endDate', show: true},
+])
+const positions = ref([
+  {id: 1, label: 'Closer'},
+  {id: 4, label: 'Setter'}
+])
+const feeTypes = ref([
+  {id: 1, label: 'Per kW'},
+  {id: 2, label: 'Flat'}
+])
+const sourceHeaders = ref([
+  {text: 'Source', value: 'source', show: true},
+  {text: 'Fee Amount', value: 'feeAmount', show: true},
+  {text: 'Fee Type', value: 'feeType', show: true},
+  {text: 'Deduct at Milestone', value: 'deductAtMilestone', show: true},
+  {text: '', value: 'icons', show: true},
+])
+const milestoneHeaders = ref([
+  {text: commissionPositionId.value === 4 ? 'Tier' : 'Milestone', value: 'milestoneType', show: true},
+  {text: 'Minimum Pitches', value: 'min', positionId: 4},
+  {text: 'Maximum Pitches', value: 'max', positionId: 4},
+  {
+    text: commissionPositionId.value === 4 ? 'Tier Payment ($)' : 'Milestone Payment ($)',
+    value: 'allocation',
+    show: true
+  },
+  {text: '', value: 'icons', show: true},
+])
+const commission = ref({
+  users: [],
+  positionId: null
+})
 
-        return used
+const planId = computed(() => {
+  return route.params.id
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
+})
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
+})
+const timezone = computed(() => {
+  return userStore.details.timezone?.value
+})
+const displayedMilestoneHeaders = computed(() => {
+  return milestoneHeaders.value.filter(h => h.show || h.positionId === commission.value?.positionId)
+})
+const milestoneToDeleteType = computed(() => {
+  return milestoneToDelete.value ? milestoneToDelete.value.milestoneType : ''
+})
+const milestoneToDeleteIsUsed = computed(() => {
+  if (milestoneToDelete.value) {
+    return checkIfMilestoneUsed(milestoneToDelete.value.milestoneId)
+  }
+  return false
+})
+const milestoneToDeleteMin = computed(() => {
+  return milestoneToDelete.value ? milestoneToDelete.value.min : ''
+})
+const milestoneToDeleteMax = computed(() => {
+  return milestoneToDelete.value ? milestoneToDelete.value.max : ''
+})
+const sourceToDeleteName = computed(() => {
+  return sourceToDelete.value ? sourceToDelete.value.sourceName : ''
+})
+const userToDeleteName = computed(() => {
+  return userToDelete.value ? userToDelete.value.name : ''
+})
+const filteredCommissionUsers = computed(() => {
+  return commission.value?.users?.filter(cu => {
+    return !cu.archived
+  })
+})
+const activeUsers = computed(() => {
+  return commission.value?.users?.filter(u => {
+    return u.endDate === null || u.endDate > new Date()
+  })
+})
 
-      },
-      async getSources() {
-        if(this.addSource) {
-          try {
-            const {data} = await getRequest(`/commissionManagement/${this.planId}/availableSources`, 'blueraven')
-            this.sources = data
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Sources')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
+
+watch(planId, () => {
+  getCommissionDetails()
+})
+
+watch(commissionPositionId, async() => {
+  //if they change the position (setter vs closer) have to go back to main page
+  await router.push('/commissionManagement/commissions')
+})
+
+watch(userSearch, (val) => {
+  if (!val) {
+    usersToAdd.value = []
+    newUser.value.userId = null
+    return
+  }
+  usersToAdd.value = []
+  getUsersToAddDebounced(val)
+})
+
+onMounted(() => {
+  if (planId.value) {
+    getCommissionDetails()
+  } else {
+    dataLoading.value = false
+  }
+})
+
+const checkMinMaxMilestones = (item) => {
+  milestoneError.value = false
+  if (commission.value.positionId === 4) {
+    if (item.min === null || item.min === '') {
+      milestoneError.value = true
+      milestoneErrorMsg.value = 'All milestones must have a minimum.'
+    } else if (item.max && item.max < item.min) {
+      milestoneError.value = true
+      milestoneErrorMsg.value = 'Milestones minimum cannot be greater than the maximum.'
+    } else {
+      commission.value.milestones.forEach(m => {
+        if ((m.max === null || m.max === '') && (item.max === null || item.max === '')) {
+          milestoneError.value = true
+          milestoneErrorMsg.value = 'Cannot have 2 milestones without a maximum.'
+        } else if (item.commissionPlanAllocationId !== m.commissionPlanAllocationId &&
+            ((item.min >= m.min && item.min <= m.max) ||
+                (item.max >= m.min && item.max <= m.max) ||
+                ((item.min >= m.min || item.max >= m.min) && (m.max === null || m.max === '')))) {
+          milestoneError.value = true
+          milestoneErrorMsg.value = 'Milestones cannot overlap.'
         }
-      },
-      async updateSource(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await putRequest(`/commissionManagement/${this.planId}/source`, item, 'blueraven')
-          item.milestoneType = data.milestoneType
-          item.feeType = data.feeType
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Milestone')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getUserHistory(userId) {
-        //reset the rest of the new user fields if they change users
-        delete this.newUser.startDate
-        delete this.newUser.endDate
-        this.newUser.dateError = false
-        this.newUser.dateErrorMsg = ''
-        this.newUser.showNote = false
-        this.newUser.noteMsg = ''
-        this.errorLoadingUserHistory = false
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/commissionManagement/commissionUser/${userId}/history`, 'blueraven')
-          this.userHistory = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          this.errorLoadingUserHistory = true
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving User History')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async addSourceToPlan() {
-        try {
-          let params = {
-            sourceId: this.selectedSource.id,
-            milestoneId: this.selectedSource.milestoneId,
-            feeAmount: this.selectedSource.feeAmount,
-            feeTypeId: this.selectedSource.feeTypeId,
-          }
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/source`, params, 'blueraven')
-          this.commission.sources.push(data)
-          this.selectedSource = {}
-          this.addSource = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Source')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteSource () {
-        const id = this.sourceToDelete.id
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/commissionManagement/${this.planId}/source/${id}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Source Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.commission.sources = this.commission.sources.filter(s => {
-            return s.id !== id
-          })
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Source')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
+      })
     }
   }
+}
+const getCommissionDetails = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/commissionManagement/plan/${planId.value}`, 'blueraven')
+    commission.value = data
+    if ([2, 3].includes(commission.value.statusId)) {
+      commission.value.approved = true
+    }
+    // temporarily only allowing closers
+    commission.value.positionType = 'closers'
+    checkErrorMessages()
+    dataLoading.value = false
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Commission Details')
+    appStore.loading = false
+  }
+}
+const validateStartDates = () => {
+  //this is used when cloning users
+  cloneDateError.value = false
+  commission.value?.users?.forEach(u => {
+    if (u.selected && u.startDate >= cloneStartDate.value) {
+      cloneDateError.value = true
+    }
+  })
+
+  if (!cloneDateError.value) {
+    clonePlan(commission.value.users, cloneStartDate.value)
+    cloneDialog.value = false;
+  }
+}
+const checkDates = (startDate, endDate, plans, item, existingId) => {
+  //item = where to track the error
+  item.dateError = false
+
+  if (startDate > endDate) {
+    item.dateError = true
+    item.dateErrorMsg = 'End Date cannot be before Start Date'
+  } else {
+    let overlap = []
+    let hasActivePlan = false
+    plans.forEach(p => {
+      if (dateRangeOverlap(startDate, endDate, p, existingId)) {
+        overlap.push(p)
+      }
+      // if any plan doesn't have an end date, then there is an active plan
+      if (!p.endDate) {
+        hasActivePlan = true
+      }
+    })
+    if (overlap.length > 0) {
+      item.dateError = true
+      item.dateErrorMsg = 'Plans Cannot Overlap'
+    } else if (!existingId && startDate && hasActivePlan) {
+      item.showNote = true
+      item.noteMsg = `The Current plan's end date will be set to ${moment(startDate).subtract(1, 'd').format('MM/DD/YYYY')}.`
+    }
+  }
+}
+const dateRangeOverlap = (start, end, plan, existingId) => {
+  //this will not allow them to go back in time to add plans before existing plans which seems to be ok
+  if (plan.id === existingId) {
+    // ignore overlap check for self on existing record
+    return false
+  } else {
+    //this is used when adding a new plan
+    return start <= plan.startDate || start <= plan.endDate
+  }
+}
+const checkErrorMessages = () => {
+  errorMessages.value = []
+  if (commission.value.total === 0) {
+    errorMessages.value.push('The Rate per kW cannot be zero.')
+  }
+  //sum of m1 and m2 payment = rate per kw
+  if (commission.value?.positionId === 1) {
+    let sum = commission.value?.milestones?.reduce((a, b) => a + b.allocation, 0)
+    if (sum !== commission.value.total) {
+      errorMessages.value.push(`The sum of all milestone payment amounts must equal the ${payRateText.value}. `)
+    }
+  }
+}
+const planHasActiveUsers = () => {
+  let hasActive = false
+  commission.value?.users?.forEach(u => {
+    if (u.endDate === null || u.endDate > new Date()) {
+      hasActive = true
+    }
+  })
+  return hasActive
+}
+
+const savePlan = async () => {
+  appStore.loading = true
+  try {
+    let params = {
+      id: commission.value.id,
+      name: commission.value.name,
+      description: commission.value.description,
+      positionId: commission.value.positionId,
+      total: commission.value.total
+    }
+    const {data, status} = await postRequest(`/commissionManagement`, params, 'blueraven')
+    if (!planId.value) {
+      //need to reload some stuff if this was a new plan
+      await router.push({name: 'commission', params: {id: data.id}})
+    }
+    checkErrorMessages()
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Commission Plan')
+    appStore.loading = false
+  }
+}
+const approvePlan = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await postRequest(`/commissionManagement/${planId.value}/approve`, {}, 'blueraven')
+    snackbar('SUCCESS', 'Commission Plan Approved')
+    commission.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Approving Commission Plan')
+    appStore.loading = false
+  }
+}
+const inactivatePlan = async () => {
+  appStore.loading = true
+  try {
+    await postRequest(`/commissionManagement/${planId.value}/inactivate`, {}, 'blueraven')
+    snackbar('SUCCESS', 'Commission Plan Inactivated')
+    await router.push({name: 'commissions'})
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Inactivating Commission Plan')
+    appStore.loading = false
+  }
+}
+const deletePlan = async () => {
+  appStore.loading = true
+  try {
+    await deleteRequest(`/commissionManagement/${planId.value}`, 'blueraven')
+    snackbar('SUCCESS', 'Commission Plan Deleted')
+    await router.push({name: 'commissions'})
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Commission Plan')
+    appStore.loading = false
+  }
+}
+const clonePlan = async (users, startDate) => {
+  appStore.loading = true
+  try {
+    let params = {
+      users: users ? users.filter(u => u.selected).map(u => u.userId) : [],
+      startDate: startDate ?? null,
+      backdateApprovalCreds: null
+    }
+    const {data, status} = await postRequest(`/commissionManagement/${planId.value}/clone`, params, 'blueraven')
+    await router.push({name: 'commission', params: {id: data.id}})
+    // temporarily only allowing closers
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Cloning Commission')
+    appStore.loading = false
+  }
+}
+const updateAssignedUser = async (item) => {
+  appStore.loading = true
+  try {
+    const {status} = await postRequest(`/commissionManagement/${planId.value}/updateUser`, item, 'blueraven')
+    assignedUserExpanded.value = []
+    userHistory.value = []
+    snackbar('SUCCESS', 'Assigned User Updated')
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating Assigned User')
+    appStore.loading = false
+  }
+}
+const getUsersToAddDebounced = debounce((val) => {
+  getUsersToAdd(val)
+}, 500)
+const getUsersToAdd = async (query) => {
+  if (addUser.value) {
+    usersLoading.value = true
+    try {
+      let positions = commission.value.positionId === 1 ? 'closers' : 'setters'
+      let params = {
+        positions,
+        query,
+        planId: planId.value
+      }
+      const {data} = await getRequestWithParams(`/commissionManagement/_search`, {params}, 'blueraven')
+      usersToAdd.value = data
+      usersLoading.value = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Commission Plan Users')
+      appStore.loading = false
+    }
+  }
+}
+const addUserToPlan = async () => {
+  appStore.loading = true
+  try {
+    let params = {
+      userId: newUser.value.userId,
+      startDate: newUser.value.startDate,
+      endDate: newUser.value.endDate,
+      approvalCreds: null
+    }
+    const {
+      data,
+      status
+    } = await postRequestWithRequestParams(`/commissionManagement/${planId.value}/users/${commission.value.positionId}`, params, {addUserToPlan: true}, 'blueraven')
+    commission.value.users = data
+    snackbar('SUCCESS', 'Commission Plan User Added')
+    addUser.value = false
+    newUser.value = {}
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Commission Plan User')
+    appStore.loading = false
+  }
+}
+const deleteUserFromPlan = async () => {
+  const commissionPlanUser = userToDelete.value
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/commissionManagement/${planId.value}/commissionUser/${commissionPlanUser.id}`, 'blueraven')
+    snackbar('SUCCESS', 'Commission Plan User Deleted')
+    commissionPlanUser.archived = true
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Commission Plan User')
+    appStore.loading = false
+  }
+}
+
+const getMilestones = async () => {
+  if (addMilestone.value) {
+    try {
+      const {data} = await getRequest(`/commissionManagement/${planId.value}/availableMilestones/${commission.value.positionId}`, 'blueraven')
+      milestones.value = data
+      // if(commission.value.positionId === 4) {
+      //   selectedMilestone.value.id = milestones.value[0].id
+      // }
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Milestones')
+      appStore.loading = false
+    }
+  }
+}
+const updateMilestone = async (item) => {
+  appStore.loading = true
+  try {
+    const {status} = await putRequest(`/commissionManagement/${planId.value}/milestone`, item, 'blueraven')
+    checkErrorMessages()
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Milestone')
+    appStore.loading = false
+  }
+}
+const addMilestoneToPlan = async () => {
+  try {
+    let params = {
+      milestoneTypeId: selectedMilestone.value.id,
+      allocation: selectedMilestone.value.allocation,
+      min: selectedMilestone.value.min,
+      max: selectedMilestone.value.max
+    }
+    const {data} = await postRequest(`/commissionManagement/${planId.value}/milestone`, params, 'blueraven')
+    commission.value.milestones.push(data)
+    checkErrorMessages()
+    selectedMilestone.value = {}
+    addMilestone.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Milestone')
+    appStore.loading = false
+  }
+}
+const deleteMilestone = async () => {
+  const commissionPlanAllocationId = milestoneToDelete.value.commissionPlanAllocationId
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/commissionManagement/${planId.value}/milestone/${commissionPlanAllocationId}`, 'blueraven')
+    snackbar('SUCCESS', `${levelText} Deleted`)
+    commission.value.milestones = commission.value.milestones.filter(m => {
+      return m.commissionPlanAllocationId !== commissionPlanAllocationId
+    })
+    checkErrorMessages()
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', `Error Deleting ${levelText}`)
+    appStore.loading = false
+  }
+}
+const checkIfMilestoneUsed = (milestoneId) => {
+  let used = false
+  commission.value.sources.forEach(s => {
+    if (s.milestoneId === milestoneId) {
+      used = true
+    }
+  })
+
+  return used
+
+}
+const getSources = async () => {
+  if (addSource.value) {
+    try {
+      const {data} = await getRequest(`/commissionManagement/${planId.value}/availableSources`, 'blueraven')
+      sources.value = data
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Sources')
+      appStore.loading = false
+    }
+  }
+}
+const updateSource = async (item) => {
+  appStore.loading = true
+  try {
+    const {data, status} = await putRequest(`/commissionManagement/${planId.value}/source`, item, 'blueraven')
+    item.milestoneType = data.milestoneType
+    item.feeType = data.feeType
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Milestone')
+    appStore.loading = false
+  }
+}
+const getUserHistory = async (userId) => {
+  //reset the rest of the new user fields if they change users
+  delete newUser.value.startDate
+  delete newUser.value.endDate
+  newUser.value.dateError = false
+  newUser.value.dateErrorMsg = ''
+  newUser.value.showNote = false
+  newUser.value.noteMsg = ''
+  errorLoadingUserHistory.value = false
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/commissionManagement/commissionUser/${userId}/history`, 'blueraven')
+    userHistory.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    errorLoadingUserHistory.value = true
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving User History')
+    appStore.loading = false
+  }
+}
+const addSourceToPlan = async () => {
+  try {
+    let params = {
+      sourceId: selectedSource.value.id,
+      milestoneId: selectedSource.value.milestoneId,
+      feeAmount: selectedSource.value.feeAmount,
+      feeTypeId: selectedSource.value.feeTypeId,
+    }
+    const {data} = await postRequest(`/commissionManagement/${planId.value}/source`, params, 'blueraven')
+    commission.value.sources.push(data)
+    selectedSource.value = {}
+    addSource.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Source')
+    appStore.loading = false
+  }
+}
+const deleteSource = async () => {
+  const id = sourceToDelete.value.id
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/commissionManagement/${planId.value}/source/${id}`, 'blueraven')
+    snackbar('SUCCESS', 'Source Deleted')
+    commission.value.sources = commission.value.sources.filter(s => {
+      return s.id !== id
+    })
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Source')
+    appStore.loading = false
+  }
+}
 </script>
 
 <style lang="scss" scoped>

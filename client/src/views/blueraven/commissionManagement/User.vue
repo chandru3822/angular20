@@ -23,11 +23,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanAdd"
-                   @click="[planErrorObj = {}, addNewCommissionPlan = !addNewCommissionPlan, newCommissionPlan = {}, getCommissionPlans()]">
-              <v-icon v-if="addNewCommissionPlan">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                v-if="userCanAdd"
+                @click="[planErrorObj = {}, addNewCommissionPlan = !addNewCommissionPlan, newCommissionPlan = {}, getCommissionPlans()]"
+                :prepend-icon="addNewCommissionPlan ? 'remove' : 'add'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -42,7 +44,7 @@
           />
           <DatetimePickerInput
               v-model="newCommissionPlan.startDate"
-              :timezone="this.timezone"
+              :timezone="timezone"
               :type="'date'"
               :format="'MMMM DD, YYYY'"
               label="Start Date"
@@ -50,7 +52,7 @@
           />
           <DatetimePickerInput
               v-model="newCommissionPlan.endDate"
-              :timezone="this.timezone"
+              :timezone="timezone"
               :type="'date'"
               :format="'MMMM DD, YYYY'"
               label="End Date"
@@ -63,13 +65,19 @@
             {{planErrorObj.noteMsg}}
           </div>
           <div>
-            <v-btn color="primary" class="mr-3 white--text" @click="[addNewCommissionPlan = false, savePlan(newCommissionPlan, 2, true)]"
-                   :disabled="planErrorObj.dateError || !newCommissionPlan.id || !newCommissionPlan.startDate">
-              Save
-            </v-btn>
-            <v-btn color="primary" text @click="addNewCommissionPlan = !addNewCommissionPlan">
-              Cancel
-            </v-btn>
+            <AlbatrossButton
+                color="primary"
+                class="mr-3"
+                @click="[addNewCommissionPlan = false, savePlan(newCommissionPlan, 2, true)]"
+                :disabled="planErrorObj.dateError || !newCommissionPlan.id || !newCommissionPlan.startDate"
+                text="Save"
+            ></AlbatrossButton>
+            <AlbatrossButton
+                color="primary"
+                variant="text"
+                @click="addNewCommissionPlan = !addNewCommissionPlan"
+                text="Cancel"
+            ></AlbatrossButton>
           </div>
         </v-card>
         <v-divider v-if="addNewCommissionPlan"></v-divider>
@@ -107,8 +115,12 @@
               <v-textarea filled class="mt-4"
                           v-model="item.note">
               </v-textarea>
-              <v-btn color="primary" :disabled="!item.endDate && !item.note"
-                     @click="[expanded = [], savePlan(item, 2)]">Save</v-btn>
+              <AlbatrossButton
+                  color="primary"
+                  :disabled="!item.endDate && !item.note"
+                  @click="[expanded = [], savePlan(item, 2)]"
+                  text="Save"
+              ></AlbatrossButton>
             </td>
           </template>
 
@@ -124,13 +136,22 @@
                 </pre>
               </td>
               <td>
-                <v-btn small text color="primary" @click="[expanded = [item], selectedIndex = index]"
-                       v-if="!expanded.includes(item) && userCanEdit">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" @click="[expanded = [], selectedIndex = index]"
-                       v-if="expanded.includes(item)">cancel
-                </v-btn>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="[expanded = [item], selectedIndex = index]"
+                    v-if="!expanded.includes(item) && userCanEdit"
+                    prepend-icon="edit"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="[expanded = [], selectedIndex = index]"
+                    v-if="expanded.includes(item)"
+                    text="cancel"
+                ></AlbatrossButton>
               </td>
             </tr>
           </template>
@@ -145,12 +166,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanAdd"
-                   @click="[overrideErrorObj = {}, addNewOverridePlan = !addNewOverridePlan,
-                                newOverridePlan = {}, getOverridePlans()]">
-              <v-icon v-if="addNewOverridePlan">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                v-if="userCanAdd"
+                @click="[overrideErrorObj = {}, addNewOverridePlan = !addNewOverridePlan, newOverridePlan = {}, getOverridePlans()]"
+                :prepend-icon="addNewOverridePlan ? 'remove' : 'add'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -164,20 +186,20 @@
                           attach
           />
           <DatetimePickerInput
-            v-model="newOverridePlan.startDate"
-            :timezone="this.timezone"
-            :type="'date'"
-            :format="'MMMM DD, YYYY'"
-            label="Start Date"
-            @input="checkDates(newOverridePlan.startDate, newOverridePlan.endDate, closer.overrides, overrideErrorObj)"
+              v-model="newOverridePlan.startDate"
+              :timezone="timezone"
+              :type="'date'"
+              :format="'MMMM DD, YYYY'"
+              label="Start Date"
+              @input="checkDates(newOverridePlan.startDate, newOverridePlan.endDate, closer.overrides, overrideErrorObj)"
           />
           <DatetimePickerInput
-            v-model="newOverridePlan.endDate"
-            :timezone="this.timezone"
-            :type="'date'"
-            :format="'MMMM DD, YYYY'"
-            label="End Date"
-            @input="checkDates(newOverridePlan.startDate, newOverridePlan.endDate, closer.overrides, overrideErrorObj)"
+              v-model="newOverridePlan.endDate"
+              :timezone="timezone"
+              :type="'date'"
+              :format="'MMMM DD, YYYY'"
+              label="End Date"
+              @input="checkDates(newOverridePlan.startDate, newOverridePlan.endDate, closer.overrides, overrideErrorObj)"
           />
           <div v-if="overrideErrorObj.dateError" class="error--text mb-2">
             * Error: {{overrideErrorObj.dateErrorMsg}}
@@ -185,14 +207,19 @@
           <div class="mb-2" v-if="overrideErrorObj.showNote">
             {{overrideErrorObj.noteMsg}}
           </div>
-          <v-btn color="primary" class="mr-3 white--text"
-                 @click="[addNewOverridePlan = false, savePlan(newOverridePlan, 1, true)]"
-                 :disabled="overrideErrorObj.dateError || !newOverridePlan.id || !newOverridePlan.startDate">
-            Save
-          </v-btn>
-          <v-btn color="primary" text @click="addNewOverridePlan = !addNewOverridePlan">
-            Cancel
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              class="mr-3"
+              @click="[addNewOverridePlan = false, savePlan(newOverridePlan, 1, true)]"
+              :disabled="overrideErrorObj.dateError || !newOverridePlan.id || !newOverridePlan.startDate"
+              text="Save"
+          ></AlbatrossButton>
+          <AlbatrossButton
+              color="primary"
+              variant="text"
+              @click="addNewOverridePlan = !addNewOverridePlan"
+              text="Cancel"
+          ></AlbatrossButton>
         </v-card>
         <v-divider v-if="addNewOverridePlan"></v-divider>
         <v-data-table
@@ -236,8 +263,12 @@
               <div class="mb-2" v-if="item.showNote">
                 {{item.noteMsg}}
               </div>
-              <v-btn color="primary" :disabled="(!item.endDate && !item.note) || item.dateError "
-                     @click="[overrideExpanded = [], savePlan(item, 1)]">Save</v-btn>
+              <AlbatrossButton
+                  color="primary"
+                  :disabled="(!item.endDate && !item.note) || item.dateError "
+                  @click="[overrideExpanded = [], savePlan(item, 1)]"
+                  text="Save"
+              ></AlbatrossButton>
             </td>
           </template>
 
@@ -253,13 +284,22 @@
                 </pre>
               </td>
               <td>
-                <v-btn small text color="primary" @click="[overrideExpanded = [item], overrideSelectedIndex = index]"
-                       v-if="!overrideExpanded.includes(item) && userCanEdit">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" @click="[overrideExpanded = [], overrideSelectedIndex = index]"
-                       v-if="overrideExpanded.includes(item)">cancel
-                </v-btn>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="[overrideExpanded = [item], overrideSelectedIndex = index]"
+                    v-if="!overrideExpanded.includes(item) && userCanEdit"
+                    prepend-icon="edit"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="[overrideExpanded = [], overrideSelectedIndex = index]"
+                    v-if="overrideExpanded.includes(item)"
+                    text="cancel"
+                ></AlbatrossButton>
               </td>
             </tr>
           </template>
@@ -274,14 +314,20 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanAdd"
-                   @click="[addNewReceivingPlan = !addNewReceivingPlan, cloneOverridePlan = {}, getOverridePlans()]">
-              <v-icon v-if="addNewReceivingPlan">remove</v-icon>
-              <v-icon v-else>mdi-content-copy</v-icon>
-            </v-btn>
-            <v-btn text color="primary" @click="addOverridePlan()" v-if="userCanAdd" >
-              <v-icon>add</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                v-if="userCanAdd"
+                @click="[addNewReceivingPlan = !addNewReceivingPlan, cloneOverridePlan = {}, getOverridePlans()]"
+                :prepend-icon="addNewReceivingPlan ? 'remove' : 'mdi-content-copy'"
+            ></AlbatrossButton>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="addOverridePlan()"
+                v-if="userCanAdd"
+                prepend-icon="add"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -309,10 +355,13 @@
               {{ru.name}}
             </div>
           </v-card>
-          <v-btn color="primary" class="mr-3 white--text" @click="clonePlan()"
-                 :disabled="!cloneOverridePlan.id">
-            Clone
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              class="mr-3"
+              @click="clonePlan()"
+              :disabled="!cloneOverridePlan.id"
+              text="Clone"
+          ></AlbatrossButton>
         </v-card>
         <v-data-table
             :headers="receivingHeaders"
@@ -340,7 +389,12 @@
               <v-textarea filled class="mt-4"
                           v-model="item.note">
               </v-textarea>
-              <v-btn color="primary" :disabled="!item.endDate && !item.note" @click="[addNewReceivingPlan = false, savePlan(item, 3)]">Save</v-btn>
+              <AlbatrossButton
+                  color="primary"
+                  :disabled="!item.endDate && !item.note"
+                  @click="[addNewReceivingPlan = false, savePlan(item, 3)]"
+                  text="Save"
+              ></AlbatrossButton>
             </td>
           </template>
 
@@ -353,13 +407,22 @@
                 </pre>
               </td>
               <td>
-                <v-btn small text color="primary" @click="[receivingExpanded = [item], receivingSelectedIndex = index]"
-                       v-if="!receivingExpanded.includes(item) && userCanEdit">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" @click="[receivingExpanded = [], receivingSelectedIndex = index]"
-                       v-if="receivingExpanded.includes(item)">cancel
-                </v-btn>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="[receivingExpanded = [item], receivingSelectedIndex = index]"
+                    v-if="!receivingExpanded.includes(item) && userCanEdit"
+                    prepend-icon="edit"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="[receivingExpanded = [], receivingSelectedIndex = index]"
+                    v-if="receivingExpanded.includes(item)"
+                    text="cancel"
+                ></AlbatrossButton>
               </td>
             </tr>
           </template>
@@ -370,274 +433,277 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import moment from 'moment'
-  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import moment from 'moment'
+import {handleHidingGlobalLoader, getRequest, postRequest, } from '@/helpers/helpers'
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useBrsStore } from '@/stores/BrsStorePinia.js'
+import { storeToRefs } from 'pinia'
 
-  export default {
-    name: 'Commission',
-    components: {DatetimePickerInput},
-    created() {
-      this.getCloserDetails()
-    },
-    watch: {
-      '$store.state.brs.commissionPositionId': function () {
-        //they can't switch between Setter/Closer while on an actual user
-        this.$router.push(`/commissionManagement/users`)
-      },
-    },
-    computed: {
-      ...mapStores(useUserStore),
-      userCanAdd() {
-        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
-      },
-      userCanEdit() {
-        return this.userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
-      },
-      timezone() {
-        return this.userStore.details.timezone?.value
-      },
-    },
-    data() {
-      return {
-        snackbar: {},
-        planErrorObj: {},
-        overrideErrorObj: {},
-        dataLoading: true,
-        overrideSelectedIndex: null,
-        positionId: this.$store.state.brs.commissionPositionId,
-        selectedIndex: null,
-        receivingSelectedIndex: null,
-        commissionPlans: [],
-        overridePlans: [],
-        newCommissionPlan: {},
-        newOverridePlan: {},
-        cloneOverridePlan: {},
-        addNewCommissionPlan: false,
-        addNewOverridePlan: false,
-        addNewReceivingPlan: false,
-        userId: this.$route.params.id,
-        expanded: [],
-        overrideExpanded: [],
-        receivingExpanded: [],
-        overrideHeaders: [
-          {text: 'Plan Name', value: 'name', show: true},
-          {text: 'Description', value: 'Position', show: true},
-          {text: 'Start Date', value: 'startDate', show: true},
-          {text: 'End Date', value: 'endDate', show: true},
-          {text: 'Notes', value: 'note', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        planHeaders: [
-          {text: 'Plan Name', value: 'name', show: true},
-          {text: 'Description', value: 'description', show: true},
-          {text: 'Start Date', value: 'startDate', show: true},
-          {text: 'End Date', value: 'endDate', show: true},
-          {text: 'Notes', value: 'note', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        receivingHeaders: [
-          {text: 'Plan Name', value: 'name', show: true},
-          {text: 'Notes', value: 'note', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        closer: {}
-      }
-    },
-    methods: {
-      async getCloserDetails () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/commissionManagement/closerDetails/${this.userId}`, 'blueraven')
-          this.closer = data ? data[0] : []
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading User Details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getCommissionPlans () {
-        if(this.addNewCommissionPlan) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {data, status} = await getRequest(`/commissionManagement/plans/${this.positionId}`, 'blueraven')
-            this.commissionPlans = data
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Loading Commission Plans')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async getOverridePlans () {
-        if(this.addNewOverridePlan || this.addNewReceivingPlan) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {data, status} = await getRequest(`/commissionManagement/overrides/plans/${this.positionId}/active`, 'blueraven')
-            this.overridePlans = data
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Loading Override Plans')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      checkDates(startDate, endDate, plans, item, existingId) {
-        //item = where to track the error
-        item.dateError = false
+const brsStore = useBrsStore()
+const { commissionPositionId } = storeToRefs(brsStore)
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-        if(startDate > endDate) {
-          item.dateError = true
-          item.dateErrorMsg = 'End Date cannot be before Start Date'
-        } else {
-          let overlap = []
-          let hasActivePlan = false
-          plans.forEach(p => {
-            if(this.dateRangeOverlap(startDate, endDate, p, existingId)) {
-              overlap.push(p)
-            }
-            // if any plan doesn't have an end date, then there is an active plan
-            if(!p.endDate) {
-              hasActivePlan = true
-            }
-          })
-          if(overlap.length > 0) {
-            item.dateError = true
-            item.dateErrorMsg = 'Plans Cannot Overlap'
-          } else if(!existingId && startDate && hasActivePlan) {
-            item.showNote = true
-            item.noteMsg = `The Current plan's end date will be set to ${moment(startDate).subtract(1, 'd').format('MM/DD/YYYY')}.`
-          }
-        }
-      },
-      dateRangeOverlap(start, end, plan, existingId) {
-        //this will not allow them to go back in time to add plans before existing plans which seems to be ok
-        if(plan.id === existingId) {
-          // ignore overlap check for self on existing record
-          return false
-        } else {
-          //this is used when adding a new plan
-          return start <= plan.startDate || start <= plan.endDate
-        }
-      },
-      async savePlan (item, type, isNew) {
-        let params = {
-          userId: this.userId,
-          startDate: item.startDate,
-          endDate: item.endDate,
-          note: item.note,
-          m1Allocation: item.m1Allocation,
-          m2Allocation: item.m2Allocation
-        }
-        let url = ''
-        //override == 1, commission = 2, receiving === 3
-        if(type === 1) {
-          if(isNew) {
-            url = `/commissionManagement/overrides/${item.id}/assignedUsers`
-          } else {
-            url = `/commissionManagement/overrides/${item.id}/updateUser`
-          }
-        } else if(type === 2) {
-          if(isNew) {
-            url = `/commissionManagement/${item.id}/users/${this.positionId}`
-          } else {
-            url = `/commissionManagement/${item.id}/updateUser`
-          }
-        } else {
-            url = `/commissionManagement/overrides/${item.id}/receivingUser`
-        }
-        try {
-          const {data, status} = await postRequest(url, params, 'blueraven')
-          //reset fields as needed
-          if(type === 1) {
-            this.overrideExpanded = []
-            this.addNewOverridePlan = false
-            this.newOverridePlan = {}
-            if(isNew) {
-              this.closer.overrides = data
-            }
-          } else if (type === 2) {
-            this.expanded = []
-            this.newCommissionPlan = {}
-            this.addNewCommissionPlan = false
-            if(isNew) {
-              this.closer.plans = data
-            }
-          } else {
-            this.receivingExpanded = []
-            this.addNewReceivingPlan = false
-          }
-          this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          let errorMsg = e?.msg ?? 'Error Saving Plan'
-          this.snackbar = getSnackbar('ERROR', errorMsg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async clonePlan () {
-        let params = {
-          receivingUsers: this.cloneOverridePlan.receivingUsers.filter(r => r.selected).map(r => r.userId),
-          assignedUsers: this.cloneOverridePlan.assignedUsers.filter(r => r.selected).map(r => r.userId),
-          positionId: this.cloneOverridePlan.positionId,
-          userId: this.userId,
-          backdateApprovalCreds: null,
-        }
-        try {
-          const {data, status} = await postRequest(`/commissionManagement/overrides/${this.cloneOverridePlan.id}/clone`, params, 'blueraven')
-          this.$router.push({name: 'override', params: {id: data.id}})
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Plan to User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async addOverridePlan() {
-        try {
-          const {data} = await postRequest(`/commissionManagement/overrides`, {}, 'blueraven')
-          this.addReceivingUserToOverridePlan(data.id)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Creating New Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async addReceivingUserToOverridePlan(overridePlanId) {
-        let params = {
-          userId: this.userId,
-          m1Allocation: 0,
-          m2Allocation: 0,
-        }
-        try {
-          const {status} = await postRequest(`/commissionManagement/overrides/${overridePlanId}/receivingUsers`, params, 'blueraven')
-          this.$router.push({name: 'override', params: {id: overridePlanId}})
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding User to Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
+onMounted(() => {
+  getCloserDetails()
+})
+
+watch(commissionPositionId, async() => {
+  //if they change the position (setter vs closer) have to go back to main page
+  await router.push('/commissionManagement/users')
+})
+
+const planErrorObj = ref({})
+const overrideErrorObj = ref({})
+const dataLoading = ref(true)
+const overrideSelectedIndex = ref(null)
+const positionId = ref(brsStore.commissionPositionId)
+const selectedIndex = ref(null)
+const receivingSelectedIndex = ref(null)
+const commissionPlans = ref([])
+const overridePlans = ref([])
+const newCommissionPlan = ref({})
+const newOverridePlan = ref({})
+const cloneOverridePlan = ref({})
+const addNewCommissionPlan = ref(false)
+const addNewOverridePlan = ref(false)
+const addNewReceivingPlan = ref(false)
+const userId = ref(route.params.id)
+const expanded = ref([])
+const overrideExpanded = ref([])
+const receivingExpanded = ref([])
+const overrideHeaders = ref([
+  {text: 'Plan Name', value: 'name', show: true},
+  {text: 'Description', value: 'Position', show: true},
+  {text: 'Start Date', value: 'startDate', show: true},
+  {text: 'End Date', value: 'endDate', show: true},
+  {text: 'Notes', value: 'note', show: true},
+  {text: '', value: 'icons', show: true},
+])
+const planHeaders = ref([
+  {text: 'Plan Name', value: 'name', show: true},
+  {text: 'Description', value: 'description', show: true},
+  {text: 'Start Date', value: 'startDate', show: true},
+  {text: 'End Date', value: 'endDate', show: true},
+  {text: 'Notes', value: 'note', show: true},
+  {text: '', value: 'icons', show: true},
+])
+const receivingHeaders = ref([
+  {text: 'Plan Name', value: 'name', show: true},
+  {text: 'Notes', value: 'note', show: true},
+  {text: '', value: 'icons', show: true},
+])
+const closer = ref({})
+
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
+})
+const timezone = computed(() => {
+  return userStore.details.timezone?.value
+})
+
+
+const getCloserDetails = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/commissionManagement/closerDetails/${userId.value}`, 'blueraven')
+    closer.value = data ? data[0] : []
+    dataLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading User Details')
+
+    appStore.loading = false
+  }
+}
+const getCommissionPlans = async () => {
+  if(addNewCommissionPlan.value) {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/commissionManagement/plans/${positionId.value}`, 'blueraven')
+      commissionPlans.value = data
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Commission Plans')
+
+      appStore.loading = false
     }
   }
+}
+const getOverridePlans = async () => {
+  if(addNewOverridePlan.value || addNewReceivingPlan.value) {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/commissionManagement/overrides/plans/${positionId.value}/active`, 'blueraven')
+      overridePlans.value = data
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Override Plans')
+
+      appStore.loading = false
+    }
+  }
+}
+const checkDates = (startDate, endDate, plans, item, existingId) => {
+  //item = where to track the error
+  item.dateError = false
+
+  if(startDate > endDate) {
+    item.dateError = true
+    item.dateErrorMsg = 'End Date cannot be before Start Date'
+  } else {
+    let overlap = []
+    let hasActivePlan = false
+    plans.forEach(p => {
+      if(dateRangeOverlap(startDate, endDate, p, existingId)) {
+        overlap.push(p)
+      }
+      // if any plan doesn't have an end date, then there is an active plan
+      if(!p.endDate) {
+        hasActivePlan = true
+      }
+    })
+    if(overlap.length > 0) {
+      item.dateError = true
+      item.dateErrorMsg = 'Plans Cannot Overlap'
+    } else if(!existingId && startDate && hasActivePlan) {
+      item.showNote = true
+      item.noteMsg = `The Current plan's end date will be set to ${moment(startDate).subtract(1, 'd').format('MM/DD/YYYY')}.`
+    }
+  }
+}
+const dateRangeOverlap = (start, end, plan, existingId) => {
+  //this will not allow them to go back in time to add plans before existing plans which seems to be ok
+  if(plan.id === existingId) {
+    // ignore overlap check for self on existing record
+    return false
+  } else {
+    //this is used when adding a new plan
+    return start <= plan.startDate || start <= plan.endDate
+  }
+}
+const savePlan = async (item, type, isNew) => {
+  let params = {
+    userId: userId.value,
+    startDate: item.startDate,
+    endDate: item.endDate,
+    note: item.note,
+    m1Allocation: item.m1Allocation,
+    m2Allocation: item.m2Allocation
+  }
+  let url = ''
+  //override == 1, commission = 2, receiving === 3
+  if(type === 1) {
+    if(isNew) {
+      url = `/commissionManagement/overrides/${item.id}/assignedUsers`
+    } else {
+      url = `/commissionManagement/overrides/${item.id}/updateUser`
+    }
+  } else if(type === 2) {
+    if(isNew) {
+      url = `/commissionManagement/${item.id}/users/${positionId.value}`
+    } else {
+      url = `/commissionManagement/${item.id}/updateUser`
+    }
+  } else {
+    url = `/commissionManagement/overrides/${item.id}/receivingUser`
+  }
+  try {
+    const {data, status} = await postRequest(url, params, 'blueraven')
+    //reset fields as needed
+    if(type === 1) {
+      overrideExpanded.value = []
+      addNewOverridePlan.value = false
+      newOverridePlan.value = {}
+      if(isNew) {
+        closer.value.overrides = data
+      }
+    } else if (type === 2) {
+      expanded.value = []
+      newCommissionPlan.value = {}
+      addNewCommissionPlan.value = false
+      if(isNew) {
+        closer.value.plans = data
+      }
+    } else {
+      receivingExpanded.value = []
+      addNewReceivingPlan.value = false
+    }
+    snackbar('SUCCESS', 'Saved Successfully')
+
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let errorMsg = e?.msg ?? 'Error Saving Plan'
+    snackbar('ERROR', errorMsg)
+
+    appStore.loading = false
+  }
+}
+const clonePlan = async () => {
+  let params = {
+    receivingUsers: cloneOverridePlan.value.receivingUsers.filter(r => r.selected).map(r => r.userId),
+    assignedUsers: cloneOverridePlan.value.assignedUsers.filter(r => r.selected).map(r => r.userId),
+    positionId: cloneOverridePlan.value.positionId,
+    userId: userId.value,
+    backdateApprovalCreds: null,
+  }
+  try {
+    const {data, status} = await postRequest(`/commissionManagement/overrides/${cloneOverridePlan.value.id}/clone`, params, 'blueraven')
+    handleHidingGlobalLoader( status)
+    await router.push({name: 'override', params: {id: data.id}})
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Plan to User')
+
+    appStore.loading = false
+  }
+}
+const addOverridePlan = async() => {
+  try {
+    const {data} = await postRequest(`/commissionManagement/overrides`, {}, 'blueraven')
+    addReceivingUserToOverridePlan(data.id)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Creating New Plan')
+
+    appStore.loading = false
+  }
+}
+const addReceivingUserToOverridePlan = async(overridePlanId) => {
+  let params = {
+    userId: userId.value,
+    m1Allocation: 0,
+    m2Allocation: 0,
+  }
+  try {
+    const {status} = await postRequest(`/commissionManagement/overrides/${overridePlanId}/receivingUsers`, params, 'blueraven')
+    handleHidingGlobalLoader( status)
+    await router.push({name: 'override', params: {id: overridePlanId}})
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding User to Plan')
+
+    appStore.loading = false
+  }
+}
 </script>
 
 <style lang="scss" scoped>

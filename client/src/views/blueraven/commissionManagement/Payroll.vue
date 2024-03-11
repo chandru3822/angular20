@@ -17,38 +17,31 @@
   </v-container>
 </template>
 
-<script>
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+  import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useRoute} from "vue-router/composables";
+  const route = useRoute()
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
 
-  export default {
-    name: 'PayrollReview',
+  const model = ref('')
 
-    computed: {
-      ...mapStores(useUserStore),
-      tabs() {
-        return [ {
-          label: 'Payroll Review',
-          path: `/commissionManagement/payroll/${this.$route.params.id}/review`,
-          display: this.userStore.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Summary',
-          path: `/commissionManagement/payroll/${this.$route.params.id}/summary`,
-          display: this.userStore.userHasFeature('COMMISSIONS')
-        }]
-      },
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        model: ''
-      }
-    },
-    methods: {}
-  }
+  const tabs = computed(() => {
+    return [ {
+      label: 'Payroll Review',
+      path: `/commissionManagement/payroll/${route.params.id}/review`,
+      display: userStore.userHasFeature('COMMISSIONS')
+    }, {
+      label: 'Summary',
+      path: `/commissionManagement/payroll/${route.params.id}/summary`,
+      display: userStore.userHasFeature('COMMISSIONS')
+    }]
+  })
+  const displayedTabs = computed(() => {
+    return tabs.value.filter(tab => tab.display)
+  })
 </script>
 
 <style lang="scss" scoped>

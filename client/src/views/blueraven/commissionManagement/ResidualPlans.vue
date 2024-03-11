@@ -7,9 +7,6 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-<!--        <v-btn text color="primary" @click="goToDetails({})">-->
-<!--          <v-icon>add</v-icon>-->
-<!--        </v-btn>-->
       </v-toolbar-items>
     </v-toolbar>
     <v-divider></v-divider>
@@ -18,11 +15,11 @@
         <v-card>
           <v-card-title class="pt-0">
             <v-text-field
-              v-model="search"
-              prepend-inner-icon="search"
-              label="Search"
-              single-line
-              hide-details
+                v-model="search"
+                prepend-inner-icon="search"
+                label="Search"
+                single-line
+                hide-details
             ></v-text-field>
           </v-card-title>
           <v-divider></v-divider>
@@ -59,49 +56,59 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
+<script setup>
+import {handleHidingGlobalLoader, getRequest, } from '@/helpers/helpers'
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useBrsStore } from '@/stores/BrsStorePinia.js'
+import { storeToRefs } from 'pinia'
 
-  export default {
-    name: 'ResidualPlans',
+const brsStore = useBrsStore()
+const { commissionPositionId } = storeToRefs(brsStore)
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-    created() {
-      this.getResidualPlans()
-    },
-    data() {
-      return {
-        snackbar: {},
-        dataLoading: true,
-        search: '',
-        headers: [
-          {text: 'Plan Name', value: 'name', show: true},
-          {text: 'Description', value: 'description', show: true},
-          {text: 'Status', value: 'statusType', show: true},
-        ],
-        residualPlans: []
-      }
-    },
-    methods: {
-      async getResidualPlans () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/commissionManagement/residuals/plans`, 'blueraven')
-          this.residualPlans = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Residual Plans')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      goToDetails (item) {
-        this.$router.push({name: 'residualPlan', params: {id: item.id}})
-      }
-    }
+onMounted(() => {
+  getResidualPlans()
+})
+
+watch(commissionPositionId, () => {
+  getResidualPlans()
+})
+
+const dataLoading = ref(true)
+const search = ref('')
+const headers = ref([
+  {text: 'Plan Name', value: 'name', show: true},
+  {text: 'Description', value: 'description', show: true},
+  {text: 'Status', value: 'statusType', show: true},
+])
+const residualPlans = ref([])
+
+const getResidualPlans = async ()  => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/commissionManagement/residuals/plans`, 'blueraven')
+    residualPlans.value = data
+    dataLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Residual Plans')
+
+    appStore.loading = false
   }
+}
+const goToDetails = async (item)  => {
+  await router.push({name: 'residualPlan', params: {id: item.id}})
+}
 </script>
 
 <style lang="scss">

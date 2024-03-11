@@ -1,6 +1,7 @@
 <template>
   <v-main>
     <v-container>
+
       <v-row>
         <v-col cols="6">
           <h3 class="mb-5">Paste the v-btn code here</h3>
@@ -41,7 +42,7 @@
 
 <script setup>
 import {getCurrentInstance, onMounted, ref} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 import * as prettier from 'prettier'
 import htmlParser from 'prettier/parser-html'
 
@@ -99,6 +100,7 @@ const processBtn = async () => {
   tempString = tempString.replaceAll(' large ', ' size="large" ')
   tempString = tempString.replaceAll('v-on="on"', ':activation-handler="on"')
   tempString = tempString.replaceAll('<v-icon', '\n<v-icon')
+  tempString = tempString.replaceAll('class=""', '')
 
   //handle no color
   //if there is no color then it needs to be set to 'unset' as we default to color = primary since that is the most commonly used

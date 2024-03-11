@@ -8,84 +8,20 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
-          <v-btn color="primary" class="white--text mr-2"
-                 :disabled="!residualPlan.name"
-                 @click="savePlan()">
-            Save
-          </v-btn>
-          <v-btn color="success" class="white--text mr-2"
-                 v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && residualPlan.statusType === 'PENDING'"
-                 :disabled="errorMessages.length > 0"
-                 @click="approvePlan()">
-            Approve
-          </v-btn>
-
-<!--          <v-dialog v-if="planId && residualPlan && residualPlan.users && residualPlan.users.filter(u => {return u.endDate == null}).length > 0"-->
-<!--            v-model="cloneDialog"-->
-<!--            width="600"-->
-<!--          >-->
-<!--            <template v-slot:activator="{ on }">-->
-<!--              <v-btn color="primary" dark v-on="on" class="mr-2">-->
-<!--                Clone-->
-<!--              </v-btn>-->
-<!--            </template>-->
-
-<!--            <v-card>-->
-<!--              <v-card-title-->
-<!--                class="text-h5 grey lighten-2"-->
-<!--                primary-title-->
-<!--              >-->
-<!--                Clone {{residualPlan.name}}-->
-<!--              </v-card-title>-->
-
-<!--              <v-card-text class="pt-4">-->
-<!--                <div class="mb-2">-->
-<!--                  This option allows you to copy an entire plan over. <br/>-->
-<!--                  By default, no users are copied over.-->
-<!--                </div>-->
-<!--                Users to Copy:-->
-<!--                <div v-for="u in filterBy(residualPlan.users, (u) => { return u.endDate == null })">-->
-<!--                  <input type="checkbox" class="mr-2" v-model="u.selected">-->
-<!--                  {{ u.name }}: {{u.startDate | formatDate('date')}}-->
-<!--                </div>-->
-<!--                <div class="mt-3" v-if="residualPlan.users && residualPlan.users.filter(u => u.selected).length > 0">-->
-<!--                  <DatetimePickerInput-->
-<!--                    v-model="cloneStartDate"-->
-<!--                    :timezone="timezone"-->
-<!--                    :type="'date'"-->
-<!--                    :format="'MMMM DD, YYYY'"-->
-<!--                    label="Start Date"-->
-<!--                  />-->
-<!--                  <div v-if="cloneStartDate">-->
-<!--                    * This will update the end date for all selected users to {{moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on their current plan.-->
-<!--                  </div>-->
-<!--                  <div v-if="cloneDateError" class="error&#45;&#45;text">-->
-<!--                    You cannot select a start date that is before or equal to any other user's plan start date.-->
-<!--                  </div>-->
-<!--                </div>-->
-<!--              </v-card-text>-->
-
-<!--              <v-divider></v-divider>-->
-
-<!--              <v-card-actions>-->
-<!--                <v-spacer></v-spacer>-->
-<!--                <v-btn-->
-<!--                  text-->
-<!--                  @click="[cloneDialog = false, cloneStartDate = null]"-->
-<!--                >-->
-<!--                  Cancel-->
-<!--                </v-btn>-->
-<!--                <v-btn-->
-<!--                  color="primary"-->
-<!--                  :disabled="(residualPlan.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||-->
-<!--                            (residualPlan.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"-->
-<!--                  class="white&#45;&#45;text"-->
-<!--                  @click="validateStartDates()">-->
-<!--                  Clone-->
-<!--                </v-btn>-->
-<!--              </v-card-actions>-->
-<!--            </v-card>-->
-<!--          </v-dialog>-->
+          <AlbatrossButton
+              color="primary"
+              class="mr-2"
+              :disabled="!residualPlan.name"
+              @click="savePlan()"
+              text="Save"
+          ></AlbatrossButton>
+          <AlbatrossButton
+              color="success"
+              class="mr-2"
+              v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && residualPlan.statusType === 'PENDING'"
+              :disabled="errorMessages.length > 0"
+              @click="approvePlan()"
+          > Approve </AlbatrossButton>
         </div>
       </v-toolbar-items>
     </v-toolbar>
@@ -148,23 +84,26 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="residualPlan.statusType === 'PENDING'" @click="[selectedLevel = {}, addLevel = !addLevel]">
-              <v-icon v-if="addLevel">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                v-if="residualPlan.statusType === 'PENDING'"
+                @click="[selectedLevel = {}, addLevel = !addLevel]"
+                :prepend-icon="addLevel ? 'remove' : 'add'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
         <v-data-table
-          :headers="levelHeaders"
-          :items="residualPlan.residualPlanAllocations"
-          :fixed-header="true"
-          hide-default-footer
-          disable-sort
-          :loading="dataLoading"
-          single-expand
-          :expanded.sync="levelExpanded"
-          class="elevation-1"
+            :headers="levelHeaders"
+            :items="residualPlan.residualPlanAllocations"
+            :fixed-header="true"
+            hide-default-footer
+            disable-sort
+            :loading="dataLoading"
+            single-expand
+            :expanded.sync="levelExpanded"
+            class="elevation-1"
         >
           <template #no-data>
             No available levels
@@ -196,10 +135,12 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addUser = !addUser, newUser = {}, userHistory = []]">
-              <v-icon v-if="addUser">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="[addUser = !addUser, newUser = {}, userHistory = []]"
+                :prepend-icon="addUser ? 'remove' : 'add'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -220,22 +161,22 @@
               >
               </v-autocomplete>
               <DatetimePickerInput
-                v-model="newUser.startDate"
-                :timezone="timezone"
-                :type="'date'"
-                :format="'MMMM DD, YYYY'"
-                label="Start Date"
-                :readonly="!newUser.userId || errorLoadingUserHistory"
-                @input="checkDates(newUser.startDate, newUser.endDate, userHistory, newUser)"
+                  v-model="newUser.startDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :format="'MMMM DD, YYYY'"
+                  label="Start Date"
+                  :readonly="!newUser.userId || errorLoadingUserHistory"
+                  @input="checkDates(newUser.startDate, newUser.endDate, userHistory, newUser)"
               />
               <DatetimePickerInput
-                v-model="newUser.endDate"
-                :timezone="timezone"
-                :type="'date'"
-                :format="'MMMM DD, YYYY'"
-                label="End Date"
-                :readonly="!newUser.userId || errorLoadingUserHistory"
-                @input="checkDates(newUser.startDate, newUser.endDate, userHistory, newUser)"
+                  v-model="newUser.endDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :format="'MMMM DD, YYYY'"
+                  label="End Date"
+                  :readonly="!newUser.userId || errorLoadingUserHistory"
+                  @input="checkDates(newUser.startDate, newUser.endDate, userHistory, newUser)"
               />
             </v-col>
           </v-row>
@@ -246,25 +187,28 @@
           <div class="mb-2" v-else-if="newUser.showNote">
             {{newUser.noteMsg}}
           </div>
-          <v-btn color="primary" class="mr-3 white--text" @click="addUserToPlan()"
-                 :disabled="newUser.dateError || !newUser.userId || !newUser.startDate || errorLoadingUserHistory">
-            Add
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              class="mr-3"
+              @click="addUserToPlan()"
+              :disabled="newUser.dateError || !newUser.userId || !newUser.startDate || errorLoadingUserHistory"
+              text="Add"
+          ></AlbatrossButton>
         </v-card>
         <v-card color="white" class="square-card px-5 pt-1 pb-4">
           <v-text-field
-            prepend-inner-icon="search"
-            text
-            hide-details
-            clearable
-            label="Search users..."
-            v-model="search"
+              prepend-inner-icon="search"
+              text
+              hide-details
+              clearable
+              label="Search users..."
+              v-model="search"
           ></v-text-field>
         </v-card>
         <v-divider></v-divider>
         <v-data-table
             :headers="headers"
-            :items="filterResidualPlanUsers()"
+            :items="filteredResidualPlanUsers"
             :fixed-header="true"
             :options.sync="options"
             :search="search"
@@ -288,24 +232,24 @@
               <v-row>
                 <v-col cols="12" md="6">
                   <DatetimePickerInput
-                    v-model="item.endDate"
-                    :timezone="timezone"
-                    :type="'date'"
-                    :format="'MMMM DD, YYYY'"
-                    label="End Date"
-                    :readonly="errorLoadingUserHistory"
-                    @input="checkDates(item.startDate, item.endDate, userHistory, item, residualPlan.id)"
+                      v-model="item.endDate"
+                      :timezone="timezone"
+                      :type="'date'"
+                      :format="'MMMM DD, YYYY'"
+                      label="End Date"
+                      :readonly="errorLoadingUserHistory"
+                      @input="checkDates(item.startDate, item.endDate, userHistory, item, residualPlan.id)"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-data-table
-                    :headers="historyHeaders"
-                    :items="userHistory"
-                    :fixed-header="true"
-                    :items-per-page="-1"
-                    hide-default-footer
-                    class="elevation-1"
-                    v-if="userHistory.length > 0"
+                      :headers="historyHeaders"
+                      :items="userHistory"
+                      :fixed-header="true"
+                      :items-per-page="-1"
+                      hide-default-footer
+                      class="elevation-1"
+                      v-if="userHistory.length > 0"
                   >
                   </v-data-table>
                   <div v-if="errorLoadingUserHistory" class="error--text">
@@ -319,10 +263,13 @@
               <div class="mb-2" v-else-if="item.showNote">
                 {{item.noteMsg}}
               </div>
-              <v-btn color="primary" class="mr-3 white--text" @click="updateAssignedUser(item)"
-                     :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory">
-                Save
-              </v-btn>
+              <AlbatrossButton
+                  color="primary"
+                  class="mr-3"
+                  @click="updateAssignedUser(item)"
+                  :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory"
+                  text="Save"
+              ></AlbatrossButton>
             </td>
           </template>
 
@@ -334,18 +281,30 @@
               <td class="text-left">{{item.endDate}}</td>
               <td>
 
-                <v-btn small text color="primary" @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
-                       v-if="residualPlan.statusType === 'PENDING' && !assignedUserExpanded.includes(item)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" @click="assignedUserExpanded = []"
-                       v-if="assignedUserExpanded.includes(item)">
-                  cancel
-                </v-btn>
-                <v-btn small text color="primary" @click="userToDelete = item"
-                    v-if="residualPlan.statusType === 'PENDING'">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
+                    v-if="residualPlan.statusType === 'PENDING' && !assignedUserExpanded.includes(item)"
+                    prepend-icon="edit"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="assignedUserExpanded = []"
+                    v-if="assignedUserExpanded.includes(item)"
+                    text="cancel"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="userToDelete = item"
+                    v-if="residualPlan.statusType === 'PENDING'"
+                    prepend-icon="delete"
+                ></AlbatrossButton>
               </td>
             </tr>
           </template>
@@ -361,441 +320,384 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import moment from 'moment'
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
-  import constants from "@/helpers/constants";
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import moment from 'moment'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest,  getRequestWithParams} from '@/helpers/helpers'
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import constants from "@/helpers/constants";
+import debounce from 'lodash.debounce'
+import { storeToRefs } from 'pinia'
 
-  export default {
-    name: 'ResidualPlan',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      ConfirmationDialog,
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useBrsStore } from '@/stores/BrsStorePinia.js'
 
-      DatetimePickerInput
-    },
-    created() {
-      if(this.planId) {
-        this.getResidualPlanDetails()
-      } else {
-        this.dataLoading = false
+const brsStore = useBrsStore()
+const { commissionPositionId } = storeToRefs(brsStore)
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const cloneDialog = ref(false)
+const addUser = ref(false)
+const newUser = ref({})
+const usersToAdd = ref([])
+const userSearch = ref(null)
+const userHistory = ref([])
+const usersLoading = ref(false)
+const levelExpanded = ref([])
+const footerProps = ref({
+  'items-per-page-options': [10, 50, 100, 1000, 3000],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const options = ref({itemsPerPage: 100})
+const levelHeaders = ref([
+  {text: 'Lifetime FDC Lower', value: 'min', show: true},
+  {text: 'Lifetime FDC Upper', value: 'max', show: true},
+  {text: 'Target FDC', value: 'allocation', show: true},
+  {text: 'Partial FDC', value: 'fdcCount', show: true},
+  {text: 'Partial FDC %', value: 'partial', show: true},
+])
+const addLevel = ref(false)
+const selectedLevel = ref({})
+const cloneStartDate = ref(null)
+const dataLoading = ref(true)
+const inactivateConfirm = ref(false)
+const deleteConfirm = ref(false)
+const errorLoadingUserHistory = ref(false)
+const assignedUserExpanded = ref([])
+const search = ref('')
+const headers = ref([
+  {text: 'Name', value: 'name', show: true},
+  {text: 'Employee ID', value: 'employeeId', show: true},
+  {text: 'Start Date', value: 'startDate', show: true},
+  {text: 'End Date', value: 'endDate', show: true},
+  {text: '', value: 'icons', show: true},
+])
+const historyHeaders = ref([
+  {text: 'Name', value: 'name', show: true},
+  {text: 'Start Date', value: 'startDate', show: true},
+  {text: 'End Date', value: 'endDate', show: true},
+])
+const errorMessages = ref([])
+const cloneDateError = ref(false)
+const residualPlan = ref({users: [],})
+const levelToDelete = ref(null)
+const userToDelete = ref(null)
+
+onMounted(() => {
+  if(planId.value) {
+    getResidualPlanDetails()
+  } else {
+    dataLoading.value = false
+  }
+})
+
+watch(commissionPositionId, async() => {
+  //if they change the position (setter vs closer) have to go back to main page
+  await router.push('/commissionManagement/residualPlans')
+})
+
+const planId = computed(() => {
+  return route.params.id
+})
+const timezone = computed(() => {
+  return userStore.details.timezone?.value
+})
+const levelToDeleteName = computed(() => {
+  return levelToDelete.value ? levelToDelete.value.name : ''
+})
+const userToDeleteName = computed(() => {
+  return userToDelete.value ? userToDelete.value.name : ''
+})
+const filteredResidualPlanUsers = computed(() => {
+  return residualPlan.value?.users?.filter(cu => { return !cu.archived})
+})
+
+watch(planId, () => {
+  getResidualPlanDetails()
+})
+watch(userSearch, (val) => {
+  if(!val) {
+    newUser.value.userId = null
+    usersToAdd.value = []
+    return
+  }
+  usersToAdd.value = []
+  getUsersToAddDebounced(val)
+})
+
+const getResidualPlanDetails = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/commissionManagement/residuals/plan/${planId.value}`, 'blueraven')
+    residualPlan.value = data
+    if([2,3].includes(residualPlan.value.residualPlanStatusId)) {
+      residualPlan.value.approved = true
+    }
+    checkErrorMessages()
+    dataLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Residual Plan Details')
+
+    appStore.loading = false
+  }
+}
+const validateStartDates = () => {
+  //this is used when cloning users
+  cloneDateError.value = false
+  residualPlan.value?.users?.forEach(u => {
+    if(u.selected && u.startDate >= cloneStartDate.value) {
+      cloneDateError.value = true
+    }
+  })
+
+  if(!cloneDateError) {
+    clonePlan(residualPlan.value.users, cloneStartDate.value)
+    cloneDialog.value = false;
+  }
+}
+const checkDates = (startDate, endDate, plans, item, existingId) => {
+  //item = where to track the error
+  item.dateError = false
+
+  if(startDate > endDate) {
+    item.dateError = true
+    item.dateErrorMsg = 'End Date cannot be before Start Date'
+  } else {
+    let overlap = []
+    let hasActivePlan = false
+    plans.forEach(p => {
+      if(dateRangeOverlap(startDate, endDate, p, existingId)) {
+        overlap.push(p)
       }
-    },
-    watch: {
-      $route(to) {
-        // react to route changes...
-        this.planId = to.params.id
-        this.getResidualPlanDetails()
-      },
-      userSearch (val) {
-        if(!val) {
-          this.newUser.userId = null
-          this.usersToAdd = []
-          return
-        }
-        this.usersToAdd = []
-        this.getUsersToAddDebounced(val)
+      // if any plan doesn't have an end date, then there is an active plan
+      if(!p.endDate) {
+        hasActivePlan = true
       }
-    },
-    data() {
-      return {
-        snackbar: {},
-        cloneDialog: false,
-        addUser: false,
-        newUser: {},
-        usersToAdd: [],
-        userSearch: null,
-        userHistory: [],
-        usersLoading: false,
-        levelExpanded: [],
-        footerProps: {
-          'items-per-page-options': [10, 50, 100, 1000, 3000],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        options: {
-          itemsPerPage: 100
-        },
-        levelHeaders: [
-          {text: 'Lifetime FDC Lower', value: 'min', show: true},
-          {text: 'Lifetime FDC Upper', value: 'max', show: true},
-          {text: 'Target FDC', value: 'allocation', show: true},
-          {text: 'Partial FDC', value: 'fdcCount', show: true},
-          {text: 'Partial FDC %', value: 'partial', show: true},
-        ],
-        addLevel: false,
-        selectedLevel: {},
-        moment,
-        cloneStartDate: null,
-        dataLoading: true,
-        inactivateConfirm: false,
-        deleteConfirm: false,
-        planId: this.$route.params.id,
-        errorLoadingUserHistory: false,
-        assignedUserExpanded: [],
-        search: '',
-        headers: [
-          {text: 'Name', value: 'name', show: true},
-          {text: 'Employee ID', value: 'employeeId', show: true},
-          {text: 'Start Date', value: 'startDate', show: true},
-          {text: 'End Date', value: 'endDate', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        historyHeaders: [
-          {text: 'Name', value: 'name', show: true},
-          {text: 'Start Date', value: 'startDate', show: true},
-          {text: 'End Date', value: 'endDate', show: true},
-        ],
-        errorMessages: [],
-        cloneDateError: false,
-        residualPlan: {
-          users: [],
-        },
-        levelToDelete: null,
-        userToDelete: null
-      }
-    },
-
-    computed: {
-      ...mapStores(useUserStore),
-      timezone() {
-        return this.userStore.details.timezone?.value
-      },
-      levelToDeleteName() {
-        return this.levelToDelete ? this.levelToDelete.name : ''
-      },
-      userToDeleteName() {
-        return this.userToDelete ? this.userToDelete.name : ''
-      }
-    },
-    methods: {
-      async getResidualPlanDetails () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/commissionManagement/residuals/plan/${this.planId}`, 'blueraven')
-          this.residualPlan = data
-          if([2,3].includes(this.residualPlan.residualPlanStatusId)) {
-            this.residualPlan.approved = true
-          }
-          this.checkErrorMessages()
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Residual Plan Details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      validateStartDates() {
-        //this is used when cloning users
-        this.cloneDateError = false
-        this.residualPlan?.users?.forEach(u => {
-          if(u.selected && u.startDate >= this.cloneStartDate) {
-            this.cloneDateError = true
-          }
-        })
-
-        if(!this.cloneDateError) {
-          this.clonePlan(this.residualPlan.users, this.cloneStartDate)
-          this.cloneDialog = false;
-        }
-      },
-      checkDates(startDate, endDate, plans, item, existingId) {
-        //item = where to track the error
-        item.dateError = false
-
-        if(startDate > endDate) {
-          item.dateError = true
-          item.dateErrorMsg = 'End Date cannot be before Start Date'
-        } else {
-          let overlap = []
-          let hasActivePlan = false
-          plans.forEach(p => {
-            if(this.dateRangeOverlap(startDate, endDate, p, existingId)) {
-              overlap.push(p)
-            }
-            // if any plan doesn't have an end date, then there is an active plan
-            if(!p.endDate) {
-              hasActivePlan = true
-            }
-          })
-          if(overlap.length > 0) {
-            item.dateError = true
-            item.dateErrorMsg = 'Plans Cannot Overlap'
-          } else if(!existingId && startDate && hasActivePlan) {
-            item.showNote = true
-            item.noteMsg = `The Current plan's end date will be set to ${moment(startDate).subtract(1, 'd').format('MM/DD/YYYY')}.`
-          }
-        }
-      },
-      dateRangeOverlap(start, end, plan, existingId) {
-        //this will not allow them to go back in time to add plans before existing plans which seems to be ok
-        if(plan.id === existingId) {
-          // ignore overlap check for self on existing record
-          return false
-        } else {
-          //this is used when adding a new plan
-          return start <= plan.startDate || start <= plan.endDate
-        }
-      },
-      checkErrorMessages () {
-        this.errorMessages = []
-      },
-      planHasActiveUsers () {
-        let hasActive = false
-        this.residualPlan?.users?.forEach(u => {
-          if(u.endDate === null || u.endDate > new Date()){
-            hasActive = true
-          }
-        })
-        return hasActive
-      },
-      activeUsers () {
-        return this.residualPlan?.users?.filter(u => {
-          return u.endDate === null || u.endDate > new Date()
-        })
-      },
-      async savePlan () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            id: this.residualPlan.id,
-            name: this.residualPlan.name,
-            description: this.residualPlan.description
-          }
-          const {data, status} = await postRequest(`/commissionManagement/residuals/plan`, params, 'blueraven')
-          if(!this.planId) {
-            //need to reload some stuff if this was a new plan
-            this.$router.push({name: 'residualPlan', params: {id: data.id}})
-          }
-          this.checkErrorMessages()
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Residual Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async approvePlan () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/commissionManagement/residuals/plan/${this.planId}/approve`, {}, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Residual Plan Approved')
-          this.residualPlan = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Approving Residual Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      // async inactivatePlan () {
-      //   this.$store.commit(AppMutations.SET_LOADING, true)
-      //   try {
-      //     await postRequest(`/commissionManagement/residuals/${this.planId}/inactivate`, {}, 'blueraven')
-      //     this.snackbar = getSnackbar('SUCCESS', 'Residual Plan Inactivated')
-      //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      //     this.$router.push({name: 'residualPlans'})
-      //   } catch (e) {
-      //     console.error('*** ERROR ***', e)
-      //     this.snackbar = getSnackbar('ERROR', 'Error Inactivating Residual Plan')
-      //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   }
-      // },
-      // async deletePlan () {
-      //   this.$store.commit(AppMutations.SET_LOADING, true)
-      //   try {
-      //     await deleteRequest(`/commissionManagement/residuals/plan/${this.planId}`, 'blueraven')
-      //     this.snackbar = getSnackbar('SUCCESS', 'Residual Plan Deleted')
-      //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      //     this.$router.push({name: 'residualPlans'})
-      //   } catch (e) {
-      //     console.error('*** ERROR ***', e)
-      //     this.snackbar = getSnackbar('ERROR', 'Error Deleting Residual Plan')
-      //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   }
-      // },
-      // async clonePlan (users, startDate) {
-      //   this.$store.commit(AppMutations.SET_LOADING, true)
-      //   try {
-      //     let params = {
-      //       users: users ? users.filter(u => u.selected).map(u => u.userId) : [],
-      //       startDate: startDate ?? null,
-      //       backdateApprovalCreds: null
-      //     }
-      //     const {data} = await postRequest(`/commissionManagement/residuals/plan/${this.planId}/clone`, params, 'blueraven')
-      //     this.$router.push({name: 'residualPlan', params: {id: data.id}})
-      //     // temporarily only allowing closers
-      //   } catch (e) {
-      //     console.error('*** ERROR ***', e)
-      //     this.snackbar = getSnackbar('ERROR', 'Error Cloning ResidualPlan')
-      //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   }
-      // },
-      async updateAssignedUser(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await postRequest(`/commissionManagement/residuals/${this.planId}/updateUser`, item, 'blueraven')
-          this.assignedUserExpanded = []
-          this.userHistory = []
-          this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Assigned User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      getUsersToAddDebounced(val) {
-        clearTimeout(this._searchTimerId)
-        this._searchTimerId = setTimeout(() => {
-          this.getUsersToAdd(val)
-        }, 500) /* 500ms throttle */
-      },
-      async getUsersToAdd(query) {
-        if(this.addUser) {
-          this.usersLoading = true
-          try {
-            let params = {
-              query,
-              planId: this.planId
-            }
-            const {data} = await getRequestWithParams(`/commissionManagement/residuals/_search`, {params}, 'blueraven')
-            this.usersToAdd = data
-            this.usersLoading = false
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Residual Plan Users')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async addUserToPlan() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            userId: this.newUser.userId,
-            startDate: this.newUser.startDate,
-            endDate: this.newUser.endDate,
-            approvalCreds: null
-          }
-          const {data, status} = await postRequest(`/commissionManagement/residuals/${this.planId}/users`, params, 'blueraven')
-          this.residualPlan.users = data
-          this.snackbar = getSnackbar('SUCCESS', 'Residual Plan User Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.addUser = false
-          this.newUser = {}
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Residual Plan User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteUserFromPlan() {
-        const residualPlanUser = this.userToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/commissionManagement/residuals/${this.planId}/residualPlanUser/${residualPlanUser.id}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Residual Plan User Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          residualPlanUser.archived = true
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Residual Plan User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterResidualPlanUsers () {
-        return this.residualPlan.users.filter(cu => { return !cu.archived})
-      },
-      async getUserHistory(userId) {
-        //reset the rest of the new user fields if they change users
-        delete this.newUser.startDate
-        delete this.newUser.endDate
-        this.newUser.dateError = false
-        this.newUser.dateErrorMsg = ''
-        this.newUser.showNote = false
-        this.newUser.noteMsg = ''
-        this.errorLoadingUserHistory = false
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/commissionManagement/residuals/residualPlanUser/${userId}/history`, 'blueraven')
-          this.userHistory = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          this.errorLoadingUserHistory = true
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving User History')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async addLevelToPlan() {
-        try {
-          let params = {
-            ...this.selectedLevel
-          }
-          const {data} = await postRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation`, params, 'blueraven')
-          this.residualPlan.residualPlanAllocations.push(data)
-          this.selectedLevel = {}
-          this.addLevel = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Level')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteLevel () {
-        const residualPlanAllocationId = this.levelToDelete.id
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation/${residualPlanAllocationId}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Level Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.residualPlan.residualPlanAllocations = this.residualPlan.residualPlanAllocations.filter(rpa => {
-            return rpa.id !== residualPlanAllocationId
-          })
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Level')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async updateLevel(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await putRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation`, item, 'blueraven')
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Level')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+    })
+    if(overlap.length > 0) {
+      item.dateError = true
+      item.dateErrorMsg = 'Plans Cannot Overlap'
+    } else if(!existingId && startDate && hasActivePlan) {
+      item.showNote = true
+      item.noteMsg = `The Current plan's end date will be set to ${moment(startDate).subtract(1, 'd').format('MM/DD/YYYY')}.`
     }
   }
+}
+const dateRangeOverlap = (start, end, plan, existingId) => {
+  //this will not allow them to go back in time to add plans before existing plans which seems to be ok
+  if(plan.id === existingId) {
+    // ignore overlap check for self on existing record
+    return false
+  } else {
+    //this is used when adding a new plan
+    return start <= plan.startDate || start <= plan.endDate
+  }
+}
+const checkErrorMessages =  () => {
+  errorMessages.value = []
+}
+const planHasActiveUsers =  () => {
+  let hasActive = false
+  residualPlan.value?.users?.forEach(u => {
+    if(u.endDate === null || u.endDate > new Date()){
+      hasActive = true
+    }
+  })
+  return hasActive
+}
+const savePlan = async () => {
+  appStore.loading = true
+  try {
+    let params = {
+      id: residualPlan.value.id,
+      name: residualPlan.value.name,
+      description: residualPlan.value.description
+    }
+    const {data, status} = await postRequest(`/commissionManagement/residuals/plan`, params, 'blueraven')
+    if(!planId.value) {
+      //need to reload some stuff if this was a new plan
+      router.push({name: 'residualPlan', params: {id: data.id}})
+    }
+    checkErrorMessages()
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Residual Plan')
+
+    appStore.loading = false
+  }
+}
+const approvePlan = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await postRequest(`/commissionManagement/residuals/plan/${planId.value}/approve`, {}, 'blueraven')
+    snackbar('SUCCESS', 'Residual Plan Approved')
+    residualPlan.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Approving Residual Plan')
+
+    appStore.loading = false
+  }
+}
+const updateAssignedUser = async(item) => {
+  appStore.loading = true
+  try {
+    const {status} = await postRequest(`/commissionManagement/residuals/${planId.value}/updateUser`, item, 'blueraven')
+    assignedUserExpanded.value = []
+    userHistory.value = []
+    snackbar('SUCCESS', 'Assigned User Updated')
+
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating Assigned User')
+
+    appStore.loading = false
+  }
+}
+const getUsersToAddDebounced = debounce((val) => {
+  getUsersToAdd(val)
+}, 500)
+const getUsersToAdd = async(query) => {
+  if(addUser.value) {
+    usersLoading.value = true
+    try {
+      let params = {
+        query,
+        planId: planId.value
+      }
+      const {data} = await getRequestWithParams(`/commissionManagement/residuals/_search`, {params}, 'blueraven')
+      usersToAdd.value = data
+      usersLoading.value = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Residual Plan Users')
+
+      appStore.loading = false
+    }
+  }
+}
+const addUserToPlan = async() => {
+  appStore.loading = true
+  try {
+    let params = {
+      userId: newUser.value.userId,
+      startDate: newUser.value.startDate,
+      endDate: newUser.value.endDate,
+      approvalCreds: null
+    }
+    const {data, status} = await postRequest(`/commissionManagement/residuals/${planId.value}/users`, params, 'blueraven')
+    residualPlan.value.users = data
+    snackbar('SUCCESS', 'Residual Plan User Added')
+
+    addUser.value = false
+    newUser.value = {}
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Residual Plan User')
+
+    appStore.loading = false
+  }
+}
+const deleteUserFromPlan = async() => {
+  const residualPlanUser = userToDelete.value
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/commissionManagement/residuals/${planId.value}/residualPlanUser/${residualPlanUser.id}`, 'blueraven')
+    snackbar('SUCCESS', 'Residual Plan User Deleted')
+
+    residualPlanUser.archived = true
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Residual Plan User')
+
+    appStore.loading = false
+  }
+}
+const getUserHistory = async(userId) => {
+  //reset the rest of the new user fields if they change users
+  delete newUser.value.startDate
+  delete newUser.value.endDate
+  newUser.value.dateError = false
+  newUser.value.dateErrorMsg = ''
+  newUser.value.showNote = false
+  newUser.value.noteMsg = ''
+  errorLoadingUserHistory.value = false
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/commissionManagement/residuals/residualPlanUser/${userId}/history`, 'blueraven')
+    userHistory.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    errorLoadingUserHistory.value = true
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving User History')
+
+    appStore.loading = false
+  }
+}
+const addLevelToPlan = async() => {
+  try {
+    let params = {
+      ...selectedLevel.value
+    }
+    const {data} = await postRequest(`/commissionManagement/residuals/plan/${planId.value}/allocation`, params, 'blueraven')
+    residualPlan.value.residualPlanAllocations.push(data)
+    selectedLevel.value = {}
+    addLevel.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Level')
+
+    appStore.loading = false
+  }
+}
+const deleteLevel = async () => {
+  const residualPlanAllocationId = levelToDelete.value.id
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/commissionManagement/residuals/plan/${planId.value}/allocation/${residualPlanAllocationId}`, 'blueraven')
+    snackbar('SUCCESS', 'Level Deleted')
+
+    residualPlan.value.residualPlanAllocations = residualPlan.value.residualPlanAllocations.filter(rpa => {
+      return rpa.id !== residualPlanAllocationId
+    })
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Level')
+
+    appStore.loading = false
+  }
+}
+const updateLevel = async(item) => {
+  appStore.loading = true
+  try {
+    const {status} = await putRequest(`/commissionManagement/residuals/plan/${planId.value}/allocation`, item, 'blueraven')
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Level')
+
+    appStore.loading = false
+  }
+}
 </script>
 
 <style lang="scss" scoped>

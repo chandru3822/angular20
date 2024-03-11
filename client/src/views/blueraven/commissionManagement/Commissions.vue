@@ -7,9 +7,13 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text color="primary" @click="goToDetails({})" v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')">
-          <v-icon>add</v-icon>
-        </v-btn>
+        <AlbatrossButton
+            variant="text"
+            color="primary"
+            @click="goToDetails({})"
+            v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')"
+            prepend-icon="add"
+        ></AlbatrossButton>
       </v-toolbar-items>
     </v-toolbar>
     <v-divider></v-divider>
@@ -60,62 +64,59 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
   import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+  import {getCurrentInstance, computed, ref, onMounted, watch} from 'vue'
+  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useRoute, useRouter} from "vue-router/composables";
+  import { useBrsStore } from '@/stores/BrsStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { storeToRefs } from 'pinia'
+  const route = useRoute()
+  const router = useRouter()
+  const appStore = useAppStore()
+  const brsStore = useBrsStore()
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
+  const { commissionPositionId } = storeToRefs(brsStore)
 
-  export default {
-    name: 'Commissions',
+  onMounted(() => {
+    getCommissions()
+  })
 
-    created() {
-      this.getCommissions()
-    },
-    watch: {
-      '$store.state.brs.commissionPositionId': function () {
-        this.positionId = this.$store.state.brs.commissionPositionId
-        this.getCommissions()
-      }
-    },
-    computed: {
-      ...mapStores(useUserStore),
-    },
-    data() {
-      return {
-        snackbar: {},
-        dataLoading: true,
-        positionId: this.$store.state.brs.commissionPositionId,
-        search: '',
-        headers: [
+  watch(commissionPositionId, () => {
+    getCommissions()
+  })
+
+        const dataLoading = ref(true)
+        const search = ref('')
+        const commissions = ref([])
+        const headers = ref([
           {text: 'Plan Name', value: 'name', show: true},
           {text: 'Description', value: 'description', show: true},
           {text: 'Status', value: 'statusType', show: true},
           {text: 'Active Users', value: 'activeUsers', show: true},
-        ],
-        commissions: []
-      }
-    },
-    methods: {
-      async getCommissions () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        ])
+
+      const getCommissions = async () => {
+        appStore.loading = true
         try {
-          const {data, status} = await getRequest(`/commissionManagement/plans/${this.positionId}`, 'blueraven')
-          this.commissions = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
+          const {data, status} = await getRequest(`/commissionManagement/plans/${commissionPositionId.value}`, 'blueraven')
+          commissions.value = data
+          dataLoading.value = false
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Commissions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Loading Commissions')
+          appStore.loading = false
         }
-      },
-      goToDetails (item) {
-        this.$router.push({name: 'commission', params: {id: item.id}})
       }
-    }
-  }
+      const goToDetails = (item) => {
+        router.push({name: 'commission', params: {id: item.id}})
+      }
 </script>
 
 <style lang="scss">
