@@ -157,7 +157,8 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     return Executors.newScheduledThreadPool(10);
   }
 
-  @Scheduled(cron = "0 0 3 * * *", zone = "America/Denver")
+  //    every  day at 3 am mtn
+  @Scheduled(cron = "0 0 9 * * *", zone = "UTC")
   public void dailyCompanyDashboardSetup() {
     companyDashboardService.callCompanyDashboardSetup(null);
   }

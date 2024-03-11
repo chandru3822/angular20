@@ -124,7 +124,7 @@ BEGIN
                          inner join flow.contact c on p.contact_id = c.id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
-                         left join brs.project_details pd on pd.project_id = p.id
+                         inner join brs.project_details pd on pd.project_id = p.id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
                     and (c.owner_position_ids && v_position_ids)
@@ -164,7 +164,7 @@ BEGIN
                          inner join flow.contact c on p.contact_id = c.id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
-                         left join brs.project_details pd on pd.project_id = p.id
+                         inner join brs.project_details pd on pd.project_id = p.id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
                     and (c.owner_position_ids && v_position_ids)
@@ -241,7 +241,7 @@ BEGIN
                       inner join flow.contact c on p.contact_id = c.id
                       left join flow.company_state cs on cs.id = p.company_state_id
                       left join flow.state s on s.id = cs.state_id
-                      left join brs.project_details pd on pd.project_id = p.id
+                      inner join brs.project_details pd on pd.project_id = p.id
                where c.company_id = any (v_company_ids)
                  and p.archived is not true
                  and (c.owner_position_ids && v_position_ids)
