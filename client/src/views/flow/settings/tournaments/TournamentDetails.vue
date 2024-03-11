@@ -149,19 +149,18 @@
 
 <script setup>
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
 import constants from '@/helpers/constants'
 import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {
   handleHidingGlobalLoader,
   getRequest,
-  putRequest,
-  getSnackbar
+  putRequest
 } from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute} from "vue-router/composables";
+import {useRoute} from 'vue-router/composables'
 import { useFileStore } from '@/stores/FileStore.js'
 
 const userStore = useUserStore()
@@ -187,7 +186,6 @@ const addImage = ref(false)
 const savingImage = ref(false)
 const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY)
 const attachmentTypeId = ref(914)
-const snackbar = ref({})
 const edit = ref(false)
 const tournament = ref({})
 const ownerTypes = ref([])

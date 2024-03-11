@@ -77,7 +77,7 @@
             manage: false,
             display: this.userStore.userHasFeature('EXPENSES')
           }]
-      }
+      },
       displayedTabs () {
         return this.tabs.filter(tab => tab.display && tab.manage === this.manage)
       },
