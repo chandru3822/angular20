@@ -117,6 +117,7 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
+const filters = vueInstance.$filters
 
 const props = defineProps({
   milestone: Object,
@@ -162,9 +163,9 @@ const filteredDrilldownItems = (filteredItems) => {
 }
 
 const addHeaders = ()=> {
-  if(this.drilldownData.length > 0) {
-    this.drilldownData[0].additional_columns.forEach((header, index) => {
-      this.drilldownHeaders.push({
+  if(drilldownData.value?.length > 0) {
+    drilldownData.value[0].additional_columns.forEach((header, index) => {
+      drilldownHeaders.value.push({
         text: header.label,
         value: 'additional_columns['+index+'].value',
         show: true,
@@ -205,22 +206,22 @@ const exportCsv = () => {
     }
   })
 
-  this.drilldownData.forEach((o, idx) => {
+  drilldownData.value?.forEach((o, idx) => {
     csv += `\n`
 
     filteredHeaders.value?.forEach((h, i) => {
 
       if(i !== 0) {
         if (h.value === 'date_value') {
-          csv += '"' + `${o.date_value === null || o.date_value === undefined ? '' : this.$filters.formatDate(o.date_value, o.date_type, 'MM/DD/YYYY')}` + '",'
+          csv += '"' + `${o.date_value === null || o.date_value === undefined ? '' : filters.formatDate(o.date_value, o.date_type, 'MM/DD/YYYY')}` + '",'
         } else if (h.value === 'additional_field_value') {
-          csv += '"' + `${o.additional_field_value === null || o.additional_field_value === undefined ? '' : this.$filters.formatDate(o.additional_field_value, o.additional_field_type, 'MM/DD/YYYY')}` + '",'
+          csv += '"' + `${o.additional_field_value === null || o.additional_field_value === undefined ? '' : filters.formatDate(o.additional_field_value, o.additional_field_type, 'MM/DD/YYYY')}` + '",'
         } else if(h.additional){
           if(o.additional_columns[h.index].data_type === 'timestamp') {
-            csv += '"' + `${this.$filters.formatDate(o.additional_columns[h.index].value, 'MM/DD/YYYY')}` + '",'
+            csv += '"' + `${filters.formatDate(o.additional_columns[h.index].value, 'MM/DD/YYYY')}` + '",'
           }
           else if(o.additional_columns[h.index].data_type === 'timestamp') {
-            csv += '"' + `${this.$filters.formatDate(o.additional_columns[h.index].value, 'MM/DD/YYYY')}` + '",'
+            csv += '"' + `${filters.formatDate(o.additional_columns[h.index].value, 'MM/DD/YYYY')}` + '",'
           }
           else{
             csv += o.additional_columns[h.index].value + ',';
@@ -235,7 +236,7 @@ const exportCsv = () => {
   })
 
   const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
-  saveAs(blob, `${this.milestone.name}.csv`)
+  saveAs(blob, `${milestone.value.name}.csv`)
 }
 
 </script>
