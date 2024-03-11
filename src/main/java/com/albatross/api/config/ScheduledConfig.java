@@ -146,9 +146,8 @@ public class ScheduledConfig implements SchedulingConfigurer {
     }
   }
 
-  //    every  day at 1 am
-  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
-  // zone = "America/Denver")
+  //    every  day at 1 am - needs to be in utc to avoid DST issues
+  @Scheduled(cron = "0 0 7 * * *", zone = "UTC")
   public void closeUserConversations() {
     if (closeUserConversations) {
       setCronUser();
@@ -158,8 +157,8 @@ public class ScheduledConfig implements SchedulingConfigurer {
     }
   }
 
-  //    every  day at 1 am
-  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
+  //    every  day at 1 am - needs to be in utc to avoid DST issues
+  @Scheduled(cron = "0 0 7 * * *", zone = "UTC")
   public void sendCertExpirationEmails() {
       setCronUser();
       log.info("*** CRON: start send Cert Expiration Emails ***");
