@@ -549,7 +549,7 @@
         return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
       })
       const timezone = computed(() => {
-        return userStore.details.timezone?.value
+        return userStore.timezone.value
       })
       const headers = computed(() => {
         return positionId.value === 1 ? closerHeaders.value : setterHeaders.value

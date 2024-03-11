@@ -267,7 +267,7 @@ export default {
     },
     async getAssignedFields () {
       try {
-        let timezone = this.userStore.details.timezone?.value
+        let timezone = this.userStore.timezone.value
         const {data} = await getRequest(`/smartlistv1/${this.smartlistId}/field?timezone=${timezone}`)
         this.assignedFields = data
       } catch (e) {

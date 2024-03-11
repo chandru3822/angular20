@@ -31,6 +31,13 @@ export const useUserStore = defineStore('user', {
       // this function returns true if the user has any access level for any feature -
       // or if the user is a system admin
       return this.isSystemAdmin || this.details.featureAccess?.length > 0
+    },
+    timezone() {
+      if (!this.details?.timezone) {
+        this.guessTimeZone()
+      }
+
+      return this.details.timezone
     }
   },
   actions: {

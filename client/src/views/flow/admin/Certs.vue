@@ -143,7 +143,7 @@ const userStore = useUserStore()
 const snackbar = vueInstance.$snackbar
 
 const addNew = ref(false)
-const timezone = ref(userStore.details.timezone?.value)
+const timezone = ref(userStore.timezone.value)
 const certs = ref([])
 const selectedCert = ref({})
 const selectedCertId = ref(null)

@@ -79,7 +79,7 @@ const userId = computed(() => {
   return userStore.details.id
 })
 const timezone = computed(() => {
-  return userStore.details.timezone?.value
+  return userStore.timezone.value
 })
 
 const getTournament = async () => {

@@ -326,7 +326,7 @@ export default {
       return this.userStore.details.id
     },
     timezone() {
-      return this.userStore.details.timezone?.value
+      return this.userStore.timezone.value
     },
     is7oaksAdmin() {
       return this.userStore.isSystemAdmin

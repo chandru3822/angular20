@@ -671,7 +671,7 @@
     return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
   })
   const timezone = computed(()  => {
-    return userStore.details.timezone?.value
+    return userStore.timezone.value
   })
   const visibleReceivingHeaders = computed(()  => {
     return receivingHeaders.value.filter(header => header.show === true)

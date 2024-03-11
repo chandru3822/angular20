@@ -410,7 +410,7 @@ const planId = computed(() => {
   return route.params.id
 })
 const timezone = computed(() => {
-  return userStore.details.timezone?.value
+  return userStore.timezone.value
 })
 const levelToDeleteName = computed(() => {
   return levelToDelete.value ? levelToDelete.value.name : ''

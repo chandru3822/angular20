@@ -224,7 +224,7 @@ const toolbarOptions = ref({
 });
 
 const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY);
-const timezone = ref(userStore.details.timezone?.value);
+const timezone = ref(userStore.timezone.value);
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE);
 
 const onePlatformRequired = [

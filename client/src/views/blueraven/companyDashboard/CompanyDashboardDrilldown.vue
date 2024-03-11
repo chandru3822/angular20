@@ -135,7 +135,7 @@ onMounted(() => {
   addHeaders()
 })
 const timezone = computed(() => {
-  return userStore.details.timezone?.value || 'US/Mountain'
+  return userStore.timezone.value || 'US/Mountain'
 })
 const filteredHeaders = computed(() => {
   return drilldownHeaders.value?.filter(header => header.show === true)

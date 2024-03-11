@@ -176,7 +176,7 @@ const userCanEdit = computed(() => {
 })
 
 const timezone = computed(() => {
-  return userStore.details.timezone?.value
+  return userStore.timezone.value
 })
 const tournamentId = computed(() => {
   return route.params.id

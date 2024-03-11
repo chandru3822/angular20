@@ -451,7 +451,7 @@ const getReport = async () => {
 
 const getFields = async () => {
   try {
-    const {data} = await getRequest(`/smartlist/${report.value.id}/field?timezone=${userStore.details.timezone?.value}`)
+    const {data} = await getRequest(`/smartlist/${report.value.id}/field?timezone=${userStore.timezone.value}`)
     fields.value = cloneDeep(data)
     sourceFields.value = cloneDeep(data)
   } catch (e) {

@@ -365,7 +365,7 @@ const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
 })
 const timezone = computed(() => {
-  return userStore.details.timezone?.value
+  return userStore.timezone.value
 })
 
 const dataLoading = ref(true)

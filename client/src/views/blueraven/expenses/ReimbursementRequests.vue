@@ -323,7 +323,7 @@ export default {
       return this.userStore.userHasFeatureAccessLevel('EXPENSES', 'EDIT')
     },
     timezone() {
-      return this.userStore.details.timezone?.value
+      return this.userStore.timezone.value
     },
     userId() {
       return this.userStore.details.id

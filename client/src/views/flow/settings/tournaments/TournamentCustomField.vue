@@ -126,7 +126,7 @@ const props = defineProps({
 const {required, readonly, field, callback} = props;
 
 const timezone = computed(() => {
-  return userStore.details.timezone?.value
+  return userStore.timezone.value
 })
 
 const isLoading = ref(false)

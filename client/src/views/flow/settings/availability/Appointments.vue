@@ -292,7 +292,7 @@
   const dateFormat = ref('MMMM DD, YYYY')
   const timestampType = ref('timestamp')
   const timestampFormat = ref('MMMM DD, YYYY h:mm a')
-  const timezone = ref(userStore.details.timezone?.value)
+  const timezone = ref(userStore.timezone.value)
   const headers = ref([
     { text: 'Appointments', value: 'appointment', show: true},
     { text: 'Title', value: 'title', show: true},

@@ -453,7 +453,7 @@
     computed: {
       ...mapStores(useUserStore, useAppStore),
       timezone() {
-        return this.userStore.details.timezone?.value
+        return this.userStore.timezone.value
       },
       userCanEdit() {
         return this.userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')

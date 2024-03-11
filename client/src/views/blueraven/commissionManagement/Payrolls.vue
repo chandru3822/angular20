@@ -169,7 +169,7 @@ watch(repSearch, (val) => {
 })
 
 const timezone = computed(() => {
-  return userStore.details.timezone.value
+  return userStore.timezone.value
 })
 
 const positionId = computed(() => {

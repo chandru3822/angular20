@@ -234,7 +234,7 @@
         return this.userStore.userHasFeatureAccessLevel('USERS', 'EDIT')
       },
       timezone() {
-        return this.userStore.details.timezone?.value
+        return this.userStore.timezone.value
       },
       positionToDeleteName(){
         return this.positionToDelete ? this.positionToDelete.position : ''

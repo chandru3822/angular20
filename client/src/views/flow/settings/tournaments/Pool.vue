@@ -343,7 +343,7 @@ const userCanEdit = computed(() => {
 })
 
 const timezone = computed(() => {
-  return userStore.details.timezone?.value
+  return userStore.timezone.value
 })
 
 const userToDeleteName = computed(() => {

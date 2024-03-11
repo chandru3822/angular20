@@ -809,7 +809,7 @@ const userIsAdmin = computed(() => {
   return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
 })
 const timezone = computed(() => {
-  return userStore.details.timezone?.value
+  return userStore.timezone.value
 })
 const displayedMilestoneHeaders = computed(() => {
   return milestoneHeaders.value.filter(h => h.show || h.positionId === commission.value?.positionId)

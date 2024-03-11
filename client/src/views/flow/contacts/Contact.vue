@@ -625,7 +625,7 @@ export default {
       return this.userStore.details.companyId
     },
     timezone() {
-      return this.userStore.details.timezone?.value
+      return this.userStore.timezone.value
     },
     addressFieldRequired() {
       //this logic seems backwards but it is just the way rules work

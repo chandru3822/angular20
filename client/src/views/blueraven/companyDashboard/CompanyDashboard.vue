@@ -490,7 +490,7 @@ onMounted(() => {
   ]
 
   if (userStore.details?.timezone?.value) {
-    timezone.value = userStore.details.timezone?.value
+    timezone.value = userStore.timezone.value
   }
 
   getWeekNum()

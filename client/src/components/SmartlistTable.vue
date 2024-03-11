@@ -123,7 +123,7 @@ export default {
         async getSmartlistData() {
             try {
                 this.isLoading = true
-                const params = {timezone: this.userStore.details.timezone}
+                const params = {timezone: this.userStore.timezone}
                 const {data} = await getRequestWithParams(`/smartlistv1/${this.smartlistId}/data`, {params})
                 this.reportData = data.data
                 this.headers = data.headers.map(h => ({text: h.name, value: h.name, id: h.id}))

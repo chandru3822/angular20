@@ -290,7 +290,7 @@ export default {
   computed: {
     ...mapStores(useUserStore, useAppStore, useFileStore),
     timezone() {
-      return this.userStore.details.timezone?.value
+      return this.userStore.timezone.value
     },
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
