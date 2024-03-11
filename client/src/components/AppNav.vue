@@ -150,7 +150,7 @@ export default {
       await this.getCompanies()
     },
     announcementEvents: async function () {
-      this.$store.getters.getEventsByTopic('announcement').forEach(ae => {
+      this.notificationStore.getEventsByTopic('announcement').forEach(ae => {
         //there seems to be an issue when stale announcements are in the eventstream and they are populating when they shouldn't
         //this time check will hopefully fix that.
         if(ae.endTime == null || moment().isBetween(moment(ae.startTime), moment(ae.endTime))) {

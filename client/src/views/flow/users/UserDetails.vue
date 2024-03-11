@@ -234,7 +234,6 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {ProjectMutations} from '@/stores/ProjectStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {
   handleHidingGlobalLoader,

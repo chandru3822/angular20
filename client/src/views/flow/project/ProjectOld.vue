@@ -347,7 +347,7 @@ export default {
       return this.userStore.userHasFeature('EVENTS')
     },
     projectTagEvents() {
-      return this.$store.getters.getEventsByTopic('project_tag')?.filter(e => e.projectId === this.projectId)
+      return this.notificationStore.getEventsByTopic('project_tag')?.filter(e => e.projectId === this.projectId)
     },
     projectStage() {
       return this.statuses?.find(s => s.id === this.project.companyProjectStatusTypeId)?.rootProjectStatusType

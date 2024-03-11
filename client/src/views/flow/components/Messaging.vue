@@ -77,6 +77,7 @@ import { AppMutations } from '@/stores/AppStore'
 import moment from 'moment'
 import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
 
 export default {
   name: 'Messaging',
@@ -147,12 +148,12 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useNotificationStore),
     currentUserFullName() {
       return this.userStore.details.fullName
     },
     smsOwnershipEvents() {
-      return this.$store.getters.getEventsByTopic('sms_ownership').length
+      return this.notificationStore.getEventsByTopic('sms_ownership').length
     }
   },
   watch: {
