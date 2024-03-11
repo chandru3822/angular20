@@ -59,7 +59,7 @@ export const useNotificationStore = defineStore('notification', {
     },
     async fetchNotifications() {
       try {
-        const { data } = await getRequest(`/notifications/`)
+        const { data } = await getRequest(`/notifications`)
         this.setNotifications(data ?? [])
       } catch (e) {
         console.error('*** ERROR ***', e)

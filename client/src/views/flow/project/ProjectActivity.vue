@@ -186,6 +186,7 @@ import { mapStores } from 'pinia'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
 
 export default {
   name: 'ProjectActivity',
@@ -248,7 +249,6 @@ export default {
       userId: this.userIdIn ? this.userIdIn : parseInt(this.$route.params.userId) || null,
       projectProcessStepId: parseInt(this.$route.params.processStepId) || null,
       projectProcessStepEventId: parseInt(this.$route.params.ppsEventId) || null,
-      selectedOption: this.$route.params.viewId ? parseInt(this.$route.params.viewId) :  this.showSmsTab && this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.projectStore.selectedTab || (this.projectStore.selectedTab === 0 && !this.showSmsTab)) ? 1 : this.projectStore.selectedTab,
       userHasTeam: false,
       userAssigned: false,
       showJoinConversationDialog: false,
@@ -263,7 +263,6 @@ export default {
       conversationIsLoading: true,
       toggleFocused: this.isMobile ? 1 : 0,
       toggleFocusedXs: 0,
-      toggleTimelineView: this.projectStore.notesActivityView,
       hideEmptyFolderStatus: false,
     }
   },
@@ -271,7 +270,15 @@ export default {
     this.handlePageLoad()
   },
   computed: {
-    ...mapStores(useUserStore, useAppStore, useProjectStore),
+    ...mapStores(useUserStore, useAppStore, useProjectStore, useNotificationStore),
+    selectedOption() {
+      return (this.$route.params.viewId) ? parseInt(this.$route.params.viewId) :
+        (this.showSmsTab && this.$route.path.indexOf('inbox') > 0) ? 0 :
+          (null == this.projectStore.selectedTab || (this.projectStore.selectedTab === 0 && !this.showSmsTab)) ? 1 : this.projectStore.selectedTab
+    },
+    toggleTimelineView() {
+      return this.projectStore.notesActivityView
+    },
     userCanViewSms() {
       return this.userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW')
     },
@@ -311,7 +318,7 @@ export default {
       return this.allowSidebarCollapse && this.projectStore.rightSideSplit
     },
     smsOwnershipEvents() {
-      return this.$store.getters.getEventsByTopic('sms_ownership').length
+      return this.notificationStore.getEventsByTopic('sms_ownership').length
     },
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
@@ -342,7 +349,6 @@ export default {
     },
     selectView: function(viewOption) {
       this.projectStore.selectedTab = viewOption
-      this.selectedOption = viewOption
     },
     selectNotesActivityView(){
       if(this.toggleTimelineView === 0){
