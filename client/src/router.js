@@ -29,6 +29,7 @@ const router = new Router({
     {
       path: '/vue3',
       name: 'vue3',
+      alias: '/tempButtonHandler',
       redirect: '/vue3/vbtn',
       component: () => import('./views/vue3/Vue3.vue'),
       children: [
