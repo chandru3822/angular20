@@ -376,7 +376,7 @@ export default {
   computed: {
     ...mapStores(useUserStore),
     timezone() {
-      return this.userStore.details?.timezone?.value
+      return this.userStore.timezone.value
     },
     //before this was a computed value it wasn't updating the ui for all field types when they were required
     rules() {

@@ -37,12 +37,7 @@ Vue.filter('formatDate', function(value, type, format, inputFormat) {
 
   const userStore = useUserStore()
 
-  let timezone = userStore.details?.timezone?.value
-
-  if (!timezone) {
-    userStore.guessTimeZone()
-    timezone = userStore.details?.timezone?.value
-  }
+  let timezone = userStore.timezone.value
 
   if (!type || (type === 'timestamp' && !timezone)) {
     console.error('TYPE IS REQUIRED, TIMEZONE IS REQUIRED FOR TIMESTAMPS')

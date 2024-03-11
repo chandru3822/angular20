@@ -489,9 +489,7 @@ onMounted(() => {
     { text: 'Today3', value: 'actualTotal3', align: 'left', class: 'total-col-th data-col-th', show: !isBrCorporateUser.value, width: '25%' },
   ]
 
-  if (userStore.details?.timezone?.value) {
-    timezone.value = userStore.timezone.value
-  }
+  timezone.value = userStore.timezone.value
 
   getWeekNum()
   getWeekNum()
