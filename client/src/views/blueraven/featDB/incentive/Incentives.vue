@@ -3,22 +3,25 @@
     <v-row>
       <v-col cols="12"  class="pt-0 px-0">
         <v-data-table
-          :headers="headers"
-          :items="filteredIncentives"
-          :loading="dataLoading"
-          :items-per-page="100"
-          :mobile-breakpoint="0"
-          fixed-header
-          :footer-props="footerProps"
-          class="elevation-1 incentive-table"
+            :headers="headers"
+            :items="filteredIncentives"
+            :loading="dataLoading"
+            :items-per-page="100"
+            :mobile-breakpoint="0"
+            fixed-header
+            :footer-props="footerProps"
+            class="elevation-1 incentive-table"
         >
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <v-btn text @click="addItem" color="primary"
-                     v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'ADD')">
-                <v-icon>add</v-icon>
-                <span v-if="!constants.IS_MOBILE">Add New</span>
-              </v-btn>
+              <AlbatrossButton
+                  variant="text"
+                  @click="addItem"
+                  color="primary"
+                  v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'ADD')"
+                  prepend-icon="add"
+                  text="Add New"
+              ></AlbatrossButton>
             </div>
           </template>
 
@@ -81,29 +84,45 @@
 
           <template #item="{ item, index }">
             <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
-              <td class="text-left clickable" @click="$router.push({ path: `incentive/${item.id}/details` })">
+              <td class="text-left clickable" @click="router.push({ path: `incentive/${item.id}/details` })">
                 {{ item.name || '' }}
               </td>
-              <td class="text-left clickable" @click="$router.push({ path: `incentive/${item.id}/details` })">
+              <td class="text-left clickable" @click="router.push({ path: `incentive/${item.id}/details` })">
                 {{ item.state || '' }}
               </td>
-              <td class="text-left clickable" @click="$router.push({ path: `incentive/${item.id}/details` })">
+              <td class="text-left clickable" @click="router.push({ path: `incentive/${item.id}/details` })">
                 {{ item.type || '' }}
               </td>
-              <td class="text-left clickable" @click="$router.push({ path: `incentive/${item.id}/details` })">
+              <td class="text-left clickable" @click="router.push({ path: `incentive/${item.id}/details` })">
                 {{ item.status || '' }}
               </td>
               <td class="text-right">
-                <v-btn :to="`/database/incentive/${item.id}/details`" text x-small fab>
-                  <v-icon>mdi-arrow-right</v-icon>
-                </v-btn>
-                <v-icon v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'EDIT')" small color="primary"
-                        class="mr-3 feat-db-link-icon" @click="editIncentive(item)">
-                  edit
-                </v-icon><v-icon v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'DELETE')" small color="primary"
-                        class="mr-3 feat-db-link-icon" @click="deleteIncentive(item)">
-                  delete
-                </v-icon>
+                <AlbatrossButton
+                    :to="`/database/incentive/${item.id}/details`"
+                    variant="text"
+                    size="x-small"
+                    fab
+                    color="unset"
+                    prepend-icon="mdi-arrow-right"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'EDIT')"
+                    size="small"
+                    icon
+                    color="primary"
+                    class="mr-3 feat-db-link-icon"
+                    @click="editIncentive(item)"
+                    prepend-icon="edit"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'DELETE')"
+                    size="small"
+                    color="primary"
+                    icon
+                    class="mr-3 feat-db-link-icon"
+                    @click="deleteIncentive(item)"
+                    prepend-icon="delete"
+                ></AlbatrossButton>
               </td>
             </tr>
           </template>
@@ -118,7 +137,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-<!--todo: update to ConfirmationDialog-->
+    <!--todo: update to ConfirmationDialog-->
     <v-dialog v-model="incentiveDialog" max-width="500px">
       <v-card>
         <v-card-title>
@@ -163,11 +182,19 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="close">Cancel</v-btn>
-          <v-btn color="primary" raised @click="newIncentiveDuplicateCheck" class="white--text"
-                 :disabled="!editedItem.name?.trim() || !editedItem.companyStateId">
-            {{ btnTxt }}
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              variant="text"
+              @click="close"
+              text="Cancel"
+          ></AlbatrossButton>
+          <AlbatrossButton
+              color="primary"
+              raised
+              @click="newIncentiveDuplicateCheck"
+              :disabled="!editedItem.name?.trim() || !editedItem.companyStateId"
+              :text="btnTxt"
+          ></AlbatrossButton>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -194,271 +221,257 @@
       <template v-slot:yes>Create</template>
     </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="!!incentiveToDelete" @confirm="confirmDeleteIncentive" @close-dialog="incentiveToDelete=null">
-    Are you sure you want to delete {{ incentiveToDeleteName }}?
+      Are you sure you want to delete {{ incentiveToDeleteName }}?
     </ConfirmationDialog>
   </v-container>
 </template>
 
-<script>
+<script setup>
 import constants from "@/helpers/constants";
 import cloneDeep from "lodash.clonedeep";
 import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
-import {AppMutations} from "@/stores/AppStore";
-import {deleteRequest, getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import {deleteRequest, getRequest,  handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: "incentives",
-  components: {ConfirmationDialog},
-  data: () => ({
-    constants,
-    dataLoading: true,
-    incentiveFilters: {
-      name: {value: '', type: 'text', model: 'name'},
-      state: {value: [], type: 'select', model: 'state'},
-      type: {value: [], type: 'select', model: 'type'},
-      status: {value: [], type: 'select', model: 'status'}
-    },
-    states: [],
-    statuses: [],
-    types: [],
-    tabs: FEAT_DB_TABS,
-    headers: [
-      {text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 300, show: true},
-      {text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 150, show: true},
-      {text: 'Type', value: 'type', width: constants.IS_MOBILE ? 150 : 150, show: true},
-      {text: 'Status', value: 'status', width: constants.IS_MOBILE ? 150 : 150, show: true},
-      {text: null, value: 'icons', sortable: false, show: true, width: 50}
-    ],
-    footerProps: {
-      showFirstLastPage: !constants.IS_MOBILE,
-      firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
-      lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
-      'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
-      'items-per-page-options': [25, 50, 100, 1000]
-    },
-    incentiveDialog: false,
-    editedItem: {
-      name: '',
-      statusId: '',
-      typeId: '',
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-    },
-    incentives: [],
-    addMode: false,
-    incentiveToDelete: null,
-    duplicateDialog: false,
-    duplicateIncentiveMatch: null
-  }),
-  computed: {
-    ...mapStores(useUserStore),
-    filteredIncentives() {
-      return this.incentives && this.incentives.filter(incentive => {
-        return Object.keys(this.incentiveFilters).every(filterName => {
-          const filter = this.incentiveFilters[filterName]
+const dataLoading = ref(true)
+const incentiveFilters = ref({name: {value: '', type: 'text', model: 'name'},state: {value: [], type: 'select', model: 'state'},type: {value: [], type: 'select', model: 'type'},status: {value: [], type: 'select', model: 'status'}})
+const states = ref([])
+const statuses = ref([])
+const types = ref([])
+const tabs = ref(FEAT_DB_TABS)
+const headers = ref([
+  {text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 300, show: true},
+  {text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 150, show: true},
+  {text: 'Type', value: 'type', width: constants.IS_MOBILE ? 150 : 150, show: true},
+  {text: 'Status', value: 'status', width: constants.IS_MOBILE ? 150 : 150, show: true},
+  {text: null, value: 'icons', sortable: false, show: true, width: 50}
+])
+const footerProps = ref({showFirstLastPage: !constants.IS_MOBILE,firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+  'items-per-page-options': [25, 50, 100, 1000]})
+const incentiveDialog = ref(false)
+const editedItem = ref({name: '',statusId: '',typeId: '',})
+const incentives = ref([])
+const addMode = ref(false)
+const incentiveToDelete = ref(null)
+const duplicateDialog = ref(false)
+const duplicateIncentiveMatch = ref(null)
 
-          if (filter.value?.length < 1) {
-            return true
-          }
+const filteredIncentives = computed(() => {
+  return incentives.value && incentives.value.filter(incentive => {
+    return Object.keys(incentiveFilters.value).every(filterName => {
+      const filter = incentiveFilters.value[filterName]
 
-          if (!incentive[filterName]) {
-            return false
-          }
-
-          if (filter.value !== null && filter.value !== undefined) {
-            return incentive[filterName].toLowerCase().includes(filter.value.toLowerCase())
-          } else if (filter.value === undefined) {
-            filter.value = []
-          } else {
-            filter.value = ''
-            // return true here or the first row in the incentive list will disappear when you clear the filters
-            return true
-          }
-        })
-      })
-    },
-    formTitle() {
-      return this.addMode ? 'Create Incentive' : 'Update Incentive'
-    },
-    btnTxt() {
-      return this.addMode ? 'Add' : 'Update'
-    },
-    incentiveToDeleteName(){
-      return this.incentiveToDelete ? this.incentiveToDelete.name : ''
-    },
-  },
-  async created() {
-    this.$store.commit(AppMutations.SET_LOADING, true)
-    await this.fetchStates()
-    await this.getTypes()
-    await this.getStatuses()
-    await this.fetchIncentives()
-  },
-  methods: {
-    async getTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest('/featDb/incentive/list/type', 'blueraven')
-        this.types = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      if (filter.value?.length < 1) {
+        return true
       }
-    },
-    async getStatuses() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest('/featDb/incentive/list/status', 'blueraven')
-        this.statuses = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status\'')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async fetchIncentives() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest('/featDb/incentive/list/all', 'blueraven')
-        this.incentives = cloneDeep(data).filter(incentive => incentive.archived === false)
-        this.dataLoading = false
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.dataLoading = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
 
-    async fetchStates() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getActiveStates()
-        this.states = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      if (!incentive[filterName]) {
+        return false
       }
-    },
-    addItem() {
-      this.getTypes()
-      this.getStatuses()
-      this.addMode = true
-      this.incentiveDialog = true
-    },
-    editIncentive (item) {
-      this.editedItem = Object.assign({}, item)
-      this.getTypes()
-      this.getStatuses()
-      this.addMode = false
-      this.incentiveDialog = true
-    },
-    close() {
-      this.incentiveDialog = false
-      this.editedItem = {}
-    },
-    deleteIncentive(item) {
-      this.incentiveToDelete = {
-        id: item.id,
-        name: item.name
-      }
-    },
-    async confirmDeleteIncentive() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await deleteRequest(`/featDb/incentive/${this.incentiveToDelete.id}`, 'blueraven')
-        this.snackbar = getSnackbar('SUCCESS', 'Incentive deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        await this.fetchIncentives().then(() => this.fetchStates())
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error deleting Incentive')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.incentiveToDelete = null
-    },
 
-    newIncentiveDuplicateCheck() {
-      this.duplicateIncentiveMatch = this.incentives.find(incentive => {
-
-        return this.doNamesMatch(this.editedItem.name, incentive.name) &&
-            this.editedItem.companyStateId === incentive.companyStateId
-      })
-      if(this.duplicateIncentiveMatch){
-        this.incentiveDialog = false
-        //add state name for display purposes
-        this.editedItem.state = this.states.find(state => state.id === this.editedItem.companyStateId)?.state
-        this.editedItem.type = this.types.find(type => type.id === this.editedItem.typeId)?.type
-        this.editedItem.status = this.statuses.find(status => status.id === this.editedItem.statusId)?.status
-        this.duplicateDialog = true
+      if (filter.value !== null && filter.value !== undefined) {
+        return incentive[filterName].toLowerCase().includes(filter.value.toLowerCase())
+      } else if (filter.value === undefined) {
+        filter.value = []
       } else {
-        this.saveIncentive()
+        filter.value = ''
+        // return true here or the first row in the incentive list will disappear when you clear the filters
+        return true
       }
-    },
+    })
+  })
+})
+const formTitle = computed(() =>{
+  return addMode.value ? 'Create Incentive' : 'Update Incentive'
+})
+const btnTxt = computed(() =>{
+  return addMode.value ? 'Add' : 'Update'
+})
+const incentiveToDeleteName = computed(()=>{
+  return incentiveToDelete.value ? incentiveToDelete.value.name : ''
+})
 
-    doNamesMatch(name1, name2){
-      //step 1: remove all punctuation and whitespaces (we don't care if those match)
-      const name1Clean = this.cleanName(name1)
-      const name2Clean = this.cleanName(name2)
-      //step 2: check if name1 contains name2 or vice versa, if so they match.
-      //This is kind of weird but blue raven requested this behavior specifically
-      return name2Clean && name1Clean &&
-          ((name2Clean.length > 0 && name1Clean.indexOf(name2Clean) >= 0)
-          || (name1Clean && name1Clean.length > 0 && name2Clean.indexOf(name1Clean) >= 0))
-    },
+onMounted(async () => {
+  await fetchStates()
+  await getTypes()
+  await getStatuses()
+  await fetchIncentives()
+})
 
-    cleanName(name){
-      return name && name.length > 0 ? name.replace(/[^\w]/g, '').toLowerCase() : name
-    },
+const getTypes = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest('/featDb/incentive/list/type', 'blueraven')
+    types.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Types')
 
-    async saveIncentive() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      if (this.addMode) {
-        try {
-          const {status} = await postRequest('/featDb/incentive', this.editedItem, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Incentive created')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error creating Incentive')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      } else {
-        try {
-          const {status} = await putRequest(`/featDb/incentive/simpleUpdate`, this.editedItem, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Incentive updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error updating Incentive')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-
-      this.close()
-      await this.fetchIncentives()
-      this.editedItem = {}
-    },
+    appStore.loading = false
   }
+}
+const getStatuses = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest('/featDb/incentive/list/status', 'blueraven')
+    statuses.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Status\'')
+
+    appStore.loading = false
+  }
+}
+const fetchIncentives = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest('/featDb/incentive/list/all', 'blueraven')
+    incentives.value = cloneDeep(data).filter(incentive => incentive.archived === false)
+    dataLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+    dataLoading.value = false
+    appStore.loading = false
+  }
+}
+
+const fetchStates = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getActiveStates()
+    states.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving States')
+
+    appStore.loading = false
+  }
+}
+const addItem = ()  => {
+  getTypes()
+  getStatuses()
+  addMode.value = true
+  incentiveDialog.value = true
+}
+const editIncentive =  (item)  => {
+  editedItem.value = Object.assign({}, item)
+  getTypes()
+  getStatuses()
+  addMode.value = false
+  incentiveDialog.value = true
+}
+const close = ()  => {
+  incentiveDialog.value = false
+  editedItem.value = {}
+}
+const deleteIncentive = (item)  => {
+  incentiveToDelete.value = {
+    id: item.id,
+    name: item.name
+  }
+}
+const confirmDeleteIncentive = async() => {
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/featDb/incentive/${incentiveToDelete.value.id}`, 'blueraven')
+    snackbar('SUCCESS', 'Incentive deleted')
+
+    await fetchIncentives().then(() => fetchStates())
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error deleting Incentive')
+
+    appStore.loading = false
+  }
+  incentiveToDelete.value = null
+}
+
+const newIncentiveDuplicateCheck = ()  => {
+  duplicateIncentiveMatch.value = incentives.value.find(incentive => {
+
+    return doNamesMatch(editedItem.value.name, incentive.name) &&
+        editedItem.value.companyStateId === incentive.companyStateId
+  })
+  if(duplicateIncentiveMatch.value){
+    incentiveDialog.value = false
+    //add state name for display purposes
+    editedItem.value.state = states.value.find(state => state.id === editedItem.value.companyStateId)?.state
+    editedItem.value.type = types.value.find(type => type.id === editedItem.value.typeId)?.type
+    editedItem.value.status = statuses.value.find(status => status.id === editedItem.value.statusId)?.status
+    duplicateDialog.value = true
+  } else {
+    saveIncentive()
+  }
+}
+
+const doNamesMatch = (name1, name2) => {
+  //step 1: remove all punctuation and whitespaces (we don't care if those match)
+  const name1Clean = cleanName(name1)
+  const name2Clean = cleanName(name2)
+  //step 2: check if name1 contains name2 or vice versa, if so they match.
+  //This is kind of weird but blue raven requested this behavior specifically
+  return name2Clean && name1Clean &&
+      ((name2Clean.length > 0 && name1Clean.indexOf(name2Clean) >= 0)
+          || (name1Clean && name1Clean.length > 0 && name2Clean.indexOf(name1Clean) >= 0))
+}
+
+const cleanName = (name) => {
+  return name && name.length > 0 ? name.replace(/[^\w]/g, '').toLowerCase() : name
+}
+
+const saveIncentive = async() => {
+  appStore.loading = true
+  if (addMode.value) {
+    try {
+      const {status} = await postRequest('/featDb/incentive', editedItem.value, 'blueraven')
+      snackbar('SUCCESS', 'Incentive created')
+
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error creating Incentive')
+
+      appStore.loading = false
+    }
+  } else {
+    try {
+      const {status} = await putRequest(`/featDb/incentive/simpleUpdate`, editedItem.value, 'blueraven')
+      snackbar('SUCCESS', 'Incentive updated')
+
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error updating Incentive')
+
+      appStore.loading = false
+    }
+  }
+
+  close()
+  await fetchIncentives()
+  editedItem.value = {}
 }
 </script>
 

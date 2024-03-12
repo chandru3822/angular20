@@ -31,12 +31,17 @@
         </v-col>
       </v-row>
       <v-row class="py-3">
-        <v-col cols="12">
+        <v-col cols="6">
           <AlbatrossButton
               :disabled="!optionsValue"
               @click="processBtn" text="Submit"></AlbatrossButton>
           <AlbatrossButton class="ml-4" variant="text"
                            @click="doClear" text="Clear"></AlbatrossButton>
+        </v-col>
+        <v-col cols="6">
+          <div v-if="hasError" class="error--text" style="font-size: 20px;">
+            Error: {{ errorMsg }}
+          </div>
         </v-col>
       </v-row>
     </v-container>
@@ -57,6 +62,11 @@ const optionsValue = ref(null)
 const compositionValue = ref(null)
 const inputField = ref(null)
 const autoCopyToClipboard = ref(true)
+const hasError = ref(false)
+const errorMsg = ref('')
+const errorTexts = [
+    '$ref', '$filter', 'filterBy', '$emit'
+]
 const replacements = [
   { oldValue: 'this.$store.commit(AppMutations.SET_LOADING, true)', newValue: 'appStore.loading = true'},
   { oldValue: 'this.$store.commit(AppMutations.SET_LOADING, false)', newValue: 'appStore.loading = false'},
@@ -81,7 +91,9 @@ const replacements = [
   { oldValue: 'import {} from \'@/helpers/helpers\'', newValue: ''},
   { oldValue: 'import { } from \'@/helpers/helpers\'', newValue: ''},
   { oldValue: 'this.timezone', newValue: 'timezone'},
-
+  { oldValue: 'this.fileStore', newValue: 'fileStore'},
+  { oldValue: 'this.appStore.showSnack(this.snackbar)', newValue: ''},
+  { oldValue: 'this.appStore', newValue: 'appStore'},
 ]
 
 
@@ -90,11 +102,31 @@ onMounted(() => {
 
 
 const processBtn = async () => {
+  hasError.value = false
+  errorMsg.value = ''
+
   let text = optionsValue.value
 
   replacements.forEach(r => {
     text = text.replaceAll(r.oldValue, r.newValue)
   })
+
+  //remove `this.` from anything that is `this. + any alphanumerics + (`
+  // ...like this.validateForm() will turn into validateForm()
+  let matches = text.match(/this\.[^\s()\W]+\(/g)
+  matches?.forEach(s => {
+    text = text.replaceAll(s, s.substring(5, s.length))
+  })
+
+  let errorString = ''
+  errorTexts.forEach(e => {
+    if(text.includes(e)) {
+      errorString = errorString + ` ${e}`
+      hasError.value = true
+    }
+  })
+
+  errorMsg.value = hasError.value ? `You have issues to handle with: ${errorString}` : ''
 
   compositionValue.value = text
   if(autoCopyToClipboard.value) {

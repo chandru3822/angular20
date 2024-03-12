@@ -4,10 +4,15 @@
       <v-col cols="12" class="pb-0">
         <v-toolbar color="white" class="elevation-1">
           <v-toolbar-title class="app-title">
-            <v-btn v-for="tab in tabs" text :to="tab.path" color="primary"
-            :class="{'v-btn--active': isActiveBtn(tab)}" v-if="hasAccess(tab)">
-              {{tab.label}}
-            </v-btn>
+            <AlbatrossButton
+                v-for="tab in tabs"
+                variant="text"
+                :to="tab.path"
+                color="primary"
+                :class="{'AlbatrossButton--active': isActiveBtn(tab)}"
+                v-if="hasAccess(tab)"
+                :text="tab.label"
+            ></AlbatrossButton>
           </v-toolbar-title>
           <v-spacer></v-spacer>
         </v-toolbar>
@@ -17,33 +22,34 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import constants from '@/helpers/constants'
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
   import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useRoute, useRouter} from "vue-router/composables";
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  export default {
-    name: 'featDbContainer',
-    data: () => ({
-      constants,
-      tabs: FEAT_DB_TABS,
-    }),
-    computed: {
-      ...mapStores(useUserStore)
-    },
-    methods: {
-      isActiveBtn(btn) {
+  const appStore = useAppStore()
+  const route = useRoute()
+  const router = useRouter()
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
+
+  const tabs = ref(FEAT_DB_TABS)
+
+
+      const isActiveBtn = (btn)  => {
         return btn.pathMatches.some(pm => {
-          return this.$route.path.includes(pm)
+          return route.path.includes(pm)
         })
-      },
-
-      hasAccess(tab){
-        return this.userStore.userHasFeatureAccessLevel(tab.featureCode, 'VIEW')
       }
-    }
-  }
+      const hasAccess = (tab) => {
+        return userStore.userHasFeatureAccessLevel(tab.featureCode, 'VIEW')
+      }
 </script>
 
 <style lang="scss" scoped>

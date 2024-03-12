@@ -14,18 +14,18 @@
       @toggle-collapse-expand="$emit('toggle-collapse-expand', $event)"
   >
     <template v-slot:addOrEdit>
-    <v-form
-            ref="linkForm">
-      <v-text-field v-model="link.name" required label="Name" filled></v-text-field>
-      <v-text-field v-model="link.link" required type="url"
-                    :rules="[urlRule]" label="URL" filled></v-text-field>
-      <v-text-field v-model="link.username" label="Username" filled></v-text-field>
-      <v-text-field v-model="link.password" label="Password" filled></v-text-field>
-      <v-textarea label="Notes" auto-grow filled
-                  style="margin: 15px 0 -15px 0"
-                  v-model="link.notes">
-      </v-textarea>
-    </v-form>
+      <v-form
+          ref="linkForm">
+        <v-text-field v-model="selectedLink.name" required label="Name" filled></v-text-field>
+        <v-text-field v-model="selectedLink.link" required type="url"
+                      :rules="[urlRule]" label="URL" filled></v-text-field>
+        <v-text-field v-model="selectedLink.username" label="Username" filled></v-text-field>
+        <v-text-field v-model="selectedLink.password" label="Password" filled></v-text-field>
+        <v-textarea label="Notes" auto-grow filled
+                    style="margin: 15px 0 -15px 0"
+                    v-model="selectedLink.notes">
+        </v-textarea>
+      </v-form>
     </template>
     <v-list v-show="links.length > 0" v-for="(link, index) of links"
             :key="link.id" class="px-2" :style="{'border-radius': index === links.length - 1 ? '5px !important' : '',
@@ -35,7 +35,8 @@
           <v-list-item-action @click="editLink(link)" v-if="userCanEdit">
             <v-icon small color="primary">edit</v-icon>
           </v-list-item-action>
-          <v-list-item-title :style="[{'font-size': isNested ? '0.95em !important' : '0.85em !important'}, {'text-align': 'left'}]">
+          <v-list-item-title
+              :style="[{'font-size': isNested ? '0.95em !important' : '0.85em !important'}, {'text-align': 'left'}]">
             <a :href="link.link" target="_blank" class="list-link">{{ link.name }}</a>
           </v-list-item-title>
         </v-list-item-content>
@@ -48,210 +49,221 @@
   </FeatDbCard>
 </template>
 
-<script>
-  import cloneDeep from 'lodash.clonedeep'
+<script setup>
+import cloneDeep from 'lodash.clonedeep'
 
-  import { AppMutations } from '@/stores/AppStore'
-  import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-  import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
-  import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
-  import { mapStores } from 'pinia'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  export default {
-    name: "FeatDbinks",
-    components: {FeatDbCard},
-    props: {
-      title:  String,
-      linkTypeId: Number,
-      userCanEdit: Boolean,
-      itemId: Number,
-      itemType: String,
-      ahjId: Number,
-      links: {
-        type: Array,
-        default: () => []
-      },
-      isNested: {
-        type: Boolean,
-        default: false
-      },
-      showExpanded: {
-        type: Boolean,
-        default: false
-      },
-      expandedAll: CollapseExpandEnum
-    },
-    data () {
-      return {
-        snackbar: {},
-        link: {
-          id: null,
-          linkTypeId: this.type,
-          name: null,
-          link: null,
-          username: null,
-          password: null,
-          notes: null
-        },
-        editMode: false,
-        validUrl: false,
-        linksCopy: this.links,
+import {putRequest, postRequest, } from '@/helpers/helpers'
+import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
+import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
+import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import {useAppStore} from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+
+const props = defineProps({
+  title: String,
+  linkTypeId: Number,
+  userCanEdit: Boolean,
+  itemId: Number,
+  itemType: String,
+  ahjId: Number,
+  links: {
+    type: Array,
+    default: () => []
+  },
+  isNested: {
+    type: Boolean,
+    default: false
+  },
+  showExpanded: {
+    type: Boolean,
+    default: false
+  },
+  expandedAll: CollapseExpandEnum
+})
+const {
+  title,
+  linkTypeId,
+  userCanEdit,
+  itemId,
+  itemType,
+  ahjId,
+  links,
+  isNested,
+  showExpanded,
+  expandedAll
+} = toRefs(props)
+
+const linkForm = ref(null)
+const selectedLink = ref({})
+const editMode = ref(false)
+const validUrl = ref(false)
+const linksCopy = ref(links.value)
+
+const linkInfoEntered = computed(() => {
+  return selectedLink.value.name && selectedLink.value.link && validUrl.value
+})
+
+const urlRule = (url) => {
+  if (url && (!url.includes('http://') && !url.includes('https://')) || (url === 'http://' || url === 'https://')) {
+    validUrl.value = false
+    return 'Valid URL is required'
+  } else {
+    validUrl.value = true
+    return true
+  }
+}
+const hideCtrls = () => {
+  linkForm.value.reset()
+  editMode.value = false
+}
+const editLink = (link) => {
+  editMode.value = true
+  selectedLink.value = Object.assign({}, link)
+}
+const saveLink = async (newLink) => {
+  appStore.loading = true
+  selectedLink.value.linkTypeId = linkTypeId.value
+
+  if (newLink) {
+    try {
+      let res = null
+      //changed to not require updates when a new feat_db gets added
+      if (['permit', 'inspection', 'design'].includes(itemType.value)) {
+        res = await postRequest(`/featDb/ahj/${ahjId.value}/${itemType.value}/${itemId.value}/links`, selectedLink.value, 'blueraven')
+      } else {
+        res = await postRequest(`/featDb/${itemType.value}/${itemId.value}/links`, selectedLink.value, 'blueraven')
       }
-    },
-    computed: {
-      ...mapStores(useAppStore),
-      linkInfoEntered() {
-        return this.link.name && this.link.link && this.validUrl
+
+      linksCopy.value.push(cloneDeep(res.data))
+      snackbar('SUCCESS', 'Link added')
+      linkForm.value.reset()
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error adding link')
+    }
+  } else {
+    try {
+      let res = null
+      //changed to not require updates when a new feat_db gets added
+      if (['permit', 'inspection', 'design'].includes(itemType.value)) {
+        res = await putRequest(`/featDb/ahj/${ahjId.value}/${itemType.value}/${itemId.value}/links/${selectedLink.value.id}`, selectedLink.value, 'blueraven')
+      } else {
+        res = await putRequest(`/featDb/${itemType.value}/${itemId.value}/links/${selectedLink.value.id}`, selectedLink.value, 'blueraven')
       }
-    },
-    methods: {
-      urlRule(url) {
-        if (url && (!url.includes('http://') && !url.includes('https://')) || (url === 'http://' || url === 'https://')) {
-          this.validUrl = false
-          return 'Valid URL is required'
-        } else {
-          this.validUrl = true
-          return true
-        }
-      },
-      hideCtrls() {
-        this.$refs.linkForm.reset()
-        this.editMode = false
-      },
-      editLink(link) {
-        this.editMode = true
-        this.link = Object.assign({}, link)
-      },
-      async saveLink(newLink) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        this.link.linkTypeId = this.linkTypeId
 
-        if (newLink) {
-          try {
-            let res = null
-            //changed to not require updates when a new feat_db gets added
-            if (['permit', 'inspection', 'design'].includes(this.itemType)) {
-              res = await postRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links`, this.link, 'blueraven')
-            } else {
-              res = await postRequest(`/featDb/${this.itemType}/${this.itemId}/links`, this.link, 'blueraven')
-            }
-
-            this.linksCopy.push(cloneDeep(res.data))
-            this.snackbar = getSnackbar('SUCCESS', 'Link added')
-            this.appStore.showSnack(this.snackbar)
-            this.$refs.linkForm.reset()
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error adding link')
-            this.appStore.showSnack(this.snackbar)
-          }
-        } else {
-          try {
-            let res = null
-            //changed to not require updates when a new feat_db gets added
-            if (['permit', 'inspection', 'design'].includes(this.itemType)) {
-              res = await putRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
-            } else {
-              res = await putRequest(`/featDb/${this.itemType}/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
-            }
-
-            let updatedLinkIndex = this.linksCopy.findIndex(i => i.id === res.data.id)
-            this.linksCopy[updatedLinkIndex].name = res.data.name
-            this.linksCopy[updatedLinkIndex].link = res.data.link
-            this.linksCopy[updatedLinkIndex].username = res.data.username
-            this.linksCopy[updatedLinkIndex].password = res.data.password
-            this.linksCopy[updatedLinkIndex].notes = res.data.notes
-            this.snackbar = getSnackbar('SUCCESS', 'Link updated')
-            this.appStore.showSnack(this.snackbar)
-            this.$refs.linkForm.reset()
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error adding link')
-            this.appStore.showSnack(this.snackbar)
-          }
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      },
-      async deleteLink() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
-        try {
-          //changed to not require updates when a new feat_db gets added
-          if (['permit', 'inspection', 'design'].includes(this.itemType)) {
-            await putRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}/archive`, null, 'blueraven')
-          } else {
-            await putRequest(`/featDb/${this.itemType}/links/${this.link.id}/archive`, null, 'blueraven')
-          }
-
-          let deletedLinkIndex = this.linksCopy.findIndex(i => i.id === this.link.id)
-          this.linksCopy.splice(deletedLinkIndex, 1)
-          this.snackbar = getSnackbar('SUCCESS', 'Link deleted')
-          this.appStore.showSnack(this.snackbar)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error deleting link')
-          this.appStore.showSnack(this.snackbar)
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      },
+      let updatedLinkIndex = linksCopy.value.findIndex(i => i.id === res.data.id)
+      linksCopy.value[updatedLinkIndex].name = res.data.name
+      linksCopy.value[updatedLinkIndex].link = res.data.link
+      linksCopy.value[updatedLinkIndex].username = res.data.username
+      linksCopy.value[updatedLinkIndex].password = res.data.password
+      linksCopy.value[updatedLinkIndex].notes = res.data.notes
+      snackbar('SUCCESS', 'Link updated')
+      linkForm.value.reset()
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error adding link')
     }
   }
+  appStore.loading = false
+}
+const deleteLink = async () => {
+  console.log('3222',selectedLink.value)
+  appStore.loading = true
+
+  try {
+    //changed to not require updates when a new feat_db gets added
+    if (['permit', 'inspection', 'design'].includes(itemType.value)) {
+      await putRequest(`/featDb/ahj/${ahjId.value}/${itemType.value}/${itemId.value}/links/${selectedLink.value.id}/archive`, null, 'blueraven')
+    } else {
+      await putRequest(`/featDb/${itemType.value}/links/${selectedLink.value.id}/archive`, null, 'blueraven')
+    }
+
+    let deletedLinkIndex = linksCopy.value.findIndex(i => i.id === selectedLink.value.id)
+    linksCopy.value.splice(deletedLinkIndex, 1)
+    snackbar('SUCCESS', 'Link deleted')
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error deleting link')
+  }
+  appStore.loading = false
+}
 </script>
 
 <style scoped lang="scss">
-  .flex-row-center {
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: center;
+.flex-row-center {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+}
+
+.cancel-link {
+  font-size: 0.85em !important;
+  text-decoration: none;
+}
+
+.list-link {
+  text-decoration: none;
+}
+
+.cancel-link:hover,
+.list-link:hover {
+  text-decoration: underline;
+}
+
+.v-card__title,
+.v-toolbar__title {
+  font-size: 1em !important;
+}
+
+.v-text-field,
+.v-input ::v-deep label {
+  font-size: 0.95em !important;
+}
+
+.v-list {
+  border-bottom: 1px solid var(--v-primary-base) !important;
+  border-radius: 0;
+}
+
+.v-list__item__title {
+  font-size: 0.8em !important;
+}
+
+.v-list-item__action {
+  margin: 0 10px 0 0 !important;
+  max-width: 30px;
+  height: 30px;
+  border: 1px solid var(--v-primary-base) !important;
+  border-radius: 3px;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.link-btns {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  align-items: center;
+
+  button {
+    margin: 0 0 0 7px;
   }
-  .cancel-link {
-    font-size: 0.85em !important;
-    text-decoration: none;
-  }
-  .list-link {
-    text-decoration: none;
-  }
-  .cancel-link:hover,
-  .list-link:hover {
-    text-decoration: underline;
-  }
-  .v-card__title,
-  .v-toolbar__title {
-    font-size: 1em !important;
-  }
-  .v-text-field,
-  .v-input ::v-deep label {
-    font-size: 0.95em !important;
-  }
-  .v-list {
-    border-bottom: 1px solid var(--v-primary-base) !important;
-    border-radius: 0;
-  }
-  .v-list__item__title {
-    font-size: 0.8em !important;
-  }
-  .v-list-item__action {
-    margin: 0 10px 0 0 !important;
-    max-width: 30px;
-    height: 30px;
-    border: 1px solid var(--v-primary-base) !important;
-    border-radius: 3px;
-    display: flex;
-    justify-content: center;
-    cursor: pointer;
-  }
-  .link-btns {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-end;
-    align-items: center;
-    button {
-      margin: 0 0 0 7px;
-    }
-  }
-  .empty-list {
-    padding: 20px;
-    text-align: left;
-  }
+}
+
+.empty-list {
+  padding: 20px;
+  text-align: left;
+}
 </style>

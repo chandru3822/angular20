@@ -2,22 +2,29 @@
   <v-card class="design-card square-card">
     <v-row no-gutters class="px-2" id="ahj-permit">
       <v-col class="ahj-form-btns py-1" cols="12">
-        <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
-          {{ expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All' }}
-        </v-btn>
-        <v-btn v-if="dataWasChanged"
-               color="primary" text
-               @click="resetForm"
-               class="cancel-link"
-               style="margin-right: 10px"
-        >Cancel
-        </v-btn>
-        <v-btn class="white--text mr-0 save-btn"
-               v-if="userCanEdit"
-               color="primary"
-               @click="validateForm()"
-        >Save
-        </v-btn>
+        <AlbatrossButton
+            variant="text"
+            color="primary"
+            class="text-capitalize"
+            @click="toggleMinimizeAll"
+            :text="expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'"
+        ></AlbatrossButton>
+        <AlbatrossButton
+            v-if="dataWasChanged"
+            color="primary"
+            variant="text"
+            @click="resetForm"
+            class="cancel-link"
+            html-style="margin-right: 10px"
+            text="Cancel"
+        ></AlbatrossButton>
+        <AlbatrossButton
+            class="mr-0 save-btn"
+            v-if="userCanEdit"
+            color="primary"
+            @click="validateForm()"
+            text="Save"
+        ></AlbatrossButton>
       </v-col>
     </v-row>
 
@@ -51,22 +58,27 @@
 
           <v-card-actions class="px-6">
             <v-spacer></v-spacer>
-            <v-btn color="primary" text @click="saveDialog = false"
-                   class="cancel-link mr-2"
-            >Cancel
-            </v-btn>
-            <v-btn v-if="ahjDesign.updateAllInArea.length > 0"
-                   class="white--text mr-0 save-btn"
-                   color="primary"
-                   @click="saveConfirmDialog = true"
-            >Save
-            </v-btn>
-            <v-btn v-else
-                   class="white--text mr-0 save-btn"
-                   color="primary"
-                   @click="updateAhjDesign"
-            >Save
-            </v-btn>
+            <AlbatrossButton
+                color="primary"
+                variant="text"
+                @click="saveDialog = false"
+                class="cancel-link mr-2"
+                text="Cancel"
+            ></AlbatrossButton>
+            <AlbatrossButton
+                v-if="ahjDesign.updateAllInArea?.length > 0"
+                class="mr-0 save-btn"
+                color="primary"
+                @click="saveConfirmDialog = true"
+                text="Save"
+            ></AlbatrossButton>
+            <AlbatrossButton
+                v-else
+                class="mr-0 save-btn"
+                color="primary"
+                @click="updateAhjDesign"
+                text="Save"
+            ></AlbatrossButton>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -83,15 +95,19 @@
 
           <v-card-actions class="px-6">
             <v-spacer></v-spacer>
-            <v-btn color="primary" text @click="saveConfirmDialog = false"
-                   class="cancel-link mr-2"
-            >Cancel
-            </v-btn>
-            <v-btn class="white--text mr-0 save-btn"
-                   color="primary"
-                   @click="updateAhjDesign"
-            >Yes
-            </v-btn>
+            <AlbatrossButton
+                color="primary"
+                variant="text"
+                @click="saveConfirmDialog = false"
+                class="cancel-link mr-2"
+                text="Cancel"
+            ></AlbatrossButton>
+            <AlbatrossButton
+                class="mr-0 save-btn"
+                color="primary"
+                @click="updateAhjDesign"
+                text="Yes"
+            ></AlbatrossButton>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -99,207 +115,202 @@
   </v-card>
 </template>
 
-<script>
+<script setup>
 import cloneDeep from 'lodash.clonedeep'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, } from '@/helpers/helpers'
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
 import TwoColumnMasonry from "@/views/blueraven/featDB/components/TwoColumnMasonry.vue";
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: 'ahjDesign',
-  components: {
-    CustomValueInput,
-    TwoColumnMasonry
-  },
-  computed: {
-    ...mapStores(useUserStore),
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')
-    },
-    expandedAll(){
-      if(this.expandedGroups === this.totalGroups){
-        return CollapseExpandEnum.EXPANDED
-      } else if (this.expandedGroups === 0) {
-        return CollapseExpandEnum.COLLAPSED
-      } else {
-        return CollapseExpandEnum.MIXED
-      }
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const itemType = ref('design')
+const saveDialog = ref(false)
+const saveConfirmDialog = ref(false)
+const dataWasChanged = ref(false)
+const dataReady = ref(false)
+const customFieldGroups = ref([])
+const totalGroups = ref(8)
+const expandedGroups = ref(8)
+const ahjDesign = ref({designRequirements: [],electricalRequirements: [],structuralRequirements: [],contacts: []})
+const ahjDesignForm = ref(null)
+
+const userCanEdit = computed(()  => {
+  return userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')
+})
+const expandedAll = computed(() => {
+  if(expandedGroups.value === totalGroups.value){
+    return CollapseExpandEnum.EXPANDED
+  } else if (expandedGroups.value === 0) {
+    return CollapseExpandEnum.COLLAPSED
+  } else {
+    return CollapseExpandEnum.MIXED
+  }
+})
+const ahjId = computed(() => {
+  return route.params.ahjId
+})
+
+
+onMounted(async() => {
+  //this is how it was before. don't hate
+  await getAhjDesign()
+  await getCustomFieldGroupAssignmentsForScreen()
+  dataReady.value = true
+})
+
+
+const updateDirtyValue = (item) => {
+  item.valueWasChanged = true
+  dataWasChanged.value = true
+}
+const toggleCollapseExpand = (wasExpanded) => {
+  if(wasExpanded === false) {
+    expandedGroups.value--
+  }else {
+    expandedGroups.value++
+  }
+}
+const toggleMinimizeAll = () => {
+  if (expandedAll.value !== CollapseExpandEnum.COLLAPSED) {
+    expandedGroups.value = 0
+  } else {
+    expandedGroups.value = totalGroups.value
+  }
+}
+const getAhjDesign = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/featDb/ahj/${ahjId.value}/design`, 'blueraven')
+    window.document.title = `AHJ - ${data.ahjName}`
+    ahjDesign.value = cloneDeep(data)
+    ahjDesign.value.updateAllInArea = "";
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving AHJ Design')
+    appStore.loading = false
+  }
+}
+const getCustomFieldGroupAssignmentsForScreen = async() => {
+  appStore.loading = true
+  try {
+    if (ahjDesign.value.id) {
+      const params = {sourceId: ahjDesign.value.id, objectTypeId: 1}
+      const {
+        data,
+        status
+      } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+      customFieldGroups.value = cloneDeep(data)
+      totalGroups.value = totalGroups.value + customFieldGroups.value?.length
+      expandedGroups.value = totalGroups.value
+      handleHidingGlobalLoader( status)
+    } else {
+      console.error('*** ERROR ***', 'Missing parameter "sourceId"')
+      snackbar('ERROR', 'Error retrieving custom fields')
     }
-  },
-  data: () => ({
-    CollapseExpandEnum,
-    ahjId: null,
-    itemType: 'design',
-    snackbar: {},
-    saveDialog: false,
-    saveConfirmDialog: false,
-    dataWasChanged: false,
-    dataReady: false,
-    customFieldGroups: [],
-    totalGroups: 8,
-    expandedGroups: 8,
-    ahjDesign: {
-      designRequirements: [],
-      electricalRequirements: [],
-      structuralRequirements: [],
-      contacts: []
-    }
-  }),
-  methods: {
-    updateDirtyValue(item) {
-      item.valueWasChanged = true
-      this.dataWasChanged = true
-    },
-    toggleCollapseExpand(wasExpanded) {
-      if(wasExpanded === false) {
-        this.expandedGroups--
-      }else {
-        this.expandedGroups++
-      }
-    },
-    toggleMinimizeAll() {
-      if (this.expandedAll !== CollapseExpandEnum.COLLAPSED) {
-        this.expandedGroups = 0
-      } else {
-        this.expandedGroups = this.totalGroups
-      }
-    },
-    async getAhjDesign() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving custom fields')
+    appStore.loading = false
+  }
+}
+const getCustomFieldsForGroup = (groupId) => {
+  let match = customFieldGroups.value.find(cfga => cfga.id === groupId)
+  return match ? match.customFieldValues : []
+}
+const resetCustomFieldValueWasChangedFlags = () => {
+  customFieldGroups.value.forEach(group => {
+    group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
+  })
+}
+const resetForm = async() => {
+  appStore.loading = true
+  dataWasChanged.value = false
+  dataReady.value = false
+  getAhjDesign().then(() => {
+    getCustomFieldGroupAssignmentsForScreen().then(() => dataReady.value = true)
+  })
+}
+
+const validateForm = () => {
+  //checks for required fields prior to opening the save dialog
+  if (ahjDesignForm.value.validate()) {
+    saveDialog.value = true
+  } else {
+    snackbar('ERROR', 'Missing Required Fields')
+
+  }
+}
+const updateAhjDesign = async() => {
+  saveDialog.value = false
+  saveConfirmDialog.value = false
+  let updateAllInState = (ahjDesign.value.updateAllInArea == 'state');
+  let updateAllInMetro = (ahjDesign.value.updateAllInArea == 'metro');
+
+
+  try {
+    appStore.loading = true
+
+    if (updateAllInState) {
       try {
-        const {data, status} = await getRequest(`/featDb/ahj/${this.ahjId}/design`, 'blueraven')
-        window.document.title = `AHJ - ${data.ahjName}`
-        this.ahjDesign = cloneDeep(data)
-        this.ahjDesign.updateAllInArea = "";
-        handleHidingGlobalLoader(this, status)
+        const {data} = await getRequest(`/featDb/ahj/${ahjId.value}/design/searchAhjsByState/${ahjDesign.value.stateId}`, 'blueraven')
+        ahjDesign.value.ahjIds = []
+        ahjDesign.value.designIds = []
+
+        data.forEach(row => {
+          ahjDesign.value.ahjIds.push(row.ahjId)
+          ahjDesign.value.designIds.push(row.id)
+        })
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Design')
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'An error occurred when preparing to update all designs in ' + ahjDesign.value.stateName)
       }
-    },
-    async getCustomFieldGroupAssignmentsForScreen() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    } else if (updateAllInMetro) {
       try {
-        if (this.ahjDesign.id) {
-          const params = {sourceId: this.ahjDesign.id, objectTypeId: 1}
-          const {
-            data,
-            status
-          } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-          this.customFieldGroups = cloneDeep(data)
-          this.totalGroups = this.totalGroups + this.customFieldGroups.length
-          this.expandedGroups = this.totalGroups
-          handleHidingGlobalLoader(this, status)
-        } else {
-          console.error('*** ERROR ***', 'Missing parameter "sourceId"')
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
-        }
+        const {data} = await getRequest(`/featDb/ahj/${ahjId.value}/design/searchAhjsByMetro/${ahjDesign.value.metroAreaId}`, 'blueraven')
+        ahjDesign.value.ahjIds = []
+        ahjDesign.value.designIds = []
+
+        data.forEach(row => {
+          ahjDesign.value.ahjIds.push(row.ahjId)
+          ahjDesign.value.designIds.push(row.id)
+        })
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'An error occurred when preparing to update all designs in ' + ahjDesign.value.stateName)
       }
-    },
-    getCustomFieldsForGroup(groupId) {
-      let match = this.customFieldGroups.find(cfga => cfga.id === groupId)
-      return match ? match.customFieldValues : []
-    },
-    resetCustomFieldValueWasChangedFlags() {
-      this.customFieldGroups.forEach(group => {
-        group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
-      })
-    },
-    async resetForm() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.dataWasChanged = false
-      this.dataReady = false
-      this.getAhjDesign().then(() => {
-        this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
-      })
-    },
-    validateForm() {
-      //checks for required fields prior to opening the save dialog
-      if (this.$refs.ahjDesignForm.validate()) {
-        this.saveDialog = true
-      } else {
-        this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async updateAhjDesign() {
-      this.saveDialog = false
-      this.saveConfirmDialog = false
-      let updateAllInState = (this.ahjDesign.updateAllInArea == 'state');
-      let updateAllInMetro = (this.ahjDesign.updateAllInArea == 'metro');
-
-
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
-        if (updateAllInState) {
-          try {
-            const {data} = await getRequest(`/featDb/ahj/${this.ahjId}/design/searchAhjsByState/${this.ahjDesign.stateId}`, 'blueraven')
-            this.ahjDesign.ahjIds = []
-            this.ahjDesign.designIds = []
-
-            data.forEach(row => {
-              this.ahjDesign.ahjIds.push(row.ahjId)
-              this.ahjDesign.designIds.push(row.id)
-            })
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'An error occurred when preparing to update all designs in ' + this.ahjDesign.stateName)
-          }
-        }
-
-        else if (updateAllInMetro){
-          try {
-            const {data} = await getRequest(`/featDb/ahj/${this.ahjId}/design/searchAhjsByMetro/${this.ahjDesign.metroAreaId}`, 'blueraven')
-            this.ahjDesign.ahjIds = []
-            this.ahjDesign.designIds = []
-
-            data.forEach(row => {
-              this.ahjDesign.ahjIds.push(row.ahjId)
-              this.ahjDesign.designIds.push(row.id)
-            })
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'An error occurred when preparing to update all designs in ' + this.ahjDesign.stateName)
-          }
-        }
-
-        this.ahjDesign.customFieldGroups = this.customFieldGroups
-        const {
-          data,
-          status
-        } = await putRequest(`/featDb/ahj/${this.ahjId}/design/${this.ahjDesign.id}`, this.ahjDesign, 'blueraven')
-        this.ahjDesign = cloneDeep(data)
-        this.ahjDesign.updateAllInArea = ""
-        this.dataWasChanged = false
-        this.resetCustomFieldValueWasChangedFlags()
-        let successMessage = updateAllInState ? 'All designs in ' + this.ahjDesign.stateName + ' have been updated successfully' : updateAllInMetro ? 'All designs in ' + this.ahjDesign.metroArea + ' have been updated successfully': 'Design updated successfully'
-        this.snackbar = getSnackbar('SUCCESS', successMessage)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        let errorMessage = updateAllInState ? 'An error occurred when attempting to update all designs in ' + this.ahjDesign.stateName : 'Failed to update design'
-        this.snackbar = getSnackbar('ERROR', errorMessage)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-
     }
-  },
-  async created() {
-    this.ahjId = parseInt(this.$route.params.ahjId)
-    this.getAhjDesign().then(() => {
-      this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
-    })
+
+    ahjDesign.value.customFieldGroups = customFieldGroups.value
+    const {
+      data,
+      status
+    } = await putRequest(`/featDb/ahj/${ahjId.value}/design/${ahjDesign.value.id}`, ahjDesign.value, 'blueraven')
+    ahjDesign.value = cloneDeep(data)
+    ahjDesign.value.updateAllInArea = ""
+    dataWasChanged.value = false
+    resetCustomFieldValueWasChangedFlags()
+    let successMessage = updateAllInState ? 'All designs in ' + ahjDesign.value.stateName + ' have been updated successfully' : updateAllInMetro ? 'All designs in ' + ahjDesign.value.metroArea + ' have been updated successfully' : 'Design updated successfully'
+    snackbar('SUCCESS', successMessage)
+
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let errorMessage = updateAllInState ? 'An error occurred when attempting to update all designs in ' + ahjDesign.value.stateName : 'Failed to update design'
+    snackbar('ERROR', errorMessage)
+    appStore.loading = false
   }
 }
 </script>

@@ -20,26 +20,25 @@
   </v-container>
 </template>
 
-<script>
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+import { getCurrentInstance, toRefs } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
 
-export default {
-  name: "AhjServicingFot",
-  props: {
-    servicingFots: {
-      type: Array,
-      default: () => []
-    },
-    isNested: {
-      type: Boolean,
-      default: false
-    }
+const props = defineProps({
+  servicingFots: {
+    type: Array,
+    default: () => []
   },
-  computed: {
-    ...mapStores(useUserStore)
+  isNested: {
+    type: Boolean,
+    default: false
   }
-}
+})
+
+const { servicingFots, isNested } = toRefs(props)
+
 </script>
 
 <style scoped lang="scss">
