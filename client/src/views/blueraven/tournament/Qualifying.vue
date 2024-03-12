@@ -17,40 +17,50 @@
         {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text
-                 :disabled="bracketsEmpty"
-                 @click="toggleSelectAllQualifying()" v-if="userCanEdit && !pool.advanced">
-            Select All Qualifying
-          </v-btn>
-          <v-btn v-if="userCanEdit"
-                 :disabled="selectedUsers.length !== tournamentUserCount || pool.advanced || bracketsEmpty || matchesNotGenerated"
-                 color="primary" class="white--text" @click="advanceSelectedToBracket()">
-            <span v-if="matchesNotGenerated">Must Generate Matches</span>
-            <span v-else-if="!pool.advanced">Advance Selected to Bracket</span>
-            <span v-else>Pool Has Been Advanced</span>
-          </v-btn>
+          <AlbatrossButton
+              variant="text"
+              :disabled="bracketsEmpty"
+              @click="toggleSelectAllQualifying()"
+              v-if="userCanEdit && !pool.advanced"
+              color="unset"
+              text="Select All Qualifying"
+          ></AlbatrossButton>
+          <AlbatrossButton
+              v-if="userCanEdit"
+              :disabled="selectedUsers.length !== tournamentUserCount || pool.advanced || bracketsEmpty || matchesNotGenerated"
+              color="primary"
+              @click="advanceSelectedToBracket()"
+              :text="matchesNotGenerated ? 'Must Generate Matches' : !pool.advanced ? 'Advance Selected to Bracket' : 'Pool Has Been Advanced'"
+          ></AlbatrossButton>
+          <AlbatrossButton
+              v-if="userCanEdit"
+              :disabled="selectedUsers.length !== tournamentUserCount || pool.advanced || bracketsEmpty || matchesNotGenerated"
+              color="primary"
+              @click="advanceSelectedToBracket()"
+              :text="matchesNotGenerated ? 'Must Generate Matches' : !pool.advanced ? 'Advance Selected to Bracket' : 'Pool Has Been Advanced'"
+          ></AlbatrossButton>
         </v-toolbar-items>
       </v-toolbar>
 
       <v-text-field
-        v-model="search"
-        class="mb-2 px-4 py-2"
-        prepend-inner-icon="search"
-        label="Search"
-        single-line
-        hide-details
+          v-model="search"
+          class="mb-2 px-4 py-2"
+          prepend-inner-icon="search"
+          label="Search"
+          single-line
+          hide-details
       ></v-text-field>
       <v-divider></v-divider>
       <v-data-table
-        :headers="headers"
-        :items="poolUsers"
-        :fixed-header="true"
-        :search="search"
-        dense
-        :items-per-page="100"
-        :footer-props="footerProps"
-        disable-sort
-        class="elevation-1 square-card"
+          :headers="headers"
+          :items="poolUsers"
+          :fixed-header="true"
+          :search="search"
+          dense
+          :items-per-page="100"
+          :footer-props="footerProps"
+          disable-sort
+          class="elevation-1 square-card"
       >
         <template #no-data>
           <span class="default-text-color">No available users</span>
@@ -61,9 +71,9 @@
         </template>
 
         <template #header.score="{ header }">
-            <div class="text-center">
-              {{header.text}}
-            </div>
+          <div class="text-center">
+            {{header.text}}
+          </div>
         </template>
 
 
@@ -84,9 +94,14 @@
               <span v-else>{{item.score}}</span>
             </td>
             <td class="text-right">
-              <v-btn text small color="primary" class="clickable" @click="[showModal = true, showScoreUser = item]">
-                <v-icon>mdi-format-list-bulleted</v-icon>
-              </v-btn>
+              <AlbatrossButton
+                  variant="text"
+                  size="small"
+                  color="primary"
+                  class="clickable"
+                  @click="[showModal = true, showScoreUser = item]"
+                  prepend-icon="mdi-format-list-bulleted"
+              ></AlbatrossButton>
             </td>
           </tr>
         </template>
@@ -97,279 +112,275 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, logError, postRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import orderBy from "lodash.orderby"
-  import ScoreDrilldown from "./component/ScoreDrilldown";
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
 
-  export default {
-    name: 'Qualifying',
-    components: {
-      ScoreDrilldown
-    },
-    data() {
-      return {
-        constants,
-        snackbar: {},
-        tournamentId: this.$route.params.id,
-        poolTypeId: 1,
-        finalMatches: [],
-        showScoreUser: {},
-        showModal: false,
-        bracketsEmpty: false,
-        selectRerender: 1,
-        search: '',
-        tournament: {},
-        lastQualifiedUserScore: null,
-        tournamentUserCount: 0,
-        matchesNotGenerated: false,
-        minRowsPerPage: 0,
-        footerProps: {
-          'items-per-page-options': [25, 50, 100],
-        },
-        dataLoading: true,
-        pool: {},
-        poolUsers: [],
-        ordered: [],
-        selectedUsers: [],
-        seededUserIds: [],
-        headers: [
-          {text: '', value: 'checkbox', show: true, width: '50px'},
-          {text: 'User', value: 'fullName', show: true},
-          {text: 'Score', value: 'score', show: true, width: '185px'},
-          {text: '', value: 'details', show: true},
-        ],
-      }
-    },
-    watch: {
-      // whenever tournament_id changes, this function will run
-      '$route.params.id': async function () {
-        // reset the selected group when the object type changes
-        this.tournamentId = this.$route.params.id
-        this.tournament = {}
-        this.pool = {}
-        this.poolUsers = []
-        this.selectedUsers = []
-        this.matchesNotGenerated = false
-        this.tournamentUserCount = 0
-        await this.getTournament()
-        this.getPool()
-        this.getPoolUsers()
-      }
-    },
-    async created() {
-      //need the tournament first so i can see how many users can qualify
-      await this.getTournament()
-      this.getPool()
-      this.getPoolUsers()
-    },
-    computed: {
-      ...mapStores(useUserStore),
-      userCanEdit() {
-        return this.userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
-      },
-    },
-    methods: {
-      toggleSingleSelect(item) {
-        if (item.selected) {
-          this.selectedUsers.push(item)
-        } else {
-          this.selectedUsers = this.selectedUsers.filter(u => u.userId !== item.userId)
-        }
-      },
-      toggleSelectAllQualifying() {
-        this.selectedUsers = []
-        //get the score of the last qualified user based on index so we can compare others to it later
-        this.poolUsers.forEach((pu, idx) => {
-          if (idx < this.tournamentUserCount) {
-            pu.selected = true
-            this.selectedUsers.push(pu)
-          } else if (pu.score === this.lastQualifiedUserScore) {
-            //if a user has the same score as the final qualified user then select them also so that they have to manual decide who advances
-            pu.selected = true
-            this.selectedUsers.push(pu)
-            this.minRowsPerPage++
-            this.snackbar = getSnackbar('ERROR', 'The final qualifying user is tied with other users. You will have to manually select who advances.')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            pu.selected = false
-          }
-        })
-        //force checkbox to rerender as selected
-        this.selectRerender++
-      },
-      async advanceSelectedToBracket() {
-        let seededUsers = orderBy(this.selectedUsers, ['score', su => su.fullName.toLowerCase()], ['desc', 'asc'])
-        this.seededUserIds = seededUsers?.map(u => u.userId)
+import {handleHidingGlobalLoader, getRequest, logError, postRequest, } from '@/helpers/helpers'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import constants from '@/helpers/constants'
+import orderBy from "lodash.orderby"
+import ScoreDrilldown from "./component/ScoreDrilldown";
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-        this.populateSeededMatches()
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-        if(this.seededUserIds?.length > 0 && this.finalMatches.length === this.tournamentUserCount / 2) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {status} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/assignUsersToMatches`, this.finalMatches, 'blueraven')
-            this.pool.advanced = true
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Advancing Users')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        } else {
-          this.snackbar = getSnackbar('ERROR', 'Error Advancing Users')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      populateSeededMatches () {
-        //todo: this could probably be cleaned up a little but I got it working and that is all i care about at this point
-        //reset these values every time
-        this.ordered = []
-        this.finalMatches = []
+const tournamentId = computed(() => {
+  return route.params.id
+})
 
-        let ind = []
+const poolTypeId = ref(1)
+const finalMatches = ref([])
+const showScoreUser = ref({})
+const showModal = ref(false)
+const bracketsEmpty = ref(false)
+const selectRerender = ref(1)
+const search = ref('')
+const tournament = ref({})
+const lastQualifiedUserScore = ref(null)
+const tournamentUserCount = ref(0)
+const matchesNotGenerated = ref(false)
+const minRowsPerPage = ref(0)
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100],})
+const dataLoading = ref(true)
+const pool = ref({})
+const poolUsers = ref([])
+const ordered = ref([])
+const selectedUsers = ref([])
+const seededUserIds = ref([])
+const headers = ref([
+  {text: '', value: 'checkbox', show: true, width: '50px'},
+  {text: 'User', value: 'fullName', show: true},
+  {text: 'Score', value: 'score', show: true, width: '185px'},
+  {text: '', value: 'details', show: true},
+])
 
-        //populate a blank array of zeroes for the total number of users
-        // (not sure why but that's how they coded the formula to work and it doesn't work if this isn't done this way)
-        for(let i = 0; i < this.tournamentUserCount; i++) {
-          ind.push(0)
-        }
+watch(tournamentId, async() => {
+  // reset the selected group when the tournament changes
+  tournament.value = {}
+  pool.value = {}
+  poolUsers.value = []
+  selectedUsers.value = []
+  matchesNotGenerated.value = false
+  tournamentUserCount.value = 0
+  await getTournament()
+  getPool()
+  getPoolUsers()
+})
 
-        //this creates the total number of users game indexes that i dont fully understand
-        for (let i = 0; i <= (Math.log(this.tournamentUserCount) / Math.log(2)); i++) {
-          for(let N = 1; N <= this.tournamentUserCount; N++)
-          {
-            let myRank = Math.floor((N - 1) / Math.pow(2, i) + 1);
-            ind[N - 1] += Math.floor(((myRank % 4)/2)) * Math.pow(2, ( (Math.log(this.tournamentUserCount) / Math.log(2)) -  i - 1));
-          }
-        }
+onMounted(async () => {
+  //need the tournament first so i can see how many users can qualify
+  await getTournament()
+  getPool()
+  getPoolUsers()
+})
 
-        //make an array of the games so i can order them by the game number
-        //again i dont fully understand the ind[N-1]+1 stuff but i know it works cuz they coded that part
-        let games = []
-        for (let N = 1; N <= this.tournamentUserCount; N++){
-          let gameNumber = ind[N - 1] + 1;
-          let game = {
-            seed: N,
-            gameNumber
-          }
-          games.push(game)
-        }
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+})
 
-        //order them by game number
-        this.ordered = orderBy(games, g => g.gameNumber);
+const toggleSingleSelect = (item) => {
+  if (item.selected) {
+    selectedUsers.value.push(item)
+  } else {
+    selectedUsers.value = selectedUsers.value.filter(u => u.userId !== item.userId)
+  }
+}
+const toggleSelectAllQualifying = () => {
+  selectedUsers.value = []
+  //get the score of the last qualified user based on index so we can compare others to it later
+  poolUsers.value.forEach((pu, idx) => {
+    if (idx < tournamentUserCount.value) {
+      pu.selected = true
+      selectedUsers.value.push(pu)
+    } else if (pu.score === lastQualifiedUserScore.value) {
+      //if a user has the same score as the final qualified user then select them also so that they have to manual decide who advances
+      pu.selected = true
+      selectedUsers.value.push(pu)
+      minRowsPerPage.value++
+      snackbar('ERROR', 'The final qualifying user is tied with other users. You will have to manually select who advances.')
 
-        //the game numbers go 1,2,3,4,5,6 etc
-        //i need them to go 1,1,2,2,3,3,4,4
-        //this changes the game numbers accordingly
-        let count = 1
-        this.ordered.forEach((o, idx) => {
-          o.gameNumber = count
-          if(idx % 2 !== 0) {
-            count++
-          }
-        })
+    } else {
+      pu.selected = false
+    }
+  })
+  //force checkbox to rerender as selected
+  selectRerender.value++
+}
+const advanceSelectedToBracket = async() => {
+  let seededUsers = orderBy(selectedUsers.value, ['score', su => su.fullName.toLowerCase()], ['desc', 'asc'])
+  seededUserIds.value = seededUsers?.map(u => u.userId)
 
+  populateSeededMatches()
 
-        let params = {}
-        for(let i = 1; i <= this.tournamentUserCount / 2; i++) {
-          //find both the matches where the gameNumber === i
-          let matches = this.ordered.filter(o => o.gameNumber === i)
-          //turn the 2 rows into 1 object for sending to the backend
-          // seededUserIds is indexed at zero and match seeds start at 1, so have to subtract 1
-          params = {
-            matchNumber: i,
-            user1Id: this.seededUserIds[(matches[0].seed - 1)],
-            user2Id: this.seededUserIds[(matches[1].seed -1)]
-          }
-          //populate the final results to be sent
-          this.finalMatches.push(params)
+  if(seededUserIds.value?.length > 0 && finalMatches.value.length === tournamentUserCount.value / 2) {
+    appStore.loading = true
+    try {
+      const {status} = await postRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/assignUsersToMatches`, finalMatches.value, 'blueraven')
+      pool.value.advanced = true
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Advancing Users')
 
-          //just a quick String to display the magic on the screen in a more friendly format
-          // let game = 'Game ' + i + ': ' + matches[0].seed + ' vs ' + matches[1].seed + '\n'
-          // this.gamesString += game
-        }
-        //log it out
-        // console.log('final matches', this.finalMatches)
+      appStore.loading = false
+    }
+  } else {
+    snackbar('ERROR', 'Error Advancing Users')
 
+  }
+}
+const populateSeededMatches =  () => {
+  //todo: this could probably be cleaned up a little but I got it working and that is all i care about at this point
+  //reset these values every time
+  ordered.value = []
+  finalMatches.value = []
 
-      },
-      async getTournament() {
-        try {
-          const {data} = await getRequest(`/tournament/${this.tournamentId}`, 'blueraven')
-          this.tournament = data
-          if(this.tournament?.brackets?.length === 0) {
-            this.bracketsEmpty = true
-          } else {
-            this.tournament?.brackets?.forEach(b => {
-              this.tournamentUserCount += b.numberOfUsers
-              if(!b.matchesGenerated) {
-                this.matchesNotGenerated = true
-              }
-            })
-            this.minRowsPerPage = this.tournamentUserCount > 100 ? this.tournamentUserCount : 100
-          }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Tournament')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async getPool() {
-        try {
-          const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
-          this.dataLoading = false
-          this.pool = data
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching pool details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async getPoolUsers() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/tournament/${this.tournamentId}/pool/usersByType/${this.poolTypeId}`, 'blueraven')
-          this.poolUsers = data
-          if(!this.bracketsEmpty) {
-            this.lastQualifiedUserScore = this.poolUsers[this.tournamentUserCount - 1].score
-          }
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching pool user details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+  let ind = []
+
+  //populate a blank array of zeroes for the total number of users
+  // (not sure why but that's how they coded the formula to work and it doesn't work if this isn't done this way)
+  for(let i = 0; i < tournamentUserCount.value; i++) {
+    ind.push(0)
+  }
+
+  //this creates the total number of users game indexes that i dont fully understand
+  for (let i = 0; i <= (Math.log(tournamentUserCount.value) / Math.log(2)); i++) {
+    for(let N = 1; N <= tournamentUserCount.value; N++)
+    {
+      let myRank = Math.floor((N - 1) / Math.pow(2, i) + 1);
+      ind[N - 1] += Math.floor(((myRank % 4)/2)) * Math.pow(2, ( (Math.log(tournamentUserCount.value) / Math.log(2)) -  i - 1));
     }
   }
+
+  //make an array of the games so i can order them by the game number
+  //again i dont fully understand the ind[N-1]+1 stuff but i know it works cuz they coded that part
+  let games = []
+  for (let N = 1; N <= tournamentUserCount.value; N++){
+    let gameNumber = ind[N - 1] + 1;
+    let game = {
+      seed: N,
+      gameNumber
+    }
+    games.push(game)
+  }
+
+  //order them by game number
+  ordered.value = orderBy(games, g => g.gameNumber);
+
+  //the game numbers go 1,2,3,4,5,6 etc
+  //i need them to go 1,1,2,2,3,3,4,4
+  //this changes the game numbers accordingly
+  let count = 1
+  ordered.value.forEach((o, idx) => {
+    o.gameNumber = count
+    if(idx % 2 !== 0) {
+      count++
+    }
+  })
+
+
+  let params = {}
+  for(let i = 1; i <= tournamentUserCount.value / 2; i++) {
+    //find both the matches where the gameNumber === i
+    let matches = ordered.value.filter(o => o.gameNumber === i)
+    //turn the 2 rows into 1 object for sending to the backend
+    // seededUserIds is indexed at zero and match seeds start at 1, so have to subtract 1
+    params = {
+      matchNumber: i,
+      user1Id: seededUserIds.value[(matches[0].seed - 1)],
+      user2Id: seededUserIds.value[(matches[1].seed -1)]
+    }
+    //populate the final results to be sent
+    finalMatches.value.push(params)
+
+    //just a quick String to display the magic on the screen in a more friendly format
+    // let game = 'Game ' + i + ': ' + matches[0].seed + ' vs ' + matches[1].seed + '\n'
+    // gamesString.value += game
+  }
+  //log it out
+  // console.log('final matches', finalMatches.value)
+
+
+}
+const getTournament = async() => {
+  try {
+    const {data} = await getRequest(`/tournament/${tournamentId.value}`, 'blueraven')
+    tournament.value = data
+    if(tournament.value?.brackets?.length === 0) {
+      bracketsEmpty.value = true
+    } else {
+      tournament.value?.brackets?.forEach(b => {
+        tournamentUserCount.value += b.numberOfUsers
+        if(!b.matchesGenerated) {
+          matchesNotGenerated.value = true
+        }
+      })
+      minRowsPerPage.value = tournamentUserCount.value > 100 ? tournamentUserCount.value : 100
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Tournament')
+
+  }
+}
+const getPool = async() => {
+  try {
+    const {data} = await getRequest(`/tournament/${tournamentId.value}/pool/byType/${poolTypeId.value}`, 'blueraven')
+    dataLoading.value = false
+    pool.value = data
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching pool details')
+
+  }
+}
+const getPoolUsers = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/tournament/${tournamentId.value}/pool/usersByType/${poolTypeId.value}`, 'blueraven')
+    poolUsers.value = data
+    if(!bracketsEmpty.value) {
+      lastQualifiedUserScore.value = poolUsers.value[tournamentUserCount.value - 1].score
+    }
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching pool user details')
+
+    appStore.loading = false
+  }
+}
 </script>
 
 <style lang="scss">
-  #qualifying-pool-container .v-data-table__wrapper {
-    max-height: calc(100vh - 375px);
-    min-height: 300px;
-  }
+#qualifying-pool-container .v-data-table__wrapper {
+  max-height: calc(100vh - 375px);
+  min-height: 300px;
+}
 
-  .qualified-row {
-    /*background-color: var(--v-brGreen-base) !important;;*/
-    background-color: lightgreen !important;
-  }
+.qualified-row {
+  /*background-color: var(--v-brGreen-base) !important;;*/
+  background-color: lightgreen !important;
+}
 
-  .on-fence-row {
-    /*background-color: var(--v-brGreen-base) !important;;*/
-    background-color: #cdfacd !important;
-  }
+.on-fence-row {
+  /*background-color: var(--v-brGreen-base) !important;;*/
+  background-color: #cdfacd !important;
+}
 </style>
 
 <style lang="scss" scoped>
-  #qualifying-pool-container {
-    padding: 50px;
-  }
+#qualifying-pool-container {
+  padding: 50px;
+}
 </style>
 
