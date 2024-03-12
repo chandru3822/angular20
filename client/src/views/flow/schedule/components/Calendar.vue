@@ -670,7 +670,6 @@ const isMobile = computed(() => {
       const getPositions = async() => {
         store.commit(AppMutations.SET_LOADING, true)
         try {
-          debugger
           const {data, status} = await getRequest(`/position/schedulable`, null, [])
           positions.value = data
           //if we came from an event, preselect the correct Resource TYPES
@@ -774,17 +773,19 @@ const isMobile = computed(() => {
 
       const closeResource = (resource) => {
         //todo: are there any cases where a user resource and an org resource could end up with the same id??
-        let index = selectedUsers.value.findIndex(r => r.id === resource.id)
+        let index = selectedUsers.value.findIndex(r =>
+          r.id === resource.id
+        )
         if(index >= 0){
           selectedUsers.value.splice(index, 1)
         } else {
           index = selectedOrgs.value.findIndex(r => r.id === resource.id)
           selectedOrgs.value.splice(index,1)
         }
-
         if(isResourceOnMap(resource)){
           toggleMapPinForResource(resource)
         }
+        calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
       }
       const toggleScheduleResource = (resource) =>{
         if(!isAssignedResource(resource)){
@@ -921,7 +922,6 @@ const isMobile = computed(() => {
           //i do this here instead of on its own because all of the code above here has to happen for get availability as well
           calendarLoading.value = true
          const availabilityData = await getAvailability(info);
-debugger
           try {
             let params = {
               orgIds: selectedOrgs.value?.length > 0 ? selectedOrgs.value.map(o => o.masterId) : [],
