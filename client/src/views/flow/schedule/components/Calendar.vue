@@ -223,15 +223,6 @@
           :color="'primary'"
         ></v-progress-circular>
       </div>
-<!--      <div class="d-flex">-->
-<!--        <v-spacer></v-spacer>-->
-<!--      <v-btn id="day-selection-btn" ref="daySelectionbtn" class="invisible-btn"></v-btn>-->
-<!--      <v-menu activator="#day-selection-btn" nudge-bottom="40px">-->
-<!--        <v-list>-->
-<!--          <v-list-item v-for="(option, index) in dayOptions" @click="switchToDayView(option)" class="clickable"><span class="body-large py-4">{{option.formattedDate}}</span></v-list-item>-->
-<!--        </v-list>-->
-<!--      </v-menu>-->
-<!--      </div>-->
       <FullCalendar ref="eventCalendar" id="event-calendar" :options="calendarOptions">
         <template v-slot:resourceLabelContent="{resource, index}">
           <div class="d-flex justify-space-between align-baseline">
@@ -263,7 +254,7 @@ import cloneDeep from 'lodash.clonedeep'
 import {getSchedulingOrgTypes} from '@/services/orgService'
 import {AppMutations} from '@/stores/AppStore'
 
-import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar, getEventColorClass} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "../../../../components/ConfirmationDialog.vue";
 import {UserActions} from "@/stores/UserStore";
@@ -295,16 +286,16 @@ const calendarOptions = ref({
   plugins: [
     resourceTimelinePlugin, interaction, momentTimezonePlugin
   ],
-      initialView: 'resourceTimelineDay',
-      resources: [],
-      resourceAreaWidth: 300,
-      eventSources:[
+  initialView: 'resourceTimelineDay',
+  resources: [],
+  resourceAreaWidth: 300,
+  eventSources:[
     (info, successCallback, failureCallback) => goGetEventsNow(info, successCallback, failureCallback)
   ],
-      eventClick: (eventClickInfo) => handleEventClick(eventClickInfo),
-      navLinks: true,
-      navLinkDayClick: "resourceTimeline",
-      slotLabelDidMount:function ({el, date, view, level}) {
+  eventClick: (eventClickInfo) => handleEventClick(eventClickInfo),
+  navLinks: true,
+  navLinkDayClick: "resourceTimeline",
+  slotLabelDidMount:function ({el, date, view, level}) {
     //this is a workaround because the day headers on the week view take you to the wrong view,
     // and they don't trigger navLinkDayClick
     if(view.type === "resourceTimelineWeek" && level === 0) {
@@ -318,21 +309,21 @@ const calendarOptions = ref({
   },
   headerToolbar:{
     left: 'prev,customToday,next',
-        center: 'title',
-        right: 'resourceTimelineDay,resourceTimelineWeek'
+    center: 'title',
+    right: 'resourceTimelineDay,resourceTimelineWeek'
   },
   titleFormat:{ month: 'long',
-      year: 'numeric',
-      day: 'numeric',
-      weekday: 'long'
+    year: 'numeric',
+    day: 'numeric',
+    weekday: 'long'
   },
   height: '100%',
-      timeZone: store.state.schedule.timezone.value || {},
+  timeZone: store.state.schedule.timezone.value || {},
 
-      customButtons: {
+  customButtons: {
     customToday: {
       text: 'Today',
-          click: async () => {
+      click: async () => {
         let calendarApi = refs.eventCalendar.getApi()
         calendarApi.gotoDate(new Date)
         handlePinsOnDayChange()
@@ -381,7 +372,7 @@ const calendarLoading = ref(false)
     const licenseKey =  ref('GPL-My-Project-Is-Open-Source')
     const daySelector =  ref(false)
     const dayOptions =  ref([])
-    const timezone =  ref(store.state.schedule.timezone.value)
+const timezone =  ref(store.state.schedule.timezone.value)
 const timezones = ref([
   { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
   { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
@@ -393,88 +384,88 @@ const timezones = ref([
 ])
 
 
-      //states
+//states
 const sortedStates = computed(() => {
-        const sStates = props.states.filter(state => selectedStates.value.includes(state))
-        const uStates = props.states.filter(state => !selectedStates.value.includes(state))
-        return sStates.concat(uStates)
-      })
-      const selectAllStates = computed( () => {
-        return props.states.length === selectedStates.value.length
-      })
-      const selectSomeStates = computed(() => {
-        return selectedStates.value.length > 0 && !selectAllStates
-      })
-      const iconStates = computed(() => {
-        if (props.states.length === selectedStates.value.length) {
-          return 'check_box'
-        }
-        if (selectSomeStates) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      })
-      //org Types
-      const sortedOrgTypes = computed(() =>  {
-        const sots = orgTypes.value.filter(orgType => selectedOrgTypes.value.includes(orgType))
-        const usots = orgTypes.value.filter(orgType => !selectedOrgTypes.value.includes(orgType))
-        return sots.concat(usots)
-      })
-      const selectAllOrgTypes =  computed(() => {
-        return orgTypes.value.length === selectedOrgTypes.value.length
-      })
-      const selectSomeOrgTypes =  computed(() => {
-        return selectedOrgTypes.value.length > 0 && !selectAllOrgTypes.value
-      })
-      const iconOrgTypes =  computed(() => {
-        if (orgTypes.value.length === selectedOrgTypes.value.length) {
-          return 'check_box'
-        }
-        if (selectSomeOrgTypes.value) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      })
-      //positions
-      const sortedPositions = computed(() => {
-        const sp = positions.value.filter(position => selectedPositions.value.includes(position));
-        const up = positions.value.filter(position => !selectedPositions.value.includes(position));
-        return sp.concat(up)
+  const sStates = props.states.filter(state => selectedStates.value.includes(state))
+  const uStates = props.states.filter(state => !selectedStates.value.includes(state))
+  return sStates.concat(uStates)
+})
+const selectAllStates = computed( () => {
+  return props.states.length === selectedStates.value.length
+})
+const selectSomeStates = computed(() => {
+  return selectedStates.value.length > 0 && !selectAllStates
+})
+const iconStates = computed(() => {
+  if (props.states.length === selectedStates.value.length) {
+    return 'check_box'
+  }
+  if (selectSomeStates) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+})
+//org Types
+const sortedOrgTypes = computed(() =>  {
+  const sots = orgTypes.value.filter(orgType => selectedOrgTypes.value.includes(orgType))
+  const usots = orgTypes.value.filter(orgType => !selectedOrgTypes.value.includes(orgType))
+  return sots.concat(usots)
+})
+const selectAllOrgTypes =  computed(() => {
+  return orgTypes.value.length === selectedOrgTypes.value.length
+})
+const selectSomeOrgTypes =  computed(() => {
+  return selectedOrgTypes.value.length > 0 && !selectAllOrgTypes.value
+})
+const iconOrgTypes =  computed(() => {
+  if (orgTypes.value.length === selectedOrgTypes.value.length) {
+    return 'check_box'
+  }
+  if (selectSomeOrgTypes.value) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+})
+//positions
+const sortedPositions = computed(() => {
+  const sp = positions.value.filter(position => selectedPositions.value.includes(position));
+  const up = positions.value.filter(position => !selectedPositions.value.includes(position));
+  return sp.concat(up)
 
-      })
-      const selectAllPositions =  computed(() => {
-        return positions.value.length === selectedPositions.value.length
-      })
-      const selectSomePositions =  computed(() => {
-        return selectedPositions.value.length > 0 && !selectAllPositions.value
-      })
-      const iconPositions =  computed(() => {
-        if (positions.value.length === selectedPositions.value.length) {
-          return 'check_box'
-        }
-        if (selectSomePositions.value) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      })
-      //orgs
-      const sortedOrgs = computed(() => {
-        const sOrgs = orgs.value.filter(org => selectedOrgs.value.includes(org));
-        const usOrgs = orgs.value.filter(org => !selectedOrgs.value.includes(org));
-        return sOrgs.concat(usOrgs)
-      })
-      //users
-      const sortedUsers = computed(() => {
-        const sUsers = users.value.filter(user => selectedUsers.value.includes(user));
-        const usUsers = users.value.filter(user => !selectedUsers.value.includes(user));
-        return sUsers.concat(usUsers)
-      })
-      const firstDayOption = computed(() => {
-        return moment.utc(calendarStartTime.value).format('dddd MMM Do, YYYY')
-      })
-      const isMobile = computed(() => {
-        return vuetify.breakpoint.smAndDown
-      })
+})
+const selectAllPositions =  computed(() => {
+  return positions.value.length === selectedPositions.value.length
+})
+const selectSomePositions =  computed(() => {
+  return selectedPositions.value.length > 0 && !selectAllPositions.value
+})
+const iconPositions =  computed(() => {
+  if (positions.value.length === selectedPositions.value.length) {
+    return 'check_box'
+  }
+  if (selectSomePositions.value) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+})
+//orgs
+const sortedOrgs = computed(() => {
+  const sOrgs = orgs.value.filter(org => selectedOrgs.value.includes(org));
+  const usOrgs = orgs.value.filter(org => !selectedOrgs.value.includes(org));
+  return sOrgs.concat(usOrgs)
+})
+//users
+const sortedUsers = computed(() => {
+  const sUsers = users.value.filter(user => selectedUsers.value.includes(user));
+  const usUsers = users.value.filter(user => !selectedUsers.value.includes(user));
+  return sUsers.concat(usUsers)
+})
+// const firstDayOption = computed(() => {
+//   return moment.utc(calendarStartTime.value).format('dddd MMM Do, YYYY')
+// })
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
 
     onMounted (async () => {
       calendarApi.value = refs.eventCalendar.getApi()
@@ -503,6 +494,7 @@ const sortedStates = computed(() => {
         // update the timezone for the schedule page
         changeTimezone(timezone.value)
       })
+
       // whenever selectedUsers or selectedOrgs changes, concat them both into resources
     watch(selectedUsers, () => {
         calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
@@ -550,7 +542,7 @@ const sortedStates = computed(() => {
         calendarOptions.value.resources.forEach((r, index) => {
           r.eventBackgroundColor = '#FFFFFF'
           r.eventBorderColor = '#919191'
-          r.eventColorClass = getColorClass(index)
+          r.eventColorClass = getEventColorClass(index)
 
           //the event will come get this later
           if(index <= 19) {
@@ -678,6 +670,7 @@ const sortedStates = computed(() => {
       const getPositions = async() => {
         store.commit(AppMutations.SET_LOADING, true)
         try {
+          debugger
           const {data, status} = await getRequest(`/position/schedulable`, null, [])
           positions.value = data
           //if we came from an event, preselect the correct Resource TYPES
@@ -928,7 +921,7 @@ const sortedStates = computed(() => {
           //i do this here instead of on its own because all of the code above here has to happen for get availability as well
           calendarLoading.value = true
          const availabilityData = await getAvailability(info);
-
+debugger
           try {
             let params = {
               orgIds: selectedOrgs.value?.length > 0 ? selectedOrgs.value.map(o => o.masterId) : [],
@@ -983,16 +976,7 @@ const sortedStates = computed(() => {
           window.open(routerData.href, '_blank')
         }
       }
-      const getColorClass = (index) => {
-        const colorClassList = [
-          'event-tile-red', 'event-tile-light-green', 'event-tile-teal', 'event-tile-yellow',
-          'event-tile-sky-blue', 'event-tile-purple', 'event-tile-grey', 'event-tile-orange',
-          'event-tile-dark-red', 'event-tile-blue', 'event-tile-green', 'event-tile-dark-purple',
-          'event-tile-brown', 'event-tile-seafoam', 'event-tile-pink', 'event-tile-light-teal',
-          'event-tile-dark-grey', 'event-tile-maroon', 'event-tile-navy', 'event-tile-olive'
-        ]
-        return colorClassList[index%20]
-      }
+
       const changeTimezone = async (tz) => {
         //update the timezone in the schedule store
         await store.dispatch(ScheduleActions.CHANGE_TIMEZONE, tz)
@@ -1018,128 +1002,6 @@ const sortedStates = computed(() => {
         props.dateCallback(calendarStartTime.value, calendarEndTime.value)
       }
 
-      //todo: determine if these are used now
-      const handleEventRender = (info) => {
-        console.log('handleEventRender')
-        //3 types of display. null = regular scheduled events,
-        // background = blocked out from start to end, (resource_appointments)
-        // inverse-background = blocked before start and after end (resource_schedule_availability)
-        if(info.event.display === 'background') {
-          info.el.textContent = info.event.title
-          return ['background-event']
-        } else if(info.event.display !== 'inverse-background') {
-          info.el.querySelector('.fc-title').innerHTML = info.event.title
-          info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px; height: 20px; overflow: hidden;`
-          // return ['event-tile', getColorClass()]
-
-
-          //this gives normal events a hover
-          info.el.title = info.event.extendedProps.hoverTitle
-        }
-      }
-      const handleResourceRender = (renderInfo) => {
-        console.log('handleResourceRender')
-        let checkbox = document.createElement('INPUT');
-        checkbox.setAttribute('type', 'checkbox')
-        checkbox.setAttribute('class', 'mr-2')
-
-        checkbox.onchange = (event) => {
-          handlePopulatingMapPins(event.target.checked, renderInfo.resource, true, true)
-        }
-
-        //if this is an org (first char === 1) then make it a hyperlink to the org screen
-        // console.log('resource: ', renderInfo)
-        let isOrg = false
-        let anchorHref = ''
-        if(renderInfo?.resource?.id?.charAt(0) === '1') {
-          isOrg = true
-          let orgId = renderInfo?.resource?.id?.substring(1)
-          anchorHref = getHostUrl() + '/org/' + orgId
-        }
-        renderInfo.el.querySelector('.fc-cell-text').innerHTML = isOrg ?
-          "<a target='_blank' href=" + anchorHref + ">" + renderInfo.resource.title + "</a>" :
-          "<span>" + renderInfo.resource.title + "</span>"
-        renderInfo.el.querySelector('.fc-cell-text').prepend(checkbox)
-
-      }
-
-
-
-      /*Functions that will probably go away*/
-      const switchToDayView = (dayOption) => {
-        let calendarApi = refs.eventCalendar.getApi()
-        calendar.value.options.slotDuration = '00:30:00'
-        calendar.value.options.minTime = '02:00:00'
-        calendar.value.options.maxTime = '23:00:00'
-        calendar.value.options.slotLabelInterval = '01:00:00'
-        calendar.value.options.slotWidth = 45
-        calendar.value.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric', weekday: 'long'}
-        let day = dayOption ? moment.utc(dayOption.rawDate).format('YYYY-MM-DD') : null
-        calendarApi.changeView('resourceTimelineDay', day)
-        props.dateCallback(calendarStartTime.value, calendarEndTime.value)
-        handlePinsOnDayChange()
-      }
-      const getEvents = async(isOrgs, reload) => {
-        //if `isOrgs` is not passed in, it is because we don't know it (came from v-switch change)
-        if(null == isOrgs) {
-          isOrgs = selectedOrgs.value?.length > 0
-          orgValuesChanged.value = true
-          userValuesChanged.value = true
-        }
-
-        //dont reload events if they deselected all of one type and only load if the selected values changed
-        if(reload || (isOrgs && selectedOrgs.value?.length > 0 && (orgValuesChanged.value || calendarInitialRender.value))
-            || (!isOrgs && selectedUsers.value?.length > 0 && (userValuesChanged.value || calendarInitialRender.value))) {
-          if (reload || !calendarInitialRender.value) {
-            setCalendarStartAndEndTimes()
-          }
-          calendarInitialRender.value = false
-          if (selectedOrgs.value.length > 0 || selectedUsers.value.length > 0) {
-            //i do this here instead of on its own because all of the code above here has to happen for get availability as well
-            calendarLoading.value = true
-            await getAvailability()
-
-            try {
-              let params = {
-                orgIds: selectedOrgs.value?.length > 0 ? selectedOrgs.value.map(o => o.masterId) : [],
-                // this was the old way. leaving here in case
-                // userPositionIds: this.getUserPositionIds(),
-                userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
-                startTime: calendarStartTime.value,
-                endTime: calendarEndTime.value,
-                includeCancelled: includeCancelled.value
-              }
-              const {data} = await postRequest(`/schedule`, params)
-              data.forEach(d => {
-                // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
-                d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
-                d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName}`
-                d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
-                let matchingResource = calendarOptions.value.resources.find(r => r.id === d.resourceId)
-                if(d.eventStatusTypeId === 3) {
-                  d.colorForBorder = '#919191'
-                  d.textColor = '#919191'
-                } else {
-                  d.colorForBorder = matchingResource?.color
-                  d.textColor = 'var(--v-primary-base)'
-                  d.classNames=['event-tile', matchingResource?.eventColorClass]
-                }
-              })
-              let events = cloneDeep(data)
-
-              calendarLoading.value = false
-            } catch (e) {
-              console.error('*** ERROR ***', e)
-              snackbar.value = getSnackbar('ERROR', 'Error Retrieving Events')
-              store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-              calendarLoading.value = false
-            } finally {
-              orgValuesChanged.value = false
-              userValuesChanged.value = false
-            }
-          }
-        }
-      }
 </script>
 
 <style lang="scss">
@@ -1148,67 +1010,7 @@ const sortedStates = computed(() => {
   border-left-width: 20px;
   height: 20px;
 }
-.event-tile-red {
-  border-left-color: #e7211b !important;
-}
-.event-tile-light-green {
-  border-left-color: #39b942 !important;
-}
-.event-tile-teal {
-  border-left-color: #076270 !important; //I like this color better b/c the other looks black
-  //border-left-color: #181e1e !important;
-}
-.event-tile-yellow {
-  border-left-color: #eceb50 !important;
-}
-.event-tile-sky-blue {
-  border-left-color: #3ca5d6 !important;
-}
-.event-tile-purple {
-  border-left-color: #9e4ed6 !important;
-}
-.event-tile-grey {
-  border-left-color: #919393 !important;
-}
-.event-tile-orange {
-  border-left-color: #e68f35 !important;
-}
-.event-tile-dark-red {
-  border-left-color: #770909 !important;
-}
-.event-tile-blue {
-  border-left-color: #1013c1 !important;
-}
-.event-tile-green {
-  border-left-color: #074f0a !important;
-}
-.event-tile-dark-purple {
-  border-left-color: #42063e !important;
-}
-.event-tile-brown {
-  border-left-color: #402e11 !important;
-}
-.event-tile-seafoam {
-  border-left-color: #98ffd5 !important;
-}
-.event-tile-pink {
-  border-left-color: #ff7f9e !important;
-}
-.event-tile-light-teal {
-  border-left-color: #00fffc !important;
-}
-.event-tile-dark-grey {
-  border-left-color: #3f3f3f !important;
-}
-.event-tile-maroon {
-  border-left-color: #840046 !important;
-}
-.event-tile-navy {
-  border-left-color: #3a0080 !important;
-}
-.event-tile-olive {
-  border-left-color: #575f00 !important;
-}
+
 .background-event {
   font-size: 11px;
   padding-left: 5px;
