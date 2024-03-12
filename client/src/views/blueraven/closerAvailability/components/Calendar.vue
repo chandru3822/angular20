@@ -1,5 +1,5 @@
 <script setup>
-import {getCurrentInstance, onMounted, ref, watch} from "vue";
+import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
 import momentTimezonePlugin from "@fullcalendar/moment-timezone";
@@ -159,7 +159,7 @@ const getRoundRobinUsers = async() => {
     store.commit(AppMutations.SET_LOADING, true)
     try {
       let params = {
-        roundRobinIds: roundRobins.value?.length > 0 ? roundRobins.value.map(z => z.id) : null
+        roundRobinIds: selectedRoundRobins.value?.length > 0 ? selectedRoundRobins.value.map(z => z.id) : null
       }
       const {data, status} = await postRequest(`/roundRobin/usersByDownline`, params, null, [])
       roundRobinUsers.value = data
@@ -172,6 +172,26 @@ const getRoundRobinUsers = async() => {
       store.commit(AppMutations.SET_LOADING, false)
     }
   }
+
+const selectAllRoundRobinUsers = computed(() => roundRobinUsers.value.length === selectedUsers.value.length)
+const selectSomeRoundRobinUsers = computed(() => selectedUsers.value.length > 0 && !selectAllRoundRobinUsers.value)
+const iconRoundRobinUsers = computed(() => {
+  if (selectAllRoundRobinUsers.value) {
+    return 'check_box'
+  }
+  if (selectSomeRoundRobinUsers.value) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+})
+
+const toggleSelectAllRoundRobinUsers = () => {
+  if (selectAllRoundRobinUsers.value) {
+    selectedUsers.value = []
+  } else {
+    selectedUsers.value = cloneDeep(roundRobinUsers.value)
+  }
+}
 
 
 const handleResourceColors = () => {
@@ -430,6 +450,22 @@ onMounted (async () => {
                 {{ selectedUsers.length }} selected
               </span>
         </template>
+        <template v-slot:prepend-item>
+          <v-list-item
+              v-if="roundRobinUsers.length <= 20"
+              ripple
+              @click="toggleSelectAllRoundRobinUsers()">
+            <v-list-item-action>
+              <v-icon>{{ iconRoundRobinUsers }}</v-icon>
+            </v-list-item-action>
+            <v-list-item-title>Select All</v-list-item-title>
+          </v-list-item>
+          <v-divider
+              v-if="roundRobinUsers.length <= 20"
+              class="mt-2"
+          ></v-divider>
+        </template>
+
       </v-autocomplete>
     </v-col>
   </v-row>
