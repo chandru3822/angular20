@@ -65,7 +65,7 @@ const autoCopyToClipboard = ref(true)
 const hasError = ref(false)
 const errorMsg = ref('')
 const errorTexts = [
-    'this.$ref', 'this.$filter', 'filterBy', 'this.$emit'
+    'this.$ref', 'this.$filter', 'filterBy', 'this.$emit', 'this.$vuetify'
 ]
 const replacements = [
   { oldValue: 'this.$store.commit(AppMutations.SET_LOADING, true)', newValue: 'appStore.loading = true'},

@@ -4,11 +4,16 @@
       <v-col cols="12">
         <v-app-bar dense tabs color="white" class="elevation-1 mb-1" id="expense-management-header">
           <v-toolbar-title>
-            <v-btn fab text v-if="userIsAdmin || userCanManage"
-                   small color="primary" class="mr-2" @click="goToPath('')">
-              <v-icon v-if="manage">mdi-view-list</v-icon>
-              <v-icon v-else>settings</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                fab
+                variant="text"
+                v-if="userIsAdmin || userCanManage"
+                size="small"
+                color="primary"
+                class="mr-2"
+                @click="goToPath()"
+                :prepend-icon="manage ? 'mdi-view-list' : 'settings'"
+            ></AlbatrossButton>
             Expense Management
           </v-toolbar-title>
           <v-tabs :optional="false" color="primary"
@@ -26,83 +31,81 @@
   </v-container>
 </template>
 
-<script>
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+import { mapStores } from 'pinia'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  export default {
-    name: 'Expenses',
-    computed: {
-      ...mapStores(useUserStore),
-      userCanManage() {
-        return this.userStore.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')
-      },
-      userIsAdmin() {
-        return this.userStore.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')
-      },
-      tabs() {
-        return [
-          {
-            label: 'Monthly Budgets',
-            path: '/expenses/manage/monthlyBudgets',
-            manage: true,
-            display: this.userStore.userHasFeature('EXPENSES')
-          },
-          {
-            label: 'Budget Templates',
-            path: '/expenses/manage/budgetTemplates',
-            manage: true,
-            display: this.userStore.userHasFeature('EXPENSES')
-          },
-          {
-            label: 'Budget Types',
-            path: '/expenses/manage/budgetTypes',
-            manage: true,
-            display: this.userStore.userHasFeature('EXPENSES')
-          },
-          {
-            label: 'GL Codes',
-            path: '/expenses/manage/glCodes',
-            manage: true,
-            display: this.userStore.userHasFeature('EXPENSES')
-          },
-          {
-            label: 'Reimbursement Requests',
-            path: '/expenses/reimbursementRequests',
-            manage: false,
-            display: this.userStore.userHasFeature('EXPENSES')
-          }, {
-            label: 'Submitted Expenses',
-            path: '/expenses/submittedExpenses',
-            manage: false,
-            display: this.userStore.userHasFeature('EXPENSES')
-          }]
-      },
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display && tab.manage === this.manage)
-      },
-      manage() {
-        return this.$route.path.includes('manage')
-      }
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const model = ref('')
+const userCanManage = computed(() => {
+  return userStore.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')
+})
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')
+})
+const tabs = computed(() => {
+  return [
+    {
+      label: 'Monthly Budgets',
+      path: '/expenses/manage/monthlyBudgets',
+      manage: true,
+      display: userStore.userHasFeature('EXPENSES')
     },
-    created() {
+    {
+      label: 'Budget Templates',
+      path: '/expenses/manage/budgetTemplates',
+      manage: true,
+      display: userStore.userHasFeature('EXPENSES')
     },
-    data() {
-      return {
-        snackbar: {},
-        model: '',
-      }
+    {
+      label: 'Budget Types',
+      path: '/expenses/manage/budgetTypes',
+      manage: true,
+      display: userStore.userHasFeature('EXPENSES')
     },
-    methods: {
-      goToPath() {
-        if(this.manage) {
-          this.$router.push('/expenses/reimbursementRequests')
-        } else {
-          this.$router.push('/expenses/manage/monthlyBudgets')
-        }
-      },
-    }
+    {
+      label: 'GL Codes',
+      path: '/expenses/manage/glCodes',
+      manage: true,
+      display: userStore.userHasFeature('EXPENSES')
+    },
+    {
+      label: 'Reimbursement Requests',
+      path: '/expenses/reimbursementRequests',
+      manage: false,
+      display: userStore.userHasFeature('EXPENSES')
+    }, {
+      label: 'Submitted Expenses',
+      path: '/expenses/submittedExpenses',
+      manage: false,
+      display: userStore.userHasFeature('EXPENSES')
+    }]
+})
+const displayedTabs = computed(() => {
+  return tabs.value.filter(tab => tab.display && tab.manage === manage.value)
+})
+const manage = computed(() => {
+  return route.path.includes('manage')
+})
+
+const goToPath = () => {
+  if(manage.value) {
+    router.push('/expenses/reimbursementRequests')
+  } else {
+    router.push('/expenses/manage/monthlyBudgets')
   }
+}
 </script>
 
 <style lang="scss">

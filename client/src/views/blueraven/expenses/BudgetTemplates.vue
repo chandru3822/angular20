@@ -6,13 +6,13 @@
           <v-toolbar-title class="app-title">Budget Templates</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[createNew = !createNew, newTemplate = {}, expanded = [], getAvailableUsers()]">
-              <v-icon v-if="!createNew">add</v-icon>
-              <v-icon v-else>close</v-icon>
-              <span v-if="!isMobile">
-                {{createNew ? 'cancel' : 'Add Template'}}
-              </span>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="[createNew = !createNew, newTemplate = {}, expanded = [], getAvailableUsers()]"
+                :prepend-icon="!createNew ? 'add' : 'close'"
+                :text="!isMobile && createNew ? 'cancel' : !isMobile && !createNew ? 'Add Template' : ''"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -30,25 +30,25 @@
                         label="Amount"
                         v-model.number="newTemplate.amount">
           </v-text-field>
-          <v-btn color="primary" class="white--text"
-                 :disabled="!newTemplate.userId
-                    || !newTemplate.amount"
-                 @click="saveTemplate(newTemplate, true)">
-            Save
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              :disabled="!newTemplate.userId || !newTemplate.amount"
+              @click="saveTemplate(newTemplate, true)"
+              text="Save"
+          ></AlbatrossButton>
         </v-card>
         <v-divider v-if="createNew" ></v-divider>
         <v-data-table
-          :headers="headers"
-          :items="filterTemplates()"
-          :items-per-page="100"
-          :mobile-breakpoint="0"
-          single-expand
-          :loading="dataLoading"
-          fixed-header
-          :expanded.sync="expanded"
-          :footer-props="footerProps"
-          class="elevation-1 fix-column-width-bug square-card"
+            :headers="headers"
+            :items="filteredTemplates"
+            :items-per-page="100"
+            :mobile-breakpoint="0"
+            single-expand
+            :loading="dataLoading"
+            fixed-header
+            :expanded.sync="expanded"
+            :footer-props="footerProps"
+            class="elevation-1 fix-column-width-bug square-card"
         >
           <template #no-data>
             <span class="default-text-color">No Templates</span>
@@ -72,11 +72,13 @@
                               prepend-icon="mdi-currency-usd"
                               v-model.number="item.amount">
                 </v-text-field>
-                <v-btn :disabled="false"
-                       color="primary" class="white--text mr-2"
-                       @click="saveTemplate(item, false)">
-                  Save
-                </v-btn>
+                <AlbatrossButton
+                    :disabled="false"
+                    color="primary"
+                    class="mr-2"
+                    @click="saveTemplate(item, false)"
+                    text="Save"
+                ></AlbatrossButton>
               </v-card>
             </td>
           </template>
@@ -89,17 +91,38 @@
                 <div v-if="item.currentMonthBudgetId">
                   Already Exists
                 </div>
-                <v-btn v-else color="primary" @click="generateCurrentMonthBudget(item)">
-                  Generate
-                </v-btn>
+                <AlbatrossButton
+                    v-else
+                    color="primary"
+                    @click="generateCurrentMonthBudget(item)"
+                    text="Generate"
+                ></AlbatrossButton>
               </td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="[createNew = false, expanded = [item]]">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                  <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                  <v-btn small text color="primary" @click="[deleteConfirm=true, itemToDelete = item]"><v-icon>delete</v-icon></v-btn>
+                  <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      v-if="!expanded.includes(item)"
+                      @click="[createNew = false, expanded = [item]]"
+                      prepend-icon="edit"
+                  ></AlbatrossButton>
+                  <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      v-if="expanded.includes(item)"
+                      @click="expanded = []"
+                      text="cancel"
+                  ></AlbatrossButton>
+                  <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="[deleteConfirm=true, itemToDelete = item]"
+                      prepend-icon="delete"
+                  ></AlbatrossButton>
                 </div>
               </td>
             </tr>
@@ -117,146 +140,149 @@
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
+<script setup>
+
+import {handleHidingGlobalLoader, getRequest, postRequest,  deleteRequest} from '@/helpers/helpers'
 import moment from 'moment'
 import constants from "@/helpers/constants"
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 
-export default {
-  name: 'BudgetTemplates',
-  components: {
-    ConfirmationDialog,
-    DatetimePickerInput
-  },
-  computed: {
-    itemToDeleteId(){
-      return this.itemToDelete ? this.itemToDelete.id : ''
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+
+
+
+const dataLoading = ref(true)
+const createNew = ref(false)
+const newTemplate = ref({})
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 500],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const availableUsers = ref([])
+const templates = ref([])
+const expanded = ref([])
+const headers = ref([
+  {text: 'User', value: 'userFullName', show: true, width: '125px'},
+  {text: 'Amount', value: 'amount', show: true, width: '75px'},
+  {text: 'Current Month Budget', value: 'amount', show: true, width: '125px'},
+  {text: null, value: 'icons', show: true, sortable: false, width: '125px'}
+])
+const deleteConfirm = ref(false)
+const itemToDelete = ref({})
+
+const itemToDeleteId = computed(() => {
+  return itemToDelete.value ? itemToDelete.value.id : ''
+})
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+const filteredTemplates = computed(() => {
+  return templates.value.filter(b => !b.archived)
+})
+
+onMounted(() => {
+  getTemplates()
+})
+
+const generateCurrentMonthBudget = async(item) => {
+  appStore.loading = true
+  try {
+    //try to add a new budget
+    let params = {
+      userId: item.userId,
+      amount: item.amount,
+      startDate: moment().startOf('month').format('YYYY-MM-DD'),
+      endDate: moment().endOf('month').format('YYYY-MM-DD')
     }
-  },
-  data() {
-    return {
-      snackbar: {},
-      constants,
-      dataLoading: true,
-      createNew: false,
-      newTemplate: {},
-      footerProps: {
-        'items-per-page-options': [25, 50, 100, 500],
-        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-      },
-      availableUsers: [],
-      templates: [],
-      expanded: [],
-      headers: [
-        {text: 'User', value: 'userFullName', show: true, width: '125px'},
-        {text: 'Amount', value: 'amount', show: true, width: '75px'},
-        {text: 'Current Month Budget', value: 'amount', show: true, width: '125px'},
-        {text: null, value: 'icons', show: true, sortable: false, width: '125px'}
-      ],
-      deleteConfirm: false,
-      itemToDelete: {}
+    const {data, status} = await postRequest(`/expenseBudgets`, params, 'blueraven')
+    item.currentMonthBudgetId = data.id
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let msg = e?.data?.detail || 'Error Generating a Budget for this User'
+    snackbar('ERROR', msg)
 
-    }
-  },
-  created() {
-    this.getTemplates()
-  },
-  methods: {
-    async generateCurrentMonthBudget(item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        //try to add a new budget
-        let params = {
-          userId: item.userId,
-          amount: item.amount,
-          startDate: moment().startOf('month').format('YYYY-MM-DD'),
-          endDate: moment().endOf('month').format('YYYY-MM-DD')
-        }
-        const {data, status} = await postRequest(`/expenseBudgets`, params, 'blueraven')
-        item.currentMonthBudgetId = data.id
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        let msg = e?.data?.detail || 'Error Generating a Budget for this User'
-        this.snackbar = getSnackbar('ERROR', msg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    filterTemplates() {
-      return this.templates.filter(b => !b.archived)
-    },
-    async getTemplates() {
-      this.dataLoading = true
-      try {
-        const {data, status} = await getRequest(`/expenseBudgets/templates`, 'blueraven')
-        this.templates = data
-        this.dataLoading = false
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getAvailableUsers() {
-      if(this.createNew) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/expenseBudgets/availableUsers`, 'blueraven')
-          this.availableUsers = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    async deleteTemplate (id) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = false
+  }
+}
 
-      try {
-        const {status} = await deleteRequest(`/expenseBudgets/templates/${id}`, 'blueraven')
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Error Deleting Budget')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.closeDeleteDialog()
-    },
-    async saveTemplate(item, isNew) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await postRequest(`/expenseBudgets/templates`, item, 'blueraven')
-        if(isNew) {
-          this.templates.push(data)
-          this.newTemplate = {}
-          this.createNew = false
-        } else {
-          this.expanded = []
-        }
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', e?.data?.detail || 'Error Saving Template')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    closeDeleteDialog() {
-      this.deleteConfirm = false
-      this.itemToDelete = {}
+const getTemplates = async() => {
+  dataLoading.value = true
+  try {
+    const {data, status} = await getRequest(`/expenseBudgets/templates`, 'blueraven')
+    templates.value = data
+    dataLoading.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+  }
+}
+const getAvailableUsers = async() => {
+  if(createNew.value) {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/expenseBudgets/availableUsers`, 'blueraven')
+      availableUsers.value = data
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+
+      appStore.loading = false
     }
   }
+}
+const deleteTemplate = async (id) => {
+  appStore.loading = true
+
+  try {
+    const {status} = await deleteRequest(`/expenseBudgets/templates/${id}`, 'blueraven')
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Error Deleting Budget')
+
+    appStore.loading = false
+  }
+  closeDeleteDialog()
+}
+const saveTemplate = async(item, isNew) => {
+  appStore.loading = true
+  try {
+    const {data, status} = await postRequest(`/expenseBudgets/templates`, item, 'blueraven')
+    if(isNew) {
+      templates.value.push(data)
+      newTemplate.value = {}
+      createNew.value = false
+    } else {
+      expanded.value = []
+    }
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', e?.data?.detail || 'Error Saving Template')
+
+    appStore.loading = false
+  }
+}
+const closeDeleteDialog = () => {
+  deleteConfirm.value = false
+  itemToDelete.value = {}
 }
 </script>
 
