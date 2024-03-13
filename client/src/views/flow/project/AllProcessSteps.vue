@@ -8,11 +8,11 @@
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <AddProcessStep
-                v-if="project.processId && userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD')"
-                class="d-inline-block"
-                :project-id="projectId"
-                :process-id="project.processId"
-                @step-added="getProcessSteps"
+                  v-if="project.processId && userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD')"
+                  class="d-inline-block"
+                  :project-id="projectId"
+                  :process-id="project.processId"
+                  @step-added="getProcessSteps"
               />
             </v-toolbar-items>
           </v-toolbar>
@@ -23,9 +23,9 @@
 
           <v-col cols="12" v-else class="pt-0">
             <TableActiveProjectProcessStepSnippet
-              :steps="processSteps.filter(step => step.processStepStatusTypeId === 1)"
-              :projectId="projectId"
-              :contactId="project.contactId"/>
+                :steps="processSteps.filter(step => step.processStepStatusTypeId === 1)"
+                :projectId="projectId"
+                :contactId="project.contactId"/>
           </v-col>
         </v-row>
       </v-col>
@@ -33,9 +33,9 @@
 
       <v-fade-transition v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-col
-          v-show="!isProcessStepsExpanded"
-          cols="12"
-          class="text-right pt-0"
+            v-show="!isProcessStepsExpanded"
+            cols="12"
+            class="text-right pt-0"
         >
         <span @click="isProcessStepsExpanded = true" class="clickable primary--text">
           Expand All Process Steps <v-icon color="primary">mdi-menu-down</v-icon>
@@ -76,13 +76,13 @@
                             class=""
                             v-model="stepsSearch"></v-text-field>
 
-              <template v-for="step in filteredProcessSteps()">
+              <template v-for="step in filteredProcessSteps">
                 <h4 class="text-left work-type-header">{{step.processStepName}}</h4>
                 <ProjectProcessStepSnippet
-                  :key="step.processStepName"
-                  :steps="step.processSteps"
-                  :projectId="projectId"
-                  :contactId="project.contactId"/>
+                    :key="step.processStepName"
+                    :steps="step.processSteps"
+                    :projectId="projectId"
+                    :contactId="project.contactId"/>
               </template>
             </v-col>
 
@@ -94,7 +94,7 @@
   </v-row>
 </template>
 
-<script>
+<script setup>
 
 import {getRequest, logError} from '@/helpers/helpers'
 import TableActiveProjectProcessStepSnippet from '@/views/flow/project/TableActiveProjectProcessStepSnippet'
@@ -102,73 +102,71 @@ import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSn
 import SpinnerInline from '@/components/SpinnerInline'
 import orderBy from 'lodash.orderby'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: 'ActiveProcessSteps',
-  components: {
-    SpinnerInline,
-    TableActiveProjectProcessStepSnippet,
-    ProjectProcessStepSnippet,
-    AddProcessStep,
-  },
-  props: {
-    project: Object
-  },
-  data () {
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  project: Object
+})
+const { project } = toRefs(props)
+
+const projectId = computed(() => {
+  return parseInt(route.params.projectId)
+})
+
+const processSteps = ref([])
+const customFieldGroups = ref([])
+const menuOpen = ref(false)
+const isProcessStepsLoading = ref(false)
+const stepsSearch = ref('')
+const isProcessStepsExpanded = ref(true)
+
+onMounted(() => {
+  getProcessSteps()
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+})
+const userHasEventsFeature = computed(() => {
+  return userStore.userHasFeature('EVENTS')
+})
+const filteredProcessSteps = computed(() => {
+  return stepsSearch.value === '' ? processStepsByName.value : processStepsByName.value.filter(psn => psn.processStepName.toLowerCase().includes(stepsSearch.value.toLowerCase()) )
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const processStepsByName = computed(() => {
+  const names = [...new Set(processSteps.value.map(step => step.processStepName))]
+  return names.map(processStepName => {
     return {
-      projectId: parseInt(this.$route.params.projectId),
-      processSteps: [],
-      customFieldGroups: [],
-      menuOpen: false,
-      isProcessStepsLoading: false,
-      snackbar: {},
-      stepsSearch: '',
-      isProcessStepsExpanded: true,
+      processStepName,
+      processSteps: orderBy(processSteps.value.filter(step => step.processStepName === processStepName), 'projectProcessStepId', 'desc')
     }
-  },
-  created () {
-    this.getProcessSteps()
-  },
-  computed: {
-    ...mapStores(useUserStore),
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
-    },
-    userHasEventsFeature() {
-      return this.userStore.userHasFeature('EVENTS')
-    },
-    companyId() {
-      return this.userStore.details.companyId
-    },
-    processStepsByName () {
-      const names = [...new Set(this.processSteps.map(step => step.processStepName))]
+  })
+})
 
-      return names.map(processStepName => {
-        return {
-          processStepName,
-          processSteps: orderBy(this.processSteps.filter(step => step.processStepName === processStepName), 'projectProcessStepId', 'desc')
-        }
-      })
-    }
-  },
-  methods: {
-    filteredProcessSteps () {
-      return this.stepsSearch === '' ? this.processStepsByName : this.processStepsByName.filter(psn => psn.processStepName.toLowerCase().includes(this.stepsSearch.toLowerCase()) )
-    },
-    getProcessSteps: async function () {
-      try {
-        this.isProcessStepsLoading = true
-        const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
-        this.processSteps = data
-        window.document.title = `${this.project.projectName} - Process Steps`
-      } catch (e) {
-        logError(e)
-      } finally {
-        this.isProcessStepsLoading = false
-      }
-    },
+const getProcessSteps = async () => {
+  try {
+    isProcessStepsLoading.value = true
+    const {data} = await getRequest(`/project/${projectId.value}/processSteps`)
+    processSteps.value = data
+    window.document.title = `${project.value.projectName} - Process Steps`
+  } catch (e) {
+    logError(e)
+  } finally {
+    isProcessStepsLoading.value = false
   }
 }
 </script>
@@ -206,8 +204,5 @@ export default {
 
   margin-left: 12px;
 
-  & > .v-btn__content {
-    color: white !important;
-  }
 }
 </style>

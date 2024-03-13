@@ -5,10 +5,17 @@
                            :is-loading="activeEventsLoading"
                            @click="toggleCollapseExpand">
     <template v-slot:tool-btn>
-      <v-btn v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
-             text small color="primary" @click.stop :to="`/project/${projectId}/events`" class="pa-2 mx-2" max-width="48px">
-        <v-icon :size="20">mdi-format-list-bulleted</v-icon>
-      </v-btn>
+      <AlbatrossButton
+          v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
+          variant="text"
+          size="small"
+          color="primary"
+          @click.stop
+          :to="`/project/${projectId}/events`"
+          class="pa-2 mx-2"
+          max-width="48px"
+          prepend-icon="mdi-format-list-bulleted"
+      ></AlbatrossButton>
     </template>
     <template v-slot:expanded-content>
       <ActiveEventSnippet class="px-3"
@@ -25,91 +32,89 @@
   </SidePanelExpansionPanel>
 </template>
 
-<script>
+<script setup>
 
 import {getRequest, logError} from '@/helpers/helpers'
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import ActiveEventSnippet from '@/views/flow/project/ActiveEventSnippet'
 import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: 'ActiveEvents',
-  components: {
-    SidePanelExpansionPanel,
-    SpinnerInline,
-    EventSnippet,
-    ActiveEventSnippet
-  },
-  props: {
-    project: Object,
-    updateKey: Number
-  },
-  watch: {
-    updateKey: function () {
-      this.getEvents()
-    },
-  },
-  data() {
+const appStore = useAppStore()
+const projectStore = useProjectStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  project: Object,
+  updateKey: Number
+})
+const { project, updateKey } = toRefs(props)
+
+watch(updateKey, () => {
+  getEvents()
+})
+
+const events = ref([])
+const customFieldGroups = ref([])
+const menuOpen = ref(false)
+const activeEventsLoading = ref(false)
+const eventSearch = ref('')
+const eventsExpanded = ref(false)
+
+onMounted(() => {
+  getEvents()
+})
+
+const projectId = computed(() => {
+  return parseInt(route.params.projectId)
+})
+const sectionExpanded = computed(() => {
+  return projectStore.activeEventDropdown
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const filteredEvents = computed(() => {
+  return eventSearch.value === '' ? eventsByName.value : eventsByName.value.filter(psn => psn.eventName.toLowerCase().includes(eventSearch.value.toLowerCase()))
+})
+const eventsByName = computed(() => {
+  const names = [...new Set(events.value.map(e => e.eventName))]
+
+  return names.map(eventName => {
     return {
-      projectId: parseInt(this.$route.params.projectId),
-      events: [],
-      customFieldGroups: [],
-      menuOpen: false,
-      activeEventsLoading: false,
-      snackbar: {},
-      eventSearch: '',
-      eventsExpanded: false,
+      eventName,
+      events: events.value.filter(step => step.eventName === eventName)
     }
-  },
-  created() {
-    this.getEvents()
-  },
-  computed: {
-    ...mapStores(useUserStore, useProjectStore),
-    sectionExpanded() {
-      return this.projectStore.activeEventDropdown
-    },
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
-    },
-    companyId() {
-      return this.userStore.details.companyId
-    },
-    eventsByName() {
-      const names = [...new Set(this.events.map(e => e.eventName))]
+  })
+})
 
-      return names.map(eventName => {
-        return {
-          eventName,
-          events: this.events.filter(step => step.eventName === eventName)
-        }
-      })
-    }
-  },
-  methods: {
-    filteredEvents() {
-      return this.eventSearch === '' ? this.eventsByName : this.eventsByName.filter(psn => psn.eventName.toLowerCase().includes(this.eventSearch.toLowerCase()))
-    },
-    getEvents: async function () {
-      try {
-        this.activeEventsLoading = true
-        const {data} = await getRequest(`/project/${this.projectId}/activeEvents`, null, [])
-        this.events = data
-      } catch (e) {
-        logError(e)
-      } finally {
-        this.activeEventsLoading = false
-      }
-    },
-    toggleCollapseExpand(){
-      this.projectStore.activeEventDropdown = !this.projectStore.activeEventDropdown
-    }
-
+const getEvents = async () => {
+  try {
+    activeEventsLoading.value = true
+    const {data} = await getRequest(`/project/${projectId.value}/activeEvents`, null, [])
+    events.value = data
+  } catch (e) {
+    logError(e)
+  } finally {
+    activeEventsLoading.value = false
   }
+}
+const toggleCollapseExpand = () => {
+  projectStore.activeEventDropdown = !projectStore.activeEventDropdown
 }
 </script>
 
@@ -149,8 +154,5 @@ export default {
 
   margin-left: 12px;
 
-  & > .v-btn__content {
-    color: white !important;
-  }
 }
 </style>

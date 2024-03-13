@@ -39,81 +39,91 @@
   </ConfirmationDialog>
 </template>
 
-<script>
+<script setup>
 import {getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-import {getSnackbar, logError} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { logError} from '@/helpers/helpers'
 
-export default {
-  name: 'ProjectProcessStepStatus',
-  components: {ConfirmationDialog},
-  props: {
-    projectId: Number,
-    projectProcessStep: Object,
-    availableProcessStepStatuses: Array,
-    limitToNonCancelled: {
-      type: Boolean,
-      default: false
-    },
-    limitToActive: {
-      type: Boolean,
-      default: false
-    },
-    showDialog: {
-      type: Boolean,
-      default: false
-    },
-    newStatusOptional: {
-      type: Boolean,
-      default: false
-    }
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  projectId: Number,
+  projectProcessStep: Object,
+  availableProcessStepStatuses: Array,
+  limitToNonCancelled: {
+    type: Boolean,
+    default: false
   },
-  data () {
-    return {
-      cancelledCompanyStatuses: [],
-      internalShowDialog: this.showDialog,
-      newStatus:{}
-    }
+  limitToActive: {
+    type: Boolean,
+    default: false
   },
-  mounted() {
-    this.getCancelledStatuses()
+  showDialog: {
+    type: Boolean,
+    default: false
   },
-  watch: {
-    showDialog: function(val) {
-      this.internalShowDialog = val
-    },
-    projectProcessStep: function () {
-      //need to re-get cancelled statuses for the correct process step when it changes
-      this.cancelledCompanyStatuses = [] //clear out any existing cancelled statuses to make sure we re-fetch for the new process
-      this.getCancelledStatuses()
-    }
-  },
-  computed: {
-    statuses() {
-      if (this.limitToActive === true) {
-        return this.availableProcessStepStatuses.filter(step => step.processStepStatusTypeId === 1)
-      } else if (this.limitToNonCancelled) {
-        return this.availableProcessStepStatuses.filter(step => step.processStepStatusTypeId !== 3)
+  newStatusOptional: {
+    type: Boolean,
+    default: false
+  }
+})
+const { projectId, projectProcessStep, availableProcessStepStatuses, limitToNonCancelled,
+  limitToActive, showDialog, newStatusOptional } = toRefs(props)
+
+const cancelledCompanyStatuses = ref([])
+const newStatus = ref({})
+
+onMounted(() => {
+  getCancelledStatuses()
+
+})
+
+watch(showDialog, async(val) => {
+  internalShowDialog.value = val
+})
+
+watch(projectProcessStep, async() => {
+  //need to re-get cancelled statuses for the correct process step when it changes
+  cancelledCompanyStatuses.value = [] //clear out any existing cancelled statuses to make sure we re-fetch for the new process
+  getCancelledStatuses()
+})
+
+const internalShowDialog = computed(() => {
+  return showDialog.value
+})
+const statuses = computed(() => {
+  if (limitToActive.value === true) {
+    return availableProcessStepStatuses.value.filter(step => step.processStepStatusTypeId === 1)
+  } else if (limitToNonCancelled.value) {
+    return availableProcessStepStatuses.value.filter(step => step.processStepStatusTypeId !== 3)
+  }
+  return availableProcessStepStatuses.value
+})
+
+const getCancelledStatuses = async() => {
+  if (cancelledCompanyStatuses.value?.length === 0) {
+    try {
+      if(projectProcessStep.value.processStepId) {
+        const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(projectProcessStep.value.processStepId)
+        cancelledCompanyStatuses.value = data
       }
-      return this.availableProcessStepStatuses
+    } catch (e) {
+      logError(e)
+      snackbar('ERROR', 'Error fetching process step statuses')
+
     }
-  },
-  methods: {
-    async getCancelledStatuses() {
-      if (this.cancelledCompanyStatuses?.length === 0) {
-        try {
-          if(this.projectProcessStep.processStepId) {
-            const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(this.projectProcessStep.processStepId)
-            this.cancelledCompanyStatuses = data
-          }
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      }
-    },
   }
 }
 </script>

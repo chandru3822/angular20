@@ -26,11 +26,15 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn
-            v-if="(selectedEvent.startTime === null && selectedEvent.allowAllUserDeletion) || userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
-            small text color="primary" class="align-self-end" @click="showDeleteDialog = true">
-            <v-icon>delete</v-icon>
-          </v-btn>
+          <AlbatrossButton
+              v-if="(selectedEvent.startTime === null && selectedEvent.allowAllUserDeletion) || userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
+              size="small"
+              variant="text"
+              color="primary"
+              class="align-self-end"
+              @click="showDeleteDialog = true"
+              prepend-icon="delete"
+          ></AlbatrossButton>
           <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteEvent"
                               @close-dialog="showDeleteDialog=false">
             Are you sure you want to delete this event: <strong>{{ selectedEvent.eventName }}</strong>?
@@ -40,7 +44,7 @@
       <div class="pb-4 px-6">
         <div class="mt-2" v-if="selectedEvent && selectedEvent.eventBanners && selectedEvent.eventBanners.length > 0">
           <v-card class="square-card" :class="{'mt-2': idx !== 0}"
-                  v-for="(b, idx) in filterBy(selectedEvent.eventBanners, true, 'canPerform')">
+                  v-for="(b, idx) in selectedEvent.eventBanners.filter(b => b.canPerform)">
             <v-card-text class="flex-display pa-0" :style="{'color': b.color}">
               <div class="banner-card-swatch" :style="{'background-color': b.bgColor}"></div>
               <div :style="{'background-color': b.bgColor + 20}" class="one-hunned">
@@ -52,15 +56,14 @@
         <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
           <div class="action-subheader albatross-header-3">
             Actions
-            <v-btn
-              class="back-btn show-unperformable-actions-btn"
-              text
-              color="primary"
-              :ripple="false"
-              @click="showUnperformableActions = !showUnperformableActions"
-            >
-              {{ showUnperformableActions ? 'Hide Disabled' : 'Show All' }}
-            </v-btn>
+            <AlbatrossButton
+                class="back-btn show-unperformable-actions-btn"
+                variant="text"
+                color="primary"
+                :ripple="false"
+                @click="showUnperformableActions = !showUnperformableActions"
+                :text="showUnperformableActions ? 'Hide Disabled' : 'Show All'"
+            ></AlbatrossButton>
           </div>
         </div>
         <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
@@ -79,10 +82,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" class="px-0" @click="collapsedAttachments = !collapsedAttachments">
-              <v-icon v-if="collapsedAttachments">mdi-chevron-up</v-icon>
-              <v-icon v-else>mdi-chevron-down</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                class="px-0"
+                @click="collapsedAttachments = !collapsedAttachments"
+                :prepend-icon="collapsedAttachments ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-row>
@@ -109,20 +115,26 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" small @click="setSplitColumnValue()" v-if="!isMobile" class="px-0">
-              <v-icon v-if="!projectStore.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
-              <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                size="small"
+                @click="setSplitColumnValue()"
+                v-if="!isMobile"
+                class="px-0"
+                :prepend-icon="!projectStore.manualColumnSplit ? 'mdi-format-columns' : 'mdi-format-align-justify'"
+            ></AlbatrossButton>
             <div>
-              <v-btn class="white--text ml-2 mt-1"
-                     :class="{'mt-3': !isMobile}"
-                     @click="checkFieldsForUnique()"
-                     :disabled="!userCanEdit || getIsEventReadonly()"
-                     :icon="isMobile"
-                     color="primary">
-                <v-icon v-if="isMobile">save</v-icon>
-                <span v-else>Save Fields</span>
-              </v-btn>
+              <AlbatrossButton
+                  class="ml-2 mt-1"
+                  :class="{'mt-3': !isMobile}"
+                  @click="checkFieldsForUnique()"
+                  :disabled="!userCanEdit || getIsEventReadonly()"
+                  :icon="isMobile"
+                  color="primary"
+                  prepend-icon="save"
+                  :text="!isMobile ? 'Save Fields' : ''"
+              ></AlbatrossButton>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -148,7 +160,7 @@
 
       </ConfirmationDialog>
       <div class="error-text pb-4 px-6" v-if="eventActionMissingRequirements">
-        {{ this.saveErrorMsg }}
+        {{ saveErrorMsg.value }}
       </div>
       <v-card class="pa-4 square-card mb-2"
               v-if="selectedEvent.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
@@ -168,28 +180,31 @@
         <v-card class="square-card px-4 pt-4 mt-4">
 
           <v-autocomplete
-            v-model="selectedEvent.companyEventStatusTypeId"
-            :items="companyEventStatuses"
-            label="Event Status"
-            :disabled="!userIsAdmin || isEventReadonly"
-            item-text="eventStatusType"
-            item-value="id"
-            @input="[statusChanged = true, defaultValuesChanged = true]"
+              v-model="selectedEvent.companyEventStatusTypeId"
+              :items="companyEventStatuses"
+              label="Event Status"
+              :disabled="!userIsAdmin || isEventReadonly"
+              item-text="eventStatusType"
+              item-value="id"
+              @input="[statusChanged = true, defaultValuesChanged = true]"
           ></v-autocomplete>
-          <v-btn color="primary" v-if="selectedEvent.uniqueBehaviorTypeId === 1 && !uniqueAlreadyHasValue"
-                 class="white--text mb-4 text-capitalize"
-                 :hidden="uniqueAlreadyHasValue"
-                 id="qa-round-robin-button"
-                 @click="toggleRoundRobinView">{{toggleViewButtonText}}
-          </v-btn>
+          <AlbatrossButton
+              color="primary"
+              v-if="selectedEvent.uniqueBehaviorTypeId === 1 && !uniqueAlreadyHasValue"
+              class="mb-4 text-capitalize"
+              :hidden="uniqueAlreadyHasValue"
+              id="qa-round-robin-button"
+              @click="toggleRoundRobinView"
+              :text="toggleViewButtonText"
+          ></AlbatrossButton>
           <!--show startTime, endTime, and resource fields-->
           <v-container v-if="!showRoundRobin" class="px-4" :class="{'pt-0': selectedEvent.uniqueBehaviorTypeId !== 1}">
-              <div v-if="!uniqueAlreadyHasValue && selectedEvent.uniqueBehaviorTypeId === 1" class="title-large pt-1">Manual Assignment</div>
+            <div v-if="!uniqueAlreadyHasValue && selectedEvent.uniqueBehaviorTypeId === 1" class="title-large pt-1">Manual Assignment</div>
             <v-row>
               <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="py-0" :class="{'pt-2': selectedEvent.uniqueBehaviorTypeId === 1}">
                 <DatetimePickerInput
                     v-model="selectedEvent.startTime"
-                    :timezone="this.timezone"
+                    :timezone="timezone"
                     :disabled="uniqueAlreadyHasValue || showRoundRobin || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly, selectedEvent.startTimeReadOnlyAllow)"
                     :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly, selectedEvent.startTimeReadOnlyAllow)"
                     :required="actionRequiresStart && !selectedEvent.startTime && !eventSaveOverrideRequired"
@@ -203,7 +218,7 @@
               <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="py-0" :class="{'pt-2': selectedEvent.uniqueBehaviorTypeId === 1}">
                 <DatetimePickerInput
                     v-model="selectedEvent.endTime"
-                    :timezone="this.timezone"
+                    :timezone="timezone"
                     :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly, selectedEvent.endTimeReadOnlyAllow)"
                     :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly, selectedEvent.endTimeReadOnlyAllow)"
                     v-if="!getDefaultFieldHidden(selectedEvent.endTimeHiddenWhiteListedPositions, selectedEvent.endTimeHidden, selectedEvent.endTimeHiddenAllow)"
@@ -211,7 +226,7 @@
                     :type="'timestamp'"
                     :format="'MMMM DD, YYYY, h:mm A'"
                     label="End Time"
-                    :change-callback="() => { this.defaultValuesChanged = true}"
+                    :change-callback="() => { defaultValuesChanged.value = true}"
                 />
               </v-col>
             </v-row>
@@ -239,57 +254,68 @@
               </v-card-text>
               <v-row class="pb-3 px-0 one-hunned" v-else>
                 <v-col :cols="(projectStore.manualColumnSplit && timeSlots.length > 0 && availabilityDateField.dateValue && !dateValueChanged) ? 6 : 12" class="pb-0 pt-2">
-                <CustomValueInput
-                  :readonly="!userCanEdit"
-                  :min-date="minDate"
-                  :callback="checkAvailabilityDate"
-                  :field="availabilityDateField"
-                  :show-field-name="false"
-                />
+                  <CustomValueInput
+                      :readonly="!userCanEdit"
+                      :min-date="minDate"
+                      :callback="checkAvailabilityDate"
+                      :field="availabilityDateField"
+                      :show-field-name="false"
+                  />
                 </v-col>
                 <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2" v-if="availabilityDateField.dateValue && !dateValueChanged">
-                <v-select v-if="timeSlots.length > 0"
-                          v-model="selectedTimeSlot"
-                          class="qa-round-robin-time-select"
-                          :items="timeSlots"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
-                          label="Select an Available Time Slot"
-                          return-object
-                >
-                  <template slot="selection" slot-scope="data">
-                    {{ data.item.scheduledStartTime | formatDate('timestamp') }}
-                  </template>
-                  <template slot="item" slot-scope="data">
-                    {{ data.item.scheduledStartTime | formatDate('timestamp') }}
-                  </template>
-                </v-select>
-                <div v-else-if="searchedTimeSlots">No Times
-                  Available for the
-                  Selected Date
-                </div>
+                  <v-select v-if="timeSlots.length > 0"
+                            v-model="selectedTimeSlot"
+                            class="qa-round-robin-time-select"
+                            :items="timeSlots"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            label="Select an Available Time Slot"
+                            return-object
+                  >
+                    <template slot="selection" slot-scope="data">
+                      {{ data.item.scheduledStartTime | formatDate('timestamp') }}
+                    </template>
+                    <template slot="item" slot-scope="data">
+                      {{ data.item.scheduledStartTime | formatDate('timestamp') }}
+                    </template>
+                  </v-select>
+                  <div v-else-if="searchedTimeSlots">No Times
+                    Available for the
+                    Selected Date
+                  </div>
                 </v-col>
                 <div class="text-right flex-display flex-wrap justify-end one-hunned" v-if="availabilityDateField.dateValue">
-                  <v-btn color="primary" class="text-capitalize mr-2 mb-4" :outlined="!!selectedTimeSlot.scheduledStartTime"
-                         :loading="remoteSearchLoading"
-                         :disabled="inPersonSearchLoading"
-                         v-if="showRemoteSearch || userIsAdmin"
-                         id="qa-round-robin-search-remote"
-                         @click="getAvailableTimeSlots(true)">
-                    Search Remote Appt. Slots
-                  </v-btn>
-                  <v-btn color="primary" class="text-capitalize mr-2 mb-4" :outlined="!!selectedTimeSlot.scheduledStartTime"
-                         :loading="inPersonSearchLoading"
-                         v-if="schedulerCanEdit || userIsAdmin"
-                         :disabled="remoteSearchLoading"
-                         id="qa-round-robin-search"
-                         @click="getAvailableTimeSlots(false)">
-                    Search In-person Appt. Slots
-                  </v-btn>
-                  <v-btn color="primary" class="text-capitalize mb-4" v-if="availabilityDateField.dateValue"
-                         :disabled="!selectedTimeSlot.scheduledStartTime" @click="saveCloserAppointment" id="qa-round-robin-save">
-                    Save Appointment
-                  </v-btn>
+                  <AlbatrossButton
+                      color="primary"
+                      class="text-capitalize mr-2 mb-4"
+                      :outlined="!!selectedTimeSlot.scheduledStartTime"
+                      :loading="remoteSearchLoading"
+                      :disabled="inPersonSearchLoading"
+                      v-if="showRemoteSearch || userIsAdmin"
+                      id="qa-round-robin-search-remote"
+                      @click="getAvailableTimeSlots(true)"
+                      text="Search Remote Appt. Slots"
+                  ></AlbatrossButton>
+                  <AlbatrossButton
+                      color="primary"
+                      class="text-capitalize mr-2 mb-4"
+                      :outlined="!!selectedTimeSlot.scheduledStartTime"
+                      :loading="inPersonSearchLoading"
+                      v-if="schedulerCanEdit || userIsAdmin"
+                      :disabled="remoteSearchLoading"
+                      id="qa-round-robin-search"
+                      @click="getAvailableTimeSlots(false)"
+                      text="Search In-person Appt. Slots"
+                  ></AlbatrossButton>
+                  <AlbatrossButton
+                      color="primary"
+                      class="text-capitalize mb-4"
+                      v-if="availabilityDateField.dateValue"
+                      :disabled="!selectedTimeSlot.scheduledStartTime"
+                      @click="saveCloserAppointment"
+                      id="qa-round-robin-save"
+                      text="Save Appointment"
+                  ></AlbatrossButton>
                 </div>
               </v-row>
             </v-card-text>
@@ -297,17 +323,13 @@
           </div>
         </v-card>
         <v-col
-          v-if="selectedEvent && selectedEvent.id"
-          class="pt-0 px-0"
-          v-for="(cfg, index) in selectedEvent.customFieldGroups"
-          :key="cfg.id"
+            v-if="selectedEvent && selectedEvent.id"
+            class="pt-0 px-0"
+            v-for="(cfg, index) in selectedEvent.customFieldGroups"
+            :key="cfg.id"
         >
           <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
             <v-toolbar-title class="albatross-header-4">
-              <!--              <v-btn small text v-if="cfg.eventId && userStore.userHasFeature('SCHEDULE')"-->
-              <!--                     :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">-->
-              <!--                <v-icon>mdi-calendar</v-icon>-->
-              <!--              </v-btn>-->
               {{ cfg.groupName }}
             </v-toolbar-title>
             <v-spacer></v-spacer>
@@ -318,26 +340,26 @@
             <v-row>
               <v-col :cols="projectStore.manualColumnSplit && cfg.customFieldValues && cfg.customFieldValues.length > 1 ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
-                  v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
-                  :key="idx"
-                  :required="field.required && !eventSaveOverrideRequired"
-                  :callback="populateDirtyCfvs"
-                  :readonly="getFieldReadOnly(field)"
-                  :field="field"
-                  :use-field-ancillary-name="true"
-                  :show-field-name="false"
+                    v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
+                    :key="idx"
+                    :required="field.required && !eventSaveOverrideRequired"
+                    :callback="populateDirtyCfvs"
+                    :readonly="getFieldReadOnly(field)"
+                    :field="field"
+                    :use-field-ancillary-name="true"
+                    :show-field-name="false"
                 />
               </v-col>
               <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
                 <CustomValueInput
-                  v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
-                  :key="idx"
-                  :required="field.required && !eventSaveOverrideRequired"
-                  :callback="populateDirtyCfvs"
-                  :readonly="getFieldReadOnly(field)"
-                  :field="field"
-                  :use-field-ancillary-name="true"
-                  :show-field-name="false"
+                    v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+                    :key="idx"
+                    :required="field.required && !eventSaveOverrideRequired"
+                    :callback="populateDirtyCfvs"
+                    :readonly="getFieldReadOnly(field)"
+                    :field="field"
+                    :use-field-ancillary-name="true"
+                    :show-field-name="false"
                 />
               </v-col>
             </v-row>
@@ -353,19 +375,19 @@
   </v-main>
 </template>
 
-<script>
+<script setup>
 
 import {
   getRequest,
   logError,
-  getSnackbar,
+
   getRequestWithParams,
   putRequest,
   postRequest,
   deleteRequest,
   followLink
 } from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
+
 import {getAssignedToEvent} from '@/services/eventStatusTypeService'
 import {getEventCustomFieldReadOnly, getEventDefaultFieldReadOnly, getEventDefaultFieldHidden} from "@/services/customFieldService";
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
@@ -380,749 +402,733 @@ import Vue2Filters from 'vue2-filters'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import ActionButton from "./ActionButton";
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
 
-export default {
-  name: 'ProjectProcessStepEvent',
-  components: {
-    ActionButton,
-    ConfirmationDialog,
-    CustomValueInput,
-    DatetimePickerInput,
-    SpinnerInline,
-    AttachmentsFolderList
-  },
-  mixins: [Vue2Filters.mixin],
-  props: {
-    project: Object,
-    splitValueColumns: Boolean
-  },
-  data() {
-    return {
-      snackbar: {},
-      selectedEvent: {},
-      projectMismatch: false,
-      defaultValuesChanged: false,
-      //this is used to determine if we should save the status or not. should only save if it changes
-      statusChanged: false,
-      unsavedFieldsModal: false,
-      navigationOverride: false,
-      toPath: null,
-      conflictingEvents: null,
-      query: {},
-      attemptedAction: {},
-      companyEventStatuses: [],
-      saveErrorMsg: '',
-      eventActionMissingRequirements: false,
-      ppsEventId: parseInt(this.$route.params.ppsEventId),
-      menuOpen: false,
-      dirtyCfvs: [],
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-      projectId: parseInt(this.$route.params.projectId),
-      projectProcessStepId: parseInt(this.$route.params.processStepId),
-      processStepId: this.$route.query.processStepId,
-      eventSaveOverrideRequired: false,
-      collapsedAttachments: false,
-      actionRequiresStart: false,
-      actionRequiresEnd: false,
-      actionRequiresResource: false,
-      roundRobinNumberOfDays: 7,
-      timeSlots: [],
-      selectedTimeSlot: {},
-      schedulerCanEdit: false,
-      showRemoteSearch: false,
-      inPersonSearchLoading: false,
-      remoteSearchLoading: false,
-      mostRecentSearchWasRemote: false,
-      schedulerLoading: true,
-      closerApptOverride: false,
-      minDate: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
-      closerApptSaved: false,
-      searchedTimeSlots: false,
-      showRoundRobin: false,
-      uniqueAlreadyHasValue: false,
-      availabilityDateField: {id: -1, fieldName: 'Select a Date', dataTypeId: 1, dateValue: null},
-      dateValueChanged: false,
-      showUnperformableActions: false,
-      eventDetailsLoading: true,
-      isEventReadonly: false,
-      isUploadReadonly: false,
-      // windowWidth: window.innerWidth,
-      // splitColumnMinWidth: 1700,
-      getStatusClass,
-      showDeleteDialog: false
-    }
-  },
-  async created() {
-    await this.loadAllPageDetails()
-  },
-  beforeRouteUpdate(to, from, next) {
-    // called when the route that renders this component is about to be updated via router-view update
-    if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.defaultValuesChanged)) {
-      //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
-      this.navigationOverride = false
-      next()
-    } else {
-      this.toPath = to.path
-      this.query = to.query
-      this.unsavedFieldsModal = true
-    }
-  },
-  beforeRouteLeave(to, from, next) {
-    // called when the route that renders this component is about to be navigated away from.
-    if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.defaultValuesChanged)) {
-      //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
-      this.navigationOverride = false
-      next()
-    } else {
-      this.toPath = to.path
-      this.query = to.query
-      this.unsavedFieldsModal = true
-    }
-  },
-  mounted() {
-    // window.addEventListener('resize', () => {
-    //   this.windowWidth = window.innerWidth
-    // })
-  },
-  watch: {
-    eventActionMissingRequirements: function () {
-      this.$nextTick(() => {
-        this.$refs.eventFieldForm.validate()
-      })
-    },
-    // whenever pps event id changes, this function will run
-    '$route.params.ppsEventId': function () {
-      // reset the selected item
-      this.projectProcessStepId = parseInt(this.$route.params.processStepId)
-      this.ppsEventId = parseInt(this.$route.params.ppsEventId)
-      this.loadAllPageDetails()
-    },
-  },
-  computed: {
-    ...mapStores(useUserStore, useAppStore, useProjectStore),
-    timezone() {
-      return this.userStore.timezone.value
-    },
-    userIsAdmin() {
-      return this.userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')
-    },
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
-    },
-    userCanManage() {
-      return this.userStore.userHasFeatureAccessLevel('EVENTS', 'MANAGE')
-    },
-    userCanAdd() {
-      return this.userStore.userHasFeatureAccessLevel('EVENTS', 'ADD')
-    },
-    userIsScheduler() {
-      return this.userStore.details.userPositions?.some(p => p.scheduler)
-    },
-    filteredActions() {
-      if (!this?.selectedEvent?.eventActions) {
-        return []
-      }
+const projectStore = useProjectStore()
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
 
-      if (this.showUnperformableActions) {
-        return this.selectedEvent.eventActions
-      } else {
-        return this.selectedEvent.eventActions.filter(a => a.canPerform === true)
-      }
-    },
-    toggleViewButtonText(){
-      if(this.showRoundRobin){
-        return 'Manually Assign Resources'
-      } else {
-        return 'Round Robin'
-      }
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    }
-  },
-  methods: {
-    doSomething() {
-      // console.log('this happened')
-    },
-    goToPath(path, query) {
-      this.unsavedFieldsModal = false
-      this.$router.push({path, query})
-    },
-    setSplitColumnValue() {
-      //flip the flag
-      this.projectStore.manualColumnSplit = !this.projectStore.manualColumnSplit
-    },
-    getCustomFieldValuesToDisplay(values, columnNum) {
-      if (this.projectStore.manualColumnSplit) {
-        return values.filter(function (element, index, values) {
-          return (index % 2 === (columnNum === 1 ? 0 : 1));
-        });
-      } else {
-        return values
-      }
-    },
-    async loadAllPageDetails() {
-      this.eventDetailsLoading = true
-      //if you add a new item to requests make sure it returns the request status
-      const requests = [this.getEventDetails()]
-      try {
-        await Promise.all(requests).then((statusVals) => {
-          let success = true
-          statusVals.forEach(status => {
-            if (status !== 200) {
-              success = false
-            }
-          })
-          if (success) {
-            //this was causing issues if you moved too quickly between events
-            this.eventDetailsLoading = false
-          }
-        })
-      } catch (e) {
-        console.error('*** ERROR ***', e)
+const props = defineProps({
+  project: Object,
+  splitValueColumns: Boolean
+})
+const { project, splitValueColumns } = toRefs(props)
 
-      }
-    },
-    closeEventWindow() {
-      this.selectedEvent = {}
-    },
-    getResourceRequirement() {
-      if (this.actionRequiresResource && !this.selectedEvent.resourceId && !this.eventSaveOverrideRequired) {
-        return this.requiredRules
-      }
-    },
-    followMultipleLinks(action) {
-      let params = {
-        projectId: this.projectId,
-        ppsId: this.projectProcessStepId,
-        ppseId: this.ppseId
-      }
+const selectedEvent = ref({})
+const projectMismatch = ref(false)
+const defaultValuesChanged = ref(false)
+const statusChanged = ref(false)
+const unsavedFieldsModal = ref(false)
+const navigationOverride = ref(false)
+const toPath = ref(null)
+const conflictingEvents = ref(null)
+const query = ref({})
+const attemptedAction = ref({})
+const companyEventStatuses = ref([])
+const saveErrorMsg = ref('')
+const eventActionMissingRequirements = ref(false)
+const menuOpen = ref(false)
+const dirtyCfvs = ref([])
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const processStepId = ref(route.query.processStepId)
+const eventSaveOverrideRequired = ref(false)
+const collapsedAttachments = ref(false)
+const actionRequiresStart = ref(false)
+const actionRequiresEnd = ref(false)
+const actionRequiresResource = ref(false)
+const roundRobinNumberOfDays = ref(7)
+const timeSlots = ref([])
+const selectedTimeSlot = ref({})
+const schedulerCanEdit = ref(false)
+const showRemoteSearch = ref(false)
+const inPersonSearchLoading = ref(false)
+const remoteSearchLoading = ref(false)
+const mostRecentSearchWasRemote = ref(false)
+const schedulerLoading = ref(true)
+const closerApptOverride = ref(false)
+const minDate = ref(moment().format('YYYY-MM-DDTHH:mm:ssZ'))
+const closerApptSaved = ref(false)
+const searchedTimeSlots = ref(false)
+const showRoundRobin = ref(false)
+const uniqueAlreadyHasValue = ref(false)
+const availabilityDateField = ref({id: -1, fieldName: 'Select a Date', dataTypeId: 1, dateValue: null})
+const dateValueChanged = ref(false)
+const showUnperformableActions = ref(false)
+const eventDetailsLoading = ref(true)
+const isEventReadonly = ref(false)
+const isUploadReadonly = ref(false)
+const showDeleteDialog = ref(false)
+const ppseFieldsContainer = ref(null)
+const eventFieldForm = ref(null)
 
-      action?.childLinks?.forEach(link => {
-        followLink(this, link.url, params)
-      })
-    },
-    validateActionRequirements: async function (action) {
-      this.attemptedAction = action
-      this.eventActionMissingRequirements = false
-      this.eventSaveOverrideRequired = false
-      this.actionRequiresStart = action?.requireStartTime //this is no longer required to be true
-      this.actionRequiresEnd = action?.requireEndTime
-      this.actionRequiresResource = action?.requireResource
-      //will only be used if there is an error shown here
-      this.saveErrorMsg = 'Additional fields are required to perform the selected action.'
+const emit = defineEmits(['refresh-upcoming-events', 'refresh-project-status', 'refresh-upcoming-pps'])
 
-      let cfHasMissing = this.needsRequiredField(action.requiredFields)
-      if ((this.actionRequiresStart && !this.selectedEvent.startTime) ||
-        (this.actionRequiresEnd && !this.selectedEvent.endTime) ||
-        (this.actionRequiresResource && !this.selectedEvent.resourceId) || cfHasMissing) {
+onMounted(async() => {
+  await loadAllPageDetails()
+})
 
-        this.eventActionMissingRequirements = true
+const projectId = computed(() => {
+  return parseInt(route.params.projectId)
+})
+const processStepId = computed(() => {
+  return parseInt(route.params.processStepId)
+})
+const ppsEventId = computed(() => {
+  return parseInt(route.params.ppsEventId)
+})
 
-      } else {
-        //if there wasn't a required field then run the event
-        this.eventActionMissingRequirements = false
-        await this.doEventAction(action)
-      }
-    },
-    needsRequiredField(requiredFields) {
-      let fieldValueMissing = false
-
-      this.selectedEvent?.customFieldGroups?.forEach(cfg => {
-        cfg?.customFieldValues?.forEach(cf => {
-          let match = requiredFields.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
-          if (match) {
-            if ( // check each data type to see if it has a value
-              (cf.dataTypeId === 1 && null == cf.dateValue) ||
-              (cf.dataTypeId === 2 && null == cf.timestampValue) ||
-              (cf.dataTypeId === 3 && null == cf.booleanValue) ||
-              (cf.dataTypeId === 4 && null == cf.numericValue) ||
-              ((cf.dataTypeId === 5 || cf.dataTypeId === 13) && null == cf.textValue) ||
-              (cf.dataTypeId === 6 && null == cf.intValue) ||
-              (cf.dataTypeId === 7 && (null == cf.intArrayValue || cf.intArrayValue.length === 0)) ||
-              (cf.dataTypeId === 8 && null == cf.intValue) ||
-              (cf.dataTypeId === 9 && null == cf.intValue)
-            ) {
-              cf.required = true
-              fieldValueMissing = true
-              this.eventActionMissingRequirements = true
-            }
-          } else {
-            cf.required = false
-          }
-        })
-      })
-      return fieldValueMissing
-    },
-    async getStatusesAssignedToEvent() {
-      try {
-        const {data} = await getAssignedToEvent(this.selectedEvent.eventId)
-        this.companyEventStatuses = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.appStore.showSnack(this.snackbar)
-      }
-    },
-    async userCanScheduleLeadAllocation() {
-      //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
-      if (this.userIsScheduler) {
-        this.schedulerLoading = true
-        try {
-          const {data} = await getRequestWithParams(`/roundRobin/userCanSchedule`, {
-            params: {
-              postalCode: this.project.postalCode
-            }
-          })
-          this.schedulerCanEdit = data
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
-          this.appStore.showSnack(this.snackbar)
-        } finally {
-          this.schedulerLoading = false
-        }
-      }
-    },
-    async userCanScheduleRemoteLeadAllocation() {
-      //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
-      if (this.userIsScheduler) {
-        this.schedulerLoading = true
-        try {
-          const {data} = await getRequest(`/roundRobin/userCanScheduleRemote`)
-          this.showRemoteSearch = data
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
-          this.appStore.showSnack(this.snackbar)
-        } finally {
-          this.schedulerLoading = false
-        }
-      }
-    },
-    doEventAction: async function (action) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let params = {
-          id: this.selectedEvent.id,
-          startTime: this.selectedEvent.startTime,
-          endTime: this.selectedEvent.endTime,
-          resourceId: this.selectedEvent.resourceId,
-          saveVersion: this.selectedEvent.saveVersion,
-          companyEventStatusTypeId: this.selectedEvent.companyEventStatusTypeId,
-          customFieldValues: this.dirtyCfvs
-        }
-
-        const {data} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/action/${action.id}/perform`, params)
-
-        this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
-        this.appStore.showSnack(this.snackbar)
-
-        //calls fn that tells the upcoming events to update
-        //we dont know if an event action will trigger other changes so we have to refresh everything all the time
-        this.$emit('refresh-project-status')
-        this.$emit('refresh-upcoming-pps')
-        this.$emit('refresh-upcoming-events')
-
-        //set this because running an action also saves fields so it needs to be reset
-        this.defaultValuesChanged = false
-
-        //if there are links returned, open them
-        data?.childFunctionReturnedStrings?.forEach(rs => {
-          //the date stringify guarantees a new tab opens every time
-          window.open(rs, JSON.stringify(new Date()))
-        })
-
-        if (data?.processStepStatusTypeId !== 1) {
-          //set navigation override so we dont get the unsaved fields popup
-          this.navigationOverride = true
-          //if ps root status is not active then go back to project screen
-          this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
-        } else if (data?.eventStatusTypeId !== 1) {
-          //set navigation override so we dont get the unsaved fields popup
-          this.navigationOverride = true
-          //if ps root status is active but event root status is not then go back to ps
-          let path = `/project/${this.projectId}/processStep/${this.projectProcessStepId}`
-          this.$router.push(path)
-        } else {
-          //stay on the screen and refresh values
-          this.selectedEvent = data
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        let saveMismatch = e.data?.message === 'Save Version Mismatch'
-        let msg = saveMismatch ? `Cannot save changes, this event has been updated by another user. Click <a class="white--text underline" href="">here</a> to refresh.` : 'Error Performing Event'
-        this.snackbar = getSnackbar('ERROR', msg, saveMismatch)
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getRoundRobinNumDays: async function () {
-      //need to load the round robin Number of days into future for this project
-      const {data} = await getRequestWithParams(`/roundRobin/byPostalCode`, {
-        params: {
-          projectId: this.projectId,
-          postalCode: this.project.postalCode
-        }
-      })
-      this.roundRobinNumberOfDays = data.schedulableFutureDays || 7
-    },
-    startTimeChanged() {
-      this.defaultValuesChanged = true
-      //if it is the closer event then auto populate the end time with (start time + 1 hour)
-      if (this.selectedEvent?.uniqueBehaviorTypeId === 1 && this.selectedEvent?.startTime != null) {
-        this.selectedEvent.endTime = moment.utc(this.selectedEvent.startTime).add(90, 'm').format('YYYY-MM-DDTHH:mm:ssZ')
-      }
-    },
-    userIsWhitelisted(){
-      if(this.selectedEvent?.readonlyWhiteListedPositions) {
-        for (let wlp of this.selectedEvent?.readonlyWhiteListedPositions) {
-          let match = this.userStore.details.userPositions.find(up => up.positionId === wlp.positionId)
-          if (match) {
-            return true //if the user has a position that matches any of the whiteList positions, the user should see the event
-          }
-        }
-        return false //if we go through all the whiteList positions and haven't found a match, the user should not see the event
-      }
-    },
-    isEventEditableByThisUserIgnoringReadOnly(){
-      //can the user edit the field if the readonly setting is false
-      // if events admin/manager then they can edit any event fields regardless of event/process step status
-      return this.userIsAdmin || this.userCanManage || (this.userCanEdit && this.selectedEvent.eventStatusTypeId === 1 && this.selectedEvent.processStepStatusTypeId === 1)
-    },
-    isButtonEditableByThisUserIgnoringReadOnly(){
-      return this.userIsAdmin || this.userCanManage || this.userCanEdit
-    },
-    getIsEventReadonly() {
-      return !this.userStore.isSystemAdmin && (
-          (this.selectedEvent?.readonly && !this.userIsWhitelisted())
-          || !this.isEventEditableByThisUserIgnoringReadOnly()
-        )
-    },
-    getIsUploadReadonly() {
-      return !this.userStore.isSystemAdmin && (
-        (this.selectedEvent?.readonly && !this.userIsWhitelisted())
-        || !this.isButtonEditableByThisUserIgnoringReadOnly()
-      )
-    },
-    getFieldReadOnly: function (field) {
-      if (null != field) {
-        // read only if either the field or the event is read only or the user cannot edit
-        //had to remove the fullAdmin thing because events can now have ancillary fields which need to always be readonly regardless of permissions
-        return !this.userCanEdit || getEventCustomFieldReadOnly(field) || this.isEventReadonly
-      }
-      return false
-    },
-    getDefaultFieldReadOnly: function (wlp, readOnlyFieldValue, allowFlag) {
-      //full Admin is never read only
-      // read only if either the field or the event is read only
-      return (!this.userStore.isSystemAdmin && getEventDefaultFieldReadOnly(wlp, readOnlyFieldValue, allowFlag)) || this.isEventReadonly
-
-    },
-    getDefaultFieldHidden: function (wlp, hiddenFieldValue, hiddenFlag) {
-      return getEventDefaultFieldHidden(wlp, hiddenFieldValue, hiddenFlag)
-    },
-    populateDirtyCfvs(field) {
-      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-      if (!match && field?.id !== -1) {
-        this.dirtyCfvs.push(field)
-      }
-    },
-    // getEventCfgs: async function (ppsEvent) {
-    //   try {
-    //     const {data} = await getRequest(`/customFieldValues/event/${ppsEvent.id}`)
-    //     this.selectedEvent.customFieldGroups = data
-    //   } catch (e) {
-    //     console.error('*** ERROR ***', e)
-    //     this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
-    //     this.appStore.showSnack(this.snackbar)
-    //     this.$store.commit(AppMutations.SET_LOADING, false)
-    //   }
-    // },
-    getEventDetails: async function () {
-      try {
-        this.projectMismatch = false
-        const {
-          data,
-          status
-        } = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.ppsEventId}`)
-        if (data && data.projectId && data.projectId !== this.projectId) {
-          this.projectMismatch = true
-          this.eventDetailsLoading = false
-          this.snackbar = getSnackbar('ERROR', `Invalid Request: Project Mismatch`)
-          this.appStore.showSnack(this.snackbar)
-        } else {
-          this.selectedEvent = data
-          //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
-          this.selectedEvent.allowAllUserDeletion = data.startTime === null
-          //have to reset the pps stuff too in case they just go directly to the url
-
-          this.projectStore.pps = {
-            projectProcessStepId: this.selectedEvent.projectProcessStepId,
-            processStepId: this.selectedEvent.processStepId,
-            processStepName: this.selectedEvent.processStepName
-          }
-          window.document.title = this.project?.id ? `${this.project.projectName} - ${this.selectedEvent.eventName}`
-            : `${this.selectedEvent.eventName}`
-          this.projectStore.ppsEvent = this.selectedEvent
-          this.projectStore.linkLabel = `${this.selectedEvent.eventName} (${this.selectedEvent.id})`
-          this.projectStore.linkId = this.selectedEvent.id
-          this.isEventReadonly = this.getIsEventReadonly()
-          this.isUploadReadonly = this.getIsUploadReadonly()
-          if (data.uniqueBehaviorTypeId === 1) {
-            this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
-            this.getRoundRobinNumDays()
-            this.userCanScheduleLeadAllocation()
-            this.userCanScheduleRemoteLeadAllocation()
-          }
-          //this was causing an error if you clicked too fast between events
-          if (data.id) {
-            await this.getStatusesAssignedToEvent()
-          }
-          return status
-        }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        let msg = e?.data?.message || 'Error Retrieving Details'
-        this.snackbar = getSnackbar('ERROR', msg)
-        this.appStore.showSnack(this.snackbar)
-      }
-    },
-    deleteEvent: async function () {
-      const ppseId = this.selectedEvent.id
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.selectedEvent.archived = true
-      try {
-        await deleteRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${ppseId}`)
-        //set navigation override so that if there were unsaved fields it won't ask you to try and save
-        this.navigationOverride = true
-        this.$emit('refresh-upcoming-events')
-        //go to the process step
-        this.$router.push(`/project/${this.projectId}/processStep/${this.projectProcessStepId}`)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async checkForSchedulingConflicts(){
-      this.saveEventDetails(false);
-
-    },
-    async saveEventDetails(forceSave) {
-      this.eventSaveOverrideRequired = true
-      this.eventActionMissingRequirements = false
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let params = {
-          id: this.selectedEvent.id,
-          startTime: this.selectedEvent.startTime,
-          endTime: this.selectedEvent.endTime,
-          resourceId: this.selectedEvent.resourceId,
-          saveVersion: this.selectedEvent.saveVersion,
-          //we only send up the status if it changed. sql handles whether to save the value or not
-          companyEventStatusTypeId: this.statusChanged ? this.selectedEvent.companyEventStatusTypeId : null,
-          customFieldValues: this.dirtyCfvs,
-          forceSave: (forceSave || (this.selectedEvent.companyEventStatusTypeId === 4))
-        }
-        const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/${params.forceSave}`, params)
-        this.statusChanged = false
-        this.dirtyCfvs = []
-        this.$refs.ppseFieldsContainer.$el.scrollTop = 0
-        this.selectedEvent = data
-        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
-        this.appStore.showSnack(this.snackbar)
-        this.$emit('refresh-upcoming-events')
-        if (data.uniqueBehaviorTypeId === 1) {
-          this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
-          this.getRoundRobinNumDays()
-        }
-      } catch (e) {
-        if(e.status == 409){
-          this.conflictingEvents = e.data;
-        }
-        else {
-          logError(e)
-          let saveMismatch = e.data?.message === 'Save Version Mismatch'
-          let msg = saveMismatch ? `<div class="text-center">Cannot Save Changes. <br/>This event has been updated by another user. <br/>Click <a class="white--text underline" href="">here</a> to refresh.</div>` : 'Error Performing Event'
-          this.snackbar = getSnackbar('ERROR', msg, saveMismatch)
-          this.appStore.showSnack(this.snackbar)
-        }
-      } finally {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    toggleRoundRobinView(){
-      if(!this.showRoundRobin) {
-        // if clicking to open round robin, clear out any manually set dates
-        this.selectedEvent.resourceId = null
-        this.selectedEvent.startTime = null
-        this.selectedEvent.endTime = null
-      } else {
-        this.availabilityDateField.dateValue = null
-        this.selectedTimeSlot = {}
-      }
-      this.showRoundRobin = !this.showRoundRobin
-    },
-    async getAvailableTimeSlots(remote) {
-      //reset this list every search in case there is an error or no results it doesn't confuse the user
-      this.timeSlots = []
-      this.mostRecentSearchWasRemote = remote
-      try {
-        this.remoteSearchLoading = remote
-        this.inPersonSearchLoading = !remote
-        this.selectedTimeSlot = {}
-        this.searchedTimeSlots = false
-
-        let params = {
-          projectId: this.projectId,
-          startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-          endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-          availableDate: this.availabilityDateField.dateValue,
-          remote: remote
-        }
-        const {data} = await getRequestWithParams(`/availability/timeSlots`, {params})
-        this.searchedTimeSlots = true
-        this.timeSlots = data
-        this.remoteSearchLoading = false
-        this.inPersonSearchLoading = false
-        this.dateValueChanged = false
-      } catch (e) {
-        logError(e)
-        this.remoteSearchLoading = false
-        this.inPersonSearchLoading = false
-        let errorMsg = e.data ? e.data.message : 'Error Retrieving Time Slots'
-        this.snackbar = getSnackbar('ERROR', errorMsg)
-        this.appStore.showSnack(this.snackbar)
-      }
-    },
-    async saveCloserAppointment() {
-      try {
-        let body = {
-          projectId: this.projectId,
-          projectProcessStepId: this.projectProcessStepId,
-          projectProcessStepEventId: this.selectedEvent.id, // i think?
-          // startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-          // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-          appointmentTime: this.selectedTimeSlot.scheduledStartTime,
-          users: this.selectedTimeSlot.users,
-          remote: this.mostRecentSearchWasRemote,
-          customFieldValues: this.dirtyCfvs
-        }
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await postRequest(`/availability/setCloserAppointment`, body)
-        if (data) {
-          // this.customFieldGroups = data
-          // this.setCfgValues()
-          this.closerApptSaved = true
-          this.showRoundRobin = false
-          this.availabilityDateField.dateValue = null
-          this.timeSlots = []
-          this.selectedTimeSlot = {}
-          //set the some values that may have updated when setting the closer appt event
-          this.selectedEvent.startTime = data.appointmentStartTime
-          this.selectedEvent.endTime = data.appointmentEndTime
-          this.selectedEvent.resourceId = data.userPositionId
-          this.selectedEvent.resource = data.userFullName
-          this.selectedEvent.companyEventStatusTypeId = data.companyEventStatusTypeId
-          this.selectedEvent.eventActions = data.eventActions
-          this.uniqueAlreadyHasValue = true
-          //reset the error messages:
-          this.eventActionMissingRequirements = false
-          this.saveErrorMsg = ''
-          this.showUnperformableActions = true
-
-        }
-      } catch (e) {
-        logError(e)
-        let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'
-        this.snackbar = getSnackbar('ERROR', msg)
-        this.appStore.showSnack(this.snackbar)
-      } finally {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    checkAvailabilityDate() {
-      //these values all need reset every time the date selected changes so they dont use a bad date/time combo
-      this.dateValueChanged = true
-      this.selectedTimeSlot = {}
-      this.timeSlots = []
-      if (this.availabilityDateField.dateValue !== null) {
-        // Limit user to selecting availability dates < 8 days out
-        const selectedDate = DateTime.fromISO(this.availabilityDateField.dateValue)
-        const cappedDate = DateTime.local().set({
-          hour: 0,
-          minute: 0,
-          second: 0,
-          millisecond: 0
-        }).plus({days: this.roundRobinNumberOfDays})
-        if (selectedDate > cappedDate) {
-          this.availabilityDateField.dateValue = null
-          this.snackbar = getSnackbar('ERROR', `You can only schedule appointments ${this.roundRobinNumberOfDays} days in advance`)
-          this.appStore.showSnack(this.snackbar)
-        } else {
-          this.populateDirtyCfvs(this.availabilityDateField)
-        }
-      }
-    },
-    async checkFieldsForUnique() {
-      let validSave = true
-      let startTime = this.selectedEvent.startTime
-      let endTime = this.selectedEvent.endTime
-
-      //if is for closer appt
-      if (this.selectedEvent.uniqueBehaviorTypeId === 1) {
-        if (!startTime || !endTime || !this.selectedEvent.resourceId) {
-          validSave = false
-          this.eventActionMissingRequirements = true
-          this.actionRequiresEnd = !endTime
-          this.actionRequiresResource = !this.selectedEvent.resourceId
-          this.saveErrorMsg = 'Additional fields are required to save this event.'
-        } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
-          validSave = false
-          this.eventActionMissingRequirements = true
-          this.saveErrorMsg = 'End time must be after start time'
-        }
-      } else if (null != this.selectedEvent.startTime) {
-        //for all other types just compare start to end if end not null
-        if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
-          validSave = false
-          this.eventActionMissingRequirements = true
-          this.saveErrorMsg = 'End time must be after start time'
-        }
-      }
-      //per judson, dont require start time anymore
-      // else {
-      //   //only startTime is required to save fields
-      //   validSave = false
-      //   this.actionRequiresEnd = false
-      //   this.actionRequiresResource = false
-      //   this.eventActionMissingRequirements = true
-      //   this.saveErrorMsg = 'Start Time is required to save the event fields'
-      //   //dont do this for now. makes the page look weird after save
-      //   // document.getElementById('event-header').scrollIntoView()
-      // }
-
-      //after everything, only save if valid
-      if (validSave) {
-        this.eventActionMissingRequirements = false
-        this.defaultValuesChanged = false
-        this.checkForSchedulingConflicts();
-      }
-    },
-    filterProjectProcessStepEvents() {
-      return this.projectProcessStepEvents ? this.projectProcessStepEvents.filter(ppse => {
-        return !ppse.archived
-      }) : []
-    },
+onBeforeRouteUpdate(async (to, from, next) => {
+  // called when the route that renders this component is about to be updated via router-view update
+  if (navigationOverride.value || (dirtyCfvs.value.length === 0 && !defaultValuesChanged.value)) {
+    //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
+    navigationOverride.value = false
+    next()
+  } else {
+    toPath.value = to.path
+    query.value = to.query
+    unsavedFieldsModal.value = true
   }
+})
+
+onBeforeRouteLeave(async (to, from, next) => {
+  // called when the route that renders this component is about to be navigated away from.
+  if (navigationOverride.value || (dirtyCfvs.value.length === 0 && !defaultValuesChanged.value)) {
+    //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
+    navigationOverride.value = false
+    next()
+  } else {
+    toPath.value = to.path
+    query.value = to.query
+    unsavedFieldsModal.value = true
+  }
+})
+
+watch(eventActionMissingRequirements, async() => {
+  vueInstance.$nextTick(() => {
+    eventFieldForm.value.validate()
+  })
+})
+
+watch(ppsEventId, async() => {
+  // reset the selected item
+  projectProcessStepId.value = parseInt(route.params.processStepId)
+  ppsEventId.value = parseInt(route.params.ppsEventId)
+  loadAllPageDetails()
+})
+
+
+const timezone = computed(() => {
+  return userStore.timezone.value
+})
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
+})
+const userCanManage = computed(() => {
+  return userStore.userHasFeatureAccessLevel('EVENTS', 'MANAGE')
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('EVENTS', 'ADD')
+})
+const userIsScheduler = computed(() => {
+  return userStore.details.userPositions?.some(p => p.scheduler)
+})
+const filteredActions = computed(() => {
+  if (!selectedEvent.value?.eventActions) {
+    return []
+  }
+
+  if (showUnperformableActions.value) {
+    return selectedEvent.value.eventActions
+  } else {
+    return selectedEvent.value.eventActions.filter(a => a.canPerform === true)
+  }
+})
+const toggleViewButtonText = computed(() => {
+  if(showRoundRobin.value){
+    return 'Manually Assign Resources'
+  } else {
+    return 'Round Robin'
+  }
+})
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+
+const goToPath = (path, query) => {
+  unsavedFieldsModal.value = false
+  router.push({path, query})
+}
+const setSplitColumnValue = () => {
+  //flip the flag
+  projectStore.manualColumnSplit = !projectStore.manualColumnSplit
+}
+const getCustomFieldValuesToDisplay = (values, columnNum) => {
+  if (projectStore.manualColumnSplit) {
+    return values.filter(function (element, index, values) {
+      return (index % 2 === (columnNum === 1 ? 0 : 1));
+    });
+  } else {
+    return values
+  }
+}
+const  loadAllPageDetails = async() => {
+  eventDetailsLoading.value = true
+  //if you add a new item to requests make sure it returns the request status
+  const requests = [getEventDetails()]
+  try {
+    await Promise.all(requests).then((statusVals) => {
+      let success = true
+      statusVals.forEach(status => {
+        if (status !== 200) {
+          success = false
+        }
+      })
+      if (success) {
+        //this was causing issues if you moved too quickly between events
+        eventDetailsLoading.value = false
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+
+  }
+}
+const closeEventWindow = () => {
+  selectedEvent.value = {}
+}
+const getResourceRequirement = () => {
+  if (actionRequiresResource.value && !selectedEvent.value.resourceId && !eventSaveOverrideRequired.value) {
+    return requiredRules.value
+  }
+}
+const followMultipleLinks = (action) => {
+  let params = {
+    projectId: projectId.value,
+    ppsId: projectProcessStepId.value,
+    ppseId: ppseId.value
+  }
+
+  action?.childLinks?.forEach(link => {
+    followLink(this, link.url, params)
+  })
+}
+const validateActionRequirements = async (action) => {
+  attemptedAction.value = action
+  eventActionMissingRequirements.value = false
+  eventSaveOverrideRequired.value = false
+  actionRequiresStart.value = action?.requireStartTime //this is no longer required to be true
+  actionRequiresEnd.value = action?.requireEndTime
+  actionRequiresResource.value = action?.requireResource
+  //will only be used if there is an error shown here
+  saveErrorMsg.value = 'Additional fields are required to perform the selected action.'
+
+  let cfHasMissing = needsRequiredField(action.requiredFields)
+  if ((actionRequiresStart.value && !selectedEvent.value.startTime) ||
+      (actionRequiresEnd.value && !selectedEvent.value.endTime) ||
+      (actionRequiresResource.value && !selectedEvent.value.resourceId) || cfHasMissing) {
+
+    eventActionMissingRequirements.value = true
+
+  } else {
+    //if there wasn't a required field then run the event
+    eventActionMissingRequirements.value = false
+    await doEventAction(action)
+  }
+}
+const needsRequiredField = (requiredFields) => {
+  let fieldValueMissing = false
+
+  selectedEvent.value?.customFieldGroups?.forEach(cfg => {
+    cfg?.customFieldValues?.forEach(cf => {
+      let match = requiredFields.find(rf => rf.customFieldGroupAssignmentId === cf.customFieldGroupAssignmentId)
+      if (match) {
+        if ( // check each data type to see if it has a value
+            (cf.dataTypeId === 1 && null == cf.dateValue) ||
+            (cf.dataTypeId === 2 && null == cf.timestampValue) ||
+            (cf.dataTypeId === 3 && null == cf.booleanValue) ||
+            (cf.dataTypeId === 4 && null == cf.numericValue) ||
+            ((cf.dataTypeId === 5 || cf.dataTypeId === 13) && null == cf.textValue) ||
+            (cf.dataTypeId === 6 && null == cf.intValue) ||
+            (cf.dataTypeId === 7 && (null == cf.intArrayValue || cf.intArrayValue.length === 0)) ||
+            (cf.dataTypeId === 8 && null == cf.intValue) ||
+            (cf.dataTypeId === 9 && null == cf.intValue)
+        ) {
+          cf.required = true
+          fieldValueMissing = true
+          eventActionMissingRequirements.value = true
+        }
+      } else {
+        cf.required = false
+      }
+    })
+  })
+  return fieldValueMissing
+}
+const getStatusesAssignedToEvent = async() => {
+  try {
+    const {data} = await getAssignedToEvent(selectedEvent.value.eventId)
+    companyEventStatuses.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+  }
+}
+const userCanScheduleLeadAllocation = async() => {
+  //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
+  if (userIsScheduler.value) {
+    schedulerLoading.value = true
+    try {
+      const {data} = await getRequestWithParams(`/roundRobin/userCanSchedule`, {
+        params: {
+          postalCode: project.value.postalCode
+        }
+      })
+      schedulerCanEdit.value = data
+    } catch (e) {
+      logError(e)
+      snackbar('ERROR', 'Error Checking Scheduler Round Robin')
+
+    } finally {
+      schedulerLoading.value = false
+    }
+  }
+}
+const userCanScheduleRemoteLeadAllocation = async() => {
+  //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
+  if (userIsScheduler.value) {
+    schedulerLoading.value = true
+    try {
+      const {data} = await getRequest(`/roundRobin/userCanScheduleRemote`)
+      showRemoteSearch.value = data
+    } catch (e) {
+      logError(e)
+      snackbar('ERROR', 'Error Checking Scheduler Round Robin')
+
+    } finally {
+      schedulerLoading.value = false
+    }
+  }
+}
+const doEventAction = async (action) => {
+  appStore.loading = true
+  try {
+    let params = {
+      id: selectedEvent.value.id,
+      startTime: selectedEvent.value.startTime,
+      endTime: selectedEvent.value.endTime,
+      resourceId: selectedEvent.value.resourceId,
+      saveVersion: selectedEvent.value.saveVersion,
+      companyEventStatusTypeId: selectedEvent.value.companyEventStatusTypeId,
+      customFieldValues: dirtyCfvs.value
+    }
+
+    const {data} = await postRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${selectedEvent.value.id}/action/${action.id}/perform`, params)
+
+    snackbar('SUCCESS', 'Action Completed')
+
+
+    //calls fn that tells the upcoming events to update
+    //we dont know if an event action will trigger other changes so we have to refresh everything all the time
+    emit('refresh-project-status')
+    emit('refresh-upcoming-pps')
+    emit('refresh-upcoming-events')
+
+    //set this because running an action also saves fields so it needs to be reset
+    defaultValuesChanged.value = false
+
+    //if there are links returned, open them
+    data?.childFunctionReturnedStrings?.forEach(rs => {
+      //the date stringify guarantees a new tab opens every time
+      window.open(rs, JSON.stringify(new Date()))
+    })
+
+    if (data?.processStepStatusTypeId !== 1) {
+      //set navigation override so we dont get the unsaved fields popup
+      navigationOverride.value = true
+      //if ps root status is not active then go back to project screen
+      router.push({name: 'projectDetails', params: {projectId: projectId.value}})
+    } else if (data?.eventStatusTypeId !== 1) {
+      //set navigation override so we dont get the unsaved fields popup
+      navigationOverride.value = true
+      //if ps root status is active but event root status is not then go back to ps
+      let path = `/project/${projectId.value}/processStep/${projectProcessStepId.value}`
+      router.push(path)
+    } else {
+      //stay on the screen and refresh values
+      selectedEvent.value = data
+    }
+    appStore.loading = false
+
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let saveMismatch = e.data?.message === 'Save Version Mismatch'
+    let msg = saveMismatch ? `Cannot save changes, this event has been updated by another user. Click <a class="white--text underline" href="">here</a> to refresh.` : 'Error Performing Event'
+    snackbar('ERROR', msg, saveMismatch)
+
+    appStore.loading = false
+  }
+}
+const getRoundRobinNumDays = async  () => {
+  //need to load the round robin Number of days into future for this project
+  const {data} = await getRequestWithParams(`/roundRobin/byPostalCode`, {
+    params: {
+      projectId: projectId.value,
+      postalCode: project.value.postalCode
+    }
+  })
+  roundRobinNumberOfDays.value = data.schedulableFutureDays || 7
+}
+const startTimeChanged = ()  => {
+  defaultValuesChanged.value = true
+  //if it is the closer event then auto populate the end time with (start time + 1 hour)
+  if (selectedEvent.value?.uniqueBehaviorTypeId === 1 && selectedEvent.value?.startTime != null) {
+    selectedEvent.value.endTime = moment.utc(selectedEvent.value.startTime).add(90, 'm').format('YYYY-MM-DDTHH:mm:ssZ')
+  }
+}
+const userIsWhitelisted = () => {
+  if(selectedEvent.value?.readonlyWhiteListedPositions) {
+    for (let wlp of selectedEvent.value?.readonlyWhiteListedPositions) {
+      let match = userStore.details.userPositions.find(up => up.positionId === wlp.positionId)
+      if (match) {
+        return true //if the user has a position that matches any of the whiteList positions, the user should see the event
+      }
+    }
+    return false //if we go through all the whiteList positions and haven't found a match, the user should not see the event
+  }
+}
+const isEventEditableByThisUserIgnoringReadOnly = () => {
+  //can the user edit the field if the readonly setting is false
+  // if events admin/manager then they can edit any event fields regardless of event/process step status
+  return userIsAdmin.value || userCanManage.value || (userCanEdit.value && selectedEvent.value.eventStatusTypeId === 1 && selectedEvent.value.processStepStatusTypeId === 1)
+}
+const isButtonEditableByThisUserIgnoringReadOnly = () => {
+  return userIsAdmin.value || userCanManage.value || userCanEdit.value
+}
+const getIsEventReadonly = ()  => {
+  return !userStore.isSystemAdmin && (
+      (selectedEvent.value?.readonly && !userIsWhitelisted())
+      || !isEventEditableByThisUserIgnoringReadOnly()
+  )
+}
+const getIsUploadReadonly = ()  => {
+  return !userStore.isSystemAdmin && (
+      (selectedEvent.value?.readonly && !userIsWhitelisted())
+      || !isButtonEditableByThisUserIgnoringReadOnly()
+  )
+}
+const getFieldReadOnly =  (field)  => {
+  if (null != field) {
+    // read only if either the field or the event is read only or the user cannot edit
+    //had to remove the fullAdmin thing because events can now have ancillary fields which need to always be readonly regardless of permissions
+    return !userCanEdit.value || getEventCustomFieldReadOnly(field) || isEventReadonly.value
+  }
+  return false
+}
+const getDefaultFieldReadOnly =  (wlp, readOnlyFieldValue, allowFlag)  => {
+  //full Admin is never read only
+  // read only if either the field or the event is read only
+  return (!userStore.isSystemAdmin && getEventDefaultFieldReadOnly(wlp, readOnlyFieldValue, allowFlag)) || isEventReadonly.value
+}
+const getDefaultFieldHidden =  (wlp, hiddenFieldValue, hiddenFlag)  => {
+  return getEventDefaultFieldHidden(wlp, hiddenFieldValue, hiddenFlag)
+}
+const populateDirtyCfvs = (field) => {
+  let match = dirtyCfvs.value.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+  if (!match && field?.id !== -1) {
+    dirtyCfvs.value.push(field)
+  }
+}
+const getEventDetails = async () => {
+  try {
+    projectMismatch.value = false
+    const {
+      data,
+      status
+    } = await getRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${ppsEventId.value}`)
+    if (data && data.projectId && data.projectId !== projectId.value) {
+      projectMismatch.value = true
+      eventDetailsLoading.value = false
+      snackbar('ERROR', `Invalid Request: Project Mismatch`)
+
+    } else {
+      selectedEvent.value = data
+      //this verifies whether the event had a start time when the page loaded, if not then we allow all users to delete
+      selectedEvent.value.allowAllUserDeletion = data.startTime === null
+      //have to reset the pps stuff too in case they just go directly to the url
+
+      projectStore.pps = {
+        projectProcessStepId: selectedEvent.value.projectProcessStepId,
+        processStepId: selectedEvent.value.processStepId,
+        processStepName: selectedEvent.value.processStepName
+      }
+      window.document.title = project.value?.id ? `${project.value.projectName} - ${selectedEvent.value.eventName}`
+          : `${selectedEvent.value.eventName}`
+      projectStore.ppsEvent = selectedEvent.value
+      projectStore.linkLabel = `${selectedEvent.value.eventName} (${selectedEvent.value.id})`
+      projectStore.linkId = selectedEvent.value.id
+      isEventReadonly.value = getIsEventReadonly()
+      isUploadReadonly.value = getIsUploadReadonly()
+      if (data.uniqueBehaviorTypeId === 1) {
+        uniqueAlreadyHasValue.value = null != selectedEvent.value.startTime || null != selectedEvent.value.endTime || null != selectedEvent.value.resourceId
+        getRoundRobinNumDays()
+        userCanScheduleLeadAllocation()
+        userCanScheduleRemoteLeadAllocation()
+      }
+      //this was causing an error if you clicked too fast between events
+      if (data.id) {
+        await getStatusesAssignedToEvent()
+      }
+      return status
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let msg = e?.data?.message || 'Error Retrieving Details'
+    snackbar('ERROR', msg)
+
+  }
+}
+const deleteEvent = async  () => {
+  const ppseId = selectedEvent.value.id
+  appStore.loading = true
+  selectedEvent.value.archived = true
+  try {
+    await deleteRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${ppseId}`)
+    //set navigation override so that if there were unsaved fields it won't ask you to try and save
+    navigationOverride.value = true
+    emit('refresh-upcoming-events')
+    //go to the process step
+    router.push(`/project/${projectId.value}/processStep/${projectProcessStepId.value}`)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Event')
+
+    appStore.loading = false
+  }
+}
+const checkForSchedulingConflicts = ()=> {
+  saveEventDetails(false);
+}
+const saveEventDetails = async(forceSave) => {
+  eventSaveOverrideRequired.value = true
+  eventActionMissingRequirements.value = false
+  appStore.loading = true
+  try {
+    let params = {
+      id: selectedEvent.value.id,
+      startTime: selectedEvent.value.startTime,
+      endTime: selectedEvent.value.endTime,
+      resourceId: selectedEvent.value.resourceId,
+      saveVersion: selectedEvent.value.saveVersion,
+      //we only send up the status if it changed. sql handles whether to save the value or not
+      companyEventStatusTypeId: statusChanged.value ? selectedEvent.value.companyEventStatusTypeId : null,
+      customFieldValues: dirtyCfvs.value,
+      forceSave: (forceSave || (selectedEvent.value.companyEventStatusTypeId === 4))
+    }
+    const {data} = await putRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${selectedEvent.value.id}/${params.forceSave}`, params)
+    statusChanged.value = false
+    dirtyCfvs.value = []
+    ppseFieldsContainer.value.$el.scrollTop = 0
+    selectedEvent.value = data
+    snackbar('SUCCESS', 'Fields Saved')
+
+    emit('refresh-upcoming-events')
+    if (data.uniqueBehaviorTypeId === 1) {
+      uniqueAlreadyHasValue.value = null != selectedEvent.value.startTime || null != selectedEvent.value.endTime || null != selectedEvent.value.resourceId
+      getRoundRobinNumDays()
+    }
+  } catch (e) {
+    if(e.status == 409){
+      conflictingEvents.value = e.data;
+    }
+    else {
+      logError(e)
+      let saveMismatch = e.data?.message === 'Save Version Mismatch'
+      let msg = saveMismatch ? `<div class="text-center">Cannot Save Changes. <br/>This event has been updated by another user. <br/>Click <a class="white--text underline" href="">here</a> to refresh.</div>` : 'Error Performing Event'
+      snackbar('ERROR', msg, saveMismatch)
+
+    }
+  } finally {
+    appStore.loading = false
+  }
+}
+const toggleRoundRobinView = () => {
+  if(!showRoundRobin.value) {
+    // if clicking to open round robin, clear out any manually set dates
+    selectedEvent.value.resourceId = null
+    selectedEvent.value.startTime = null
+    selectedEvent.value.endTime = null
+  } else {
+    availabilityDateField.value.dateValue = null
+    selectedTimeSlot.value = {}
+  }
+  showRoundRobin.value = !showRoundRobin.value
+}
+const getAvailableTimeSlots = async(remote) => {
+  //reset this list every search in case there is an error or no results it doesn't confuse the user
+  timeSlots.value = []
+  mostRecentSearchWasRemote.value = remote
+  try {
+    remoteSearchLoading.value = remote
+    inPersonSearchLoading.value = !remote
+    selectedTimeSlot.value = {}
+    searchedTimeSlots.value = false
+
+    let params = {
+      projectId: projectId.value,
+      startTime: moment(availabilityDateField.value.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+      endTime: moment(availabilityDateField.value.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+      availableDate: availabilityDateField.value.dateValue,
+      remote: remote
+    }
+    const {data} = await getRequestWithParams(`/availability/timeSlots`, {params})
+    searchedTimeSlots.value = true
+    timeSlots.value = data
+    remoteSearchLoading.value = false
+    inPersonSearchLoading.value = false
+    dateValueChanged.value = false
+  } catch (e) {
+    logError(e)
+    remoteSearchLoading.value = false
+    inPersonSearchLoading.value = false
+    let errorMsg = e.data ? e.data.message : 'Error Retrieving Time Slots'
+    snackbar('ERROR', errorMsg)
+
+  }
+}
+const saveCloserAppointment = async() => {
+  try {
+    let body = {
+      projectId: projectId.value,
+      projectProcessStepId: projectProcessStepId.value,
+      projectProcessStepEventId: selectedEvent.value.id, // i think?
+      // startTime: moment(availabilityDateField.value.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+      // endTime: moment(availabilityDateField.value.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+      appointmentTime: selectedTimeSlot.value.scheduledStartTime,
+      users: selectedTimeSlot.value.users,
+      remote: mostRecentSearchWasRemote.value,
+      customFieldValues: dirtyCfvs.value
+    }
+    appStore.loading = true
+    const {data} = await postRequest(`/availability/setCloserAppointment`, body)
+    if (data) {
+      // customFieldGroups.value = data
+      // setCfgValues()
+      closerApptSaved.value = true
+      showRoundRobin.value = false
+      availabilityDateField.value.dateValue = null
+      timeSlots.value = []
+      selectedTimeSlot.value = {}
+      //set the some values that may have updated when setting the closer appt event
+      selectedEvent.value.startTime = data.appointmentStartTime
+      selectedEvent.value.endTime = data.appointmentEndTime
+      selectedEvent.value.resourceId = data.userPositionId
+      selectedEvent.value.resource = data.userFullName
+      selectedEvent.value.companyEventStatusTypeId = data.companyEventStatusTypeId
+      selectedEvent.value.eventActions = data.eventActions
+      uniqueAlreadyHasValue.value = true
+      //reset the error messages:
+      eventActionMissingRequirements.value = false
+      saveErrorMsg.value = ''
+      showUnperformableActions.value = true
+
+    }
+  } catch (e) {
+    logError(e)
+    let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'
+    snackbar('ERROR', msg)
+
+  } finally {
+    appStore.loading = false
+  }
+}
+const checkAvailabilityDate = () => {
+  //these values all need reset every time the date selected changes so they dont use a bad date/time combo
+  dateValueChanged.value = true
+  selectedTimeSlot.value = {}
+  timeSlots.value = []
+  if (availabilityDateField.value.dateValue !== null) {
+    // Limit user to selecting availability dates < 8 days out
+    const selectedDate = DateTime.fromISO(availabilityDateField.value.dateValue)
+    const cappedDate = DateTime.local().set({
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0
+    }).plus({days: roundRobinNumberOfDays.value})
+    if (selectedDate > cappedDate) {
+      availabilityDateField.value.dateValue = null
+      snackbar('ERROR', `You can only schedule appointments ${roundRobinNumberOfDays.value} days in advance`)
+
+    } else {
+      populateDirtyCfvs(availabilityDateField.value)
+    }
+  }
+}
+const checkFieldsForUnique = () => {
+  let validSave = true
+  let startTime = selectedEvent.value.startTime
+  let endTime = selectedEvent.value.endTime
+
+  //if is for closer appt
+  if (selectedEvent.value.uniqueBehaviorTypeId === 1) {
+    if (!startTime || !endTime || !selectedEvent.value.resourceId) {
+      validSave = false
+      eventActionMissingRequirements.value = true
+      actionRequiresEnd.value = !endTime
+      actionRequiresResource.value = !selectedEvent.value.resourceId
+      saveErrorMsg.value = 'Additional fields are required to save this event.'
+    } else if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
+      validSave = false
+      eventActionMissingRequirements.value = true
+      saveErrorMsg.value = 'End time must be after start time'
+    }
+  } else if (null != selectedEvent.value.startTime) {
+    //for all other types just compare start to end if end not null
+    if (startTime && endTime && !moment(endTime).isAfter(startTime)) {
+      validSave = false
+      eventActionMissingRequirements.value = true
+      saveErrorMsg.value = 'End time must be after start time'
+    }
+  }
+  //per judson, dont require start time anymore
+  // else {
+  //   //only startTime is required to save fields
+  //   validSave = false
+  //   actionRequiresEnd.value = false
+  //   actionRequiresResource.value = false
+  //   eventActionMissingRequirements.value = true
+  //   saveErrorMsg.value = 'Start Time is required to save the event fields'
+  //   //dont do this for now. makes the page look weird after save
+  //   // document.getElementById('event-header').scrollIntoView()
+  // }
+
+  //after everything, only save if valid
+  if (validSave) {
+    eventActionMissingRequirements.value = false
+    defaultValuesChanged.value = false
+    checkForSchedulingConflicts();
+  }
+}
+const filterProjectProcessStepEvents = () => {
+  return projectProcessStepEvents.value ? projectProcessStepEvents.value.filter(ppse => {
+    return !ppse.archived
+  }) : []
 }
 </script>
 

@@ -5,10 +5,14 @@
         <router-link :to="`/project/${projectId}/status`">{{ project.projectName }}</router-link>
       </div>
       <v-spacer></v-spacer>
-      <v-btn color="primary" dark class=" float-right white--text mr-1" :icon="isMobile" @click="deleteProjectConfirm=true">
-        <v-icon v-if="isMobile" class="mt-2">delete</v-icon>
-        <span v-else>Delete Project</span>
-      </v-btn>
+      <AlbatrossButton
+          color="primary"
+          class="float-right mr-1"
+          :icon="isMobile"
+          @click="deleteProjectConfirm=true"
+          prepend-icon="delete"
+          :text="isMobile ? '' : 'Delete Project'"
+      ></AlbatrossButton>
     </v-toolbar>
     <ConfirmationDialog
         :open-dialog="deleteProjectConfirm"
@@ -20,10 +24,14 @@
     </ConfirmationDialog>
     <v-row>
       <v-col cols="12" class="relative">
-        <v-btn text class="pl-1 pr-2 anchor" :to="`/project/${projectId}/status`">
-          <v-icon>arrow_left</v-icon>
-          <span>Back to Project</span>
-        </v-btn>
+        <AlbatrossButton
+            variant="text"
+            class="pl-1 pr-2 anchor"
+            :to="`/project/${projectId}/status`"
+            color="unset"
+            prepend-icon="arrow_left"
+            text="Back to Project"
+        ></AlbatrossButton>
         <v-tabs class="tabs-bar" v-model="activeTab">
           <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
                  class="text-capitalize ma-0"
@@ -39,84 +47,79 @@
   </div>
 </template>
 
-<script>
+<script setup>
 
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import {deleteRequest, getRequest, getSnackbar, logError} from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
+import {deleteRequest, getRequest,  logError} from "@/helpers/helpers";
 
-export default {
-  name: 'ProjectAdmin',
-  components: {ConfirmationDialog},
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  data () {
-    return {
-      projectId: parseInt(this.$route.params.projectId),
-      project: {},
-      deleteProjectConfirm: false,
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+
+const projectId = ref(parseInt(route.params.projectId))
+const project = ref({})
+const deleteProjectConfirm = ref(false)
+const activeTab = ref(null)
+
+onMounted(async() => {
+  await getProject()
+})
+
+const tabs = computed(() => {
+  return [
+    {
+      id: 1,
+      label: 'Process Steps',
+      path: `/projectAdmin/${projectId.value}/processSteps`,
+    },
+    {
+      id: 2,
+      label: 'Tags',
+      path: `/projectAdmin/${projectId.value}/tags`,
     }
-  },
-  computed: {
-    //this should not be so hard
-    activeTab: {
-      get: function() {
-        return this.$route?.path?.includes('/attachmentType') ? `/settings/event/${this.eventId}/attachmentTypes` : null
-      },
-      set: function(val) {
-        return val
-      }
-    },
-    tabs() {
-      return [
-        {
-          id: 1,
-          label: 'Process Steps',
-          path: `/projectAdmin/${this.projectId}/processSteps`,
-        },
-        {
-          id: 2,
-          label: 'Tags',
-          path: `/projectAdmin/${this.projectId}/tags`,
-        }
-      ]
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    }
-  },
-  async created () {
-    await this.getProject()
-  },
-  methods: {
-    getProject: async function () {
-      try {
-        const {data} = await getRequest(`/project/${this.projectId}`)
-        this.project = data
-        window.document.title = `${this.project.projectName} - Admin`
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching project')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async deleteProject() {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await deleteRequest(`/project/${this.projectId}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Project Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$router.push('/projects')
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error deleting project')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-  }
+  ]
+})
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+
+const getProject = async () => {
+  try {
+    const {data} = await getRequest(`/project/${projectId.value}`)
+    project.value = data
+    window.document.title = `${project.value.projectName} - Admin`
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching project')
 
   }
+}
+const deleteProject = async() => {
+  try {
+    appStore.loading = true
+    await deleteRequest(`/project/${projectId.value}`)
+    snackbar('SUCCESS', 'Project Deleted')
+
+    router.push('/projects')
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error deleting project')
+
+  } finally {
+    appStore.loading = false
+  }
+}
 </script>
 
 <style scoped lang="scss">

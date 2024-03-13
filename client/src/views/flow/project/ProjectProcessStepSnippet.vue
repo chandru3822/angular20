@@ -4,13 +4,13 @@
       <v-card class="square-card">
         <v-data-table
             id="all-process-steps-table"
-          :headers="headers"
-          :items="steps"
-          :fixed-header="true"
-          :items-per-page="-1"
-          hide-default-footer
-          disable-sort
-          class="elevation-0"
+            :headers="headers"
+            :items="steps"
+            :fixed-header="true"
+            :items-per-page="-1"
+            hide-default-footer
+            disable-sort
+            class="elevation-0"
             :item-class="isPrimaryStep"
         >
           <template #no-data>
@@ -35,33 +35,33 @@
   </v-row>
 </template>
 
-<script>
-  export default {
-    name: 'ProjectProcessStepSnippet',
-    props: {
-      projectId: Number,
-      steps: Array,
-      contactId: Number
-    },
-    data () {
-      return {
-        headers: [
-          {text: 'ID', value: 'id', show: true, width: 80},
-          {text: 'Type', value: 'processStepName', show: true},
-          {text: 'Created', value: 'dateCreated', show: true},
-          {text: 'Owner', value: 'owner', show: true},
-          {text: 'Status', value: 'processStepStatusType', show: true},
-        ]
-      }
-    },
-    methods: {
-      isPrimaryStep(item){
-        if(item.main){
-          return "primary-row"
-        }
-      }
-    }
+<script setup>
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  projectId: Number,
+  steps: Array,
+  contactId: Number
+})
+const { projectId, steps, contactId } = toRefs(props)
+
+const headers = ref([
+  {text: 'ID', value: 'id', show: true, width: 80},
+  {text: 'Type', value: 'processStepName', show: true},
+  {text: 'Created', value: 'dateCreated', show: true},
+  {text: 'Owner', value: 'owner', show: true},
+  {text: 'Status', value: 'processStepStatusType', show: true},
+])
+
+const isPrimaryStep = (item) => {
+  if(item.main){
+    return "primary-row"
   }
+}
 </script>
 
 <style scoped lang="scss">

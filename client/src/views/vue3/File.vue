@@ -63,7 +63,7 @@ const optionsValue = ref(null)
 const compositionValue = ref(null)
 const inputField = ref(null)
 const autoCopyToClipboard = ref(true)
-const resetFieldsOnPaste = ref(false)
+const resetFieldsOnPaste = ref(true)
 const hasError = ref(false)
 const errorMsg = ref('')
 const errorTexts = [
@@ -94,6 +94,8 @@ const replacements = [
   { oldValue: 'import { } from \'@/helpers/helpers\'', newValue: ''},
   { oldValue: 'this.timezone', newValue: 'timezone'},
   { oldValue: 'this.fileStore', newValue: 'fileStore'},
+  { oldValue: 'this.projectStore', newValue: 'projectStore'},
+  { oldValue: 'this.notificationStore', newValue: 'notificationStore'},
   { oldValue: 'this.appStore.showSnack(this.snackbar)', newValue: ''},
   { oldValue: 'this.appStore', newValue: 'appStore'},
 ]
