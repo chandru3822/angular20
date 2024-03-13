@@ -27,6 +27,7 @@ declare
   v_prioritized_closer_dashboard_start_time     timestamp;
   v_prioritized_closer_dashboard_checkin        timestamp;
   v_prioritized_closer_dashboard_ppse_id        bigint;
+  v_prioritized_closer_appointment_by_round_robin boolean;
 BEGIN
   update brs.project_details
   set first_appointment_not_pitched_or_missed         = null,
@@ -49,7 +50,8 @@ BEGIN
       prioritized_closer_dashboard_outcome            = null,
       prioritized_closer_dashboard_start_time         = null,
       prioritized_closer_dashboard_checkin            = null,
-      prioritized_closer_dashboard_ppse_id            = null
+      prioritized_closer_dashboard_ppse_id            = null,
+      prioritized_closer_appointment_by_round_robin = false
   where project_id = p_project_id;
 
   select int_value, coalesce(start_time,p_start_time), id
@@ -88,12 +90,14 @@ BEGIN
     (select lov.name from flow.list_of_value lov where lov.id = ppsecfv1.int_value),
     ppse.start_time,
     ppsecfv.timestamp_value,
-    ppse.id
+    ppse.id,
+    coalesce(ppsecfv2.boolean_value,false)
   into v_prioritized_closer_dashboard_outcome_id,
     v_prioritized_closer_dashboard_outcome,
     v_prioritized_closer_dashboard_start_time,
     v_prioritized_closer_dashboard_checkin,
-    v_prioritized_closer_dashboard_ppse_id
+    v_prioritized_closer_dashboard_ppse_id,
+    v_prioritized_closer_appointment_by_round_robin
   from flow.project_process_step_event ppse
          inner join flow.project_process_step pps
                     on pps.id = ppse.project_process_step_id and pps.process_step_id in (1, 3390)
@@ -102,6 +106,8 @@ BEGIN
                       ppsecfv.custom_field_group_assignment_id = 1377
          left join flow.project_process_step_event_custom_field_value ppsecfv1
                    on ppsecfv1.project_process_step_event_id = ppse.id and ppsecfv1.custom_field_group_assignment_id = 4
+         left join flow.project_process_step_event_custom_field_value ppsecfv2 on ppsecfv2.project_process_step_event_id = ppse.id
+                    and   ppsecfv2.custom_field_group_assignment_id = 24658
   where pps.project_id = p_project_id
     and ppsecfv1.int_value = any ('{2,1139,1140}')
     and ppse.start_time is not null
@@ -115,12 +121,14 @@ BEGIN
       (select lov.name from flow.list_of_value lov where lov.id = ppsecfv1.int_value),
       ppse.start_time,
       ppsecfv.timestamp_value,
-      ppse.id
+      ppse.id,
+      coalesce(ppsecfv2.boolean_value,false)
     into v_prioritized_closer_dashboard_outcome_id,
       v_prioritized_closer_dashboard_outcome,
       v_prioritized_closer_dashboard_start_time,
       v_prioritized_closer_dashboard_checkin,
-      v_prioritized_closer_dashboard_ppse_id
+      v_prioritized_closer_dashboard_ppse_id,
+      v_prioritized_closer_appointment_by_round_robin
     from flow.project_process_step_event ppse
            inner join flow.project_process_step pps
                       on pps.id = ppse.project_process_step_id and pps.process_step_id in (1, 3390)
@@ -129,6 +137,8 @@ BEGIN
                         ppsecfv.custom_field_group_assignment_id = 1377
            left join flow.project_process_step_event_custom_field_value ppsecfv1
                      on ppsecfv1.project_process_step_event_id = ppse.id and ppsecfv1.custom_field_group_assignment_id = 4
+           left join flow.project_process_step_event_custom_field_value ppsecfv2 on ppsecfv2.project_process_step_event_id = ppse.id
+      and   ppsecfv2.custom_field_group_assignment_id = 24658
     where pps.project_id = p_project_id
       and ppse.start_time is not null
       and ppse.resource_id is not null
@@ -141,6 +151,7 @@ BEGIN
       v_prioritized_closer_dashboard_checkin = null;
       v_prioritized_closer_dashboard_outcome_id = null;
       v_prioritized_closer_dashboard_outcome = null;
+      v_prioritized_closer_appointment_by_round_robin = false;
     end if;
   end if;
 
@@ -168,7 +179,8 @@ BEGIN
       prioritized_closer_dashboard_outcome            = v_prioritized_closer_dashboard_outcome,
       prioritized_closer_dashboard_start_time         = v_prioritized_closer_dashboard_start_time,
       prioritized_closer_dashboard_checkin            = v_prioritized_closer_dashboard_checkin,
-      prioritized_closer_dashboard_ppse_id            = v_prioritized_closer_dashboard_ppse_id
+      prioritized_closer_dashboard_ppse_id            = v_prioritized_closer_dashboard_ppse_id,
+      prioritized_closer_appointment_by_round_robin = coalesce(v_prioritized_closer_appointment_by_round_robin,false)
   where project_id = p_project_id;
 
   if v_missed_id is not null or v_pitched_id is not null then
