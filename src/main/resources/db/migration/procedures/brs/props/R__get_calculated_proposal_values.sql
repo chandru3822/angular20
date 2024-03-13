@@ -1451,22 +1451,24 @@ BEGIN
                                              else 0
                                              end,0);
 
-    v_solar_only_cap_down_payment = coalesce(((v_no_ancillary_amount_to_finance + coalesce(v_down_payment_amount,0)) -
+    v_solar_only_cap_down_payment = case when v_dealer_fee > 0 then coalesce(((v_no_ancillary_amount_to_finance + coalesce(v_down_payment_amount,0)) -
                                               (v_maximum_dollar_per_watt_for_solar * v_system_size * 1000 * (1 - v_dealer_fee))) /
                                              (v_dealer_fee +
                                               case -- promotion_cost will be lower when down payments are applied. This case accounts for that.
                                                 when v_product_id = 293 then (v_initial_payment_factor * 18) /
                                                                              ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
-                                                else 0::numeric end),0);
+                                                else 0::numeric end),0)
+                                    else 0::numeric end;
 
-    v_ancillary_percent_cap_down_payment = coalesce((v_total_ancillary_costs -
+    v_ancillary_percent_cap_down_payment = case when v_dealer_fee > 0 then coalesce((v_total_ancillary_costs -
                                                      v_non_solar_cap * (v_no_ancillary_amount_to_finance + coalesce(v_down_payment_amount,0) ) -
                                                      v_non_solar_cap * coalesce(v_cash_price_storage,0) -
                                                      v_non_solar_cap * v_total_ancillary_costs) /
                                                     (v_non_solar_cap * (1 - v_dealer_fee) - v_non_solar_cap + 1 -
                                                      case when v_product_id = 293 then (v_non_solar_cap * v_initial_payment_factor * 18) /
                                                                                        ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
-                                                          else 0::numeric end),0);
+                                                          else 0::numeric end),0)
+                                                    else 0::numeric end;
     if (v_down_payment_amount + v_above_line_rebate + v_battery_cap_down_payment) >
        v_ancillary_percent_cap_down_payment then
       -- If the sum of above_line_rebate and down_payment_amount is more than the default, the % will change
