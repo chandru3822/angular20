@@ -500,6 +500,7 @@ declare
   v_solar_only_cap_down_payment                         numeric;
   v_ancillary_percent_cap_down_payment                  numeric;
   v_battery_cap_down_payment                            numeric;
+  v_all_ancillary_costs                 jsonb;
 
 BEGIN
   select proposal_id,
@@ -1014,7 +1015,7 @@ BEGIN
                             coalesce(v_reroof_cost, 0)::numeric +
                             coalesce(v_tree_trimming_cost, 0)::numeric +
                             coalesce(v_trenching_cost, 0)::numeric +
-                            coalesce(v_ac_unit_relocation_cost, 0)::numeric;
+                            coalesce(v_ac_unit_relocation_cost, 0)::numeric;  ---todo add these thing for Michael and make sure it's perfect  all_ancillary_costs
 
   --raise notice 'v_total_ancillary_costs = %',v_total_ancillary_costs;
 
@@ -1853,7 +1854,41 @@ BEGIN
     raise exception 'Solar Costs exceed the maximum allowable value.';
   end if;
 
+
   if p_insert_prop_log_history is true then
+
+    v_all_ancillary_costs = null;
+    if coalesce(v_main_panel_upgrade_cost, 0)::numeric > 0 then
+      v_all_ancillary_costs =
+        coalesce(v_all_ancillary_costs, '{}'::jsonb) ||
+        jsonb_build_object('Main Panel Upgrade Cost', coalesce(v_main_panel_upgrade_cost, 0)::numeric);
+    end if;
+    if coalesce(v_structural_upgrade_cost, 0)::numeric > 0 then
+      v_all_ancillary_costs =
+        coalesce(v_all_ancillary_costs, '{}'::jsonb) ||
+        jsonb_build_object('Structural Upgrade Cost', coalesce(v_structural_upgrade_cost, 0)::numeric);
+    end if;
+    if coalesce(v_reroof_cost, 0)::numeric > 0 then
+      v_all_ancillary_costs =
+        coalesce(v_all_ancillary_costs, '{}'::jsonb) ||
+        jsonb_build_object('Reroof Cost', coalesce(v_reroof_cost, 0)::numeric);
+    end if;
+    if coalesce(v_tree_trimming_cost, 0)::numeric > 0 then
+      v_all_ancillary_costs =
+        coalesce(v_all_ancillary_costs, '{}'::jsonb) ||
+        jsonb_build_object('Tree Trimming Cost', coalesce(v_tree_trimming_cost, 0)::numeric);
+    end if;
+    if coalesce(v_trenching_cost, 0)::numeric > 0 then
+      v_all_ancillary_costs =
+        coalesce(v_all_ancillary_costs, '{}'::jsonb) ||
+        jsonb_build_object('Trenching Cost', coalesce(v_trenching_cost, 0)::numeric);
+    end if;
+    if coalesce(v_ac_unit_relocation_cost, 0)::numeric > 0 then
+      v_all_ancillary_costs =
+        coalesce(v_all_ancillary_costs, '{}'::jsonb) ||
+        jsonb_build_object('AC Unit Relocation Cost', coalesce(v_ac_unit_relocation_cost, 0)::numeric);
+    end if;
+
     insert into brs.proposal_log_history(project_id, fullname, address, city, state, zip, phone,
                                          email, loan_term, interest_rate, optional_down_payment,
                                          required_down_payment,
@@ -1906,7 +1941,8 @@ BEGIN
                                          eto_rebate_amount,
                                          virtual_sales_price_adjustment,
                                          virtual_sales_base_price,
-                                         system_size_ac)
+                                         system_size_ac,
+                                         all_ancillary_costs)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -2012,7 +2048,8 @@ BEGIN
             v_eto_rebate_amount,
             v_virtual_sales_price_adjustment,
             v_virtual_sales_base_price,
-            v_system_size_ac);
+            v_system_size_ac,
+            v_all_ancillary_costs);
   end if;
 
   return query
