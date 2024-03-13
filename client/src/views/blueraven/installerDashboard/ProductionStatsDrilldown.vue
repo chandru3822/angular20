@@ -9,9 +9,12 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text color="primary" @click="$emit('prodStatsDrilldownDialogClosed')">
-          Close
-        </v-btn>
+        <AlbatrossButton
+          variant="text"
+          color="primary"
+          @click="emit('prodStatsDrilldownDialogClosed')"
+          text="Close"
+        ></AlbatrossButton>
       </v-toolbar-items>
     </v-toolbar>
 
@@ -65,9 +68,14 @@
                      {{ item.notes[0].note }}
                   </pre>
               <v-spacer></v-spacer>
-              <v-btn small fab text color="primary" @click="[item.showNotesModal = true, ytfDoWeNeedThis++]">
-                <v-icon>mdi-comment-text-multiple</v-icon>
-              </v-btn>
+              <AlbatrossButton
+                size="small"
+                fab
+                variant="text"
+                color="primary"
+                @click="[item.showNotesModal = true, ytfDoWeNeedThis++]"
+                prepend-icon="mdi-comment-text-multiple"
+              ></AlbatrossButton>
             </div>
             <v-dialog
               :key="ytfDoWeNeedThis"
@@ -93,13 +101,12 @@
                 <v-card-actions>
                   <v-spacer></v-spacer>
 
-                  <v-btn
+                  <AlbatrossButton
                     color="primary"
-                    class="white--text mr-2 mb-3"
+                    class="mr-2 mb-3"
                     @click="[item.showNotesModal = false, ytfDoWeNeedThis++]"
-                  >
-                    Close
-                  </v-btn>
+                    text="Close"
+                  ></AlbatrossButton>
                 </v-card-actions>
               </v-card>
             </v-dialog>
@@ -110,96 +117,90 @@
   </v-card>
 </template>
 
-<script>
-import constants from '@/helpers/constants'
-import NotesAndActivityContent from '@/views/flow/components/NotesAndActivityContent'
+<script setup>
+  import constants from '@/helpers/constants'
+  import NotesAndActivityContent from '@/views/flow/components/NotesAndActivityContent'
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import {ref, onMounted, computed, watch, getCurrentInstance, defineEmits} from "vue";
 
-export default {
-  name: 'ProductionStatsDrilldown',
-  components: {
-    NotesAndActivityContent
-  },
-  props: {
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
+  const router = vueInstance.$router
+  const route = vueInstance.$route
+  const vuetify = vueInstance.$vuetify
+
+  const emit = defineEmits(['prodStatsDrilldownDialogClosed'])
+  const props = defineProps({
     startDate: String,
     endDate: String,
     title: String,
     drilldownData: Array
-  },
-  watch: {
-    title: {
-      handler() {
-        this.setHeaders();
-      }
-    }
-  },
-  data() {
-    return {
-      constants,
-      snackbar: {},
-      results: [],
-      headers: [
-        {text: 'Project ID', value: 'project_id', show: true},
-        {text: 'Project Name', value: 'project_name', show: true},
-        {text: 'Installation Crew', value: 'crewname', show: true},
-        {text: 'Installation Closeout Start Time', value: 'installation_closeout_start_time', show: true},
-        {text: 'Installation Date', value: 'installation_end_time', show: true},
-        {text: 'Substantial Completion Date', value: 'substantial_completion_date', show: true},
-        {text: 'AHJ Inspection Date', value: 'ahj_inspection_start_time', show: true},
-        {text: 'AHJ Inspection Outcome', value: 'ahj_inspection_outcome_name', show: true},
-        {text: 'AHJ Inspection Fail Reason', value: 'ahj_inspection_fail_reason', show: true},
-        {text: 'Inspection Fail Feedback', value: 'inspection_fail_feedback', show: true},
-        {text: 'Notes', value: 'notes', show: true}
-      ],
-      ytfDoWeNeedThis: 0,
-    }
-  },
-  computed: {
-    visibleHeaders() {
-      return this.headers.filter(header => header.show === true)
-    },
-  },
-  async created() {
+  })
+
+  const results = ref([])
+  const headers = ref([
+    {text: 'Project ID', value: 'project_id', show: true},
+    {text: 'Project Name', value: 'project_name', show: true},
+    {text: 'Installation Crew', value: 'crewname', show: true},
+    {text: 'Installation Closeout Start Time', value: 'installation_closeout_start_time', show: true},
+    {text: 'Installation Date', value: 'installation_end_time', show: true},
+    {text: 'Substantial Completion Date', value: 'substantial_completion_date', show: true},
+    {text: 'AHJ Inspection Date', value: 'ahj_inspection_start_time', show: true},
+    {text: 'AHJ Inspection Outcome', value: 'ahj_inspection_outcome_name', show: true},
+    {text: 'AHJ Inspection Fail Reason', value: 'ahj_inspection_fail_reason', show: true},
+    {text: 'Inspection Fail Feedback', value: 'inspection_fail_feedback', show: true},
+    {text: 'Notes', value: 'notes', show: true}
+  ])
+  const ytfDoWeNeedThis = ref(0)
+  watch(title, () => {
+    setHeaders();
+  })
+
+  const visibleHeaders = computed(() => {
+    return this.headers.filter(header => header.show === true)
+  })
+
+  onMounted(async () => {
     this.setHeaders();
-  },
-  methods: {
-    setHeaders() {
-      if (this.title === 'Inspection Pass Rate') {
-        // Installation Closeout Start Time
-        this.headers[3].show = false;
-        // AHJ Inspection Date
-        this.headers[6].show = true;
-        // AHJ Inspection Outcome
-        this.headers[7].show = true;
-        // AHJ Inspection Fail Reason
-        this.headers[8].show = true;
-        // Inspection Fail Feedback
-        this.headers[9].show = true;
-      } else if (this.title === 'On-time Closeout %') {
-        // Installation Closeout Start Time
-        this.headers[3].show = true;
-        // AHJ Inspection Date
-        this.headers[6].show = false;
-        // AHJ Inspection Outcome
-        this.headers[7].show = false;
-        // AHJ Inspection Fail Reason
-        this.headers[8].show = false;
-        // Inspection Fail Feedback
-        this.headers[9].show = false;
-      } else {
-        // Installation Closeout Start Time
-        this.headers[3].show = false;
-        // AHJ Inspection Date
-        this.headers[6].show = false;
-        // AHJ Inspection Outcome
-        this.headers[7].show = false;
-        // AHJ Inspection Fail Reason
-        this.headers[8].show = false;
-        // Inspection Fail Feedback
-        this.headers[9].show = false;
-      }
+  })
+
+  const setHeaders = () => {
+    if (props.title === 'Inspection Pass Rate') {
+      // Installation Closeout Start Time
+      headers.value[3].show = false;
+      // AHJ Inspection Date
+      headers.value[6].show = true;
+      // AHJ Inspection Outcome
+      headers.value[7].show = true;
+      // AHJ Inspection Fail Reason
+      headers.value[8].show = true;
+      // Inspection Fail Feedback
+      headers.value[9].show = true;
+    } else if (props.title === 'On-time Closeout %') {
+      // Installation Closeout Start Time
+      headers.value[3].show = true;
+      // AHJ Inspection Date
+      headers.value[6].show = false;
+      // AHJ Inspection Outcome
+      headers.value[7].show = false;
+      // AHJ Inspection Fail Reason
+      headers.value[8].show = false;
+      // Inspection Fail Feedback
+      headers.value[9].show = false;
+    } else {
+      // Installation Closeout Start Time
+      headers.value[3].show = false;
+      // AHJ Inspection Date
+      headers.value[6].show = false;
+      // AHJ Inspection Outcome
+      headers.value[7].show = false;
+      // AHJ Inspection Fail Reason
+      headers.value[8].show = false;
+      // Inspection Fail Feedback
+      headers.value[9].show = false;
     }
   }
-}
 </script>
 
 <style lang="scss">
