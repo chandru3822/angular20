@@ -18,36 +18,35 @@
   </v-container>
 </template>
 
-<script>
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  export default {
-    name: 'Rebate',
-    computed: {
-      ...mapStores(useUserStore),
-      tabs() {
-        return [ {
-          label: 'View Payments',
-          path: '/finances/rebate/viewPayments',
-          display: this.userStore.userHasFeature('REBATES')
-        }, {
-          label: 'Batches',
-          path: '/finances/rebate/batches',
-          display: this.userStore.userHasFeature('REBATES')
-        }]
-      },
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        model: ''
-      }
-    },
-    methods: {
-    }
-  }
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const model = ref('')
+
+const tabs = computed(() => {
+  return [ {
+    label: 'View Payments',
+    path: '/finances/rebate/viewPayments',
+    display: userStore.userHasFeature('REBATES')
+  }, {
+    label: 'Batches',
+    path: '/finances/rebate/batches',
+    display: userStore.userHasFeature('REBATES')
+  }]
+})
+const displayedTabs = computed(() => {
+  return tabs.value.filter(tab => tab.display)
+})
+
 </script>

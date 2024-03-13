@@ -6,6 +6,7 @@
           <div class="header">
             <h3 class="">Paste the File here</h3>
             <v-checkbox dense hide-details label="Auto copy to clipboard?" v-model="autoCopyToClipboard"></v-checkbox>
+            <v-checkbox dense hide-details label="Reset and Refocus on Paste?" v-model="resetFieldsOnPaste"></v-checkbox>
           </div>
         </v-col>
         <v-col cols="6">
@@ -62,6 +63,7 @@ const optionsValue = ref(null)
 const compositionValue = ref(null)
 const inputField = ref(null)
 const autoCopyToClipboard = ref(true)
+const resetFieldsOnPaste = ref(false)
 const hasError = ref(false)
 const errorMsg = ref('')
 const errorTexts = [
@@ -137,6 +139,9 @@ const processBtn = async () => {
 
 const optionsValueInput = () => {
   compositionValue.value = null
+  if(resetFieldsOnPaste.value) {
+    processBtn()
+  }
 }
 
 const doClear = () => {
