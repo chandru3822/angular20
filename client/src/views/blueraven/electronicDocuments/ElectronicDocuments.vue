@@ -19,36 +19,32 @@
   </v-container>
 </template>
 
-<script>
-  import Snackbar from '@/components/Snackbar.vue'
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+  import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useRoute, useRouter} from "vue-router/composables";
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  export default {
-    name: 'electronicDocuments',
-    components: {
-      Snackbar
-    },
-    computed: {
-      ...mapStores(useUserStore),
-      tabs() {
-        return [ {
-          label: 'Electronic Documents Request',
-          path: '/installation-agreements/request',
-          display: this.userStore.userHasFeature('ELECTRONIC_DOCUMENTS')
-        }]
-      },
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        model: ''
-      }
-    },
-    methods: {
-    }
-  }
+  const appStore = useAppStore()
+  const route = useRoute()
+  const router = useRouter()
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
+
+  const model = ref('')
+
+  const tabs = computed(() => {
+    return [ {
+      label: 'Electronic Documents Request',
+      path: '/installation-agreements/request',
+      display: userStore.userHasFeature('ELECTRONIC_DOCUMENTS')
+    }]
+  })
+  const displayedTabs = computed(() => {
+    return tabs.value.filter(tab => tab.display)
+  })
+
+
 </script>
