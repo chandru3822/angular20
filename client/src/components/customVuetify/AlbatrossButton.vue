@@ -47,6 +47,7 @@ const props = defineProps({
   href: String,
   target: String, //pretty sure this prop is gone in v3
   htmlStyle: String, //style was a reserved word...only seen this used to set a max width so far. in v3 there is an option for that so style should go away
+  htmlStyleObject: String, //style was a reserved word...only seen this used to set a max width so far. in v3 there is an option for that so style should go away
   activationHandler: Object,
   text: {
     type: String,

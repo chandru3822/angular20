@@ -520,6 +520,7 @@ const getActivities = async () => {
       snackbar('ERROR', 'Error loading notes')
 
     } finally {
+      console.log('VVVV',activitiesLoading.value)
       activitiesLoading.value = false
     }
   }

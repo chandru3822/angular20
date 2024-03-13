@@ -102,7 +102,7 @@
         >
           <AlbatrossButton
               :color="toggleTimelineView === 0 ? 'primary' : 'white'"
-              :class="{'': toggleTimelineView === 0, 'primary--text' : toggleTimelineView === 1}"
+              :class="{'white--text': toggleTimelineView === 0, 'primary--text' : toggleTimelineView === 1}"
               class="text-capitalize my-4 fix-toggle-opacity body-medium"
               html-style="width: 50% !important;"
               @click="selectNotesActivityView"
@@ -110,7 +110,7 @@
           ></AlbatrossButton>
           <AlbatrossButton
               :color="toggleTimelineView === 1 ? 'primary' : 'white'"
-              :class="{'': toggleTimelineView === 1, 'primary--text' : toggleTimelineView === 0}"
+              :class="{'white--text': toggleTimelineView === 1, 'primary--text' : toggleTimelineView === 0}"
               class="text-capitalize fix-toggle-opacity body-medium"
               html-style="width: 50% !important;"
               @click="selectNotesActivityView"

@@ -546,15 +546,15 @@ const getMilestones = async() => {
     let statusCompleted = false;
     for(let x = milestones.value.length - 1; x >= 0; x--){
       if(project.value.projectStatusType == 'Cancelled'){
-        milestones.value[x].btnColor = 'grey'
+        milestones.value[x].btnColor = '#F5F5F5'
         milestones.value[x].iconColor = 'grey'
         continue;
       }
       if(statusCompleted || (milestones.value[x].assignedFields.length > 0 && milestones.value[x].assignedFields.every(f => f.fieldValue))) {
-        milestones.value[x].btnColor = 'success lighten-1'
+        milestones.value[x].btnColor = 'var(--v-success-lighten1)'
         milestones.value[x].iconColor = 'white'
       } else {
-        milestones.value[x].btnColor = 'grey'
+        milestones.value[x].btnColor = '#F5F5F5'
         milestones.value[x].iconColor = 'grey'
       }
 

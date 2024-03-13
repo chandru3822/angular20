@@ -9,10 +9,10 @@
       <v-toolbar flat color="transparent" class="toolbar-z-index-override-for-menu" id="activity-card-title">
         <v-toolbar-title class="body-medium">
           <v-icon small color="#FB8C00" v-if="a.pinned && highlightPinnedActivity" class="mr-2">mdi-pin</v-icon>
-          <a @click="searchCallback('uncategorized', -1, SearchTypeEnum.TAG)" class="uncategorized-text" v-if="!a.activityHashtags || a.activityHashtags?.length === 0" :inner-html.prop="'[uncategorized]' | searchHighlight(query)"></a>
+          <a @click="props.searchCallback('uncategorized', -1, SearchTypeEnum.TAG)" class="uncategorized-text" v-if="!a.activityHashtags || a.activityHashtags?.length === 0" :inner-html.prop="'[uncategorized]' | searchHighlight(query)"></a>
           <span class="test" v-for="(ah, idx) in a.activityHashtags">
                 <span v-if="idx !== 0">, </span>
-                <a @click="searchCallback('#' + ah.hashtag)" :inner-html.prop="'#' + ah.hashtag | searchHighlight(query)"></a>
+                <a @click="props.searchCallback('#' + ah.hashtag)" :inner-html.prop="'#' + ah.hashtag | searchHighlight(query)"></a>
               </span>
           <a v-if="a.linked" @click="goToPath(a)" class="pl-3">
             <v-icon small color="primary">mdi-link</v-icon>
@@ -66,9 +66,9 @@
         </div>
       </v-card-text>
       <v-card-actions style="display: inline-block" class="body-medium grey--text text--darken-2 px-4">
-        <span class="clickable" @click="searchCallback(a.createdBy, a.createdById, SearchTypeEnum.USER)" :inner-html.prop="a.createdBy | searchHighlight(query)"/>
-        <span v-if="a.createdByPosition" class="clickable" @click="searchCallback(a.createdByPosition, null, SearchTypeEnum.POSITION)" :inner-html.prop="', ' + a.createdByPosition | searchHighlight(query)"/>
-        <span v-if="a.createdByPositionOrg" class = "clickable" @click="searchCallback(a.createdByPositionOrg, a.createdByPositionOrgId, SearchTypeEnum.TEAM)" :inner-html.prop="`(${a.createdByPositionOrg})` | searchHighlight(query)"/> | {{ a.dateCreated | formatDate('timestamp', 'M/D/YY h:mm a') }}
+        <span class="clickable" @click="props.searchCallback(a.createdBy, a.createdById, SearchTypeEnum.USER)" :inner-html.prop="a.createdBy | searchHighlight(query)"/>
+        <span v-if="a.createdByPosition" class="clickable" @click="props.searchCallback(a.createdByPosition, null, SearchTypeEnum.POSITION)" :inner-html.prop="', ' + a.createdByPosition | searchHighlight(query)"/>
+        <span v-if="a.createdByPositionOrg" class = "clickable" @click="props.searchCallback(a.createdByPositionOrg, a.createdByPositionOrgId, SearchTypeEnum.TEAM)" :inner-html.prop="`(${a.createdByPositionOrg})` | searchHighlight(query)"/> | {{ a.dateCreated | formatDate('timestamp', 'M/D/YY h:mm a') }}
         <span v-if="a.dateCreated !== a.dateModified" :inner-html.prop="`| Edited by ${ a.modifiedBy }` | searchHighlight(query)"/>
         <span v-if="a.dateCreated !== a.dateModified" :inner-html.prop="a.dateModified | formatDate('timestamp', ' [on] M/D/YY [at] h:mm a')"/>
         <span v-if="a.pinned" :inner-html.prop="` | Pinned by ${ a.pinnedBy }` | searchHighlight(query)"/>
@@ -131,8 +131,7 @@ const props = defineProps({
   },
 })
 const { activities, contactId, orgId, userId, currentUserId,
-  projectId, sectionType, editCallback, searchCallback,
-  highlightPinnedActivity, query, useInfiniteLoader } = toRefs(props)
+  projectId, sectionType, highlightPinnedActivity, query, useInfiniteLoader } = toRefs(props)
 
 const loaderState = ref(null)
 const editedIndex = ref(null)
@@ -149,14 +148,14 @@ const infiniteStateLoaded = (hitMax) => {
   //the counts are loaded from the parent so we have to wait to set the state here
   if(hitMax) {
     hitMax.value = true
-    loaderState.value?.complete()
+    // loaderState.value?.complete()
   }
   else {
-    loaderState.value?.loaded()
+    // loaderState.value?.loaded()
   }
 }
 const editItem = (item) => {
-  editCallback(item)
+  props.editCallback(item)
 }
 const goToPath = (activity) => {
   let path = ''
@@ -203,7 +202,7 @@ const deleteActivity = async(activity) => {
   }
 }
 
-defineExpose(infiniteStateLoaded)
+defineExpose({infiniteStateLoaded})
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
