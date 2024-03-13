@@ -238,7 +238,7 @@ const getEventSources = async(info, successCallback, failureCallback) => {
         data?.forEach(d => {
           d.id = d.eventId
           // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-          // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
+          // if resource is a user show on calendar using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
           d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName}`
           d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
           //get all selected users who match the appt user_id
@@ -407,10 +407,7 @@ onMounted (async () => {
                       item-value="id"
                       attach
       >
-        <template
-            slot="selection"
-            slot-scope="{ item, index }"
-        >
+        <template v-slot:selection = "{ item, index }">
           <div v-if="index === 0 && selectedRoundRobins.length < 3">
             <v-chip small close @click:close="selectedRoundRobins.splice(index, 1)"
                     v-for="sr in selectedRoundRobins">
@@ -443,10 +440,7 @@ onMounted (async () => {
                       @input="[userValuesChanged = true, limiter()]"
                       attach
       >
-        <template
-            slot="selection"
-            slot-scope="{ item, index }"
-        >
+        <template v-slot:selection = "{ item, index }">
               <span v-if="index === 0" class="primary--text text-caption">
                 {{ selectedUsers.length }} selected
               </span>
@@ -522,14 +516,6 @@ onMounted (async () => {
   transform: scale(0.775);
   transform-origin: center;
 }
-
-
-//#closer-availability-calendar-container .fc-timeline-bg-harness .fc-event:hover {
-//    max-width: unset;
-//    width: fit-content;
-//    z-index: 20;
-//
-//}
 
 #closer-availability-calendar-container .fc-event.event-tile:hover {
   color: inherit !important;
