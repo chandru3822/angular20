@@ -5,10 +5,10 @@
       width="28px"
       :activation-handler="on"
       :class="{'not-clickable': !clickable }"
-      :html-style="{'background-color': '#F5F5F5'}"
+      html-style="background-color: #F5F5F5"
       :outlined="currentStatusId !== milestone.id && milestone.btnColor === 'grey'"
       :color="currentStatusId === milestone.id ? 'primary lighten-5' : milestone.btnColor"
-      elevation="0"
+      :elevation="0"
       :prepend-icon="milestone.iconTag || 'blank'"
   ></AlbatrossButton>
 </template>

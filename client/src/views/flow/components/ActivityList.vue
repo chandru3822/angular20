@@ -110,8 +110,6 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 
-defineExpose(infiniteStateLoaded)
-
 const props = defineProps({
   activities: Array,
   contactId: Number,
@@ -142,14 +140,6 @@ const activityToDelete = ref(null)
 const hitMax = ref(false)
 
 const emit = defineEmits(['bottomHitCount', 'reload', 'remove-deleted'])
-
-//todo figure out
-//   filters: {
-//     searchHighlight: function(value, query){
-//       return value.replace(new RegExp(query, "ig"),(v) => `<span class="grey lighten-2">${v}</span>`)
-//     }
-//   }
-
 
 const infiniteHandler = ($state) => {
   loaderState.value = $state
@@ -212,6 +202,8 @@ const deleteActivity = async(activity) => {
     savingActivity.value = false
   }
 }
+
+defineExpose(infiniteStateLoaded)
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

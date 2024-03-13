@@ -47,6 +47,7 @@
     </div>
     <div class="activity-body" :class="{'footer-closed-height': !addActivity && null == editedActivity.id}">
       <div v-if="pinnedActivitiesOnly.length > 0 && !searchText" :class="{'pb-7': !timelineView}">
+        WTF
         <ActivityList v-if=!savingActivity
                       :activities="pinnedActivitiesOnly"
                       :project-id="projectId"
@@ -98,6 +99,7 @@
                   </template>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
+                  Hello
                   <ActivityList v-if="!savingActivity"
                                 :activities="sortAndFilterActivities(h.activities, h.sortDirection)"
                                 :project-id="projectId"
@@ -133,7 +135,7 @@
                     :search-callback="searchByClick"
                     :highlightPinnedActivity = false
                     :query="queryText"
-                    ref="activityList"
+                    ref="activityListA"
                     :use-infinite-loader="true"
                     @bottomHitCount="bottomHitCallback"
                     @reload="getActivities"
@@ -311,6 +313,7 @@ const pinnedActivitiesOnly = ref([])
 const bottomHitCount = ref(1)
 const activitiesToShow = ref(constants.ACTIVITIES_SHOWN)
 const activityList = ref(null)
+const activityListA = ref(null)
 
 const emit = defineEmits(['scrollToTop'])
 
@@ -362,15 +365,17 @@ const sortedFilteredActivities = computed(() => {
 
   getPinnedActivitiesOnly(activities.value)
   if(sortedList.length > (activitiesToShow.value * bottomHitCount.value) ) {
-    if(activityList.value) {
+    if(activityListA.value) {
       //todo: @randa need to fix this for comp api
-      // activityList.value.infiniteStateLoaded(false)
+      console.log('AAAA', activityListA.value)
+      activityListA.value.infiniteStateLoaded(false)
     }
     return sortedList.slice(0, (activitiesToShow.value * bottomHitCount.value))
   } else {
-    if(activityList.value) {
+    if(activityListA.value) {
       //todo: @randa need to fix this for comp api
-      // activityList.value.infiniteStateLoaded(true)
+      console.log('BBBB', activityListA.value)
+      activityListA.value.infiniteStateLoaded(true)
     }
     return sortedList
   }

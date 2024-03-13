@@ -226,6 +226,10 @@ const { showSmsTab, contactId, userIdIn, orgId, forceShowUploadBtn, allowSidebar
 
 const emit = defineEmits(['closeRight'])
 
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+
 const userHasTeam = ref(false)
 const userAssigned = ref(false)
 const showJoinConversationDialog = ref(false)
@@ -291,9 +295,7 @@ const isSidebarCollapsed = computed(() => {
 const smsOwnershipEvents = computed(() => {
   return notificationStore.getEventsByTopic('sms_ownership').length
 })
-const isMobile = computed(() => {
-  return vuetify.breakpoint.smAndDown
-})
+
 const projectId = computed(() => {
   return parseInt(route.params.projectId)
 })

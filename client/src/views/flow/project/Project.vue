@@ -408,20 +408,6 @@ const ppsEventId = computed(() => {
   return route.params.ppsEventId
 })
 
-watch(projectTagEvents, async() => {
-  projectStore.resetProjectState()
-})
-watch(projectTagEvents, async() => {
-  projectStore.resetPpsEventState()
-})
-
-watch(projectTagEvents, async() => {
-  if (projectTagEvents.value?.length > 0) {
-    await notificationStore.processProjectMsg(projectId.value)
-    await getProjectTags()
-  }
-})
-
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
 })
@@ -489,6 +475,20 @@ const overviewDetails = computed(() => {
 })
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
+})
+
+watch(processStepId, async() => {
+  projectStore.resetProjectState()
+})
+watch(ppsEventId, async() => {
+  projectStore.resetPpsEventState()
+})
+
+watch(projectTagEvents, async() => {
+  if (projectTagEvents.value?.length > 0) {
+    await notificationStore.processProjectMsg(projectId.value)
+    await getProjectTags()
+  }
 })
 
 const loadProject = async()=> {
@@ -657,7 +657,7 @@ const getStatesAndCountries = () => {
   // only load countries and states if they try to edit the project address and they haven't already been loaded
   if (states.value.length === 0 || countries.value.length === 0) {
     getCompanyStates()
-    getCountries()
+    getAllCountries()
   }
 }
 const getCompanyStates = async () => {
@@ -673,7 +673,7 @@ const getCompanyStates = async () => {
     statesLoading.value = false
   }
 }
-const getCountries = async () => {
+const getAllCountries = async () => {
   try {
     countriesLoading.value = true
     const {data, status} = await getCountries()
