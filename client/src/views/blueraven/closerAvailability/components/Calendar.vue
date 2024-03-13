@@ -152,6 +152,7 @@ const masterUsers = ref([]) //?
 watch(selectedUsers, () => {
   calendarOptions.value.resources = selectedUsers.value
   handleResourceColors()
+  reloadCalendar()
 })
 
 const getRoundRobinUsers = async() => {
@@ -191,8 +192,8 @@ const toggleSelectAllRoundRobinUsers = () => {
   } else {
     selectedUsers.value = cloneDeep(roundRobinUsers.value)
   }
+  reloadCalendar()
 }
-
 
 const handleResourceColors = () => {
   calendarOptions.value.resources.forEach((r, index) => {
@@ -426,7 +427,8 @@ onMounted (async () => {
     </v-col>
     <!--        <v-col id="placeholder-col-2" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
     <v-col id="user-resources-col" class="py-0">
-      <v-autocomplete v-model="selectedUsers"
+      <v-autocomplete ref="pczuSelect"
+                      v-model="selectedUsers"
                       :items="roundRobinUsers"
                       label="User Resources"
                       multiple
@@ -439,7 +441,6 @@ onMounted (async () => {
                       item-text="fullName"
                       item-value="id"
                       @input="[userValuesChanged = true, limiter()]"
-                      @blur="reloadCalendar"
                       attach
       >
         <template
