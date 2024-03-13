@@ -28,6 +28,19 @@ Vue.filter('formatDateZoneless', function(value) {
   }
 })
 
+Vue.filter('searchHighlight', function(value, query) {
+  if (value) {
+    return value.replace(new RegExp(query, "ig"),(v) => `<span class="grey lighten-2">${v}</span>`)
+  }
+})
+
+Vue.filter('fieldValues', function(field) {
+    if (Array.isArray(field.values)) {
+        return field?.values?.join(', ')
+    }
+    return field.values
+})
+
 Vue.filter('formatDate', function(value, type, format, inputFormat) {
   /*
   //  this part of the code: `moment(String(value))` was throwing format warnings from moment with regular timestamp formats

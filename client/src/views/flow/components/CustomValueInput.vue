@@ -10,137 +10,137 @@
 
       <v-col class="d-flex justify-start align-self-start py-0">
         <DatetimePickerInput
-          v-if="field.dataTypeId === 1"
-          v-model="field.dateValue"
-          :timezone="this.timezone"
-          :type="'date'"
-          :allow-now="field.allowNow"
-          :required="required"
-          :min-date="minDate"
-          :max-date="maxDate"
-          :filled="filledStyle"
-          :format="'MMMM DD, YYYY'"
-          :label="getFieldName()"
-          :hide-details="hideDetails"
-          :readonly="readonly"
-          :custom-class="customClass ? customClass.concat(readonly ? ' error--text' : '') : readonly ? ' error--text' : ''"
-          @input="callback(field)"
+            v-if="field.dataTypeId === 1"
+            v-model="field.dateValue"
+            :timezone="timezone"
+            :type="'date'"
+            :allow-now="field.allowNow"
+            :required="required"
+            :min-date="minDate"
+            :max-date="maxDate"
+            :filled="filledStyle"
+            :format="'MMMM DD, YYYY'"
+            :label="getFieldName()"
+            :hide-details="hideDetails"
+            :readonly="readonly"
+            :custom-class="customClass ? customClass.concat(readonly ? ' error--text' : '') : readonly ? ' error--text' : ''"
+            @input="props.callback(field)"
         />
 
         <DatetimePickerInput
-          v-if="field.dataTypeId === 2"
-          v-model="field.timestampValue"
-          :timezone="this.timezone"
-          type="timestamp"
-          :allow-now="field.allowNow"
-          :filled="filledStyle"
-          :required="required"
-          :format="'MMMM DD, YYYY, h:mm A'"
-          :label="getFieldName()"
-          :hide-details="hideDetails"
-          :readonly="readonly"
-          :custom-class="customClass ? customClass.concat(readonly ? ' error--text' : '') : readonly ? ' error--text' : ''"
-          @input="callback(field)"
+            v-if="field.dataTypeId === 2"
+            v-model="field.timestampValue"
+            :timezone="timezone"
+            type="timestamp"
+            :allow-now="field.allowNow"
+            :filled="filledStyle"
+            :required="required"
+            :format="'MMMM DD, YYYY, h:mm A'"
+            :label="getFieldName()"
+            :hide-details="hideDetails"
+            :readonly="readonly"
+            :custom-class="customClass ? customClass.concat(readonly ? ' error--text' : '') : readonly ? ' error--text' : ''"
+            @input="props.callback(field)"
         />
 
         <v-checkbox
-          v-if="field.dataTypeId === 3"
-          v-model="field.booleanValue"
-          :required="required"
-          :label="getFieldName()"
-          :hide-details="hideDetails"
-          :rules="rules"
-          :filled="filledStyle"
-          :disabled="readonly"
-          :readonly="readonly"
-          :ripple="false"
-          @change="callback(field)"
-          :class="customClass"
-          :hint="hint"
+            v-if="field.dataTypeId === 3"
+            v-model="field.booleanValue"
+            :required="required"
+            :label="getFieldName()"
+            :hide-details="hideDetails"
+            :rules="rules"
+            :filled="filledStyle"
+            :disabled="readonly"
+            :readonly="readonly"
+            :ripple="false"
+            @change="props.callback(field)"
+            :class="customClass"
+            :hint="hint"
         />
 
         <v-text-field
-          v-if="field.dataTypeId === 4"
-          text
-          :required="required"
-          :readonly="readonly"
-          :disabled="readonly"
-          :class="[customClass, {'error--text': readonly}]"
-          placeholder=" "
-          :rules="rules"
-          :filled="filledStyle"
-          :label="getFieldName()"
-          :hide-details="hideDetails"
-          :hint="hint"
-          type="number"
-          v-model.number="field.numericValue"
-          @change="callback(field)"
-          autocomplete="off"
-          :append-icon="appendIcon ? appendIcon : null"
-          @click:append="appendCallback(field.numericValue)"
+            v-if="field.dataTypeId === 4"
+            text
+            :required="required"
+            :readonly="readonly"
+            :disabled="readonly"
+            :class="[customClass, {'error--text': readonly}]"
+            placeholder=" "
+            :rules="rules"
+            :filled="filledStyle"
+            :label="getFieldName()"
+            :hide-details="hideDetails"
+            :hint="hint"
+            type="number"
+            v-model.number="field.numericValue"
+            @change="props.callback(field)"
+            autocomplete="off"
+            :append-icon="appendIcon ? appendIcon : null"
+            @click:append="props.appendCallback(field.numericValue)"
         />
 
         <!--        12 is the new SYSTEM_readonly field. but i think we can use this same field as id=10 will ALWAYS be readonly and (never required i think)-->
         <v-textarea
-          v-if="field.dataTypeId === 5 || field.dataTypeId === 12 || (field.dataTypeId === 8 && field.systemReadonly)"
-          auto-grow
-          rows="1"
-          :required="required"
-          :readonly="readonly || field.dataTypeId === 12"
-          :disabled="readonly || field.dataTypeId === 12"
-          :class="[customClass, {'error--text': readonly || required}]"
-          placeholder=" "
-          :rules="rules"
-          :filled="filledStyle"
-          :label="getFieldName()"
-          :hide-details="hideDetails"
-          v-model="field.textValue"
-          @change="callback(field)"
-          autocomplete="off"
+            v-if="field.dataTypeId === 5 || field.dataTypeId === 12 || (field.dataTypeId === 8 && field.systemReadonly)"
+            auto-grow
+            rows="1"
+            :required="required"
+            :readonly="readonly || field.dataTypeId === 12"
+            :disabled="readonly || field.dataTypeId === 12"
+            :class="[customClass, {'error--text': readonly || required}]"
+            placeholder=" "
+            :rules="rules"
+            :filled="filledStyle"
+            :label="getFieldName()"
+            :hide-details="hideDetails"
+            v-model="field.textValue"
+            @change="props.callback(field)"
+            autocomplete="off"
         />
 
         <v-text-field
-          v-if="field.dataTypeId === 6 && !field.hasListValues"
-          text
-          :required="required"
-          :readonly="readonly"
-          :disabled="readonly"
-          :class="[customClass, {'error--text': readonly}]"
-          :label="getFieldName()"
-          :hide-details="hideDetails"
-          placeholder=" "
-          :filled="filledStyle"
-          :rules="rules"
-          type="number"
-          v-model.number="field.intValue"
-          @change="callback(field)"
-          autocomplete="off"
+            v-if="field.dataTypeId === 6 && !field.hasListValues"
+            text
+            :required="required"
+            :readonly="readonly"
+            :disabled="readonly"
+            :class="[customClass, {'error--text': readonly}]"
+            :label="getFieldName()"
+            :hide-details="hideDetails"
+            placeholder=" "
+            :filled="filledStyle"
+            :rules="rules"
+            type="number"
+            v-model.number="field.intValue"
+            @change="props.callback(field)"
+            autocomplete="off"
         />
 
         <v-autocomplete
-          v-if="field.dataTypeId === 6 && field.hasListValues"
-          v-model="field.intValue"
-          text
-          attach
-          :hide-no-data="field.lazyLoadValues"
-          :required="required"
-          :clearable="!readonly"
-          :readonly="readonly"
-          :disabled="readonly"
-          :class="[customClass, {'error--text': readonly || required}]"
-          :loading="isLoading"
-          placeholder=" "
-          :filled="filledStyle"
-          item-disabled="archived"
-          :rules="rules"
-          :items="getListOfValues()"
-          :label="getFieldName()"
-          :hide-details="hideDetails"
-          :hint="hint"
-          item-value="id"
-          item-text="name"
-          @input="handleInput"
-          autocomplete="off"
+            v-if="field.dataTypeId === 6 && field.hasListValues"
+            v-model="field.intValue"
+            text
+            attach
+            :hide-no-data="field.lazyLoadValues"
+            :required="required"
+            :clearable="!readonly"
+            :readonly="readonly"
+            :disabled="readonly"
+            :class="[customClass, {'error--text': readonly || required}]"
+            :loading="isLoading"
+            placeholder=" "
+            :filled="filledStyle"
+            item-disabled="archived"
+            :rules="rules"
+            :items="getListOfValues()"
+            :label="getFieldName()"
+            :hide-details="hideDetails"
+            :hint="hint"
+            item-value="id"
+            item-text="name"
+            @input="handleInput"
+            autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
@@ -151,30 +151,30 @@
         </v-autocomplete>
 
         <v-autocomplete
-          v-if="field.dataTypeId === 7 || field.dataTypeId === 10"
-          text
-          attach
-          :required="required"
-          multiple
-          placeholder=" "
-          v-model="field.intArrayValue"
-          :hide-no-data="field.lazyLoadValues"
-          :search-input.sync="search"
-          :filled="filledStyle"
-          :items="getListOfValues()"
-          item-disabled="archived"
-          :clearable="!readonly"
-          :readonly="readonly"
-          :disabled="readonly"
-          :class="[customClass, {'error--text': readonly}]"
-          :rules="rules"
-          :label="getFieldName()"
-          :hide-details="hideDetails"
-          :hint="hint"
-          item-value="id"
-          item-text="name"
-          @input="handleInput"
-          autocomplete="off"
+            v-if="field.dataTypeId === 7 || field.dataTypeId === 10"
+            text
+            attach
+            :required="required"
+            multiple
+            placeholder=" "
+            v-model="field.intArrayValue"
+            :hide-no-data="field.lazyLoadValues"
+            :search-input.sync="search"
+            :filled="filledStyle"
+            :items="getListOfValues()"
+            item-disabled="archived"
+            :clearable="!readonly"
+            :readonly="readonly"
+            :disabled="readonly"
+            :class="[customClass, {'error--text': readonly}]"
+            :rules="rules"
+            :label="getFieldName()"
+            :hide-details="hideDetails"
+            :hint="hint"
+            item-value="id"
+            item-text="name"
+            @input="handleInput"
+            autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
@@ -185,29 +185,29 @@
         </v-autocomplete>
 
         <v-autocomplete
-          v-if="field.dataTypeId === 8 && !field.systemReadonly"
-          v-model="field.intValue"
-          text
-          attach
-          :required="required"
-          :search-input.sync="search"
-          :hide-no-data="field.lazyLoadValues"
-          :clearable="!readonly"
-          :filled="filledStyle"
-          item-disabled="archived"
-          :readonly="readonly"
-          :disabled="readonly"
-          :class="[customClass, {'error--text': readonly}]"
-          :items="getListOfValues()"
-          :label="getFieldName()"
-          :hide-details="hideDetails"
-          :hint="hint"
-          :rules="rules"
-          placeholder=" "
-          item-value="id"
-          item-text="name"
-          @input="handleInput"
-          autocomplete="off"
+            v-if="field.dataTypeId === 8 && !field.systemReadonly"
+            v-model="field.intValue"
+            text
+            attach
+            :required="required"
+            :search-input.sync="search"
+            :hide-no-data="field.lazyLoadValues"
+            :clearable="!readonly"
+            :filled="filledStyle"
+            item-disabled="archived"
+            :readonly="readonly"
+            :disabled="readonly"
+            :class="[customClass, {'error--text': readonly}]"
+            :items="getListOfValues()"
+            :label="getFieldName()"
+            :hide-details="hideDetails"
+            :hint="hint"
+            :rules="rules"
+            placeholder=" "
+            item-value="id"
+            item-text="name"
+            @input="handleInput"
+            autocomplete="off"
         >
           <template #item="{ item }">
             <v-list-item-content>
@@ -218,34 +218,34 @@
         </v-autocomplete>
 
         <v-autocomplete
-          v-if="field.dataTypeId === 9"
-          v-model="field.intValue"
-          :search-input.sync="search"
-          :hide-no-data="field.lazyLoadValues"
-          text
-          attach
-          :filled="filledStyle"
-          :required="required"
-          :clearable="!readonly"
-          item-disabled="archived"
-          :items="getListOfValues()"
-          :label="getFieldName()"
-          :hide-details="hideDetails"
-          :readonly="readonly"
-          :disabled="readonly"
-          :class="[customClass, {'error--text': readonly}]"
-          :rules="rules"
-          :hint="hint"
-          placeholder=" "
-          item-value="id"
-          item-text="name"
-          @input="handleInput"
-          autocomplete="off"
+            v-if="field.dataTypeId === 9"
+            v-model="field.intValue"
+            :search-input.sync="search"
+            :hide-no-data="field.lazyLoadValues"
+            text
+            attach
+            :filled="filledStyle"
+            :required="required"
+            :clearable="!readonly"
+            item-disabled="archived"
+            :items="getListOfValues()"
+            :label="getFieldName()"
+            :hide-details="hideDetails"
+            :readonly="readonly"
+            :disabled="readonly"
+            :class="[customClass, {'error--text': readonly}]"
+            :rules="rules"
+            :hint="hint"
+            placeholder=" "
+            item-value="id"
+            item-text="name"
+            @input="handleInput"
+            autocomplete="off"
         >
           <template v-slot:prepend v-if="field.allowSelectSelf">
             <v-tooltip top small>
               <template v-slot:activator="{on, attrs}">
-            <v-icon @click="selectSelf" class="clickable" color="primary" v-bind="attrs" v-on="on">mdi-account-arrow-right-outline</v-icon>
+                <v-icon @click="selectSelf" class="clickable" color="primary" v-bind="attrs" v-on="on">mdi-account-arrow-right-outline</v-icon>
               </template>
               <span class="albatross-body-3">Select Me</span>
             </v-tooltip>
@@ -269,14 +269,14 @@
             <v-icon v-if="copyFeature" @click="copyToClipBoard(field.textValue)" small color="primary" class="ml-3">mdi-content-copy</v-icon>
           </div>
           <quill-editor
-            :options="toolbarOptions"
-            class="rich-text-editor albatross-body-2"
-            :class="{'rich-text-editor-required': required && !field.richTextValue,
+              :options="toolbarOptions"
+              class="rich-text-editor albatross-body-2"
+              :class="{'rich-text-editor-required': required && !field.richTextValue,
                      'rich-text-editor-readonly': readonly || (locked && lockFeature)}, customClass"
-            :readonly="readonly"
-            :disabled="readonly || (locked && lockFeature)"
-            @change="(q) => doRichTextFieldCallback(field, q)"
-            v-model="field.richTextValue"
+              :readonly="readonly"
+              :disabled="readonly || (locked && lockFeature)"
+              @change="(q) => doRichTextFieldCallback(field, q)"
+              v-model="field.richTextValue"
           />
           <div class="rich-text-label error--text" v-if="required && !field.richTextValue">
             Field is required
@@ -293,247 +293,231 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import debounce from 'lodash.debounce'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import constants from '@/helpers/constants'
 import 'quill/dist/quill.snow.css'
 import { quillEditor } from 'vue-quill-editor'
-import {getRequestWithParams, getSnackbar} from '@/helpers/helpers'
-import {AppMutations} from "@/stores/AppStore";
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import {getRequestWithParams, } from '@/helpers/helpers'
 
-export default {
-  name: 'CustomValueInput',
-  props: {
-    apiPath: {
-      type: String,
-      default: 'flow'
-    },
-    required: {
-      type: Boolean,
-      default: false
-    },
-    readonly: {
-      type: Boolean,
-      default: false
-    },
-    field: Object,
-    useFieldAncillaryName: {
-      type: Boolean,
-      default: false
-    },
-    showFieldName: {
-      type: Boolean,
-      default: true
-    },
-    hideLabel: {
-      type: Boolean,
-      default: false
-    },
-    hideDetails: {
-      type: Boolean,
-      default: false
-    },
-    lockFeature: {
-      type: Boolean,
-      default: false
-    },
-    copyFeature: {
-      type: Boolean,
-      default: false
-    },
-    listOfValueFilter: {
-      type: Function,
-      required: false
-    },
-    hint: {
-      type: String,
-      required: false
-    },
-    minDate: String,
-    maxDate: String,
-    //had to add filledStyle to allow the AHJ screens to use the custom value input but keep its same style. that makes me super happy
-    filledStyle: Boolean,
-    callback: Function,
-    customClass: String,
-    appendIcon: String,
-    appendCallback: Function
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  apiPath: {
+    type: String,
+    default: 'flow'
   },
-  components: {
-    DatetimePickerInput,
-    QuillEditor: quillEditor
+  required: {
+    type: Boolean,
+    default: false
   },
-  filters: {
-    fieldValues: function(field) {
-      if (Array.isArray(field.values)) {
-        return field?.values?.join(', ')
-      }
-      return field.values
+  readonly: {
+    type: Boolean,
+    default: false
+  },
+  field: Object,
+  useFieldAncillaryName: {
+    type: Boolean,
+    default: false
+  },
+  showFieldName: {
+    type: Boolean,
+    default: true
+  },
+  hideLabel: {
+    type: Boolean,
+    default: false
+  },
+  hideDetails: {
+    type: Boolean,
+    default: false
+  },
+  lockFeature: {
+    type: Boolean,
+    default: false
+  },
+  copyFeature: {
+    type: Boolean,
+    default: false
+  },
+  listOfValueFilter: {
+    type: Function,
+    required: false
+  },
+  hint: {
+    type: String,
+    required: false
+  },
+  minDate: String,
+  maxDate: String,
+  filledStyle: Boolean,
+  callback: Function,
+  customClass: String,
+  appendIcon: String,
+  appendCallback: Function
+})
+const { apiPath, required, readonly, field, useFieldAncillaryName, showFieldName,
+  hideLabel, hideDetails, lockFeature, copyFeature, listOfValueFilter, hint, minDate,
+  maxDate, filledStyle, customClass, appendIcon } = toRefs(props)
+
+const search = ref(null)
+const isLoading = ref(false)
+const toolbarOptions = ref({
+  modules: {
+    toolbar: [
+      ['bold', 'italic', 'underline', 'blockquote'], //toggled buttons
+      //without the color array then black = false which just un-sets color. in our case our default is navy blue, so unsetting the color goes back to navy blue and not to black.  by setting the black value to #000000 it fixes this issue.  when our default color changes to black then we could just remove the colors in this array to use the defaults from quill
+      [{ 'color': ['#000000', '#e60000', '#ff9900', '#ffff00', '#008a00', '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc', '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb', '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0', '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200', '#006100', '#0047b2', '#6b24b2', '#444444', '#5c0000', '#663d00', '#666600', '#003700', '#002966', '#3d1466'] },
+        { 'background': [] }],          // dropdown with defaults from theme
+      [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+      ['clean']                                         // remove all formatting button
+    ]
+  }
+})
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const arrayRequiredRules = ref(constants.BASIC_ARRAY_REQUIRED_RULE)
+const locked = ref(true)
+const currentUserId = ref(null)
+
+const timezone = computed(() => {
+  return userStore.timezone.value
+})
+//before this was a computed value it wasn't updating the ui for all field types when they were required
+const rules = computed(() => {
+  let rules = []
+  //handle required rule
+  if (required.value && [7, 10].includes(field.value.dataTypeId)) {
+    //dont do push here cuz arrayRequiredRules is already an array
+    rules = arrayRequiredRules.value
+  } else if (required.value) {
+    //dont do push here cuz requiredRules is already an array
+    rules = requiredRules.value
+  }
+
+  //handle min/max validation (currently only used in brs - proposal design fields
+  if (field.value.minValue) {
+    // v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
+    rules.push(v => ((!v && v !== 0) || (v >= field.value.minValue)) || `Value must be greater than or equal to ${field.value.minValue}`)
+  }
+  if (field.value.maxValue) {
+    rules.push(v => ((!v && v !== 0) || (v <= field.value.maxValue)) || `Value must be less than or equal to ${field.value.maxValue}`)
+  }
+  // rules.value = rules
+  return rules
+})
+const fieldAncillaryName = computed(() => {
+  if (field.value.ancillaryCustomFieldHint) {
+    return field.value.fieldName + ' ' + field.value.ancillaryCustomFieldHint
+  } else if (field.value.useParentData) {
+    return field.value.fieldName + ' (Parent)'
+  } else if (field.value.ancillaryCustomFieldGroupAssignmentId) {
+    return field.value.fieldName + ' (Ancillary)'
+  } else {
+    return field.value.fieldName
+  }
+})
+
+watch(search, (val) => {
+  if (field.value.lazyLoadValues) {
+    getItems(val)
+  }
+})
+
+const copyToClipBoard = (textValue) => {
+  navigator.clipboard.writeText(textValue);
+  snackbar('SUCCESS', 'Copied text to clipboard')
+
+}
+const doRichTextFieldCallback = (field, quill)  => {
+  field.textValue = quill?.text || null
+  props.callback(field)
+}
+const getFieldName = ()  => {
+  return hideLabel.value ? null : useFieldAncillaryName.value ? fieldAncillaryName.value : field.value.fieldName
+}
+
+const getItems = debounce(async(query = '') => {
+  try {
+    if (query) {
+      isLoading.value = false
+      const { data = [] } = await getRequestWithParams(`/customField/${field.value.id}/values`, { params: { query } }, apiPath.value, [])
+      field.value.listOfValues = [...data]
     }
-  },
-  computed: {
-    ...mapStores(useUserStore),
-    timezone() {
-      return this.userStore.timezone.value
-    },
-    //before this was a computed value it wasn't updating the ui for all field types when they were required
-    rules() {
-      let rules = []
-      //handle required rule
-      if (this.required && [7, 10].includes(this.field.dataTypeId)) {
-        //dont do push here cuz arrayRequiredRules is already an array
-        rules = this.arrayRequiredRules
-      } else if (this.required) {
-        //dont do push here cuz requiredRules is already an array
-        rules = this.requiredRules
-      }
+  } finally {
+    isLoading.value = false
+  }
+}, 250)
 
-      //handle min/max validation (currently only used in brs - proposal design fields
-      if (this.field.minValue) {
-        // v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
-        rules.push(v => ((!v && v !== 0) || (v >= this.field.minValue)) || `Value must be greater than or equal to ${this.field.minValue}`)
-      }
-      if (this.field.maxValue) {
-        rules.push(v => ((!v && v !== 0) || (v <= this.field.maxValue)) || `Value must be less than or equal to ${this.field.maxValue}`)
-      }
-      // this.rules = rules
-      return rules
-    },
-    fieldAncillaryName() {
-      if (this.field.ancillaryCustomFieldHint) {
-        return this.field.fieldName + ' ' + this.field.ancillaryCustomFieldHint
-      } else if (this.field.useParentData) {
-        return this.field.fieldName + ' (Parent)'
-      } else if (this.field.ancillaryCustomFieldGroupAssignmentId) {
-        return this.field.fieldName + ' (Ancillary)'
+const getListOfValues = ()  => {
+  if (listOfValueFilter.value) {
+    return field.value?.listOfValues?.filter(listOfValueFilter.value)
+  }
+  return field.value?.listOfValues || []
+}
+const handleInput = (val)  => {
+  props.callback(field.value, val === null)
+}
+const selectSelf = () => {
+  switch(field.value.companySystemListId) {
+    case 1: //Users by Organization
+    case 2: //Users by Position
+      //a field with System List Type "Users by Position" or "Users by Organization" returns a distinct list of user positions (so a user can appear more than once)
+      //and uses the userPositionId as the value.id
+      // if a user appears more than once, we want to use their primary position, so we get the position id of their primary position to find them in the list,
+      let currentUserPrimaryPositionId = userStore.details.userPositions.find(position => position.primaryFlag === true)?.id
+      let currentUserValues = getListOfValues().filter(value => value.id && value.id === currentUserPrimaryPositionId)
+      if(currentUserValues.length > 0) {
+        //select the primary position
+        field.value.intValue = currentUserValues[0].id
       } else {
-        return this.field.fieldName
-      }
-    }
-  },
-  data() {
-    return {
-      search: null,
-      isLoading: false,
-      toolbarOptions: {
-        modules: {
-          toolbar: [
-            ['bold', 'italic', 'underline', 'blockquote'], //toggled buttons
-            //without the color array then black = false which just un-sets color. in our case our default is navy blue, so unsetting the color goes back to navy blue and not to black.  by setting the black value to #000000 it fixes this issue.  when our default color changes to black then we could just remove the colors in this array to use the defaults from quill
-            [{ 'color': ['#000000', '#e60000', '#ff9900', '#ffff00', '#008a00', '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc', '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb', '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0', '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200', '#006100', '#0047b2', '#6b24b2', '#444444', '#5c0000', '#663d00', '#666600', '#003700', '#002966', '#3d1466'] },
-              { 'background': [] }],          // dropdown with defaults from theme
-            [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
-            ['clean']                                         // remove all formatting button
-          ]
-        }
-      },
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-      arrayRequiredRules: constants.BASIC_ARRAY_REQUIRED_RULE,
-      locked: true,
-      currentUserId:null,
-    }
-  },
-  // leaving this here in case we need to start showing the (Parent) / (Primary) stuff on the ancillary fields on the project
-  // computed: {
-  // displayedFieldName () {
-  //   return this.field.useParentData ? this.field.fieldName + ' (Parent)' : this.field.ancillaryCustomFieldGroupAssignmentId ? this.field.fieldName + ' (Primary)' : this.field.fieldName
-  // }
-  // },
-  watch: {
-    search(val) {
-      if (this.field.lazyLoadValues) {
-        this.getItems(val)
-      }
-    }
-  },
-
-  methods: {
-    copyToClipBoard(textValue){
-      navigator.clipboard.writeText(textValue);
-      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
-      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    },
-    doRichTextFieldCallback(field, quill) {
-      field.textValue = quill?.text || null
-      this.callback(field)
-    },
-    getFieldName() {
-      return this.hideLabel ? null : this.useFieldAncillaryName ? this.fieldAncillaryName : this.field.fieldName
-    },
-    getItems: debounce(async function(query = '') {
-      try {
-        if (query) {
-          this.isLoading = false
-          const { data = [] } = await getRequestWithParams(`/customField/${this.field.id}/values`, { params: { query } }, this.apiPath, [])
-          this.field.listOfValues = [...data]
-        }
-      } finally {
-        this.isLoading = false
-      }
-    }, 250),
-
-    getListOfValues() {
-      if (this.listOfValueFilter) {
-        return this.field?.listOfValues?.filter(this.listOfValueFilter)
-      }
-      return this.field?.listOfValues || []
-    },
-    handleInput(val) {
-      this.callback(this.field, val === null)
-    },
-    selectSelf(){
-      switch(this.field.companySystemListId) {
-        case 1: //Users by Organization
-        case 2: //Users by Position
-          //a field with System List Type "Users by Position" or "Users by Organization" returns a distinct list of user positions (so a user can appear more than once)
-          //and uses the userPositionId as the value.id
-          // if a user appears more than once, we want to use their primary position, so we get the position id of their primary position to find them in the list,
-          let currentUserPrimaryPositionId = this.userStore.details.userPositions.find(position => position.primaryFlag === true)?.id
-          let currentUserValues = this.getListOfValues().filter(value => value.id && value.id === currentUserPrimaryPositionId)
-            if(currentUserValues.length > 0) {
-              //select the primary position
-              this.field.intValue = currentUserValues[0].id
-            } else {
-              // if their primary position is not in the list, get the newest position in the list
-              let positions = this.userStore.details.userPositions.filter(position => position.primaryFlag === false)
-              .sort((position1, position2) => {
-                //sort newest to oldest position
-                if(position1.startDate < position2.startDate){
-                  return 1
-                }
-                if (position1.startDate > position2.startDate){
-                  return -1
-                }
-                return 0
-              })
-              for (let alternateUserPosition of positions) {
-                currentUserValues = this.getListOfValues().filter(value => value.id && value.id === alternateUserPosition.id)
-                if(currentUserValues.length > 0){
-                  //the first in the list of positions that also appears in the listOfValues is the newest position,
-                  // so select it and get out of the loop
-                  this.field.intValue = currentUserValues[0].id
-                  return
-                }
+        // if their primary position is not in the list, get the newest position in the list
+        let positions = userStore.details.userPositions.filter(position => position.primaryFlag === false)
+            .sort((position1, position2) => {
+              //sort newest to oldest position
+              if(position1.startDate < position2.startDate){
+                return 1
               }
-             }
-          break;
-        case 4://All Active Users
-        default: //(just using this for the default case because it's simplest)
-          //a field with System List Type of “All Active Users” returns a distinct list of users and uses the userId as the value.id
-          let currentUserId = this.userStore.details.id
-          let currentUserPosition = this.getListOfValues().find(value => value.id && value.id === currentUserId)
-              if(currentUserPosition){
-                this.field.intValue = currentUserPosition.id
+              if (position1.startDate > position2.startDate){
+                return -1
               }
-              break;
+              return 0
+            })
+        for (let alternateUserPosition of positions) {
+          currentUserValues = getListOfValues().filter(value => value.id && value.id === alternateUserPosition.id)
+          if(currentUserValues.length > 0){
+            //the first in the list of positions that also appears in the listOfValues is the newest position,
+            // so select it and get out of the loop
+            field.value.intValue = currentUserValues[0].id
+            return
+          }
+        }
       }
-      //if the current user is not found in the list, do nothing
-      if(this.field.intValue) {
-        this.handleInput(this.field.intValue)
+      break;
+    case 4://All Active Users
+    default: //(just using this for the default case because it's simplest)
+      //a field with System List Type of “All Active Users” returns a distinct list of users and uses the userId as the value.id
+      let currentUserId = userStore.details.id
+      let currentUserPosition = getListOfValues().find(value => value.id && value.id === currentUserId)
+      if(currentUserPosition){
+        field.value.intValue = currentUserPosition.id
       }
-    }
+      break;
+  }
+  //if the current user is not found in the list, do nothing
+  if(field.value.intValue) {
+    handleInput(field.value.intValue)
   }
 }
 </script>

@@ -8,9 +8,13 @@
               <v-toolbar-title class="title-large">Document Summary</v-toolbar-title>
               <v-spacer/>
               <v-toolbar-items v-if="isMobile">
-                <v-btn x-small text color="primary" @click="closeModal()">
-                  <v-icon>close</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    size="x-small"
+                    variant="text"
+                    color="primary"
+                    @click="closeModal()"
+                    prepend-icon="close"
+                ></AlbatrossButton>
               </v-toolbar-items>
             </v-toolbar>
             <div v-if="saveError" class="error-text mt-3">
@@ -19,55 +23,55 @@
             <div class="subtitle-1 mb-4 mt-4 default-text-color">Upload Details</div>
             <v-card class="square-card pa-3">
               <v-text-field
-                label="Document Name"
-                :rules="requiredRules"
-                @change="displayNameChanged = true"
-                v-model="fileDetails.displayName"
-                class="albatross-body-2"
+                  label="Document Name"
+                  :rules="requiredRules"
+                  @change="displayNameChanged = true"
+                  v-model="fileDetails.displayName"
+                  class="albatross-body-2"
               ></v-text-field>
               <DatetimePickerInput
-                v-model="fileDetails.dateCreated"
-                :timezone="timezone"
-                :type="'date'"
-                readonly
-                hidePrependIcon
-                :format="'MM/DD/YYYY'"
-                label="Upload Date"
-                custom-class="albatross-body-2"
+                  v-model="fileDetails.dateCreated"
+                  :timezone="timezone"
+                  :type="'date'"
+                  readonly
+                  hidePrependIcon
+                  :format="'MM/DD/YYYY'"
+                  label="Upload Date"
+                  custom-class="albatross-body-2"
               />
               <v-text-field
-                disabled readonly
-                label="Uploaded By"
-                v-model="fileDetails.uploadedBy"
-                class="albatross-body-2"
+                  disabled readonly
+                  label="Uploaded By"
+                  v-model="fileDetails.uploadedBy"
+                  class="albatross-body-2"
               ></v-text-field>
               <v-text-field
-                disabled readonly
-                label="Document Type"
-                v-model="fileDetails.attachmentType"
-                class="albatross-body-2"
+                  disabled readonly
+                  label="Document Type"
+                  v-model="fileDetails.attachmentType"
+                  class="albatross-body-2"
               ></v-text-field>
               <div class="location-container">
                 <label class="location-label">Document Location</label>
                 <a class="location-link" @click="goToPath(fileDetails.originPath)">{{fileDetails.originLocation}}</a>
               </div>
-<!--              <div @click="goToPath(fileDetails.originPath)" class=" mb-3 relative"-->
-<!--                  :class="{'clickable': fileDetails.originPath}">-->
-<!--                <div class="force_clickable-overlay"></div>-->
-<!--                <v-text-field-->
-<!--                  disabled readonly-->
-<!--                  label="Document Location"-->
-<!--                  v-model="fileDetails.originLocation"-->
-<!--                  class="albatross-body-2"-->
-<!--                  hide-details-->
-<!--                ></v-text-field>-->
-<!--              </div>-->
+              <!--              <div @click="goToPath(fileDetails.originPath)" class=" mb-3 relative"-->
+              <!--                  :class="{'clickable': fileDetails.originPath}">-->
+              <!--                <div class="force_clickable-overlay"></div>-->
+              <!--                <v-text-field-->
+              <!--                  disabled readonly-->
+              <!--                  label="Document Location"-->
+              <!--                  v-model="fileDetails.originLocation"-->
+              <!--                  class="albatross-body-2"-->
+              <!--                  hide-details-->
+              <!--                ></v-text-field>-->
+              <!--              </div>-->
             </v-card>
             <div v-if="customFieldGroups.length > 0" class="subtitle-1 mt-6 mb-3 default-text-color">Document Information</div>
             <v-col
-              class="pa-0"
-              v-for="(cfg, index) in customFieldGroups"
-              :key="index"
+                class="pa-0"
+                v-for="(cfg, index) in customFieldGroups"
+                :key="index"
             >
               <div class="albatross-body-1 default-text-color mb-2">{{ cfg.groupName }}</div>
               <v-card class="square-card pa-3 mb-6">
@@ -93,19 +97,32 @@
                     <template v-slot:yes>Yes</template>
                     <template v-slot:no>No</template>
                   </ConfirmationDialog>
-                  <v-btn text v-if="isExisting" color="primary" small @click="closeModal()">
-                    Cancel
-                  </v-btn>
-                  <v-btn text v-else color="primary" small @click="confirmClose = true">
-                    Cancel
-                  </v-btn>
+                  <AlbatrossButton
+                      variant="text"
+                      v-if="isExisting"
+                      color="primary"
+                      size="small"
+                      @click="closeModal()"
+                      text="Cancel"
+                  ></AlbatrossButton>
+                  <AlbatrossButton
+                      variant="text"
+                      v-else
+                      color="primary"
+                      size="small"
+                      @click="confirmClose = true"
+                      text="Cancel"
+                  ></AlbatrossButton>
                   <div>
-                    <v-btn small :loading="fieldsSaving"
-                           :disabled="customFieldsLoading"
-                           class="mt-3"
-                           color="primary" @click="saveAndUpload()">
-                      {{ isExisting ? 'Save Changes' : 'Save and Upload' }}
-                    </v-btn>
+                    <AlbatrossButton
+                        size="small"
+                        :loading="fieldsSaving"
+                        :disabled="customFieldsLoading"
+                        class="mt-3"
+                        color="primary"
+                        @click="saveAndUpload()"
+                        :text="isExisting ? 'Save Changes' : 'Save and Upload'"
+                    ></AlbatrossButton>
                   </div>
                 </v-toolbar-items>
               </v-toolbar>
@@ -116,14 +133,21 @@
               <v-toolbar-title class="title-large">{{ fileDetails.displayName }}</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn small text color="primary"
-                       v-if="isExisting"
-                       :href="existingAttachment.presignedUrl">
-                  <v-icon>mdi-tray-arrow-down</v-icon>
-                </v-btn>
-                <v-btn x-small text color="primary" @click="closeModal()">
-                  <v-icon>close</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    v-if="isExisting"
+                    :href="existingAttachment.presignedUrl"
+                    prepend-icon="mdi-tray-arrow-down"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="x-small"
+                    variant="text"
+                    color="primary"
+                    @click="closeModal()"
+                    prepend-icon="close"
+                ></AlbatrossButton>
               </v-toolbar-items>
             </v-toolbar>
             <div class="mt-3 preview-main-container">
@@ -136,14 +160,20 @@
 
                 </div>
                 <v-toolbar v-if="!isMobile" dense class="page-selection-bar" flat color="transparent">
-                  <v-btn text @click="zoomImage(false)">
-                    <v-icon>mdi-magnify-minus-outline</v-icon>
-                  </v-btn>
+                  <AlbatrossButton
+                      variant="text"
+                      @click="zoomImage(false)"
+                      color="unset"
+                      prepend-icon="mdi-magnify-minus-outline"
+                  ></AlbatrossButton>
                   <v-spacer></v-spacer>
 
-                  <v-btn text @click="zoomImage(true)">
-                    <v-icon>mdi-magnify-plus-outline</v-icon>
-                  </v-btn>
+                  <AlbatrossButton
+                      variant="text"
+                      @click="zoomImage(true)"
+                      color="unset"
+                      prepend-icon="mdi-magnify-plus-outline"
+                  ></AlbatrossButton>
                 </v-toolbar>
               </div>
               <div v-else-if="isPdf" class="one-hunned height-one-hunned overflow-auto">
@@ -151,11 +181,11 @@
                   <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
                 </div>
                 <vue-pdf-embed
-                  ref="pdfRef"
-                  :source="fileSrcUrl"
-                  :page="pdfPage"
-                  :width="pdfWidth"
-                  @rendered="handleDocumentRender"
+                    ref="pdfRef"
+                    :source="fileSrcUrl"
+                    :page="pdfPage"
+                    :width="pdfWidth"
+                    @rendered="handleDocumentRender"
                 />
               </div>
               <div v-else class="height-one-hunned one-hunned">
@@ -170,47 +200,64 @@
             </div>
             <div v-if="isPdf && !pdfIsLoading">
               <v-toolbar dense class="page-selection-bar" flat color="transparent">
-                <v-btn text @click="zoomPdf(false)">
-                  <v-icon>mdi-magnify-minus-outline</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    variant="text"
+                    @click="zoomPdf(false)"
+                    color="unset"
+                    prepend-icon="mdi-magnify-minus-outline"
+                ></AlbatrossButton>
                 <v-spacer></v-spacer>
-                <v-btn text :disabled="pdfPage <= 1" @click="pdfPage--" class="mr-3">
-                  <v-icon>mdi-chevron-left</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    variant="text"
+                    :disabled="pdfPage <= 1"
+                    @click="pdfPage--"
+                    class="mr-3"
+                    color="unset"
+                    prepend-icon="mdi-chevron-left"
+                ></AlbatrossButton>
 
                 Page {{ pdfPage }} / {{ pdfPageCount }}
 
-                <v-btn text :disabled="pdfPage >= pdfPageCount" @click="pdfPage++" class="ml-3">
-                  <v-icon>mdi-chevron-right</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    variant="text"
+                    @click="pdfPage++"
+                    :disabled="pdfPage >= pdfPageCount"
+                    class="ml-3"
+                    color="unset"
+                    prepend-icon="mdi-chevron-right"
+                ></AlbatrossButton>
+
                 <v-spacer></v-spacer>
-                <v-btn text @click="zoomPdf(true)">
-                  <v-icon>mdi-magnify-plus-outline</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    variant="text"
+                    @click="zoomPdf(true)"
+                    color="unset"
+                    prepend-icon="mdi-magnify-plus-outline"
+                ></AlbatrossButton>
               </v-toolbar>
             </div>
           </v-col>
-<!--          <v-col cols="12" class="pa-0 d-md-none">-->
-<!--            <v-tabs fixed-tabs v-model="tab">-->
-<!--              <v-tab @click="tab=0">Summary</v-tab>-->
-<!--              <v-tab @click="tab=1">Preview</v-tab>-->
-<!--            </v-tabs>-->
-<!--          </v-col>-->
+          <!--          <v-col cols="12" class="pa-0 d-md-none">-->
+          <!--            <v-tabs fixed-tabs v-model="tab">-->
+          <!--              <v-tab @click="tab=0">Summary</v-tab>-->
+          <!--              <v-tab @click="tab=1">Preview</v-tab>-->
+          <!--            </v-tabs>-->
+          <!--          </v-col>-->
         </v-row>
       </v-form>
     </v-card-text>
   </v-card>
 </template>
 
-<script>
+<script setup>
 import {
   getRequestWithParams,
-  getSnackbar,
+
   getAttachmentSourceId,
   logError, postRequest,
   putRequest
 } from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
+
 import constants from "@/helpers/constants"
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
@@ -219,266 +266,268 @@ import cloneDeep from 'lodash.clonedeep'
 import VuePdfEmbed from 'vue-pdf-embed/dist/vue2-pdf-embed'
 import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from "@/components/ConfirmationDialog"
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 
-export default {
-  name: "AttachmentCoversheetModal",
-  props: {
-    existingAttachment: Object,
-    closeCallback: Function,
-    fileUploadedCallback: Function,
-    showModal: Boolean,
-    file: File,
-    projectId: Number,
-    projectProcessStepId: Number,
-    userId: Number,
-    contactId: Number,
-    orgId: Number,
-    objectTypeId: Number,
-    projectProcessStepEventId: Number,
-  },
-  components: {
-    DatetimePickerInput,
-    CustomValueInput,
-    VuePdfEmbed,
-    SpinnerInline,
-    ConfirmationDialog
-  },
-  watch: {
-    showModal: function (visible) {
-      //created only gets called the first time the modal opens. this forces it to load every time (the watcher doesn't get call on the first time the modal opens, so no double loading to worry about)
-      if (visible) {
-        this.doPageLoad()
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const fileStore = useFileStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+
+const props = defineProps({
+  existingAttachment: Object,
+  closeCallback: Function,
+  fileUploadedCallback: Function,
+  showModal: Boolean,
+  file: File,
+  projectId: Number,
+  projectProcessStepId: Number,
+  userId: Number,
+  contactId: Number,
+  orgId: Number,
+  objectTypeId: Number,
+  projectProcessStepEventId: Number,
+})
+const { existingAttachment, showModal,
+  file, projectId, projectProcessStepId, userId, contactId, orgId,
+  objectTypeId, projectProcessStepEventId } = toRefs(props)
+
+watch(showModal, (visible) => {
+  //created only gets called the first time the modal opens. this forces it to load every time (the watcher doesn't get call on the first time the modal opens, so no double loading to worry about)
+  if (visible) {
+    doPageLoad()
+  }
+})
+
+const fileDetails = ref({})
+const acceptedFileTypes = ref(constants.STANDARD_IMAGES_DOCS_AUDIO)
+const imageFileExtensions = ref(constants.IMAGE_FILE_EXTENSIONS)
+const customFieldGroups = ref([])
+const dirtyCfvs = ref([])
+const fieldsSaving = ref(false)
+const displayNameChanged = ref(false)
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const saveError = ref(false)
+const errorMsg = ref(null)
+const isExisting = ref(false)
+const customFieldsLoading = ref(false)
+const isImage = ref(false)
+const imageWidth = ref(null)
+const isPdf = ref(false)
+const pdfPage = ref(1)
+const pdfWidth = ref(null)
+const pdfPageCount = ref(1)
+const pdfIsLoading = ref(true)
+const fileSrcUrl = ref(null)
+const confirmClose = ref(false)
+const tab = ref(isMobile.value ? 1 : 0)
+const rightPaneViewer = ref(null)
+const pdfRef = ref(null)
+const attachmentFieldsForm = ref(null)
+
+onMounted(() => {
+  doPageLoad()
+  if(isMobile.value){
+    tab.value = 1
+  }
+})
+
+const timezone = computed(() => {
+  return userStore.timezone.value
+})
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+
+const zoomImage = (zoomIn) => {
+  imageWidth.value = null === imageWidth.value ? rightPaneViewer.value?.clientWidth : imageWidth.value
+  if(zoomIn) {
+    imageWidth.value *= 1.2
+  } else {
+    imageWidth.value /= 1.2
+  }
+}
+const zoomPdf = (zoomIn) => {
+  pdfIsLoading.value = true
+  pdfWidth.value = null === pdfWidth.value ? rightPaneViewer.value?.clientWidth : pdfWidth.value
+  if(zoomIn) {
+    pdfWidth.value *= 1.2
+  } else {
+    pdfWidth.value /= 1.2
+  }
+}
+const handleDocumentRender = () => {
+  pdfIsLoading.value = false
+  pdfPageCount.value = pdfRef.value.pageCount
+}
+const goToPath = (path) => {
+  if(null != path) {
+    if(path === router.currentRoute.path) {
+      closeModal()
+    } else {
+      router.push(path)
+    }
+  }
+}
+const doPageLoad = async() => {
+  //reset all the items cuz when the modal re-opens it doesnt reset everything
+  isExisting.value = null != existingAttachment.value.id
+  displayNameChanged.value = false
+  customFieldGroups.value = []
+  dirtyCfvs.value = []
+  fileDetails.value = {}
+  saveError.value = false
+  errorMsg.value = null
+  fileSrcUrl.value = null
+  isPdf.value = false
+  isImage.value = false
+  confirmClose.value = false
+  pdfPage.value = 1
+  pdfPageCount.value = 1
+
+  //handle urls/extensions for new files prior to upload and also existing files with presigned urls
+  let fileExtension = file.value && file.value.name ? file.value?.name?.substr(file.value?.name?.lastIndexOf('.') + 1) : existingAttachment.value.fileExtension
+  isPdf.value = fileExtension === 'pdf'
+  isImage.value = imageFileExtensions.value.includes(fileExtension.toLowerCase())
+  fileSrcUrl.value = file.value && file.value.name ? URL.createObjectURL(file.value) : existingAttachment.value.presignedUrl
+
+  //required so that both new and existing files work since the objects aren't identical
+  fileDetails.value = cloneDeep(existingAttachment.value)
+
+  await getFieldGroups()
+}
+const getFieldGroups = async() => {
+  customFieldsLoading.value = true
+  try {
+    const {data} = await getRequestWithParams(`/customFieldValues/attachmentType/${existingAttachment.value.attachmentTypeId}`, {
+      params: {
+        attachmentId: existingAttachment.value.id
+      }
+    }, null, [])
+    customFieldGroups.value = data
+    customFieldsLoading.value = false
+  } catch (e) {
+    logError(e)
+  } finally {
+    isFieldsLoading.value = false
+  }
+}
+const populateDirtyCfvs = (field) => {
+  let match = dirtyCfvs.value.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+  if (!match) {
+    dirtyCfvs.value.push(field)
+  }
+}
+const getReadOnly = (field) => {
+  return getCustomFieldReadOnly(field)
+}
+const closeModal = () => {
+  props.closeCallback(existingAttachment.value.attachmentTypeId)
+}
+const saveAndUpload = async() => {
+  if (attachmentFieldsForm.value.validate()) {
+    if (!existingAttachment.value.id) {
+      //file hasn't been uploaded yet so do that first to get the id
+      await uploadDocument()
+    } else {
+      //existing file
+      if(displayNameChanged.value) {
+        await saveDisplayName()
+      }
+      //if file already exists then only save fields
+      await updateFieldGroups(existingAttachment.value.id)
+    }
+  } else {
+    errorMsg.value = 'Additional fields are required before saving.'
+    saveError.value = true
+    snackbar('ERROR', 'Missing Required Fields')
+
+  }
+}
+const saveDisplayName = async() => {
+  appStore.loading = true
+  try {
+    existingAttachment.value.displayName = fileDetails.value.displayName
+    const {data, status} = await putRequest(`/attachment/${existingAttachment.value.id}`, existingAttachment.value)
+    existingAttachment.value.presignedUrl = data.presignedUrl
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Changes')
+
+    appStore.loading = false
+  }
+}
+const uploadDocument = async() => {
+  try {
+    appStore.loading = true
+    //reset error message when trying to upload new file
+    error.value = {}
+    if (file.value && file.value.size > 0) {
+      const {sourceId, secondaryId} = getAttachmentSourceId(projectId.value, projectProcessStepId.value, projectProcessStepEventId.value,
+          userId.value, contactId.value, orgId.value)
+
+      if(sourceId != null) {
+        await fileStore.uploadFile({
+          file: file.value,
+          attachmentTypeId: existingAttachment.value.attachmentTypeId,
+          displayName: fileDetails.value.displayName,
+          objectTypeId: objectTypeId.value,
+          sourceId,
+          secondaryId,
+          callback: uploadCallback.value
+        })
       }
     }
-  },
-  data() {
-    return {
-      fileDetails: {},
-      acceptedFileTypes: constants.STANDARD_IMAGES_DOCS_AUDIO,
-      imageFileExtensions: constants.IMAGE_FILE_EXTENSIONS,
-      customFieldGroups: [],
-      dirtyCfvs: [],
-      fieldsSaving: false,
-      displayNameChanged: false,
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-      saveError: false,
-      errorMsg: null,
-      isExisting: false,
-      customFieldsLoading: false,
-      isImage: false,
-      imageWidth: null,
-      isPdf: false,
-      pdfPage: 1,
-      pdfWidth: null,
-      pdfPageCount: 1,
-      pdfIsLoading: true,
-      fileSrcUrl: null,
-      confirmClose: false,
-      tab: this.isMobile ? 1 : 0
+    // appStore.loading = false
+  } catch (e) {
+    appStore.loading = false
+    logError(e)
+    snackbar('ERROR', 'Error Uploading File')
+
+  }
+}
+const uploadCallback = async(newAttachment, error) => {
+  if (error) {
+    error.value = error
+    snackbar('ERROR', error.message)
+
+  } else {
+    await updateFieldGroups(newAttachment.id)
+    props.fileUploadedCallback(newAttachment)
+    closeModal()
+  }
+  appStore.loading = false
+}
+const updateFieldGroups = async(attachmentId) => {
+  if (dirtyCfvs.value?.length > 0) {
+    fieldsSaving.value = true
+    appStore.loading = true
+    try {
+      // save dirty custom field values
+      const {data} = await postRequest(`/customFieldValues/attachmentType/${existingAttachment.value.attachmentTypeId}/attachment/${attachmentId}`, dirtyCfvs.value)
+      dirtyCfvs.value = []
+      customFieldGroups.value = data
+      snackbar('SUCCESS', 'Fields Saved')
+
+      appStore.loading = false
+    } catch (e) {
+      logError(e)
+      snackbar('ERROR', 'Error Saving Custom Fields')
+
+      appStore.loading = false
+    } finally {
+      fieldsSaving.value = false
     }
-  },
-  created() {
-    this.doPageLoad()
-    if(this.isMobile){
-      this.tab = 1
-    }
-  },
-  computed: {
-    ...mapStores(useUserStore, useAppStore, useFileStore),
-    timezone() {
-      return this.userStore.timezone.value
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-  },
-  methods: {
-    zoomImage(zoomIn) {
-      this.imageWidth = null === this.imageWidth ? this.$refs.rightPaneViewer?.clientWidth : this.imageWidth
-      if(zoomIn) {
-        this.imageWidth *= 1.2
-      } else {
-        this.imageWidth /= 1.2
-      }
-    },
-    zoomPdf(zoomIn) {
-      this.pdfIsLoading = true
-      this.pdfWidth = null === this.pdfWidth ? this.$refs.rightPaneViewer?.clientWidth : this.pdfWidth
-      if(zoomIn) {
-        this.pdfWidth *= 1.2
-      } else {
-        this.pdfWidth /= 1.2
-      }
-    },
-    handleDocumentRender() {
-      this.pdfIsLoading = false
-      this.pdfPageCount = this.$refs.pdfRef.pageCount
-    },
-    goToPath(path) {
-      if(null != path) {
-        if(path === this.$router.currentRoute.path) {
-          this.closeModal()
-        } else {
-          this.$router.push(path)
-        }
-      }
-    },
-    async doPageLoad() {
-      //reset all the items cuz when the modal re-opens it doesnt reset everything
-      this.isExisting = null != this.existingAttachment.id
-      this.displayNameChanged = false
-      this.customFieldGroups = []
-      this.dirtyCfvs = []
-      this.fileDetails = {}
-      this.saveError = false
-      this.errorMsg = null
-      this.fileSrcUrl = null
-      this.isPdf = false
-      this.isImage = false
-      this.confirmClose = false
-      this.pdfPage = 1
-      this.pdfPageCount = 1
-
-      //handle urls/extensions for new files prior to upload and also existing files with presigned urls
-      let fileExtension = this.file && this.file.name ? this.file?.name?.substr(this.file?.name?.lastIndexOf('.') + 1) : this.existingAttachment.fileExtension
-      this.isPdf = fileExtension === 'pdf'
-      this.isImage = this.imageFileExtensions.includes(fileExtension.toLowerCase())
-      this.fileSrcUrl = this.file && this.file.name ? URL.createObjectURL(this.file) : this.existingAttachment.presignedUrl
-
-      //required so that both new and existing files work since the objects aren't identical
-      this.fileDetails = cloneDeep(this.existingAttachment)
-
-      await this.getFieldGroups()
-    },
-    getFieldGroups: async function () {
-      this.customFieldsLoading = true
-      try {
-        const {data} = await getRequestWithParams(`/customFieldValues/attachmentType/${this.existingAttachment.attachmentTypeId}`, {
-          params: {
-            attachmentId: this.existingAttachment.id
-          }
-        }, null, [])
-        this.customFieldGroups = data
-        this.customFieldsLoading = false
-      } catch (e) {
-        logError(e)
-      } finally {
-        this.isFieldsLoading = false
-      }
-    },
-    populateDirtyCfvs(field) {
-      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-      if (!match) {
-        this.dirtyCfvs.push(field)
-      }
-    },
-    getReadOnly: function (field) {
-      return getCustomFieldReadOnly(field)
-    },
-    closeModal() {
-      this.closeCallback(this.existingAttachment.attachmentTypeId)
-    },
-    async saveAndUpload() {
-      if (this.$refs.attachmentFieldsForm.validate()) {
-        if (!this.existingAttachment.id) {
-          //file hasn't been uploaded yet so do that first to get the id
-          await this.uploadDocument()
-        } else {
-          //existing file
-          if(this.displayNameChanged) {
-            await this.saveDisplayName()
-          }
-          //if file already exists then only save fields
-          await this.updateFieldGroups(this.existingAttachment.id)
-        }
-      } else {
-        this.errorMsg = 'Additional fields are required before saving.'
-        this.saveError = true
-        this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.appStore.showSnack(this.snackbar)
-      }
-    },
-    async saveDisplayName() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.existingAttachment.displayName = this.fileDetails.displayName
-        const {data, status} = await putRequest(`/attachment/${this.existingAttachment.id}`, this.existingAttachment)
-        this.existingAttachment.presignedUrl = data.presignedUrl
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    uploadDocument: async function () {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        //reset error message when trying to upload new file
-        this.error = {}
-        if (this.file && this.file.size > 0) {
-          const {sourceId, secondaryId} = getAttachmentSourceId(this.projectId, this.projectProcessStepId, this.projectProcessStepEventId,
-                                                    this.userId, this.contactId, this.orgId)
-
-          if(sourceId != null) {
-            await this.fileStore.uploadFile({
-              file: this.file,
-              attachmentTypeId: this.existingAttachment.attachmentTypeId,
-              displayName: this.fileDetails.displayName,
-              objectTypeId: this.objectTypeId,
-              sourceId,
-              secondaryId,
-              callback: this.uploadCallback
-            })
-          }
-        }
-        // this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-        this.appStore.showSnack(this.snackbar)
-      }
-    },
-    async uploadCallback(newAttachment, error) {
-      if (error) {
-        this.error = error
-        this.snackbar = getSnackbar('ERROR', error.message)
-        this.appStore.showSnack(this.snackbar)
-      } else {
-        await this.updateFieldGroups(newAttachment.id)
-        this.fileUploadedCallback(newAttachment)
-        this.closeModal()
-      }
-      this.$store.commit(AppMutations.SET_LOADING, false)
-    },
-    async updateFieldGroups(attachmentId) {
-      if (this.dirtyCfvs?.length > 0) {
-        this.fieldsSaving = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          // save dirty custom field values
-          const {data} = await postRequest(`/customFieldValues/attachmentType/${this.existingAttachment.attachmentTypeId}/attachment/${attachmentId}`, this.dirtyCfvs)
-          this.dirtyCfvs = []
-          this.customFieldGroups = data
-          this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
-          this.appStore.showSnack(this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
-          this.appStore.showSnack(this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } finally {
-          this.fieldsSaving = false
-        }
-      }
-    },
   }
 }
 </script>
