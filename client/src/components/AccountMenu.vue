@@ -67,7 +67,10 @@ import { useFileStore } from '@/stores/FileStore.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
 
+const route = useRoute()
+const router = useRouter()
 const fileStore = useFileStore()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy

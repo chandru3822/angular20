@@ -108,183 +108,166 @@
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
 import SpinnerInline from '@/components/SpinnerInline'
-import { handleHidingGlobalLoader, getRequestWithParams, isNumberOrHyphen, postRequest, getSnackbar} from '@/helpers/helpers'
+import { handleHidingGlobalLoader, getRequestWithParams, isNumberOrHyphen, postRequest, } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
 import {saveContact} from '@/services/contactService'
 import {getCompanyStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 
-const { VITE_ENV } =  import.meta.env
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-export default {
-  name: 'NewContact',
-  components: {
-    SpinnerInline,
-    CustomValueInput
-  },
-  data () {
-    return {
-      snackbar: {},
-      constants,
-      contact: {},
-      isNumberOrHyphen,
-      states: [],
-      postalCodeRules: constants.POSTAL_CODE_REQUIRED_RULES,
-      cityRules: constants.CITY_RULES,
-      addressRules: constants.ADDRESS_RULES,
-      // phoneRules: constants.PHONE_REQUIRED_RULES,
-      nameRules: constants.NAME_RULES,
-      nameRequiredRules: constants.NAME_REQUIRED_RULES,
-      contactPhoneRule: [
-        () => ((this.contact.phone != null && this.contact.phone !== '') || (this.contact.mobile != null && this.contact.mobile !== '')) || "Phone or Mobile is required",
-        v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
-        v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number",
-        v => ((!v || (this.contact.phone !== this.contact.mobile))) || 'Phone and Mobile Cannot be the same',
-      ],
-      loadingInsertFields: true,
-      countries: [],
-      dirtyCfvs: [],
-      customFieldGroups: [],
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-      emailRules: constants.EMAIL_RULES
-    }
-  },
-  watch: {
-    contact: {
-      // This will let Vue know to look inside the array
-      deep: true,
+const contact = ref({})
+const states = ref([])
+const postalCodeRules = ref(constants.POSTAL_CODE_REQUIRED_RULES)
+const cityRules = ref(constants.CITY_RULES)
+const addressRules = ref(constants.ADDRESS_RULES)
+const nameRules = ref(constants.NAME_RULES)
+const nameRequiredRules = ref(constants.NAME_REQUIRED_RULES)
+const contactPhoneRule = ref([() => ((contact.value.phone != null && contact.value.phone !== '') || (contact.value.mobile != null && contact.value.mobile !== '')) || "Phone or Mobile is required",v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number",v => ((!v || (contact.value.phone !== contact.value.mobile))) || 'Phone and Mobile Cannot be the same',])
+const loadingInsertFields = ref(true)
+const countries = ref([])
+const dirtyCfvs = ref([])
+const customFieldGroups = ref([])
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const emailRules = ref(constants.EMAIL_RULES)
+const contactForm = ref(null)
 
-      // We have to move our method to a handler field
-      handler() {
-        this.validate(false)
-      }
-    }
-  },
-  created () {
-    //todo: use only for testing
-    if(VITE_ENV === 'local') {
-      // this.setFakeContact()
-    }
-    this.getCompanyStates()
-    this.getCountries()
-    this.getCustomFieldGroups()
-  },
-  computed: {
-    ...mapStores(useUserStore, useAppStore),
-    companyId() {
-      return this.$route.query.cid || this.userStore.details.companyId
-    }
-  },
-  methods: {
-    validate (saveContact) {
-
-      let valid = this.$refs.contactForm.validate()
-      if (valid && saveContact) {
-        this.saveContact()
-      }
+watch(
+    () => contact,
+    (newValue, oldValue) => {
+      validate(false);
     },
-    async getCustomFieldGroups () {
-      this.loadingInsertFields = true
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequestWithParams(`/customFieldGroup/getContactInsertFields`, {
-          params: {
-            companyId: this.companyId
-          }
-        })
-        this.customFieldGroups = data
-        this.loadingInsertFields = false
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.loadingInsertFields = false
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCompanyStates () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getCompanyStates(parseInt(this.companyId))
-        this.states = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCountries () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getCountries(parseInt(this.companyId))
-        this.countries = data
-        if(this.countries?.length === 1) {
-          this.contact.companyCountryId = this.countries[0].id
-        }
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveContact () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.contact.customFieldGroups = this.customFieldGroups
-      try {
-        this.contact.companyId = this.companyId
-        let body = {
-          contact: this.contact,
-          cfvs: this.dirtyCfvs?.length > 0 ? this.dirtyCfvs : []
-        }
-        const {data, status} = await saveContact(this.contact.id, body)
-        // postRequest(`/contact/custom`, body)
-
-        this.$router.push({path: `/contact/${data?.contact?.id}`})
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Contact')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    populateDirtyCfvs(field) {
-      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-      if(!match) {
-        this.dirtyCfvs.push(field)
-      }
-    },
-    getReadOnly: function (field) {
-      return getCustomFieldReadOnly(field)
-    },
-    setFakeContact () {
-      this.contact = {
-        firstName: 'Randa',
-        lastName: 'Test',
-        phone: '1111111111',
-        mobile: '1111111111',
-        street1: '1234 Oak St.',
-        city: 'Salt Lake City',
-        companyStateId: 2,
-        companyCountryId: 1,
-        postalCode: '84115',
-        email: 'randa@randa.com'
-      }
-    }
+    { deep: true }
+)
+onMounted(() => {
+  //todo: use only for testing
+  if(VITE_ENV === 'local') {
+    // setFakeContact()
   }
+  getCompanyStates()
+  getCountries()
+  getCustomFieldGroups()
+})
 
+const companyId  = computed(() => {
+  return route.query.cid || userStore.details.companyId
+})
+
+const validate =  (saveContact) => {
+
+  let valid = contactForm.value.validate()
+  if (valid && saveContact) {
+    saveContact()
+  }
 }
+const getCustomFieldGroups = async () => {
+  loadingInsertFields.value = true
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequestWithParams(`/customFieldGroup/getContactInsertFields`, {
+      params: {
+        companyId: companyId.value
+      }
+    })
+    customFieldGroups.value = data
+    loadingInsertFields.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    loadingInsertFields.value = false
+    snackbar('ERROR', 'Error Retrieving Custom Fields')
+
+    appStore.loading = false
+  }
+}
+const getCompanyStates = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getCompanyStates(parseInt(companyId.value))
+    states.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving States')
+
+    appStore.loading = false
+  }
+}
+const getCountries = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getCountries(parseInt(companyId.value))
+    countries.value = data
+    if(countries.value?.length === 1) {
+      contact.value.companyCountryId = countries.value[0].id
+    }
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Countries')
+
+    appStore.loading = false
+  }
+}
+const saveContact = async () => {
+  appStore.loading = true
+  contact.value.customFieldGroups = customFieldGroups.value
+  try {
+    contact.value.companyId = companyId.value
+    let body = {
+      contact: contact.value,
+      cfvs: dirtyCfvs.value?.length > 0 ? dirtyCfvs.value : []
+    }
+    const {data, status} = await saveContact(contact.value.id, body)
+    // postRequest(`/contact/custom`, body)
+
+    router.push({path: `/contact/${data?.contact?.id}`})
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Contact')
+
+    appStore.loading = false
+  }
+}
+const populateDirtyCfvs = (field) => {
+  let match = dirtyCfvs.value.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+  if(!match) {
+    dirtyCfvs.value.push(field)
+  }
+}
+const getReadOnly = (field) => {
+  return getCustomFieldReadOnly(field)
+}
+const setFakeContact =  () => {
+  contact.value = {
+    firstName: 'Randa',
+    lastName: 'Test',
+    phone: '1111111111',
+    mobile: '1111111111',
+    street1: '1234 Oak St.',
+    city: 'Salt Lake City',
+    companyStateId: 2,
+    companyCountryId: 1,
+    postalCode: '84115',
+    email: 'randa@randa.com'
+  }
+}
+
 </script>
