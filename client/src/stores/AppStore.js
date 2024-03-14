@@ -26,9 +26,9 @@ export const AppStore = {
     theme: theme.LIGHT
   },
   mutations: {
-    [AppMutations.SET_LOADING]: (state, loading) => (state.loading = loading),
+    // [AppMutations.SET_LOADING]: (state, loading) => (state.loading = loading),
     // [AppMutations.SET_SELECTED_PROCESS_STEP_NAME]: (state, selectedProcessStepName) => (state.selectedProcessStepName = selectedProcessStepName),
-    [AppMutations.SHOW_SNACK]: (state, snack) => (state.snack = snack),
+    // [AppMutations.SHOW_SNACK]: (state, snack) => (state.snack = snack),
     // [AppMutations.SET_ANNOUNCEMENTS]: (state, announcements) => (state.announcements = announcements),
     // [AppMutations.SET_REDIRECT_URL]: (state, url) => (state.redirectUrl = url),
     // [AppMutations.SET_SPINNER_URL]: (state, url) => (state.spinnerUrl = url),
