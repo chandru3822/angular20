@@ -7,19 +7,18 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-switch
-              v-model="search.inactive"
-              @change="setLocalStorage"
-              class="fix-switch-color mt-5 mr-3"
-              label="Include Inactive"
+                v-model="search.inactive"
+                @change="setLocalStorage"
+                class="fix-switch-color mt-5 mr-3"
+                label="Include Inactive"
             />
-            <v-btn text color="primary" @click="exportCsv">
-              <v-icon>mdi-cloud-download</v-icon>
-              <span class="ml-2" v-if="!constants.IS_MOBILE">Export</span>
-            </v-btn>
-            <v-btn text color="primary" to="/newOrg" v-if="hasOrgAddAccess">
-              <v-icon>add</v-icon>
-              <span class="ml-2" v-if="!constants.IS_MOBILE">Add Organization</span>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="exportCsv"
+                prepend-icon="mdi-cloud-download"
+                :text="!constants.IS_MOBILE ? 'Export' : ''"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-data-table
@@ -91,197 +90,148 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {  handleHidingGlobalLoader, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import { saveAs } from 'file-saver'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
-  import { mapStores } from 'pinia'
+<script setup>
 
-  export default {
-    name: 'Orgs',
+import {  handleHidingGlobalLoader, getRequestWithParams,  } from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import { saveAs } from 'file-saver'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-    data () {
-      return {
-        initialLoad: true,
-        snackbar: {},
-        constants,
-        delay: 500,
-        // includeInactive: false,
-        dialog: false,
-        orgs: [],
-        orgFilter: this.$route.params.orgFilter ? this.$route.params.orgFilter : '',
-        headers: [
-          { text: 'Organization', value: 'orgName', show: true,
-            filter: value => {
-              if (!this.search.org) {
-                return true
-              } else {
-                return value.toLowerCase().includes(this.search.org.toLowerCase())
-              }
-            }
-          },
-          { text: 'Type', value: 'orgType', show: true,
-            filter: value => {
-              if (!this.search.type) {
-                return true
-              } else {
-                return value.toLowerCase().includes(this.search.type.toLowerCase())
-              }
-            }},
-          { text: 'Parent', value: 'parentOrgName', show: true,
-            filter: value => {
-              if (!this.search.parent) {
-                return true
-              } else {
-                return value && value.toLowerCase().includes(this.search.parent.toLowerCase())
-              }
-            }},
-          { text: 'State', value: 'stateAbbreviation', show: true,
-            filter: value => {
-              if (!this.search.stateAbbreviation) {
-                return true
-              } else {
-                return value && value.toLowerCase().includes(this.search.stateAbbreviation.toLowerCase())
-              }
-            }},
-          { text: 'Active', value: 'activeFlag', show: true,
-            filter: value => {
-              if (!this.search.active) {
-                return true
-              } else {
-                let stringValue = value ? 'Yes' : 'No'
-                return stringValue.toLowerCase().includes(this.search.active.toLowerCase())
-              }
-            }}
-        ],
-        descending: true,
-        footerProps: {
-          'items-per-page-options': [25, 50, 100, 1000],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        options: {
-          itemsPerPage: 100
-        },
-        totalOrgs: 0,
-        dataLoading: true,
-        search: {
-          org: '',
-          type: '',
-          parent: '',
-          active: '',
-          inactive: false
-        }
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const initialLoad = ref(true)
+const delay = ref(500)
+const dialog = ref(false)
+const orgs = ref([])
+const orgFilter = ref(route.params.orgFilter ? route.params.orgFilter : '')
+const headers = ref([
+  { text: 'Organization', value: 'orgName', show: true,filter: value => {if (!search.value.org) {return true} else {return value.toLowerCase().includes(search.value.org.toLowerCase())}}},
+  { text: 'Type', value: 'orgType', show: true,filter: value => {if (!search.value.type) {return true} else {return value.toLowerCase().includes(search.value.type.toLowerCase())}}},
+  { text: 'Parent', value: 'parentOrgName', show: true,filter: value => {if (!search.value.parent) {return true} else {return value && value.toLowerCase().includes(search.value.parent.toLowerCase())}}},
+  { text: 'State', value: 'stateAbbreviation', show: true,filter: value => {if (!search.value.stateAbbreviation) {return true} else {return value && value.toLowerCase().includes(search.value.stateAbbreviation.toLowerCase())}}},
+  { text: 'Active', value: 'activeFlag', show: true,filter: value => {if (!search.value.active) {return true} else {let stringValue = value ? 'Yes' : 'No'; return stringValue.toLowerCase().includes(search.value.active.toLowerCase())}}}
+])
+const descending = ref(true)
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 1000],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const options = ref({itemsPerPage: 100})
+const totalOrgs = ref(0)
+const dataLoading = ref(true)
+const search = ref({org: '',type: '',parent: '',active: '',inactive: false})
+
+
+const hasOrgAddAccess = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ORGS', 'ADD')
+})
+const filteredOrgs = computed(() => {
+  return orgs.value.filter(o => { return search.value?.inactive ? true : o.activeFlag})
+})
+const useSavedFilters = computed(() => {
+  return route.params.useSavedFilters
+})
+
+watch(
+    () => options,
+    (newValue, oldValue) => {
+      if (!initialLoad.value) {
+        getOrgs();
       }
     },
-    computed: {
-      ...mapStores(useUserStore),
-      hasOrgAddAccess() {
-        return this.userStore.userHasFeatureAccessLevel('ORGS', 'ADD')
-      },
-      filteredOrgs () {
-        return this.orgs.filter(o => { return this.search?.inactive ? true : o.activeFlag})
-      },
-    },
-    watch: {
-      options: {
-        handler () {
-          if(!this.initialLoad) {
-            this.getOrgs()
-          }
-        },
-        deep: true,
-      },
-    },
-    beforeRouteEnter(to, from, next) {
-      //if coming to this page from the project details - use the previously used searchQuery
-      next((vm) => {
-        if(from?.fullPath.includes('/org/')) {
-          let localOrgSearch = localStorage.getItem('orgSearch')
-          if(localOrgSearch !== null) {
-            vm.search = JSON.parse(localStorage.getItem('orgSearch'))
-          }
-        } else {
-          localStorage.removeItem('orgSearch')
-        }
-        vm.getOrgs()
-      });
-    },
-    methods: {
-      setLocalStorage () {
-        localStorage.setItem('orgSearch', JSON.stringify(this.search))
-      },
-      clickRow(id){
-        this.$router.push({name: 'org', params: {id}})
-      },
-      // filterResults(value, search, item) {
-      // },
-      async getOrgs() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequestWithParams(`/org`)
-          this.orgs = data
-          this.initialLoad = false
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Organizations')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      exportCsv() {
-        let csv = ''
+    { deep: true }
+)
 
-        this.headers.forEach(h => csv += `${h.text},`)
-        csv = `${csv.slice(0, -1)}\n`
-
-        this.filteredOrgs.forEach(o => {
-
-          let addRow = true
-          this.headers.forEach(h => {
-            if (!h.filter(o[h.value])) {
-              addRow = false
-            }
-          })
-
-          if (addRow) {
-            this.headers.forEach(h => csv += '"'+`${o[h.value] === null ? '' : o[h.value]}`+'",')
-            csv = `${csv.slice(0, -1)}\n`
-          }
-        })
-
-        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
-        saveAs(blob, 'Orgs.csv')
-      },
-    },
-
-    async created () {
-      if (this.orgFilter) {
-        this.search = this.orgFilter
-      }
-    }
+onMounted(() => {
+  if (orgFilter.value) {
+    search.value = orgFilter.value
   }
+  if(useSavedFilters.value === 'true') {
+    let localOrgSearch = localStorage.getItem('orgSearch')
+    if(localOrgSearch !== null) {
+      search.value = JSON.parse(localStorage.getItem('orgSearch'))
+    }
+  } else {
+    localStorage.removeItem('orgSearch')
+  }
+  getOrgs()
+})
+
+const setLocalStorage =  () => {
+  localStorage.setItem('orgSearch', JSON.stringify(search.value))
+}
+const clickRow = (id)=> {
+  router.push({name: 'org', params: {id}})
+}
+const getOrgs = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequestWithParams(`/org`)
+    orgs.value = data
+    initialLoad.value = false
+    dataLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Organizations')
+
+    appStore.loading = false
+  }
+}
+const exportCsv = () => {
+  let csv = ''
+
+  headers.value.forEach(h => csv += `${h.text},`)
+  csv = `${csv.slice(0, -1)}\n`
+
+  filteredOrgs.value.forEach(o => {
+
+    let addRow = true
+    headers.value.forEach(h => {
+      if (!h.filter(o[h.value])) {
+        addRow = false
+      }
+    })
+
+    if (addRow) {
+      headers.value.forEach(h => csv += '"'+`${o[h.value] === null ? '' : o[h.value]}`+'",')
+      csv = `${csv.slice(0, -1)}\n`
+    }
+  })
+
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
+  saveAs(blob, 'Orgs.csv')
+}
+
+
 </script>
 
 <style lang="scss">
-  #orgs-container .v-data-table__wrapper {
-    height: calc(100vh - 190px);
-    min-height: 300px;
-  }
+#orgs-container .v-data-table__wrapper {
+  height: calc(100vh - 190px);
+  min-height: 300px;
+}
 </style>
 
 <style lang="scss" scoped>
-  #orgs-container {
-    margin-top: -15px;
-    padding-left: 0;
-    padding-right: 0;
-    padding-top: 0;
-  }
+#orgs-container {
+  margin-top: -15px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
 
-  .org-table {
-    margin-top: 2px;
-  }
+.org-table {
+  margin-top: 2px;
+}
 </style>

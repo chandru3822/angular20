@@ -6,11 +6,14 @@
           <v-toolbar-title class="title-large-medium">Contacts</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="canAdd && (!userStore.isParent|| !companies || companies.length === 1)"
-                   to="/newContact" color="primary" >
-              <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE" class="body-medium">Add Contact</span>
-            </v-btn>
+
+            <AlbatrossButton
+                variant="text"
+                v-if="canAdd && (!userStore.isParent|| !companies || companies.length === 1)"
+                to="/newContact"
+                color="primary"
+                :text="!constants.IS_MOBILE ? 'Add Contact' : ''"
+            ></AlbatrossButton>
             <v-menu data-app left
                     v-else-if="canAdd && companies && companies.length > 1"
                     offset-y
@@ -19,10 +22,13 @@
                     class="account-menu"
                     :close-on-content-click="false">
               <template v-slot:activator="{ on }">
-                <v-btn text v-on="on" color="primary">
-                  <v-icon>add</v-icon>
-                  <span v-if="!constants.IS_MOBILE" class="body-medium">Add Contact</span>
-                </v-btn>
+                <AlbatrossButton
+                    variant="text"
+                    :activation-handler="on"
+                    color="primary"
+                    prepend-icon="add"
+                    :text="!constants.IS_MOBILE ? 'Add Contact' : ''"
+                ></AlbatrossButton>
               </template>
               <v-list dense class="pa-3">
                 <v-list-item  @click="menuOpen = false" :to="`/newContact?cid=${c.id}`"

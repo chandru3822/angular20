@@ -4,9 +4,19 @@
       <v-card-title>
         Add Organization
         <v-spacer></v-spacer>
-        <v-btn text color="primary" class="mr-3" to="/orgs">Cancel</v-btn>
-        <v-btn color="primary white--text" :disabled="loadingInsertFields || (org.schedulable && !org.companyTimezoneId)"
-               @click="validate">Save</v-btn>
+        <AlbatrossButton
+            variant="text"
+            color="primary"
+            class="mr-3"
+            to="/orgs"
+            text="Cancel"
+        ></AlbatrossButton>
+        <AlbatrossButton
+            color="primary "
+            :disabled="loadingInsertFields || (org.schedulable && !org.companyTimezoneId)"
+            @click="validate"
+            text="Save"
+        ></AlbatrossButton>
       </v-card-title>
 
       <v-form ref="orgForm">
@@ -18,27 +28,27 @@
                             :rules="requiredRules"
                             v-model="org.orgName"></v-text-field>
               <v-autocomplete v-model="selectedOrgType"
-                        :items="orgTypes"
-                        label="Organization Type"
-                        :rules="requiredRules"
-                        item-text="orgType"
-                        item-value="id"
-                        return-object
-                        @input="getOrgsByType()"
+                              :items="orgTypes"
+                              label="Organization Type"
+                              :rules="requiredRules"
+                              item-text="orgType"
+                              item-value="id"
+                              return-object
+                              @input="getAllOrgsByType()"
                               attach
               ></v-autocomplete>
               <v-autocomplete v-model="org.parentOrgId"
-                        :items="parents"
-                        label="Parent Organization"
-                        item-text="orgName"
-                        item-value="id"
+                              :items="parents"
+                              label="Parent Organization"
+                              item-text="orgName"
+                              item-value="id"
                               attach
               ></v-autocomplete>
               <v-autocomplete attach v-model="org.companyStateId"
-                        :items="states"
-                        label="State"
-                        item-text="state"
-                        item-value="id"
+                              :items="states"
+                              label="State"
+                              item-text="state"
+                              item-value="id"
               ></v-autocomplete>
               <v-checkbox label="Show in Scheduling Tool" class="mb-n4" v-model="org.schedulable" @change="getCompanyTimezones(org.schedulable)"></v-checkbox>
               <div v-if="org.schedulable">
@@ -74,165 +84,161 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
 
-  import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-  import {getOrgTypes, getOrgsByType} from '@/services/orgService'
-  import {getCustomFieldReadOnly} from '@/services/customFieldService'
-  import SpinnerInline from '@/components/SpinnerInline'
-  import {getCompanyStates} from "@/services/stateService";
-  import { mapStores } from 'pinia'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  export default {
-    name: 'NewLead',
-    components: {
-      SpinnerInline,
-      CustomValueInput
-    },
-    data () {
-      return {
-        snackbar: {},
-        selectedOrgType: null,
-        org: {},
-        orgTypes: [],
-        loadingInsertFields: true,
-        parents: [],
-        companyTimezones: [],
-        states: [],
-        dirtyCfvs: [],
-        customFieldGroups: [],
-        requiredRules: constants.BASIC_REQUIRED_RULE,
-      }
-    },
-    created () {
-      this.getCompanyStates()
-      this.getCustomFieldGroups()
-      this.getOrgTypes()
-    },
-    computed: {
-      ...mapStores(useUserStore, useAppStore),
-      companyId() {
-        return this.userStore.details.companyId
-      },
-    },
-    methods: {
-      validate () {
-        if (this.$refs.orgForm.validate()) {
-          this.saveOrg()
-        }
-      },
-      async getCompanyTimezones(schedulable) {
-        if(schedulable) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {data, status} = await getRequestWithParams(`/timezone`)
-            this.companyTimezones = data
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
-            this.appStore.showSnack(this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async getCustomFieldGroups () {
-        this.loadingInsertFields = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/customFieldGroup/getOrgInsertFields`)
-          this.customFieldGroups = data
-          this.loadingInsertFields = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.loadingInsertFields = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
-          this.appStore.showSnack(this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveOrg () {
-        this.org.orgTypeId = this.selectedOrgType?.id
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        this.org.customFieldGroups = this.customFieldGroups
-        try {
-          const {data, status} = await putRequest(`/org`, this.org)
-          this.$router.push({name: 'org', params: {id: data.id}})
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Org')
-          this.appStore.showSnack(this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getOrgTypes () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getOrgTypes()
-          this.orgTypes = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
-          this.appStore.showSnack(this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getOrgsByType () {
-        // this gets the available parents
-        if(this.selectedOrgType?.orgParentTypeId) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {data, status} = await getOrgsByType(this.selectedOrgType?.orgParentTypeId)
-            this.parents = data
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Parent Orgs')
-            this.appStore.showSnack(this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        } else {
-          this.parents = []
-        }
-      },
-      populateDirtyCfvs (field) {
-        let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-        if (!match) {
-          this.dirtyCfvs.push(field)
-        }
-      },
-      getReadOnly: function (field) {
-        return getCustomFieldReadOnly(field)
-      },
-      async getCompanyStates () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getCompanyStates()
-          this.states = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-          this.appStore.showSnack(this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-    }
+import {handleHidingGlobalLoader, getRequest, putRequest,  getRequestWithParams} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+import {getOrgTypes, getOrgsByType} from '@/services/orgService'
+import {getCustomFieldReadOnly} from '@/services/customFieldService'
+import SpinnerInline from '@/components/SpinnerInline'
+import {getCompanyStates} from "@/services/stateService";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const selectedOrgType = ref(null)
+const org = ref({})
+const orgTypes = ref([])
+const loadingInsertFields = ref(true)
+const orgForm = ref(null)
+const parents = ref([])
+const companyTimezones = ref([])
+const states = ref([])
+const dirtyCfvs = ref([])
+const customFieldGroups = ref([])
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+
+onMounted(() => {
+  getAllCompanyStates()
+  getCustomFieldGroups()
+  getAllOrgTypes()
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+
+const validate = () => {
+  if (orgForm.value.validate()) {
+    saveOrg()
   }
+}
+const getCompanyTimezones = async(schedulable) => {
+  if(schedulable) {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequestWithParams(`/timezone`)
+      companyTimezones.value = data
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Timezones')
+
+      appStore.loading = false
+    }
+  }
+}
+const getCustomFieldGroups = async () => {
+  loadingInsertFields.value = true
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/customFieldGroup/getOrgInsertFields`)
+    customFieldGroups.value = data
+    loadingInsertFields.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    loadingInsertFields.value = false
+    snackbar('ERROR', 'Error Retrieving Custom Fields')
+
+    appStore.loading = false
+  }
+}
+const saveOrg = async () => {
+  org.value.orgTypeId = selectedOrgType.value?.id
+  appStore.loading = true
+  org.value.customFieldGroups = customFieldGroups.value
+  try {
+    const {data, status} = await putRequest(`/org`, org.value)
+    router.push({name: 'org', params: {id: data.id}})
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Org')
+
+    appStore.loading = false
+  }
+}
+const getAllOrgTypes = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getOrgTypes()
+    orgTypes.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Org Types')
+
+    appStore.loading = false
+  }
+}
+const getAllOrgsByType = async () => {
+  // this gets the available parents
+  if(selectedOrgType.value?.orgParentTypeId) {
+    appStore.loading = true
+    try {
+      const {data, status} = await getOrgsByType(selectedOrgType.value?.orgParentTypeId)
+      parents.value = data
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Parent Orgs')
+
+      appStore.loading = false
+    }
+  } else {
+    parents.value = []
+  }
+}
+const populateDirtyCfvs = (field) => {
+  let match = dirtyCfvs.value.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+  if (!match) {
+    dirtyCfvs.value.push(field)
+  }
+}
+const getReadOnly = (field) => {
+  return getCustomFieldReadOnly(field)
+}
+const getAllCompanyStates = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getCompanyStates()
+    states.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving States')
+
+    appStore.loading = false
+  }
+}
+
 </script>
 
 <style lang="scss" scoped>
-  .v-select ::v-deep .v-select__selection {
-    color: var(--v-primaryText-base);
-  }
+.v-select ::v-deep .v-select__selection {
+  color: var(--v-primaryText-base);
+}
 </style>
 

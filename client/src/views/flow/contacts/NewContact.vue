@@ -4,13 +4,39 @@
       <v-card-title class="title-large-medium">
         Add Contact
         <v-spacer></v-spacer>
-        <v-btn v-if="!constants.IS_MOBILE" text color="primary" class="mr-3 body-medium" to="/contacts">Cancel</v-btn>
-        <v-btn v-if="!constants.IS_MOBILE" color="primary white--text" :disabled="loadingInsertFields" @click="validate(true)" class="body-medium">Save</v-btn>
+        <AlbatrossButton
+            v-if="!constants.IS_MOBILE"
+            variant="text"
+            color="primary"
+            class="mr-3 body-medium"
+            to="/contacts"
+            text="Cancel"
+        ></AlbatrossButton>
+        <AlbatrossButton
+            v-if="!constants.IS_MOBILE"
+            color="primary "
+            :disabled="loadingInsertFields"
+            @click="validate(true)"
+            class="body-medium"
+            text="Save"
+        ></AlbatrossButton>
       </v-card-title>
       <v-card-text  v-if="constants.IS_MOBILE">
-        <v-btn text class="mr-3 body-medium" color="primary" to="/contacts">Cancel</v-btn>
-        <v-btn color="primary white--text" :disabled="loadingInsertFields"
-               @click="validate(true)" id="qa-add-contact-save" class="body-medium">Save</v-btn>
+        <AlbatrossButton
+            variant="text"
+            class="mr-3 body-medium"
+            color="primary"
+            to="/contacts"
+            text="Cancel"
+        ></AlbatrossButton>
+        <AlbatrossButton
+            color="primary "
+            :disabled="loadingInsertFields"
+            @click="validate(true)"
+            id="qa-add-contact-save"
+            class="body-medium"
+            text="Save"
+        ></AlbatrossButton>
       </v-card-text>
       <v-form ref="contactForm">
         <v-container>
