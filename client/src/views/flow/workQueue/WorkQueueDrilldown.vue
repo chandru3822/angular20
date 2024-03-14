@@ -3,9 +3,14 @@
     <v-row v-if="!dataLoading && !errorLoading">
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-btn text small :to="`/workQueue`" class="mr-3" color="primary">
-            <v-icon>mdi-arrow-left</v-icon>
-          </v-btn>
+          <AlbatrossButton
+              variant="text"
+              size="small"
+              :to="`/workQueue`"
+              class="mr-3"
+              color="primary"
+              prepend-icon="mdi-arrow-left"
+          ></AlbatrossButton>
           <v-toolbar-title class="app-title" v-if="workQueue && workQueue.workQueueType">{{ workQueue.workQueueType }}
           </v-toolbar-title>
           <v-spacer></v-spacer>
@@ -24,10 +29,14 @@
                 label="Hide events with a start time in the future"
                 @change="filterFutureFollowUps()"
             />
-            <v-btn text color="primary" @click="exportCsv" v-if="results.length > 0">
-              <v-icon class="mr-2">mdi-cloud-download</v-icon>
-              Export
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="exportCsv"
+                v-if="results.length > 0"
+                prepend-icon="mdi-cloud-download"
+                text="Export"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <div v-if="noResults && !dataLoading" class="one-hunned text-center mt-5">
@@ -77,11 +86,14 @@
                 <!--                             :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">-->
                 <!--                  {{ item['Project Name'] }}-->
                 <!--                </router-link>-->
-                <a >
-                  <v-btn text small
-                         :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
-                    {{ item['Project Name'] }}
-                  </v-btn>
+                <a>
+                  <AlbatrossButton
+                      variant="text"
+                      small
+                      :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`"
+                      color="unset"
+                      :text="item['Project Name']"
+                  ></AlbatrossButton>
                 </a>
                 <div class="chip-container">
                   <v-chip v-for="(tag, idx) in item.tags"
@@ -120,9 +132,14 @@
                 <router-link  v-if="item['Owner']" class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Owner'] }}
                 </router-link>
-                <v-btn outlined text v-else-if="userCanOwnProcessStep(item)" class="text-capitalize primary--text">
-                  <a @click="assignToUser(item)">Assign to me</a>
-                </v-btn>
+                <AlbatrossButton
+                    variant="outlined"
+                    v-else-if="userCanOwnProcessStep(item)"
+                    class="text-capitalize primary--text"
+                    @click="assignToUser(item)"
+                    color="unset"
+                    text="Assign to me">
+                </AlbatrossButton>
               </td>
               <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Active Process Steps']">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
@@ -134,10 +151,14 @@
                      class="remove-left-margin"
                      :class="{'pt-2': item.tags && item.tags.length > 0}">
                   <a >
-                    <v-btn v-if="item['Project Name']" text small
-                           :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}/event/${item.projectProcessStepEventId}`">
-                      {{ item['Project Name'] }}
-                    </v-btn>
+                    <AlbatrossButton
+                        v-if="item['Project Name']"
+                        variant="text"
+                        small
+                        :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}/event/${item.projectProcessStepEventId}`"
+                        color="unset"
+                        :text="item['Project Name']"
+                    ></AlbatrossButton>
                   </a>
                   <div class="chip-container">
                     <v-chip v-for="(tag, idx) in item.tags"
@@ -174,9 +195,14 @@
                     <v-spacer></v-spacer>
                     {{ item.id }}
                   </router-link>
-                  <v-btn small fab text color="primary" @click="[showNotesModal = true, notesPpsIndex = index, itemToUpdate = item]">
-                    <v-icon>mdi-comment-text-multiple</v-icon>
-                  </v-btn>
+                  <AlbatrossButton
+                      size="small"
+                      icon
+                      variant="text"
+                      color="primary"
+                      @click="[showNotesModal = true, notesPpsIndex = index, itemToUpdate = item]"
+                      prepend-icon="mdi-comment-text-multiple"
+                  ></AlbatrossButton>
                 </div>
               </td>
             </tr>

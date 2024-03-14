@@ -180,10 +180,11 @@
           tracked will be coming up soon!
         </span>
         <v-card-actions class="flex-display justify-end">
-          <v-btn
-              @click="showMetricsDialog = false">
-            Close
-          </v-btn>
+          <AlbatrossButton
+              @click="showMetricsDialog = false"
+              color="unset"
+              text="Close"
+          ></AlbatrossButton>
         </v-card-actions>
       </v-card>
     </v-dialog>
