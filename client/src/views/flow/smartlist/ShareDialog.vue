@@ -199,12 +199,13 @@
 
 import { getRequest, handleHidingGlobalLoader, logError, postRequest, putRequest, UUID } from '@/helpers/helpers'
 import { getCurrentInstance, ref, computed } from 'vue'
-import { AppMutations } from '@/stores/AppStore'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
+const appStore = useAppStore()
 const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
@@ -328,7 +329,7 @@ const updateAccess = async () => {
 
   if (Object.keys(payload).length > 0) {
     try {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       await postRequest(`/smartlist/${props.smartlist.id}/access`, {...payload, smartlistId: props.smartlist.id})
 
       if (payload.updatePublic && payload.public) {
@@ -361,7 +362,7 @@ const confirmOwnershipChange = async (accessLevel) => {
 
 const updateOwner = async () => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     await putRequest(`/smartlist/${props.smartlist.id}/owner`, newOwner.value)
     snackbar('SUCCESS', `Ownership successfully transferred`)
     emit('dialog-closed')

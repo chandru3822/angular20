@@ -294,7 +294,6 @@
 <script setup>
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import { getRequest, logError, postRequest, putRequest } from '@/helpers/helpers'
-import { AppMutations } from '@/stores/AppStore'
 import constants from '@/helpers/constants'
 import ReportFields from '@/views/flow/smartlist/editor/ReportFields.vue'
 import ReportRequirements from '@/views/flow/smartlist/editor/ReportRequirements.vue'
@@ -308,6 +307,7 @@ import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
 import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
@@ -322,6 +322,7 @@ const snackbar = vueInstance.$snackbar
 
 const store = vueInstance.$store
 const userStore = useUserStore()
+const appStore = useAppStore()
 
 const hasViewAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'VIEW')
 const hasViewAllAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL')
@@ -484,7 +485,7 @@ const copied = async (copiedReport) => {
 
 const save = async () => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
 
     if (report.value?.id) {
       //send all fields for re-ordering, but send only requirements which have changed
@@ -521,7 +522,7 @@ const save = async () => {
     logError(e)
     snackbar('ERROR', e.message || e.data?.message || 'Error saving smartlist')
   } finally {
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
@@ -634,7 +635,7 @@ const updateRequirement = (requirement, index) => requirements.value.splice(inde
 
 const toggleDataView = async () => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     const selectedType = reportTypes.value.find(t => t.id === report.value.companyObjectTypeId)
     report.value.objectTypeId = selectedType.objectTypeId
 
@@ -643,7 +644,7 @@ const toggleDataView = async () => {
   } catch (e) {
     snackbar('ERROR', 'Unable to update project details setting')
   } finally {
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 

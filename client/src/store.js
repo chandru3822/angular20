@@ -1,14 +1,16 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import {AppStore} from '@/stores/AppStore'
+import { AppMutations, AppStore } from '@/stores/AppStore'
 import ProposalStore, { ProposalMutations } from '@/views/blueraven/settings/proposalDesigner/store'
 import { createPinia, PiniaVuePlugin } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 
 Vue.use(PiniaVuePlugin)
 export const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
+const appStorePinia = useAppStore(pinia)
 
 Vue.use(Vuex)
 
@@ -80,7 +82,9 @@ const store = new Vuex.Store({
         const hydratedState = JSON.parse(localStorage.getItem('store'))
         this.replaceState(Object.assign(state, hydratedState))
       }
-    }
+    },
+    [AppMutations.SET_LOADING]: (state, loading) => (appStorePinia.loading = loading),
+    [AppMutations.SHOW_SNACK]: (state, snack) => (appStorePinia.showSnack(snack))
   },
   actions: {
     // CANCEL_PENDING_REQUESTS(context) {

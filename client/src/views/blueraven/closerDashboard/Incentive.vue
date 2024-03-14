@@ -58,6 +58,7 @@ import {getSnackbar} from "@/helpers/helpers";
 import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 /**
  * counts: {q1:Number, q2:Number, q3:Number, q4:Number}
@@ -88,6 +89,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
 const fileStore = useFileStore()
+const appStore = useAppStore()
 
 const percentAchieved = ref(0),
     progressBarIsFull=ref(false),
@@ -137,7 +139,7 @@ const loadImages = async () => {
 const loadImage= async (typeId, imageType) => {
   let snackbar
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     await fileStore.getOne({
       attachmentTypeId: typeId,
       sourceId: companyId,
@@ -146,7 +148,7 @@ const loadImage= async (typeId, imageType) => {
         if(typeId === backgroundImageTypeId.value){
           backgroundImageLoaded.value = true
         }
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     })
   } catch(e) {
@@ -156,7 +158,7 @@ const loadImage= async (typeId, imageType) => {
       backgroundImageLoaded.value = true
     }
     store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 onMounted(async () => {

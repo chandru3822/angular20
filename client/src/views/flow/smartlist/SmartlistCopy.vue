@@ -15,6 +15,7 @@
 import { AppMutations } from '@/stores/AppStore'
 import { getSnackbar, logError, postRequest } from '@/helpers/helpers'
 import { getCurrentInstance } from 'vue'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const props = defineProps({
   smartlist: {
@@ -37,14 +38,14 @@ const emit = defineEmits(['copied'])
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-
+const appStore = useAppStore()
 
 let copySmartlist = async () => {
 
   let snackbar
 
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     const {data} = await postRequest(`/smartlist/${props.smartlist.id}/copy`)
     snackbar = getSnackbar('SUCCESS', `Smartlist Duplicated`)
     emit('copied', data)
@@ -52,7 +53,7 @@ let copySmartlist = async () => {
     logError(e)
     snackbar = getSnackbar('ERROR', 'Error duplicating smartlist')
   } finally {
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     store.commit(AppMutations.SHOW_SNACK, snackbar)
   }
 }
