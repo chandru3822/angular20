@@ -54,7 +54,10 @@
 
                 <template #item.statusType="{item}" class="text-left"><a href="/settings/eventStatuses">{{ item.eventStatusType }}</a></template>
                 <template #item.category="{item}" class="text-left">{{ item.rootEventStatusType }}</template>
-                <td class="text-right">
+            <template #item.scheduleEditable="{item}" class="text-left">
+              <v-checkbox v-model="item.editableInSchedule" @change="saveEditableInSchedule(item)"/>
+            </template>
+            <td class="text-right">
                   <div class="flex-display align-center">
                     <v-btn small text color="primary" v-if="userCanEdit" @click="eventStatusTypeToDelete=item"><v-icon>delete</v-icon></v-btn>
                   </div>
@@ -136,6 +139,7 @@ export default {
         {text: 'Status Type', value: 'statusType', show: true},
         {text: 'Category', value: 'category', show: true},
         {text: '', value: 'icons', show: false, width: '100px'},
+        {text: 'Editable in Schedule', value: 'scheduleEditable', show: true}
       ],
       eventStatusTypeToDelete: null,
       attachmentTypeToDelete: null,
@@ -194,6 +198,23 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Status Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveEditableInSchedule (item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const params = {
+          editableInSchedule: item.editableInSchedule
+        }
+       await postRequest(`/event/status/updateEditableInSchedule/${item.companyEventStatusTypeId}/forEvent/${parseInt(this.eventId)}?editableInSchedule=${item.editableInSchedule}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Editable in Schedule Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }catch (e){
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Editable in Schedule')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

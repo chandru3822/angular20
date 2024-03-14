@@ -37,7 +37,7 @@
     </v-row>
     <v-row>
       <v-col>
-        <v-btn v-if="!notificationsEnabled" @click="getNotificationToken">
+        <v-btn v-if="!notificationsEnabled" @click="enableToken">
           Get Notified
         </v-btn>
         <v-btn v-else @click="removeNotificationToken">
@@ -536,6 +536,9 @@ export default {
         this.$router.push(path)
       }
     },
+    async enableToken(){
+      await this.getNotificationToken()
+    }
   }
 }
 </script>

@@ -65,7 +65,7 @@ BEGIN
                              rsa.day_of_week_id                                        as "dayOfWeekId",
                              false                                                     as "allDay",
                              null                                                      as title,
-                             'inverse-background'                                      as rendering,
+                             'inverse-background'                                      as display,
                              false as "isSlotTime",
                              rsa.daylight_savings as "daylightSavings",
                              case when rs.org_id is not null then 1 else 2 end         as "systemListTypeId"
@@ -85,7 +85,7 @@ BEGIN
                              null::bigint                                         as "dayOfWeekId",
                              ra.all_day                                        as "allDay",
                              ra.title,
-                             'background'                                      as rendering,
+                             'background'                                      as display,
                              false as  "isSlotTime",
                              null  as "daylightSavings", -- personal appts don't need to do adjustments based on DST
                              case when ra.org_id is not null then 1 else 2 end as "systemListTypeId"
@@ -104,7 +104,7 @@ BEGIN
                              rsa.day_of_week_id,
                              false                                                                      as "allDay",
                              null                                                                       as title,
-                             'inverse-background'                                                       as rendering,
+                             'inverse-background'                                                       as display,
                              true as  "isSlotTime", --i had no way to tell this apart from a regular schedule on the frontend
                              null  as "daylightSavings", -- slot schedules don't need to do adjustments based on DST
                              case when rs.org_id is not null then 1 else 2 end                          as "systemListTypeId"

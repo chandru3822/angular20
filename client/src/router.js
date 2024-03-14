@@ -23,6 +23,11 @@ const router = new Router({
       props: true
     },
     {
+      path: '/tempButtonHandler',
+      name: 'tempButtonHandler',
+      component: () => import('./views/TempButtonHandler.vue')
+    },
+    {
       path: '/forgotPassword',
       name: 'forgotPassword',
       component: () => import('./views/ForgotPassword.vue')
@@ -599,6 +604,10 @@ const router = new Router({
           component: () => import( './views/flow/settings/Settings.vue'),
           children: [
             ProposalVersionSettingsRoutes,
+            {
+              path: 'pushNotifications',
+              component: () => import('./views/flow/pushNotifications/Admin.vue')
+            },
             {
               path: 'statusCheck',
               meta: {title: 'Albatross - Settings'},

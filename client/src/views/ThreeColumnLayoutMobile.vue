@@ -27,11 +27,13 @@ import {ref, defineProps, defineEmits, onMounted, watch} from 'vue'
 
 const props = defineProps({
   menuItems: Array, //@required
+  headerHidden: Boolean,
   headerHeight: String, //@optional
   headerColor: String, //@optional
   viewChangeCallback: Function, //@required,
-  subMenuSelectedView: Object //@optional, allows us to close the menu when using a submenu and the route doesn't change
-
+  subMenuSelectedView: Object, //@optional, allows us to close the menu when using a submenu and the route doesn't change
+  useRightPanelMobile:Boolean,
+  rightOpen:Boolean,
 })
 const emit = defineEmits(['selectMenuItem'])
 
@@ -75,7 +77,7 @@ const chooseSelectedView = (view, id) => {
       </v-list>
     </v-navigation-drawer>
   <v-row>
-    <v-toolbar id="three-column-header" flat :height="headerHeight" :color="headerColor ? headerColor : 'grey lighten-2'">
+    <v-toolbar v-if="!headerHidden" id="three-column-header" flat :height="headerHeight" :color="headerColor ? headerColor : 'grey lighten-2'">
     <v-btn small text color="primary" @click="toggleMenu(false)" >
       <v-icon>mdi-menu</v-icon>
     </v-btn>
@@ -88,6 +90,10 @@ const chooseSelectedView = (view, id) => {
     <slot name="main-column"/>
     </v-col>
   </v-row>
+    <v-navigation-drawer v-if="useRightPanelMobile" v-model="rightOpen" width="85%" right absolute temporary clipped touchless><!--touchless makes it so moving the map around doesn't trigger the sidebar closing-->
+      <slot name="right-column"/>
+    </v-navigation-drawer>
+
   </v-container>
 </template>
 

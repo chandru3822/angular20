@@ -7,7 +7,7 @@ const {
 } = import.meta.env
 import { ref } from 'vue'
 import { initializeApp } from 'firebase/app'
-import { deleteToken, getMessaging, getToken } from 'firebase/messaging'
+import { deleteToken, getMessaging, getToken, onMessage } from 'firebase/messaging'
 import { deleteRequest, postRequest } from '@/helpers/helpers'
 
 // See: https://firebase.google.com/docs/web/learn-more#config-object
@@ -19,53 +19,88 @@ const firebaseConfig = {
   messagingSenderId: VITE_FIREBASE_MESSAGING_SENDER_ID
 }
 
+const STORAGE_KEY = 'firebase/token'
 
-function getFirebaseApp(){
+function getFirebaseApp() {
   try {
     // Initialize Firebase
-    if (firebaseConfig.apiKey && firebaseConfig.projectId){
+    if (firebaseConfig.apiKey && firebaseConfig.projectId) {
       return initializeApp(firebaseConfig)
     }
     return undefined
-  }catch (e){
+  } catch (e) {
     log.error(e)
     return undefined
   }
 }
 
-function getFirebaseMessaging(app){
+function getFirebaseMessaging(app) {
   try {
-    if (app){
+    if (app) {
       return getMessaging(app)
     }
     return undefined
-  }catch (e){
+  } catch (e) {
     return undefined
   }
 }
 
+function getItem() {
+  const storedToken = localStorage.getItem(STORAGE_KEY)
+  if (!storedToken) {
+    return undefined
+  }
+
+  const parsed = JSON.parse(storedToken)
+  if (parsed?.expires) {
+    if (new Date() > new Date(parsed.expires)) {
+      localStorage.removeItem(STORAGE_KEY)
+      return undefined
+    }
+  }
+
+  return parsed?.value
+}
+
+//default ttl = 60 days
+function saveItem(item, ttl = 1000 * 60 * 60 * 24 * 60) {
+  const saved = JSON.stringify({
+    value: item,
+    expires: new Date().getTime() + ttl
+  })
+  localStorage.setItem(STORAGE_KEY, saved)
+}
+
+const registered = ref(false)
+const message = ref()
+
+const app = getFirebaseApp()
+
+// Initialize Firebase Cloud Messaging and get a reference to the service
+const messaging = getFirebaseMessaging(app)
+
 export function useFirebase() {
-
-  const app = getFirebaseApp()
-
-  // Initialize Firebase Cloud Messaging and get a reference to the service
-  const messaging = getFirebaseMessaging(app)
-
-  const registered = ref(false)
-
   const getNotificationToken = async function () {
     try {
+      const isProduction = import.meta.env.MODE === 'production'
       const sw = await navigator.serviceWorker.register(
-        import.meta.env.MODE === 'production' ? '/firebase-messaging-sw.js' : '/dev-sw.js?dev-sw',
-        { type: import.meta.env.MODE === 'production' ? 'classic' : 'module' }
+        isProduction ? '/firebase-messaging-sw.js' : '/dev-sw.js?dev-sw',
+        { type: isProduction ? 'classic' : 'module' }
       )
+
+      const storedToken = getItem()
+
       const token = await getToken(messaging, {
         serviceWorkerRegistration: sw,
-        vapidKey: VITE_VAPID_KEY })
-      if (token) {
+        vapidKey: VITE_VAPID_KEY
+      })
+
+      if (!storedToken || storedToken !== token) {
         await postRequest('/user/token', { token })
-        registered.value = true
+        saveItem(token)
       }
+
+      registered.value = true
       return token
     } catch (e) {
       registered.value = false
@@ -75,12 +110,17 @@ export function useFirebase() {
   }
 
   const removeNotificationToken = async function () {
-    const notificationToken = await getNotificationToken()
+    const notificationToken = getItem()
     if (!notificationToken) {
       return
     }
-    await deleteRequest(`/user/token?id=${notificationToken}`)
-    await deleteToken(messaging)
+    await Promise.allSettled([
+      deleteRequest(`/user/token?id=${notificationToken}`),
+      deleteToken(messaging)
+    ])
+
+    localStorage.removeItem(STORAGE_KEY)
+
     registered.value = false
     return true
   }
@@ -92,19 +132,26 @@ export function useFirebase() {
       const token = await getNotificationToken()
       if (token) {
         registered.value = granted
+
+        //todo: handle deregistration
+        onMessage(messaging, payload=>{
+          message.value = payload
+        })
       }
     }
   }
 
-  if (app && messaging){
-    init()
-    return { registered, removeNotificationToken, getNotificationToken }
+  if (app && messaging) {
+    return { init, registered, removeNotificationToken, getNotificationToken, message }
   }
 
   return {
     registered,
-    removeNotificationToken: ()=> console.error('notifications not configured properly'),
-    getNotificationToken: ()=> console.error('notifications not configured properly'),
+    message,
+    init: () => console.error('notifications not configured properly'),
+    removeNotificationToken: () =>
+      console.error('notifications not configured properly'),
+    getNotificationToken: () =>
+      console.error('notifications not configured properly')
   }
-
 }

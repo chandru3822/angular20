@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Hidden
@@ -19,7 +19,7 @@ import java.util.List;
 public class PushNotificationApiController {
   private final PushNotificationService pushNotificationService;
 
-  public record PushNotificationPayload (String title, String message, List<Long> userIds){}
+  public record PushNotificationPayload (String title, String message, Set<Long> userIds){}
 
   @PostMapping
   public void pushNotifications(@RequestBody PushNotificationPayload payload){
