@@ -13,7 +13,7 @@ public class CompanyEventStatusType {
 
   private Long id, companyId, eventStatusTypeId, createdById, modifiedById;
   private String eventStatusType, rootEventStatusType;
-  private Boolean archived;
+  private Boolean archived, editableInSchedule;
 
   // This status type ID represents what status to change current active to
   private Long cancelledCompanyEventStatusTypeId;
