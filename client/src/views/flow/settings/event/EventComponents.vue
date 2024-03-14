@@ -169,7 +169,6 @@ export default {
         this.eventLoading = true;
         const {data} = await getRequest(`/event/${this.eventId}`)
         this.event = data
-        debugger
         this.$store.commit(AppMutations.SET_LOADING, false)
         this.eventLoading = false;
       } catch (e) {
