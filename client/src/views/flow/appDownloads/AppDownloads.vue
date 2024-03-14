@@ -60,7 +60,6 @@
 </template>
 
 <script setup>
-;
 import constants from '@/helpers/constants'
 import AppList from '@/views/flow/appDownloads/AppList'
 import { handleHidingGlobalLoader, putRequest, postRequest } from "@/helpers/helpers";

@@ -193,7 +193,6 @@ import {
 
   postRequest
 } from '@/helpers/helpers'
-  ;
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
