@@ -62,11 +62,14 @@ export default {
       this.fieldName = this.field.fieldName;
     }
     else {
-      if (this.field.dataTypeId == 1) {
-        this.fieldName = this.field.fieldName + ': ' + this.field.fieldValue.toLocaleDateString('en-US', {
+      if (this.field.dataTypeId === 1) {
+        //dataTypeId: 1 = date
+        this.fieldName = this.field.fieldName + ': ' + new Date(this.field.fieldValue).toLocaleDateString('en-US', {
+          timeZone: 'UTC',
           day: 'numeric', month: 'short', year: 'numeric' //formatDate('date', 'D MMM YYYY');
         })
-      } else if (this.field.dataTypeId == 2 || this.field.dataTypeId == 3) {
+      } else if (this.field.dataTypeId === 2) {
+        //dataTypeId: 2 = timestamp
         this.fieldName = this.field.fieldName + ': ' + new Date((this.field.fieldValue + 'Z')).toLocaleDateString('en-US', {
           day: 'numeric', month: 'long', year: 'numeric', hour: "numeric", minute: "2-digit", hourCycle: "h12" //formatDate('date', 'D MMM YYYY');
         })//formatDate('timestamp', 'D MMM YYYY H:mm a');
