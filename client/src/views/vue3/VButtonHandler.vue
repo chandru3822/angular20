@@ -54,8 +54,8 @@ const snackbar = vueInstance.$snackbar
 const vBtnValue = ref(null)
 const albatrossButtonValue = ref(null)
 const inputField = ref(null)
-const autoCopyToClipboard = ref(false)
-const resetFieldsOnPaste = ref(false)
+const autoCopyToClipboard = ref(true)
+const resetFieldsOnPaste = ref(true)
 
 //for testing
 // vBtnValue.value = '<v-btn\n' +

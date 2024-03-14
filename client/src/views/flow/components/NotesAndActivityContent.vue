@@ -59,7 +59,7 @@
             color="primary"
             v-if="note.note"
             @click="[note={}, dirtyNote = false]"
-            :text="cancel"
+            text="Cancel"
         ></AlbatrossButton>
       </div>
     </v-card>

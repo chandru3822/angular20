@@ -131,7 +131,6 @@
                       :accept="acceptedFileTypes"
                       @change='doUpload($event.target.files, type)'
                       style="display: none"
-                      @click.native.stop=""
                       :ref="`fileInput${type.attachmentTypeId}`"
                   >
                   <div class="expansion-panel-header-open" v-if="open"
