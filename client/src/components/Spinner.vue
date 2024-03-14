@@ -17,27 +17,22 @@
   </v-row>
 </template>
 
-<script>
-import { mapStores } from 'pinia'
+<script setup>
+import { toRefs, computed } from 'vue'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: 'Spinner',
-  props: {
-    spinnerColor: String,
-    size: Number
-  },
-  computed: {
-    ...mapStores(useAppStore),
-    spinnerUrl() {
-      return this.appStore.spinnerUrl || null
-    }
-  },
-  data() {
-    return {
-    }
-  }
-}
+const appStore = useAppStore()
+
+const props = defineProps({
+  spinnerColor: String,
+  size: Number
+})
+const { spinnerColor, size } = toRefs(props)
+
+const spinnerUrl = computed(() => {
+  return appStore.spinnerUrl || null
+})
+
 </script>
 
 <style scoped lang="scss">

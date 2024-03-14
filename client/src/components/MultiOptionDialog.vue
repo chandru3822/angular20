@@ -15,46 +15,48 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn
+        <AlbatrossButton
             @click="cancel"
-            text
+            variant="text"
             color="primary"
             class="text-capitalize mr-2 mb-2"
         >
           <slot name="cancel">Cancel</slot>
-        </v-btn>
-        <v-btn v-for="(option, index) in options"
+        </AlbatrossButton>
+        <AlbatrossButton
+            v-for="(option, index) in options"
             @click="select(index)"
             color="primary"
             class="text-capitalize mr-2 mb-2"
-        >
-          {{option}}
-        </v-btn>
+            :text="option"
+        ></AlbatrossButton>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
-<script>
-export default {
-  name: "MultiOptionDialog",
-  props: {
-    openDialog: Boolean,
-    hideTitle:Boolean,
-    options:[]
-  },
-  data() {
-    return {
-    }
-  },
-  methods: {
-    cancel() {
-      this.$emit('cancel')
-    },
-    select(option){
-      this.$emit('option-' + option)
-    },
-  }
+<script setup>
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  openDialog: Boolean,
+  hideTitle: Boolean,
+  options: Array
+
+})
+const {openDialog, hideTitle, options} = toRefs(props)
+
+
+const cancel = () => {
+  vueInstance.$emit('cancel')
+}
+const select = (option) => {
+  vueInstance.$emit('option-' + option)
 }
 </script>
 

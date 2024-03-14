@@ -205,7 +205,7 @@
             <v-row v-else>
               <v-card flat color="rowShadeCustom" class="square-card mt-2 col-12 col-md-4">
                 <v-card-text>
-                  <multi-select-group
+                  <MultiSelectGroup
                       v-if="!positionsLoading"
                       background-color="transparent"
                       :userCanEdit="userCanEdit"
@@ -213,9 +213,9 @@
                       :content="positions"
                       :dropdownEnabled="processStep.readonly"
                       :selectedContent="processStep.whiteListedPositions"
-                      :title="'Read Only'"
-                      :label="'Allowed Positions'"
-                      :alternateLabel = "'Denied Positions'"
+                      title="Read Only"
+                      label="Allowed Positions"
+                      alternateLabel="Denied Positions"
                       :allow="processStep.readonlyAllow"
                       :contentLoading="positionsLoading"
                       save-button
@@ -224,12 +224,12 @@
                       @allow-changed="startTimeReadOnlyAllowEventListener"
                       @checkbox-changed="startTimeReadOnlyCheckboxEventListener"
                       @save-multi-select="saveReadOnlyAndWhiteList"
-                  ></multi-select-group>
+                  ></MultiSelectGroup>
                 </v-card-text>
               </v-card>
               <v-card flat class="square-card mt-2 col-12 col-md-8 col-lg-6">
                 <v-card-text>
-                  <multi-select-group
+                  <MultiSelectGroup
                       v-if="!positionsLoading"
                       background-color="transparent"
                       :userCanEdit="userCanEdit"
@@ -264,7 +264,8 @@
 </template>
 
 <script setup>
-
+import SpinnerInline from "@/components/SpinnerInline.vue";
+import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import draggable from 'vuedraggable'
 import {getAvailableForProcessStep} from '@/services/processStepStatusTypeService'

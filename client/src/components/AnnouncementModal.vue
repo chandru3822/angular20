@@ -8,9 +8,13 @@
         <v-toolbar-title class="title-large">{{ announcement.title }}</v-toolbar-title>
         <v-spacer/>
         <v-toolbar-items>
-          <v-btn x-small text color="primary" @click="closeModal()">
-            <v-icon>close</v-icon>
-          </v-btn>
+          <AlbatrossButton
+              size="x-small"
+              variant="text"
+              color="primary"
+              @click="closeModal()"
+              prepend-icon="close"
+          ></AlbatrossButton>
         </v-toolbar-items>
       </v-toolbar>
       <div class="px-4 pt-4">
@@ -19,11 +23,11 @@
           <img class="announcement-image" :src="announcement.presignedUrl">
         </div>
         <div :class="{'pt-3': !announcement.presignedUrl}">
-        <a class="announcement-hyperlink"
-           v-if="announcement.hyperlink" target="_blank"
-           :href="announcement.hyperlink">
-          {{announcement.hyperlink}}
-        </a>
+          <a class="announcement-hyperlink"
+             v-if="announcement.hyperlink" target="_blank"
+             :href="announcement.hyperlink">
+            {{announcement.hyperlink}}
+          </a>
         </div>
         <div class="mt-2" v-if="announcement.description">
           <quill-editor
@@ -39,53 +43,48 @@
   </v-card>
 </template>
 
-<script>
+<script setup>
 
 import 'quill/dist/quill.snow.css'
 import { quillEditor } from 'vue-quill-editor'
 import SpinnerInline from '@/components/SpinnerInline'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: "AttachmentCoversheetModal",
-  props: {
-    announcement: Object,
-    closeCallback: Function,
-  },
-  components: {
-    QuillEditor: quillEditor,
-    SpinnerInline
-  },
-  watch: {},
-  data() {
-    return {
-      toolbarOptions: {
-        modules: {
-          toolbar: [
-            ['bold', 'italic', 'underline', 'blockquote'], //toggled buttons
-            //without the color array then black = false which just un-sets color. in our case our default is navy blue, so unsetting the color goes back to navy blue and not to black.  by setting the black value to #000000 it fixes this issue.  when our default color changes to black then we could just remove the colors in this array to use the defaults from quill
-            [{ 'color': ['#000000', '#e60000', '#ff9900', '#ffff00', '#008a00', '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc', '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb', '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0', '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200', '#006100', '#0047b2', '#6b24b2', '#444444', '#5c0000', '#663d00', '#666600', '#003700', '#002966', '#3d1466'] },
-              { 'background': [] }],          // dropdown with defaults from theme
-            [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
-            ['clean']                                         // remove all formatting button
-          ]
-        }
-      },
-    }
-  },
-  created() {
+const appStore = useAppStore()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
 
-  },
-  computed: {
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
+const props = defineProps({
+  announcement: Object,
+  closeCallback: Function,
+})
+const { announcement } = toRefs(props)
 
-  },
-  methods: {
-    closeModal() {
-      this.closeCallback()
-    },
+const toolbarOptions = ref({
+  modules: {
+    toolbar: [
+      ['bold', 'italic', 'underline', 'blockquote'], //toggled buttons
+      //without the color array then black = false which just un-sets color. in our case our default is navy blue, so unsetting the color goes back to navy blue and not to black.  by setting the black value to #000000 it fixes this issue.  when our default color changes to black then we could just remove the colors in this array to use the defaults from quill
+      [{ 'color': ['#000000', '#e60000', '#ff9900', '#ffff00', '#008a00', '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc', '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb', '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0', '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200', '#006100', '#0047b2', '#6b24b2', '#444444', '#5c0000', '#663d00', '#666600', '#003700', '#002966', '#3d1466'] },
+        { 'background': [] }],          // dropdown with defaults from theme
+      [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+      ['clean']                                         // remove all formatting button
+    ]
   }
+})
+
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+
+const closeModal = () => {
+  props.closeCallback()
 }
 </script>
 

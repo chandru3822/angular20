@@ -2,16 +2,19 @@
   <div v-if="loadComplete">
     <v-row class="toolbar-z-index-override">
       <v-col
-        v-if="userIsMasquerading"
-        cols="12"
-        style="font-size: 18px; text-align: center; background-color: var(--v-error-base); color: white;"
+          v-if="userIsMasquerading"
+          cols="12"
+          style="font-size: 18px; text-align: center; background-color: var(--v-error-base); color: white;"
       >
         BE CAREFUL!! YOU ARE MASQUERADING!!
-        <v-btn :disabled="clearingMasquerade" :loading="clearingMasquerade"
-               @click="clearMasquerade()" class="primary--text"
-        >
-          CLEAR
-        </v-btn>
+        <AlbatrossButton
+            :disabled="clearingMasquerade"
+            :loading="clearingMasquerade"
+            @click="clearMasquerade()"
+            class="primary--text"
+            color="unset"
+            text="CLEAR"
+        ></AlbatrossButton>
       </v-col>
       <v-col cols="12" class="pt-0 pb-0">
 
@@ -25,11 +28,17 @@
                   class="account-menu"
                   :close-on-content-click="false">
             <template v-slot:activator="{ on }">
-              <v-btn icon v-on="on" :color="selectedCompany.logoPresignedUrl ? 'transparent' : '#bbbbbb'">
-                <img class="header-logo" v-if="selectedCompany.logoPresignedUrl"
-                     :src="selectedCompany.logoPresignedUrl">
-                <v-icon v-else>mdi-office-building</v-icon>
-              </v-btn>
+              <AlbatrossButton
+                  icon
+                  :activation-handler="on"
+                  :color="selectedCompany.logoPresignedUrl ? 'transparent' : '#bbbbbb'"
+              >
+                <template #default>
+                  <img class="header-logo" v-if="selectedCompany.logoPresignedUrl"
+                       :src="selectedCompany.logoPresignedUrl">
+                  <v-icon v-else>mdi-office-building</v-icon>
+                </template>
+              </AlbatrossButton>
             </template>
             <v-list>
               <v-list-item v-for="(item, index) in companies" :key="index"
@@ -39,12 +48,26 @@
               </v-list-item>
             </v-list>
           </v-menu>
-          <v-btn icon v-else to="/home"
-                 :color="selectedCompany.logoPresignedUrl ? 'transparent' : '#bbbbbb'">
-            <img class="header-logo" v-if="selectedCompany.logoPresignedUrl" :src="selectedCompany.logoPresignedUrl">
-            <v-icon v-else>mdi-office-building</v-icon>
-          </v-btn>
-          <v-btn v-if="showMobileBanner && $route.path !== '/apps'" @click="goToApps" icon class="text-capitalize bold px-0"><v-icon>mdi-download-circle</v-icon></v-btn>
+          <AlbatrossButton
+              icon
+              v-else
+              to="/home"
+              :color="selectedCompany.logoPresignedUrl ? 'transparent' : '#bbbbbb'"
+              prepend-icon="mdi-office-building"
+          >
+            <template #default>
+              <img class="header-logo" v-if="selectedCompany.logoPresignedUrl" :src="selectedCompany.logoPresignedUrl">
+              <v-icon v-else>mdi-office-building</v-icon>
+            </template>
+          </AlbatrossButton>
+          <AlbatrossButton
+              v-if="showMobileBanner && $route.path !== '/apps'"
+              @click="goToPath('/apps')"
+              icon
+              class="text-capitalize bold px-0"
+              color="unset"
+              prepend-icon="mdi-download-circle"
+          ></AlbatrossButton>
           <v-spacer v-if="isMobile"></v-spacer>
           <div v-if="isMobile" class="flex-display flex-align-items-center">
             <v-menu data-app left
@@ -54,34 +77,36 @@
                     class="account-menu"
                     :close-on-content-click="false">
               <template v-slot:activator="{ on }">
-                <v-btn class="account-menu-button label-medium px-3
-                              pages-button"
-                       :color="headerColor"
-                       dark
-                       x-small
-                       v-on="on">
-                  PAGES
-                  <v-icon>mdi-chevron-down</v-icon>
-                </v-btn>
+                <AlbatrossButton
+                    class="account-menu-button label-medium px-3 pages-button"
+                    :color="headerColor"
+                    size="x-small"
+                    :activation-handler="on"
+                >
+                  <template #default>
+                    PAGES
+                    <v-icon>mdi-chevron-down</v-icon>
+                  </template>
+                </AlbatrossButton>
               </template>
               <v-list v-if="displayedTabs.length > 1">
                 <v-list-item v-for="(tab, index) in displayedTabs" :key="index"
                              @click="[tabMenuOpen = false, goToPath(tab.path)]">
                   <v-list-item-title>{{ tab.label }}
                     <v-badge
-                      class="notif-badge"
-                      color="#D03331"
-                      :content="smsNotification.length"
-                      v-if="tab.label == 'Inbox' && smsNotification.length > 0"
+                        class="notif-badge"
+                        color="#D03331"
+                        :content="smsNotification.length"
+                        v-if="tab.label === 'Inbox' && smsNotification.length > 0"
                     >
                     </v-badge>
                   </v-list-item-title>
                 </v-list-item>
               </v-list>
             </v-menu>
-<!--            <div class="company-tools-container" v-if="companyTools.length > 0">-->
-              <CompanyTools v-if="companyTools.length > 0" :is-mobile="isMobile" :company-tools="companyTools" />
-<!--            </div>-->
+            <!--            <div class="company-tools-container" v-if="companyTools.length > 0">-->
+            <CompanyTools v-if="companyTools.length > 0" :is-mobile="isMobile" :company-tools="companyTools"/>
+            <!--            </div>-->
           </div>
           <v-tabs v-else :optional="true" color="secondary" :background-color="headerColor"
                   v-model="model" dark
@@ -91,15 +116,15 @@
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path" class="label-medium">
               {{ tab.label }}
               <v-badge
-                class="notif-badge"
-                color="#D03331"
-                :content="smsNotification.length"
-                v-if="tab.label == 'Inbox' && smsNotification.length > 0"
+                  class="notif-badge"
+                  color="#D03331"
+                  :content="smsNotification.length"
+                  v-if="tab.label == 'Inbox' && smsNotification.length > 0"
               >
               </v-badge>
             </v-tab>
             <div class="company-tools-container" v-if="companyTools.length > 0">
-              <CompanyTools :company-tools="companyTools" />
+              <CompanyTools :company-tools="companyTools"/>
             </div>
           </v-tabs>
           <v-spacer v-if="!isMobile" class="ml-5"></v-spacer>
@@ -118,262 +143,253 @@
   </div>
 </template>
 
-<script>
-import { AppMutations } from '@/stores/AppStore'
-import {getRequest, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
+<script setup>
+
+import {getRequest,  handleHidingGlobalLoader} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import AccountMenu from '@/components/AccountMenu.vue'
 import CompanyTools from '@/components/CompanyTools.vue'
 import axios from 'axios'
 import AnnouncementDropdown from '@/components/AnnouncementDropdown.vue'
 import moment from 'moment'
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
-import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
+import {useNotificationStore} from '@/stores/NotificationStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import {useAppStore} from '@/stores/AppStorePinia.js'
 
-const { VITE_ENV } =  import.meta.env
-//@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
+const appStore = useAppStore()
+const notificationStore = useNotificationStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
 
-export default {
-  name: 'appNav',
-  components: {
-    AnnouncementDropdown,
-    AccountMenu,
-    CompanyTools
+const loadComplete = ref(false)
+const clearingMasquerade = ref(false)
+const selectedCompany = ref({})
+const menuOpen = ref(false)
+const tabMenuOpen = ref(false)
+const companies = ref([])
+const announcements = ref([])
+const companyTools = ref([])
+const model = ref('')
+const showMobileBanner = ref(false)
+const headerColor = ref(constants.ENV_COLOR)
+const tabs = ref([{
+  label: 'Contacts',
+  path: '/contacts',
+  feature: 'CONTACTS',
+  show: true
+}, {
+  label: 'Projects',
+  path: '/projects',
+  feature: 'PROJECTS',
+  show: true
+},
+  {
+    label: 'Schedule',
+    path: '/schedule',
+    feature: 'SCHEDULE',
+    show: true
   },
-  watch: {
-    themeUpdateEvents: async function () {
-      // todo refactor this to receive the theme update from the notification so we dont have load anything
-      // console.log('THIS IS HAPPENING', this.themeUpdateEvents)
-      //reload the companies so we get any new icons
-      await this.getCompanies()
-    },
-    announcementEvents: async function () {
-      this.notificationStore.getEventsByTopic('announcement').forEach(ae => {
-        //there seems to be an issue when stale announcements are in the eventstream and they are populating when they shouldn't
-        //this time check will hopefully fix that.
-        if(ae.endTime == null || moment().isBetween(moment(ae.startTime), moment(ae.endTime))) {
-          let match = this.appStore.announcements.find(a => a.id === ae.announcement?.id)
-          if(!match && ae.announcement) {
-            this.appStore.announcements.push(ae.announcement)
-          }
+  {
+    label: 'Work Queue',
+    path: '/workQueue',
+    feature: 'WORK_QUEUE',
+    show: true
+  }, {
+    label: 'Smartlists',
+    path: '/smartlist',
+    feature: 'SMARTLIST',
+    show: true
+  }, {
+    label: 'Inbox',
+    path: '/inbox',
+    feature: 'SMS_INBOX',
+    show: true
+  }])
+
+
+onMounted(() => {
+  loadComplete.value = true
+  if (userStore?.details?.id) {
+    getCompanies()
+    getCompanyTools()
+    getSmsNotification()
+    getActiveAnnouncements()
+  }
+
+  //@TODO: #smartlistsv2 Please leave while smartlists v2 is being developed
+  if (userStore.isSystemAdmin) {
+    tabs.value.splice(4, 0, {
+      label: 'Smartlists v1',
+      path: '/smartlistv1',
+      feature: 'SMARTLIST',
+      show: true
+    })
+  }
+
+  let userAgent = window.navigator.userAgent
+  if (!hideMobileBanner.value && userAgent && ['Android', 'iPhone', 'iPad'].some(v => userAgent.includes(v))) {
+    //the hideMobileBanner prop is used so that the mobile app can disable the mobile banner when displaying web views inside the app
+    showMobileBanner.value = true
+  }
+})
+
+const companyName = computed(() => {
+  return userStore?.details?.companyName
+})
+const userIsMasquerading = computed(() => {
+  return userStore?.details?.masqueradingUserId != null
+})
+const hideMobileBanner = computed(() => {
+  return userStore?.hideMobileBanner || false
+})
+const displayedTabs = computed(() => {
+  return tabs.value.filter(tab => userStore.userHasFeature(tab.feature) && tab.show)
+})
+const smsNotification = computed(() => {
+  return notificationStore.getNotificationsByTopic('sms_reply')
+})
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+const isBetween = computed(() => {
+  return !vuetify.breakpoint.smAndDown && !vuetify.breakpoint.lgAndUp
+})
+const themeUpdateEvents = computed(() => {
+  return notificationStore.getEventsByTopic('theme_update').length
+})
+const announcementEvents = computed(() => {
+  return notificationStore.getEventsByTopic('announcement').length
+})
+
+watch(themeUpdateEvents, async () => {
+  // todo refactor this to receive the theme update from the notification so we dont have load anything
+  // console.log('THIS IS HAPPENING', themeUpdateEvents.value)
+  //reload the companies so we get any new icons
+  await getCompanies()
+})
+
+watch(announcementEvents, async () => {
+  notificationStore.getEventsByTopic('announcement').forEach(ae => {
+    //there seems to be an issue when stale announcements are in the eventstream and they are populating when they shouldn't
+    //this time check will hopefully fix that.
+    if (ae.endTime == null || moment().isBetween(moment(ae.startTime), moment(ae.endTime))) {
+      let match = appStore.announcements.find(a => a.id === ae.announcement?.id)
+      if (!match && ae.announcement) {
+        appStore.announcements.push(ae.announcement)
+      }
+    }
+  })
+})
+
+const changeContext = async (companyId) => {
+  appStore.loading = true
+  const params = {
+    companyId,
+    isAdmin: userStore.isSystemAdmin
+  }
+  await userStore.changeContext(params)
+}
+const getCompanies = async () => {
+  // get the companies that a user has access to
+  // appStore.loading = true
+  try {
+    const url = (userStore.isSystemAdmin) ? `/companies` : `/companies/assignedToUser`
+    const {data} = await getRequest(url, null, [])
+    companies.value = data
+    userStore.companies = companies.value
+    selectedCompany.value = companies.value.find(c => c.id === userStore?.details?.companyId) || {}
+    //always do this, that way if they dont have a spinner it will unset the url
+    appStore.spinnerUrl = selectedCompany.value?.spinnerPresignedUrl
+
+    //this handles if the color is null too
+    appStore.setPrimaryBaseColor(selectedCompany.value?.primaryColor)
+    appStore.setBannerColor(selectedCompany.value?.bannerColor)
+
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Changing Companies')
+    // appStore.loading = false
+  }
+}
+const getCompanyTools = async () => {
+  // get the company tools then filter the ones the user has access to
+  appStore.loading = true
+  try {
+    let parentId = -1;
+    let childNames;
+    let childPaths;
+    const {data} = await getRequest(`/feature/companyTools`, null, [])
+
+    companyTools.value = data.filter(d => {
+      if (d.parentCompanyFeatureId != null && userStore.userHasFeature(d.childCode)) {
+        if (parentId == -1 || (parentId != d.parentCompanyFeatureId)) {
+          childNames = []
+          childPaths = []
+          parentId = d.parentCompanyFeatureId;
         }
-      })
-    }
-  },
-  data() {
-    return {
-      snackbar: {},
-      constants,
-      loadComplete: false,
-      clearingMasquerade: false,
-      companyName: this.userStore?.details?.companyName,
-      selectedCompany: {},
-      menuOpen: false,
-      tabMenuOpen: false,
-      companies: [],
-      announcements: [],
-      companyTools: [],
-      model: '',
-      showMobileBanner: false,
-      headerColor: constants.ENV_COLOR,
-      tabs: [{
-        label: 'Contacts',
-        path: '/contacts',
-        feature: 'CONTACTS',
-        show: true
-      }, {
-        label: 'Projects',
-        path: '/projects',
-        feature: 'PROJECTS',
-        show: true
-      },
-        {
-          label: 'Schedule',
-          path: '/schedule',
-          feature: 'SCHEDULE',
-          show: true
-        },
-        {
-          label: 'Work Queue',
-          path: '/workQueue',
-          feature: 'WORK_QUEUE',
-          show: true
-        }, {
-          label: 'Smartlists',
-          path: '/smartlist',
-          feature: 'SMARTLIST',
-          show: true
-        }, {
-          label: 'Inbox',
-          path: '/inbox',
-          feature: 'SMS_INBOX',
-          show: true
-        }],
-      VITE_ENV
-    }
-  },
-  created() {
-    this.loadComplete = true
-    if (this.userStore?.details?.id) {
-      this.getCompanies()
-      this.getCompanyTools()
-      this.getSmsNotification()
-      this.getActiveAnnouncements()
-    }
-
-    //@TODO: #smartlistsv2 Please leave while smartlists v2 is being developed
-    if (this.userStore.isSystemAdmin) {
-      this.tabs.splice(4, 0, {
-        label: 'Smartlists v1',
-        path: '/smartlistv1',
-        feature: 'SMARTLIST',
-        show: true
-      })
-    }
-
-    let userAgent = window.navigator.userAgent
-    if (!this.hideMobileBanner && userAgent && ['Android', 'iPhone', 'iPad'].some(v => userAgent.includes(v))) {
-      //the hideMobileBanner prop is used so that the mobile app can disable the mobile banner when displaying web views inside the app
-      this.showMobileBanner = true
-    }
-  },
-  computed: {
-    ...mapStores(useUserStore, useAppStore, useNotificationStore),
-    userIsMasquerading() {
-      return  this.userStore?.details?.masqueradingUserId != null
-    },
-    hideMobileBanner() {
-      return  this.userStore?.hideMobileBanner || false
-    },
-    displayedTabs() {
-      return this.tabs.filter(tab => this.userStore.userHasFeature(tab.feature) && tab.show)
-    },
-    smsNotification() {
-      return this.notificationStore.getNotificationsByTopic('sms_reply')
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-    isBetween(){
-      return !this.$vuetify.breakpoint.smAndDown && !this.$vuetify.breakpoint.lgAndUp
-    },
-    themeUpdateEvents() {
-      return this.notificationStore.getEventsByTopic('theme_update').length
-    },
-    announcementEvents() {
-      return this.notificationStore.getEventsByTopic('announcement').length
-    },
-  },
-  methods: {
-    async changeContext(companyId) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      const params = {
-        companyId,
-        isAdmin: this.userStore.isSystemAdmin
+        childNames.push(d.childName);
+        childPaths.push(d.featurePath)
+        d.featurePath = null;
+        d.childNames = childNames.slice();
+        d.childPaths = childPaths.slice();
       }
-      await this.userStore.changeContext(params)
-    },
-    async getCompanies() {
-      // get the companies that a user has access to
-      // this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const url = (this.userStore.isSystemAdmin) ? `/companies` : `/companies/assignedToUser`
-        const { data } = await getRequest(url, null, [])
-        this.companies = data
-        this.userStore.companies = this.companies
-        this.selectedCompany = this.companies.find(c => c.id === this.userStore?.details?.companyId) || {}
-        //always do this, that way if they dont have a spinner it will unset the url
-        this.appStore.spinnerUrl = this.selectedCompany?.spinnerPresignedUrl
+      return userStore.userHasFeature(d.childCode);
 
-        //this handles if the color is null too
-        this.appStore.setPrimaryBaseColor(this.selectedCompany?.primaryColor)
-        this.appStore.setBannerColor(this.selectedCompany?.bannerColor)
-
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Changing Companies')
-        // this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCompanyTools() {
-      // get the company tools then filter the ones the user has access to
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let parentId = -1;
-        let childNames;
-        let childPaths;
-        const { data } = await getRequest(`/feature/companyTools`, null, [])
-
-        this.companyTools = data.filter(d => {
-          if (d.parentCompanyFeatureId != null && this.userStore.userHasFeature(d.childCode)) {
-            if(parentId == -1 || (parentId != d.parentCompanyFeatureId)){
-              childNames = []
-              childPaths = []
-              parentId = d.parentCompanyFeatureId;
-            }
-            childNames.push(d.childName);
-            childPaths.push(d.featurePath)
-            d.featurePath = null;
-            d.childNames = childNames.slice();
-            d.childPaths = childPaths.slice();
-          }
-          return this.userStore.userHasFeature(d.childCode);
-
-        })
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Changing Companies')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    goToPath(path) {
-      this.$router.push({ path: `${path}` })
-    },
-    async goToApps() {
-      this.$router.push('/apps')
-    },
-    async clearMasquerade() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.clearingMasquerade = true
-        const { data } = await axios.get(`${constants.VUE_APP_BASE_API}/auth/masquerade/clear`)
-        if (data && data.token) {
-          this.userStore.jwt = data.token
-          //update the user
-          const { data: currentUser } = await getRequest(`/user/current`)
-          this.userStore.details = currentUser
-          //then reload the screen
-          window.location.reload()
-        }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Clearing Masquerade')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getSmsNotification() {
-      this.notificationStore.fetchNotifications()
-    },
-    async getActiveAnnouncements() {
-      try {
-        this.appStore.announcements = []
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequest(`/announcements/active`)
-        this.appStore.announcements = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        this.saving = false
-      }
+    })
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Changing Companies')
+    appStore.loading = false
+  }
+}
+const goToPath = (path) => {
+  router.push(path)
+}
+const clearMasquerade = async () => {
+  appStore.loading = true
+  try {
+    clearingMasquerade.value = true
+    const {data} = await axios.get(`${constants.VUE_APP_BASE_API}/auth/masquerade/clear`)
+    if (data && data.token) {
+      userStore.jwt = data.token
+      //update the user
+      const {data: currentUser} = await getRequest(`/user/current`)
+      userStore.details = currentUser
+      //then reload the screen
+      window.location.reload()
     }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Clearing Masquerade')
+
+    appStore.loading = false
+  }
+}
+const getSmsNotification = () => {
+  notificationStore.fetchNotifications()
+}
+const getActiveAnnouncements = async () => {
+  try {
+    appStore.announcements = []
+    appStore.loading = true
+    const {data, status} = await getRequest(`/announcements/active`)
+    appStore.announcements = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+  } finally {
+    appStore.loading = false
   }
 }
 </script>

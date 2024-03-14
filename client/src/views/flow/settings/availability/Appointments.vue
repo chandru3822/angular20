@@ -292,7 +292,6 @@
   const dateFormat = ref('MMMM DD, YYYY')
   const timestampType = ref('timestamp')
   const timestampFormat = ref('MMMM DD, YYYY h:mm a')
-  const timezone = ref(userStore.timezone.value)
   const headers = ref([
     { text: 'Appointments', value: 'appointment', show: true},
     { text: 'Title', value: 'title', show: true},
@@ -301,6 +300,10 @@
   ])
   const showDeleteDialog = ref(false)
   const itemToDelete = ref(null)
+
+  const timezone = computed(() => {
+    return  userStore.timezone.value
+  })
 
   const userCanEdit = computed(() => {
     return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT')
@@ -433,7 +436,7 @@
       const {status} = await deleteRequest(url)
 
       appointments.value?.forEach((a) => {
-        if (a.id === this.itemToDelete.id) {
+        if (a.id === itemToDelete.value.id) {
           a.archived = true
         }
       })

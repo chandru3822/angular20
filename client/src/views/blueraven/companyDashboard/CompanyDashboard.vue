@@ -954,15 +954,15 @@ const getDashboardValues = async (dateWasManuallyEntered) => {
   targetTypeId.value = singleDateRange.value ? 1 :
       loadTargetsRanges.value.includes(selectedDateRange.value) ? 2 : null
 
-      this.loadingData = true;
-      if(this.dropdownValues != null && this.dropdownValues.length > 0){
-        await this.changeDropdownSelection(1);
+      loadingData.value = true;
+      if(dropdownValues.value != null && dropdownValues.value.length > 0){
+        await changeDropdownSelection(1);
       }
       else {
-        this.dashValues = await this.getDashBoardData(this.startDate, this.endDate, moment(this.startDate).subtract(1, "days").format('YYYY-MM-DD'), moment(this.endDate).subtract(1, "days").format('YYYY-MM-DD'));
+        dashValues.value = await getDashBoardData(startDate.value, endDate.value, moment(startDate.value).subtract(1, "days").format('YYYY-MM-DD'), moment(endDate.value).subtract(1, "days").format('YYYY-MM-DD'));
       }
-      if(this.secondDateRange != null) {
-        await this.changeDropdownSelection(2);
+      if(secondDateRange.value != null) {
+        await changeDropdownSelection(2);
 
   }
 

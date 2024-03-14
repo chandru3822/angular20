@@ -1,45 +1,42 @@
-<script>
+<script setup>
 import useRegisterSW from '@/mixins/useRegisterSW'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 // const intervalMS = 5 * 60 * 1000 //5 minutes
 const intervalMS = 60 * 60 * 1000 //1 hour
+const loading = ref(false)
+const reload = ref(null)
 
-export default {
-  name: 'ReloadPrompt',
-  mixins: [useRegisterSW],
-  data(){
-    return {
-      loading: false
-    }
-  },
-  methods: {
-    doStuff(){
-      this.loading = true
-      this.updateServiceWorker()
-    },
-    close(){
-      this.$refs.reload.close()
-      this.closePromptUpdateSW()
-    },
-    onOfflineReadyFn(){
-      this.$refs.reload.show()
-    },
-    onNeedRefreshFn() {
-      this.$refs.reload.show()
-    },
-    handleSWManualUpdates(registration){
-      if (registration){
-        setInterval(()=> registration.update(), intervalMS)
-      }
-    }
+const doStuff = () => {
+  loading.value = true
+  updateServiceWorker()
+}
+const close = () => {
+  reload.value.close()
+  closePromptUpdateSW()
+}
+const onOfflineReadyFn = () => {
+  reload.value.show()
+}
+const onNeedRefreshFn = ()  => {
+  reload.value.show()
+}
+const handleSWManualUpdates = (registration) => {
+  if (registration){
+    setInterval(()=> registration.update(), intervalMS)
   }
 }
 </script>
 
 <template>
   <dialog
-    ref="reload"
-    class="pwa-toast"
+      ref="reload"
+      class="pwa-toast"
   >
     <div class="message">
       <span>
@@ -47,26 +44,27 @@ export default {
       </span>
     </div>
 
-    <v-btn
-      class="white--text text-capitalize font-weight-bold"
-      :loading="loading"
-      :disabled="loading"
-      color="primary"
-      @click.prevent="doStuff()"
+    <AlbatrossButton
+        class="text-capitalize font-weight-bold"
+        :loading="loading"
+        :disabled="loading"
+        color="primary"
+        @click.prevent="doStuff()"
+        text="Reload"
     >
-      Reload
-      <template v-slot:loader>
+      <template #loader>
         <span class="custom-loader">
           <v-icon light>mdi-cached</v-icon>
         </span>
       </template>
-    </v-btn>
-    <v-btn text
-           color="primary"
-           class="text-capitalize"
-           @click="close">
-      Cancel
-    </v-btn>
+    </AlbatrossButton>
+    <AlbatrossButton
+        variant="text"
+        color="primary"
+        class="text-capitalize"
+        @click="close"
+        text="Cancel"
+    ></AlbatrossButton>
   </dialog>
 </template>
 

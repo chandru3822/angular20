@@ -16,16 +16,19 @@
     <span v-else>{{ snackbar.text }}</span>
 
     <template v-slot:action="{ attrs }">
-      <v-btn text v-bind="attrs"
-             @click="show = false">
-        <v-icon color="secondary">clear</v-icon>
-      </v-btn>
+      <AlbatrossButton
+          variant="text"
+          v-bind="attrs"
+          @click="show = false"
+          prepend-icon="clear"
+      ></AlbatrossButton>
     </template>
   </v-snackbar>
 </template>
 
 <script setup>
 import { getCurrentInstance, ref } from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy

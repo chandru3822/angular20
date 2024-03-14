@@ -41,10 +41,10 @@
               @click="submitRequest(it)"
           >
             <td class="text-left pl-4">
-                {{ it.customer_name ? it.customer_name : '' }}
+              {{ it.customer_name ? it.customer_name : '' }}
             </td>
-<!--            need to check permissions if we turn this on-->
-<!--            <td class="text-left pl-4"><a target="_blank" :href="`/project/${it.project_id}/details`">{{ it.project_id }}</a></td>-->
+            <!--            need to check permissions if we turn this on-->
+            <!--            <td class="text-left pl-4"><a target="_blank" :href="`/project/${it.project_id}/details`">{{ it.project_id }}</a></td>-->
             <td class="text-left pl-4">{{ it.project_id }}</td>
             <td class="text-left pl-4">{{ it.address ? it.address : '' }}</td>
           </tr>
@@ -56,18 +56,19 @@
           <slot name="dialogContent"></slot>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn
+            <AlbatrossButton
                 @click="closeDialog"
-                color="primary" text
-                class="text-capitalize mr-2 mb-2">
-              cancel
-            </v-btn>
-            <v-btn
+                color="primary"
+                variant="text"
+                class="text-capitalize mr-2 mb-2"
+                text="cancel"
+            ></AlbatrossButton>
+            <AlbatrossButton
                 @click="[$emit('submitRequest'), closeDialog()]"
                 color="primary"
-                class="white--text elevation-2 text-capitalize mr-2 mb-2">
-              Submit
-            </v-btn>
+                class="elevation-2 text-capitalize mr-2 mb-2"
+                text="Submit"
+            ></AlbatrossButton>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -76,71 +77,75 @@
 </template>
 
 
-<script>
+<script setup>
 import constants from "@/helpers/constants";
 import debounce from "lodash.debounce";
-import { useUserStore } from '@/stores/UserStorePinia.js'
-import { mapStores } from 'pinia'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: "RequestTable",
-  props: {
-    headers: Array, // format {text: '', value: '', show: boolean}
-    projects: Array,
-    totalItems: Number,
-    featureCode:String,
-    isLoading: Boolean
-  },
-  data: () => ({
-    snackbar: {},
-    footerProps: {
-      'items-per-page-options': [25, 50, 100, 500],
-      'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-    },
-    options: {
-      itemsPerPage: 100
-    },
-    pagination: {},
-    projectsSearch: '',
-    searchQuery: '', //holds the search input string to pass up to parent
-    requestDialog: false,
-  }),
-  computed: {
-    ...mapStores(useUserStore),
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-    dataLoading(){
-      return this.isLoading
-      //computed so that it updates when the value changes on the parent
-    }
-  },
-  methods: {
-    changeSort(column) {
-      //todo: make sort actually work
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending
-      } else {
-        this.pagination.sortBy = column
-        this.pagination.descending = false
-      }
-    },
-    closeDialog() {
-      this.requestDialog = false
-    },
-    debounceFilterProjects: debounce(function () {
-      if(this.searchQuery == ''){
-        this.$emit('clearSearch')
-      }
-      this.$emit('searchInput', this.searchQuery)
-    }, 500),
+const props = defineProps({
+  headers: Array, // format {text: '', value: '', show: boolean}
+  projects: Array,
+  totalItems: Number,
+  featureCode:String,
+  isLoading: Boolean
+})
+const { headers, projects, totalItems, featureCode, isLoading } = toRefs(props)
 
-    submitRequest(item) {
-      if(this.userStore.userHasFeatureAccessLevel(this.featureCode, 'ADD')){
-        this.$emit('openRequest', item)
-        this.requestDialog = true
-      }
-    }
+const emit = defineEmits(['clearSearch', 'searchInput', 'openRequest'])
+
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 500],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const options = ref({itemsPerPage: 100})
+const pagination = ref({})
+const projectsSearch = ref('')
+const searchQuery = ref('')
+const requestDialog = ref(false)
+
+const dataLoading = computed(() => {
+  return isLoading.value
+  //computed so that it updates when the value changes on the parent
+})
+
+const changeSort = (column) => {
+  //todo: make sort actually work
+  if (pagination.value.sortBy === column) {
+    pagination.value.descending = !pagination.value.descending
+  } else {
+    pagination.value.sortBy = column
+    pagination.value.descending = false
   }
+}
+const closeDialog = () => {
+  requestDialog.value = false
+}
 
+const debounceFilterProjects = debounce((query) => {
+  if(searchQuery.value == ''){
+    emit('clearSearch')
+  }
+  emit('searchInput', searchQuery.value)
+}, 500)
+
+
+const submitRequest = (item) => {
+  if(userStore.userHasFeatureAccessLevel(featureCode.value, 'ADD')){
+    emit('openRequest', item)
+    requestDialog.value = true
+  }
 }
 </script>
 
