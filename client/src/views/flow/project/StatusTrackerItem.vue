@@ -66,11 +66,14 @@ onMounted(() => {
     fieldName.value = field.value.fieldName;
   }
   else {
-    if (field.value.dataTypeId == 1) {
-      fieldName.value = field.value.fieldName + ': ' + field.value.fieldValue.toLocaleDateString('en-US', {
+    if (field.value.dataTypeId === 1) {
+      //dataTypeId: 1 = date
+      fieldName.value = field.value.fieldName + ': ' + new Date(field.value.fieldValue).toLocaleDateString('en-US', {
+        timeZone: 'UTC',
         day: 'numeric', month: 'short', year: 'numeric' //formatDate('date', 'D MMM YYYY');
       })
-    } else if (field.value.dataTypeId == 2 || field.value.dataTypeId == 3) {
+    } else if (field.value.dataTypeId === 2) {
+      //dataTypeId: 2 = timestamp
       fieldName.value = field.value.fieldName + ': ' + new Date((field.value.fieldValue + 'Z')).toLocaleDateString('en-US', {
         day: 'numeric', month: 'long', year: 'numeric', hour: "numeric", minute: "2-digit", hourCycle: "h12" //formatDate('date', 'D MMM YYYY');
       })//formatDate('timestamp', 'D MMM YYYY H:mm a');

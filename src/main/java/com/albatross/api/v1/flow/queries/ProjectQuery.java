@@ -853,7 +853,7 @@ where contact_id = :contactId
                                            when dvcfc.id is not null then ubt.return_data_type_id
                                            when dvfc.id is not null and def.data_type_id is not null then def.data_type_id
                                            when dvfc.id is not null and def.data_type_id is null
-                                               then (select f.company_data_type_id
+                                               then (select t.data_type_id
                                                      from flow.custom_field_group_assignment c
                                                               inner join flow.custom_field f on f.id = c.custom_field_id
                                                               inner join flow.company_data_type t on t.id = f.company_data_type_id
