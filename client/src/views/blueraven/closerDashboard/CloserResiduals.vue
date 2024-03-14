@@ -247,19 +247,23 @@
 
 <script setup>
   import constants from '@/helpers/constants'
-  import { getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
-  import { AppMutations } from '@/stores/AppStore'
+  import { getRequest, getRequestWithParams } from '@/helpers/helpers'
   import SpinnerInline from '@/components/SpinnerInline'
   import moment from 'moment'
   import {getCurrentInstance, toRefs, ref, computed, onMounted} from "vue";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
   import {useRoute, useRouter} from "vue-router/composables";
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import {useUserStore} from "@/stores/UserStorePinia.js";
 
+  const userStore = useUserStore()
+  const appStore = useAppStore()
   const route = useRoute()
   const router = useRouter()
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
 
   const props = defineProps({
       isAdmin: Boolean
@@ -273,7 +277,6 @@
       }
     })
 
-  const snackbar = ref({})
   const users = ref([])
   const selectedUserId = ref(null)
   const residualData = ref({})
@@ -331,7 +334,7 @@
     itemsPerPage: 20
   })
   const currentUserId = computed(() => {
-    return store.state.user.details.id
+    return userStore.details.id
   })
   const notAssignedMessage = computed(() => {
     return isAdmin.value && selectedUserId.value === null ? 'You must select a user'
@@ -353,14 +356,13 @@
           const {data} = await getRequest('/closerDashboard/closers', 'blueraven')
           users.value = data
         } catch (e) {
-          snackbar.value = getSnackbar('ERROR', 'Error retrieving users')
-          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+          snackbar('ERROR', 'Error retrieving users')
           usersLoading.value = false
         }
       }
       const loadResidualData = async() => {
         if((isAdmin.value && selectedUserId.value != null) || !isAdmin.value) {
-          store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           dataLoading.value = true
           try {
             viewingDataFor.value = viewingDataFor.value === '' ? currentMonth.value : viewingDataFor.value
@@ -371,12 +373,11 @@
             const {data} = await getRequestWithParams(url, {params}, 'blueraven')
             residualData.value = data
             dataLoading.value = false
-            store.commit(AppMutations.SET_LOADING, false)
+            appStore.loading = false
           } catch (e) {
-            snackbar.value = getSnackbar('ERROR', 'Error retrieving residual data')
-            store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+            snackbar('ERROR', 'Error retrieving residual data')
             dataLoading.value = false
-            store.commit(AppMutations.SET_LOADING, false)
+            appStore.loading = false
           }
         } else {
           dataLoading.value = false

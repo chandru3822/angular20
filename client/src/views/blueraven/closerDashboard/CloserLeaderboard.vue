@@ -69,21 +69,25 @@
 
 <script setup>
   import constants from '@/helpers/constants'
-  import { handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
-  import { AppMutations } from '@/stores/AppStore'
+  import { handleHidingGlobalLoader, getRequest, getRequestWithParams } from '@/helpers/helpers'
   import SpinnerInline from '@/components/SpinnerInline'
   import DatetimePickerInput from "@/components/DatetimePickerInput";
   import {getCurrentInstance, ref, computed, onMounted} from "vue";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import {useUserStore} from "@/stores/UserStorePinia.js";
+
+  const userStore = useUserStore()
+  const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
 
   const currentUserId = computed(() => {
-    return store.state.user.details.id
+    return userStore.details.id
   })
   const timezone = computed(() => {
-    return store.state.user.details?.timezone?.value
+    return userStore.details?.timezone?.value
   })
         const currentUserOrgId = ref(null)
         const bookingDate = ref(null)
@@ -116,8 +120,7 @@
             handleHidingGlobalLoader(vueInstance, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            snackbar.value = getSnackbar('ERROR', `Error retrieving bookings.`)
-            store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+            snackbar('ERROR', `Error retrieving bookings.`)
             bookingsLoading.value = false
           }
         }

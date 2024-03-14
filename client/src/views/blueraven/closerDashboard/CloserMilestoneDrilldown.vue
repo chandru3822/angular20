@@ -63,6 +63,9 @@ import moment from "moment";
 import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
 import {getCurrentInstance, toRefs, ref, computed, onMounted} from "vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import {useUserStore} from "@/stores/UserStorePinia.js";
+
+const userStore = useUserStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -89,7 +92,7 @@ const { selectedQuarter, drilldownData, isOpen } = toRefs(props)
       ])
 
     const milestoneDrilldownTitle = computed(() => {
-      return store.state.user.details.firstName + ' ' + store.state.user.details.lastName + DashboardTypeEnum.CLOSER.drilldown.label + selectedQuarter.value
+      return userStore.details.firstName + ' ' + userStore.details.lastName + DashboardTypeEnum.CLOSER.drilldown.label + selectedQuarter.value
     })
 
     const closeMilestoneDialog = () => {

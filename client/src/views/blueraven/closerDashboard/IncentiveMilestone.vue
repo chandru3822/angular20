@@ -32,9 +32,14 @@ import moment from "moment";
 import SetterMilestoneDrilldown from "@/views/blueraven/setterDashboard/SetterMilestoneDrilldown";
 import CloserMilestoneDrilldown from "@/views/blueraven/closerDashboard/CloserMilestoneDrilldown";
 import {getCurrentInstance, watch, toRefs, ref, computed, onMounted} from "vue";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import {useUserStore} from "@/stores/UserStorePinia.js";
 
+const userStore = useUserStore()
+const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
     quarter: QuarterEnum,
@@ -52,7 +57,7 @@ const upperLabel = ref('')
 const lowerLabel = ref('')
 
 const currentUserId = computed(() => {
-  return store.state.user.details.id
+  return userStore.details.id
 })
     const windowInnerWidth = computed(() => {
       return window.innerWidth
@@ -126,7 +131,7 @@ onMounted(() => {
 
     /* Drilldown CODE START */
     const milestoneDrilldown = async (quarter) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
         let params = {}
         if(dashboardType.value === DashboardTypeEnum.SETTERMGR){
@@ -165,12 +170,11 @@ onMounted(() => {
         }
 
         milestoneDialog.value = true
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar.value = getSnackbar('ERROR', 'Error retrieving drilldown data')
-        store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-        store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error retrieving drilldown data')
+        appStore.loading = false
       }
     }
     const closeMilestoneDialog = () => {

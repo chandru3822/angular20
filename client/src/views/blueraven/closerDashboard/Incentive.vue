@@ -90,20 +90,20 @@ const store = vueInstance.$store
 const userStore = useUserStore()
 const fileStore = useFileStore()
 const appStore = useAppStore()
+const snackbar = vueInstance.$snackbar
 
 const percentAchieved = ref(0),
     progressBarIsFull=ref(false),
     headerImage=ref({}),
-    snackbar=ref({}),
     headerImageTypeId=ref(991),
     backgroundImage=ref({}),
     backgroundImageTypeId=ref(992),
-    companyId = userStore.details.companyId,
     backgroundImageLoaded=ref(false)
 
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
 const windowInnerWidth = computed(() => { return window.innerWidth})
-
-
 
 const milestoneLevel = (quarterCount) => {
   switch(true) {
@@ -139,7 +139,7 @@ const loadImage= async (typeId, imageType) => {
     appStore.loading = true
     await fileStore.getOne({
       attachmentTypeId: typeId,
-      sourceId: companyId,
+      sourceId: companyId.value,
       callback: async (img) => {
         imageType.image = img
         if(typeId === backgroundImageTypeId.value){
@@ -150,12 +150,11 @@ const loadImage= async (typeId, imageType) => {
     })
   } catch(e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', `Error Loading ${imageType}`)
+    snackbar('ERROR', `Error Loading ${imageType}`)
     if(typeId === backgroundImageTypeId.value){
       backgroundImageLoaded.value = true
     }
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 onMounted(async () => {

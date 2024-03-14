@@ -7,15 +7,20 @@
 
 <script setup>
 import moment from 'moment'
-import {getRequest, getSnackbar} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
+import {getRequest} from '@/helpers/helpers'
 import Incentive from "@/views/blueraven/closerDashboard/Incentive";
 import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
 import {MilestoneEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import {getCurrentInstance, ref, computed, onMounted} from "vue";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import {useUserStore} from "@/stores/UserStorePinia.js";
+
+const userStore = useUserStore()
+const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 const incentiveDataLoaded = ref(false)
 const closerDashContainer = ref(null)
@@ -28,7 +33,7 @@ const fdcCounts = ref({
 })
 
 const currentUserId = computed(() => {
-  return store.state.user.details.id
+  return userStore.details.id
 })
 const windowInnerWidth = computed(() => {
   return window.innerWidth
@@ -57,18 +62,17 @@ const resetScrollBarPosition = () => {
 const loadIncentive = async () => {
   incentiveDataLoaded.value = false
 
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     getRequest('/closerDashboard/getIncentiveFdcCounts', 'blueraven').then(res => {
       fdcCounts.value = res.data
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error retrieving incentive data')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+    snackbar('ERROR', 'Error retrieving incentive data')
     incentiveDataLoaded.value = true
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 const calcPointsForQuarter = (fdcCount, qualificationMetForQuarter) => {
