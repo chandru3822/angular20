@@ -148,6 +148,8 @@ const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
 const emailRules = ref(constants.EMAIL_RULES)
 const contactForm = ref(null)
 
+const { VITE_ENV } = import.meta.env
+
 watch(
     () => contact,
     (newValue, oldValue) => {
@@ -160,8 +162,8 @@ onMounted(() => {
   if(VITE_ENV === 'local') {
     // setFakeContact()
   }
-  getCompanyStates()
-  getCountries()
+  getAllCompanyStates()
+  getAllCountries()
   getCustomFieldGroups()
 })
 
@@ -173,7 +175,7 @@ const validate =  (saveContact) => {
 
   let valid = contactForm.value.validate()
   if (valid && saveContact) {
-    saveContact()
+    saveNewContact()
   }
 }
 const getCustomFieldGroups = async () => {
@@ -196,7 +198,7 @@ const getCustomFieldGroups = async () => {
     appStore.loading = false
   }
 }
-const getCompanyStates = async () => {
+const getAllCompanyStates = async () => {
   appStore.loading = true
   try {
     const {data, status} = await getCompanyStates(parseInt(companyId.value))
@@ -209,7 +211,7 @@ const getCompanyStates = async () => {
     appStore.loading = false
   }
 }
-const getCountries = async () => {
+const getAllCountries = async () => {
   appStore.loading = true
   try {
     const {data, status} = await getCountries(parseInt(companyId.value))
@@ -225,7 +227,7 @@ const getCountries = async () => {
     appStore.loading = false
   }
 }
-const saveContact = async () => {
+const saveNewContact = async () => {
   appStore.loading = true
   contact.value.customFieldGroups = customFieldGroups.value
   try {

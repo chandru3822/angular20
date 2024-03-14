@@ -594,7 +594,8 @@ const showMobileSummary = ref(true)
 const showMobileAssociatedProjects = ref(false)
 const showMobileNotes = ref(false)
 const showMobileDocuments = ref(false)
-const notes = ref(null)
+const addressChanged = ref(false)
+const notesComponent = ref(null)
 const contactEditForm = ref(null)
 const contactForm = ref(null)
 
@@ -678,7 +679,7 @@ onBeforeRouteLeave(async (to, from, next) => {
   // called when the route that renders this component is about to
   // be navigated away from.
   // has access to `this` component instance.
-  hasDirtyNotes.value = notes.value?.hasUnsavedNotes()
+  hasDirtyNotes.value = notesComponent.value?.hasUnsavedNotes()
   if (navigationOverride.value || (dirtyCfvs.value.length === 0 && !dirtySystemFields.value && !hasDirtyNotes.value)) {
     //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
     to.params.useSavedFilters = "true"
@@ -690,13 +691,14 @@ onBeforeRouteLeave(async (to, from, next) => {
 })
 
 const openTab = (tab)=> {
-  showMobileOverview.value = (tab == 'overview');
-  showMobileSummary.value = (tab == 'summary');
-  showMobileAssociatedProjects.value = (tab == 'associatedProjects');
-  showMobileNotes.value = (tab == 'notes');
-  showMobileDocuments.value = (tab == 'documents');
+  showMobileOverview.value = (tab === 'overview');
+  showMobileSummary.value = (tab === 'summary');
+  showMobileAssociatedProjects.value = (tab === 'associatedProjects');
+  showMobileNotes.value = (tab === 'notes');
+  showMobileDocuments.value = (tab === 'documents');
   projectStore.leftSideSplit = true;
 }
+
 const openMenu = ()=> {
   projectStore.leftSideSplit = false;
 }
@@ -722,8 +724,8 @@ const collapseSide = (side) => {
 const getStatesAndCountries = () => {
   // only load countries and states if they try to edit the project address and they haven't already been loaded
   if (states.value.length === 0 || countries.value.length === 0) {
-    getCompanyStates()
-    getCountries()
+    getAllCompanyStates()
+    getAllCountries()
   }
 }
 const getUserPositionIds = () => {
@@ -904,7 +906,7 @@ const convertToCustomer = async() => {
     appStore.loading = false
   }
 }
-const getCompanyStates = async() => {
+const getAllCompanyStates = async() => {
   try {
     const {data, status} = await getCompanyStates()
     states.value = data
@@ -914,7 +916,7 @@ const getCompanyStates = async() => {
 
   }
 }
-const getCountries = async() => {
+const getAllCountries = async() => {
   try {
     const {data, status} = await getCountries(parseInt(companyId.value))
     countries.value = data
