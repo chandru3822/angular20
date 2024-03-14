@@ -341,11 +341,11 @@ const getWorkQueueName = async () => {
     const {data, status} = await getRequest(`/workQueueType/${workQueueTypeId.value}`)
     workQueue.value = data
     workQueue.value.defaultColumnDisplay.forEach((h) => {
-      // headers.value.push({
-      //   text: h.text,
-      //   value: h.value,
-      //   show: h.show,
-      // })
+      headers.value.push({
+        text: h.text,
+        value: h.value,
+        show: h.show,
+      })
       headerLinks.value[h.value] = h.show
     })
     handleHidingGlobalLoader( status)
