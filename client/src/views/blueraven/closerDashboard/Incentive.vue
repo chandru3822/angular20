@@ -94,6 +94,7 @@ const appStore = useAppStore()
 const percentAchieved = ref(0),
     progressBarIsFull=ref(false),
     headerImage=ref({}),
+    snackbar=ref({}),
     headerImageTypeId=ref(991),
     backgroundImage=ref({}),
     backgroundImageTypeId=ref(992),
@@ -128,16 +129,12 @@ const calcYearPercentage= () => {
 watch(() => props.yearlyPointTotal, () => {
   calcYearPercentage()
 })
-watch(backgroundImageLoaded, () => {
-  console.log(backgroundImageLoaded.value)
-})
 
 const loadImages = async () => {
   await loadImage(headerImageTypeId.value, headerImage.value)
   await loadImage(backgroundImageTypeId.value, backgroundImage.value)
 }
 const loadImage= async (typeId, imageType) => {
-  let snackbar
   try {
     appStore.loading = true
     await fileStore.getOne({
@@ -153,12 +150,12 @@ const loadImage= async (typeId, imageType) => {
     })
   } catch(e) {
     console.error('*** ERROR ***', e)
-    snackbar = getSnackbar('ERROR', `Error Loading ${imageType}`)
+    snackbar.value = getSnackbar('ERROR', `Error Loading ${imageType}`)
     if(typeId === backgroundImageTypeId.value){
       backgroundImageLoaded.value = true
     }
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    appStore.loading = false
+    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
 onMounted(async () => {

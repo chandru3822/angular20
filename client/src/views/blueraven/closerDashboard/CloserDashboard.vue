@@ -5,11 +5,12 @@
         <v-app-bar id="date-range-btns-toolbar" class="elevation-1">
           <v-toolbar-items>
             <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
-              <v-btn text @click="setTimeInterval('WTD')">WTD</v-btn>
-              <v-btn text @click="setTimeInterval('MTD')">MTD</v-btn>
-              <v-btn text @click="setTimeInterval('60 days')" class="text-lowercase">60 days</v-btn>
-              <v-btn text @click="setTimeInterval('90 days')" class="text-lowercase">90 days</v-btn>
-              <v-btn text @click="setTimeInterval('YTD')">YTD</v-btn>
+              <AlbatrossButton v-for="button in timeIntervalBtns"
+                  variant="text"
+                  @click="setTimeInterval(button.timeInterval)"
+                  color="unset"
+                  :text="button.name"
+              ></AlbatrossButton>
             </v-btn-toggle>
           </v-toolbar-items>
         </v-app-bar>
@@ -20,10 +21,12 @@
     <div class="ranking-tables-section-header">
       <span v-if="!userCanViewAll">Your </span>Office Ranking
       <div class="expand-section">
-        <v-btn text @click="showOfficeRankingSection = !showOfficeRankingSection">
-          <v-icon v-if="!showOfficeRankingSection">mdi-chevron-down</v-icon>
-          <v-icon v-else>mdi-chevron-up</v-icon>
-        </v-btn>
+        <AlbatrossButton
+            variant="text"
+            @click="showOfficeRankingSection = !showOfficeRankingSection"
+            color="unset"
+            :prepend-icon="!showOfficeRankingSection ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+        ></AlbatrossButton>
       </div>
     </div>
     <!-- RANKING TABLES FIRST HEADER END -->
@@ -164,10 +167,12 @@
     <div class="ranking-tables-section-header" :class="{'fix-bottom-page-issue': !showCompanyRankingSection}">
       Company Ranking
       <div class="expand-section">
-        <v-btn text @click="showCompanyRankingSection = !showCompanyRankingSection">
-          <v-icon v-if="!showCompanyRankingSection">mdi-chevron-down</v-icon>
-          <v-icon v-else>mdi-chevron-up</v-icon>
-        </v-btn>
+        <AlbatrossButton
+            variant="text"
+            @click="showCompanyRankingSection = !showCompanyRankingSection"
+            color="unset"
+            :prepend-icon="!showCompanyRankingSection ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+        ></AlbatrossButton>
       </div>
     </div>
     <!-- RANKING TABLES SECOND HEADER END -->
@@ -293,6 +298,7 @@ import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
 import {getCurrentInstance, ref, computed, onMounted} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -326,6 +332,13 @@ const topRepsLoading = ref(true)
 const showOfficeRankingSection = ref(true)
 const showCompanyRankingSection = ref(true)
 const closerDashContainer = ref(null)
+const timeIntervalBtns = ref([
+  { name: 'WTD', timeInterval: 'WTD'},
+  { name: 'MTD', timeInterval: 'MTD'},
+  { name: '60 days', timeInterval: '60 days'},
+  { name: '90 days', timeInterval: '90 days'},
+  { name: 'YTD', timeInterval: 'YTD'},
+])
 
 const filteredTopRepsData = computed(() => {
   if (searchText.value) {
