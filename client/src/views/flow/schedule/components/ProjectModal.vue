@@ -34,7 +34,6 @@ const saveInvalid = ref(true)
 const confirmUnschedule = ref(false)
 const cancelledCompanyEventStatuses = ref()
 
-
 watch(() => props.resourceFromCalendar, () => {
   if(props.resourceFromCalendar.id) {
     scheduleCalendarResourceToProject(props.resourceFromCalendar)
@@ -223,7 +222,7 @@ const cancelProjectProcessStepEvent = async() => {
   <!-- Everything below only shows when expanded -->
   <div v-show="show">
     <!--  When the event hasn't been scheduled  -->
-    <div v-if="userCanEdit && project.processStepStatusTypeId === 1 && project.eventStatusTypeId === 1">
+    <div v-if="userCanEdit && project.processStepStatusTypeId === 1 && project.editableInSchedule">
       <v-card-text class="py-0">
         <v-autocomplete v-model="project.resource"
                         :items="project.resources"
@@ -281,7 +280,7 @@ const cancelProjectProcessStepEvent = async() => {
       </v-card-text>
       <v-card-actions v-if="userCanEdit" class="pt-1 pb-4 px-4">
         <v-spacer/>
-        <v-btn @click="[confirmUnschedule = true, getCancelledCompanyEventStatuses()]" color="primary" small text class="text-capitalize">Unschedule</v-btn>
+        <v-btn v-if="project.editableInSchedule" @click="[confirmUnschedule = true, getCancelledCompanyEventStatuses()]" color="primary" small text class="text-capitalize">Unschedule</v-btn>
       </v-card-actions>
     </div>
 <!-- ------------------- -->
