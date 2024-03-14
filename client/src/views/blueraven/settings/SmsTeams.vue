@@ -29,15 +29,15 @@
                           class="team-select"
           >
             <template
-              slot="selection"
-              slot-scope="{ item, index }"
+                slot="selection"
+                slot-scope="{ item, index }"
             >
               <v-chip small v-if="index === 0 && newTemplate.teamIds && newTemplate.teamIds.length < 2">
                 <span>{{ item.fullName }}</span>
               </v-chip>
               <span
-                v-if="index === 1 && newTemplate.teamIds && newTemplate.teamIds.length >= 2"
-                class="primary--text caption"
+                  v-if="index === 1 && newTemplate.teamIds && newTemplate.teamIds.length >= 2"
+                  class="primary--text caption"
               >{{ newTemplate.teamIds.length }} selected</span>
             </template>
           </v-autocomplete>
@@ -50,15 +50,15 @@
           <v-btn @click="[addTemplate = !addTemplate, newTemplate = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
-          :headers="headers"
-          :items="filterTemplates"
-          :fixed-header="true"
-          :items-per-page="-1"
-          single-expand
-          :mobile-breakpoint="0"
-          :expanded.sync="expanded"
-          hide-default-footer
-          class="elevation-1 org-type-table"
+            :headers="headers"
+            :items="filteredTemplates"
+            :fixed-header="true"
+            :items-per-page="-1"
+            single-expand
+            :mobile-breakpoint="0"
+            :expanded.sync="expanded"
+            hide-default-footer
+            class="elevation-1 org-type-table"
         >
           <template #no-data>
             <span class="default-text-color">NO DATA HERE!</span>
@@ -69,7 +69,7 @@
           </template>
 
           <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': filterTemplates.indexOf(item) % 2}">
+            <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': filteredTemplates.indexOf(item) % 2}">
               <h3>Edit Template</h3>
               <v-text-field text v-model="item.title" label="Title" />
               <v-textarea v-model="item.message"
@@ -88,15 +88,15 @@
                               class="team-select"
               >
                 <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
+                    slot="selection"
+                    slot-scope="{ item, index }"
                 >
                   <v-chip small v-if="index === 0 && expandedItem.teamIds && expandedItem.teamIds.length < 2">
                     <span>{{ item.fullName }}</span>
                   </v-chip>
                   <span
-                    v-if="index === 1 && expandedItem.teamIds && expandedItem.teamIds.length >= 2"
-                    class="primary--text caption"
+                      v-if="index === 1 && expandedItem.teamIds && expandedItem.teamIds.length >= 2"
+                      class="primary--text caption"
                   >{{ expandedItem.teamIds.length }} selected</span>
                 </template>
               </v-autocomplete>
@@ -106,7 +106,7 @@
           </template>
 
           <template #item="{ item }">
-            <tr  class="text-left" :class="{'shaded-row': filterTemplates.indexOf(item) % 2}">
+            <tr  class="text-left" :class="{'shaded-row': filteredTemplates.indexOf(item) % 2}">
               <td class="text-left">{{ item.title }}</td>
               <td>
                 <v-btn small text v-if="!expanded.includes(item) && userStore.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')" @click="expanded = [item]; expandedItem = item">
@@ -124,110 +124,109 @@
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, putRequest, getSnackbar, getRequest} from '@/helpers/helpers'
+<script setup>
+
+import {handleHidingGlobalLoader, putRequest,  getRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-export default {
-  name: 'MessageTemplates',
-  components: {},
-  data () {
-    return {
-      snackbar: {},
-      constants,
-      templates: [],
-      newTemplate: {},
-      addTemplate: false,
-      levels: [],
-      headers: [
-        { text: 'Title', value: 'title', show: true },
-        { text: null, value: 'icons', show: true, sortable: false }
-      ],
-      expanded: [],
-      expandedItem: [],
-      showDeleteDialog: false,
-      teams: [],
-      selectableTeams: [],
-    }
-  },
-  computed: {
-    ...mapStores(useUserStore),
-    filterTemplates () {
-      return this.templates.filter(tmp => !tmp.archived)
-    },
-  },
-  methods: {
-    async getTemplates () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/messaging/templates`)
-        this.templates = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Templates')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveTemplate(template, isNew) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await putRequest(`/messaging/template`, template)
-        if(isNew){
-          this.templates.push(data)
-          this.addTemplate = false
-          this.newTemplate = {}
-          this.snackbar = getSnackbar('SUCCESS', 'Template Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } else {
-          this.expanded = []
-          this.snackbar = getSnackbar('SUCCESS', 'Template Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Template' : 'Error Updating Template')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteTemplate(template) {
-      try {
-        const {status} = await putRequest(`/messaging/template/delete/${template.id}`)
-        this.showDeleteDialog = false
-        template.archived = true
-        this.snackbar = getSnackbar('SUCCESS', 'Template Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Template')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getTeams() {
-      try {
-        const {data} = await getRequest(`/smsTeam`)
-        this.selectableTeams = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving teams')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-  },
-  async created () {
-    this.getTemplates()
-    this.getTeams()
+const templates = ref([])
+const newTemplate = ref({})
+const addTemplate = ref(false)
+const levels = ref([])
+const headers = ref([
+  { text: 'Title', value: 'title', show: true },
+  { text: null, value: 'icons', show: true, sortable: false }
+])
+const expanded = ref([])
+const expandedItem = ref([])
+const showDeleteDialog = ref(false)
+const teams = ref([])
+const selectableTeams = ref([])
+
+onMounted(() => {
+  getTemplates()
+  getTeams()
+})
+
+const filteredTemplates = computed(() => {
+  return templates.value.filter(tmp => !tmp.archived)
+})
+
+const getTemplates = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/messaging/templates`)
+    templates.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Templates')
+
+    appStore.loading = false
   }
 }
+const saveTemplate = async(template, isNew) => {
+  appStore.loading = true
+  try {
+    const {data, status} = await putRequest(`/messaging/template`, template)
+    if(isNew){
+      templates.value.push(data)
+      addTemplate.value = false
+      newTemplate.value = {}
+      snackbar('SUCCESS', 'Template Added')
+
+    } else {
+      expanded.value = []
+      snackbar('SUCCESS', 'Template Updated')
+
+    }
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', isNew ? 'Error Adding Template' : 'Error Updating Template')
+
+    appStore.loading = false
+  }
+}
+const deleteTemplate = async(template) => {
+  try {
+    const {status} = await putRequest(`/messaging/template/delete/${template.id}`)
+    showDeleteDialog.value = false
+    template.archived = true
+    snackbar('SUCCESS', 'Template Deleted')
+
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Template')
+
+    appStore.loading = false
+  }
+}
+const getTeams = async() => {
+  try {
+    const {data} = await getRequest(`/smsTeam`)
+    selectableTeams.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving teams')
+
+  }
+}
+
 </script>
 
 <style lang="scss">

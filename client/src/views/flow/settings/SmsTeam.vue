@@ -344,7 +344,7 @@ const selectablePositions = computed(() => {
 const getTeams = async () => {
   appStore.loading = true
   try {
-    const {data, status} = await getRequest(`/smsTeam/`)
+    const {data, status} = await getRequest(`/smsTeam`)
     teams.value = data
     teams.value.map(team => team.checked = team.isDefault)
     handleHidingGlobalLoader(status)
@@ -364,11 +364,11 @@ const saveTeam = async (team, isNew) => {
       const oldDefaultTeam = teams.value.filter(team => team.isDefault)[0]
       if (oldDefaultTeam) {
         oldDefaultTeam.isDefault = false
-        const {removeData, removeStatus} = await putRequest(`/smsTeam/`, oldDefaultTeam) //removes the default state from
+        const {removeData, removeStatus} = await putRequest(`/smsTeam`, oldDefaultTeam) //removes the default state from
       }
       team.isDefault = team.checked
     }
-    const {data, status} = await putRequest(`/smsTeam/`, team)
+    const {data, status} = await putRequest(`/smsTeam`, team)
     if(isNew){
       teams.value.push(data)
       addTeam.value = false
