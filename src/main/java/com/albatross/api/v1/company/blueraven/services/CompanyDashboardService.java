@@ -18,7 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
+
+
 import java.util.*;
 
 import static java.time.temporal.TemporalAdjusters.*;
@@ -201,7 +202,7 @@ public class CompanyDashboardService {
         currentPeriod.getStartDate(),
         currentPeriod.getEndDate(),
         previousPeriod.getStartDate(),
-        previousPeriod.getStartDate(), "last period"));
+        previousPeriod.getEndDate(), "last period"));
     }
 
     ranges.add(new CompanyDashboardDateRange(6, "Last Week", "LAST WEEK",
@@ -211,10 +212,10 @@ public class CompanyDashboardService {
       lastWeekEnd.minusDays(7), "the week before last week"));
 
     ranges.add(new CompanyDashboardDateRange(7, "Last 30 Days", "LAST_30_DAYS",
-      today.minus(29, ChronoUnit.DAYS),
+      today.minusDays(29),
       today,
-      today.minus(59, ChronoUnit.DAYS),
-      today.minus(30, ChronoUnit.DAYS), "30 days before last 30 days"));
+      today.minusDays(59),
+      today.minusDays(30), "30 days before last 30 days"));
 
     if(isAdmin) {
       ranges.add(new CompanyDashboardDateRange(8, "Last Period", "LAST_PERIOD",

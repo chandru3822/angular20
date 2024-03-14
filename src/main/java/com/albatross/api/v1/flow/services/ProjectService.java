@@ -261,12 +261,13 @@ public class ProjectService {
     return proj.isPresent();
   }
 
-  public List<ProjectStatusField> getStatusFieldsByProject(Long projectId) {
+  public List<ProjectStatusField> getStatusFieldsByProject(Long projectId, Long companyProjectStatusTypeId) {
     User user = securityService.getCurrentUser();
 
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("projectId", projectId);
+    params.put("companyProjectStatusTypeId", companyProjectStatusTypeId);
 
     List<ProjectStatusField> results = sqlCache.queryBySql(ProjectQuery.getStatusFieldsByProject, params, new ProjectStatusFieldMapper<>(ProjectStatusField.class, om));
 

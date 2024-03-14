@@ -431,8 +431,13 @@
       let url = deleteAllRecurring ? `/availability/appointment/recurrence/${item.recurringEventId}` : `/availability/appointment/${item.id}`
 
       const {status} = await deleteRequest(url)
-      item.archived = true
-      itemToDelete.value.archived = true
+
+      appointments.value?.forEach((a) => {
+        if (a.id === this.itemToDelete.id) {
+          a.archived = true
+        }
+      })
+
       if(deleteAllRecurring) {
         //reload appointments if we deleted more than one
         await getAppointments()
