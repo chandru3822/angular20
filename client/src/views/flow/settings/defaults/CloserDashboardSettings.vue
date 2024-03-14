@@ -1,3 +1,53 @@
+<template>
+  <v-container>
+    <v-row v-for="([key, imageType], idx) in Object.entries(ImageTypeEnum)">
+      <v-col cols="12">
+        <v-toolbar color="white" class="elevation-1">
+          <v-toolbar-title class="title-large">{{ imageType.header }}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <div v-if="userCanEdit">
+            <AlbatrossButton variant="text" icon :large="$vuetify.breakpoint.smAndDown" color="primary"
+                   v-if="!imageType.saving && !imageType.image?.presignedUrl"
+                   @click="imageType.add = !imageType.add"
+                   :prepend-icon="imageType.add ? 'remove' : 'add'"
+            />
+            <AlbatrossButton variant="text" icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else
+                   @click="imageToDelete=imageType"
+                   prepend-icon="delete"
+            />
+          </div>
+        </v-toolbar>
+        <div class="text-center">
+          <div class="mt-4" v-if="imageType.add">
+            <form enctype="multipart/form-data" novalidate>
+              <input
+                type="file"
+                :accept="acceptedFileTypes"
+                class="file-input clickable body-medium mx-6"
+                :disabled="imageType.saving"
+                @change="uploadFile(imageType, $event.target.files, imageType.attachmentTypeId, companyId, 1048576)"
+                name="avatar"
+              >
+              <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
+            </form>
+          </div>
+          <div class="company-logo-background" v-else-if="imageType.image?.presignedUrl">
+            <img class="company-logo" :src="imageType.image.presignedUrl" alt="image preview">
+          </div>
+          <div class="mt-4" v-else>
+            No image uploaded
+          </div>
+        </div>
+      </v-col>
+    </v-row>
+
+    <ConfirmationDialog :open-dialog="!!imageToDelete" @confirm="deleteAttachment"
+                        @close-dialog="imageToDelete=null">
+      {{ deleteImageDialogText }}
+    </ConfirmationDialog>
+  </v-container>
+</template>
+
 <script setup>
 /*
 *@name CloserDashboardSettings
@@ -13,6 +63,8 @@ import {AppMutations} from "@/stores/AppStore";
 import {Actions} from "@/store";
 import {getSnackbar} from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 const ImageTypeEnum = ref({
   CLOSER_DASH_TOURNAMENT_HEADER_LOGO: {
@@ -64,9 +116,8 @@ const loadImage = async(logoType) => {
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    this.snackbar = getSnackbar('ERROR', 'Error Loading Image')
-    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    this.$store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Loading Image')
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
 
@@ -134,58 +185,7 @@ onMounted(async () => {
     loadImage(value)
   })
 })
-
 </script>
-
-<template>
-  <v-container>
-  <v-row v-for="([key, imageType], idx) in Object.entries(ImageTypeEnum)">
-    <v-col cols="12">
-      <v-toolbar color="white" class="elevation-1">
-        <v-toolbar-title class="title-large">{{ imageType.header }}</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <div v-if="userCanEdit">
-          <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                 v-if="!imageType.saving && !imageType.image?.presignedUrl" @click="imageType.add = !imageType.add">
-            <v-icon v-if="imageType.add">remove</v-icon>
-            <v-icon v-else>add</v-icon>
-          </v-btn>
-          <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else
-                 @click="imageToDelete=imageType">
-            <v-icon>delete</v-icon>
-          </v-btn>
-        </div>
-      </v-toolbar>
-      <div class="text-center">
-        <div class="mt-4" v-if="imageType.add">
-          <form enctype="multipart/form-data" novalidate>
-            <input
-                type="file"
-                :accept="acceptedFileTypes"
-                class="file-input clickable body-medium mx-6"
-                :disabled="imageType.saving"
-                @change="uploadFile(imageType, $event.target.files, imageType.attachmentTypeId, companyId, 1048576)"
-                name="avatar"
-            >
-            <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
-          </form>
-        </div>
-        <div class="company-logo-background" v-else-if="imageType.image?.presignedUrl">
-          <img class="company-logo" :src="imageType.image.presignedUrl" alt="image preview">
-        </div>
-        <div class="mt-4" v-else>
-          No image uploaded
-        </div>
-      </div>
-    </v-col>
-  </v-row>
-
-  <ConfirmationDialog :open-dialog="!!imageToDelete" @confirm="deleteAttachment"
-                      @close-dialog="imageToDelete=null">
-    {{ deleteImageDialogText }}
-  </ConfirmationDialog>
-  </v-container>
-</template>
 
 <style scoped lang="scss">
 .company-logo-background {

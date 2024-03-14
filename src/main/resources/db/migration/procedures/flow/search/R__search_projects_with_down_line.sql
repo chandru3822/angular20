@@ -29,7 +29,9 @@ create or replace function flow.search_projects_with_down_line(p_searchterm char
             company_project_status_type_id bigint,
             project_status_type            character varying,
             contact                        jsonb,
-            commissions_outstanding        numeric
+            commissions_outstanding        numeric,
+            root_project_status_type       character varying,
+            owner_name   character varying
           )
   language plpgsql
 as
@@ -94,7 +96,9 @@ BEGIN
               (select t.commissions_outstanding
                from brs.get_commissions_by_project_status(limited_projects.company_project_status_type_id::bigint,limited_projects.id::bigint) as t)
                   else null::numeric
-              end as commissions_oustanding
+              end as commissions_oustanding,
+             limited_projects.root_project_status_type,
+             limited_projects.closer_name
       FROM (select *
             from (select p.id::bigint,
                          p.project_name,
@@ -113,13 +117,17 @@ BEGIN
                          (select row_to_json(contact1)
                           from (select c.id,
                                        c.phone,
-                                       c.mobile) contact1)::jsonb as contact
+                                       c.mobile) contact1)::jsonb as contact,
+                         pst.project_status_type  as root_project_status_type,
+                         pd.closer_name
                   from flow.project p
                          inner join flow.company_project_status_type cpst
                                     on cpst.id = p.company_project_status_type_id
+                         inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
                          inner join flow.contact c on c.id = p.contact_id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
+                         inner join brs.project_details pd on pd.project_id = p.id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
                     and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
@@ -149,13 +157,17 @@ BEGIN
                          (select row_to_json(contact1)
                           from (select c.id,
                                        c.phone,
-                                       c.mobile) contact1)::jsonb as contact
+                                       c.mobile) contact1)::jsonb as contact,
+                         pst.project_status_type  as root_project_status_type,
+                         pd.closer_name
                   from flow.project p
                          inner join flow.company_project_status_type cpst
                                     on cpst.id = p.company_project_status_type_id
+                         inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
                          inner join flow.contact c on c.id = p.contact_id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
+                         inner join brs.project_details pd on pd.project_id = p.id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
                     and (c.owner_org_ids && v_org_ids)
@@ -202,7 +214,9 @@ BEGIN
                     (select t.commissions_outstanding
                      from brs.get_commissions_by_project_status(limited_projects.company_project_status_type_id::bigint,limited_projects.id::bigint) as t)
                   else null::numeric
-               end as commissions_oustanding
+               end as commissions_oustanding,
+             limited_projects.root_project_status_type,
+             limited_projects.closer_name
          FROM (select p.id::bigint,
                       p.project_name,
                       p.contact_id::bigint,
@@ -220,13 +234,17 @@ BEGIN
                       (select row_to_json(contact1)
                        from (select c.id,
                                     c.phone,
-                                    c.mobile) contact1)::jsonb as contact
+                                    c.mobile) contact1)::jsonb as contact,
+                      pst.project_status_type  as root_project_status_type,
+                      pd.closer_name
                from flow.project p
                       inner join flow.company_project_status_type cpst
                                  on cpst.id = p.company_project_status_type_id
+                      inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
                       inner join flow.contact c on c.id = p.contact_id
                       left join flow.company_state cs on cs.id = p.company_state_id
                       left join flow.state s on s.id = cs.state_id
+                      inner join brs.project_details pd on pd.project_id = p.id
                where c.company_id = any (v_company_ids)
                  and p.archived is not true
                  and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)

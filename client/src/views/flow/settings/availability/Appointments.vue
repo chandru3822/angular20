@@ -416,21 +416,29 @@
             const endTime = DateTime.fromISO(a.endTime, {zone: 'utc'})
                                 .minus({days: 1})
                                 .toISO()
+
             return {...a, endTime}
           }
           return a
         })
       },
       async deleteAppointment(deleteAllRecurring) {
+        console.log(`DeleteAllRecurring: ${deleteAllRecurring}`)
         const item = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
+          console.log(item)
           let url = deleteAllRecurring ? `/availability/appointment/recurrence/${item.recurringEventId}` : `/availability/appointment/${item.id}`
 
           const {status} = await deleteRequest(url)
-          item.archived = true
-          this.itemToDelete.archived = true
+
+          this.appointments.forEach((a) => {
+            if (a.id === this.itemToDelete.id) {
+              a.archived = true
+            }
+          })
+
           if(deleteAllRecurring) {
             //reload appointments if we deleted more than one
             await this.getAppointments()
@@ -445,6 +453,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
         this.closeDeleteDialog()
+
       },
       async deleteRecurring(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)

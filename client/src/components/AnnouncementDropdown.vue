@@ -125,7 +125,7 @@
         return this.constants.IS_MOBILE ? 320 : 400
       },
       hasUnalertedAnnouncements () {
-        return this.$store.state.app.announcements?.filter(a => !a.alerted)?.length > 0 || false
+        return this.$store?.state?.app?.announcements?.filter(a => !a.alerted)?.length > 0 || false
       },
     },
     created () {

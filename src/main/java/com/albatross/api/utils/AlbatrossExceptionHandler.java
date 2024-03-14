@@ -64,7 +64,7 @@ public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
   @ExceptionHandler(value = ApiException.class)
   protected ResponseEntity<ErrorMessage> handleApiException(ApiException ex) {
     final Throwable rootCause = ExceptionUtils.getRootCause(ex);
-    return ResponseEntity.internalServerError().body(new ErrorMessage(rootCause.getMessage()));
+    return ResponseEntity.badRequest().body(new ErrorMessage(rootCause.getMessage()));
   }
 
   @ExceptionHandler(value = ClientAbortException.class)

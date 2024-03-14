@@ -39,80 +39,66 @@
                 </div>
           </template>
               <template #item.icons = "{item, index}">
-                <v-btn small :large="$vuetify.breakpoint.smAndDown" icon color="primary" @click="editIndex = index" v-if="index !== editIndex">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small :large="$vuetify.breakpoint.smAndDown" icon color="primary" @click="saveConfigurationValue(item)" v-if="index === editIndex">
-                  <v-icon>save</v-icon>
-                </v-btn>
-                <v-btn small :large="$vuetify.breakpoint.smAndDown" icon color="primary" @click="editIndex = null" v-if="index === editIndex && $vuetify.breakpoint.smAndDown">
-                  <v-icon>close</v-icon>
-                </v-btn><v-btn small text color="primary" @click="editIndex = null" v-else-if="index === editIndex">
-                  cancel
-                </v-btn>
-              </template>
+                <AlbatrossButton size="small" variant="text" :large="vuetify.breakpoint.smAndDown" icon color="primary" @click="editIndex = index" v-if="index !== editIndex" prepend-icon="edit"/>
+                <AlbatrossButton size="small" variant="text" :large="vuetify.breakpoint.smAndDown" icon color="primary" @click="saveConfigurationValue(item)" v-if="index === editIndex" prepend-icon="save"/>
+                <AlbatrossButton size="small" variant="text" :large="vuetify.breakpoint.smAndDown" icon color="primary" @click="editIndex = null" v-if="index === editIndex && vuetify.breakpoint.smAndDown" prepend-icon="close"/>
+                <AlbatrossButton size="small" variant="text" color="primary" @click="editIndex = null" v-else-if="index === editIndex" text="CANCEL"/>              </template>
         </v-data-table>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
-export default {
-  name: 'Configurations',
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+const store = vueInstance.$store
 
-  data () {
-    return {
-      constants,
-      editIndex: null,
-      snackbar: {},
-      headers: [
-        {text: 'Name', value: 'name', show: true},
-        {text: 'Value', value: 'value', show: true},
-        {text: null, value: 'icons', show: true, sortable: false}
-      ],
-      configurationValues: [],
-      companyId: this.$store.state.user.details.companyId,
+const editIndex = ref(null)
+const configurationValues = ref([])
+const companyId = ref(store.state.user.details.companyId)
+
+const headers = ref([
+  {text: 'Name', value: 'name', show: true},
+  {text: 'Value', value: 'value', show: true},
+  {text: null, value: 'icons', show: true, sortable: false}
+])
+
+onMounted(async () => {
+  await getConfigurationValues()
+})
+
+    const getConfigurationValues = async () => {
+      store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/companies/${companyId.value}/configuration`)
+        configurationValues.value = data
+        handleHidingGlobalLoader(vueInstance, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'Error Retrieving Data')
+        store.commit(AppMutations.SET_LOADING, false)
+      }
     }
-  },
-  computed: {
-  },
-  async created () {
-    this.getConfigurationValues()
-  },
-  methods: {
-    async getConfigurationValues() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    const saveConfigurationValue = async (item) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/companies/${this.companyId}/configuration`)
-        this.configurationValues = data
-        handleHidingGlobalLoader(this, status)
+        const {status} = await putRequest(`/companies/${companyId.value}/configuration`, item)
+        editIndex.value = null
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Saving Configuration Value')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async saveConfigurationValue(item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await putRequest(`/companies/${this.companyId}/configuration`, item)
-        this.editIndex = null
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Configuration Value')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-  },
-}
+    }
 </script>
 <style lang="scss">
 //keeps the arrow icon on the sort chip (mobile dropdown) from having a light blue background

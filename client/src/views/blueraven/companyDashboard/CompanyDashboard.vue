@@ -970,7 +970,7 @@ export default {
         await this.changeDropdownSelection(1);
       }
       else {
-        this.dashValues = await this.getDashBoardData(this.startDate, this.endDate, moment().subtract(60, "days").format('YYYY-MM-DD'), moment().subtract(31, "days").format('YYYY-MM-DD'));
+        this.dashValues = await this.getDashBoardData(this.startDate, this.endDate, moment(this.startDate).subtract(1, "days").format('YYYY-MM-DD'), moment(this.endDate).subtract(1, "days").format('YYYY-MM-DD'));
       }
       if(this.secondDateRange != null) {
         await this.changeDropdownSelection(2);

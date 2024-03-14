@@ -76,8 +76,14 @@ public class ProjectController {
 
   @GetMapping(value = "/{projectId}/statusFields")
   public List<ProjectStatusField> getStatusFieldsByProject(@PathVariable Long projectId) {
-    return projectService.getStatusFieldsByProject(projectId);
+    return projectService.getStatusFieldsByProject(projectId, null);
   }
+
+    @GetMapping(value = "/{projectId}/statusFields/{companyProjectStatusTypeId}")
+    public List<ProjectStatusField> getStatusFieldsByProjectForStatus(@PathVariable Long projectId,
+                                                                      @PathVariable Long companyProjectStatusTypeId) {
+        return projectService.getStatusFieldsByProject(projectId, companyProjectStatusTypeId);
+    }
 
   @DeleteMapping(value = "/{projectId}")
   public void deleteProject(
