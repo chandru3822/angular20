@@ -11,7 +11,7 @@
           size="small"
           color="primary"
           class="pa-2 mx-2"
-          @click.stop
+          @click.native.stop
           :to="`/project/${projectId}/processSteps`"
           prepend-icon="mdi-format-list-bulleted"
       ></AlbatrossButton>
@@ -118,7 +118,6 @@ const processStepsByName = computed(() => {
     }
   })
 })
-
 
 const getProcessSteps = async () => {
   try {

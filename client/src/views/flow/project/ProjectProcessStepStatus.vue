@@ -84,6 +84,7 @@ const { projectId, projectProcessStep, availableProcessStepStatuses, limitToNonC
 
 const cancelledCompanyStatuses = ref([])
 const newStatus = ref({})
+const internalShowDialog = ref(showDialog.value)
 
 onMounted(() => {
   getCancelledStatuses()
@@ -100,9 +101,6 @@ watch(projectProcessStep, async() => {
   getCancelledStatuses()
 })
 
-const internalShowDialog = computed(() => {
-  return showDialog.value
-})
 const statuses = computed(() => {
   if (limitToActive.value === true) {
     return availableProcessStepStatuses.value.filter(step => step.processStepStatusTypeId === 1)

@@ -26,7 +26,7 @@
 
         <v-divider/>
         <v-data-table
-            class="elevation-1 table-striped"
+            class="elevation-1 table-striped clickable"
             :headers="headers"
             :items="projects"
             fixed-header
@@ -38,7 +38,7 @@
             :server-items-length="totalProjects"
             :loading="isProjectsLoading"
             :class="{'fix-column-width-bug': !isMobile}"
-            @click:row.stop="goToRoute"
+            @click:row="goToRoute"
         >
           <template #no-data>
             <span class="default-text-color">No available projects</span>
@@ -49,24 +49,16 @@
           </template>
 
           <template #item.id="{item: project, index}" class="text-left py-0 pl-4 clickable">
-            <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
               {{project.id}}
-            </router-link>
           </template>
           <template #item.projectName="{item: project, index}" class="text-left text--black clickable">
-            <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
               {{project.projectName}}
-            </router-link>
           </template>
           <template #item.stateAbbreviation="{item: project, index}" class="text-left clickable">
-            <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
               {{project.stateAbbreviation}}
-            </router-link>
           </template>
           <template #item.projectStatusType="{item: project, index}" class="text-left clickable">
-            <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
               {{project.projectStatusType}}
-            </router-link>
           </template>
           <template #item.dateCreated="{item: project, index}" class="text-left clickable">
             <span class="clickable">{{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</span>

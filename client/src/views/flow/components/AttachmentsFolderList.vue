@@ -131,7 +131,7 @@
                       :accept="acceptedFileTypes"
                       @change='doUpload($event.target.files, type)'
                       style="display: none"
-                      @click.stop=""
+                      @click.native.stop=""
                       :ref="`fileInput${type.attachmentTypeId}`"
                   >
                   <div class="expansion-panel-header-open" v-if="open"
@@ -144,14 +144,14 @@
                 </span>
                   <AlbatrossButton
                       v-if="allowUpload || forceShowUploadBtn"
-                      @click.native.stop="selectFile(btn-type.attachmentTypeId)"
+                      @click.native.stop="selectFile(type.attachmentTypeId)"
                       :icon="isMobile"
-                      elevation="0"
+                      :elevation="0"
                       variant="text"
                       color="primary"
                       class="text-capitalize"
                       :class="{'mr-4': isMobile}"
-                      :disabled="dragTypeId === btn-type.attachmentTypeId"
+                      :disabled="dragTypeId === type.attachmentTypeId"
                       :prepend-icon="isMobile ? 'mdi-tray-arrow-up' : ''"
                       :text="!isMobile ? 'Upload' : ''"
                   ></AlbatrossButton>
@@ -224,6 +224,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
+// const rootInstance = getCurrentInstance().appContext.app;
 
 const props = defineProps({
   allowUpload: Boolean,
@@ -280,6 +281,8 @@ const showCompareModal = ref(false)
 const opened = ref([])
 const emptyFolderToggleState = ref(null)
 const _filterTimerId = ref(null)
+const typePath = ref('')
+const attachmentPath = ref('')
 
 const emit = defineEmits(['scrollToTop'])
 
@@ -352,13 +355,13 @@ onMounted(() => {
   //this was in mounted() not created()
   if (loadLinked.value) {
     //if in the linked section and a new record was linked, add it here
-    this.$root.$on('newAttachmentLinked', data => {
+    vueInstance.$on('newAttachmentLinked', data => {
       let clone = cloneDeep(data)
       clone.linked = true //if you dont clone it here then it updates the root obj in the calling fn which borks stuff
       attachments.value.push(clone)
     })
     //if in the linked section and a linked attachment is archived, remove it
-    this.$root.$on('attachmentDeleted', id => {
+    vueInstance.$on('attachmentDeleted', id => {
       attachments.value = attachments.value.filter(a => a.id !== id)
     })
   }
@@ -401,7 +404,7 @@ const fileUploaded = (attachment, error) => {
     if (!forceShowUploadBtn.value) {
       //so far, if forceShowUploadBtn, then it is on org, user, contact, etc so it is already where it needs to be and doesn't need to refresh again
       //this value tells the right pane to update when a file is uploaded
-      projectStore.value.incrementReloadKey()
+      projectStore.incrementReloadKey()
     }
   }
   appStore.loading = false
@@ -555,7 +558,7 @@ const uploadDocument = async (files, type) => {
           if (!forceShowUploadBtn.value) {
             //so far, if forceShowUploadBtn, then it is on org, user, contact, etc so it is already where it needs to be and doesn't need to refresh again
             //this value tells the right pane to update when a file is uploaded
-            projectStore.value.incrementReloadKey()
+            projectStore.incrementReloadKey()
           }
           appStore.loading = false
         } else {
@@ -568,7 +571,7 @@ const uploadDocument = async (files, type) => {
               objectTypeId: objectTypeId.value,
               sourceId,
               secondaryId,
-              callback: fileUploaded.value
+              callback: fileUploaded
             })
           }
         }

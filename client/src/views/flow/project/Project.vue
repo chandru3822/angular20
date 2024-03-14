@@ -103,6 +103,7 @@
       <template v-slot:yes>Save</template>
     </ConfirmationDialog>
     <!--    end dialog -->
+
     <ThreeColumnLayoutMobile v-if="isMobile"
                              :menu-items="[
                                  pageOverviewMenuItem,
@@ -206,7 +207,7 @@
               {{ projectStore.ppsEvent.eventName }} Event
             </router-link>
           </span>
-            <span v-if="projectStore && selectedTab && $route.name === 'projectDetails'" class="breadcrumb albatross-body-2 primary--text">
+            <span v-if="projectStore && selectedTab && route.name === 'projectDetails'" class="breadcrumb albatross-body-2 primary--text">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
               {{ selectedTab.tabName}}
           </span>
@@ -396,6 +397,7 @@ onMounted(() => {
 
 onBeforeRouteLeave(async (to, from, next) => {
   to.params.useSavedFilters = "true"
+  next()
 })
 
 const projectId = computed(() => {
@@ -495,8 +497,8 @@ const loadProject = async()=> {
   await getProject()
   await getMilestones()
 }
-const changeTabs = (selectedTab, buttonClicked)  => {
-  selectedTab.value = selectedTab
+const changeTabs = (selectedChildTab, buttonClicked)  => {
+  selectedTab.value = selectedChildTab
   if (buttonClicked && route.name !== 'projectDetails') {
     router.push({name: 'projectDetails', projectId: projectId.value})
   }

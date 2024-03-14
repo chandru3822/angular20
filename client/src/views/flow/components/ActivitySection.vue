@@ -47,7 +47,6 @@
     </div>
     <div class="activity-body" :class="{'footer-closed-height': !addActivity && null == editedActivity.id}">
       <div v-if="pinnedActivitiesOnly.length > 0 && !searchText" :class="{'pb-7': !timelineView}">
-        WTF
         <ActivityList v-if=!savingActivity
                       :activities="pinnedActivitiesOnly"
                       :project-id="projectId"
@@ -88,7 +87,7 @@
                           :prepend-icon="h.sortDirection === 'desc' ? 'mdi-arrow-up' : 'mdi-arrow-down'"
                       ></AlbatrossButton>
                       <AlbatrossButton
-                          v-if="open && btn-type.id !== 1 && h.hashtagId !== -1 && !(addActivity && selectedTopics.filter(t => t.id == h.hashtagId).length > 0) && null == editedActivity.id"
+                          v-if="open && type.id !== 1 && h.hashtagId !== -1 && !(addActivity && selectedTopics.filter(t => t.id == h.hashtagId).length > 0) && null == editedActivity.id"
                           variant="text"
                           color="primary"
                           class="text-capitalize pa-2"
@@ -99,7 +98,6 @@
                   </template>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
-                  Hello
                   <ActivityList v-if="!savingActivity"
                                 :activities="sortAndFilterActivities(h.activities, h.sortDirection)"
                                 :project-id="projectId"
@@ -135,7 +133,7 @@
                     :search-callback="searchByClick"
                     :highlightPinnedActivity = false
                     :query="queryText"
-                    ref="activityListA"
+                    ref="activityListTopic"
                     :use-infinite-loader="true"
                     @bottomHitCount="bottomHitCallback"
                     @reload="getActivities"
@@ -313,7 +311,7 @@ const pinnedActivitiesOnly = ref([])
 const bottomHitCount = ref(1)
 const activitiesToShow = ref(constants.ACTIVITIES_SHOWN)
 const activityList = ref(null)
-const activityListA = ref(null)
+const activityListTopic = ref(null)
 
 const emit = defineEmits(['scrollToTop'])
 
@@ -365,17 +363,13 @@ const sortedFilteredActivities = computed(() => {
 
   getPinnedActivitiesOnly(activities.value)
   if(sortedList.length > (activitiesToShow.value * bottomHitCount.value) ) {
-    if(activityListA.value) {
-      //todo: @randa need to fix this for comp api
-      console.log('AAAA', activityListA.value)
-      activityListA.value.infiniteStateLoaded(false)
+    if(activityList.value) {
+      activityList.value.infiniteStateLoaded(false)
     }
     return sortedList.slice(0, (activitiesToShow.value * bottomHitCount.value))
   } else {
-    if(activityListA.value) {
-      //todo: @randa need to fix this for comp api
-      console.log('BBBB', activityListA.value)
-      activityListA.value.infiniteStateLoaded(true)
+    if(activityListTopic.value) {
+      activityListTopic.value.infiniteStateLoaded(true)
     }
     return sortedList
   }
@@ -422,7 +416,7 @@ const bottomHitCallback = () => {
   bottomHitCount.value = bottomHitCount.value + 1
 }
 const getLinkLabel = () => {
-  return editedActivity.value.linked && null != editedActivity.value.linkLabel ? `Link ${editedActivity.value.linkLabel}` : `Link ${projectStore.value.linkLabel}`
+  return editedActivity.value.linked && null != editedActivity.value.linkLabel ? `Link ${editedActivity.value.linkLabel}` : `Link ${projectStore.linkLabel}`
 }
 const sortAndFilterActivities = (activities, sortDirection)=> {
   return orderBy(activities.filter(a => {
@@ -515,12 +509,11 @@ const getActivities = async () => {
     try {
       const {data} = await getRequest(`/activity/${sectionType.value}/${primaryId.value}`)
       activities.value = data
-    } catch {
+    } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error loading notes')
 
     } finally {
-      console.log('VVVV',activitiesLoading.value)
       activitiesLoading.value = false
     }
   }
@@ -597,7 +590,7 @@ const linkEditedActivity = () => {
     editedActivity.value.linkedPpseId = parseInt(route.params.ppsEventId)
     //this has to populate even when the linked item is an event or else we can't re-load the link path correctly
     editedActivity.value.linkedPpsId = parseInt(route.params.processStepId)
-    editedActivity.value.linkLabel = projectStore.value.linkLabel
+    editedActivity.value.linkLabel = projectStore.linkLabel
   } else {
     editedActivity.value.linkLabel = null
     editedActivity.value.linkedPpseId = null
@@ -690,7 +683,7 @@ const editActivity = async() => {
 
     getActivityTopics();
     editedActivity.value = {}
-    editedIndex.value = null
+    editedIndex = null
     if(!timelineView.value){
       //only reset the scroll if we're editing in the topics view
       emit('scrollToTop')

@@ -1,14 +1,14 @@
 <template>
   <CollapsableRightPanel
       :view-options="[{icon: 'mdi-forum-outline', visible: showSmsTab}, {icon: 'mdi-text-long', visible: true}, {icon: 'mdi-folder-outline', visible: true}]"
-      :selected-option="selectedOption"
-      :showHeaderSecondLine = "selectedOption === 0"
+      :selected-option="viewId"
+      :showHeaderSecondLine = "viewId === 0"
       @selectView="selectView($event)"
       :allowSidebarCollapse = !!allowSidebarCollapse
       @collapseClicked="$emit('collapseCallback')"
   >
     <template v-slot:title>
-      <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
+      <v-tooltip bottom small v-if="showSmsTab && route.path.includes('inboxConversation')">
         <template v-slot:activator="{on, attrs}">
           <a v-if="!isSidebarCollapsed && messageProperties.projectName"
              v-bind="attrs" v-on="on"
@@ -34,7 +34,7 @@
         <span v-else class="albatross-body-3">Go to user</span>
       </v-tooltip>
       <span v-else>{{ sidebarTitle }}</span>
-      <div v-if="showSmsTab && selectedOption === 0 && !$route.path.includes('inbox')" style="display: inline-flex">
+      <div v-if="showSmsTab && viewId === 0 && !route.path.includes('inbox')" style="display: inline-flex">
         <v-chip v-if="messageProperties.projectName" class="customer-chip" style="margin-left: 4px;" small>
           <span >Customer</span>
         </v-chip>
@@ -44,7 +44,7 @@
       </div>
     </template>
     <template v-slot:header-actions>
-      <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
+      <div v-if="showSmsTab && viewId === 0 && userCanViewSms && !isSidebarCollapsed">
         <v-tooltip bottom small>
           <template v-slot:activator="{on, attrs}">
             <AlbatrossButton
@@ -58,7 +58,7 @@
           </template>
           <span class="albatross-body-3">History</span></v-tooltip>
       </div>
-      <div v-else-if="selectedOption === 2 && !isSidebarCollapsed" style="width: 168px;" class="mr-2">
+      <div v-else-if="viewId === 2 && !isSidebarCollapsed" style="width: 168px;" class="mr-2">
 
         <v-btn-toggle
             v-model="toggleFocused"
@@ -75,7 +75,7 @@
           <AlbatrossButton
               :color="toggleFocused === 0 ? 'primary' : 'white'"
               id="focused-toggle"
-              :class="{'': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
+              :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
               class="text-capitalize my-4 fix-toggle-opacity body-medium"
               html-style="width: 50% !important;"
               text="Focused"
@@ -83,14 +83,14 @@
           <AlbatrossButton
               :color="toggleFocused === 1 ? 'primary' : 'white'"
               id="focused-toggle"
-              :class="{'': toggleFocused === 1, 'primary--text' : toggleFocused === 0}"
+              :class="{'white--text': toggleFocused === 1, 'primary--text' : toggleFocused === 0}"
               class="text-capitalize fix-toggle-opacity body-medium"
               html-style="width: 50% !important;"
               text="All"
           ></AlbatrossButton>
         </v-btn-toggle>
       </div>
-      <div v-else-if="selectedOption === 1 && !isSidebarCollapsed" style="width: 168px;" class="mr-2" @click="startReadNotesTimer('Clicked in the notes tab')">
+      <div v-else-if="viewId === 1 && !isSidebarCollapsed" style="width: 168px;" class="mr-2">
 
         <v-btn-toggle
             v-model="toggleTimelineView"
@@ -122,7 +122,7 @@
     <template v-if="collapseBtnIcon" v-slot:collapse-btn-icon><v-icon>{{collapseBtnIcon}}</v-icon></template>
     <template v-slot:header-second-line>
       <TeamAssignmentChips
-          v-if="showSmsTab && selectedOption === 0 && userCanViewSms"
+          v-if="showSmsTab && viewId === 0 && userCanViewSms"
           :sms-team-owners="messageProperties.smsTeamOwners"
           :team-names-associated-to-user="teamNamesAssociatedToUser"
           :reloading="conversationIsLoading"
@@ -135,7 +135,7 @@
       />
     </template>
     <Messaging
-        v-if="showSmsTab && selectedOption === 0"
+        v-if="showSmsTab && viewId === 0 && !conversationIsLoading"
         :primaryId="projectId"
         :userIdIn="userId"
         :user-assigned="userAssigned"
@@ -145,11 +145,11 @@
     <ActivitySection :contact-id="contactId" :user-id="userId"
                      :timeline-view="toggleTimelineView === 0"
                      :object-type-id="objectTypeId" :project-id="projectId"
-                     :org-id="orgId" v-show="selectedOption === 1"
+                     :org-id="orgId" v-show="viewId === 1"
                      @scrollToTop="scrollToTop"
 
     />
-    <AttachmentsFolderList v-if="selectedOption === 2"
+    <AttachmentsFolderList v-if="viewId === 2"
                            :contact-id="contactId"
                            :user-id="userId"
                            :object-type-id="objectTypeId"
@@ -246,26 +246,36 @@ const toggleFocused = ref(isMobile.value ? 1 : 0)
 const toggleFocusedXs = ref(0)
 const hideEmptyFolderStatus = ref(false)
 
-const selectedOption = computed(() => {
-  return (route.params.viewId) ? parseInt(route.params.viewId) :
-      (showSmsTab.value && route.path.indexOf('inbox') > 0) ? 0 :
-          (null == projectStore.selectedTab || (projectStore.selectedTab === 0 && !showSmsTab.value)) ? 1 : projectStore.selectedTab
-})
-const toggleTimelineView = computed(() => {
-  return projectStore.notesActivityView
-})
+const toggleTimelineView = ref(projectStore.notesActivityView)
+
 const userCanViewSms = computed(() => {
   return userStore.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW')
 })
+
+const projectProcessStepId = computed(() => {
+  return parseInt(route.params.processStepId) || null
+})
+const projectProcessStepEventId = computed(() => {
+  return parseInt(route.params.ppsEventId) || null
+})
+const viewId = computed(() => {
+  // return parseInt(route.params.viewId)
+  return route.params?.viewId ? parseInt(route.params.viewId) :
+      (showSmsTab.value && route.path.indexOf('inbox') > 0) ? 0 :
+          (null == projectStore.selectedTab || (projectStore.selectedTab === 0 && !showSmsTab.value)) ? 1 : projectStore.selectedTab
+})
 const currentUserId = computed(() => {
   return userStore.details.id
+})
+const userId = computed(() => {
+  return userIdIn.value ? userIdIn.value : parseInt(route.params.userId) || null
 })
 const objectTypeId = computed(() => {
   //not needed for other types
   return userId.value ? 3 : contactId.value ? 2 : orgId.value ? 5 : null
 })
 const sidebarTitle = computed(() => {
-  switch (selectedOption.value) {
+  switch (viewId.value) {
     case 0:
       if (userCanViewSms.value) {
         if (projectId.value) {
@@ -299,12 +309,7 @@ const smsOwnershipEvents = computed(() => {
 const projectId = computed(() => {
   return parseInt(route.params.projectId)
 })
-const userId = computed(() => {
-  return userIdIn.value ? userIdIn.value : parseInt(route.params.userId) || null
-})
-const viewId = computed(() => {
-  return parseInt(route.params.viewId)
-})
+
 
 onMounted(() => {
   handlePageLoad()
@@ -312,31 +317,33 @@ onMounted(() => {
 
 watch(projectId, async() => {
   projectId.value = parseInt(route.params.projectId) || null
-  selectedOption.value = route.path.indexOf('inbox') > 0 ? 0 : (null == projectStore.selectedTab ? 1 : projectStore.selectedTab)
-  if(selectedOption.value === 0) {
-    fetchTeamsForUser()
+  if(viewId.value === 0) {
+    await fetchTeamsForUser()
   }
 })
-watch(viewId, async() => {
-  selectedOption.value = viewId.value
-})
+// watch(viewId, async() => {
+//   // selectedOption.value = viewId.value
+//   return (route.params.viewId ? parseInt(route.params.viewId) :
+//       (showSmsTab.value && route.path.indexOf('inbox') > 0) ? 0 :
+//           (null == projectStore.selectedTab || (projectStore.selectedTab === 0 && !showSmsTab.value)) ? 1 : projectStore.selectedTab
+// })
 watch(smsOwnershipEvents, debounce(async function() {
   await fetchTeamsForUser()
 }, 800))
-watch(selectedOption, async() => {
+watch(viewId, async() => {
   handlePageLoad()
 })
 watch(userId, async() => {
   userId.value = parseInt(route.params.userId) || null
-  selectedOption.value = route.path.indexOf('inbox') > 0 ? 0 : (null == userStore.selectedTab ? 1 : userStore.selectedTab)
-  if(selectedOption.value === 0) {
-    fetchTeamsForUser()
+  // selectedOption.value = route.path.indexOf('inbox') > 0 ? 0 : (null == userStore.selectedTab ? 1 : userStore.selectedTab)
+  if(viewId.value === 0) {
+    await fetchTeamsForUser()
   }
 })
 
 const handlePageLoad = ()  => {
   //dont load the sms stuff if they aren't on the sms tab
-  if (userCanViewSms.value && selectedOption.value === 0) {
+  if (userCanViewSms.value && viewId.value === 0) {
     handleSmsLoad()
   }
 }

@@ -339,7 +339,6 @@ import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 import SpinnerInline from '@/components/SpinnerInline'
-import Vue2Filters from 'vue2-filters'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import ConfirmationDialog from "../../../components/ConfirmationDialog.vue";
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
@@ -354,10 +353,16 @@ const appStore = useAppStore()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const projectStore = useProjectStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
+
+const props = defineProps({
+  project: Object
+})
+const { project } = toRefs(props)
 
 const NEW_STATUS_TO_USE = {id: null}
 

@@ -16,7 +16,9 @@
     <div class="pa-0 height-one-hunned">
       <div class="project-header">
         <v-toolbar color="transparent" class="elevation-0 process-step-toolbar mx-6">
-          <v-toolbar-title class="albatross-header-2">{{ projectTab.tabName }}</v-toolbar-title>
+          <v-toolbar-title class="albatross-header-2">
+            {{ projectTab.tabName }}
+          </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items v-if="projectTab.id !== -1">
             <v-menu data-app :right="!isMobile" :left="isMobile"
@@ -48,7 +50,7 @@
                         :accept="acceptedFileTypes"
                         @change='[doUpload($event.target.files, item), attachmentMenuOpen = false]'
                         style="display: none"
-                        @click.stop=""
+                        @click.native.stop=""
                         :ref="`menuFileInput${item.attachmentTypeId}`"
                     >
                   </v-list-item>
@@ -174,9 +176,11 @@ import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useProjectStore} from '@/stores/ProjectStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 
+const projectStore = useProjectStore()
 const fileStore = useFileStore()
 const appStore = useAppStore()
 const route = useRoute()
@@ -213,13 +217,13 @@ const props = defineProps({
 })
 const { project, projectTab } = toRefs(props)
 
-onMounted(() => {
+onMounted(async() => {
   window.document.title = `${project.value.projectName} - Project Details`
-  getFieldGroups()
+  await getFieldGroups()
 })
 
 watch(projectTab, async() => {
-  getFieldGroups()
+  await getFieldGroups()
 })
 
 const userCanEdit = computed(() => {

@@ -80,7 +80,7 @@
               v-if="allowUpload"
               variant="text"
               color="primary"
-              @click="startDelete(item)"
+              @click.native.stop="startDelete(item)"
               @mouseover="buttonHovered = true"
               @mouseleave="buttonHovered = false"
               class="px-0 button-position"
@@ -93,6 +93,7 @@
               variant="text"
               color="primary"
               class="button-position"
+              @click.native.stop
               :href="item.presignedUrl"
               @mouseover="buttonHovered = true"
               @mouseleave="buttonHovered = false"
@@ -123,7 +124,6 @@ import {
 import {deleteAttachment} from "@/services/attachmentService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
-import Vue2Filters from 'vue2-filters'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
@@ -139,6 +139,7 @@ const projectStore = useProjectStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
+// const rootInstance = getCurrentInstance().appContext.app;
 
 const props = defineProps({
   attachments: Array,
@@ -166,7 +167,7 @@ const props = defineProps({
 })
 const { attachments, search, displayType, showNonPrimaryDocs, loadLinked, allowUpload,
   compare, projectId, userId, contactId, orgId, objectTypeId, projectProcessStepId,
-  projectProcessStepEventId, compareCallback, deleteCallback, countSelected,
+  projectProcessStepEventId, countSelected,
   cancelResetKey, allowEdit } = toRefs(props)
 
 watch(cancelResetKey, () => {
@@ -222,13 +223,14 @@ const deleteTheAttachment = async () => {
   const id = attachmentToDelete.value.id
   try {
     await deleteAttachment(id)
-    if(deleteCallback.value) {deleteCallback(id)}
+    if(props.deleteCallback) {
+      props.deleteCallback(id)
+    }
     //this value tells the right pane to update when a file is deleted
-    projectStore.value.incrementReloadKey()
+    projectStore.incrementReloadKey()
 
     //only emit a change event if something was linked, only the actively showing linked section will update
-    //todo: need to fgure out this root stuff
-    this.$root.$emit('attachmentDeleted', id)
+    vueInstance.$emit('attachmentDeleted', id)
 
     snackbar('SUCCESS', 'Document Deleted')
 
@@ -268,12 +270,11 @@ const linkAttachment = async(attachment, doLink) => {
       attachment.linkedToSelected = false
       //this value tells the right pane to update after a file is unlinked from the center pane
       //definitely better ways to handle this but fully refreshing is what we are doing for now
-      projectStore.value.incrementReloadKey()
+      projectStore.incrementReloadKey()
     } else {
       attachment.linkedToSelected = true
       //only emit a change event if something was linked, only the actively showing linked section will update
-      //todo: need to fgure out this root stuff
-      this.$root.$emit('newAttachmentLinked', attachment)
+      vueInstance.$emit('newAttachmentLinked', attachment)
     }
 
     performingLink.value = false
@@ -295,7 +296,7 @@ const closeDeleteDialog = () => {
   attachmentToDelete.value = null
 }
 const selectFileToCompare = (e, item) => {
-  compareCallback(item)
+  props.compareCallback(item)
 }
 </script>
 

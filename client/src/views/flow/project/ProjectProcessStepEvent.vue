@@ -128,7 +128,7 @@
               <AlbatrossButton
                   class="ml-2 mt-1"
                   :class="{'mt-3': !isMobile}"
-                  @click="checkFieldsForUnique()"
+                  @click="checkFieldsForUnique"
                   :disabled="!userCanEdit || getIsEventReadonly()"
                   :icon="isMobile"
                   color="primary"
@@ -226,7 +226,7 @@
                     :type="'timestamp'"
                     :format="'MMMM DD, YYYY, h:mm A'"
                     label="End Time"
-                    :change-callback="() => { defaultValuesChanged.value = true}"
+                    :change-callback="endTimeChanged"
                 />
               </v-col>
             </v-row>
@@ -442,7 +442,6 @@ const eventActionMissingRequirements = ref(false)
 const menuOpen = ref(false)
 const dirtyCfvs = ref([])
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
-const processStepId = ref(route.query.processStepId)
 const eventSaveOverrideRequired = ref(false)
 const collapsedAttachments = ref(false)
 const actionRequiresStart = ref(false)
@@ -482,7 +481,7 @@ onMounted(async() => {
 const projectId = computed(() => {
   return parseInt(route.params.projectId)
 })
-const processStepId = computed(() => {
+const projectProcessStepId = computed(() => {
   return parseInt(route.params.processStepId)
 })
 const ppsEventId = computed(() => {
@@ -794,6 +793,10 @@ const getRoundRobinNumDays = async  () => {
   })
   roundRobinNumberOfDays.value = data.schedulableFutureDays || 7
 }
+const endTimeChanged = ()  => {
+  console.log('AAAAAAA')
+  defaultValuesChanged.value = true
+}
 const startTimeChanged = ()  => {
   defaultValuesChanged.value = true
   //if it is the closer event then auto populate the end time with (start time + 1 hour)
@@ -1081,6 +1084,7 @@ const checkAvailabilityDate = () => {
   }
 }
 const checkFieldsForUnique = () => {
+  console.log('test')
   let validSave = true
   let startTime = selectedEvent.value.startTime
   let endTime = selectedEvent.value.endTime

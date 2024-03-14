@@ -47,6 +47,7 @@
         text="CANCEL"
       />
       <AlbatrossButton :disabled="!teamToSave || !ownersToSave"
+                       :loading="teamSaving"
              color="primary" class="white--text" @click="addTeamDetails()"
              text="SAVE"
       />
@@ -55,7 +56,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from "@/stores/AppStore";
 import {getRequest, postRequest} from "@/helpers/helpers";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 
@@ -83,6 +83,7 @@ const emit = defineEmits(['closeTeamAdded'])
 const teamToSave = ref('')
 const selectableTeams = ref([])
 const existingTeams = ref({})
+const teamSaving = ref(false)
 const ownersToSave = ref([])
 const selectableUsers = ref([])
 
@@ -125,11 +126,12 @@ const getTeams = async () => {
   }
 }
 const addTeamDetails = async () => {
-  let params = {
-    id: teamToSave.value.id,
-    users: ownersToSave.value
-  }
+  teamSaving.value = true
   try {
+    let params = {
+      id: teamToSave.value.id,
+      users: ownersToSave.value
+    }
     if (props.projectId) {
       await postRequest(`/messaging/addTeam/project/${props.projectId}`, params)
     }
@@ -138,7 +140,7 @@ const addTeamDetails = async () => {
     }
 
     const snackbarText = (!ownersToSave.value || ownersToSave.value.length === 0 ) ? 'Team added':
-        (isTeamAlreadyAdded.value(teamToSave.value) ? 'Conversation assigned' : `Conversation assigned and ${teamToSave.value.teamName} team added`)
+        (isTeamAlreadyAdded(teamToSave.value) ? 'Conversation assigned' : `Conversation assigned and ${teamToSave.value.teamName} team added`)
     snackbar('SUCCESS', snackbarText)
     teamToSave.value = '';
     selectableUsers.value = []
@@ -146,6 +148,8 @@ const addTeamDetails = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error adding team')
+  } finally {
+    teamSaving.value = false
   }
 
   emit('closeTeamAdded')

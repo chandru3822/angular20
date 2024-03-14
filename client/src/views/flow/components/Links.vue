@@ -6,7 +6,7 @@
           <v-toolbar-title class="headline-small">Links</v-toolbar-title>
         </v-toolbar>
         <v-row v-for="(l, index) in links" class="px-7 py-1">
-          <a  :key="l.id" text target="_blank" @click="followLink(l.url)" class="text-capitalize body-medium"><v-icon color="primary" class="pr-1">mdi-link</v-icon>{{l.link}}</a>
+          <a  :key="l.id" text target="_blank" @click="followThisLink(l.url)" class="text-capitalize body-medium"><v-icon color="primary" class="pr-1">mdi-link</v-icon>{{l.link}}</a>
         </v-row>
       </v-col>
     </v-row>
@@ -53,7 +53,7 @@ const fetchLinks = async () => {
   const {data} = await getRequest(linkPath.value)
   links.value = data
 }
-const followLink = (url) => {
+const followThisLink = (url) => {
   let params = {
     projectId: projectId.value,
     ppsId: projectProcessStepId.value,

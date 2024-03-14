@@ -308,6 +308,11 @@ watch(showModal, (visible) => {
   }
 })
 
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+
+const isFieldsLoading = ref(true)
 const fileDetails = ref({})
 const acceptedFileTypes = ref(constants.STANDARD_IMAGES_DOCS_AUDIO)
 const imageFileExtensions = ref(constants.IMAGE_FILE_EXTENSIONS)
@@ -344,9 +349,7 @@ onMounted(() => {
 const timezone = computed(() => {
   return userStore.timezone.value
 })
-const isMobile = computed(() => {
-  return vuetify.breakpoint.smAndDown
-})
+
 
 const zoomImage = (zoomIn) => {
   imageWidth.value = null === imageWidth.value ? rightPaneViewer.value?.clientWidth : imageWidth.value

@@ -67,7 +67,7 @@
                             class=""
                             v-model="eventSearch"></v-text-field>
 
-              <template v-for="event in filteredEvents()">
+              <template v-for="event in filteredEvents">
                 <h4 class="text-left work-type-header">{{event.eventName}}</h4>
                 <EventSnippet
                     :key="event.eventName"

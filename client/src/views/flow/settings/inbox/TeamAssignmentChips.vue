@@ -125,20 +125,20 @@
 
       </v-dialog>
       <v-menu offset-y :close-on-content-click="false" v-model="teamsMenuOpen" v-if="userCanView && !readOnly">
-        <template v-slot:activator="{on, attrs}">
+        <template v-slot:activator="{on: menu, attrs}">
           <v-tooltip top small>
-            <template v-slot:activator="{on, attrs}">
+            <template v-slot:activator="{on: tooltip, attrs}">
               <AlbatrossButton
                 variant="text"
                 icon
                 v-bind="attrs"
-                :activation-handler="on"
-                size="large"
+                :activation-handler="{...tooltip, ...menu}"
+                size="small"
                 class="align-self-baseline"
                 prepend-icon="mdi-plus"
-                text="Add Member"
               />
             </template>
+            <span class="albatross-body-3">Add Member</span>
           </v-tooltip>
         </template>
         <AddTeamDropdown :sms-team-owners="smsTeamOwners" :project-id="projectId" :owner-user-id="userId" @closeTeamAdded="teamAdded()"></AddTeamDropdown>
@@ -149,13 +149,12 @@
 <script setup>
 import {getSnackbar, getRequest, putRequest} from "@/helpers/helpers";
 import AddTeamDropdown from "@/views/flow/settings/inbox/AddTeamDropdown";
-import {AppMutations} from "@/stores/AppStore";
-
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, computed, onMounted, getCurrentInstance, watch, defineProps} from "vue";
 import {useUserStore} from "@/stores/UserStorePinia.js";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'
+
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -164,6 +163,7 @@ const route = useRoute()
 const router = useRouter()
 const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
+
 const props = defineProps({
   smsTeamOwners: Array,
   teamNamesAssociatedToUser: Array,

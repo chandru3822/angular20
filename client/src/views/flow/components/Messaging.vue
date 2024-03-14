@@ -30,23 +30,26 @@
       </template>
     </v-row>
 
-    <v-tooltip bottom small>
-        <template v-slot:activator="{on, attrs}">
-          <AlbatrossButton
-              icon
-              color="primary"
-              v-bind="attrs"
-              :activation-handler="on"
-              class="templateButton"
-              html-style="display: none"
-              small
-              prepend-icon="article"
-          ></AlbatrossButton>
-        </template>
-        <span class="albatross-body-3">Templates</span>
-      </v-tooltip>
+
 
     <v-menu top left offset-y :close-on-content-click="false" v-model="showTemplateDialog">
+      <template v-slot:activator="{on: menu, attrs}">
+        <v-tooltip bottom small>
+          <template v-slot:activator="{on: tooltip, attrs}">
+            <AlbatrossButton
+                icon
+                color="primary"
+                v-bind="attrs"
+                :activation-handler="{...tooltip, ...menu}"
+                class="templateButton"
+                html-style="display: none"
+                small
+                prepend-icon="article"
+            ></AlbatrossButton>
+          </template>
+          <span class="albatross-body-3">Templates</span>
+        </v-tooltip>
+      </template>
       <v-card class="template-dialog" width="295px">
         <v-card-title>
           <span class="albatross-header-4-new">Add Template</span>
@@ -81,12 +84,11 @@ import { getRequest,  postRequest, putRequest } from '@/helpers/helpers'
 
 import moment from 'moment'
 import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
-import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
-
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -98,6 +100,13 @@ const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 const filters = vueInstance.$filters
 
+const props = defineProps({
+  userAssigned: Boolean,
+  userIdIn: Number,
+  teamsAssociatedToUser: Array
+})
+const { userAssigned, userIdIn, teamsAssociatedToUser } = toRefs(props)
+
 onMounted(() => {
   if (projectId.value) {
     fetchProjectData()
@@ -106,10 +115,10 @@ onMounted(() => {
     fetchUserData()
   }
   fetchSmsData()
+  toggleChatBox()
 })
 
 const participants = ref([])
-const teamsAssociatedToUser = ref([])
 // the list of the messages to show, can be paginated and adjusted dynamically
 const messageList = ref([])
 const newMessagesCount = ref(0)
@@ -151,6 +160,8 @@ const icons = ref({
 const alwaysScrollToBottom = ref(true)
 const messageStyling = ref(false)
 const selectedUserId = ref(-1)
+const contactId = ref(null)
+const id = ref(null)
 const showTemplateDialog = ref(false)
 const selectedTemplate = ref('')
 const selectableTemplates = ref([])
@@ -160,7 +171,7 @@ const currentUserFullName = computed(() => {
   return userStore.details.fullName
 })
 const smsOwnershipEvents = computed(() => {
-  return notificationStore.value.getEventsByTopic('sms_ownership').length
+  return notificationStore.getEventsByTopic('sms_ownership').length
 })
 const projectId = computed(() => {
   return parseInt(route.params.projectId)

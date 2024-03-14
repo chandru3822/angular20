@@ -144,14 +144,14 @@ const infiniteHandler = ($state) => {
   loaderState.value = $state
   emit('bottomHitCount')
 }
-const infiniteStateLoaded = (hitMax) => {
+const infiniteStateLoaded = (hitMaxHere) => {
   //the counts are loaded from the parent so we have to wait to set the state here
-  if(hitMax) {
+  if(hitMaxHere) {
     hitMax.value = true
-    // loaderState.value?.complete()
+    loaderState.value?.complete()
   }
   else {
-    // loaderState.value?.loaded()
+    loaderState.value?.loaded()
   }
 }
 const editItem = (item) => {
