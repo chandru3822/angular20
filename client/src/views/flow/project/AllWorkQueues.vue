@@ -120,7 +120,6 @@ const workQueueHistory = ref([])
 const expandHistoric = ref(true)
 const expandCurrent = ref(true)
 const dataLoading = ref(false)
-const snackbar = ref({})
 const headers = ref([
   {text: 'WQ Category', value: 'workQueueCategory', show: true},
   {text: 'WQ Type', value: 'workQueueType', show: true},
