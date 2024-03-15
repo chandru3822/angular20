@@ -6,77 +6,68 @@
     </fragment>
   </div>
 </template>
-<script>
+<script setup>
 import TextEditor from './text/TextEditor'
 import {generateHTMLFromJSON} from './text/utils'
 import {mapState} from 'vuex'
 import {Fragment} from 'vue-frag'
+import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
 
 const xmlSerializer = new XMLSerializer()
 
-export default {
-  name: 'TextBlock',
-  components: {TextEditor, Fragment},
-  inject: ['editor'],
-  props: {
-    id: {
-      required: true
-    },
-    blockValue: {
-      type: Object,
-      required: true
-    },
-    themeKey: {
-      type: String
-    },
-    editable: {
-      type: Boolean
-    },
-    blockStyle: {
-      type: Object,
-      default: function () {
-        return {}
-      }
-    }
+const props = defineProps({
+  id: {
+    required: true
   },
-  data() {
-    return {
-      html: ''
-    }
+  blockValue: {
+    type: Object,
+    required: true
   },
-  computed: {
-    styles() {
-      const themeStyles = this.theme[this.themeKey] ?? {}
-      return {...themeStyles, ...this.blockStyle}
-    },
-    ...mapState({
-      selectedId: state => state.proposal.selectedId,
-      theme: (state) => state.proposal.theme
-    })
+  themeKey: {
+    type: String
   },
-  watch: {
-    blockValue: {
-      immediate: true,
-      handler: function (newVal) {
-        this.html = this.generateHtml(newVal)
-      }
-    }
+  editable: {
+    type: Boolean
   },
-  methods: {
-    generateHtml(val) {
-      try {
-        //trick the fragment into always updating
-        const commentEl = document.createComment(`fragment#id=${this.id} last_updated=${new Date().valueOf()}`)
-        const serializeToString = xmlSerializer.serializeToString(commentEl)
-        const htmlFromJSON = generateHTMLFromJSON(val)
-
-        return serializeToString + htmlFromJSON
-      } catch (e) {
-        console.error('ID:', this.id, e)
-      }
-      return ''
+  blockStyle: {
+    type: Object,
+    default: function () {
+      return {}
     }
   }
+})
+
+const html = ref('')
+
+//@kaleb how to?
+// inject: ['editor'],
+
+//@kaleb not sure if these map state things are right
+const {selectedId, theme} = mapState({
+  selectedId: state => state.proposal.selectedId,
+  theme: (state) => state.proposal.theme
+})
+const styles = computed(() => {
+  const themeStyles = theme.value[props.themeKey] ?? {}
+  return {...themeStyles, ...props.blockStyle}
+})
+
+watch(props.blockValue, (newVal) => {
+  html.value = generateHtml(newVal);
+}, {immediate: true});
+
+const generateHtml = (val) => {
+  try {
+    //trick the fragment into always updating
+    const commentEl = document.createComment(`fragment#id=${props.id} last_updated=${new Date().valueOf()}`)
+    const serializeToString = xmlSerializer.serializeToString(commentEl)
+    const htmlFromJSON = generateHTMLFromJSON(val)
+
+    return serializeToString + htmlFromJSON
+  } catch (e) {
+    console.error('ID:', props.id, e)
+  }
+  return ''
 }
 </script>
 

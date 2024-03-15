@@ -4,9 +4,10 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { mapState } from 'vuex'
 import constants from '@/helpers/constants'
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 
 const styleUpdatedFn = function(el, binding) {
   const replacer = {
@@ -29,24 +30,31 @@ const styleUpdatedFn = function(el, binding) {
   })
 }
 
-export default {
-  name: 'PageBlock',
-  props: ['blockStyle', 'themeKey'],
-  directives: {
-    'proposal-style': {
-      bind: styleUpdatedFn,
-      update: styleUpdatedFn
-    }
+const props = defineProps({
+  themeKey: {
+    type: String
   },
-  computed: {
-    styles() {
-      return { ...(this.theme[this.themeKey] ?? {}), ...this.blockStyle }
-    },
-    ...mapState({
-      theme: (state) => state.proposal.theme
-    })
-  }
-}
+  blockStyle: {
+    type: Object
+  },
+})
+
+// @kaleb - not sure how to put this directive in
+  // directives: {
+  //   'proposal-style': {
+  //     bind: styleUpdatedFn,
+  //     update: styleUpdatedFn
+  //   }
+  // }
+
+//@kaleb not sure if these map state things are right
+  const { theme } = mapState({
+    theme: (state) => state.proposal.theme,
+  })
+
+  const styles = computed(() => {
+    return { ...(theme.value[props.themeKey] ?? {}), ...props.blockStyle }
+  })
 </script>
 <style lang="scss" scoped>
 .proposal-page {

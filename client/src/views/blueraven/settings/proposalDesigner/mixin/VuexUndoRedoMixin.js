@@ -1,6 +1,8 @@
 import { ProposalMutations } from '../store'
 import cloneDeep from 'lodash.clonedeep'
 
+// @kaleb should this file be changed to compostion api also?
+
 export const VuexUndoRedoMixin = {
   data() {
     return {

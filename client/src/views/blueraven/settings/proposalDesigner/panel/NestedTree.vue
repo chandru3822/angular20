@@ -21,10 +21,32 @@
     </div>
   </draggable>
 </template>
-<script>
+<script setup>
 import debounce from 'lodash.debounce'
 import draggable from 'vuedraggable'
 import { ProposalMutations } from '@/views/blueraven/settings/proposalDesigner/store'
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  children: {
+    type: Array,
+    default: function() {
+      return []
+    }
+  }
+})
+const { children } = toRefs(props)
 
 const blockOrderSorter = (a, b) => {
   if (a.blockOrder > b.blockOrder) {
@@ -36,40 +58,25 @@ const blockOrderSorter = (a, b) => {
   return 0
 }
 
-export default {
-  name: 'tree',
-  props: {
-    children: {
-      type: Array,
-      default: function() {
-        return []
-      }
+const emit = defineEmits(['select'])
+const dragging = ref(false)
+
+const selected = computed(() => {
+  return store.getters.selectedBlock
+})
+const sortedChildren = computed(() => {
+  return children.value?.slice().sort(blockOrderSorter)
+})
+
+    const filterByParentId = (parent) => {
+      return store.getters.filterByParentId(parent)
     }
-  },
-  data() {
-    return {
-      dragging: false
+    const handleClick = (node) => {
+      store.commit(ProposalMutations.SET_SELECTED, node.id)
+      emit('select', node.id)
     }
-  },
-  components: { draggable },
-  computed: {
-    selected() {
-      return this.$store.getters.selectedBlock
-    },
-    sortedChildren() {
-      return this.children.slice().sort(blockOrderSorter)
-    }
-  },
-  methods: {
-    filterByParentId(parent) {
-      return this.$store.getters.filterByParentId(parent)
-    },
-    handleClick(node) {
-      this.$store.commit(ProposalMutations.SET_SELECTED, node.id)
-      this.$emit('select', node.id)
-    },
     //todo; this should register in the undo history
-    checkMove: debounce(function(evt) {
+    const checkMove = debounce((evt) => {
       const { draggedContext: active, relatedContext: target  } = evt ?? {}
 
       if (!active  || !active.element){
@@ -126,15 +133,14 @@ export default {
       // }
       //
       // // console.log({ draggedItem, targetItem })
-      this.$store.commit(ProposalMutations.UPDATE_POSITION, {
+      store.commit(ProposalMutations.UPDATE_POSITION, {
         blockId: active?.element.id,
         pos,
         parentId: target?.element?.parentId
       })
 
     }, 250)
-  }
-}
+
 </script>
 <style lang="scss" scoped>
 .node-container {

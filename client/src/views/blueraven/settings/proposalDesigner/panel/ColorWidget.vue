@@ -3,8 +3,20 @@
     <v-subheader class="pl-0 d-flex">
       <slot name="title" class="flex-grow-1">Color</slot>
       <span v-if="editing">
-        <v-btn v-if="editing" text @click="editing = false">Cancel</v-btn>
-        <v-btn v-if="editing" text @click="onDone">Done</v-btn>
+        <AlbatrossButton
+            v-if="editing"
+            variant="text"
+            @click="editing = false"
+            color="unset"
+            text="Cancel"
+        ></AlbatrossButton>
+        <AlbatrossButton
+            v-if="editing"
+            variant="text"
+            @click="on"
+            color="unset"
+            text="Done"
+        >Done</AlbatrossButton>
       </span>
 
       <div v-else class="color-brick" @click="editing = true" :style="{'background-color' : color }" >
@@ -14,37 +26,35 @@
     <v-color-picker v-if="editing" v-model="color" />
   </div>
 </template>
-<script>
-export default {
-  props: {
-    value: {
-      type: String
-    },
-    attr: {
-      type: String,
-      default: 'color'
-    }
+<script setup>
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+const props = defineProps({
+  value: {
+    type: String
   },
-  data() {
-    return {
-      editing: false,
-      color: undefined
-    }
-  },
-  watch: {
-    value: {
-      handler: function(newVal) {
-        this.color = newVal
-      }
-    }
-  },
-  methods: {
-    onDone() {
-      this.editing = false
-      const color = (typeof this.color === 'object') ? this.color?.hexa : this.color
-      this.$emit('input', { [this.attr]: color })
-    }
+  attr: {
+    type: String,
+    default: 'color'
   }
+})
+const { value, attr } = toRefs(props)
+
+const editing = ref(false)
+const color = ref(undefined)
+const emit = defineEmits(['input'])
+
+watch(
+    () => value,
+    (newValue, oldValue) => {
+      color.value = newValue
+    }
+);
+
+const onDone = () => {
+  editing.value = false
+  const color = (typeof color.value === 'object') ? color.value?.hexa : color.value
+  emit('input', { [attr.value]: color })
 }
 </script>
 

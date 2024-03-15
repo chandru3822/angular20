@@ -1,8 +1,6 @@
 <template>
   <router-view></router-view>
 </template>
-<script>
-export default {
-  name: 'ProposalSettings'
-}
+<script setup>
+
 </script>

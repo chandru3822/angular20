@@ -11,15 +11,18 @@
     />
   </div>
 </template>
-<script>
-export default {
-  name: 'ZoomControl',
-  props: ['value'],
-  methods: {
-    handleChange(e) {
-      this.$emit('input', e)
-    },
-  },
+<script setup>
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+const props = defineProps({
+  value: {
+    type: Object
+  }
+})
+
+const emit = defineEmits(['input'])
+
+const handleChange = (e) => {
+  emit('input', e)
 }
 </script>
 <style lang="scss" scoped>

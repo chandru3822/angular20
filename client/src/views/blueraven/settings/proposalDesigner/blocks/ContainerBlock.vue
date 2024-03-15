@@ -3,19 +3,27 @@
     <slot>Missing Children</slot>
   </div>
 </template>
-<script>
+<script setup>
 import { mapState } from 'vuex'
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 
-export default {
-  name: 'Container',
-  props: ['blockStyle', 'themeKey'],
-  computed: {
-    styles() {
-      return { ...(this.theme[this.themeKey] ?? {}), ...this.blockStyle }
-    },
-    ...mapState({
-      theme: (state) => state.proposal.theme,
-    })
+//@kaleb??
+const props = defineProps({
+  themeKey: {
+    type: String
   },
-}
+  blockStyle: {
+    type: Object
+  },
+})
+//@kaleb not sure if these map state things are right
+const { theme } = mapState({
+  theme: (state) => state.proposal.theme,
+})
+
+const styles = computed(() => {
+  return { ...(theme.value[props.themeKey] ?? {}), ...props.blockStyle }
+})
+
+
 </script>

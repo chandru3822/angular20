@@ -8,7 +8,7 @@
       <div class="previews">
         <div class="preview-image" :class="{'selected' : selected && selected.id === image.id }" v-for="image in images"
              @click="select(image)">
-          <img-proxy :uuid="image.uuid" :alt="image.filename" :width="100" />
+          <img-proxy :uuid="image.uuid" :alt="image.filename" :width="100"/>
         </div>
       </div>
 
@@ -17,23 +17,23 @@
           <v-row no-gutters>
             <v-col :cols="8">
               <v-file-input
-                dense
-                counter
-                multiple
-                ref="fileInput"
-                hide-details
-                show-size
-                outlined
-                label="Upload New Images"
-                v-model="uploadFiles"
+                  dense
+                  counter
+                  multiple
+                  ref="fileInput"
+                  hide-details
+                  show-size
+                  outlined
+                  label="Upload New Images"
+                  v-model="uploadFiles"
               >
                 <template v-slot:selection="{ index, text }">
                   <v-chip
-                    v-if="index < 2"
-                    color="deep-purple accent-4"
-                    dark
-                    label
-                    small
+                      v-if="index < 2"
+                      color="deep-purple accent-4"
+                      dark
+                      label
+                      small
                   >
                     {{ text }}
                   </v-chip>
@@ -47,128 +47,126 @@
               </v-file-input>
             </v-col>
             <v-col :cols="4">
-              <v-btn text :disabled="!uploadFiles.length" @click="uploadAttachments(uploadFiles)">Upload</v-btn>
+              <AlbatrossButton
+                  variant="text"
+                  :disabled="!uploadFiles.length"
+                  @click="uploadAttachments(uploadFiles)"
+                  color="unset"
+                  text="Upload"
+              ></AlbatrossButton>
             </v-col>
           </v-row>
         </v-container>
       </div>
 
       <v-card-actions>
-        <v-btn
-          text
-          @click="cancel"
-        >
-          Cancel
-        </v-btn>
+        <AlbatrossButton
+            variant="text"
+            @click="cancel"
+            color="unset"
+            text="Cancel"
+        ></AlbatrossButton>
         <v-spacer></v-spacer>
-        <v-btn
-          color="primary"
-          @click="ok"
-          dark
-          :disabled="!selected"
-        >
-          Ok
-        </v-btn>
+        <AlbatrossButton
+            color="primary"
+            @click="ok"
+            :disabled="!selected"
+            text="Ok"
+        ></AlbatrossButton>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
-<script>
-import { getRequestWithParams, getSnackbar, handleHidingGlobalLoader, logError } from '@/helpers/helpers'
-import { AppMutations } from '@/stores/AppStore'
+<script setup>
+import {getRequestWithParams, getSnackbar, handleHidingGlobalLoader, logError} from '@/helpers/helpers'
 import ImgProxy from '@/components/ImgProxy'
-import { mapStores } from 'pinia'
-import { useFileStore } from '@/stores/FileStore.js'
+import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
+import {useFileStore} from '@/stores/FileStore.js'
+import {useAppStore} from '@/stores/AppStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
+const fileStore = useFileStore()
+const appStore = useAppStore()
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
 
 const PROPOSAL_TEMPLATE_ATTACHMENT_TYPE_ID = 939
 const IMAGE_REGEX = /^(jpe?g|png|gif|webp)$/i
 
-export default {
-  data() {
-    return {
-      uploadFiles: [],
-      selected: null,
-      resolve: null,
-      reject: null,
-      images: [],
-      dialog: false
-    }
-  },
-  components: {ImgProxy},
-  computed: {
-    ...mapStores(useFileStore)
-  },
-  methods: {
-    async _fetchProposalImages() {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+const uploadFiles = ref([])
+const selected = ref(null)
+const resolve = ref(null)
+const reject = ref(null)
+const images = ref([])
+const dialog = ref(false)
 
-        const { data, status } = await getRequestWithParams(`/attachment`, {
-          params: {
-            attachmentTypeId: 939 //PROPOSAL_TEMPLATE
-          }
-        }, null, [])
+const _fetchProposalImages = async () => {
+  try {
+    appStore.loading = true
 
-        this.images = data?.filter(a => IMAGE_REGEX.test(a.fileExtension))
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        const snackbar = getSnackbar('ERROR', 'Error retrieving data')
-        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
-      } finally {
-        this.$store.commit(AppMutations.SET_LOADING, false)
+    const {data, status} = await getRequestWithParams(`/attachment`, {
+      params: {
+        attachmentTypeId: 939 //PROPOSAL_TEMPLATE
       }
-    },
-    open() {
-      this.dialog = true
-      this._fetchProposalImages()
-      return new Promise(((resolve, reject) => {
-        this.resolve = resolve
-        this.reject = reject
-      }))
-    },
-    select(attachment) {
-      this.selected = attachment
-    },
-    ok() {
-      this.resolve({ uuid: this.selected.uuid })
-      this.dialog = false
-      this.selected = null
-    },
-    cancel() {
-      this.selected = null
-      this.reject(undefined)
-      this.dialog = false
-    },
-    addDragDocument: async function(e) {
-      this.uploadFiles = e.dataTransfer.files
-    },
-    async uploadAttachments(files) {
-      if (files?.length > 0) {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
+    }, null, [])
 
-          const filesToUpload = files?.map(file => {
-            return {
-              file,
-              attachmentTypeId: PROPOSAL_TEMPLATE_ATTACHMENT_TYPE_ID,
-              sourceId: null,
-              displayName: file.name.substr(0, file.name.lastIndexOf('.')),
-              deleteFirst: false
-            }
-          })
+    images.value = data?.filter(a => IMAGE_REGEX.test(a.fileExtension))
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error retrieving data')
+  } finally {
+    appStore.loading = false
+  }
+}
+const open = () => {
+  dialog.value = true
+  _fetchProposalImages()
+  return new Promise(((resolve, reject) => {
+    resolve.value = resolve
+    reject.value = reject
+  }))
+}
+const select = (attachment) => {
+  selected.value = attachment
+}
+const ok = () => {
+  resolve.value({uuid: selected.value.uuid})
+  dialog.value = false
+  selected.value = null
+}
+const cancel = () => {
+  selected.value = null
+  reject.value(undefined)
+  dialog.value = false
+}
+const addDragDocument = async (e) => {
+  uploadFiles.value = e.dataTransfer.files
+}
+const uploadAttachments = async (files) => {
+  if (files?.length > 0) {
+    try {
+      appStore.loading = true
 
-          const uploaded = await this.fileStore.uploadFileMulti(filesToUpload)
-          this.images = [...this.images, ...uploaded]
-          this.uploadFiles = []
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error uploading document')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
-          this.$store.commit(AppMutations.SET_LOADING, false)
+      const filesToUpload = files?.map(file => {
+        return {
+          file,
+          attachmentTypeId: PROPOSAL_TEMPLATE_ATTACHMENT_TYPE_ID,
+          sourceId: null,
+          displayName: file.name.substr(0, file.name.lastIndexOf('.')),
+          deleteFirst: false
         }
-      }
+      })
+
+      const uploaded = await fileStore.uploadFileMulti(filesToUpload)
+      images.value = [...images.value, ...uploaded]
+      uploadFiles.value = []
+    } catch (e) {
+      logError(e)
+      snackbar('ERROR', 'Error uploading document')
+      appStore.loading = false
+    } finally {
+      appStore.loading = true
     }
   }
 }

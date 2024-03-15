@@ -4,21 +4,33 @@
       <div>
         <v-card-title>Typography</v-card-title>
         <v-btn-toggle v-model="cssStyle.textAlign">
-          <v-btn small value="left">
-            <v-icon>mdi-format-align-left</v-icon>
-          </v-btn>
+          <AlbatrossButton
+              size="small"
+              value="left"
+              color="unset"
+              prepend-icon="mdi-format-align-left"
+          ></AlbatrossButton>
 
-          <v-btn small value="center">
-            <v-icon>mdi-format-align-center</v-icon>
-          </v-btn>
+          <AlbatrossButton
+              size="small"
+              value="center"
+              color="unset"
+              prepend-icon="mdi-format-align-center"
+          ></AlbatrossButton>
 
-          <v-btn small value="right">
-            <v-icon>mdi-format-align-right</v-icon>
-          </v-btn>
+          <AlbatrossButton
+              size="small"
+              value="right"
+              color="unset"
+              prepend-icon="mdi-format-align-right"
+          ></AlbatrossButton>
 
-          <v-btn small value="justify">
-            <v-icon>mdi-format-align-justify</v-icon>
-          </v-btn>
+          <AlbatrossButton
+              size="small"
+              value="justify"
+              color="unset"
+              prepend-icon="mdi-format-align-justify"
+          ></AlbatrossButton>
         </v-btn-toggle>
 
         <v-text-field outlined dense
@@ -61,8 +73,17 @@
         <v-card-title>Background</v-card-title>
         <div>
           <image-selector-widget ref="imageSelector" />
-          <v-btn @click="openSelectImage('@backgroundImage')">Open Image</v-btn>
-          <v-btn text @click="doUpdateStyles({'@backgroundImage' : undefined })">Clear Image</v-btn>
+          <AlbatrossButton
+              @click="openSelectImage('@backgroundImage')"
+              color="unset"
+              text="Open Image"
+          ></AlbatrossButton>
+          <AlbatrossButton
+              variant="text"
+              @click="doUpdateStyles({'@backgroundImage' : undefined })"
+              color="unset"
+              text="Clear Image"
+          ></AlbatrossButton>
         </div>
 
         <v-select dense
@@ -119,58 +140,55 @@
     </div>
   </fragment>
 </template>
-<script>
+<script setup>
 import ImageSelectorWidget from './ImageSelectorWidget'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 import SizeWidget from './SizeWidget'
 import ColorWidget from './ColorWidget'
 import SpaceWidget from './SpaceWidget'
 import { Fragment } from 'vue-frag'
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+const props = defineProps({
+  type: {
+    type: String,
+    required: true
+  },
+  cssStyle: {
+    type: Object,
+    required: false,
+    default: function() {
+      return {}
+    }
+  }
+})
 
-export default {
-  props: {
-    type: {
-      type: String,
-      required: true
-    },
-    cssStyle: {
-      type: Object,
-      required: false,
-      default: function() {
-        return {}
-      }
-    }
-  },
-  components: { Fragment, SizeWidget, ColorWidget, ImageSelectorWidget, SpaceWidget },
-  computed: {
-    isFlex() {
-      return this.cssStyle?.display === 'flex'
-    }
-  },
-  mounted() {
-    this.style = { ...this.cssStyle }
-  },
-  data() {
-    return {
-      style: {},
-      paddingToggle: null,
-      displayItems: ['block', 'flex'],
-      flexDirectionItems: ['row', 'row-reverse', 'column', 'column-reverse'],
-      flexJustifyItems: ['flex-start', 'space-between', 'center', 'space-around', 'flex-end'],
-      flexAlignItems: ['flex-start', 'center', 'flex-end'],
-      backgroundSizeItems: ['auto', 'contain', 'cover']
-    }
-  },
-  methods: {
-    doUpdateStyles(styles) {
-      // console.log({styles, applied: {...this.cssStyle, ...styles}})
-      this.$emit('input', { ...this.cssStyle, ...styles })
-    },
-    async openSelectImage(attribute = '@backgroundImage') {
-      const result = await this.$refs.imageSelector.open()
-      if (result?.uuid !== undefined) {
-        this.doUpdateStyles({ [attribute]: result.uuid })
-      }
-    }
+const emit = defineEmits(['input'])
+
+const style = ref({})
+const imageSelector = ref(null)
+const paddingToggle = ref(null)
+const displayItems = ref(['block', 'flex'])
+const flexDirectionItems = ref(['row', 'row-reverse', 'column', 'column-reverse'])
+const flexJustifyItems = ref(['flex-start', 'space-between', 'center', 'space-around', 'flex-end'])
+const flexAlignItems = ref(['flex-start', 'center', 'flex-end'])
+const backgroundSizeItems = ref(['auto', 'contain', 'cover'])
+
+const isFlex = computed(() => {
+  return props.cssStyle?.display === 'flex'
+})
+
+onMounted(() => {
+  style.value = { ...props.cssStyle }
+})
+
+const doUpdateStyles = (styles) => {
+  // console.log({styles, applied: {...this.cssStyle, ...styles}})
+  emit('input', { ...props.cssStyle, ...styles })
+}
+const openSelectImage = async(attribute = '@backgroundImage') => {
+  const result = await imageSelector.value.open()
+  if (result?.uuid !== undefined) {
+    doUpdateStyles({ [attribute]: result.uuid })
   }
 }
 </script>

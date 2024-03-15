@@ -3,99 +3,114 @@
     <v-container>
       <v-toolbar flat class="app-toolbar">
         <v-toolbar-title class="app-title"
-          >Test Push Notifications
+        >Test Push Notifications
         </v-toolbar-title>
       </v-toolbar>
       <v-row>
         <v-col>
           <v-combobox
-            v-model="selected"
-            :items="users"
-            item-text="fullName"
-            item-value="id"
-            label="Users"
-            multiple
-            outlined
-            dense
-            clearable
-            small-chips
-            deletable-chips
+              v-model="selected"
+              :items="users"
+              item-text="fullName"
+              item-value="id"
+              label="Users"
+              multiple
+              outlined
+              dense
+              clearable
+              small-chips
+              deletable-chips
           />
           <v-text-field
-            label="Title"
-            solo
-            v-model="title"
-            :disabled="!selected?.length"
+              label="Title"
+              solo
+              v-model="title"
+              :disabled="!selected?.length"
           />
           <v-textarea
-            :disabled="!selected?.length"
-            solo
-            no-resize
-            name="input-7-4"
-            label="Message"
-            v-model="message"
+              :disabled="!selected?.length"
+              solo
+              no-resize
+              name="input-7-4"
+              label="Message"
+              v-model="message"
           />
         </v-col>
       </v-row>
       <v-row>
-        <v-btn class="mr-4" type="submit" :disabled="!isValid"> submit </v-btn>
-        <v-btn @click="clear">clear</v-btn>
+        <AlbatrossButton
+            class="mr-4"
+            type="submit"
+            :disabled="!isValid"
+            color="unset"
+            text="submit"
+        ></AlbatrossButton>
+        <AlbatrossButton
+            @click=""
+            color="unset"
+            text="clear"
+        ></AlbatrossButton>
       </v-row>
     </v-container>
   </v-form>
 </template>
-<script>
+<script setup>
 import { getRequest, postRequest } from '@/helpers/helpers'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  data() {
-    return {
-      filter: '',
-      title: '',
-      message: '',
-      selected: [],
-      users: []
-    }
-  },
-  created() {
-    Promise.allSettled([this.getPushNotificationUsers()])
-  },
-  computed: {
-    isValid() {
-      return (
-        this.title?.trim()?.length > 0 &&
-        this.message?.trim()?.length > 0 &&
-        this.selected?.length > 0
-      )
-    }
-  },
-  methods: {
-    clear() {
-      this.$refs.form.reset()
-    },
-    async getPushNotificationUsers() {
-      try {
-        const { data = [] } = await getRequest('/user/notifications', null, [])
-        this.users = [...data]
-      } catch (e) {
-        console.error(e)
-      }
-    },
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-    async sendPushNotifications() {
-      try {
-        if (this.title && this.message && this.selected.length > 0) {
-          await postRequest('/push', {
-            title: this.title,
-            message: this.message,
-            userIds: this.selected.map(u=>u.id)
-          })
-          this.clear()
-        }
-      } catch (e) {
-        console.error(e)
-      }
+const filter = ref('')
+const title = ref('')
+const message = ref('')
+const selected = ref([])
+const users = ref([])
+const form = ref(null)
+
+onMounted(() => {
+  Promise.allSettled([getPushNotificationUsers()])
+})
+const isValid = computed(() => {
+  return (
+      title.value?.trim()?.length > 0 &&
+      message.value?.trim()?.length > 0 &&
+      selected.value?.length > 0
+  )
+})
+
+const clear = () => {
+  form.value.reset()
+}
+const getPushNotificationUsers = async() => {
+  try {
+    const { data = [] } = await getRequest('/user/notifications', null, [])
+    users.value = [...data]
+  } catch (e) {
+    console.error(e)
+  }
+}
+const sendPushNotifications = async() => {
+  try {
+    if (title.value && message.value && selected.value?.length > 0) {
+      await postRequest('/push', {
+        title: title.value,
+        message: message.value,
+        userIds: selected.value?.map(u=>u.id)
+      })
+      clear()
     }
+  } catch (e) {
+    console.error(e)
   }
 }
 </script>

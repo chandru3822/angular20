@@ -55,9 +55,9 @@
               </colgroup>
               <tbody>
               <tr
-                :title="`${change.modifiedBy} on ${ $options.filters.timestamp(change.modifiedDate)} in #${change.versionId}`"
-                :class="{ 'current' : item.action === 'modified' && change.versionId == version }"
-                v-for="change in item.changes">
+                  :title="`${change.modifiedBy} on ${ $options.filters.timestamp(change.modifiedDate)} in #${change.versionId}`"
+                  :class="{ 'current' : item.action === 'modified' && change.versionId == version }"
+                  v-for="change in item.changes">
                 <td>{{ change.fieldName }}</td>
                 <td>
                   <span class="changed"
@@ -72,10 +72,10 @@
           </template>
         </v-data-table>
         <v-alert
-          v-else
-          dense
-          tile
-          transition="scale-transition"
+            v-else
+            dense
+            tile
+            transition="scale-transition"
         >
           No changes were recorded.
         </v-alert>
@@ -83,7 +83,12 @@
 
       <v-card-actions>
         <v-spacer/>
-        <v-btn text color="primary" @click="close()">Close</v-btn>
+        <AlbatrossButton
+            variant="text"
+            color="primary"
+            @click="close()"
+            text="Close"
+        ></AlbatrossButton>
       </v-card-actions>
     </v-card>
     <v-card v-if="!loading && error">
@@ -93,85 +98,89 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer/>
-        <v-btn text color="primary" @click="close()">Close</v-btn>
+        <AlbatrossButton
+            variant="text"
+            color="primary"
+            @click="close()"
+            text="Close"
+        ></AlbatrossButton>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
-<script>
+<script setup>
 import {getRequest} from "@/helpers/helpers";
 import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 
-export default {
-  name: 'ProposalVersionHistory',
-  props: ['visible', 'version'],
-  mixins: [ProposalSettingsMixins],
-  data() {
-    return {
-      error: undefined,
-      loading: false,
-      show: false,
-      detail: undefined,
-      headers: [
-        {text: 'Section', value: 'section', sortable: false},
-        {text: 'Action', value: 'action', sortable: false},
-        {text: 'Last Modified', value: 'modifiedBy', sortable: false},
-        {text: 'Changes', value: 'changes', sortable: false},
-      ]
-    }
-  },
-  watch: {
-    visible(val) {
-      this.show = val
+const props = defineProps(['visible', 'version'])
+const emit = defineEmits(['update:visible'])
+const { visible } = toRefs(props)
 
-    },
-    show(val) {
-      if (val) {
-        this.getProposalHistory(this.version)
+
+const error = ref(undefined)
+const loading = ref(false)
+const show = ref(false)
+const detail = ref(undefined)
+const headers = ref([
+  {text: 'Section', value: 'section', sortable: false},
+  {text: 'Action', value: 'action', sortable: false},
+  {text: 'Last Modified', value: 'modifiedBy', sortable: false},
+  {text: 'Changes', value: 'changes', sortable: false},
+])
+
+//@kaleb mixins
+// mixins: [ProposalSettingsMixins],
+
+watch(visible, (val) => {
+  show.value = val
+})
+watch(show, (val) => {
+  if (val) {
+    getProposalHistory(props.version)
+  }
+})
+
+const getProposalHistory = async(versionId) => {
+  try {
+    loading.value = true
+    const {data} = await getRequest(`/proposal/versions/${versionId}/history`, 'blueraven')
+    data.history = data?.history?.map(h => {
+      if (h.archived) {
+        h.action = 'deleted'
+      } else {
+        const modified = h?.changes?.some(v => v.previousValue !== undefined) ?? false
+        h.action = modified ? 'modified' : 'added'
       }
-    }
-  },
-  methods: {
-    async getProposalHistory(versionId) {
-      try {
-        this.loading = true
-        const {data} = await getRequest(`/proposal/versions/${versionId}/history`, 'blueraven')
-        data.history = data?.history?.map(h => {
-          if (h.archived) {
-            h.action = 'deleted'
-          } else {
-            const modified = h?.changes?.some(v => v.previousValue !== undefined) ?? false
-            h.action = modified ? 'modified' : 'added'
-          }
 
-          h.changes.sort((a, b) => {
-            if (a.fieldName < b.fieldName) {
-              return -1;
-            }
-            if (a.fieldName > b.fieldName) {
-              return 1;
-            }
-            return 0;
-          })
+      h.changes.sort((a, b) => {
+        if (a.fieldName < b.fieldName) {
+          return -1;
+        }
+        if (a.fieldName > b.fieldName) {
+          return 1;
+        }
+        return 0;
+      })
 
-          return h
-        })
-        this.detail = {...data}
-      } catch (e) {
-        this.error = e?.response?.data ?? 'Unknown error loading version history'
-        console.error(e)
-      } finally {
-        this.loading = false
-      }
-    },
-    close() {
-      this.show = !this.show
-      this.error = undefined
-      this.detail = undefined
-      this.$emit('update:visible', this.show)
-    }
+      return h
+    })
+    detail.value = {...data}
+  } catch (e) {
+    error.value = e?.response?.data ?? 'Unknown error loading version history'
+    console.error(e)
+  } finally {
+    loading.value = false
   }
 }
+const close = () => {
+  show.value = !show.value
+  error.value = undefined
+  detail.value = undefined
+  emit('update:visible', show.value)
+}
+
 </script>
 <style scoped lang="scss">
 .history-summary-table{

@@ -28,39 +28,38 @@
     </component>
   </fragment>
 </template>
-<script>
+<script setup>
 import { Fragment } from 'vue-frag'
 import Blocks from './blocks'
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 
-export default {
-  name: 'block',
-  components: {
-    Fragment,
-    ...Blocks
+const store = vueInstance.$store
+
+const props = defineProps({
+  debug: {
+    type: Boolean,
+    default: false
   },
-  props: {
-    debug: {
-      type: Boolean,
-      default: false
-    },
-    editable: {
-      type: Boolean,
-      default: false
-    },
-    depth: {
-      type: Number,
-      default: 0
-    },
-    children: {
-      type: Array,
-      default: function() {
-        return []
-      }
+  editable: {
+    type: Boolean,
+    default: false
+  },
+  depth: {
+    type: Number,
+    default: 0
+  },
+  children: {
+    type: Array,
+    default: function() {
+      return []
     }
-  },
-  computed: {
-    sortedChildren() {
-      return this.children.slice().sort(((a, b) => {
+  }
+})
+const { debug, editable, depth, children } = toRefs(props)
+
+
+    const sortedChildren = computed(() => {
+      return children.value?.slice().sort(((a, b) => {
         if (a.blockOrder > b.blockOrder) {
           return 1
         }
@@ -69,17 +68,14 @@ export default {
         }
         return 0
       }))
-    },
-    selectedId() {
-      return this.editable ? this.$store.state.proposal.selectedId : -1
+    })
+    const selectedId = computed(() => {
+      return editable.value ? store.state.proposal.selectedId : -1
+    })
+
+    const filterByParentId = (parent) => {
+      return store.getters.filterByParentId(parent)
     }
-  },
-  methods: {
-    filterByParentId(parent) {
-      return this.$store.getters.filterByParentId(parent)
-    }
-  }
-}
 </script>
 <style lang="scss">
 .block-ui {

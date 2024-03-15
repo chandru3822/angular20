@@ -4,16 +4,38 @@
       <v-toolbar-title class="title-large">Proposal Versions</v-toolbar-title>
       <v-spacer />
       <v-toolbar-items>
-        <v-btn class="toolbar-btn-text" text color="primary" :to="{'name' : 'proposalDesigner'}">
-          <span>Designer</span>
-        </v-btn>
-        <v-btn class="toolbar-btn-icon" icon large color="primary" :to="{'name' : 'proposalDesigner'}">
-          <v-icon>edit</v-icon>
-        </v-btn>
+        <AlbatrossButton
+            class="toolbar-btn-text"
+            variant="text"
+            color="primary"
+            :to="`{'name' : 'proposalDesigner'}`"
+            text="Designer"
+        ></AlbatrossButton>
+        <AlbatrossButton
+            class="toolbar-btn-icon"
+            icon
+            size="large"
+            color="primary"
+            :to="`{'name' : 'proposalDesigner'}`"
+            prepend-icon="edit"
+        ></AlbatrossButton>
       </v-toolbar-items>
       <v-toolbar-items v-if="canCreateVersion">
-        <v-btn class="toolbar-btn-text" text color="primary" @click="create">Create New Version</v-btn>
-        <v-btn class="toolbar-btn-icon" icon large color="primary" @click="create"><v-icon>mdi-plus</v-icon></v-btn>
+        <AlbatrossButton
+            class="toolbar-btn-text"
+            variant="text"
+            color="primary"
+            @click="create"
+            text="Create New Version"
+        ></AlbatrossButton>
+        <AlbatrossButton
+            class="toolbar-btn-icon"
+            icon
+            size="large"
+            color="primary"
+            @click="create"
+            prepend-icon="mdi-plus"
+        ></AlbatrossButton>
       </v-toolbar-items>
     </v-toolbar>
     <v-divider />
@@ -23,7 +45,7 @@
       </div>
       <v-card v-if="versions.length" class="square-card">
         <v-data-table id="proposal-version-table"
-            :headers="headers"
+                      :headers="headers"
                       :items="versions"
                       :options.sync="options"
                       :server-items-length="totalVersions"
@@ -47,18 +69,17 @@
 
           </template>
           <template #item.dateModified="{ item }">
-            <span> {{ item.dateModified | timestamp }}</span>
+            <span> {{ item.dateModified | formatDate('timestamp') }}</span>
           </template>
           <template #item.actions="{item}">
-            <v-btn
+            <AlbatrossButton
                 class="ma-2"
-                text
+                variant="text"
                 icon
                 color="primary"
-                @click.stop="showHistory(item.version)"
-            >
-              <v-icon>mdi-history</v-icon>
-            </v-btn>
+                @click.navive.stop="showHistory(item.version)"
+                prepend-icon="mdi-history"
+            ></AlbatrossButton>
           </template>
         </v-data-table>
 
@@ -69,87 +90,79 @@
   </v-container>
 
 </template>
-<script>
+<script setup>
 import { getRequestWithParams, postRequest } from '@/helpers/helpers'
-import store from '@/store'
 import ProposalVersionHistory from "@/views/blueraven/settings/proposals/ProposalVersionHistory.vue";
 import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: 'ProposalSettings',
-  components: {ProposalVersionHistory},
-  mixins: [ProposalSettingsMixins],
-  data() {
-    return {
-      loading: true,
-      history: {
-        show: false,
-        version: undefined
-      },
-      options: {
-        sortBy: ['version'],
-        sortDesc: [true]
-      },
-      headers: [
-        { text: '', value: 'status', sortable: false },
-        { text: 'Version', value: 'version', sortable: false },
-        { text: 'Modified on', value: 'dateModified', sortable: false },
-        { text: 'Modified by', value: 'modifiedBy', sortable: false },
-        { text: 'Description', value: 'notes', sortable: false },
-        { text: '', value: 'actions', sortable: false }
-      ],
-      footerProps: {
-        'items-per-page-options': [5, 10, 20, 50, 100],
-      },
-      totalVersions: -1,
-      versions: []
-    }
-  },
-  created() {
-    this.getProposalFields()
-  },
-  computed: {
-    ...mapStores(useUserStore),
-    canCreateVersion() {
-      if (!this.userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')) {
-        return false
-      }
-      return !this.loading && !this.versions.some(v => v.status === 'DRAFT')
-    }
-  },
-  watch: {
-    options: {
-      handler() {
-        this.getProposalFields()
-      },
-      deep: true
-    }
-  },
-  methods: {
-    async create() {
-      const { data } = await postRequest('/proposal/versions', {}, 'blueraven')
-      this.versions.push({ ...data })
-      await this.$router.push({ name: 'proposalDetail', params: { id: data.id } })
-    },
-    handleClick(item) {
-      this.$router.push({ name: 'proposalDetail', params: { id: item.id } })
-    },
-    async getProposalFields() {
-      const { itemsPerPage, page } = this.options
-      this.loading = true
-      const { data } = await getRequestWithParams(`/proposal/versions?size=${itemsPerPage}&page=${page - 1}`, {}, 'blueraven')
-      this.totalVersions = data.totalElements ?? -1
-      this.versions = [...data.content]
-      this.loading = false
-    },
-    showHistory(versionId){
-      this.history.version = versionId
-      this.history.show = true
-    }
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+// @kaleb mixins
+// mixins: [ProposalSettingsMixins],
+
+const loading = ref(true)
+const history = ref({show: false,version: undefined})
+const options = ref({sortBy: ['version'],sortDesc: [true]})
+const headers = ref([
+  { text: '', value: 'status', sortable: false },
+  { text: 'Version', value: 'version', sortable: false },
+  { text: 'Modified on', value: 'dateModified', sortable: false },
+  { text: 'Modified by', value: 'modifiedBy', sortable: false },
+  { text: 'Description', value: 'notes', sortable: false },
+  { text: '', value: 'actions', sortable: false }
+])
+const footerProps = ref({
+  'items-per-page-options': [5, 10, 20, 50, 100],})
+const totalVersions = ref(-1)
+const versions = ref([])
+
+onMounted(() => {
+  getProposalFields()
+})
+
+const canCreateVersion = computed(() => {
+  if (!userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')) {
+    return false
   }
+  return !loading.value && !versions.value.some(v => v.status === 'DRAFT')
+})
+
+watch(options, (newVal) => {
+  getProposalFields()
+}, { deep: true })
+
+const create = async() => {
+  const { data } = await postRequest('/proposal/versions', {}, 'blueraven')
+  versions.value.push({ ...data })
+  await router.push({ name: 'proposalDetail', params: { id: data.id } })
 }
+const handleClick = (item) => {
+  router.push({ name: 'proposalDetail', params: { id: item.id } })
+}
+const getProposalFields = async() => {
+  const { itemsPerPage, page } = options.value
+  loading.value = true
+  const { data } = await getRequestWithParams(`/proposal/versions?size=${itemsPerPage}&page=${page - 1}`, {}, 'blueraven')
+  totalVersions.value = data.totalElements ?? -1
+  versions.value = [...data.content]
+  loading.value = false
+}
+const showHistory = (versionId)=> {
+  history.value.version = versionId
+  history.value.show = true
+}
+
 </script>
 <style scoped lang="scss">
 @import "@/styles/main.scss";
@@ -171,10 +184,10 @@ tr:nth-of-type(even) {
     display: none;
   }
 }.toolbar-btn-icon {
-  @media (min-width: 961px) {
-    display: none;
-  }
-}
+   @media (min-width: 961px) {
+     display: none;
+   }
+ }
 </style>
 <style lang="scss">
 @media (max-width: 770px) {

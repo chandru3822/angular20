@@ -14,56 +14,48 @@
     </div>
   </div>
 </template>
-<script>
-export default {
-  props: {
-    label: {
-      type: String,
-      required: true
-    },
-    attr: {
-      type: String,
-      required: true
-    },
-    value: {
-      type: String,
-      default: '0px'
-    },
-    min: {
-      type: Number,
-      default: 0
-    },
-    max: {
-      type: Number,
-      default: 50
-    }
+<script setup>
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+const props = defineProps({
+  label: {
+    type: String,
+    required: true
   },
-  watch: {
-    value: {
-      immediate: true,
-      handler: function(newVal) {
-        const args = newVal
-          ?.split(/(\d+)/)
-          ?.filter(x => x !== '')
-
-        if (args?.length === 2) {
-          this.size = args[0]
-          this.unit = args[1]
-        }
-      }
-    }
+  attr: {
+    type: String,
+    required: true
   },
-  data() {
-    return {
-      unit: 'px',
-      size: 0,
-      units: ['px']
-    }
+  value: {
+    type: String,
+    default: '0px'
   },
-  methods: {
-    onChange() {
-      this.$emit('input', { [this.attr]: `${this.size}${this.unit}` })
-    }
+  min: {
+    type: Number,
+    default: 0
+  },
+  max: {
+    type: Number,
+    default: 50
   }
+})
+const emit = defineEmits(['input'])
+
+const unit = ref('px')
+const size = ref(0)
+const units = ref(['px'])
+
+watch(props.value, (newVal) => {
+  const args = newVal
+      ?.split(/(\d+)/)
+      ?.filter(x => x !== '')
+
+  if (args?.length === 2) {
+    size.value = args[0]
+    unit.value = args[1]
+  }
+}, {immediate: true});
+
+const onChange = () => {
+  emit('input', { [props.attr]: `${size.value}${unit.value}` })
 }
 </script>
