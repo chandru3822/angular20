@@ -9,6 +9,8 @@ import axios from 'axios'
 import { SnackbarPlugin } from '@/plugins/SnackbarPlugin'
 import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
+import AlbatrossTextField from '@/components/customVuetify/AlbatrossTextField.vue'
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 
 import '@/styles/main.scss'
 import { requestInterceptor, responseInterceptor  } from '@/helpers/interceptors'
@@ -80,6 +82,10 @@ Vue.filter('formatDate', function(value, type, format, inputFormat) {
 
 axios.interceptors.request.use(requestInterceptor)
 axios.interceptors.response.use((r) => r, responseInterceptor)
+
+//add the Albatross Components Globally so we can stop importing them everywhere
+Vue.component('a-text-field', AlbatrossTextField)
+Vue.component('a-btn', AlbatrossButton)
 
 Vue.use(
   VueGtag,

@@ -61,7 +61,7 @@
                       :activation-handler="on"
                       class="custom-dates-btn"
                       color="unset"
-                      :text=" apptsCreatedPipelineDateRange.label "
+                      :text="apptsCreatedPipelineDateRange.label"
                       prepend-icon="mdi-menu-down"
                   ></AlbatrossButton>
                 </template>
@@ -499,7 +499,7 @@
                         :activation-handler="on"
                         class="custom-dates-btn"
                         color="unset"
-                        :text=" apptsToFdcPipelineDateRange.label "
+                        :text="apptsToFdcPipelineDateRange.label"
                         prepend-icon="mdi-menu-down"
                     ></AlbatrossButton>
                   </template>

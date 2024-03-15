@@ -39,7 +39,8 @@
                 color="primary"
                 @click="[createNew = !createNew, newBudget = {}, expanded = [], getAvailableUsers()]"
                 :prepend-icon="!createNew ? 'add' : 'close'"
-                :text="!isMobile && createNew ? 'cancel' : !isMobile && !createNew ? 'Add Budget' : ''"
+                hide-text-on-mobile
+                :text="createNew ? 'cancel' : 'Add Budget'"
             ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>

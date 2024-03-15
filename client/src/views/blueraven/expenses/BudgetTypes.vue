@@ -11,7 +11,7 @@
                 color="primary"
                 @click="[createNew = !createNew, newBudgetType = {}]"
                 :prepend-icon="!createNew ? 'add' : 'close'"
-                :text="!isMobile && createNew ? 'cancel' : !isMobile && !createNew ? 'Add Budget Templat' : ''"
+                :text="createNew ? 'cancel' : 'Add Budget Template'"
             ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>

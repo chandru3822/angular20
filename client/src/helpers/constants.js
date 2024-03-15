@@ -20,7 +20,6 @@ constants.VUE_APP_API_PATH = '/api/v1'
 constants.MAPBOX_ACCESS_TOKEN = VITE_MAPBOX_ACCESS_TOKEN //I added this prop to all environments, so I am removing the fallback here cuz it was my personal token
 constants.MAPBOX_STYLE = VITE_MAPBOX_STYLE || 'mapbox://styles/mapbox/streets-v10'
 constants.IS_MOBILE = window.innerWidth <= 768
-constants.SCREEN_WIDTH = window.innerWidth
 // constants.MAX_FILE_SIZE = 104857600 //100 mb
 // constants.MAX_FILE_SIZE = 209715200 //200 mb
 constants.MAX_FILE_SIZE = 1048576000 //1 gb

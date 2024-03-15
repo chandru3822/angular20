@@ -11,7 +11,8 @@
                 color="primary"
                 @click="[createNew = !createNew, newGlCode = {}]"
                 :prepend-icon="!createNew ? 'add' : 'close'"
-                :text="!isMobile && createNew ? 'cancel' : !isMobile && !createNew ? 'Add GL Code' : ''"
+                hide-text-on-mobile
+                :text="createNew ? 'cancel' : 'Add GL Code'"
             ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>

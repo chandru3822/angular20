@@ -19,24 +19,16 @@
          @click="$emit('click')">
     <slot name="default">
       <template>
-        <div>
           <v-icon v-if="props.prependIcon" class="mr-1">{{ props.prependIcon }}</v-icon>
-          <span v-if="!props.hideTextOnMobile || (props.hideTextOnMobile && constants.IS_MOBILE)">{{ props.text }}</span>
+          <span :class="{'hide-sm': props.hideTextOnMobile}">{{ props.text }}</span>
           <v-icon v-if="props.appendIcon" class="ml-3">{{ props.appendIcon }}</v-icon>
-        </div>
       </template>
     </slot>
   </v-btn>
 </template>
 
 <script setup>
-import {getCurrentInstance, onMounted, defineProps, ref} from 'vue'
-import constants from '@/helpers/constants'
-
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const router = vueInstance.$router
-const snackbar = vueInstance.$snackbar
+import {defineProps} from 'vue'
 
 //note in vue3 using the prepend icon you can't change its size. so for now if the size of the icon is custom, then a default template must be sent in to override
 //note the text-none class means that you dont have to specify casing, just pass the text in the way you want it to appear

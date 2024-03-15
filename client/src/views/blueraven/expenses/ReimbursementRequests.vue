@@ -12,7 +12,8 @@
                 v-if="userCanAdd"
                 @click="[createNew = !createNew, selectedBudgetReport = {}, newReimbursementRequest = {expenseBudgetId: null}]"
                 :prepend-icon="!createNew ? 'add' : 'close'"
-                :text="!isMobile && createNew ? 'cancel' : !isMobile && !createNew ? 'Add Reimbursement Request' : ''"
+                hide-text-on-mobile
+                :text="createNew ? 'cancel' : 'Add Reimbursement Request'"
             ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>

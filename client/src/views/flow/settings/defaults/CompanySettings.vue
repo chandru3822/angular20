@@ -10,6 +10,14 @@
     <v-form ref="companyForm" v-model="validForm">
       <v-row>
         <v-col cols="12">
+          <a-text-field v-model="company.companyName"
+                        placeholder="Enter a value"
+                        required
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        class="body-large"
+                        label="Company Name">
+          </a-text-field>
           <v-text-field v-model="company.companyName"
                         placeholder="Enter a value"
                         required
@@ -27,19 +35,35 @@
                         class="body-large"
                         label="Default Password">
           </v-text-field>
-          <v-text-field v-model.number="company.minuteIncrement"
+          <a-text-field v-model.number="company.minuteIncrement"
                         placeholder="Enter a value"
                         required
+                        solo
+                        variant="solo"
                         :rules="rules"
                         @input="forceInteger"
                         :step="1"
+                        clearable
                         :key="damnKeyThing"
                         type="number"
                         class="minute-increment-field body-large"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         label="Minute Increment">
-          </v-text-field>
+          </a-text-field>
+<!--          <v-text-field v-model.number="company.minuteIncrement"-->
+<!--                        placeholder="Enter a value"-->
+<!--                        required-->
+<!--                        :rules="rules"-->
+<!--                        @input="forceInteger"-->
+<!--                        :step="1"-->
+<!--                        :key="damnKeyThing"-->
+<!--                        type="number"-->
+<!--                        class="minute-increment-field body-large"-->
+<!--                        :readonly="!userCanEdit"-->
+<!--                        :disabled="!userCanEdit"-->
+<!--                        label="Minute Increment">-->
+<!--          </v-text-field>-->
           <div>
             <div class="color-swatch d-inline-block mr-3"
                  :style="{'background-color': company.bannerColor}"></div>
@@ -84,6 +108,7 @@
                  color="primary" @click="saveCompany" v-if="userCanEdit"
                  :class="{'one-hunned': vuetify.breakpoint.smAndDown}"
                  prepend-icon="mdi-content-save"
+                           hide-text-on-mobile
                  text="SAVE CHANGES"
           />
         </v-col>
@@ -161,8 +186,6 @@
 
 
 <script setup>
-import {Actions} from '@/store'
-
 import {
   handleHidingGlobalLoader,
   postRequestWithRequestParams,

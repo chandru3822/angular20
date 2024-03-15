@@ -11,7 +11,8 @@
                 color="primary"
                 @click="[createNew = !createNew, newTemplate = {}, expanded = [], getAvailableUsers()]"
                 :prepend-icon="!createNew ? 'add' : 'close'"
-                :text="!isMobile && createNew ? 'cancel' : !isMobile && !createNew ? 'Add Template' : ''"
+                hide-text-on-mobile
+                :text="createNew ? 'cancel' : 'Add Template'"
             ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
