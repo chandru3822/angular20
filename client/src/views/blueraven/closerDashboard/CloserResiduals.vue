@@ -4,27 +4,32 @@
       <v-col cols="12">
           <v-toolbar color="white" class="elevation-1">
             <v-toolbar-title class="app-title flex-display">
-              <v-btn text class="mr-2" @click="setViewingDate(false)"
-                  :disabled="viewingDataFor === minDate">
-                <v-icon>mdi-chevron-left</v-icon>
-              </v-btn>
+              <AlbatrossButton
+                  variant="text"
+                  class="mr-2"
+                  @click="setViewingDate(false)"
+                  :disabled="viewingDataFor === minDate"
+                  color="unset"
+                  prepend-icon="mdi-chevron-left"
+              ></AlbatrossButton>
               <input type="month" id="viewing-date" name="viewing-date"
                      :min="minDate"
                      :max="maxDate"
                      :required="true"
                      @input="loadResidualData()"
                      v-model="viewingDataFor">
-              <v-btn text class="ml-2" @click="setViewingDate(true)"
-                   :disabled="viewingDataFor === currentMonth">
-                <v-icon>mdi-chevron-right</v-icon>
-              </v-btn>
+              <AlbatrossButton
+                  variant="text"
+                  class="ml-2"
+                  @click="setViewingDate(true)"
+                  :disabled="viewingDataFor === currentMonth"
+                  color="unset"
+                  prepend-icon="mdi-chevron-right"
+              ></AlbatrossButton>
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-<!--            <div class="pt-4">-->
-<!--              <v-btn @click="setViewingDate(false)">Last Month</v-btn>-->
-<!--              <v-btn class="ml-3" @click="setViewingDate(true)">Current Month</v-btn>-->
-<!--            </div>-->
+
             </v-toolbar-items>
           </v-toolbar>
       </v-col>
@@ -240,147 +245,143 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import constants from '@/helpers/constants'
   import { getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
   import moment from 'moment'
+  import {getCurrentInstance, toRefs, ref, computed, onMounted} from "vue";
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+  import {useRoute, useRouter} from "vue-router/composables";
 
-  export default {
-    name: 'closerResiduals',
-    components: {
-      SpinnerInline,
-    },
-    props: {
+  const route = useRoute()
+  const router = useRouter()
+
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+
+  const props = defineProps({
       isAdmin: Boolean
-    },
-    computed: {
-      notAssignedMessage() {
-        return this.isAdmin && this.selectedUserId === null ? 'You must select a user'
-          : this.isAdmin ? 'This user is not assigned to a residual plan. Please contact an administrator.'
-          : 'You are not assigned to a residual plan.  Please contact an administrator.'
+  })
+  const { isAdmin } = toRefs(props)
+
+  onMounted(() => {
+      loadResidualData()
+      if(isAdmin.value) {
+        loadUsers()
       }
-    },
-    watch: {
-    },
-    created () {
-      this.loadResidualData()
-      if(this.isAdmin) {
-        this.loadUsers()
+    })
+
+  const snackbar = ref({})
+  const users = ref([])
+  const selectedUserId = ref(null)
+  const residualData = ref({})
+  const totalQualifyingSearch = ref('')
+  const minDate = ref('2023-02')
+  const maxDate = ref(moment().format('YYYY-MM'))
+  const currentMonth = ref(moment().startOf('month').format('YYYY-MM'))
+  const viewingDataFor = ref(moment().startOf('month').format('YYYY-MM'))
+  const usersLoading = ref(true)
+  const dataLoading = ref(true)
+  const totalQualifyingFdcHeaders = ref([
+    {text: 'Contact Name', value: 'contact_name', show: true},
+    {text: 'Project ID', value: 'project_id', show: true},
+  ])
+  const monthlyQualifiedHeaders = ref([
+    {text: 'Contact Name', value: 'contact_name', show: true},
+    {text: 'Project ID', value: 'project_id', show: true},
+    {text: 'FDA', value: 'final_design_signed_date', show: true},
+    {text: 'FDC', value: 'final_design_complete_date', show: true},
+    {text: 'Utility Bill Verified', value: 'utility_bill_verified_date', show: true},
+    {text: 'FAS', value: 'financial_agreement_signed_date', show: true},
+    {text: 'Proof Of Homeowners Insurance', value: 'proof_of_homeowners_insurance_obtained_date', show: true},
+    {text: 'SC', value: 'substantial_completion_date', show: true},
+    {text: 'Cancelled', value: 'cancelled_date', show: true},
+    {text: 'On Hold', value: 'on_hold_date', show: true},
+    {text: 'Total Cash Down Payment', value: 'total_cash_down_payment', show: true},
+    {text: 'First Cash Payment Amount', value: 'first_cash_payment_amount', show: true},
+  ])
+      const clawbackHeaders = ref([
+    {text: 'Contact Name', value: 'contact_name', show: true},
+    {text: 'Project ID', value: 'project_id', show: true},
+    {text: 'Cancelled Date', value: 'cancelled_date', show: true},
+    {text: 'Current Clawbacks', value: 'current_clawbacks', show: true},
+    {text: 'Existing Clawbacks', value: 'existing_clawbacks', show: true},
+  ])
+      const notQualifyingHeaders = ref([
+    {text: 'Contact Name', value: 'contact_name', show: true},
+    {text: 'Project ID', value: 'project_id', show: true},
+    {text: 'FDA', value: 'final_design_signed_date', show: true},
+    {text: 'FDC', value: 'final_design_complete_date', show: true},
+    {text: 'Utility Bill Verified', value: 'utility_bill_verified_date', show: true},
+    {text: 'FAS', value: 'financial_agreement_signed_date', show: true},
+    {text: 'Proof Of Homeowners Insurance', value: 'proof_of_homeowners_insurance_obtained_date', show: true},
+    {text: 'SC', value: 'substantial_completion_date', show: true},
+    {text: 'Cancelled', value: 'cancelled_date', show: true},
+    {text: 'On Hold', value: 'on_hold_date', show: true},
+    {text: 'Total Cash Down Payment', value: 'total_cash_down_payment', show: true},
+    {text: 'First Cash Payment Amount', value: 'first_cash_payment_amount', show: true},
+  ])
+      const footerProps = ref({
+    'items-per-page-options': [10, 20, 50],
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+  })
+  const options = ref({
+    itemsPerPage: 20
+  })
+  const currentUserId = computed(() => {
+    return store.state.user.details.id
+  })
+  const notAssignedMessage = computed(() => {
+    return isAdmin.value && selectedUserId.value === null ? 'You must select a user'
+        : isAdmin.value ? 'This user is not assigned to a residual plan. Please contact an administrator.'
+            : 'You are not assigned to a residual plan.  Please contact an administrator.'
+  })
+
+      const setViewingDate = (goForward) => {
+        viewingDataFor.value = goForward ? moment(viewingDataFor.value).add(1, 'month').format('YYYY-MM')
+            : moment(viewingDataFor.value).subtract(1, 'month').format('YYYY-MM')
+        loadResidualData()
       }
-    },
-    data () {
-      return {
-        snackbar: {},
-        constants,
-        users: [],
-        selectedUserId: null,
-        currentUserId: this.$store.state.user.details.id,
-        residualData: {},
-        totalQualifyingSearch: '',
-        minDate: '2023-02',
-        maxDate: moment().format('YYYY-MM'),
-        currentMonth: moment().startOf('month').format('YYYY-MM'),
-        viewingDataFor: moment().startOf('month').format('YYYY-MM'),
-        usersLoading: true,
-        dataLoading: true,
-        totalQualifyingFdcHeaders: [
-          {text: 'Contact Name', value: 'contact_name', show: true},
-          {text: 'Project ID', value: 'project_id', show: true},
-        ],
-        monthlyQualifiedHeaders: [
-          {text: 'Contact Name', value: 'contact_name', show: true},
-          {text: 'Project ID', value: 'project_id', show: true},
-          {text: 'FDA', value: 'final_design_signed_date', show: true},
-          {text: 'FDC', value: 'final_design_complete_date', show: true},
-          {text: 'Utility Bill Verified', value: 'utility_bill_verified_date', show: true},
-          {text: 'FAS', value: 'financial_agreement_signed_date', show: true},
-          {text: 'Proof Of Homeowners Insurance', value: 'proof_of_homeowners_insurance_obtained_date', show: true},
-          {text: 'SC', value: 'substantial_completion_date', show: true},
-          {text: 'Cancelled', value: 'cancelled_date', show: true},
-          {text: 'On Hold', value: 'on_hold_date', show: true},
-          {text: 'Total Cash Down Payment', value: 'total_cash_down_payment', show: true},
-          {text: 'First Cash Payment Amount', value: 'first_cash_payment_amount', show: true},
-        ],
-        clawbackHeaders: [
-          {text: 'Contact Name', value: 'contact_name', show: true},
-          {text: 'Project ID', value: 'project_id', show: true},
-          {text: 'Cancelled Date', value: 'cancelled_date', show: true},
-          {text: 'Current Clawbacks', value: 'current_clawbacks', show: true},
-          {text: 'Existing Clawbacks', value: 'existing_clawbacks', show: true},
-        ],
-        notQualifyingHeaders: [
-          {text: 'Contact Name', value: 'contact_name', show: true},
-          {text: 'Project ID', value: 'project_id', show: true},
-          {text: 'FDA', value: 'final_design_signed_date', show: true},
-          {text: 'FDC', value: 'final_design_complete_date', show: true},
-          {text: 'Utility Bill Verified', value: 'utility_bill_verified_date', show: true},
-          {text: 'FAS', value: 'financial_agreement_signed_date', show: true},
-          {text: 'Proof Of Homeowners Insurance', value: 'proof_of_homeowners_insurance_obtained_date', show: true},
-          {text: 'SC', value: 'substantial_completion_date', show: true},
-          {text: 'Cancelled', value: 'cancelled_date', show: true},
-          {text: 'On Hold', value: 'on_hold_date', show: true},
-          {text: 'Total Cash Down Payment', value: 'total_cash_down_payment', show: true},
-          {text: 'First Cash Payment Amount', value: 'first_cash_payment_amount', show: true},
-        ],
-        footerProps: {
-          'items-per-page-options': [10, 20, 50],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        options: {
-          itemsPerPage: 20
-        },
+      const goToProject = (projectId) => {
+        router.push(`/project/${projectId}`)
       }
-    },
-    methods: {
-      setViewingDate(goForward) {
-        this.viewingDataFor = goForward ? moment(this.viewingDataFor).add(1, 'month').format('YYYY-MM')
-            : moment(this.viewingDataFor).subtract(1, 'month').format('YYYY-MM')
-        this.loadResidualData()
-      },
-      goToProject(projectId) {
-        this.$router.push(`/project/${projectId}`)
-      },
-      async loadUsers () {
-        this.usersLoading = true
+      const loadUsers = async() => {
+        usersLoading.value = true
         try {
           const {data} = await getRequest('/closerDashboard/closers', 'blueraven')
-          this.users = data
+          users.value = data
         } catch (e) {
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving users')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.usersLoading = false
+          snackbar.value = getSnackbar('ERROR', 'Error retrieving users')
+          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+          usersLoading.value = false
         }
-      },
-      async loadResidualData () {
-        if((this.isAdmin && this.selectedUserId != null) || !this.isAdmin) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          this.dataLoading = true
+      }
+      const loadResidualData = async() => {
+        if((isAdmin.value && selectedUserId.value != null) || !isAdmin.value) {
+          store.commit(AppMutations.SET_LOADING, true)
+          dataLoading.value = true
           try {
-            this.viewingDataFor = this.viewingDataFor === '' ? this.currentMonth : this.viewingDataFor
+            viewingDataFor.value = viewingDataFor.value === '' ? currentMonth.value : viewingDataFor.value
             let params = {
-              residualDate: moment(this.viewingDataFor).format('YYYY-MM-DD')
+              residualDate: moment(viewingDataFor.value).format('YYYY-MM-DD')
             }
-            let url = this.isAdmin ? `/closerDashboard/residuals/${this.selectedUserId}` : '/closerDashboard/residuals'
+            let url = isAdmin.value ? `/closerDashboard/residuals/${selectedUserId.value}` : '/closerDashboard/residuals'
             const {data} = await getRequestWithParams(url, {params}, 'blueraven')
-            this.residualData = data
-            this.dataLoading = false
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            residualData.value = data
+            dataLoading.value = false
+            store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
-            this.snackbar = getSnackbar('ERROR', 'Error retrieving residual data')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.dataLoading = false
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            snackbar.value = getSnackbar('ERROR', 'Error retrieving residual data')
+            store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+            dataLoading.value = false
+            store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
-          this.dataLoading = false
+          dataLoading.value = false
         }
-      },
-
-    },
-
-  }
+      }
 </script>
 <style lang="scss" scoped>
 .residual-table {

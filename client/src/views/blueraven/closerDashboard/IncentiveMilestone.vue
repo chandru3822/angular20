@@ -21,7 +21,7 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import {DashboardTypeEnum, incentive_constants} from "@/views/blueraven/closerDashboard/incentive_constants";
 import {MilestoneEnum, QuarterEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import {AppMutations} from "@/stores/AppStore";
@@ -31,80 +31,82 @@ import TrophyDynamic from "@/assets/blueraven/trophy-dynamic";
 import moment from "moment";
 import SetterMilestoneDrilldown from "@/views/blueraven/setterDashboard/SetterMilestoneDrilldown";
 import CloserMilestoneDrilldown from "@/views/blueraven/closerDashboard/CloserMilestoneDrilldown";
+import {getCurrentInstance, watch, toRefs, ref, computed, onMounted} from "vue";
 
-export default {
-  name: "IncentiveMilestone",
-  components: {
-    SetterMilestoneDrilldown,
-    CloserMilestoneDrilldown,
-    TrophyDynamic
-  },
-  props: {
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+
+const props = defineProps({
     quarter: QuarterEnum,
     milestoneLevel: MilestoneEnum,
     dashboardType: DashboardTypeEnum,
     currentQuarterCount: Number
-  },
-  data() {
-    return {
-      incentive_constants,
-      milestoneDialog: false,
-      currentUserId: null,
-      currentQuarter: moment().quarter(),
-      drilldownData: [],
-      upperLabel: '',
-      lowerLabel:''
-    }
-  },
-  computed: {
-    windowInnerWidth () { return window.innerWidth},
-    milestoneUnits () {
-      return this.dashboardType.milestoneUnits
-    },
-    colorClass: function () {
+})
+const { quarter, milestoneLevel, dashboardType, currentQuarterCount } = toRefs(props)
+
+const milestoneDialog = ref(false)
+const selectedQuarter = ref(1)
+const currentQuarter = ref(moment().quarter())
+const drilldownData = ref([])
+const upperLabel = ref('')
+const lowerLabel = ref('')
+
+const currentUserId = computed(() => {
+  return store.state.user.details.id
+})
+    const windowInnerWidth = computed(() => {
+      return window.innerWidth
+    })
+    const milestoneUnits = computed(() => {
+      return dashboardType.value.milestoneUnits
+    })
+    const colorClass = computed(() => {
       return {
-        'bronze': this.milestoneLevel === MilestoneEnum.LEVEL1,
-        'silver': this.milestoneLevel === MilestoneEnum.LEVEL2,
-        'gold': this.milestoneLevel === MilestoneEnum.LEVEL3,
-        'platinum': this.milestoneLevel === MilestoneEnum.LEVEL4
+        'bronze': milestoneLevel.value === MilestoneEnum.LEVEL1,
+        'silver': milestoneLevel.value === MilestoneEnum.LEVEL2,
+        'gold': milestoneLevel.value === MilestoneEnum.LEVEL3,
+        'platinum': milestoneLevel.value === MilestoneEnum.LEVEL4
       }
-    },
-    active () {
-      return this.currentQuarter === this.quarter.value
-    },
-    isSetter() {
-      return this.dashboardType === DashboardTypeEnum.SETTER || this.dashboardType === DashboardTypeEnum.SETTERMGR
-    },
-    isCloser() {
-      return this.dashboardType === DashboardTypeEnum.CLOSER
-    }
-  },
-  watch: {
-    currentQuarterCount () {
-      this.setLabels()
-    }
-  },
-  methods: {
-    setLabels () {
-      const diff = this.getNextMilestoneGoal() - this.currentQuarterCount
-      this.upperLabel = this.quarter.label
-      if(this.quarter.value < this.currentQuarter && this.milestoneLevel === MilestoneEnum.LEVEL0){
+    })
+    const active = computed(() => {
+      return currentQuarter.value === quarter.value.value
+    })
+    const isSetter = computed(() => {
+      return dashboardType.value === DashboardTypeEnum.SETTER || dashboardType.value === DashboardTypeEnum.SETTERMGR
+    })
+    const isCloser = computed(() => {
+      return dashboardType.value === DashboardTypeEnum.CLOSER
+    })
+
+watch(currentQuarterCount, async() => {
+    setLabels()
+})
+
+onMounted(() => {
+  setLabels()
+})
+
+
+    const setLabels = () => {
+      const diff = getNextMilestoneGoal() - currentQuarterCount.value
+      upperLabel.value = quarter.value.label
+      if(quarter.value.value < currentQuarter.value && milestoneLevel.value === MilestoneEnum.LEVEL0){
         //if the quarter is over and no milestone was reached
-        this.lowerLabel = "No milestone reached"
+        lowerLabel.value = "No milestone reached"
       }
-      else if(this.milestoneLevel === MilestoneEnum.LEVEL4 || (this.quarter.value < this.currentQuarter)) {
+      else if(milestoneLevel.value === MilestoneEnum.LEVEL4 || (quarter.value.value < currentQuarter.value)) {
         //if they reached the highest level OR the Quarter is over and one of the other milestones was reached
-        this.lowerLabel = `${this.incentive_constants.milestoneMap.get(this.milestoneLevel)} Achieved`
+        lowerLabel.value = `${incentive_constants.milestoneMap.get(milestoneLevel.value)} Achieved`
       } else {
-        this.lowerLabel = `${diff} ${this.milestoneUnits} to ${this.incentive_constants.milestoneMap.get(this.getNextMilestone())}`
+        lowerLabel.value = `${diff} ${milestoneUnits.value} to ${incentive_constants.milestoneMap.get(getNextMilestone())}`
       }
-    },
-    getNextMilestoneGoal() {
-      const nextMilestone = this.getNextMilestone();
-      return nextMilestone ? this.dashboardType.milestoneGoalMap[this.getNextMilestone()]: undefined
-    },
-    getNextMilestone() {
-      switch (this.milestoneLevel){
+    }
+    const getNextMilestoneGoal =() => {
+      const nextMilestone = getNextMilestone();
+      return nextMilestone ? dashboardType.value.milestoneGoalMap[getNextMilestone()]: undefined
+    }
+    const getNextMilestone =() => {
+      switch (milestoneLevel.value){
         case MilestoneEnum.LEVEL0:
           return MilestoneEnum.LEVEL1
         case MilestoneEnum.LEVEL1:
@@ -116,19 +118,19 @@ export default {
         default:
           return undefined
       }
-    },
-    resetScrollBarPosition () {
+    }
+    const resetScrollBarPosition = () => {
       // reset scroll bar position to top
       //document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
-    },
+    }
 
     /* Drilldown CODE START */
-    async milestoneDrilldown (quarter) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    const milestoneDrilldown = async (quarter) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {}
-        if(this.dashboardType === DashboardTypeEnum.SETTERMGR){
-          let userPositions = this.$store.state.user.details.userPositions
+        if(dashboardType.value === DashboardTypeEnum.SETTERMGR){
+          let userPositions = store.state.user.details.userPositions
           let userOffice = userPositions.filter(position => position.primaryFlag && !position.endDate)[0]
           let userOfficeId = userOffice ? userOffice.orgId : null
 
@@ -137,8 +139,8 @@ export default {
             isSetterMgr: true,
             setterMgrOfficeId: userOfficeId ? userOfficeId : null
           }
-        } else if (this.dashboardType === DashboardTypeEnum.SETTER){
-          let userPositions = this.$store.state.user.details.userPositions
+        } else if (dashboardType.value === DashboardTypeEnum.SETTER){
+          let userPositions = store.state.user.details.userPositions
           let userOffice = userPositions.filter(position => position.primaryFlag && !position.endDate)[0]
           let userOfficeId = userOffice ? userOffice.orgId : null
 
@@ -150,40 +152,32 @@ export default {
         } else {
           params = {quarter}
         }
-        const {data} = await getRequestWithParams(this.dashboardType.drilldown.path, {params}, 'blueraven')
-        this.drilldownData = cloneDeep(data)
-        if (this.drilldownData.length > 0) {
-          this.drilldownData.forEach(row => {
+        const {data} = await getRequestWithParams(dashboardType.value.drilldown.path, {params}, 'blueraven')
+        drilldownData.value = cloneDeep(data)
+        if (drilldownData.value.length > 0) {
+          drilldownData.value.forEach(row => {
             if (row.customer_name) {
               row.customer_name = row.customer_name.toLowerCase()
             }
           })
         } else {
-          this.drilldownData = []
+          drilldownData.value = []
         }
 
-        this.milestoneDialog = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        milestoneDialog.value = true
+        store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar.value = getSnackbar('ERROR', 'Error retrieving drilldown data')
+        store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
+    }
+    const closeMilestoneDialog = () => {
+      milestoneDialog.value = false
+      resetScrollBarPosition()
+    }
 
-    closeMilestoneDialog () {
-      this.milestoneDialog = false
-      this.resetScrollBarPosition()
-    },
-    /* Drilldown CODE END */
-  },
-
-  async created () {
-    this.currentUserId = this.$store.state.user.details.id
-    this.setLabels()
-  }
-}
 </script>
 
 <style lang="scss" scoped>
