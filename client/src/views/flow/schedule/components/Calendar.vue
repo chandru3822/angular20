@@ -282,6 +282,7 @@ const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
       preselectedEvent: {type:Object, required: false}
     })
 
+
 const calendarOptions = ref({
   plugins: [
     resourceTimelinePlugin, interaction, momentTimezonePlugin
@@ -289,6 +290,7 @@ const calendarOptions = ref({
   initialView: 'resourceTimelineDay',
   resources: [],
   resourceAreaWidth: 300,
+  schedulerLicenseKey: constants.FULL_CALENDAR_LICENSE_KEY,
   eventSources:[
     (info, successCallback, failureCallback) => goGetEventsNow(info, successCallback, failureCallback)
   ],
@@ -369,7 +371,6 @@ const calendarLoading = ref(false)
 
     const mapResourceEvents =  ref([])
     const checkedResources =  ref([])
-    const licenseKey =  ref('GPL-My-Project-Is-Open-Source')
     const daySelector =  ref(false)
     const dayOptions =  ref([])
 const timezone =  ref(store.state.schedule.timezone.value)
