@@ -358,7 +358,7 @@
     }
   }
   const saveAppt = async (appt) => {
-    if((!appt.allDay && appt.startTime >= appt.endTime) || (appt.allDay && appt.startTime > appt.endTime)) {
+    if((!appt.allDay && appt.startTime >= appt.endTime) || (appt.allDay && appt.startTime.split('T')[0] > appt.endTime.split('T')[0])) {
       saveError.value = true
       saveErrorMsg.value = '* Appointment End must be after Appointment Start'
     } else {

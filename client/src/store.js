@@ -5,7 +5,7 @@ import ProposalStore, { ProposalMutations } from '@/views/blueraven/settings/pro
 import { createPinia, PiniaVuePlugin } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { useAppStore } from '@/stores/AppStorePinia.js'
-
+import {ScheduleStore} from "@/stores/ScheduleStore.js";
 
 Vue.use(PiniaVuePlugin)
 export const pinia = createPinia()
@@ -66,9 +66,10 @@ const store = new Vuex.Store({
   modules: {
     // user: UserStore,
     // brs: BrsStore,
-    app: AppStore,
     // project: ProjectStore,
-    proposal: ProposalStore
+    app: AppStore,
+    proposal: ProposalStore,
+    schedule: ScheduleStore
   },
   mutations: {
     // ADD_CANCEL_TOKEN(state, token) {

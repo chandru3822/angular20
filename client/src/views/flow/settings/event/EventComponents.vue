@@ -7,15 +7,15 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <AlbatrossButton
-              variant="text"
-              color="primary"
-              @click="[addNewEventStatusType = !addNewEventStatusType, expanded = [], getCompanyEventStatusTypes()]"
-              v-if="userCanAdd"
-              :prepend-icon="!addNewEventStatusType ? 'add' : ''"
-              :text="vuetify.breakpoint.mdAndUp ? (addNewEventStatusType ? 'Cancel' : 'Add Event Status Type') : ''"
+                variant="text"
+                color="primary"
+                @click="[addNewEventStatusType = !addNewEventStatusType, expanded = [], getCompanyEventStatusTypes()]"
+                v-if="userCanAdd"
+                :prepend-icon="!addNewEventStatusType ? 'add' : vuetify.breakpoint.mdAndUp ? '' : 'close'"
+                :text="vuetify.breakpoint.mdAndUp ? (addNewEventStatusType ? 'Cancel' : 'Add Event Status Type') : ''"
             />
             <AlbatrossButton variant="text" color="primary" @click="expandEsst = !expandEsst"
-               :prepend-icon="!expandEsst ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+                             :prepend-icon="!expandEsst ? 'mdi-chevron-down' : 'mdi-chevron-up'"
             />
           </v-toolbar-items>
         </v-toolbar>
@@ -31,7 +31,7 @@
                             autocomplete="off"
                             @input="assignStatusTypeToEvent"
             >
-              <template slot="item" slot-scope="data">
+              <template v-slot:item="{data}">
                 <!-- HTML that describes how select should render items when the select is open -->
                 {{ data.item.eventStatusType }} ({{ data.item.rootEventStatusType }})
               </template>
@@ -57,7 +57,10 @@
 
                 <template #item.statusType="{item}" class="text-left"><a href="/settings/eventStatuses">{{ item.eventStatusType }}</a></template>
                 <template #item.category="{item}" class="text-left">{{ item.rootEventStatusType }}</template>
-                <td class="text-right">
+            <template #item.scheduleEditable="{item}" class="text-left">
+              <v-checkbox v-model="item.editableInSchedule" @change="saveEditableInSchedule(item)"/>
+            </template>
+            <td class="text-right">
                   <div class="flex-display align-center">
                     <AlbatrossButton
                       size="small"
@@ -109,93 +112,68 @@
 
 <script setup>
 import {AppMutations} from "@/stores/AppStore";
-import draggable from 'vuedraggable'
 import {getAvailableForEvent} from '@/services/eventStatusTypeService'
-import {deleteRequest, getRequest, getSnackbar, postRequest, putRequest, handleHidingGlobalLoader} from "@/helpers/helpers";
+import { getRequest, postRequest, putRequest, handleHidingGlobalLoader} from "@/helpers/helpers";
 import orderBy from "lodash.orderby"
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import cloneDeep from "lodash.clonedeep";
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
-import {useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
-const appStore = useAppStore()
-
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {ref, computed, onMounted, getCurrentInstance} from "vue";
-import { useUserStore } from '@/stores/UserStorePinia.js'
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const userStore = useUserStore()
-const route = useRoute()
+const route = vueInstance.$route
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 
-const addNewType = ref(false)
+const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
 const expandEsst = ref(true)
 const event = ref({})
+const eventId = ref(route.params.id)
 const availableCompanyEventStatusTypes = ref([])
 const companyStatusesLoading = ref(false)
 const addNewEventStatusType = ref(false)
 const newType = ref({})
 const newEventStatusTypeId = ref(null)
-const combinedStatuses = ref([ {header: 'Category'} ])
-const companyEventStatusTypes = ref([])
-const eventStatusTypes = ref([])
+
 const eventHeaders = ref([
   {text: 'Status Type', value: 'statusType', show: true},
   {text: 'Category', value: 'category', show: true},
   {text: '', value: 'icons', show: false, width: '100px'},
+  {text: 'Editable in Schedule', value: 'scheduleEditable', show: true}
+
 ])
 const eventStatusTypeToDelete = ref(null)
-const attachmentTypeToDelete = ref(null)
 const positions = ref([])
 const positionsLoading = ref(false)
 const hiddenPositionsChanged = ref(false)
 const eventLoading = ref(false)
-
-const eventId = computed(() => {
-  return route.params.id
-})
-const userCanAdd = computed(() => {
-  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
-})
-const userCanEdit = computed(() => {
-  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
-})
-
-const eventStatusTypeToDeleteName = computed(() => {
-  return eventStatusTypeToDelete.value ? eventStatusTypeToDelete.value.eventStatusType : ''
-})
-const attachmentTypeToDeleteType = computed(() => {
-  return attachmentTypeToDelete.value ? attachmentTypeToDelete.value.attachmentType : ''
-})
 
 onMounted (() => {
   getEvent()
   getPositions()
 })
 const getEvent = async  () => {
-  appStore.loading = true
-  try {
-    eventLoading.value = true;
-    const {data} = await getRequest(`/event/${eventId.value}`)
-    event.value = data
-    appStore.loading = false
-    eventLoading.value = false;
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+      store.commit(AppMutations.SET_LOADING, true)
+      try {
+        eventLoading.value = true;
+        const {data} = await getRequest(`/event/${eventId.value}`)
+        event.value = data
+        store.commit(AppMutations.SET_LOADING, false)
+        eventLoading.value = false;
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'Error Retrieving Data')
 
-    appStore.loading = false
-  }
-}
+        store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
 const filterAssignedEventStatusTypes = computed(() => {
   return orderBy(event.value?.companyEventStatusTypes?.filter(u => {
     return !u.archived
   }), [f => f.eventStatusType])
 })
 const assignStatusTypeToEvent = async  () => {
-  appStore.loading = true
+  store.commit(AppMutations.SET_LOADING, true)
   try {
     newType.value.eventId = route.params.id
     const {data} = await postRequest(`/event/status/assignCompanyStatus/${newEventStatusTypeId.value}/toEvent/${eventId.value}`)
@@ -205,14 +183,27 @@ const assignStatusTypeToEvent = async  () => {
     newEventStatusTypeId.value = null
     snackbar('SUCCESS', 'Status Type Added')
 
-    appStore.loading = false
+    store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Adding Status Type')
 
-    appStore.loading = false
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
+
+const saveEditableInSchedule = async (item) => {
+      store.commit(AppMutations.SET_LOADING, true)
+      try {
+       await postRequest(`/event/status/updateEditableInSchedule/${item.companyEventStatusTypeId}/forEvent/${parseInt(eventId.value)}?editableInSchedule=${item.editableInSchedule}`)
+        snackbar('SUCCESS', 'Editable in Schedule Updated')
+        store.commit(AppMutations.SET_LOADING, false)
+      }catch (e){
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'Error Updating Editable in Schedule')
+        store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
 const getCompanyEventStatusTypes = async () => {
   if(addNewEventStatusType.value) {
     companyStatusesLoading.value = true
@@ -229,23 +220,7 @@ const getCompanyEventStatusTypes = async () => {
   }
 
 }
-const deleteStatusTypeFromEvent = async  () => {
-  const item = eventStatusTypeToDelete.value
-  appStore.loading = true
-  try {
-    item.archived = true
-    await deleteRequest(`/event/${eventId.value}/companyStatus/${item.id}`)
-    snackbar('SUCCESS', 'Event Status Type Deleted')
 
-    appStore.loading = false
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Event Status Type')
-
-    appStore.loading = false
-  }
-  eventStatusTypeToDelete.value = null
-}
 const selectAllHidden = () => {
   return event.value.hiddenWhiteListedPositions?.length === positions.value?.length
 }
@@ -261,17 +236,6 @@ const icon = () => {
   }
   return 'check_box_outline_blank'
 }
-const toggleSelectAllPositionsOwner = () => {
-  vueInstance.$nextTick(() => {
-    if (selectAllHidden()) {
-      event.value.hiddenWhiteListedPositions = []
-      hiddenPositionsChanged.value = true
-    } else {
-      event.value.hiddenWhiteListedPositions = cloneDeep(positions.value)
-      hiddenPositionsChanged.value = true
-    }
-  })
-}
 const getPositions = async () => {
   if(positions.value?.length === 0) {
     try {
@@ -279,17 +243,17 @@ const getPositions = async () => {
       const {data, status} = await getRequest(`/position/withParent`)
       positions.value = data
       positionsLoading.value = false
-      handleHidingGlobalLoader(status)
+      handleHidingGlobalLoader(vueInstance, status)
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Retrieving Positions')
-      appStore.loading = false
+      store.commit(AppMutations.SET_LOADING, false)
     }
   }
 }
 const saveHiddenAndWhiteList = async () => {
-  appStore.loading = true
+  store.commit(AppMutations.SET_LOADING, true)
   try {
     const {status} = await putRequest(`/event/saveHiddenAndWhiteList?positionsChanged=${event.value.hiddenPositionsChanged ?? false}`, event.value)
     hiddenPositionsChanged.value = false
@@ -297,11 +261,11 @@ const saveHiddenAndWhiteList = async () => {
       event.value.hiddenWhiteListedPositions = []
     }
     snackbar('SUCCESS', 'Saved Successfully')
-    handleHidingGlobalLoader(status)
+    handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Saving Event Access Control')
-    appStore.loading = false
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
 const hiddenSelectedEventListener = (e) => {

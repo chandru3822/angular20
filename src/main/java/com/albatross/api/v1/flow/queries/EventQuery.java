@@ -152,6 +152,7 @@ public class EventQuery {
                                         ecest.event_id as "eventId",
                                         ecest.company_event_status_type_id as "companyEventStatusTypeId",
                                         ecest.archived,
+                                        ecest.editable_in_schedule as "editableInSchedule",
                                         e2.event_name as "eventName",
                                         cest.event_status_type as "eventStatusType",
                                         cest.event_status_type_id as "eventStatusTypeId",
@@ -670,6 +671,14 @@ public class EventQuery {
       insert into flow.event_company_event_status_type(event_id, company_event_status_type_id, created_by_id)
         values (:eventId, :companyEventStatusTypeId, :createdById)
     """;
+
+  public final static String updateEditableInScheduleForStatusType = """
+          update flow.event_company_event_status_type
+          set editable_in_schedule = :editableInSchedule,
+        modified_by_id = :currentUserId,
+        date_modified = now()
+    where event_id = :eventId and company_event_status_type_id = :companyEventStatusTypeId
+          """;
 
   //language=PostgreSQL
   public final static String getEventCompanyEventStatusType = """

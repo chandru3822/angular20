@@ -12,6 +12,7 @@
          :href="props.href"
          :large="props.size === 'large'"
          :small="props.size === 'small'"
+         :x-small="size === 'x-small'"
          :class="['text-none',
                   props.customClasses]"
          :to="props.to"

@@ -328,6 +328,8 @@ public class ScheduleQuery {
            e.event_name,
            ppse.company_event_status_type_id,
            cest.event_status_type_id,
+           cest.event_status_type,
+           ecest.editable_in_schedule as "editableInSchedule",
            sl.id as system_list_id,
            array_to_json(cf.system_list_option_ids) as system_list_option_ids,
            pps.id as project_process_step_id,
@@ -370,6 +372,7 @@ public class ScheduleQuery {
            inner join flow.state s on s.id = cs.state_id
            inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
            inner join flow.event e on pse.event_id = e.id
+           inner join flow.event_company_event_status_type ecest on ecest.company_event_status_type_id = cest.id and ecest.event_id = e.id
            inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
            inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
            inner join flow.system_list sl on sl.id = csl.system_list_id

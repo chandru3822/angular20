@@ -1,4 +1,5 @@
-const { VITE_BASE_API, VITE_ENV, VITE_MAPBOX_ACCESS_TOKEN, VITE_MAPBOX_STYLE} = import.meta.env
+const { VITE_BASE_API, VITE_ENV, VITE_MAPBOX_ACCESS_TOKEN,
+    VITE_MAPBOX_STYLE, VITE_FULL_CALENDAR_LICENSE_KEY } = import.meta.env
 
 let constants = {}
 
@@ -127,6 +128,7 @@ constants.NAME_REQUIRED_RULES = [
   v => /^[-.&//a-zA-Z0-9\s]+$/.test(v) || "Cannot contain special characters"
 ]
 
+constants.FULL_CALENDAR_LICENSE_KEY=VITE_FULL_CALENDAR_LICENSE_KEY
 
 
 constants.BASIC_REQUIRED_RULE = [

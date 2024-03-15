@@ -23,7 +23,7 @@ public class ScheduleEvent {
   private String resourceName, groupName, contactFirstName, contactLastName, contactFullName, projectName, processStepName,
       state, processStepStatusType, startFieldName, endFieldName, resourceFieldName,
       street1, city, stateAbbreviation, postalCode, phone, mobile, eventName, eventStatusType, companyEventStatusType;
-  private Boolean archived, startFieldReadOnly, endFieldReadOnly, resourceFieldReadOnly, forceSave;
+  private Boolean archived, startFieldReadOnly, endFieldReadOnly, resourceFieldReadOnly, forceSave, editableInSchedule;
 
   private Double latitude, longitude;
 

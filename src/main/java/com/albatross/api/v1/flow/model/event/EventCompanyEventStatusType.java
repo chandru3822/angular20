@@ -13,6 +13,6 @@ public class EventCompanyEventStatusType {
 
   private Long id, companyId, eventId, companyEventStatusTypeId, eventStatusTypeId, createdById, modifiedById;
   private String eventStatusType, rootEventStatusType, eventName;
-  private Boolean archived;
+  private Boolean archived, editableInSchedule;
 }
 
