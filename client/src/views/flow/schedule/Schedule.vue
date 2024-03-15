@@ -72,21 +72,25 @@
   import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
   import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+
+  const appStore = useAppStore()
+  const route = useRoute()
+  const router = useRouter()
+  const userStore = useUserStore()
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const router = vueInstance.$router
-  const route = vueInstance.$route
   const vuetify = vueInstance.$vuetify
 
   const snackbar = ref({})
   const saveInvalid = ref(true)
-  const timezone = ref(null)
   const startTime = ref(null)
   const endTime = ref(null)
   const mapResources = ref([])
   const projectMapMarkers = ref([])
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
   const state = ref({})
   const mapZoom = ref(null)
   const latitude = ref(null)
@@ -118,6 +122,13 @@
   })
   const showMap = computed(() => {
     return store.state.schedule.showMap
+  })
+
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
+  })
+  const timezone = computed(() => {
+    return store.state.schedule.timezone?.value === null ? userstore.details.timezone : store.state.user.details.timezone
   })
 
   watch(selectedProject, () => {

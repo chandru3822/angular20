@@ -7,7 +7,7 @@
 *@description
 *
 */
-import {getCurrentInstance, ref, watch} from "vue";
+import {getCurrentInstance, computed, ref, watch} from "vue";
 import {AppMutations} from "@/stores/AppStore.js";
 import {handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
@@ -16,7 +16,7 @@ import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/event
 import {ScheduleMutations} from "@/stores/ScheduleStore.js";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute, useRouter, computed} from "vue-router/composables";
+import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const appStore = useAppStore()
