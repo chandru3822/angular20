@@ -9,10 +9,11 @@
 */
 import {getCurrentInstance} from "vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import { useRouter} from "vue-router/composables";
 
+const router = useRouter()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const router = vueInstance.$router
 
 const props = defineProps({
   marker:Object,

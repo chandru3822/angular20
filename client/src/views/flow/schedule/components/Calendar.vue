@@ -255,18 +255,24 @@ import {AppMutations} from '@/stores/AppStore'
 
 import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar, getEventColorClass} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "../../../../components/ConfirmationDialog.vue";
-import {UserActions} from "@/stores/UserStore";
 import FullCalendar from "@fullcalendar/vue";
 import momentTimezonePlugin from "@fullcalendar/moment-timezone";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
 import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
 import {computed, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue";
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const refs = vueInstance.$refs
 const filters = vueInstance.$filters
@@ -282,6 +288,9 @@ const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
       preselectedEvent: {type:Object, required: false}
     })
 
+const timezone = computed(() => {
+  return  userStore.timezone
+})
 
 const calendarOptions = ref({
   plugins: [
@@ -320,7 +329,7 @@ const calendarOptions = ref({
     weekday: 'long'
   },
   height: '100%',
-  timeZone: store.state.schedule.timezone.value || {},
+  timeZone: timezone.value || {},
 
   customButtons: {
     customToday: {
@@ -333,7 +342,6 @@ const calendarOptions = ref({
     },
   }
 })
-const snackbar = ref({})
 const calendarLoading = ref(false)
     const includeCancelled = ref(false)
     const calendarInitialRender = ref(true)
@@ -373,7 +381,6 @@ const calendarLoading = ref(false)
     const checkedResources =  ref([])
     const daySelector =  ref(false)
     const dayOptions =  ref([])
-const timezone =  ref(store.state.schedule.timezone.value)
 const timezones = ref([
   { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
   { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
@@ -383,7 +390,6 @@ const timezones = ref([
   { friendlyValue: 'US/Eastern', value: 'America/New_York'},
   { friendlyValue: 'US/Mountain', value: 'America/Denver'}
 ])
-
 
 //states
 const sortedStates = computed(() => {
@@ -481,14 +487,10 @@ const isMobile = computed(() => {
         filterOrgsAndUsers()
       }
     })
-    watch(() => store.state.schedule.timezone.value, (value) => {
+    watch(() => timezone, (value) => {
         //when the schedule timezone value changes, update the calendar plugin's timezone
         let calendarApi = refs.eventCalendar.getApi()
-        calendarApi.setOption('timeZone', store.state.schedule.timezone.value)
-      })
-      watch(() => store.state.user.details.timezone, () => {
-        //when the app timezone changes, update the schedule timezone to match
-        timezone.value = store.state.user.details.timezone
+        calendarApi.setOption('timeZone', timezone.value)
       })
       watch(timezone, () => {
         //when the value of the timezone changes (either via the time zone dropdown selector or a change in the user store timezone value),
@@ -619,7 +621,7 @@ const isMobile = computed(() => {
         return false
       }
       const getSchedulingOrgs = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
             params: {
@@ -641,13 +643,12 @@ const isMobile = computed(() => {
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Orgs')
-          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Orgs')
+          appStore.loading = false
         }
       }
       const fetchSchedulingOrgTypes = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getSchedulingOrgTypes()
           orgTypes.value = data
@@ -663,13 +664,12 @@ const isMobile = computed(() => {
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Org Types')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Org Types')
+          appStore.loading = false
         }
       }
       const getPositions = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/position/schedulable`, null, [])
           positions.value = data
@@ -683,13 +683,12 @@ const isMobile = computed(() => {
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Positions')
-          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Positions')
+          appStore.loading = false
         }
       }
       const getSchedulingUsers = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequestWithParams(`/user/getSchedulingUsers`, {
             params: {
@@ -711,9 +710,8 @@ const isMobile = computed(() => {
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Users')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Users')
+          appStore.loading = false
         }
       }
       const limiter = () => {
@@ -913,9 +911,8 @@ const isMobile = computed(() => {
 
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Availability')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Availability')
+          appStore.loading = false
         }
       }
       const goGetEventsNow = async (info, successCallback, failureCallback) => {
@@ -958,8 +955,7 @@ const isMobile = computed(() => {
             calendarLoading.value = false
           } catch (e) {
             console.error('*** ERROR ***', e)
-            snackbar.value = getSnackbar('ERROR', 'Error Retrieving Events')
-            store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+            snackbar('ERROR', 'Error Retrieving Events')
             failureCallback(e)
             calendarLoading.value = false
           } finally {

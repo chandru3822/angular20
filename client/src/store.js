@@ -5,7 +5,7 @@ import ProposalStore, { ProposalMutations } from '@/views/blueraven/settings/pro
 import { createPinia, PiniaVuePlugin } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import {ScheduleStore} from "@/stores/ScheduleStore.js";
+import { ScheduleStore } from "@/stores/ScheduleStore";
 
 Vue.use(PiniaVuePlugin)
 export const pinia = createPinia()

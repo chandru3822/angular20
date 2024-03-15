@@ -15,10 +15,17 @@ import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/eventStatusTypeService.js";
 import {ScheduleMutations} from "@/stores/ScheduleStore.js";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter, computed} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const router = vueInstance.$router
+const snackbar = vueInstance.$snackbar
 
 const emit = defineEmits(['toggleProjectMapPin'])
 
@@ -28,13 +35,18 @@ const props = defineProps({
   resourceFromCalendar:Object,
 })
 const show = ref(true)
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
 const fieldsSaving = ref(false)
 const conflictingEvents = ref()
 const saveInvalid = ref(true)
 const confirmUnschedule = ref(false)
 const cancelledCompanyEventStatuses = ref()
-const timezoneFriendly = ref(store.state.schedule.timezone.value)
+
+const userCanEdit = computed(() => {
+  return  userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
+})
+const timezoneFriendly = computed(() => {
+  return  userStore.timezone?.value
+})
 
 watch(() => props.resourceFromCalendar, () => {
   if(props.resourceFromCalendar.id) {
@@ -46,11 +58,6 @@ watch(() => props.resourceFromCalendar, () => {
   }
 })
 
-watch(() => store.state.schedule.timezone.value, (value) => {
-  console.log('hit the watcher')
-  timezoneFriendly.value = value
-})
-
 const setSelectedResourceInStore = (resourceId) => {
   if(resourceId){
     store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, resourceId)
@@ -59,8 +66,7 @@ const setSelectedResourceInStore = (resourceId) => {
   }
   else {
     store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, null)
-    let snackbar = createSnackbar('Resource unassigned')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    snackbar(createSnackbar('Resource unassigned'))
   }
 }
 
@@ -93,7 +99,7 @@ const eventIsSameDay = () => {
 }
 
 const getResources = async(item) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     item.resources = []
     let params = {
@@ -107,9 +113,8 @@ const getResources = async(item) => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    let snackbar = getSnackbar('ERROR', 'Error Retrieving Resources')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Retrieving Resources')
+    appStore.loading = false
   }
 }
 
@@ -133,8 +138,7 @@ const getCancelledCompanyEventStatuses = async () => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    let snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    snackbar('ERROR', 'Error fetching process step statuses')
   }
 }
 
@@ -158,7 +162,7 @@ const scheduleProject = async(forceSave) => {
   props.project.resourceId = props.project.resource.id
   props.project.resourceName = props.project.resource.name
   props.project.forceSave = forceSave
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await postRequest(`/schedule/saveEvent`, props.project)
     //if saved successfully then increase the "saveVersion" so they can make a 2nd change too
@@ -167,22 +171,20 @@ const scheduleProject = async(forceSave) => {
     // this.$refs.calendar.getEvents(false, true) todo: figure out what this should change to
     handleHidingGlobalLoader(vueInstance, status)
     fieldsSaving.value = false
-    let snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    snackbar('SUCCESS', 'Successfully Scheduled Project')
   } catch (e) {
     if(e.status === 409){
       conflictingEvents.value = e.data;
       fieldsSaving.value = false
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     else {
       console.error('*** ERROR ***', e)
       let saveMismatch = e.data?.message === 'Save Version Mismatch'
       let msg = saveMismatch ? 'Error Scheduling Project. This event has been update by another user. Please refresh to see the latest data.' : 'Error Scheduling Project'
-      let snackbar = getSnackbar('ERROR', msg)
+      snackbar('ERROR', msg)
       fieldsSaving.value = false
-      store.commit(AppMutations.SHOW_SNACK, snackbar)
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
@@ -192,13 +194,11 @@ const cancelProjectProcessStepEvent = async() => {
     const {status} = await postRequest(`/projectProcessStep/${props.project.projectProcessStepId}/event/${props.project.projectProcessStepEventId}/status`, props.project.cancelledCompanyStatusType)
     props.project.eventStatusTypeId = props.project?.cancelledCompanyStatusType?.id
     handleHidingGlobalLoader(vueInstance, status)
-    let snackbar = getSnackbar('SUCCESS', 'Successfully Unscheduled Event')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    snackbar('SUCCESS', 'Successfully Unscheduled Event')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    let snackbar = getSnackbar('ERROR', 'Error Unscheduling Event')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Unscheduling Event')
+    appStore.loading = false
   }
 }
 

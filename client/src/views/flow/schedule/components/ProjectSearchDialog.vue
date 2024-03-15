@@ -20,6 +20,9 @@ import {getStatusTypes} from "@/services/processStepStatusTypeService.js";
 import ProjectSearchResultCard from "@/views/flow/schedule/components/ProjectSearchResultCard.vue";
 import SpinnerInline from "@/components/SpinnerInline.vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const props = defineProps({
   states: {
@@ -33,9 +36,13 @@ const props = defineProps({
 
 const emit = defineEmits(['close-dialog', 'zoom-map'])
 
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const router = vueInstance.$router
+const snackbar = vueInstance.$snackbar
 
 const state =ref({}),
     eventStatusTypes= ref([]),
@@ -60,7 +67,6 @@ const state =ref({}),
       'items-per-page-options': [25, 50, 100],
       'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
     }),
-    snackbar=ref({}),
     listLoading = ref(false),
     // initialLoad = ref(true)
     _timerId = ref(),
@@ -92,22 +98,20 @@ const fetchEventTypes = async() => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Event Types')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Retrieving Event Types')
+    appStore.loading = false
   }
 }
 const fetchEventStatusTypes = async() => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getEventStatusTypes()
     eventStatusTypes.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
   }
 }
 const fetchStatusTypes = async() => {
@@ -123,9 +127,8 @@ const fetchStatusTypes = async() => {
     processStepStatusTypes.value = data?.filter(d => d.id !== 3)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Status Types')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Retrieving Status Types')
+    appStore.loading = false
   }
 }
 const searchForProjects = async(search) => {
@@ -137,8 +140,7 @@ const searchForProjects = async(search) => {
     searchProjects.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Searching Projects')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+    snackbar('ERROR', 'Error Searching Projects')
   }
 }
 const goGoGadgetMapSearch = () =>{
@@ -195,8 +197,7 @@ const getProjects = async(resetQuery) => {
       // initialLoad.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar.value = getSnackbar('ERROR', 'Error Retrieving Projects')
-      store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+      snackbar('ERROR', 'Error Retrieving Projects')
       listLoading.value = false
     }
   } else {
@@ -244,8 +245,7 @@ const getProjectsSearchedFor = async(search) => {
     listLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Loading Project Details')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+    snackbar('ERROR', 'Error Loading Project Details')
     listLoading.value = false
   }
 }

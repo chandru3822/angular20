@@ -108,17 +108,23 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import '@7oaksgroup/v-mapbox/dist/v-mapbox.css'
 import {MglMap, MglMarker, MglNavigationControl, MglPopup} from '@7oaksgroup/v-mapbox'
 import constants from '@/helpers/constants'
-import {getRequestWithParams, getSnackbar, postRequest} from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
+import {getRequestWithParams, postRequest} from "@/helpers/helpers";
 import moment from 'moment'
 import debounce from "lodash.debounce";
 import {getCurrentInstance, ref, watch} from "vue";
-import MapPopUp from "@/views/flow/schedule/components/MapPopUp.vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import MapPopUp from "@/views/flow/schedule/components/MapPopUp.vue"
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const router = vueInstance.$router
 
 const props = defineProps({
   latitude: {type: Number},
@@ -136,7 +142,6 @@ watch( () => props.latitude, () => {
   changeMapLocation()
 })
 
-const snackbar = ref({})
 const menuOpen = ref(false)
 const loadingDriveTime = ref(false)
 const markerCount = ref(0) //this is used to reset the key when the color of a marker changes so it gets redraw
@@ -250,8 +255,8 @@ const geoCode = async(address) => {
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
-      let snackbar = getSnackbar('ERROR', 'Error Getting Address Suggestions')
-      store.commit(AppMutations.SHOW_SNACK, snackbar)
+      snackbar('ERROR', 'Error Getting Address Suggestions')
+      
     }
   }
 }
@@ -366,8 +371,8 @@ const getLatLong = async(address) => {
     return await getRequestWithParams(`/mapbox/getLatLong`, {params})
   } catch (e) {
     console.error('*** ERROR ***', e)
-    let snackbar = getSnackbar('ERROR', 'Error Getting Address Lat & Long')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    snackbar('ERROR', 'Error Getting Address Lat & Long')
+    
   }
 }
 const loadDriveTime = async() => {
@@ -401,8 +406,8 @@ const getDirections = async(firstPair, secondPair) => {
     loadingDriveTime.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    let snackbar = getSnackbar('ERROR', 'Error Getting Drive Time')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    snackbar('ERROR', 'Error Getting Drive Time')
+    
   }
 }
 const changeMapLocation = async() => {
@@ -416,8 +421,8 @@ const changeMapLocation = async() => {
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    let snackbar = getSnackbar('ERROR', 'Error jumping to address')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    snackbar('ERROR', 'Error jumping to address')
+    
   }
 }
 const onMapLoad = async(event) => {
