@@ -20,7 +20,6 @@ import {getStatusTypes} from "@/services/processStepStatusTypeService.js";
 import ProjectSearchResultCard from "@/views/flow/schedule/components/ProjectSearchResultCard.vue";
 import SpinnerInline from "@/components/SpinnerInline.vue";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-import AlbatrossButtonSecondary from "@/components/customVuetify/AlbatrossButtonSecondary.vue";
 
 const props = defineProps({
   states: {
@@ -439,7 +438,7 @@ onMounted(() => {
       <v-chip x-small color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">Process Step: {{selectedProcessStepStatusType.processStepStatusType}}</v-chip>
     </div>
     <v-card-actions class="px-0 pb-0">
-      <AlbatrossButtonSecondary @click="clear" text small class="text-capitalize flex-grow-0 body-medium">Reset</AlbatrossButtonSecondary>
+      <AlbatrossButton @click="clear" variant="text" small class="text-capitalize flex-grow-0 body-medium">Reset</AlbatrossButton>
       <AlbatrossButton v-if="!showSearchResults"
           variant="outlined"
           small
