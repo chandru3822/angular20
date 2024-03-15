@@ -21,12 +21,12 @@
             <v-row class="mx-3" cols="12">
               <!--Start Time White Listed Fields-->
               <v-col cols="12" md="5" class="py-0">
-                <v-text-field
+                <a-text-field
                   label="Start Time"
                   readonly disabled
                   single-line
                   hide-details
-                ></v-text-field>
+                ></a-text-field>
                 <v-row class="flex-display">
                   <multi-select-group
                     v-if="!eventLoading"
@@ -69,12 +69,12 @@
               <v-col style="height: 0" cols="0" md="1"></v-col>
               <!--End Time White Listed Fields-->
               <v-col cols="12" md="5" class="py-0">
-                <v-text-field
+                <a-text-field
                   label="End Time"
                   readonly disabled
                   single-line
                   hide-details
-                ></v-text-field>
+                ></a-text-field>
                 <v-row class="flex-display">
                   <multi-select-group
                     v-if="!eventLoading"
@@ -186,11 +186,11 @@
         <v-card v-if="createNew" text class="text-left one-hunned pa-3 square-card add-new" flat
                 color="primary lighten-9">
           <div>
-            <v-text-field
+            <a-text-field
               label="Group Name"
               tabindex=1
               v-model="newGroup.groupName"
-            ></v-text-field>
+            ></a-text-field>
           </div>
           <a-btn
             color="primary"
@@ -238,14 +238,14 @@
                   </td>
                   <td class="text-left">
                     <div v-if="userCanEdit">
-                      <v-text-field text
+                      <a-text-field
                                     v-if="item.edit"
                                     v-model="item.groupName">
                         <template slot="append-outer">
                           <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
                           <v-icon @click="item.edit = false">clear</v-icon>
                         </template>
-                      </v-text-field>
+                      </a-text-field>
                       <a style="text-decoration: underline;" v-else @click="item.edit = true">
                         {{ item.groupName }}
                       </a>

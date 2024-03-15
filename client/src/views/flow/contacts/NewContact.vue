@@ -42,32 +42,32 @@
         <v-container>
           <v-row>
             <v-col cols="12" sm="6">
-              <v-text-field text
+              <a-text-field
                             class="body-large"
                             label="First Name"
                             id="qa-first-name-field"
                             :rules="nameRequiredRules"
-                            v-model="contact.firstName"></v-text-field>
-              <v-text-field text
+                            v-model="contact.firstName"></a-text-field>
+              <a-text-field
                             class="body-large"
                             label="Last Name"
                             id="qa-last-name-field"
                             :rules="nameRequiredRules"
-                            v-model="contact.lastName"></v-text-field>
-              <v-text-field text
+                            v-model="contact.lastName"></a-text-field>
+              <a-text-field
                             class="body-large"
                             label="Address"
                             id="qa-address-field"
-                            maxlength="35"
+                            :maxlength="35"
                             counter
                             :rules="addressRules"
-                            v-model="contact.street1"></v-text-field>
-              <v-text-field text
+                            v-model="contact.street1"></a-text-field>
+              <a-text-field
                             class="body-large"
                             label="City"
                             id="qa-city-field"
                             :rules="cityRules"
-                            v-model="contact.city"></v-text-field>
+                            v-model="contact.city"></a-text-field>
               <v-select attach v-model="contact.companyStateId"
                         class="body-large"
                         :items="states"
@@ -78,33 +78,33 @@
               ></v-select>
             </v-col>
             <v-col cols="12" sm="6">
-              <v-text-field text
+              <a-text-field
                             class="body-large"
                             label="Phone"
                             :rules="contactPhoneRule"
                             id="qa-phone-field"
-                            v-model="contact.phone"></v-text-field>
-              <v-text-field text
+                            v-model="contact.phone"></a-text-field>
+              <a-text-field
                             class="body-large"
                             label="Mobile"
                             :rules="contactPhoneRule"
                             id="qa-mobile-field"
-                            v-model="contact.mobile"></v-text-field>
-              <v-text-field text
+                            v-model="contact.mobile"></a-text-field>
+              <a-text-field
                             class="body-large"
                             label="E-Mail"
                             id="qa-email-field"
                             :rules="emailRules"
-                            v-model="contact.email"></v-text-field>
-              <v-text-field text
+                            v-model="contact.email"></a-text-field>
+              <a-text-field
                             class="body-large"
                             label="Zip Code"
                             id="qa-zip-field"
                             counter
-                            maxlength="10"
-                            @keypress="isNumberOrHyphen"
+                            :maxlength="10"
+                            @keydown="isNumberOrHyphen"
                             :rules="postalCodeRules"
-                            v-model="contact.postalCode"></v-text-field>
+                            v-model="contact.postalCode"></a-text-field>
               <v-select attach v-model="contact.companyCountryId"
                         class="body-large"
                         :items="countries"

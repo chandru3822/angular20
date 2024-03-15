@@ -4,12 +4,12 @@
     <v-app-bar color="white" tabs flat class="elevation-1 call-group-bar">
       <v-toolbar-title class="pt-2">
         <div v-if="editGroup">
-          <v-text-field text class="d-inline-block mt-4 edit-text"
+          <a-text-field  class="d-inline-block mt-4 edit-text"
                         type="text"
                         label="Name"
                         tabindex=1
                         v-model="group.callGroupName">
-          </v-text-field>
+          </a-text-field>
           <a-btn variant="text" color="primary" @click="saveGroupInfo()" prepend-icon="save"/>
         </div>
         <div v-else style="margin-top: 30px">

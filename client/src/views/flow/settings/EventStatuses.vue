@@ -19,8 +19,8 @@
         </v-toolbar>
         <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-9">
           <h3>Add Event Status</h3>
-          <v-text-field label="Event Status" v-model="newType.eventStatusType">
-          </v-text-field>
+          <a-text-field label="Event Status" v-model="newType.eventStatusType">
+          </a-text-field>
           <v-autocomplete single-line
                           :items="rootStatusTypes"
                           v-model="newType.eventStatusTypeId"
@@ -37,13 +37,13 @@
         </v-card>
         <v-card class="square-card">
           <v-card-title class="pt-0">
-            <v-text-field
+            <a-text-field
               v-model="search"
               prepend-inner-icon="search"
               label="Search"
               single-line
               hide-details
-            ></v-text-field>
+            ></a-text-field>
           </v-card-title>
           <v-data-table
             :headers="headers"
@@ -62,11 +62,11 @@
               <td :colspan="headers.length" class="pa-4 text-left"
                   :class="{'shaded-row': statusTypes.indexOf(item) % 2}">
                 <h3 class="mb-3">Edit Status Type</h3>
-                <v-text-field v-model="item.eventStatusType"
+                <a-text-field v-model="item.eventStatusType"
                               label="Status Type"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
-                ></v-text-field>
+                ></a-text-field>
                 <v-autocomplete
                   :items="rootStatusTypes"
                   v-model="item.eventStatusTypeId"

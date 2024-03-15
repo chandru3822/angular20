@@ -44,13 +44,13 @@
         </v-card>
         <v-divider v-if="addScheduler"></v-divider>
         <v-card-title class="pt-0">
-          <v-text-field
+          <a-text-field
               v-model="schedulerSearch"
               prepend-inner-icon="search"
               label="Search"
               single-line
               hide-details
-          ></v-text-field>
+          ></a-text-field>
         </v-card-title>
         <v-divider></v-divider>
         <v-data-table id="round-robin-schedule-by-table"

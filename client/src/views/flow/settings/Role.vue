@@ -20,11 +20,11 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat class="mt-2 pa-5">
-          <v-text-field v-model="role.roleName"
+          <a-text-field v-model="role.roleName"
                         placeholder="Enter a value"
                         required
                         label="Role Name">
-          </v-text-field>
+          </a-text-field>
           <h3>Access Control</h3>
           <v-data-table
               :headers="headers"

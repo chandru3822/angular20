@@ -9,7 +9,7 @@
       min-width="290px"
   >
     <template #activator="{on}">
-      <v-text-field
+      <a-text-field
           :class="[customClass, {'no-icon-click': !allowNow}]"
           :value="value | formatDate(type, format, type === 'time' ? 'HH:mm' : null)"
           :label="label"
@@ -28,8 +28,8 @@
           @click:append="setNow"
           @click:prepend="setNow"
           :hide-details="hideDetails"
-          :dense="dense"
-          :outlined="outlined"
+          :density="dense ? 'compact' : 'default'"
+          :variant="outlined ? 'outlined' : variant || 'plain'"
       />
     </template>
     <v-date-picker
@@ -114,6 +114,7 @@ const props = defineProps({
   hidePrependIcon: Boolean,
   hideDetails: Boolean,
   dense: String,
+  variant: String, //eventually this should only be using variant but i am only working on v-text-fields for now
   outlined: String,
   customClass: String,
   //if this is empty it uses the company minute increment setting, if that is null then it shows all minutes

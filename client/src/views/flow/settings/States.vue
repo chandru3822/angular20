@@ -54,11 +54,11 @@
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': filterStates.indexOf(item) % 2}">
               <h3>Edit State</h3>
               <div class="mb-3">
-                <v-text-field text v-model="item.mapLatitude"
+                <a-text-field  v-model="item.mapLatitude"
                               label="Map Latitude" />
-                <v-text-field text v-model="item.mapLongitude"
+                <a-text-field  v-model="item.mapLongitude"
                               label="Map Longitude" />
-                <v-text-field text v-model="item.mapZoom"
+                <a-text-field  v-model="item.mapZoom"
                               label="Map Zoom" />
                 <label>Active:</label>
                 <input class="ml-3" type="checkbox" v-model="item.active">

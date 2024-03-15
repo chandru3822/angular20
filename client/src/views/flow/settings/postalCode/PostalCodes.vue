@@ -19,20 +19,20 @@
         <v-container>
           <v-card color="transparent" flat v-if="addNew">
             <v-form ref="postalCodeForm">
-              <v-text-field
+              <a-text-field
                 label="Postal Code"
                 tabindex=1
                 counter
-                maxlength="10"
-                @keypress="isNumberOrHyphen"
+                :maxlength="10"
+                @keydown="isNumberOrHyphen"
                 :rules="postalCodeRules"
                 v-model="newPostalCode.postalCode"
-              ></v-text-field>
-              <v-text-field
+              ></a-text-field>
+              <a-text-field
                 label="Place Name"
                 tabindex=1
                 v-model="newPostalCode.placeName"
-              ></v-text-field>
+              ></a-text-field>
               <v-autocomplete
                 :items="states"
                 item-value="id"
@@ -54,14 +54,14 @@
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
             <v-card-title class="pt-0">
-              <v-text-field
+              <a-text-field
                 v-model="search"
                 clearable
                 prepend-inner-icon="search"
                 label="Search postal codes"
                 single-line
                 hide-details
-              ></v-text-field>
+              ></a-text-field>
             </v-card-title>
             <v-data-table
               :headers="headers"

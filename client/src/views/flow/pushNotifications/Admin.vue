@@ -21,9 +21,9 @@
               small-chips
               deletable-chips
           />
-          <v-text-field
+          <a-text-field
               label="Title"
-              solo
+              variant="solo"
               v-model="title"
               :disabled="!selected?.length"
           />

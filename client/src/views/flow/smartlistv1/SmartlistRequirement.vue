@@ -164,14 +164,14 @@
 
         <!--      if nothing else sticks, then it's a regular text input -->
         <!--      @TODO humes: check for date/time here and give a date picker -->
-        <v-text-field
+        <a-text-field
             v-else-if="newRequirement.operatorTypeId && newRequirement.isCustomValue"
             v-model="newRequirement.requirementValue"
             placeholder="Enter a value"
             label="Value">
-        </v-text-field>
+        </a-text-field>
 
-        <v-text-field
+        <a-text-field
             v-if="newRequirement.dataTypeRequirementId && dataTypeRequirements.find(r => r.id === newRequirement.dataTypeRequirementId).secondaryRequirement"
             v-model="newRequirement.secondaryRequirementValue"
             label="Value"
@@ -370,14 +370,14 @@
 
             <!--      if nothing else sticks, then it's a regular text input -->
             <!--      @TODO humes: check for date/time here and give a date picker -->
-            <v-text-field
+            <a-text-field
                 v-else-if="expandedRequirement.operatorTypeId && expandedRequirement.isCustomValue"
                 v-model="expandedRequirement.requirementValue"
                 placeholder="Enter a value"
                 label="Value">
-            </v-text-field>
+            </a-text-field>
 
-            <v-text-field
+            <a-text-field
                 v-if="shouldShowEditFormValueInput"
                 v-model="expandedRequirement.secondaryRequirementValue"
                 label="Value"

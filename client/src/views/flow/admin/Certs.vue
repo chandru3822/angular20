@@ -21,8 +21,8 @@
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
           <h3>Add</h3>
           <div class="mb-3">
-            <v-text-field text label="Enter name"
-                          v-model="selectedCert.certName"></v-text-field>
+            <a-text-field  label="Enter name"
+                          v-model="selectedCert.certName"></a-text-field>
             <DatetimePickerInput
                 v-model="selectedCert.expirationDate"
                 :timezone="timezone"
@@ -66,8 +66,8 @@
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': certs.indexOf(item) % 2}">
               <h3>Edit Cert</h3>
               <div class="mb-3">
-                <v-text-field text label="Enter name"
-                              v-model="item.certName"></v-text-field>
+                <a-text-field  label="Enter name"
+                              v-model="item.certName"></a-text-field>
                 <DatetimePickerInput
                     v-model="item.expirationDate"
                     :timezone="timezone"
@@ -130,7 +130,6 @@ import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import moment from 'moment'
-import a-btn from '@/components/customVuetify/a-btn'
 
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'

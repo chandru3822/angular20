@@ -9,12 +9,12 @@
         />
         <v-toolbar flat class="app-toolbar">
           <span class="headline-small" v-if="!editName">{{ attachment.attachmentType }}</span>
-          <v-text-field v-else color="primary"
+          <a-text-field v-else color="primary"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         v-model="attachment.attachmentType"
                         hide-details
-                        label="Event Name"></v-text-field>
+                        label="Event Name"></a-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn variant="text" v-if="userCanEdit && !editName" color="primary" class=""

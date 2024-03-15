@@ -41,9 +41,8 @@
             />
           </v-tabs>
           <v-row class="px-2 pt-2 toolbar-row-2 mt-4">
-            <v-text-field
+            <a-text-field
               prepend-inner-icon="search"
-              text
               label="Search by project or owner"
               v-model="searchQuery"
               @input="searchConversations"

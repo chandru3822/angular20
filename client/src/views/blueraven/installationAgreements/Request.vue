@@ -17,16 +17,16 @@
         <v-card-text>
           <v-row>
             <v-col>
-              <v-text-field label="Customer Name"
+              <a-text-field label="Customer Name"
                             v-model="requestItem.customer_name"
                             disabled
-              ></v-text-field>
+              ></a-text-field>
 
               <div style="display: flex;">
-                <v-text-field label="Email Address"
+                <a-text-field label="Email Address"
                               v-model="requestItem.email"
                               :disabled="!editEmail"
-                ></v-text-field>
+                ></a-text-field>
                 <v-icon v-if="!editEmail" small color="primary" class="mr-3" @click="editEmail = !editEmail">
                   edit
                 </v-icon>

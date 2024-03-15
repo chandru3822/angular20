@@ -60,8 +60,8 @@
         </v-toolbar>
         <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-9">
           <h3>Add Project Status</h3>
-          <v-text-field label="Project Status" v-model="newType.projectStatusType">
-          </v-text-field>
+          <a-text-field label="Project Status" v-model="newType.projectStatusType">
+          </a-text-field>
           <v-autocomplete single-line
                           :items="rootStatusTypes"
                           v-model="newType.projectStatusTypeId"

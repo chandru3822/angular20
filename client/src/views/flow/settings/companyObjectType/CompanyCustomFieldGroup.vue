@@ -34,10 +34,10 @@
                   <a-btn variant="text" color="primary" icon size="small" class="handle" v-if="userCanEdit" prepend-icon="drag_handle"/>
                 </td>
                 <td class="text-left group-name-col">
-                  <v-text-field text
+                  <a-text-field
                                 v-if="item.edit"
                                 v-model="item.groupName">
-                  </v-text-field>
+                  </a-text-field>
                   <span v-else>{{ item.groupName }}</span>
                 </td>
                 <td>
@@ -405,14 +405,14 @@
 
                           <div class="flex-display"
                                v-if="objectType.allowMinMax && [4,6].includes(cf.dataTypeId) && !cf.hasListValues">
-                            <v-text-field text
+                            <a-text-field
                                           type="number"
                                           label="Minimum Value"
                                           @change="changedMinMax(cf)"
                                           :disabled="!userCanEdit"
                                           v-model.number="cf.minValue"/>
                             <v-spacer/>
-                            <v-text-field text
+                            <a-text-field
                                           type="number"
                                           label="Maximum Value"
                                           @change="changedMinMax(cf)"

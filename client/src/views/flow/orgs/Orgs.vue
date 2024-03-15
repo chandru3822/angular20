@@ -43,33 +43,33 @@
           <template v-slot:body.prepend>
             <tr>
               <td>
-                <v-text-field dense outlined hide-details
+                <a-text-field density="compact" variant="outlined" hide-details
                               v-model="search.org"
                               @blur="setLocalStorage"
-                              placeholder="Organization"></v-text-field>
+                              placeholder="Organization"></a-text-field>
               </td>
               <td>
-                <v-text-field dense outlined hide-details
+                <a-text-field density="compact" variant="outlined" hide-details
                               v-model="search.type"
                               @blur="setLocalStorage"
-                              placeholder="Type"></v-text-field>
+                              placeholder="Type"></a-text-field>
               </td>
               <td>
-                <v-text-field dense outlined hide-details
+                <a-text-field density="compact" variant="outlined" hide-details
                               v-model="search.parent"
                               @blur="setLocalStorage"
-                              placeholder="Parent"></v-text-field>
+                              placeholder="Parent"></a-text-field>
               </td>
               <td>
-                <v-text-field dense outlined hide-details
+                <a-text-field density="compact" variant="outlined" hide-details
                               v-model="search.stateAbbreviation"
                               @blur="setLocalStorage"
-                              placeholder="State"></v-text-field>
+                              placeholder="State"></a-text-field>
               </td>
               <td>
-                <v-text-field dense outlined hide-details
+                <a-text-field density="compact" variant="outlined" hide-details
                               @blur="setLocalStorage"
-                              v-model="search.active" placeholder="Active"></v-text-field>
+                              v-model="search.active" placeholder="Active"></a-text-field>
               </td>
             </tr>
           </template>

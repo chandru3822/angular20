@@ -14,11 +14,11 @@
         <div class="flex-display pt-3 px-3 mb-4" style="width: 100%">
           <div style="width: 100%">
             <span class="headline-small" v-if="!editName">{{ processStep.processStepName }}</span>
-            <v-text-field v-else color="primary"
+            <a-text-field v-else color="primary"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           v-model="processStep.processStepName"
-                          label="Process Step Name"></v-text-field>
+                          label="Process Step Name"></a-text-field>
 
           </div>
           <div class="text-right" v-if="userCanEdit">

@@ -19,16 +19,16 @@
         <v-divider></v-divider>
         <v-card flat v-if="createNew" class="pa-4">
           <h3>New GL Code</h3>
-          <v-text-field text
+          <a-text-field
                         type="text"
                         label="GL Code"
                         v-model="newGlCode.code">
-          </v-text-field>
-          <v-text-field text
+          </a-text-field>
+          <a-text-field
                         type="text"
                         label="Description"
                         v-model="newGlCode.description">
-          </v-text-field>
+          </a-text-field>
           <a-btn
               color="primary"
               :disabled="!newGlCode.code || !newGlCode.description"
@@ -58,23 +58,23 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">
-                <v-text-field text
+                <a-text-field
                               type="text"
                               v-if="index === editIndex"
                               label="GL Code"
                               v-model="item.code">
-                </v-text-field>
+                </a-text-field>
                 <div v-else>
                   {{ item.code }}
                 </div>
               </td>
               <td class="text-left">
-                <v-text-field text
+                <a-text-field
                               type="text"
                               v-if="index === editIndex"
                               label="Description"
                               v-model="item.description">
-                </v-text-field>
+                </a-text-field>
                 <div v-else>
                   {{ item.description }}
                 </div>

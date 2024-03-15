@@ -14,13 +14,13 @@
           />
         </v-toolbar>
         <v-card flat v-if="addBracket">
-          <v-text-field text
+          <a-text-field
                         label="Number of Users"
                         class="mb-2"
                         type="number"
                         hint="[2, 4, 8, 16, 32, 64, 128]"
                         persistent-hint
-                        v-model.number="newBracket.numberOfUsers"></v-text-field>
+                        v-model.number="newBracket.numberOfUsers"></a-text-field>
           <div class="error-text" v-if="bracketError">{{ bracketErrorMsg }}</div>
           <a-btn
               color="primary"

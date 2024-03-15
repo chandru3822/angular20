@@ -27,13 +27,13 @@
           </template>
 
           <template #item.value="{ item, index }">
-                <v-text-field text
+                <a-text-field
                               style="overflow-wrap: anywhere"
                               type="text"
                               v-if="index === editIndex"
                               label="Value"
                               v-model="item.value">
-                </v-text-field>
+                </a-text-field>
                 <div v-else style="overflow-wrap: anywhere">
                   {{ item.value }}
                 </div>

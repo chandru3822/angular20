@@ -23,14 +23,14 @@
         <v-container>
           <v-row>
             <v-col cols="12" sm="6">
-              <v-text-field text
+              <a-text-field
                             label="First Name"
                             :rules="requiredRules"
-                            v-model="user.firstName"></v-text-field>
-              <v-text-field text
+                            v-model="user.firstName"></a-text-field>
+              <a-text-field
                             label="Last Name"
                             :rules="requiredRules"
-                            v-model="user.lastName"></v-text-field>
+                            v-model="user.lastName"></a-text-field>
             </v-col>
             <v-col cols="12" sm="6">
               <v-select attach v-model="user.userStatusTypeId"
@@ -40,14 +40,14 @@
                         item-text="userStatusType"
                         item-value="id"
               ></v-select>
-              <v-text-field text
+              <a-text-field
                             label="Phone"
                             :rules="userPhoneRule"
-                            v-model="user.phoneNumber"></v-text-field>
-              <v-text-field text
+                            v-model="user.phoneNumber"></a-text-field>
+              <a-text-field
                             label="E-Mail"
                             :rules="emailRules"
-                            v-model="user.email"></v-text-field>
+                            v-model="user.email"></a-text-field>
             </v-col>
           </v-row>
         </v-container>

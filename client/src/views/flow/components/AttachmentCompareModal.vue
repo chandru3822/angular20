@@ -134,7 +134,6 @@
                 :show-field-name="false"
                 :hide-label="true"
                 :field="getFieldValue(a, field)"
-                :filled-style="false"
             />
           </v-col>
         </v-row>

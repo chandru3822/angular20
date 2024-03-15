@@ -10,14 +10,14 @@
             <v-card-text class="login-card-text">
               <h2 class="error--text" v-if="userStore.loginError">{{ userStore.loginError }}</h2>
               <v-form ref="login" v-model="validForm" @submit.prevent="onSubmit()">
-                <v-text-field required color="primary"
+                <a-text-field required color="primary"
                               :rules="requiredRules"
                               v-model="form.email" prepend-icon="person" name="login"
-                              label="Login" type="email"></v-text-field>
-                <v-text-field required color="primary"
+                              label="Login" type="email"></a-text-field>
+                <a-text-field required color="primary"
                               :rules="requiredRules"
                               v-model="form.password" prepend-icon="lock" name="password"
-                              label="Password" id="password" type="password"></v-text-field>
+                              label="Password" id="password" type="password"></a-text-field>
                 <v-card-actions>
                   <router-link :to="'/forgotPassword'" title="Forgot Password">
                     Forgot Password

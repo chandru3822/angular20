@@ -25,11 +25,11 @@
           <v-card v-if="createNew" text class="text-left one-hunned pa-3 square-card add-new" flat
                   color="rowShadeCustom">
             <div>
-              <v-text-field
+              <a-text-field
                 label="Group Name"
                 tabindex=1
                 v-model="newGroup.groupName"
-              ></v-text-field>
+              ></a-text-field>
             </div>
             <a-btn
               color="primary"
@@ -81,14 +81,14 @@
                     <template #item.groupName="{ item, index }" class="text-left" :class="{'mb-4': vuetify.breakpoint.xsOnly && item.edit}">
                       <td :class="{'shaded-row': index % 2 && !isMobile}">
                       <div v-if="userCanEdit" :class="{'shaded-row': index % 2}">
-                        <v-text-field text
+                        <a-text-field
                                       v-if="item.edit"
                                       v-model="item.groupName">
                           <template slot="append-outer">
                             <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
                             <v-icon @click="item.edit = false">clear</v-icon>
                           </template>
-                        </v-text-field>
+                        </a-text-field>
                         <a style="text-decoration: underline;" v-else @click="item.edit = true">
                           {{ item.groupName }}
                         </a>

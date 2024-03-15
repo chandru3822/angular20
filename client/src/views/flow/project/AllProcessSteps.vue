@@ -69,12 +69,12 @@
             </v-col>
 
             <v-col cols="12" class="pt-0" v-else>
-              <v-text-field placeholder="Filter..."
+              <a-text-field placeholder="Filter..."
                             hide-details
-                            outlined
+                            variant="outlined"
                             type="search"
                             class=""
-                            v-model="stepsSearch"></v-text-field>
+                            v-model="stepsSearch"></a-text-field>
 
               <template v-for="step in filteredProcessSteps">
                 <h4 class="text-left work-type-header">{{step.processStepName}}</h4>

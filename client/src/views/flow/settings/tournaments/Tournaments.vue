@@ -24,11 +24,11 @@
         </v-toolbar>
         <v-container>
           <v-card color="transparent" flat v-if="addNew" class="mb-2">
-            <v-text-field
+            <a-text-field
                 label="Tournament Name"
                 tabindex=1
                 v-model="newTournament.tournamentName"
-            ></v-text-field>
+            ></a-text-field>
             <v-autocomplete
               v-model="newTournament.tournamentOwnerTypeId"
               :items="ownerTypes"

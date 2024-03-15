@@ -16,11 +16,11 @@
     <template v-slot:addOrEdit>
       <v-form
           ref="linkForm">
-        <v-text-field v-model="selectedLink.name" required label="Name" filled></v-text-field>
-        <v-text-field v-model="selectedLink.link" required type="url"
-                      :rules="[urlRule]" label="URL" filled></v-text-field>
-        <v-text-field v-model="selectedLink.username" label="Username" filled></v-text-field>
-        <v-text-field v-model="selectedLink.password" label="Password" filled></v-text-field>
+        <a-text-field v-model="selectedLink.name" required label="Name" filled></a-text-field>
+        <a-text-field v-model="selectedLink.link" required type="url"
+                      :rules="[urlRule]" label="URL" filled></a-text-field>
+        <a-text-field v-model="selectedLink.username" label="Username" filled></a-text-field>
+        <a-text-field v-model="selectedLink.password" label="Password" filled></a-text-field>
         <v-textarea label="Notes" auto-grow filled
                     style="margin: 15px 0 -15px 0"
                     v-model="selectedLink.notes">

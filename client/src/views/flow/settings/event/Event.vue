@@ -12,12 +12,12 @@
         ></a-btn>
         <v-toolbar id="event-name-toolbar" flat class="app-toolbar">
           <span class="headline-small" v-if="!editName">{{ event.eventName }}</span>
-          <v-text-field v-else color="primary" class=""
+          <a-text-field v-else color="primary" class=""
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         v-model="event.eventName"
                         hide-details
-                        label="Event Name"></v-text-field>
+                        label="Event Name"></a-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn

@@ -50,13 +50,13 @@
         </v-card>
         <v-divider v-if="addUser"></v-divider>
         <v-card-title class="pt-0">
-          <v-text-field
+          <a-text-field
               v-model="search"
               prepend-inner-icon="search"
               label="Search"
               single-line
               hide-details
-          ></v-text-field>
+          ></a-text-field>
         </v-card-title>
         <v-divider></v-divider>
         <v-data-table id="schedule-to-table"
@@ -123,7 +123,7 @@
             <input type="checkbox" v-if="item.manualAllocationWhole || item.manualAllocationWhole === 0" checked
                    disabled readonly>
             <input type="checkbox" v-else disabled readonly>
-            <v-text-field text
+            <a-text-field
                           type="number"
                           solo
                           single-line
@@ -133,7 +133,7 @@
                           :readonly="!userCanEdit"
                           @input="[item.dirty = true, valuesUpdated = true, getTotalManualAllocation()]"
                           class="ml-2 allocation-input d-inline-block"
-                          v-model.number="item.manualAllocationWhole"></v-text-field>
+                          v-model.number="item.manualAllocationWhole"></a-text-field>
             <span class="ml-2">%</span>
           </template>
           <template #item.targetLeadAllocation="{item}" class="text-left">

@@ -25,12 +25,12 @@
                           item-text="fullName"
                           item-value="id"
           ></v-autocomplete>
-          <v-text-field text
+          <a-text-field
                         type="number"
                         prepend-icon="mdi-currency-usd"
                         label="Amount"
                         v-model.number="newTemplate.amount">
-          </v-text-field>
+          </a-text-field>
           <a-btn
               color="primary"
               :disabled="!newTemplate.userId || !newTemplate.amount"
@@ -62,17 +62,17 @@
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': templates.indexOf(item) % 2}">
               <v-card flat color="transparent" class="pa-4">
-                <v-text-field text
+                <a-text-field
                               label="Assign to User"
                               disabled
                               v-model="item.userFullName">
-                </v-text-field>
-                <v-text-field text
+                </a-text-field>
+                <a-text-field
                               type="number"
                               label="Amount"
                               prepend-icon="mdi-currency-usd"
                               v-model.number="item.amount">
-                </v-text-field>
+                </a-text-field>
                 <a-btn
                     :disabled="false"
                     color="primary"

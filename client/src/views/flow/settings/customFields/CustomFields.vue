@@ -30,14 +30,14 @@
         </v-toolbar>
         <v-card class="square-card">
           <v-card-title class="pt-0">
-            <v-text-field
+            <a-text-field
               v-model="search"
               prepend-inner-icon="search"
               label="Search"
               single-line
               clearable
               hide-details
-            ></v-text-field>
+            ></a-text-field>
           </v-card-title>
           <v-data-table id="custom-fields-table"
             :headers="headers"

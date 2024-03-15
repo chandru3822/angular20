@@ -23,11 +23,11 @@
           </div>
           <div class="address-container">
             <div class="one-hunned py-3">
-              <v-text-field text outlined label="Starting Point" placeholder="Select pin or enter address" autocomplete="new-password"
+              <a-text-field  variant="outlined" label="Starting Point" placeholder="Select pin or enter address" autocomplete="new-password"
                             @click="[address1 = '', drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
                             hide-details
                             v-model="address1"
-                            @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"></v-text-field>
+                            @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"></a-text-field>
               <v-list ref="dropdownMenu1" v-if="showAddress1List">
                 <v-list-item v-for="(suggestion, idx) in suggestions">
                   <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, true)">
@@ -44,11 +44,11 @@
 
           <div class="address-container">
             <div class="one-hunned">
-              <v-text-field text outlined label="Destination" placeholder="Select pin or enter address" autocomplete="new-password"
+              <a-text-field  variant="outlined" label="Destination" placeholder="Select pin or enter address" autocomplete="new-password"
                             @click="[address2 = '', drivingDistance = 0, drivingDuration = 0, selectAddress2 = true, selectAddress1 = false]"
                             hide-details
                             v-model="address2"
-                            @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"></v-text-field>
+                            @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"></a-text-field>
               <v-list ref="dropdownMenu2" v-if="showAddress2List">
                 <v-list-item v-for="(suggestion, idx) in suggestions">
                   <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, false)">

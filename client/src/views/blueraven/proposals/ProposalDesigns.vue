@@ -30,11 +30,11 @@
               class="pa-4 proposal-card">
 
         <div class="d-flex">
-          <v-text-field v-model="d.tempDesignName"
+          <a-text-field v-model="d.tempDesignName"
                         label="Design Name"
                         :readonly="!d.edit"
                         :disabled="!d.edit"
-          ></v-text-field>
+          ></a-text-field>
           <div class="d-flex mt-4">
             <a-btn
                 size="x-small"

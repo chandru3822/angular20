@@ -187,14 +187,13 @@
         </template>
       </v-autocomplete>
 
-      <v-text-field
+      <a-text-field
         v-show="showSecondaryValueInput"
         ref="secondaryValueField"
         v-model="secondaryValue"
         placeholder="Type Value"
-        solo
-        flat
-        hide-details="true"
+        variant="solo"
+        hide-details
         @change="add"
       >
         <template #append>
@@ -212,7 +211,7 @@
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </template>
-      </v-text-field>
+      </a-text-field>
     </v-col>
   </v-row>
 </v-sheet>

@@ -28,14 +28,14 @@
     </div>
     <div v-else-if="attachmentTypes.length > 0" :class="{'px-3': isCard}">
       <div v-if="activityTab" class="px-5 sticky-compare-bar">
-        <v-text-field
+        <a-text-field
             v-model="search"
             prepend-inner-icon="search"
             clearable
             label="Search all project documents"
             single-line
             hide-details
-        ></v-text-field>
+        ></a-text-field>
         <div class="d-flex flex-wrap"
              :class="{'justify-space-between' : $vuetify.breakpoint.smAndUp}">
 

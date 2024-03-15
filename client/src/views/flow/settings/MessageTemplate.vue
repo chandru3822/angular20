@@ -19,7 +19,7 @@
         </v-toolbar>
         <v-card v-if="addTemplate" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add Template</h3>
-          <v-text-field text v-model="newTemplate.title"
+          <a-text-field  v-model="newTemplate.title"
                         label="Title" />
           <v-textarea v-model="newTemplate.message"
                       label="Message" />
@@ -94,7 +94,7 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-6" :class="{'shaded-row': filterTemplates.indexOf(item) % 2}">
-              <v-text-field text v-model="item.title" label="Template Name" class="pb-4"/>
+              <a-text-field  v-model="item.title" label="Template Name" class="pb-4"/>
               <v-textarea v-model="item.message"
                           label="Template Message"
                           auto-grow

@@ -11,14 +11,14 @@
               @input="updateRecurrenceString"
               autocomplete="off">
     </v-select>
-    <v-text-field text
+    <a-text-field
                   type="number"
                   label="Repeat every (add here)"
                   placeholder=" "
                   :readonly="readonly"
                   :disabled="readonly"
                   @input="updateRecurrenceString"
-                  v-model="rruleRef.interval"></v-text-field>
+                  v-model="rruleRef.interval"></a-text-field>
     <v-select attach v-model="rruleRef.months"
               :items="rruleConfig.months"
               label="By Month"
@@ -52,7 +52,7 @@
       <div class="flex-display align-center">
         <v-radio class="mb-0" value="fixed"></v-radio>
         After
-        <v-text-field text
+        <a-text-field
                       type="number"
                       label=""
                       solo
@@ -62,7 +62,7 @@
                       hide-details
                       class="mx-2 shrink"
                       placeholder=" "
-                      v-model="rruleRef.count"></v-text-field>
+                      v-model="rruleRef.count"></a-text-field>
         occurrences
       </div>
       <div class="flex-display align-center">

@@ -31,9 +31,9 @@
           <v-form ref="wqtForm" class="one-hunned">
             <div class="one-hunned">
               <div v-if="editType">
-                <v-text-field class="one-hunned"
+                <a-text-field class="one-hunned"
                               label="Work Queue Type"
-                              v-model="workQueueType.workQueueType"></v-text-field>
+                              v-model="workQueueType.workQueueType"></a-text-field>
                 <v-autocomplete
                   v-model="workQueueType.workQueueCategoryId"
                   :items="workQueueCategories"
@@ -50,10 +50,10 @@
               <table class="one-hunned" v-if="workQueueType && workQueueType.id">
                 <tr>
                   <td class="wqt-row pr-2">
-                    <v-text-field text
+                    <a-text-field
                                   label="Short Window"
                                   :disabled="!editType"
-                                  v-model.number="workQueueType.shortWindow"></v-text-field>
+                                  v-model.number="workQueueType.shortWindow"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <v-autocomplete
@@ -69,10 +69,10 @@
                 </tr>
                 <tr>
                   <td class="wqt-row pr-2">
-                    <v-text-field text
+                    <a-text-field
                                   label="Long Window"
                                   :disabled="!editType"
-                                  v-model.number="workQueueType.longWindow"></v-text-field>
+                                  v-model.number="workQueueType.longWindow"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <v-autocomplete
@@ -88,10 +88,10 @@
                 </tr>
                 <tr>
                   <td class="wqt-row pr-2">
-                    <v-text-field text
+                    <a-text-field
                                   label="Expected Cycle"
                                   :disabled="!editType"
-                                  v-model.number="workQueueType.expectedCycle"></v-text-field>
+                                  v-model.number="workQueueType.expectedCycle"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <v-autocomplete
@@ -108,11 +108,11 @@
                 </tr>
                 <tr>
                   <td class="wqt-row pr-2">
-                    <v-text-field text
+                    <a-text-field
                                   label="Expected Target % (between 0 and 1)"
                                   :disabled="!editType"
                                   :rules="expectedTargetRule"
-                                  v-model.number="workQueueType.expectedTarget"></v-text-field>
+                                  v-model.number="workQueueType.expectedTarget"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <label>Inverse Expectation: </label>

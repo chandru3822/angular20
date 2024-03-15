@@ -25,15 +25,15 @@
     <v-card-text v-if="expanded">
       <v-form v-show="addMode || editMode"
               ref="contactForm" class="pa-3">
-        <v-text-field v-model="selectedContact.name" required filled
+        <a-text-field v-model="selectedContact.name" required filled
                       :label="contactTypeId === 7 ? 'Store Name' : 'Name'"
-        ></v-text-field>
-        <v-text-field v-model="selectedContact.title" filled
+        ></a-text-field>
+        <a-text-field v-model="selectedContact.title" filled
                       :label="contactTypeId === 7 ? 'Store Number' : 'Title'"
-        ></v-text-field>
-        <v-text-field v-model="selectedContact.phoneNumber" label="Phone" filled></v-text-field>
-        <v-text-field v-model="selectedContact.email" label="Email" type="email" filled></v-text-field>
-        <v-text-field v-model="selectedContact.hours" label="Hours" filled></v-text-field>
+        ></a-text-field>
+        <a-text-field v-model="selectedContact.phoneNumber" label="Phone" filled></a-text-field>
+        <a-text-field v-model="selectedContact.email" label="Email" type="email" filled></a-text-field>
+        <a-text-field v-model="selectedContact.hours" label="Hours" filled></a-text-field>
         <v-textarea label="Address" auto-grow filled
                     v-model="selectedContact.address">
         </v-textarea>

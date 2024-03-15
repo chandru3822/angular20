@@ -11,9 +11,9 @@
         <div class="flex-display pt-3 px-3 mb-4 one-hunned">
           <div class="one-hunned pl-3">
             <span class="page-title" v-if="!edit">{{ dataView.displayName }}</span>
-            <v-text-field v-else color="primary"
+            <a-text-field v-else color="primary"
                           v-model="dataView.displayName"
-                          label="Display Name"></v-text-field>
+                          label="Display Name"></a-text-field>
             <div>
               <label class="mt-4">Table Name: {{ dataView.viewName }}</label>
               <div>
@@ -66,7 +66,7 @@
         </div>
         <v-divider class="mt-3 mb-1"></v-divider>
         <div class="search-header">
-          <v-text-field
+          <a-text-field
             v-if="!addNew"
             v-model="search"
             class="mb-2 px-4 py-2 d-inline-block"
@@ -74,7 +74,7 @@
             label="Search"
             single-line
             hide-details
-          ></v-text-field>
+          ></a-text-field>
           <a-btn
             variant="text"
             color="primary"
@@ -90,10 +90,10 @@
           <h3>Add Field Config</h3>
           <div class="mb-3">
             <v-form ref="fieldConfigForm">
-              <v-text-field text v-model="newField.displayName"
+              <a-text-field  v-model="newField.displayName"
                             :rules="requiredRules"
                             label="Display Name"/>
-              <v-text-field text v-model="newField.fieldToUpdate"
+              <a-text-field  v-model="newField.fieldToUpdate"
                             hint="5-60 lowercase characters, no spaces, no symbols"
                             persistent-hint
                             :rules="fieldToUpdateRule"
@@ -245,7 +245,7 @@
                 :class="{'shaded-row': dataView.dataViewFieldConfigs.indexOf(item) % 2}">
               <h3>Edit Field Configs</h3>
               <div class="flex-display">
-                <v-text-field text v-model="item.displayName" class="d-inline-block display-name-field"
+                <a-text-field  v-model="item.displayName" class="d-inline-block display-name-field"
                               label="Display Name"/>
                 <a-btn
                   variant="text"
@@ -255,35 +255,35 @@
                   prepend-icon="save"
                 />
               </div>
-              <v-text-field text v-model="item.fieldToUpdate" disabled readonly
+              <a-text-field  v-model="item.fieldToUpdate" disabled readonly
                             label="Field to Update"/>
-              <v-text-field v-if="item.defaultFieldId"
+              <a-text-field v-if="item.defaultFieldId"
                             label="Default Field"
                             disabled readonly
                             v-model="item.fieldName"
-              ></v-text-field>
-              <v-text-field v-if="item.customFieldGroupAssignmentId"
+              ></a-text-field>
+              <a-text-field v-if="item.customFieldGroupAssignmentId"
                             label="Parent Object"
                             disabled readonly
                             v-model="item.parentObjectName"
-              ></v-text-field>
-              <v-text-field
+              ></a-text-field>
+              <a-text-field
                 v-if="item.processStepId || (item.customFieldGroupAssignmentId && item.objectTypeId === 4)"
                 label="Process Step"
                 disabled readonly
                 v-model="item.processStepName"
-              ></v-text-field>
-              <v-text-field
+              ></a-text-field>
+              <a-text-field
                 v-if="item.processStepEventId || (item.customFieldGroupAssignmentId && item.objectTypeId === 6)"
                 label="Process Step Event"
                 disabled readonly
                 v-model="item.processStepEventName"
-              ></v-text-field>
-              <v-text-field v-if="item.customFieldGroupAssignmentId"
+              ></a-text-field>
+              <a-text-field v-if="item.customFieldGroupAssignmentId"
                             label="Custom Field"
                             disabled readonly
                             v-model="item.fieldName"
-              ></v-text-field>
+              ></a-text-field>
 
               <div v-if="[4,6].includes(item.objectTypeId)">
                 <span class="mr-3 disabled-label">Update First Value Only?</span>
@@ -339,10 +339,10 @@
 
                 <div v-if="addChild">
                   <v-form ref="childFieldForm">
-                    <v-text-field text v-model="childField.displayName"
+                    <a-text-field  v-model="childField.displayName"
                                   :rules="requiredRules"
                                   label="Display Name"/>
-                    <v-text-field text v-model="childField.fieldToUpdate"
+                    <a-text-field  v-model="childField.fieldToUpdate"
                                   :rules="fieldToUpdateRule"
                                   label="Child Field to Update"/>
                     <v-autocomplete
@@ -387,7 +387,7 @@
                           <v-card-title class="pb-0">Edit Child Field Config</v-card-title>
                           <v-card-text class="pt-0">
                             <div class="flex-display">
-                              <v-text-field text v-model="childField.displayName"
+                              <a-text-field  v-model="childField.displayName"
                                             :rules="requiredRules"
                                             label="Display Name"/>
                               <a-btn

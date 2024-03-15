@@ -154,14 +154,14 @@
                     <span>{{ fp.description }}</span>
                   </v-tooltip>
                   <div class="dynamic-field-container">
-                    <v-text-field
+                    <a-text-field
                         v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
                         :key="index"
                         type="number"
                         placeholder="Enter a dynamic value (number)"
                         v-model="fp.dynamicValue"
                         @input="validateRequirementForm()"
-                        :label="fp.parameterName"></v-text-field>
+                        :label="fp.parameterName"></a-text-field>
                     <v-checkbox
                         v-else-if="fp.dataTypeId === 3"
                         :label="fp.parameterName"
@@ -170,13 +170,13 @@
                                     }"
                         :value="fp.dynamicValue === 'true'"
                         @change="changeBooleanValue($event, fp)"></v-checkbox>
-                    <v-text-field
+                    <a-text-field
                         :key="index"
                         v-else
                         placeholder="Enter a dynamic value"
                         v-model="fp.dynamicValue"
                         @input="validateRequirementForm()"
-                        :label="fp.parameterName"></v-text-field>
+                        :label="fp.parameterName"></a-text-field>
                   </div>
                 </div>
               </v-card>
@@ -203,14 +203,14 @@
                 class="mx-2"
                 label="Custom"
             ></v-switch>
-            <v-text-field
+            <a-text-field
                 v-if="newRequirement.operatorTypeId && newRequirement.customValue && ![7,8,9,10,11].includes(newRequirement.processStepRequirementTypeId)
                     && ((!selectedCustomField.listOfValueId || selectedCustomField.listOfValueId === null) && (!selectedCustomField.customFieldSql || selectedCustomField.customFieldSql === null) && (!selectedCustomField.companySystemListId || selectedCustomField.companySystemListId === null))"
                 v-model="newRequirement.requirementValue"
                 placeholder="Enter a value"
                 @input="validateRequirementForm()"
                 label="Value">
-            </v-text-field>
+            </a-text-field>
             <v-select
                 v-else-if="newRequirement.operatorTypeId
                               && newRequirement.customValue
@@ -298,13 +298,13 @@
                 item-text="dataTypeValue"
                 return-object
             ></v-select>
-            <v-text-field v-if="selectedDataTypeRequirement && selectedDataTypeRequirement.secondaryRequirement"
+            <a-text-field v-if="selectedDataTypeRequirement && selectedDataTypeRequirement.secondaryRequirement"
                           type="number"
                           v-model="newRequirement.secondaryRequirementValue"
                           placeholder="Enter a value"
                           @input="validateRequirementForm()"
                           label="Value">
-            </v-text-field>
+            </a-text-field>
             <div
                 v-if="(newRequirement.processStepRequirementTypeId === 7 || newRequirement.processStepRequirementTypeId === 8) && newRequirement.operatorTypeId">
               <label>Fail if no
@@ -370,21 +370,21 @@
                           <span>{{ fp.description }}</span>
                         </v-tooltip>
                         <div class="dynamic-field-container">
-                          <v-text-field
+                          <a-text-field
                               v-if="fp.dataTypeId === 1"
                               :readonly="requirementIsReadonly(item)"
                               :disabled="requirementIsReadonly(item)"
                               placeholder="Enter a date"
                               type="date"
                               v-model="fp.dynamicValue"
-                              :label="fp.parameterName"></v-text-field>
-                          <v-text-field
+                              :label="fp.parameterName"></a-text-field>
+                          <a-text-field
                               v-else-if="fp.dataTypeId === 2"
                               :readonly="requirementIsReadonly(item)"
                               :disabled="requirementIsReadonly(item)"
                               placeholder="Enter a timestamp"
                               v-model="fp.dynamicValue"
-                              :label="fp.parameterName"></v-text-field>
+                              :label="fp.parameterName"></a-text-field>
                           <v-checkbox
                               v-else-if="fp.dataTypeId === 3"
                               :readonly="requirementIsReadonly(item)"
@@ -395,14 +395,14 @@
                               :value="fp.dynamicValue === 'true'"
                               @change="changeBooleanValue($event, fp)"
                               :label="fp.parameterName"></v-checkbox>
-                          <v-text-field
+                          <a-text-field
                               v-else-if="fp.dataTypeId === 4"
                               :readonly="requirementIsReadonly(item)"
                               :disabled="requirementIsReadonly(item)"
                               placeholder="Enter a number"
                               v-model="fp.dynamicValue"
-                              :label="fp.parameterName"></v-text-field>
-                          <v-text-field
+                              :label="fp.parameterName"></a-text-field>
+                          <a-text-field
                               v-else-if="fp.dataTypeId === 6"
                               :readonly="requirementIsReadonly(item)"
                               :disabled="requirementIsReadonly(item)"
@@ -410,14 +410,14 @@
                               type="number"
                               step="1"
                               v-model="fp.dynamicValue"
-                              :label="fp.parameterName"></v-text-field>
-                          <v-text-field
+                              :label="fp.parameterName"></a-text-field>
+                          <a-text-field
                               v-else
                               :readonly="requirementIsReadonly(item)"
                               :disabled="requirementIsReadonly(item)"
                               placeholder="Enter a dynamic value"
                               v-model="fp.dynamicValue"
-                              :label="fp.parameterName"></v-text-field>
+                              :label="fp.parameterName"></a-text-field>
                         </div>
                       </div>
                     </v-card>
@@ -439,14 +439,14 @@
                             label="Custom"
                   ></v-switch>
                   <!-- single text field for non list custom values -->
-                  <v-text-field
+                  <a-text-field
                       v-if="item.customValue && item.processStepRequirementTypeId !== 7 && (!item.listOfValues || item.listOfValues.length === 0) && !item.listOfValueId && !item.customFieldSql && !item.systemListId && !item.companySystemListId "
                       v-model="item.requirementValue"
                       :disabled="requirementIsReadonly(item)"
                       :readonly="requirementIsReadonly(item)"
                       placeholder="Enter a value"
                       label="Value">
-                  </v-text-field>
+                  </a-text-field>
                   <!-- single select for dropdown, custom sql list, or system list -->
                   <v-select
                       v-else-if="!item.customField.companySystemListId && item.customValue && item.customField && ![7,8,9,10,11].includes(item.processStepRequirementTypeId)
@@ -516,14 +516,14 @@
                       item-value="id"
                       return-object
                   ></v-select>
-                  <v-text-field v-if="item.dataTypeRequirement.secondaryRequirement"
+                  <a-text-field v-if="item.dataTypeRequirement.secondaryRequirement"
                                 type="number"
                                 v-model="item.secondaryRequirementValue"
                                 placeholder="Enter a value"
                                 :disabled="requirementIsReadonly(item)"
                                 :readonly="requirementIsReadonly(item)"
                                 label="Value">
-                  </v-text-field>
+                  </a-text-field>
                   <div
                       v-if="(item.processStepRequirementTypeId === 7 || item.processStepRequirementTypeId === 8) && item.operatorTypeId">
                     <label>Fail if no

@@ -6,22 +6,23 @@
                          @click="addNew = !addNew" color="primary" class="mb-3" text="ADD APPOINTMENT"/>
         <v-card v-if="addNew" flat class="px-3">
           <v-card-title>Add Schedule</v-card-title>
-          <v-text-field
+          <a-text-field
             v-model="newAppt.title"
-            counter="50"
+            :maxlength="50"
+            counter
             placeholder=" "
             label="Title"
-          ></v-text-field>
-          <v-text-field
+          ></a-text-field>
+          <a-text-field
             v-model="newAppt.description"
             placeholder=" "
             label="Description (optional)"
-          ></v-text-field>
-          <v-text-field
+          ></a-text-field>
+          <a-text-field
             v-model="newAppt.location"
             placeholder=" "
             label="Location (optional)"
-          ></v-text-field>
+          ></a-text-field>
           <DatetimePickerInput
             v-model="newAppt.startTime"
             :timezone="timezone"
@@ -103,25 +104,26 @@
               <v-card flat color="transparent" class="px-3">
                 <!-- no edits allowed to recurring events for now -->
                 <!-- NOTE: THERE WOULD BE A BIG ISSUE IF WE ALLOWED EDITING RECURRING EVENTS AND THEY WERE EDITED FROM 2 DIFFERENT TIMEZONES! YIKES! -->
-                <v-text-field
+                <a-text-field
                   v-model="appt.title"
-                  counter="50"
+                  :maxlength="50"
+                  counter
                   :readonly="appt.recurringEventId != null"
                   :disabled="appt.recurringEventId != null"
                   label="Title"
-                ></v-text-field>
-                <v-text-field
+                ></a-text-field>
+                <a-text-field
                   v-model="appt.description"
                   :readonly="appt.recurringEventId != null"
                   :disabled="appt.recurringEventId != null"
                   label="Description (optional)"
-                ></v-text-field>
-                <v-text-field
+                ></a-text-field>
+                <a-text-field
                   v-model="appt.location"
                   placeholder=" "
                   label="Location (optional)"
                   @input="appt.reloadCoordinates = true"
-                ></v-text-field>
+                ></a-text-field>
                 <DatetimePickerInput
                   v-model="appt.startTime"
                   :timezone="timezone"

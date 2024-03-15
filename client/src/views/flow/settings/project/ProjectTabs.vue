@@ -19,10 +19,10 @@
         </v-toolbar>
         <v-container>
           <div v-if="addNew" class="mb-2">
-            <v-text-field v-model="newTab.tabName"
+            <a-text-field v-model="newTab.tabName"
                           placeholder=" "
                           label="Tab Label">
-            </v-text-field>
+            </a-text-field>
             <a-btn
                 :disabled="!newTab.tabName"
                 color="primary"
@@ -65,7 +65,7 @@
                   ></a-btn>
                 </td>
                 <td class="text-left">
-                  <v-text-field class="one-hunned" v-if="selectedTabId === item.id" v-model="item.tabName"></v-text-field>
+                  <a-text-field class="one-hunned" v-if="selectedTabId === item.id" v-model="item.tabName"></a-text-field>
                   <span v-else>{{item.tabName}}</span>
                 </td>
                 <td class="text-right" :class="{'one-hunned':$vuetify.breakpoint.mdAndDown && selectedTabId !== item.id}">

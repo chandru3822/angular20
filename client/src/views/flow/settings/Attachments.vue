@@ -50,11 +50,11 @@
         </v-toolbar>
         <v-container>
           <v-card color="transparent" flat v-if="addNew" class="mb-3 pa-2">
-            <v-text-field v-if="addNew"
+            <a-text-field v-if="addNew"
                           v-model="newType.attachmentType"
                           placeholder="Enter a type"
                           label="Attachment Type">
-            </v-text-field>
+            </a-text-field>
             <a-btn v-if="addNew"
                              color="primary"
                              :disabled="!newType.attachmentType"
@@ -64,13 +64,13 @@
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
             <v-card-title class="pt-0">
-              <v-text-field
+              <a-text-field
                 v-model="search"
                 prepend-inner-icon="search"
                 label="Search"
                 single-line
                 hide-details
-              ></v-text-field>
+              ></a-text-field>
             </v-card-title>
             <v-data-table
               :headers="headers"

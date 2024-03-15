@@ -4,9 +4,9 @@
       <v-container>
         <v-row>
           <v-col cols="12" sm="6">
-            <v-text-field text
+            <a-text-field
                           label="User ID"
-                          v-model="payrollSearch.userId"></v-text-field>
+                          v-model="payrollSearch.userId"></a-text-field>
           </v-col>
           <v-col cols="12" sm="6">
             <div class="text-left">
@@ -27,14 +27,14 @@
         </v-row>
         <v-row>
           <v-col cols="12" sm="6">
-            <v-text-field text
+            <a-text-field
                           label="User First Name"
-                          v-model="payrollSearch.userFirstName"></v-text-field>
+                          v-model="payrollSearch.userFirstName"></a-text-field>
           </v-col>
           <v-col cols="12" sm="6">
-            <v-text-field text
+            <a-text-field
                           label="User Last Name"
-                          v-model="payrollSearch.userLastName"></v-text-field>
+                          v-model="payrollSearch.userLastName"></a-text-field>
           </v-col>
         </v-row>
       </v-container>

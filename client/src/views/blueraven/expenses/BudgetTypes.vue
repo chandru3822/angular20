@@ -18,11 +18,11 @@
         <v-divider></v-divider>
         <v-card flat v-if="createNew" class="pa-4">
           <h3>New Budget Type</h3>
-          <v-text-field text
+          <a-text-field
                         type="text"
                         label="Budget Type"
                         v-model="newBudgetType.name">
-          </v-text-field>
+          </a-text-field>
           <a-btn
               color="primary"
               :disabled="!newBudgetType.name"
@@ -51,12 +51,12 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">
-                <v-text-field text
+                <a-text-field
                               type="text"
                               v-if="index === editIndex"
                               label="Budget Type"
                               v-model="item.name">
-                </v-text-field>
+                </a-text-field>
                 <div v-else>
                   {{ item.name }}
                 </div>

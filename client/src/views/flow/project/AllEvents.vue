@@ -60,12 +60,12 @@
             </v-col>
 
             <v-col cols="12" class="pt-0" v-else>
-              <v-text-field placeholder="Filter..."
+              <a-text-field placeholder="Filter..."
                             hide-details
-                            outlined
+                            variant="outlined"
                             type="search"
                             class=""
-                            v-model="eventSearch"></v-text-field>
+                            v-model="eventSearch"></a-text-field>
 
               <template v-for="event in filteredEvents">
                 <h4 class="text-left work-type-header">{{event.eventName}}</h4>

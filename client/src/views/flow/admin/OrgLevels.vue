@@ -16,9 +16,9 @@
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add Org Level</h3>
           <div class="mb-3">
-            <v-text-field text v-model="newOrgLevel.levelName"
+            <a-text-field  v-model="newOrgLevel.levelName"
                           label="Level Name" />
-            <v-text-field text v-model="newOrgLevel.level" type="number"
+            <a-text-field  v-model="newOrgLevel.level" type="number"
                           label="Level" />
           </div>
           <a-btn variant="text" text="Cancel" @click="[addNew = !addNew, newOrgLevel = {}]"></a-btn>
@@ -50,9 +50,9 @@
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': orgLevels.indexOf(item) % 2}">
               <h3>Edit Org Level</h3>
               <div class="mb-3">
-                <v-text-field text v-model="item.levelName"
+                <a-text-field  v-model="item.levelName"
                               label="Rank" />
-                <v-text-field text v-model="item.level" type="number"
+                <a-text-field  v-model="item.level" type="number"
                               label="Rank" />
               </div>
               <a-btn :disabled="!item.levelName || !item.level"
@@ -93,7 +93,6 @@ import {handleHidingGlobalLoader, deleteRequest, putRequest} from '@/helpers/hel
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
-import a-btn from '@/components/customVuetify/a-btn'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRouter} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

@@ -23,10 +23,10 @@
         <v-container>
           <v-row>
             <v-col cols="12">
-              <v-text-field text
+              <a-text-field
                             label="Organization Name"
                             :rules="requiredRules"
-                            v-model="org.orgName"></v-text-field>
+                            v-model="org.orgName"></a-text-field>
               <v-autocomplete v-model="selectedOrgType"
                               :items="orgTypes"
                               label="Organization Type"

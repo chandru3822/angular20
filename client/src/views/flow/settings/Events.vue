@@ -46,11 +46,11 @@
         </v-toolbar>
         <v-container class="pa-0">
           <v-card color="transparent" flat v-if="addNew" class="mb-3 pa-2">
-            <v-text-field
+            <a-text-field
               label="Event Name"
               tabindex=1
               v-model="newEvent.eventName"
-            ></v-text-field>
+            ></a-text-field>
 
             <v-autocomplete
               v-model="newEvent.resourceCustomFieldId"
@@ -70,13 +70,12 @@
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
             <v-card-title class="pt-0">
-              <v-text-field
+              <a-text-field
                 v-model="search"
                 prepend-inner-icon="search"
                 label="Search"
-                single-line
                 hide-details
-              ></v-text-field>
+              ></a-text-field>
             </v-card-title>
             <v-data-table
                 id="events-settings-table"

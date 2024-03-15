@@ -29,20 +29,20 @@
             <v-card-text class="login-card-text">
               <v-form ref="resetNewForm" v-model="validForm" @submit.prevent="onSubmit()">
 <!--                <h3 class="error&#45;&#45;text mb-3" v-if="!passwordsMatch">PASSWORDS MUST MATCH</h3>-->
-                <v-text-field color="primary"
+                <a-text-field color="primary"
                               v-model="newPassword"
                               required
                               type="password"
                               :rules="[passwordRule]"
                               name="newPass"
-                              label="New Password"></v-text-field>
-                <v-text-field color="primary"
+                              label="New Password"></a-text-field>
+                <a-text-field color="primary"
                               v-model="newPasswordAgain"
                               type="password"
                               required
                               :rules="[passwordRule]"
                               name="newPassAgain"
-                              label="Re-enter New Password"></v-text-field>
+                              label="Re-enter New Password"></a-text-field>
                 <v-card-actions>
                   <router-link :to="'/login'" title="Login">
                     Cancel

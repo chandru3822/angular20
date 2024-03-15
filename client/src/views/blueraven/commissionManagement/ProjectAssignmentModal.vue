@@ -8,10 +8,10 @@
 
     </v-card-title>
     <v-card-text class="">
-      <v-text-field text
+      <a-text-field
                     label="Enter Project ID to Add"
                     placeholder=" "
-                    v-model.number="projectId"></v-text-field>
+                    v-model.number="projectId"></a-text-field>
     </v-card-text>
     <v-card-actions>
       <v-spacer></v-spacer>

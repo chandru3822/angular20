@@ -13,42 +13,42 @@
           <div class="error-text" v-else-if="!stateIsActive()">
             Project address is in a non-active state. Please update project address to an active state.
           </div>
-          <v-text-field
+          <a-text-field
               v-model="tempProject.projectName"
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
               label="Project Name"
           />
-          <v-text-field
+          <a-text-field
               v-model="tempProject.street1"
               label="Street"
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
               counter
-              maxlength="100"
+              :maxlength="100"
               @change="tempProject.reloadCoordinates = true"
           />
-          <v-text-field
+          <a-text-field
               v-model="tempProject.city"
               label="City"
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
               @change="tempProject.reloadCoordinates = true"
           />
-          <v-text-field
+          <a-text-field
               type="text"
               v-model="tempProject.postalCode"
               counter
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
-              maxlength="10"
-              @keyup="isNumberOrHyphen"
+              :maxlength="10"
+              @keydown="isNumberOrHyphen"
               :rules="postalCodeRules"
               @change="tempProject.reloadCoordinates = true"
               label="Postal Code"
           />
           <div v-if="tempProject.companyStateId && !stateIsActive() && !editState">
-            <v-text-field
+            <a-text-field
                 type="text"
                 v-model="tempProject.state"
                 :readonly="true"

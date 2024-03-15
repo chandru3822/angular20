@@ -36,14 +36,14 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat class="mt-2 pa-5">
-          <v-text-field v-model="position.position"
+          <a-text-field v-model="position.position"
                         placeholder="Enter a value"
                         required
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         @input="setFieldsDirty"
                         label="Position Name">
-          </v-text-field>
+          </a-text-field>
           <v-autocomplete
             v-if="!positionId"
             v-model="clonePositionId"

@@ -36,10 +36,10 @@
         </v-toolbar>
         <v-container>
           <div v-if="addNew">
-            <v-text-field v-model="newType.workQueueType"
+            <a-text-field v-model="newType.workQueueType"
                           placeholder="Enter a type"
                           label="Work Queue Type">
-            </v-text-field>
+            </a-text-field>
             <v-autocomplete
                 v-model="newType.workQueueCategoryId"
                 :items="workQueueCategories"
@@ -61,13 +61,13 @@
                 text="Save"
             ></a-btn>
           </div>
-          <v-text-field
+          <a-text-field
               v-model="search"
               prepend-inner-icon="search"
               label="Search"
               single-line
               hide-details
-          ></v-text-field>
+          ></a-text-field>
           <v-data-table
               :headers="headers"
               :items="filteredWorkQueueTypes"

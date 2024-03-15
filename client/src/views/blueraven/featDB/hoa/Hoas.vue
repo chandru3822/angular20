@@ -31,14 +31,14 @@
                   :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
               >
                 <div v-if="hoaFilters[header.value]" class="pt-2 table-filter">
-                  <v-text-field v-if="hoaFilters[header.value].type === 'text'"
+                  <a-text-field v-if="hoaFilters[header.value].type === 'text'"
                                 v-model="hoaFilters[header.value].value"
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
                                 clearable
-                                filled
-                                dense
+                                variant="filled"
+                                density="compact"
                                 hide-details
-                  ></v-text-field>
+                  ></a-text-field>
                   <v-autocomplete v-else-if="hoaFilters[header.value].type === 'select'"
                                   :items="states"
                                   v-model="hoaFilters[header.value].value"
@@ -116,11 +116,11 @@
         </v-card-title>
 
         <v-card-text>
-          <v-text-field label="Name"
+          <a-text-field label="Name"
                         v-model="editedItem.name"
                         required
-                        filled
-          ></v-text-field>
+                        variant="filled"
+          ></a-text-field>
           <v-autocomplete label="State"
                           :items="states"
                           v-model="editedItem.companyStateId"
@@ -141,11 +141,11 @@
                           autocomplete="off"
                           filled
           ></v-autocomplete>
-          <v-text-field label="New Management Company"
+          <a-text-field label="New Management Company"
                         v-if="addingManagementCompany"
                         v-model="newManagementCompany"
-                        filled
-          ></v-text-field>
+                        variant="filled"
+          ></a-text-field>
           <a @click="addNewManagementCompany"> {{ addNewManagementCompanyButton }} </a>
         </v-card-text>
 

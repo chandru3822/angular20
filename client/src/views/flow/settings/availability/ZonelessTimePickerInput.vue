@@ -8,7 +8,7 @@
   min-width="290px"
 >
   <template #activator="{on}">
-    <v-text-field
+    <a-text-field
       class="px-2"
       :value="value | formatDateZoneless()"
       :label="label"

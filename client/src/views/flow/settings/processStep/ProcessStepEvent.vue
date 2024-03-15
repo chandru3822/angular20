@@ -85,10 +85,10 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat v-if="addNewEventAction">
-          <v-text-field text
+          <a-text-field
                         label="Action Name"
                         v-model="newEventAction.actionName">
-          </v-text-field>
+          </a-text-field>
           <v-select attach v-model="newEventAction.actionTypeId"
                     :items="actionTypes"
                     label="Action Type"
@@ -174,10 +174,10 @@
 
           <template #expanded-item="{ headers, item: action }">
             <td :colspan="headers.length" class="pa-4">
-              <v-text-field text
+              <a-text-field
                             label="Action Name"
                             v-model="action.actionName">
-              </v-text-field>
+              </a-text-field>
               <v-select attach v-model="action.actionTypeId"
                         :items="actionTypes"
                         :readonly="true"
@@ -418,13 +418,13 @@
                             <span>{{ fp.description }}</span>
                           </v-tooltip>
                           <div class="dynamic-field-container">
-                            <v-text-field
+                            <a-text-field
                                 v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
                                 type="number"
                                 :key="index"
                                 placeholder="Enter a dynamic value (number)"
                                 v-model="fp.dynamicValue"
-                                :label="fp.parameterName"></v-text-field>
+                                :label="fp.parameterName"></a-text-field>
                             <v-checkbox
                                 v-else-if="fp.dataTypeId === 3"
                                 type="checkbox"
@@ -435,12 +435,12 @@
                                 @change="changeBooleanValue($event, fp)"
                                 :label="fp.parameterName"
                             />
-                            <v-text-field
+                            <a-text-field
                                 v-else
                                 :key="index"
                                 placeholder="Enter a dynamic value"
                                 v-model="fp.dynamicValue"
-                                :label="fp.parameterName"></v-text-field>
+                                :label="fp.parameterName"></a-text-field>
                           </div>
                         </div>
                       </v-card>
@@ -512,21 +512,21 @@
                                     <span>{{ fp.description }}</span>
                                   </v-tooltip>
                                   <div class="dynamic-field-container">
-                                    <v-text-field
+                                    <a-text-field
                                         v-if="fp.dataTypeId === 1"
                                         placeholder="Enter a date"
                                         type="date"
                                         :readonly="!cp.edit || !userCanEdit"
                                         :disabled="!cp.edit || !userCanEdit"
                                         v-model="fp.dynamicValue"
-                                        :label="fp.parameterName"></v-text-field>
-                                    <v-text-field
+                                        :label="fp.parameterName"></a-text-field>
+                                    <a-text-field
                                         v-else-if="fp.dataTypeId === 2"
                                         placeholder="Enter a timestamp"
                                         :readonly="!cp.edit || !userCanEdit"
                                         :disabled="!cp.edit || !userCanEdit"
                                         v-model="fp.dynamicValue"
-                                        :label="fp.parameterName"></v-text-field>
+                                        :label="fp.parameterName"></a-text-field>
                                     <v-checkbox
                                         v-else-if="fp.dataTypeId === 3"
                                         :readonly="!cp.edit || !userCanEdit"
@@ -538,14 +538,14 @@
                                         :value="fp.dynamicValue === 'true'"
                                         @change="changeBooleanValue($event, fp)"
                                         :label="fp.parameterName"></v-checkbox>
-                                    <v-text-field
+                                    <a-text-field
                                         v-else-if="fp.dataTypeId === 4"
                                         :readonly="!cp.edit || !userCanEdit"
                                         :disabled="!cp.edit || !userCanEdit"
                                         placeholder="Enter a number"
                                         v-model="fp.dynamicValue"
-                                        :label="fp.parameterName"></v-text-field>
-                                    <v-text-field
+                                        :label="fp.parameterName"></a-text-field>
+                                    <a-text-field
                                         v-else-if="fp.dataTypeId === 6"
                                         :readonly="!cp.edit || !userCanEdit"
                                         :disabled="!cp.edit || !userCanEdit"
@@ -553,14 +553,14 @@
                                         type="number"
                                         step="1"
                                         v-model="fp.dynamicValue"
-                                        :label="fp.parameterName"></v-text-field>
-                                    <v-text-field
+                                        :label="fp.parameterName"></a-text-field>
+                                    <a-text-field
                                         v-else
                                         :readonly="!cp.edit || !userCanEdit"
                                         :disabled="!cp.edit || !userCanEdit"
                                         placeholder="Enter a dynamic value"
                                         v-model="fp.dynamicValue"
-                                        :label="fp.parameterName"></v-text-field>
+                                        :label="fp.parameterName"></a-text-field>
                                   </div>
                                 </div>
                               </v-card>

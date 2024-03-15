@@ -30,15 +30,15 @@
                     @input="[orgId = null, getApptLength()]"
                           attach>
           </v-autocomplete>
-          <v-text-field text
+          <a-text-field
                         v-else
                         :disabled="true"
                         label="User"
                         v-model="currentUser">
-          </v-text-field>
+          </a-text-field>
           <div class="mb-4" v-if="userId || orgId">
             <label>Default Appointment Length (minutes)</label>
-            <v-text-field
+            <a-text-field
               class="d-inline-block ml-3 shrink"
               style="width:100px;"
               type="number"
@@ -50,7 +50,7 @@
               placeholder="--"
               @input="valueChanged = true"
               v-model="defaultAppointmentLength"
-            ></v-text-field>
+            ></a-text-field>
             <a-btn class="d-inline-block"
                              v-if="userIsAdmin && valueChanged"
                              size="small"

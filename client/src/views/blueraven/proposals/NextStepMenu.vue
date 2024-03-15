@@ -71,14 +71,14 @@
                       :disabled="!proposal.locked"
                       v-model="valid"
               >
-                <v-text-field label="Email" v-model="docs.email" :rules="rules" required readonly disabled/>
+                <a-text-field label="Email" v-model="docs.email" :rules="rules" required readonly disabled/>
 
                 <v-radio-group v-model="docs.language" required column :rules="rules">
                   <v-radio label="English" value="english"/>
                   <v-radio label="Spanish" value="spanish"/>
                 </v-radio-group>
 
-                <v-text-field label="Proposal #"
+                <a-text-field label="Proposal #"
                               :value="proposal.proposalNbr"
                               :rules="rules"
                               required readonly disabled/>
@@ -117,7 +117,7 @@
           <v-radio label="No" :value="false"/>
         </v-radio-group>
 
-        <v-text-field v-if="confirmEmail.isCorrectEmail !== undefined && confirmEmail.isCorrectEmail === false"
+        <a-text-field v-if="confirmEmail.isCorrectEmail !== undefined && confirmEmail.isCorrectEmail === false"
                       v-model="confirmEmail.emailAddress"
                       placeholder="Enter correct email address"
                       :disabled="confirmEmail.isCorrectEmail"/>

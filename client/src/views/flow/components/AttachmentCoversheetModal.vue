@@ -22,13 +22,13 @@
             </div>
             <div class="subtitle-1 mb-4 mt-4 default-text-color">Upload Details</div>
             <v-card class="square-card pa-3">
-              <v-text-field
+              <a-text-field
                   label="Document Name"
                   :rules="requiredRules"
                   @change="displayNameChanged = true"
                   v-model="fileDetails.displayName"
                   class="albatross-body-2"
-              ></v-text-field>
+              ></a-text-field>
               <DatetimePickerInput
                   v-model="fileDetails.dateCreated"
                   :timezone="timezone"
@@ -39,18 +39,18 @@
                   label="Upload Date"
                   custom-class="albatross-body-2"
               />
-              <v-text-field
+              <a-text-field
                   disabled readonly
                   label="Uploaded By"
                   v-model="fileDetails.uploadedBy"
                   class="albatross-body-2"
-              ></v-text-field>
-              <v-text-field
+              ></a-text-field>
+              <a-text-field
                   disabled readonly
                   label="Document Type"
                   v-model="fileDetails.attachmentType"
                   class="albatross-body-2"
-              ></v-text-field>
+              ></a-text-field>
               <div class="location-container">
                 <label class="location-label">Document Location</label>
                 <a class="location-link" @click="goToPath(fileDetails.originPath)">{{fileDetails.originLocation}}</a>
@@ -58,13 +58,13 @@
               <!--              <div @click="goToPath(fileDetails.originPath)" class=" mb-3 relative"-->
               <!--                  :class="{'clickable': fileDetails.originPath}">-->
               <!--                <div class="force_clickable-overlay"></div>-->
-              <!--                <v-text-field-->
+              <!--                <a-text-field-->
               <!--                  disabled readonly-->
               <!--                  label="Document Location"-->
               <!--                  v-model="fileDetails.originLocation"-->
               <!--                  class="albatross-body-2"-->
               <!--                  hide-details-->
-              <!--                ></v-text-field>-->
+              <!--                ></a-text-field>-->
               <!--              </div>-->
             </v-card>
             <div v-if="customFieldGroups.length > 0" class="subtitle-1 mt-6 mb-3 default-text-color">Document Information</div>

@@ -41,9 +41,8 @@
             @change="callback(field)"
         />
 
-        <v-text-field
+        <a-text-field
             v-if="field.dataTypeId === 4"
-            text
             :required="required"
             :readonly="readonly"
             :disabled="readonly"
@@ -73,9 +72,8 @@
             autocomplete="off"
         />
 
-        <v-text-field
+        <a-text-field
             v-if="field.dataTypeId === 6"
-            text
             :required="required"
             :readonly="readonly"
             :disabled="readonly"

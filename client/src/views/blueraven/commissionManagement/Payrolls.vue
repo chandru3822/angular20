@@ -11,12 +11,12 @@
                 :format="'MMMM DD, YYYY'"
                 label="Start Date"
             />
-            <v-text-field text
+            <a-text-field
                           label="Customer"
-                          v-model="payrollSearch.customerName"></v-text-field>
-            <v-text-field text
+                          v-model="payrollSearch.customerName"></a-text-field>
+            <a-text-field
                           label="Project ID"
-                          v-model="payrollSearch.projectId"></v-text-field>
+                          v-model="payrollSearch.projectId"></a-text-field>
           </v-col>
           <v-col cols="12" sm="6">
             <DatetimePickerInput
@@ -39,9 +39,9 @@
                             @click:clear="reps = []"
                             attach
             ></v-autocomplete>
-            <!--            <v-text-field text-->
+            <!--            <a-text-field -->
             <!--                          label="Sales Rep"-->
-            <!--                          v-model="payrollSearch.salesRep"></v-text-field>-->
+            <!--                          v-model="payrollSearch.salesRep"></a-text-field>-->
             <div class="text-left">
               <a-btn
                   color="primary"

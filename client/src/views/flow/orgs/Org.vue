@@ -12,12 +12,12 @@
     <confirmation-dialog :open-dialog="showEditModal" @close-dialog="showEditModal = false" @confirm="validateForm">
       <template v-slot:title>Organization Overview</template>
       <v-form ref="orgEditForm">
-        <v-text-field
+        <a-text-field
             v-model="tempOrg.orgName"
             :readonly="!userCanEdit"
             :disabled="!userCanEdit"
             label="Organization Name"
-        ></v-text-field>
+        ></a-text-field>
         <v-select attach v-model="tempOrg.orgTypeId"
                   :items="orgTypes"
                   label="Organization Type"

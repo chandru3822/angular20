@@ -87,14 +87,13 @@
         </div>
       </div>
       <div>
-        <v-text-field
+        <a-text-field
             prepend-inner-icon="search"
-            text
             label="Search payments..."
             v-model="searchQuery"
             v-show="batchLoaded && !voidedBatch"
             @input="debounceFilterPayments"
-        ></v-text-field>
+        ></a-text-field>
       </div>
     </v-card>
     <v-divider></v-divider>

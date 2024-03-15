@@ -8,7 +8,7 @@
             {{ objectType.objectType }} - Custom Field Groups
           </v-toolbar-title>
           <v-spacer />
-          <v-text-field v-if="addNew"
+          <a-text-field v-if="addNew"
                         v-model="newGroup.groupName"
                         placeholder="Enter new group name"
                         append-outer-icon="save"

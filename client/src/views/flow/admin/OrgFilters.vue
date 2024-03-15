@@ -27,7 +27,7 @@
                 {{ data.item.level }} - {{ data.item.levelName }}
               </template>
             </v-select>
-            <v-text-field text v-model="newOrgFilter.rank" type="number"
+            <a-text-field  v-model="newOrgFilter.rank" type="number"
                           label="Rank"/>
             <label>Show Type:</label>
             <input type="checkbox" class="ml-3" v-model="newOrgFilter.showType">
@@ -74,7 +74,7 @@
                     {{ data.item.level }} - {{ data.item.levelName }}
                   </template>
                 </v-select>
-                <v-text-field text v-model="item.rank" type="number"
+                <a-text-field  v-model="item.rank" type="number"
                               label="Rank"/>
                 <label>Show Type:</label>
                 <input type="checkbox"  class="ml-3" v-model="item.showType">
@@ -121,7 +121,6 @@ import {handleHidingGlobalLoader, deleteRequest, putRequest} from '@/helpers/hel
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
-import a-btn from '@/components/customVuetify/a-btn'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import {useRouter} from "vue-router/composables"

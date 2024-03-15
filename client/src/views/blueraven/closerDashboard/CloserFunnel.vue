@@ -34,8 +34,8 @@
                 <v-menu v-model="appts_created_pipeline_menu1" transition="scale-transition" offset-y
                         min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt1_formatted"
-                                  readonly outlined dense hide-details v-on="on"></v-text-field>
+                    <a-text-field class="custom-date-input" v-model="appts_created_pipeline_dt1_formatted"
+                                  readonly variant="outlined" density="compact" hide-details v-on="on"></a-text-field>
                   </template>
                   <v-date-picker v-model="appts_created_pipeline_dt1" :max="appts_created_pipeline_dt2"
                                  @input="updateApptsCreatedPipelineCalendar"></v-date-picker>
@@ -44,8 +44,8 @@
                 <v-menu v-model="appts_created_pipeline_menu2" transition="scale-transition" offset-y
                         min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt2_formatted"
-                                  readonly outlined dense hide-details v-on="on"></v-text-field>
+                    <a-text-field class="custom-date-input" v-model="appts_created_pipeline_dt2_formatted"
+                                  readonly  variant="outlined" density="compact" hide-details v-on="on"></a-text-field>
                   </template>
                   <v-date-picker v-model="appts_created_pipeline_dt2" :min="appts_created_pipeline_dt1"
                                  @input="updateApptsCreatedPipelineCalendar"></v-date-picker>
@@ -472,8 +472,8 @@
                   <v-menu v-model="appts_to_fdc_pipeline_menu1" transition="scale-transition" offset-y
                           min-width="290px" :close-on-content-click="false">
                     <template v-slot:activator="{ on }">
-                      <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt1_formatted" readonly
-                                    outlined dense hide-details v-on="on"></v-text-field>
+                      <a-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt1_formatted" readonly
+                                    density="compact" variant="outlined" hide-details v-on="on"></a-text-field>
                     </template>
                     <v-date-picker v-model="appts_to_fdc_pipeline_dt1" :max="appts_to_fdc_pipeline_dt2"
                                    @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
@@ -482,8 +482,8 @@
                   <v-menu v-model="appts_to_fdc_pipeline_menu2" transition="scale-transition" offset-y
                           min-width="290px" :close-on-content-click="false">
                     <template v-slot:activator="{ on }">
-                      <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt2_formatted" readonly
-                                    outlined dense hide-details v-on="on"></v-text-field>
+                      <a-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt2_formatted" readonly
+                                    density="compact" variant="outlined" hide-details v-on="on"></a-text-field>
                     </template>
                     <v-date-picker v-model="appts_to_fdc_pipeline_dt2" :min="appts_to_fdc_pipeline_dt1"
                                    @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
@@ -624,13 +624,13 @@
           </v-card-title>
           <v-divider></v-divider>
           <v-card-title v-if="funnelDrilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
-            <v-text-field v-model="funnelDrilldownSearch"
+            <a-text-field v-model="funnelDrilldownSearch"
                           placeholder="Type to filter..."
                           single-line
                           hide-details
                           outlined
                           dense
-            ></v-text-field>
+            ></a-text-field>
             <span id="funnel-drilldown-row-count">
             Records: {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}
           </span>
@@ -2613,7 +2613,7 @@ onMounted(async () => {
               min-height: 12px;
             }
 
-            .v-text-field__slot input {
+            .a-text-field__slot input {
               text-align: center;
             }
           }
@@ -2815,7 +2815,7 @@ onMounted(async () => {
               min-height: 12px;
             }
 
-            .v-text-field__slot input {
+            .a-text-field__slot input {
               text-align: center;
             }
           }

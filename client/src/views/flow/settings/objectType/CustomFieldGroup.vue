@@ -65,19 +65,20 @@
             <a-btn variant="text"
                              color="primary"
                              @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd"
-                             :prepend-icon="vuetify.breakpoint.smAndDown ? (addnew ? 'close' : 'add') : ''"
-                             :text="vuetify.breakpoint.smAndDown ? (addnew ? 'CANCEL' : 'ADD NEW') : ''"
+                             :prepend-icon="addNew ? 'close' : 'add'"
+                             hide-text-on-mobile
+                             :text="addNew ? 'CANCEL' : 'ADD NEW'"
             />
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
-          <v-text-field v-if="addNew"
+          <a-text-field v-if="addNew"
               v-model="newGroup.groupName"
               placeholder="Enter new group name"
               append-outer-icon="save"
               @click:append-outer="addCustomFieldGroup"
               label="Custom Field Group">
-          </v-text-field>
+          </a-text-field>
 
           <v-data-table
               id="cfg-table"
@@ -109,11 +110,11 @@
                   />
                 </td>
                 <td class="text-left" :class="{'mb-4': vuetify.breakpoint.xsOnly && item.edit}">
-                  <v-text-field text
+                  <a-text-field
                                 :label="vuetify.breakpoint.xsOnly ? 'Name': ''"
                                 v-if="item.edit"
                                 v-model="item.groupName">
-                  </v-text-field>
+                  </a-text-field>
                   <span v-else>
                     <span v-if="isMobile" class="label-medium">Name: </span>
                     {{item.groupName}}
@@ -651,22 +652,24 @@ const iconOwner = () => {
       }
     }
     const addCustomFieldGroup = async  () => {
-      appStore.loading = true
-      try {
-        newGroup.value.companyObjectTypeId = route.params.id ?? route.query.companyObjectTypeId
-        const {data, status} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, newGroup.value)
-        newGroup.value = {}
-        addNew.value = false
-        // add the new type to the list
-        customFieldGroups.value.push(data)
-        snackbar('SUCCESS', 'Group Added')
+      if(newGroup.value?.groupName) {
+        appStore.loading = true
+        try {
+          newGroup.value.companyObjectTypeId = route.params.id ?? route.query.companyObjectTypeId
+          const {data, status} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, newGroup.value)
+          newGroup.value = {}
+          addNew.value = false
+          // add the new type to the list
+          customFieldGroups.value.push(data)
+          snackbar('SUCCESS', 'Group Added')
 
-        handleHidingGlobalLoader(status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Adding Custom Field Group')
+          handleHidingGlobalLoader(status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          snackbar('ERROR', 'Error Adding Custom Field Group')
 
-        appStore.loading = false
+          appStore.loading = false
+        }
       }
     }
     const assignCustomField = async  (item) => {

@@ -13,12 +13,12 @@
                 password.</h3>
               <h3 class="mb-5">The link to reset your password will expire in 24 hours!</h3>
               <v-form ref="resetForm">
-                <v-text-field color="primary"
+                <a-text-field color="primary"
                               v-model="email"
                               required
                               :rules="requiredRules"
                               name="login"
-                              label="Email or Username"></v-text-field>
+                              label="Email or Username"></a-text-field>
                 <v-card-actions>
                   <router-link :to="'/login'" title="Login">
                     Cancel

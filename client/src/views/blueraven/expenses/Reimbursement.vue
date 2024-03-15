@@ -13,11 +13,11 @@
       <v-col cols="12" sm="6">
         <v-card flat class="pa-4">
           <h3>New Reimbursement Request</h3>
-          <v-text-field text
+          <a-text-field
                         type="number"
                         label="Dollar Amount"
                         v-model.number="newReimbursement.amount">
-          </v-text-field>
+          </a-text-field>
           <DatetimePickerInput
               v-model="newReimbursement.expenseDate"
               :timezone="timezone"

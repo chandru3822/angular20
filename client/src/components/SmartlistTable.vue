@@ -1,13 +1,13 @@
 <template>
   <div>
     <v-toolbar class="elevation-1" width="100%">
-      <v-text-field
+      <a-text-field
           v-model="search"
           prepend-inner-icon="search"
           label="Search"
           single-line
           hide-details
-      ></v-text-field>
+      ></a-text-field>
       <v-spacer />
       <a-btn
           variant="text"

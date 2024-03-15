@@ -76,8 +76,7 @@
               <v-card-text>
                 <v-row>
                   <v-col cols="12" md="4">
-                    <v-text-field
-                        text
+                    <a-text-field
                         label="Smartlist Name"
                         :readonly="!userCanEdit"
                         v-model="smartlist.name"

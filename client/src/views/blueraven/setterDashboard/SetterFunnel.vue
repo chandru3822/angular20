@@ -274,8 +274,8 @@
                 <v-menu v-model="pipeline_menu1" transition="scale-transition" offset-y
                         min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="pipeline_dt1_formatted" readonly
-                                  outlined dense v-on="on"></v-text-field>
+                    <a-text-field class="custom-date-input" v-model="pipeline_dt1_formatted" readonly
+                                  density="compact" variant="outlined" v-on="on"></a-text-field>
                   </template>
                   <v-date-picker v-model="pipeline_dt1" :max="pipeline_dt2"
                                  @input="updatePipelineCalendar()"></v-date-picker>
@@ -284,8 +284,8 @@
                 <v-menu v-model="pipeline_menu2" transition="scale-transition" offset-y
                         min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="pipeline_dt2_formatted" readonly
-                                  outlined dense v-on="on"></v-text-field>
+                    <a-text-field class="custom-date-input" v-model="pipeline_dt2_formatted" readonly
+                                  density="compact" variant="outlined" v-on="on"></a-text-field>
                   </template>
                   <v-date-picker v-model="pipeline_dt2" :min="pipeline_dt1"
                                  @input="updatePipelineCalendar()"></v-date-picker>
@@ -409,13 +409,13 @@
         </v-card-title>
         <v-divider></v-divider>
         <v-card-title v-if="funnelDrilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
-          <v-text-field v-model="funnelDrilldownSearch"
+          <a-text-field v-model="funnelDrilldownSearch"
                         placeholder="Type to filter..."
                         single-line
                         hide-details
                         outlined
                         dense
-          ></v-text-field>
+          ></a-text-field>
           <span id="funnel-drilldown-row-count">
             Records: {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}
           </span>

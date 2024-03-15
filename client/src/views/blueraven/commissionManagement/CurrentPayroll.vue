@@ -75,7 +75,7 @@
         <v-row>
           <v-col cols="12" sm="6">
             <v-card flat color="transparent" class="pa-3">
-              <v-text-field text readonly label="Payroll ID #" v-model="currentPayroll.id"></v-text-field>
+              <a-text-field  readonly label="Payroll ID #" v-model="currentPayroll.id"></a-text-field>
               <DatetimePickerInput
                   v-model="currentPayroll.periodEnd"
                   :timezone="timezone"
@@ -85,12 +85,12 @@
                   :format="'MMMM DD, YYYY'"
                   label="Period Ending"
               />
-              <v-text-field text
+              <a-text-field
                             label="Description"
                             placeholder=" "
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
-                            v-model="currentPayroll.description"></v-text-field>
+                            v-model="currentPayroll.description"></a-text-field>
 
               <div class="text-left">
                 <a-btn
@@ -112,10 +112,10 @@
             <v-card class="pa-3">
               <label>Approved for Pay Only:</label>
               <input type="checkbox" class="ml-2" v-model="accountingSearch.showSelectedOnly">
-              <v-text-field text
+              <a-text-field
                             class="mt-3"
                             label="Project ID"
-                            v-model="accountingSearch.projectId"></v-text-field>
+                            v-model="accountingSearch.projectId"></a-text-field>
               <v-autocomplete v-model="accountingSearch.customerId"
                               :items="customers"
                               :loading="customersLoading"
@@ -153,14 +153,14 @@
       <v-col>
         <v-card>
           <v-card-title class="pt-0">
-            <v-text-field
+            <a-text-field
               v-model="search"
               prepend-inner-icon="search"
               label="Search"
               single-line
               hide-details
               @input="debounceSearch"
-            ></v-text-field>
+            ></a-text-field>
           </v-card-title>
           <v-divider></v-divider>
           <v-data-table
@@ -242,14 +242,14 @@
                       </v-card-title>
                       <v-card-text class="pt-3">
                         <strong>Type: </strong>Commission
-                        <v-text-field text
+                        <a-text-field
                                       type="number"
                                       label="Adjustment Amount"
                                       prepend-icon="mdi-currency-usd"
                                       persistent-hint
                                       :hint="`Max allowed: ${filters.currency(getCurrentMaxAdjustment(item), '$', 2)}`"
                                       v-model.number="item.adjustment">
-                        </v-text-field>
+                        </a-text-field>
                         <v-textarea
                           label="Notes"
                           v-model="item.adjustmentNote"
@@ -342,14 +342,14 @@
                       </v-card-title>
                       <v-card-text class="pt-3">
                         <strong>Type: </strong>Commission
-                        <v-text-field text
+                        <a-text-field
                                       type="number"
                                       label="Adjustment Amount"
                                       prepend-icon="mdi-currency-usd"
                                       persistent-hint
                                       :hint="`Max allowed: ${$filters.currency(_getCurrentMaxAdjustment(item), '$', 2)}`"
                                       v-model.number="item.adjustment">
-                        </v-text-field>
+                        </a-text-field>
                         <v-textarea
                           label="Notes"
                           v-model="item.adjustmentNote"

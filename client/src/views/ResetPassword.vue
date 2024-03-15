@@ -10,22 +10,22 @@
             <v-card-text class="login-card-text">
               <div class="bold error-text">{{errorMsg}}</div>
               <v-form ref="resetPassword" v-model="validForm" @submit.prevent="onSubmit()">
-                <v-text-field required color="primary"
+                <a-text-field required color="primary"
                               :rules="requiredRules"
                               v-model="form.email" prepend-icon="person" name="login"
-                              label="Username" type="email"></v-text-field>
-                <v-text-field required color="primary"
+                              label="Username" type="email"></a-text-field>
+                <a-text-field required color="primary"
                               :rules="requiredRules"
                               v-model="form.password" prepend-icon="lock" name="oldPassword"
-                              label="Current Password" id="oldPassword" type="password"></v-text-field>
-                <v-text-field required color="primary"
+                              label="Current Password" id="oldPassword" type="password"></a-text-field>
+                <a-text-field required color="primary"
                               :rules="[passwordRule]"
                               v-model="form.newPassword" prepend-icon="lock" name="newPassword"
-                              label="New Password" id="newPassword" type="password"></v-text-field>
-                <v-text-field required color="primary"
+                              label="New Password" id="newPassword" type="password"></a-text-field>
+                <a-text-field required color="primary"
                               :rules="[passwordRule]"
                               v-model="form.newPasswordConfirm" prepend-icon="lock" name="newPasswordConfirm"
-                              label="Confirm New Password" id="newPasswordConfirm" type="password"></v-text-field>
+                              label="Confirm New Password" id="newPasswordConfirm" type="password"></a-text-field>
                 <v-card-actions>
                 <v-spacer></v-spacer>
                 <a-btn :loading="loginLoading" type="submit" text="Save" />

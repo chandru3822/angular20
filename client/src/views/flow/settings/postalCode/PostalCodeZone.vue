@@ -18,11 +18,11 @@
         </v-toolbar>
         <v-container>
           <v-card class="square-card" elevation="0">
-            <v-text-field class="mt-4"
+            <a-text-field class="mt-4"
               v-model="postalCodeZone.zoneName"
               label="Zone Name"
               hide-details
-            ></v-text-field>
+            ></a-text-field>
             <v-autocomplete v-model="postalCodeZone.metroAreaId"
                             :items="metroAreas"
                             class="mt-4"
@@ -34,12 +34,12 @@
                             autocomplete="off"
                             attach
             ></v-autocomplete>
-            <v-text-field  class="my-4"
+            <a-text-field  class="my-4"
               v-model.number="postalCodeZone.adderAmount"
               label="Adder Amount"
               type="number"
               hide-details
-            ></v-text-field>
+            ></a-text-field>
             <a-btn
                 class="my-3"
                 @click="[addPostalCode = !addPostalCode, getAvailablePostalCodes()]"

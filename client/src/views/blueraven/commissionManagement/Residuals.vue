@@ -91,13 +91,13 @@
         <v-row>
           <v-col cols="12" sm="6">
             <v-card flat color="transparent" class="pa-3">
-              <v-text-field text readonly disabled label="Payroll ID #" v-model="currentResidual.id"></v-text-field>
-              <v-text-field text
+              <a-text-field  readonly disabled label="Payroll ID #" v-model="currentResidual.id"></a-text-field>
+              <a-text-field
                             label="Description"
                             placeholder=" "
                             readonly
                             disabled
-                            v-model="currentResidual.description"></v-text-field>
+                            v-model="currentResidual.description"></a-text-field>
 
               <div class="text-left">
                 <a-btn
@@ -170,13 +170,13 @@
       <v-col class="pt-0">
         <v-card>
           <v-card-title class="pt-0">
-            <v-text-field
+            <a-text-field
                 v-model="search"
                 prepend-inner-icon="search"
                 label="Search"
                 single-line
                 hide-details
-            ></v-text-field>
+            ></a-text-field>
           </v-card-title>
           <v-divider></v-divider>
           <v-data-table
@@ -271,13 +271,13 @@
                       </v-card-title>
                       <v-card-text class="pt-3">
                         <strong>Type: </strong>Commission
-                        <v-text-field text
+                        <a-text-field
                                       type="number"
                                       label="Adjustment Amount"
                                       prepend-icon="mdi-currency-usd"
                                       persistent-hint
                                       v-model.number="item.adjustment">
-                        </v-text-field>
+                        </a-text-field>
                         <v-textarea
                             label="Notes"
                             v-model="item.adjustmentNote"

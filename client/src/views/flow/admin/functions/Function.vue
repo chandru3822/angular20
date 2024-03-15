@@ -47,10 +47,10 @@
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
           <h3>Add New Param</h3>
           <div class="mb-3">
-            <v-text-field text label="Parameter Name"
+            <a-text-field label="Parameter Name"
                           v-model="newParam.parameterName"
                           hint="* This should be a UI friendly name"
-                          persistent-hint></v-text-field>
+                          persistent-hint></a-text-field>
             <v-select
                 v-model="newParam.parameterTypeId"
                 :items="parameterTypes"
@@ -118,10 +118,10 @@
                   :class="{'shaded-row': dbFunction.dbFunctionParams.indexOf(item) % 2}">
                 <h3>Edit Param</h3>
                 <div class="mb-3">
-                  <v-text-field text label="Parameter Name"
+                  <a-text-field  label="Parameter Name"
                                 v-model="item.parameterName"
                                 hint="* This should be a UI friendly name"
-                                persistent-hint></v-text-field>
+                                persistent-hint></a-text-field>
                   <div v-if="item.parameterTypeId !== 1">
                     <v-checkbox label="Nullable"
                                 class="default-text-color"

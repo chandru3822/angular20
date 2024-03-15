@@ -145,16 +145,16 @@
         <v-row>
           <v-col cols="12" sm="6">
             <v-card flat class="pa-3" color="transparent">
-              <v-text-field text
+              <a-text-field
                             label="Name"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
-                            v-model="override.name"></v-text-field>
-              <v-text-field text
+                            v-model="override.name"></a-text-field>
+              <a-text-field
                             label="Description"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
-                            v-model="override.description"></v-text-field>
+                            v-model="override.description"></a-text-field>
               <v-select attach v-model="override.positionId"
                         :items="positions"
                         :readonly="!userCanEdit"
@@ -164,11 +164,11 @@
                         item-text="label"
                         item-value="id"
               ></v-select>
-              <v-text-field text
+              <a-text-field
                             :readonly="!userCanEdit"
                             :disabled="(override.id && override.status !== 'PENDING') || !userCanEdit"
                             :label="payRateText"
-                            v-model="override.total"></v-text-field>
+                            v-model="override.total"></a-text-field>
 
               <div v-if="customFieldGroups.length > 0">
                 <CustomValueInput
@@ -183,25 +183,25 @@
           </v-col>
           <v-col cols="12" sm="6">
             <v-card class="pa-3" v-if="overrideId">
-              <v-text-field text
+              <a-text-field
                             label="Status"
                             disabled
-                            v-model="override.status"></v-text-field>
-              <v-text-field text
+                            v-model="override.status"></a-text-field>
+              <a-text-field
                             v-if="override.createdBy"
                             disabled
                             label="Created By"
-                            v-model="override.createdBy.name"></v-text-field>
-              <v-text-field text
+                            v-model="override.createdBy.name"></a-text-field>
+              <a-text-field
                             disabled
                             v-if="override.approved"
                             label="Approved"
-                            v-model="override.approved"></v-text-field>
-              <v-text-field text
+                            v-model="override.approved"></a-text-field>
+              <a-text-field
                             disabled
                             label="Approved By"
                             v-if="override.approvedBy"
-                            v-model="override.approvedBy.name"></v-text-field>
+                            v-model="override.approvedBy.name"></a-text-field>
             </v-card>
           </v-col>
         </v-row>
@@ -237,28 +237,28 @@
                             autocomplete="off"
                             attach>
             </v-autocomplete>
-            <v-text-field text
+            <a-text-field
                           type="number"
                           label="M1 Allocation"
                           v-model="newReceivingUser.m1Allocation">
-            </v-text-field>
-          <v-text-field text
+            </a-text-field>
+          <a-text-field
                         v-if="commissionPositionId === 1"
                         type="number"
                         label="M2 Allocation"
                         v-model="newReceivingUser.m2Allocation">
-            </v-text-field>
-            <v-text-field text
+            </a-text-field>
+            <a-text-field
                           type="number"
                           label="Redline M1 Allocation"
                           v-model="newReceivingUser.redLineM1Allocation">
-            </v-text-field>
-            <v-text-field text
+            </a-text-field>
+            <a-text-field
                           v-if="commissionPositionId === 1"
                           type="number"
                           label="Redline M2 Allocation"
                           v-model="newReceivingUser.redLineM2Allocation">
-          </v-text-field>
+          </a-text-field>
           <a-btn
               color="primary"
               class="mr-3"
@@ -291,28 +291,28 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4 text-left">
-              <v-text-field text
+              <a-text-field
                             type="number"
                             label="M1 Allocation"
                             v-model.number="item.m1Allocation">
-              </v-text-field>
-              <v-text-field text
+              </a-text-field>
+              <a-text-field
                             v-if="commissionPositionId === 1"
                             type="number"
                             label="M2 Allocation"
                             v-model.number="item.m2Allocation">
-              </v-text-field>
-              <v-text-field text
+              </a-text-field>
+              <a-text-field
                             type="number"
                             label="Redline M1 Allocation"
                             v-model.number="item.redLineM1Allocation">
-              </v-text-field>
-              <v-text-field text
+              </a-text-field>
+              <a-text-field
                             v-if="commissionPositionId === 1"
                             type="number"
                             label="Redline M2 Allocation"
                             v-model.number="item.redLineM2Allocation">
-              </v-text-field>
+              </a-text-field>
               <a-btn
                   color="primary"
                   :disabled="!item.m1Allocation || (commissionPositionId === 1 && !item.m2Allocation)"

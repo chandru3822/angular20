@@ -41,28 +41,28 @@
       <v-row>
         <v-col cols="12" md="6" class="px-8">
 
-          <v-text-field text
+          <a-text-field
                         type="text"
                         label="Name"
                         v-model="roundRobin.roundRobinName">
-          </v-text-field>
+          </a-text-field>
 
           <div class="d-flex align-baseline">
-            <v-text-field text
+            <a-text-field
                           style="max-width: 200px"
                           type="text"
                           label="Distribution Time Frame"
                           v-model="roundRobin.distributionTimeFrameDays">
-            </v-text-field>
+            </a-text-field>
             <span class="body-medium">days</span>
           </div>
           <div class="d-flex align-baseline">
-            <v-text-field text
+            <a-text-field
                           style="max-width: 200px"
                           type="text"
                           label="Schedulable Future Days"
                           v-model="roundRobin.schedulableFutureDays">
-            </v-text-field>
+            </a-text-field>
             <span class="body-medium">days</span>
           </div>
           <v-autocomplete v-model="roundRobin.companyTimezoneId"

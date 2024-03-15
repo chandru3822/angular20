@@ -17,10 +17,10 @@
         </v-toolbar>
         <v-container>
           <div v-if="addNew">
-            <v-text-field v-model="newCategory.workQueueCategory"
+            <a-text-field v-model="newCategory.workQueueCategory"
                           placeholder="Enter a category"
                           label="Work Queue Category">
-            </v-text-field>
+            </a-text-field>
             <div class="theme-label">
               Select a Color: {{newCategory.color}}
               <v-avatar
@@ -73,7 +73,7 @@
                   />
                 </td>
                 <td class="text-left">
-                  <v-text-field class="one-hunned" v-if="selectedWorkQueueCategoryId === item.id" v-model="item.workQueueCategory"></v-text-field>
+                  <a-text-field class="one-hunned" v-if="selectedWorkQueueCategoryId === item.id" v-model="item.workQueueCategory"></a-text-field>
                   <div v-else>{{item.workQueueCategory}}</div>
                 </td>
                 <td class="text-left">

@@ -19,13 +19,13 @@
 
       <v-col cols="12">
         <v-card flat class="square-card pb-3 px-3" color="white">
-          <v-text-field
+          <a-text-field
               v-model="search"
               append-icon="mdi-magnify"
               label="Search"
               single-line
               hide-details
-          ></v-text-field>
+          ></a-text-field>
         </v-card>
         <v-divider></v-divider>
         <v-data-table

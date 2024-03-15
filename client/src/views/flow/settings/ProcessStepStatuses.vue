@@ -53,11 +53,11 @@
         </v-toolbar>
         <v-container>
           <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-9">
-            <v-text-field v-if="addNew"
+            <a-text-field v-if="addNew"
                           v-model="newType.processStepStatusType"
                           placeholder="Enter a type"
                           label="Status Type">
-            </v-text-field>
+            </a-text-field>
             <v-autocomplete single-line
                             :items="rootStatusTypes"
                             v-model="newType.processStepStatusTypeId"
@@ -74,13 +74,13 @@
           </v-card>
           <v-card class="square-card">
             <v-card-title class="pt-0">
-              <v-text-field
+              <a-text-field
                 v-model="search"
                 prepend-inner-icon="search"
                 label="Search"
                 single-line
                 hide-details
-              ></v-text-field>
+              ></a-text-field>
             </v-card-title>
             <v-data-table
               :headers="headers"
@@ -96,11 +96,11 @@
               <template #expanded-item="{ headers, item }">
                 <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': statusTypes.indexOf(item) % 2}">
                   <h3 class="mb-3">Edit Status Type</h3>
-                  <v-text-field v-model="item.processStepStatusType"
+                  <a-text-field v-model="item.processStepStatusType"
                                 label="Status Type"
                                 :readonly="!userCanEdit"
                                 :disabled="!userCanEdit"
-                  ></v-text-field>
+                  ></a-text-field>
                   <v-autocomplete
                     :items="filteredRootStatuses"
                     v-model="item.processStepStatusTypeId"

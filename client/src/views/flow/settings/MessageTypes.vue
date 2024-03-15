@@ -20,9 +20,9 @@
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add Message Type</h3>
           <div class="mb-3">
-            <v-text-field text v-model="newType.title"
+            <a-text-field  v-model="newType.title"
                           label="Title" />
-            <v-text-field text v-model="newType.description"
+            <a-text-field  v-model="newType.description"
                           label="Description" />
             <v-textarea text v-model="newType.content" auto-grow outlined hide-details
                           label="Content" />
@@ -70,9 +70,9 @@
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': filterTypes.indexOf(item) % 2}">
               <h3>Edit Message Type</h3>
               <div class="mb-3">
-                <v-text-field text v-model="item.title"
+                <a-text-field  v-model="item.title"
                               label="Title" />
-                <v-text-field text v-model="item.description"
+                <a-text-field  v-model="item.description"
                               label="Description" />
                 <v-textarea text v-model="item.content" auto-grow outlined hide-details
                               label="Content" />

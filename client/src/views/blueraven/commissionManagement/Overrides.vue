@@ -21,13 +21,13 @@
       <v-col class="pt-0">
         <v-card>
           <v-card-title class="pt-0">
-            <v-text-field
+            <a-text-field
                 v-model="search"
                 prepend-inner-icon="search"
                 label="Search"
                 single-line
                 hide-details
-            ></v-text-field>
+            ></a-text-field>
           </v-card-title>
           <v-divider></v-divider>
           <v-data-table

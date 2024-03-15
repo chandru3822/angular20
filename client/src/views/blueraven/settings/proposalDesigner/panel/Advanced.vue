@@ -1,7 +1,7 @@
 <template>
   <v-card flat>
     <v-card-title>Advanced</v-card-title>
-    <v-text-field outlined dense
+    <a-text-field density="compact" variant="outlined"
                   v-model="expression"
                   label="Visibility"
                   hint="This expression must evaluate to a boolean"
@@ -60,7 +60,7 @@
           </v-card>
         </v-dialog>
       </template>
-    </v-text-field>
+    </a-text-field>
   </v-card>
 </template>
 <script setup>

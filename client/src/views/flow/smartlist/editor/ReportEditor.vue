@@ -17,10 +17,10 @@
                 <v-icon>mdi-chevron-left</v-icon>
               </v-btn>
 
-              <v-text-field
+              <a-text-field
                 v-show="isEditingReportName"
                 v-model="report.name"
-                outlined
+                variant="outlined"
                 placeholder="Type Name"
                 hide-details="true"
                 ref="reportNameField"

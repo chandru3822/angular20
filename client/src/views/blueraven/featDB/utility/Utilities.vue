@@ -31,7 +31,7 @@
                   :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
               >
                 <div v-if="utilityFilters[header.value]" class="pt-2 table-filter">
-                  <v-text-field v-if="utilityFilters[header.value].type === 'text'"
+                  <a-text-field v-if="utilityFilters[header.value].type === 'text'"
                                 v-model="utilityFilters[header.value].value"
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
                                 clearable
@@ -39,7 +39,7 @@
                                 type="search"
                                 dense
                                 hide-details
-                  ></v-text-field>
+                  ></a-text-field>
                   <v-autocomplete v-else-if="utilityFilters[header.value].type === 'select'"
                                   :items="states"
                                   v-model="utilityFilters[header.value].value"
@@ -101,13 +101,13 @@
             </v-card-title>
 
             <v-card-text>
-              <v-text-field
+              <a-text-field
                   label="Name"
                   v-model="editedItem.name"
                   required
                   type="search"
                   filled
-              ></v-text-field>
+              ></a-text-field>
               <v-autocomplete
                   label="Metro Area"
                   :items="metroAreas"
@@ -364,7 +364,7 @@ const goToRoute =(id) => {
     font-weight: normal;
     margin-bottom: 10px;
 
-    .v-text-field,
+    .a-text-field,
     .v-select {
       font-size: 0.875rem;
       margin-left: 15px;

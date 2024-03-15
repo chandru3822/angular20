@@ -79,16 +79,16 @@
           :label="isIos ? 'Select a .plist File' : 'Select an .apk File'"
           @change="uploadFile"
       />
-      <v-text-field text
+      <a-text-field
                     type="text"
                     label="Version Number"
                     v-model="newApp.versionNumber">
-      </v-text-field>
-      <v-text-field text
+      </a-text-field>
+      <a-text-field
                     type="number"
                     label="Build Number"
                     v-model.number="newApp.buildNumber">
-      </v-text-field>
+      </a-text-field>
 
       <a-btn
           color="primary"

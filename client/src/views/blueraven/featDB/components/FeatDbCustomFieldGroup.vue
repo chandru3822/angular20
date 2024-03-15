@@ -14,7 +14,7 @@
             :showFieldName="false"
             :field="field"
             hide-details
-            :filled-style="true"
+            variant="filled"
             :lock-feature="true"
             :copy-feature="true"
         />

@@ -14,14 +14,14 @@
     </v-card-title>
     <v-divider></v-divider>
     <v-card-title v-if="drilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
-      <v-text-field v-model="drilldownSearch"
+      <a-text-field v-model="drilldownSearch"
                     placeholder="Type to filter..."
                     class="drilldown-filter"
                     single-line
                     hide-details
-                    outlined
-                    dense
-      ></v-text-field>
+                    density="compact"
+                    variant="outlined"
+      ></a-text-field>
       <span id="funnel-drilldown-row-count">
             Records: {{ drilldownRowCount + '/' + drilldownData.length }}
           </span>

@@ -24,13 +24,13 @@
           <div class="error--text" v-if="timeError">
             {{ timeErrorMsg }}
           </div>
-          <v-text-field v-model="announcement.title"
+          <a-text-field v-model="announcement.title"
                         density="compact"
                         :disabled="!userCanEdit"
                         :readonly="!userCanEdit"
                         :rules="requiredRules"
                         label="Title"/>
-          <v-text-field v-model="announcement.alertText"
+          <a-text-field v-model="announcement.alertText"
                         density="compact"
                         :disabled="!userCanEdit"
                         :readonly="!userCanEdit"
@@ -78,7 +78,7 @@
           <div v-if="announcement.expandable">
             <h3>Expandable Announcement</h3>
 
-            <v-text-field v-model="announcement.subtitle"
+            <a-text-field v-model="announcement.subtitle"
                           density="compact"
                           :disabled="!userCanEdit"
                           :readonly="!userCanEdit"
@@ -95,7 +95,7 @@
                 v-model="announcement.description"
             />
 
-            <v-text-field v-model="announcement.hyperlink"
+            <a-text-field v-model="announcement.hyperlink"
                           class="mt-3"
                           :disabled="!userCanEdit"
                           :readonly="!userCanEdit"

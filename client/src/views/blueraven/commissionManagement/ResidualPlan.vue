@@ -43,34 +43,34 @@
         <v-row>
           <v-col cols="12" sm="6">
             <v-card flat class="pa-3" color="transparent">
-              <v-text-field text
+              <a-text-field
                             label="Name"
-                            v-model="residualPlan.name"></v-text-field>
-              <v-text-field text
+                            v-model="residualPlan.name"></a-text-field>
+              <a-text-field
                             label="Description"
-                            v-model="residualPlan.description"></v-text-field>
+                            v-model="residualPlan.description"></a-text-field>
             </v-card>
           </v-col>
           <v-col cols="12" sm="6">
             <v-card class="pa-3" v-if="planId">
-              <v-text-field text
+              <a-text-field
                             label="Status"
                             disabled
-                            v-model="residualPlan.statusType"></v-text-field>
-              <v-text-field text
+                            v-model="residualPlan.statusType"></a-text-field>
+              <a-text-field
                             disabled
                             label="Created By"
-                            v-model="residualPlan.createdName"></v-text-field>
-              <v-text-field text
+                            v-model="residualPlan.createdName"></a-text-field>
+              <a-text-field
                             disabled
                             label="Approved"
                             v-if="residualPlan.approvedDate"
-                            v-model="residualPlan.approvedDate"></v-text-field>
-              <v-text-field text
+                            v-model="residualPlan.approvedDate"></a-text-field>
+              <a-text-field
                             disabled
                             v-if="residualPlan.approvedName"
                             label="Approved By"
-                            v-model="residualPlan.approvedName"></v-text-field>
+                            v-model="residualPlan.approvedName"></a-text-field>
             </v-card>
           </v-col>
         </v-row>
@@ -196,14 +196,13 @@
           ></a-btn>
         </v-card>
         <v-card color="white" class="square-card px-5 pt-1 pb-4">
-          <v-text-field
+          <a-text-field
               prepend-inner-icon="search"
-              text
               hide-details
               clearable
               label="Search users..."
               v-model="search"
-          ></v-text-field>
+          ></a-text-field>
         </v-card>
         <v-divider></v-divider>
         <v-data-table

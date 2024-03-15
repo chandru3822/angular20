@@ -35,27 +35,27 @@
       <!-- if edit mode enabled then show inputs -->
       <dd v-if="editMailing" class="edit-mail-div">
         <div class="addr-inputs">
-          <v-text-field text
+          <a-text-field
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         type="text"
                         label="Street 1:"
                         v-model="rebateDetails.mailing_street1">
-          </v-text-field>
-          <v-text-field text
+          </a-text-field>
+          <a-text-field
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         type="text"
                         label="Street 2:"
                         v-model="rebateDetails.mailing_street2">
-          </v-text-field>
-          <v-text-field text
+          </a-text-field>
+          <a-text-field
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         type="text"
                         label="City:"
                         v-model="rebateDetails.mailing_city">
-          </v-text-field>
+          </a-text-field>
           <v-autocomplete attach v-model="rebateDetails.mailing_state_id"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
@@ -64,13 +64,13 @@
                           item-text="state"
                           item-value="id"
           ></v-autocomplete>
-          <v-text-field text
+          <a-text-field
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         type="text"
                         label="Postal Code:"
                         v-model="rebateDetails.mailing_postal_code">
-          </v-text-field>
+          </a-text-field>
           <div class="d-flex justify-end">
             <a-btn
                 class="my-2"
@@ -152,8 +152,8 @@
             </v-icon>
           </div>
           <div v-if="editTotalPromotionAmount" class="flex-display" style="width: 100px">
-            <v-text-field style="width: 80px" type="number" v-model="rebateDetails.total_promotion_amount">
-            </v-text-field>
+            <a-text-field style="width: 80px" type="number" v-model="rebateDetails.total_promotion_amount">
+            </a-text-field>
             <v-icon color="primary" @click="updateTotalPromotionAmount()">
               save
             </v-icon>
@@ -196,9 +196,9 @@
                 <td class="text-left">{{item.batch_id}}</td>
                 <td class="text-left">{{item.batch_date | formatDate('date')}}</td>
                 <td class="text-left">
-                  <v-text-field type="number" v-model="item.payment_amount"
+                  <a-text-field type="number" v-model="item.payment_amount"
                                 @change="getTotals()" :disabled="canEditPayment(item)">
-                  </v-text-field>
+                  </a-text-field>
                 </td>
                 <td class="text-left">{{item.name}}</td>
                 <td class="text-left">{{item.check_number}}</td>
@@ -234,8 +234,8 @@
                               @close-dialog="cancelNotesDialog"
                               :disable-confirm="!userCanEdit">
             <template v-slot:title>Notes</template>
-            <v-text-field v-model="notesItem.void_note" outlined auto-grow rows="5">
-            </v-text-field>
+            <v-textarea v-model="notesItem.void_note" density="compact" variant="outlined" auto-grow rows="5">
+            </v-textarea>
             <template v-slot:no>cancel</template>
             <template v-slot:yes>save</template>
           </ConfirmationDialog>
@@ -247,8 +247,8 @@
           >
             <template v-slot:title>Confirm</template>
             Are you sure you want to void this payment?
-            <v-text-field v-model="notesItem.void_note" outlined auto-grow>
-            </v-text-field>
+            <v-textarea v-model="notesItem.void_note" outlined auto-grow>
+            </v-textarea>
             <template v-slot:no>cancel</template>
             <template v-slot:yes>void</template>
           </ConfirmationDialog>

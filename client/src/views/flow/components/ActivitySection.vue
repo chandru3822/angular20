@@ -2,14 +2,13 @@
   <v-container class="px-5 py-0">
     <div v-if="mobileView" class="headline-small pt-3">Notes</div>
     <div class="activity-header" >
-      <v-text-field
+      <a-text-field
           prepend-inner-icon="search"
-          text
           label="Search"
           clearable
           @click:clear="clearSearch"
           v-model="searchText"
-      ></v-text-field>
+      ></a-text-field>
       <a-btn
           variant="text"
           size="small"

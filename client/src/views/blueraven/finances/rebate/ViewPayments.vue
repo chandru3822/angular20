@@ -37,13 +37,12 @@
         ></a-btn>
       </div>
       <div>
-        <v-text-field
+        <a-text-field
             prepend-inner-icon="search"
-            text
             label="Search payments..."
             v-model="searchQuery"
             @input="debounceFilterPayments"
-        ></v-text-field>
+        ></a-text-field>
       </div>
     </v-card>
 
@@ -117,42 +116,42 @@
           <v-card-text>
             <v-row>
               <v-col>
-                <v-text-field label="Project Name"
+                <a-text-field label="Project Name"
                               v-model="newPayItem.projectName"
                               disabled
-                ></v-text-field>
-                <v-text-field label="Project ID"
+                ></a-text-field>
+                <a-text-field label="Project ID"
                               v-model="newPayItem.projectId"
                               disabled
-                ></v-text-field>
-                <v-text-field label="Substantial Completion"
+                ></a-text-field>
+                <a-text-field label="Substantial Completion"
                               v-model="newPayItem.sc"
                               disabled
-                ></v-text-field>
-                <v-text-field label="Financier"
+                ></a-text-field>
+                <a-text-field label="Financier"
                               v-model="newPayItem.financier"
                               disabled
-                ></v-text-field>
-                <v-text-field label="Product"
+                ></a-text-field>
+                <a-text-field label="Product"
                               v-model="newPayItem.product"
                               disabled
-                ></v-text-field>
+                ></a-text-field>
               </v-col>
               <v-col>
-                <v-text-field label="Total Promotion Amount"
+                <a-text-field label="Total Promotion Amount"
                               v-model="newPayItem.totalPromotionAmount"
-                ></v-text-field>
-                <v-text-field label="# of Promotion Payments"
+                ></a-text-field>
+                <a-text-field label="# of Promotion Payments"
                               v-model="newPayItem.numberOfPromotionPayments"
-                ></v-text-field>
-                <v-text-field label="$ / Promotion Payment"
+                ></a-text-field>
+                <a-text-field label="$ / Promotion Payment"
                               v-model="perPromotionPayment"
                               disabled>
-                </v-text-field>
-                <v-text-field label="Verified By"
+                </a-text-field>
+                <a-text-field label="Verified By"
                               v-model="newPayItem.createdBy"
                               disabled
-                ></v-text-field>
+                ></a-text-field>
               </v-col>
             </v-row>
           </v-card-text>
@@ -190,11 +189,11 @@
                         @confirm="confirmPassword()"
     >
       <template v-slot:title>Please confirm payment approval</template>
-      <v-text-field class="passwordTextfield"
+      <a-text-field class="passwordTextfield"
                     label="Please confirm your password:"
                     v-model="passwordInput"
                     type="password"
-      ></v-text-field>
+      ></a-text-field>
       <template v-slot:no>cancel</template>
       <template v-slot:yes>confirm</template>
     </ConfirmationDialog>

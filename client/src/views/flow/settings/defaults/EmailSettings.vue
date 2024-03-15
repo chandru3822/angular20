@@ -28,24 +28,24 @@
       <v-form v-if="addNew" ref="emailSettingsForm" v-model="addFormValid">
         <v-row>
           <v-col>
-            <v-text-field text
+            <a-text-field
                           type="text"
                           placeholder="Sender Name"
                           :rules="senderRequiredRule"
                           v-model="newEmail.senderName"
                           required
             >
-            </v-text-field>
+            </a-text-field>
           </v-col>
           <v-col>
-            <v-text-field text
+            <a-text-field
                           type="text"
                           placeholder="Email Address"
                           :rules="emailRules"
                           v-model="newEmail.emailAddress"
                           required
             >
-            </v-text-field>
+            </a-text-field>
           </v-col>
           <v-col class="text-center">
             <v-checkbox v-model="newEmail.checked" :value="newEmail.isDefault" label="Default" width="24px"></v-checkbox>
@@ -60,25 +60,25 @@
             class="elevation-1 square-card table-striped"
         >
           <template #item.name="{ item, index }">
-                <v-text-field text
+                <a-text-field
                               type="text"
                               :ref="`senderName-edit-${item.id}`"
                               :rules="senderRequiredRule"
                               v-if="index === editIndex"
                               v-model="item.senderName">
-                </v-text-field>
+                </a-text-field>
                 <div v-else>
                   {{item.senderName}}
                 </div>
           </template>
               <template #item.value="{item, index}" class="text-left">
-                <v-text-field text
+                <a-text-field
                               type="text"
                               :ref="`emailAddress-edit-${item.id}`"
                               :rules="emailRules"
                               v-if="index === editIndex"
                               v-model="item.emailAddress">
-                </v-text-field>
+                </a-text-field>
                 <div v-else style="overflow-wrap: anywhere">
                   {{ item.emailAddress }}
                 </div>

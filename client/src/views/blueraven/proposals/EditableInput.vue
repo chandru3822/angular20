@@ -1,7 +1,7 @@
 <template>
   <div class="editable-input d-flex pa-0 align-center">
     <span v-if="!isEditMode">{{ displayText || name }}</span>
-    <v-text-field v-else v-model="name" solo single-line flat autofocus />
+    <a-text-field v-else v-model="name" solo single-line flat autofocus />
     <div v-if="editable">
       <a-btn
           size="small"
@@ -71,7 +71,7 @@ const handleSave = (evt) => {
 }
 </script>
 <style lang="scss">
-.editable-input .v-text-field__details {
+.editable-input .a-text-field__details {
   display: none;
 }
 </style>

@@ -9,10 +9,9 @@
         <v-card
             class="white elevation-1 mt-3 px-3 pt-1 square-card"
         >
-          <v-text-field
+          <a-text-field
               class="pt-3"
               prepend-inner-icon="search"
-              text
               clearable
               label="Search projects..."
               v-model="searchQuery"

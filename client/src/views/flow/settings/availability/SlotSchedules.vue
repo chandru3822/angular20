@@ -16,10 +16,10 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card color="transparent" flat v-if="addNew" class="mb-2 pa-5">
-          <v-text-field
+          <a-text-field
             label="New Schedule Name"
             v-model="newSchedule.scheduleName"
-          ></v-text-field>
+          ></a-text-field>
           <a-btn :disabled="!newSchedule.scheduleName"
                            @click="saveSchedule(newSchedule)"
                            text="SAVE"
@@ -47,7 +47,7 @@
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': slotSchedules.indexOf(item) % 2}">
               <h3>Edit Schedule</h3>
-              <v-text-field
+              <a-text-field
                 v-model="item.scheduleName"
                 label="Schedule Name"
               />

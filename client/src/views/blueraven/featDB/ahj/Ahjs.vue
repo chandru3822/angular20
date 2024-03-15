@@ -31,14 +31,15 @@
                   :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
               >
                 <div v-if="ahjFilters[header.value]" class="pt-2 table-filter">
-                  <v-text-field v-if="ahjFilters[header.value].type === 'text'"
+                  <a-text-field v-if="ahjFilters[header.value].type === 'text'"
                                 v-model="ahjFilters[header.value].value"
+                                class="mx-2"
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
                                 clearable
-                                filled
-                                dense
+                                density="compact"
+                                variant="filled"
                                 hide-details
-                  ></v-text-field>
+                  ></a-text-field>
                   <v-autocomplete v-else-if="ahjFilters[header.value].type === 'select'"
                                   :items="states"
                                   v-model="ahjFilters[header.value].value"
@@ -93,11 +94,11 @@
             </v-card-title>
 
             <v-card-text>
-              <v-text-field label="Name"
+              <a-text-field label="Name"
                             v-model="editedItem.name"
                             required
                             filled
-              ></v-text-field>
+              ></a-text-field>
               <v-autocomplete label="Metro Area"
                               :items="metroAreas"
                               v-model="editedItem.metroAreaId"

@@ -2,13 +2,13 @@
   <v-row>
     <v-col cols="12" class="py-0">
       <v-card flat class="square-card pb-3 px-3 elevation-1" color="white">
-        <v-text-field
+        <a-text-field
           v-model="search"
           prepend-inner-icon="mdi-magnify"
           label="Search"
           single-line
           hide-details
-        ></v-text-field>
+        ></a-text-field>
       </v-card>
       <v-divider></v-divider>
       <v-data-table

@@ -15,48 +15,48 @@
                   item-value="id"
                   autocomplete="off">
         </v-select>
-        <v-text-field text
+        <a-text-field
                       label="User First Name"
                       placeholder=" "
                       :rules="requiredRules"
                       :readonly="!userCanEdit"
                       v-model="tempUser.firstName"
-        ></v-text-field>
-        <v-text-field text
+        ></a-text-field>
+        <a-text-field
                       label="User Last Name"
                       :rules="requiredRules"
                       :readonly="!userCanEdit"
                       v-model="tempUser.lastName"
-        ></v-text-field>
-        <v-text-field text
+        ></a-text-field>
+        <a-text-field
                       label="Phone"
                       placeholder=" "
                       :rules="userPhoneRule"
                       :readonly="!userCanEdit"
-                      v-model="tempUser.phoneNumber"></v-text-field>
-        <v-text-field text
+                      v-model="tempUser.phoneNumber"></a-text-field>
+        <a-text-field
                       label="Phone Extension"
                       placeholder=" "
                       :readonly="!userCanEdit"
-                      v-model="tempUser.phoneExtension"></v-text-field>
-        <v-text-field text
+                      v-model="tempUser.phoneExtension"></a-text-field>
+        <a-text-field
                       label="E-Mail"
                       placeholder=" "
                       :rules="emailRule"
                       :readonly="!userCanEdit"
-                      v-model="tempUser.email"></v-text-field>
-        <v-text-field text
+                      v-model="tempUser.email"></a-text-field>
+        <a-text-field
                       label="Username"
                       placeholder=" "
                       :rules="usernameRule"
                       :readonly="!userCanEdit"
-                      v-model="tempUser.username"></v-text-field>
-        <v-text-field text class="mt-4"
+                      v-model="tempUser.username"></a-text-field>
+        <a-text-field  class="mt-4"
                       v-if="userIsAdmin"
                       :rules="passwordRule"
                       label="Password"
                       placeholder=" "
-                      v-model="tempUser.newPassword"></v-text-field>
+                      v-model="tempUser.newPassword"></a-text-field>
       </v-form>
       <template v-slot:yes>Save</template>
     </ConfirmationDialog>

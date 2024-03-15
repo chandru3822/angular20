@@ -18,11 +18,11 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
-          <v-text-field v-if="addNew"
+          <a-text-field v-if="addNew"
                         v-model="newProcess.processName"
                         placeholder="Enter new process name"
                         label="Process">
-          </v-text-field>
+          </a-text-field>
           <a-btn
             color="primary"
             :disabled="!newProcess.processName"

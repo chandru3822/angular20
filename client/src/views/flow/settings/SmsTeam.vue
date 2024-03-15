@@ -31,7 +31,7 @@
         </v-toolbar>
         <v-card v-if="addTeam" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add Team</h3>
-          <v-text-field text v-model="newTeam.teamName"
+          <a-text-field  v-model="newTeam.teamName"
                         label="Team Name" />
 
           <a-btn
@@ -63,7 +63,7 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': filterTeams.indexOf(item) % 2}">
-              <v-text-field text v-model="item.teamName" label="Team Name" class="px-4"/>
+              <a-text-field  v-model="item.teamName" label="Team Name" class="px-4"/>
               <v-checkbox dense v-model="item.checked" :value="item.isDefault" :disabled="item.isDefault" class="albatross-body-2 mt-0 px-4" label="Make Default for incoming unprompted customer and internal messages" />
               <a-btn :disabled="item.teamName.length < 1" color="primary" class="mr-2" @click="saveTeam(item, false)" text="SAVE"/>
               <div class="mb-2">

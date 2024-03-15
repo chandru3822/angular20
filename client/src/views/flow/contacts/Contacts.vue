@@ -45,15 +45,14 @@
             color="white"
             class="elevation-1 mt-3"
         >
-          <v-text-field
+          <a-text-field
               class="mt-5 body-large"
               prepend-inner-icon="search"
-              text
               clearable
               label="Search contacts..."
               v-model="search"
               @input="debounceGetContacts"
-          ></v-text-field>
+          ></a-text-field>
           <v-spacer></v-spacer>
         </v-toolbar>
         <v-data-table

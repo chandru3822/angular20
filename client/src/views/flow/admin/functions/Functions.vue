@@ -15,12 +15,12 @@
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
           <h3>Add New Function</h3>
           <div class="mb-3">
-            <v-text-field text label="Function Name"
+            <a-text-field  label="Function Name"
                           v-model="newFunction.functionName"
                           hint="* This MUST match the function name in the procedure files"
-                          persistent-hint></v-text-field>
-            <v-text-field text label="Display Name"
-                          v-model="newFunction.displayName"></v-text-field>
+                          persistent-hint></a-text-field>
+            <a-text-field  label="Display Name"
+                          v-model="newFunction.displayName"></a-text-field>
             <v-select
                 class="mt-2"
                 v-model="newFunction.dbFunctionTypeId"
@@ -64,14 +64,14 @@
               @click="addFunction()">
           </a-btn>
         </v-card>
-        <v-text-field
+        <a-text-field
             v-model="search"
             class="mb-2 px-4 py-2"
             prepend-inner-icon="search"
             label="Search"
             single-line
             hide-details
-        ></v-text-field>
+        ></a-text-field>
         <v-divider></v-divider>
         <v-data-table
             :headers="headers"
@@ -119,7 +119,6 @@
 <script setup>
 import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest} from '@/helpers/helpers'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
-import a-btn from '@/components/customVuetify/a-btn'
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'

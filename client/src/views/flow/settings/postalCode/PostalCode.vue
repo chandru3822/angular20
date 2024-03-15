@@ -17,12 +17,12 @@
         </v-toolbar>
         <v-container>
           <v-card class="square-card" elevation="0">
-            <v-text-field
+            <a-text-field
                 v-model="postalCode.placeName"
                 label="Place Name"
                 :rules="requiredRules"
                 hide-details
-            ></v-text-field>
+            ></a-text-field>
             <v-autocomplete
                 :items="zones"
                 item-value="id"

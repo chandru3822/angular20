@@ -17,10 +17,10 @@
           <h3>{{ isCompanyRoot ? 'Add New Feature' : 'Add Feature to Company' }}</h3>
           <div class="mb-3">
             <div v-if="isCompanyRoot">
-              <v-text-field text label="Enter the name of a new feature"
-                            v-model="selectedFeature.featureName"></v-text-field>
-              <v-text-field text label="Enter Feature Code"
-                            v-model="selectedFeature.featureCode"></v-text-field>
+              <a-text-field label="Enter the name of a new feature"
+                            v-model="selectedFeature.featureName"></a-text-field>
+              <a-text-field label="Enter Feature Code"
+                            v-model="selectedFeature.featureCode"></a-text-field>
               <label>Is System:</label>
               <input class="ml-3" type="checkbox" v-model="selectedFeature.isSystem">
             </div>
@@ -64,10 +64,10 @@
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': companyFeatures.indexOf(item) % 2}">
               <h3>Edit Feature</h3>
               <div class="mb-3">
-                <v-text-field text v-model="item.featureName"
+                <a-text-field v-model="item.featureName"
                               label="Feature Name"/>
                 <div v-if="isCompanyRoot">
-                  <v-text-field text v-model="item.featureCode"
+                  <a-text-field v-model="item.featureCode"
                                 label="Feature Name"/>
                   <label>Is System:</label>
                   <input class="ml-3" type="checkbox" v-model="item.isSystem">
@@ -117,7 +117,6 @@ import constants from '@/helpers/constants'
 import orderBy from 'lodash.orderby'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
-import a-btn from '@/components/customVuetify/a-btn'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 

@@ -17,12 +17,12 @@
         </v-toolbar>
         <v-container>
           <v-card v-if="addNew" flat color="transparent">
-            <v-text-field v-model="newTag.tagName"
+            <a-text-field v-model="newTag.tagName"
                           counter
                           :maxlength="tagMaxChars"
                           placeholder="Enter a tag name"
                           label="Tag Name">
-            </v-text-field>
+            </a-text-field>
             <v-row>
               <v-col cols="6">
                 <div>
@@ -58,12 +58,12 @@
               <v-list-item :class="{'shaded-row': index % 2, 'mobile': vuetify.breakpoint.smAndDown}">
                 <v-list-item-content class="text-left">
                   <div v-if="selectedTagId === a.id">
-                    <v-text-field class="one-hunned"
+                    <a-text-field class="one-hunned"
                                   label="Tag Name"
                                   counter
                                   :maxlength="25"
                                   v-model="a.tagName">
-                    </v-text-field>
+                    </a-text-field>
                     <v-row>
                       <v-col cols="6">
                         <div>

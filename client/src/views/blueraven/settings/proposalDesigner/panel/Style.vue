@@ -33,12 +33,12 @@
           ></a-btn>
         </v-btn-toggle>
 
-        <v-text-field outlined dense
+        <a-text-field density="compact" variant="outlined"
           v-model="cssStyle.fontWeight"
           label="Font Weight"
           @change="doUpdateStyles({'fontWeight': $event})"
         />
-        <v-text-field outlined dense
+        <a-text-field density="compact" variant="outlined"
                       v-model="cssStyle.lineHeight"
                       label="Line Height"
                       @change="doUpdateStyles({'lineHeight': $event})"
@@ -126,7 +126,7 @@
                   label="Align"
                   @change="doUpdateStyles({'alignItems': $event})"
         />
-        <v-text-field outlined dense
+        <a-text-field density="compact" variant="outlined"
                       v-model="cssStyle.flexBasis"
                       label="Flex Basis"
                       @change="doUpdateStyles({'flexBasis': $event})"

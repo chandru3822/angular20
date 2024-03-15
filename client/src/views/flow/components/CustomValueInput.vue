@@ -18,7 +18,7 @@
             :required="required"
             :min-date="minDate"
             :max-date="maxDate"
-            :filled="filledStyle"
+            :variant="variant"
             :format="'MMMM DD, YYYY'"
             :label="getFieldName()"
             :hide-details="hideDetails"
@@ -33,8 +33,8 @@
             :timezone="timezone"
             type="timestamp"
             :allow-now="field.allowNow"
-            :filled="filledStyle"
             :required="required"
+            :variant="variant"
             :format="'MMMM DD, YYYY, h:mm A'"
             :label="getFieldName()"
             :hide-details="hideDetails"
@@ -50,7 +50,7 @@
             :label="getFieldName()"
             :hide-details="hideDetails"
             :rules="rules"
-            :filled="filledStyle"
+            :filled="filled"
             :disabled="readonly"
             :readonly="readonly"
             :ripple="false"
@@ -59,20 +59,19 @@
             :hint="hint"
         />
 
-        <v-text-field
+        <a-text-field
             v-if="field.dataTypeId === 4"
-            text
             :required="required"
             :readonly="readonly"
             :disabled="readonly"
             :class="[customClass, {'error--text': readonly}]"
             placeholder=" "
             :rules="rules"
-            :filled="filledStyle"
             :label="getFieldName()"
             :hide-details="hideDetails"
             :hint="hint"
             type="number"
+            :variant="variant"
             v-model.number="field.numericValue"
             @change="props.callback(field)"
             autocomplete="off"
@@ -91,7 +90,7 @@
             :class="[customClass, {'error--text': readonly || required}]"
             placeholder=" "
             :rules="rules"
-            :filled="filledStyle"
+            :filled="filled"
             :label="getFieldName()"
             :hide-details="hideDetails"
             v-model="field.textValue"
@@ -99,9 +98,8 @@
             autocomplete="off"
         />
 
-        <v-text-field
+        <a-text-field
             v-if="field.dataTypeId === 6 && !field.hasListValues"
-            text
             :required="required"
             :readonly="readonly"
             :disabled="readonly"
@@ -109,7 +107,7 @@
             :label="getFieldName()"
             :hide-details="hideDetails"
             placeholder=" "
-            :filled="filledStyle"
+            :variant="variant"
             :rules="rules"
             type="number"
             v-model.number="field.intValue"
@@ -130,7 +128,7 @@
             :class="[customClass, {'error--text': readonly || required}]"
             :loading="isLoading"
             placeholder=" "
-            :filled="filledStyle"
+            :filled="filled"
             item-disabled="archived"
             :rules="rules"
             :items="getListOfValues()"
@@ -160,7 +158,7 @@
             v-model="field.intArrayValue"
             :hide-no-data="field.lazyLoadValues"
             :search-input.sync="search"
-            :filled="filledStyle"
+            :filled="filled"
             :items="getListOfValues()"
             item-disabled="archived"
             :clearable="!readonly"
@@ -193,7 +191,7 @@
             :search-input.sync="search"
             :hide-no-data="field.lazyLoadValues"
             :clearable="!readonly"
-            :filled="filledStyle"
+            :filled="filled"
             item-disabled="archived"
             :readonly="readonly"
             :disabled="readonly"
@@ -224,7 +222,7 @@
             :hide-no-data="field.lazyLoadValues"
             text
             attach
-            :filled="filledStyle"
+            :filled="filled"
             :required="required"
             :clearable="!readonly"
             item-disabled="archived"
@@ -260,8 +258,8 @@
 
         <div v-if="field.dataTypeId === 13" class="one-hunned">
           <!-- this hidden text field makes the form's required fields validation work -->
-          <v-text-field style="display: none;" v-model="field.richTextValue" :required="required" :rules="rules">
-          </v-text-field>
+          <a-text-field style="display: none;" v-model="field.richTextValue" :required="required" :rules="rules">
+          </a-text-field>
           <div class="albatross-body-1 default-text-color d-flex align-baseline mb-2 pa-1" v-if="!hideLabel && !showFieldName">
             {{ getFieldName() }}
             <v-icon v-if="locked && lockFeature" @click="locked=false" small color="primary" class="ml-3">mdi-lock</v-icon>
@@ -362,7 +360,7 @@ const props = defineProps({
   },
   minDate: String,
   maxDate: String,
-  filledStyle: Boolean,
+  variant: String,
   callback: Function,
   customClass: String,
   appendIcon: String,
@@ -370,7 +368,7 @@ const props = defineProps({
 })
 const { apiPath, required, readonly, field, useFieldAncillaryName, showFieldName,
   hideLabel, hideDetails, lockFeature, copyFeature, listOfValueFilter, hint, minDate,
-  maxDate, filledStyle, customClass, appendIcon } = toRefs(props)
+  maxDate, variant, customClass, appendIcon } = toRefs(props)
 
 const search = ref(null)
 const isLoading = ref(false)
@@ -389,7 +387,15 @@ const toolbarOptions = ref({
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
 const arrayRequiredRules = ref(constants.BASIC_ARRAY_REQUIRED_RULE)
 const locked = ref(true)
-const currentUserId = ref(null)
+
+const filled = computed(() => {
+  //this is temporary until all v-components are converted to us variant
+  return variant.value === 'filled'
+})
+
+const currentUserId = computed(() => {
+  return userStore.details.id
+})
 
 const timezone = computed(() => {
   return userStore.timezone.value
@@ -508,8 +514,7 @@ const selectSelf = () => {
     case 4://All Active Users
     default: //(just using this for the default case because it's simplest)
       //a field with System List Type of “All Active Users” returns a distinct list of users and uses the userId as the value.id
-      let currentUserId = userStore.details.id
-      let currentUserPosition = getListOfValues().find(value => value.id && value.id === currentUserId)
+      let currentUserPosition = getListOfValues().find(value => value.id && value.id === currentUserId.value)
       if(currentUserPosition){
         field.value.intValue = currentUserPosition.id
       }

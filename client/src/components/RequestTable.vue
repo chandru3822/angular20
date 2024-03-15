@@ -1,14 +1,13 @@
 <template>
   <v-container class="pa-0">
     <v-toolbar color="white" class="elevation-1 mt-3">
-      <v-text-field
+      <a-text-field
           class="mt-5 pay-search"
           prepend-inner-icon="search"
-          text
           label="Search projects..."
           v-model="searchQuery"
           @input="debounceFilterProjects"
-      ></v-text-field>
+      ></a-text-field>
     </v-toolbar>
     <v-col cols="12">
       <v-data-table

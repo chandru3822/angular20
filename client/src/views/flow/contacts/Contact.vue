@@ -15,53 +15,53 @@
       <v-form ref="contactEditForm">
         <v-card-text class="pt-4 px-0">
           <div>
-            <v-text-field
+            <a-text-field
                 v-model="tempContact.firstName"
                 :rules="requiredRules"
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
                 label="Contact First Name"
                 class="body-large"
-            ></v-text-field>
-            <v-text-field
+            ></a-text-field>
+            <a-text-field
                 class="body-large"
                 v-model="tempContact.lastName"
                 :rules="requiredRules"
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
                 label="Contact Last Name"
-            ></v-text-field>
-            <v-text-field
+            ></a-text-field>
+            <a-text-field
                 class="body-large"
                 v-model="tempContact.street1"
                 label="Street"
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
-                maxlength="100"
+                :maxlength="100"
                 counter
                 @change="tempContact.reloadCoordinates = true"
-            ></v-text-field>
-            <v-text-field
+            ></a-text-field>
+            <a-text-field
                 class="body-large"
                 v-model="tempContact.city"
                 label="City"
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
                 @change="tempContact.reloadCoordinates = true"
-            ></v-text-field>
-            <v-text-field
+            ></a-text-field>
+            <a-text-field
                 class="body-large"
                 type="text"
                 v-model="tempContact.postalCode"
                 counter
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
-                maxlength="10"
-                @keypress="isNumberOrHyphen"
+                :maxlength="10"
+                @keydown="isNumberOrHyphen"
                 :rules="postalCodeRules"
                 @change="tempContact.reloadCoordinates = true"
                 label="Postal Code"
-            ></v-text-field>
+            ></a-text-field>
             <v-autocomplete v-model="tempContact.companyStateId"
                             class="body-large"
                             :items="states"
@@ -84,23 +84,23 @@
                       item-text="country"
                       item-value="id"
             ></v-select>
-            <v-text-field text
+            <a-text-field
                           class="body-large"
                           label="Phone"
                           placeholder=" "
                           :rules="contactPhoneRule"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
-                          v-model="tempContact.phone"></v-text-field>
-            <v-text-field text
+                          v-model="tempContact.phone"></a-text-field>
+            <a-text-field
                           class="body-large"
                           label="Mobile"
                           placeholder=" "
                           :rules="contactPhoneRule"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
-                          v-model="tempContact.mobile"></v-text-field>
-            <v-text-field text
+                          v-model="tempContact.mobile"></a-text-field>
+            <a-text-field
                           class="body-large"
                           label="E-Mail"
                           id="qa-email-field"
@@ -108,7 +108,7 @@
                           :rules="emailRules"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
-                          v-model="tempContact.email"></v-text-field>
+                          v-model="tempContact.email"></a-text-field>
           </div>
           <v-autocomplete v-model="tempContact.owner"
                           class="body-large"

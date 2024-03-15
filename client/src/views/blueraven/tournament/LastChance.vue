@@ -24,14 +24,14 @@
           ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
-      <v-text-field
+      <a-text-field
           v-model="search"
           class="mb-2 px-4 py-2"
           prepend-inner-icon="search"
           label="Search"
           single-line
           hide-details
-      ></v-text-field>
+      ></a-text-field>
       <v-divider></v-divider>
       <v-data-table
           :headers="headers"

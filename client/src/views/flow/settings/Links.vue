@@ -20,15 +20,15 @@
         </v-toolbar>
         <v-container>
           <v-card v-if="addNew" flat color="transparent">
-            <v-text-field v-model="newLink.link"
+            <a-text-field v-model="newLink.link"
                           placeholder="Enter a link name"
                           label="Link">
-            </v-text-field>
-            <v-text-field v-model="newLink.url"
+            </a-text-field>
+            <a-text-field v-model="newLink.url"
                           clearable
                           placeholder="Enter a URL"
                           label="URL">
-            </v-text-field>
+            </a-text-field>
             <div>
               <p>These parameters can be used to add some system values to a url. </p>
               <p>Validation is not yet in place so be careful which screens you assign a url to.</p>
@@ -58,17 +58,17 @@
               <v-list-item :class="{'shaded-row': index % 2, 'flex-column': vuetify.breakpoint.smAndDown && selectedLinkId === a.id}">
                 <v-list-item-content class="text-left">
                   <div v-if="selectedLinkId === a.id">
-                    <v-text-field class="one-hunned"
+                    <a-text-field class="one-hunned"
                                   :class="{'px-4': vuetify.breakpoint.smAndDown}"
                                   label="Link"
                                   v-model="a.link">
-                    </v-text-field>
-                    <v-text-field class="one-hunned"
+                    </a-text-field>
+                    <a-text-field class="one-hunned"
                                   :class="{'px-4': vuetify.breakpoint.smAndDown}"
                                   label="URL"
                                   clearable
                                   v-model="a.url">
-                    </v-text-field>
+                    </a-text-field>
                     <div>
                       <p :class="{'px-4': vuetify.breakpoint.smAndDown}">These parameters can be used to add some system values to a url. </p>
                       <p :class="{'px-4': vuetify.breakpoint.smAndDown}">Validation is not yet in place so be careful which screens you assign a url to. </p>

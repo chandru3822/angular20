@@ -44,31 +44,31 @@
       <v-row>
         <v-col cols="12" md="6">
 <!--          yes, i realize this should be done better. buuuuut i just dont wanna -->
-          <v-text-field v-model="user.firstName"
+          <a-text-field v-model="user.firstName"
                         placeholder="Enter a value"
                         required
                         v-if="showOnUserProfile('First Name')"
                         :rules="requiredRules"
                         @change="setFieldsDirty"
                         label="First Name">
-          </v-text-field>
-          <v-text-field v-model="user.lastName"
+          </a-text-field>
+          <a-text-field v-model="user.lastName"
                         placeholder="Enter a value"
                         required
                         v-if="showOnUserProfile('Last Name')"
                         :rules="requiredRules"
                         @change="setFieldsDirty"
                         label="Last Name">
-          </v-text-field>
-          <v-text-field v-model="user.email"
+          </a-text-field>
+          <a-text-field v-model="user.email"
                         placeholder="Enter a value"
                         required
                         v-if="showOnUserProfile('Email')"
                         :rules="emailRules"
                         @change="setFieldsDirty"
                         label="E-mail">
-          </v-text-field>
-          <v-text-field v-model="user.username"
+          </a-text-field>
+          <a-text-field v-model="user.username"
                         placeholder="Enter a value"
                         required
                         v-if="showOnUserProfile('Username')"
@@ -76,15 +76,15 @@
                         :rules="usernameRules"
                         @change="setFieldsDirty"
                         label="Username">
-          </v-text-field>
-          <v-text-field v-model="user.phoneNumber"
+          </a-text-field>
+          <a-text-field v-model="user.phoneNumber"
                         :rules="userPhoneRule"
                         placeholder="Enter a value"
                         v-if="showOnUserProfile('Phone')"
                         required
                         @change="setFieldsDirty"
                         label="Phone">
-          </v-text-field>
+          </a-text-field>
           <v-select attach v-model="user.notificationTypeId"
                     :items="userNotificationTypes"
                     label="Notification"
@@ -94,7 +94,7 @@
                     @change="setFieldsDirty"
                     autocomplete="off">
           </v-select>
-          <v-text-field v-model="user.newPassword"
+          <a-text-field v-model="user.newPassword"
                         v-if="!userIsMasquerading && showOnUserProfile('Password')"
                         placeholder="Enter a new password"
                         required
@@ -103,8 +103,8 @@
                         :rules="[passwordRule]"
                         @change="setFieldsDirty"
                         label="Change Password">
-          </v-text-field>
-          <v-text-field v-model="user.newPasswordConfirm"
+          </a-text-field>
+          <a-text-field v-model="user.newPasswordConfirm"
                         v-if="!userIsMasquerading && showOnUserProfile('Password')"
                         placeholder="Verify password"
                         required
@@ -113,7 +113,7 @@
                         :rules="[passwordRule]"
                         @change="setFieldsDirty"
                         label="Confirm Password">
-          </v-text-field>
+          </a-text-field>
           <v-autocomplete v-if="!userIsAlbatross && showOnUserProfile('Default Home Page')"
                           v-model="user.homePageCompanyFeatureId"
                           :items="homePages"

@@ -17,11 +17,11 @@
         <v-card-text>
           <v-row>
             <v-col>
-              <v-text-field label="Customer Name"
+              <a-text-field label="Customer Name"
                             v-model="customer_name"
                             disabled
                             class="customer-name-width"
-              ></v-text-field>
+              ></a-text-field>
             </v-col>
             <v-col>
               <v-select label="Template type"
@@ -43,11 +43,11 @@
                               item-value="id"
                               @change="populateDocName"
               ></v-autocomplete>
-              <v-text-field
+              <a-text-field
                   v-show="selectedDocIds.length === 1"
                   label="Document Name"
                   v-model="document_name"
-              ></v-text-field>
+              ></a-text-field>
             </v-col>
           </v-row>
         </v-card-text>

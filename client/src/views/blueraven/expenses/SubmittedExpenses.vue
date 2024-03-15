@@ -7,14 +7,14 @@
             <v-toolbar-title class="app-title">
               Submitted Expenses
             </v-toolbar-title>
-            <v-text-field
+            <a-text-field
                 v-model="userSearchText"
                 prepend-inner-icon="search"
                 label="Search"
                 single-line
                 class="mt-5"
                 hide-details
-            ></v-text-field>
+            ></a-text-field>
           </div>
         </v-col>
         <v-col cols="12" sm="4" class="middle-header-bar">
@@ -242,12 +242,12 @@
                             item-text="name"
                             item-value="id"
             ></v-autocomplete>
-            <v-text-field text
+            <a-text-field
                           type="number"
                           prepend-icon="mdi-currency-usd"
                           label="Amount"
                           v-model.number="selectedExpense.amount">
-            </v-text-field>
+            </a-text-field>
             <label>Details:</label>
             <v-textarea class="py-2" hide-details
                         auto-grow filled

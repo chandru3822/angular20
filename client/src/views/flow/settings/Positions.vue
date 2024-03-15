@@ -17,13 +17,13 @@
           </v-toolbar-items>
         </v-toolbar>
         <div class="pa-4">
-          <v-text-field
+          <a-text-field
             v-model="search"
             prepend-inner-icon="search"
             label="Search"
             single-line
             hide-details
-          ></v-text-field>
+          ></a-text-field>
         </div>
         <v-data-table
             :headers="headers"

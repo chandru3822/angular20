@@ -31,14 +31,14 @@
                   :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
               >
                 <div v-if="supplierFilters[header.value]" class="pt-2 table-filter">
-                  <v-text-field v-if="supplierFilters[header.value].type === 'text'"
+                  <a-text-field v-if="supplierFilters[header.value].type === 'text'"
                                 v-model="supplierFilters[header.value].value"
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
                                 clearable
                                 filled
                                 dense
                                 hide-details
-                  ></v-text-field>
+                  ></a-text-field>
                   <v-autocomplete v-else-if="supplierFilters[header.value].type === 'select'"
                                   :items="states"
                                   v-model="supplierFilters[header.value].value"
@@ -113,11 +113,11 @@
         </v-card-title>
 
         <v-card-text>
-          <v-text-field label="Name"
+          <a-text-field label="Name"
                         v-model="editedItem.name"
                         required
                         filled
-          ></v-text-field>
+          ></a-text-field>
           <v-autocomplete label="State"
                           :items="states"
                           v-model="editedItem.companyStateId"
@@ -410,7 +410,7 @@ const saveSupplier = async() => {
     font-weight: normal;
     margin-bottom: 10px;
 
-    .v-text-field,
+    .a-text-field,
     .v-select {
       font-size: 0.875rem;
       margin-left: 15px;

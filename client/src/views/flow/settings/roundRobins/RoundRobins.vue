@@ -18,16 +18,16 @@
         </v-toolbar>
         <v-container>
           <v-card color="transparent" flat v-if="addNew">
-            <v-text-field
+            <a-text-field
                 label="Round Robin Name"
                 tabindex=1
                 v-model="newRoundRobin.roundRobinName"
-            ></v-text-field>
-            <v-text-field
+            ></a-text-field>
+            <a-text-field
                 label="Distribution Time Frame (Days)"
                 tabindex=1
                 v-model="newRoundRobin.distributionTimeFrameDays"
-            ></v-text-field>
+            ></a-text-field>
             <v-autocomplete v-model="newRoundRobin.companyTimezoneId"
                             :items="companyTimezones"
                             label="Time Zone"
@@ -48,14 +48,14 @@
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
             <v-card-title class="pt-0">
-              <v-text-field
+              <a-text-field
                   v-model="search"
                   prepend-inner-icon="search"
                   label="Search users and round robins"
                   single-line
                   hide-details
                   @input="debounceSearch"
-              ></v-text-field>
+              ></a-text-field>
             </v-card-title>
             <v-data-table
                 :headers="headers"
@@ -73,12 +73,12 @@
               <template #header.roundRobinName="{ header }">
                 <th class="pa-2 text-left">
                   {{ header.text }}
-                  <v-text-field outlined
+                  <a-text-field variant="outlined"
                                 hide-details
                                 class="filter-input"
                                 v-model="nameSearch"
                                 @input="filterResults()">
-                  </v-text-field>
+                  </a-text-field>
                 </th>
               </template>
 

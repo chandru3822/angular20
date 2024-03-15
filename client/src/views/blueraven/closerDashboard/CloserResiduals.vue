@@ -214,14 +214,14 @@
         <div class="residual-total-count">Total: {{residualData.total_qualifying_fdc_to_date?.length || 0}}</div>
       </v-card-title>
       <v-card-text>
-        <v-text-field
+        <a-text-field
           v-model="totalQualifyingSearch"
           prepend-inner-icon="search"
           label="Search"
           single-line
           dense
           hide-details
-        ></v-text-field>
+        ></a-text-field>
         <v-data-table
           :search="totalQualifyingSearch"
           :headers="totalQualifyingFdcHeaders"

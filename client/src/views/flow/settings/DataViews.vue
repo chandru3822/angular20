@@ -21,10 +21,10 @@
           <h3>Add Data View</h3>
           <div class="mb-3">
             <v-form ref="dataViewForm">
-            <v-text-field text v-model="newDataView.displayName"
+            <a-text-field  v-model="newDataView.displayName"
                           :rules="requiredRules"
                           label="Display Name" />
-            <v-text-field text v-model="newDataView.viewName"
+            <a-text-field  v-model="newDataView.viewName"
                           :rules="tableNameRule"
                           label="Table Name (all lower case, underscores instead of spaces)" />
               <v-select label="Company Processes"

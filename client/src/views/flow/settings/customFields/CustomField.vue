@@ -28,7 +28,7 @@
 
         <v-card text class="text-left field-card one-hunned" flat>
           <v-card-text class="pl-0">{{ customFieldId ? 'Edit Field' : 'Add Field' }}</v-card-text>
-          <v-text-field
+          <a-text-field
             label="Field Name"
             :readonly="!userCanEdit"
             :disabled="!userCanEdit"
@@ -117,7 +117,7 @@
             </div>
 
             <div v-else>
-              <v-text-field outlined
+              <a-text-field variant="outlined"
                 v-model="customField.customFieldSqlKey"
                 label="SQL Key"
               />
@@ -125,7 +125,7 @@
                 v-model="customField.customFieldSql"
                 label="SQL"
               />
-              <v-text-field outlined
+              <a-text-field variant="outlined"
                 v-model="customField.customFieldSqlReferenceTable"
                 label="SQL Reference Table"
               />
@@ -183,14 +183,14 @@
                   </v-list-item-action>
                   <v-list-item-content>
                     <div class="flex-align-items-center">
-                      <v-text-field
+                      <a-text-field
                       class="one-hunned"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
                       :placeholder="ddo.placeholder"
                       @input="ddo.isDirty = true"
                       v-model="ddo.name">
-                    </v-text-field>
+                    </a-text-field>
                       <v-tooltip left v-if="!!ddo.id">
                         <template v-slot:activator="{ on, attrs }">
                           <a-btn variant="text" icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
@@ -220,14 +220,14 @@
                   </v-list-item-action>
                   <v-list-item-content>
                     <div flex-align-items-center>
-                    <v-text-field
+                    <a-text-field
                       class="one-hunned"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
                       :placeholder="ddo.placeholder"
                       @input="ddo.isDirty = true"
                       v-model="ddo.name">
-                    </v-text-field>
+                    </a-text-field>
                       <v-tooltip left v-if="!!ddo.id">
                         <template v-slot:activator="{ on, attrs }">
                           <a-btn variant="text" icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"

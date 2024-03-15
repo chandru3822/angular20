@@ -18,13 +18,13 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addNumber" class="square-card text-left pa-5">
-          <v-text-field text
+          <a-text-field
                         label="Phone Number"
                         counter
                         type="number"
-                        maxlength="20"
+                        :maxlength="20"
                         v-model="newNumber">
-          </v-text-field>
+          </a-text-field>
           <div class="error-text mb-3" v-if="showError">{{errorMsg}}</div>
           <a-btn color="primary" class="mr-3 white--text" @click="addNumberToGroup()"
                            :disabled="!newNumber"
@@ -33,13 +33,13 @@
         </v-card>
         <v-divider v-if="addNumber"></v-divider>
         <v-card-title class="pt-0">
-          <v-text-field
+          <a-text-field
             v-model="numberSearch"
             prepend-inner-icon="search"
             label="Search"
             single-line
             hide-details
-          ></v-text-field>
+          ></a-text-field>
         </v-card-title>
         <v-divider></v-divider>
         <v-data-table id="call-group-phone-number-table"

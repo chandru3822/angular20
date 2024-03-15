@@ -81,12 +81,12 @@
                           item-text="name"
                           item-value="id"
           ></v-autocomplete>
-          <v-text-field text
+          <a-text-field
                         prepend-icon="mdi-currency-usd"
                         type="number"
                         label="Amount"
                         v-model.number="newReimbursementRequest.amount">
-          </v-text-field>
+          </a-text-field>
           <label>Notes:</label>
           <v-textarea class="py-2" hide-details
                       auto-grow filled
@@ -266,13 +266,13 @@
                                 item-text="name"
                                 item-value="id"
                 ></v-autocomplete>
-                <v-text-field text
+                <a-text-field
                               type="number"
                               label="Amount"
                               prepend-icon="mdi-currency-usd"
                               :rules="requiredRules"
                               v-model.number="selectedRequest.amount">
-                </v-text-field>
+                </a-text-field>
                 <label>Request Details:</label>
                 <v-textarea class="py-2" hide-details
                             auto-grow filled

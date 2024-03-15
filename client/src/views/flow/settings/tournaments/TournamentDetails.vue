@@ -4,13 +4,13 @@
       <v-col cols="12">
         <v-card flat class="mt-2">
           <div>
-            <v-text-field
+            <a-text-field
                 :readonly="!edit"
                 :disabled="!edit"
                 label="Tournament Name"
                 tabindex=1
                 v-model="tournament.tournamentName"
-            ></v-text-field>
+            ></a-text-field>
             <v-autocomplete
                 readonly
                 disabled
@@ -148,8 +148,6 @@
 </template>
 
 <script setup>
-
-import a-btn from '@/components/customVuetify/a-btn'
 import constants from '@/helpers/constants'
 import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'

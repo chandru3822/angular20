@@ -132,16 +132,16 @@
         <v-row>
           <v-col cols="12" sm="6">
             <v-card flat class="pa-3" color="transparent">
-              <v-text-field text
+              <a-text-field
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
                             label="Name"
-                            v-model="commission.name"></v-text-field>
-              <v-text-field text
+                            v-model="commission.name"></a-text-field>
+              <a-text-field
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
                             label="Description"
-                            v-model="commission.description"></v-text-field>
+                            v-model="commission.description"></a-text-field>
               <v-select attach v-model="commission.positionId"
                         :items="positions"
                         no-data-text="No Users Available"
@@ -149,34 +149,34 @@
                         item-text="label"
                         item-value="id"
               ></v-select>
-              <v-text-field text
+              <a-text-field
                             :label="payRateText"
                             type="number"
                             v-if="commission.positionId === 1"
                             :disabled="commission.id && commission.statusType !== 'PENDING'"
-                            v-model.number="commission.total"></v-text-field>
+                            v-model.number="commission.total"></a-text-field>
             </v-card>
           </v-col>
           <v-col cols="12" sm="6">
             <v-card class="pa-3" v-if="planId">
-              <v-text-field text
+              <a-text-field
                             label="Status"
                             disabled
-                            v-model="commission.statusType"></v-text-field>
-              <v-text-field text
+                            v-model="commission.statusType"></a-text-field>
+              <a-text-field
                             disabled
                             label="Created By"
-                            v-model="commission.createdName"></v-text-field>
-              <v-text-field text
+                            v-model="commission.createdName"></a-text-field>
+              <a-text-field
                             disabled
                             label="Approved"
                             v-if="commission.approvedDate"
-                            v-model="commission.approvedDate"></v-text-field>
-              <v-text-field text
+                            v-model="commission.approvedDate"></a-text-field>
+              <a-text-field
                             disabled
                             v-if="commission.approvedName"
                             label="Approved By"
-                            v-model="commission.approvedName"></v-text-field>
+                            v-model="commission.approvedName"></a-text-field>
             </v-card>
           </v-col>
         </v-row>
@@ -208,24 +208,24 @@
                     item-value="id"
                     autocomplete="off">
           </v-select>
-          <v-text-field text
+          <a-text-field
                         type="number"
                         :label="`${levelText} Payment $`"
                         v-model.number="selectedMilestone.allocation">
-          </v-text-field>
+          </a-text-field>
           <div v-if="commission.positionId === 4">
-            <v-text-field text
+            <a-text-field
                           type="number"
                           @input="checkMinMaxMilestones(selectedMilestone)"
                           label="Minimum Pitches"
                           v-model.number="selectedMilestone.min">
-            </v-text-field>
-            <v-text-field text
+            </a-text-field>
+            <a-text-field
                           @input="checkMinMaxMilestones(selectedMilestone)"
                           type="number"
                           label="Maximum Pitches"
                           v-model.number="selectedMilestone.max">
-            </v-text-field>
+            </a-text-field>
           </div>
           <div class="error-text mb-3" v-if="milestoneError">
             {{ milestoneErrorMsg }}
@@ -262,24 +262,24 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4 text-left">
-              <v-text-field text
+              <a-text-field
                             type="number"
                             :label="`${levelText} Payment $`"
                             v-model.number="item.allocation">
-              </v-text-field>
+              </a-text-field>
               <div v-if="commission.positionId === 4">
-                <v-text-field text
+                <a-text-field
                               @input="checkMinMaxMilestones(item)"
                               type="number"
                               label="Minimum Pitches"
                               v-model.number="item.min">
-                </v-text-field>
-                <v-text-field text
+                </a-text-field>
+                <a-text-field
                               type="number"
                               @input="checkMinMaxMilestones(item)"
                               label="Maximum Pitches"
                               v-model.number="item.max">
-                </v-text-field>
+                </a-text-field>
               </div>
               <div class="error-text mb-3" v-if="milestoneError">
                 {{ milestoneErrorMsg }}
@@ -359,9 +359,9 @@
                       item-value="id"
                       autocomplete="off">
             </v-select>
-            <v-text-field text
+            <a-text-field
                           label="Fee Amount"
-                          v-model="selectedSource.feeAmount"></v-text-field>
+                          v-model="selectedSource.feeAmount"></a-text-field>
             <v-select attach v-model="selectedSource.feeTypeId"
                       :items="feeTypes"
                       label="Fee Type"
@@ -406,9 +406,9 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4 text-left">
-              <v-text-field text
+              <a-text-field
                             label="Fee Amount"
-                            v-model="item.feeAmount"></v-text-field>
+                            v-model="item.feeAmount"></a-text-field>
               <v-select attach v-model="item.feeTypeId"
                         :items="feeTypes"
                         label="Fee Type"

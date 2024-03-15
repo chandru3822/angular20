@@ -20,7 +20,7 @@
           </div>
         </v-toolbar>
         <v-toolbar flat>
-            <v-text-field class=" d-inline-block mt-4" v-if="editName" v-model="process.processName" :class="{'one-hunned': isMobile}"></v-text-field>
+            <a-text-field class=" d-inline-block mt-4" v-if="editName" v-model="process.processName" :class="{'one-hunned': isMobile}"></a-text-field>
             <span v-else :class="{'one-hunned': isMobile}">
               {{  processId ? process.processName : 'New Process Step'}}
             </span>
@@ -124,7 +124,7 @@
             text="SAVE"
           />
         </v-container>
-        <v-text-field
+        <a-text-field
           v-model="search"
           class="mb-3 px-3 col-12"
           :style="{width: isMobile ? '100%' : '250px'}"
@@ -132,7 +132,7 @@
           label="Search"
           single-line
           hide-details
-        ></v-text-field>
+        ></a-text-field>
         <v-data-table
             id="process-step-table"
             :headers="headers"

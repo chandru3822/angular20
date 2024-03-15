@@ -17,15 +17,14 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-toolbar color="white" class="elevation-1 mt-3">
-          <v-text-field
+          <a-text-field
               class="mt-5"
               prepend-inner-icon="search"
-              text
               clearable
               label="Search users..."
               v-model="filters.search"
               @input="debounceGetUsers"
-          ></v-text-field>
+          ></a-text-field>
           <v-checkbox
               class="pt-5 ml-3"
               dense
@@ -118,11 +117,11 @@
                 <v-checkbox v-else-if="header.selectFilter"
                             :disabled="allUsersLoading"
                             v-model="selectAllUsers" @change="toggleSelectAllUsers()"></v-checkbox>
-                <v-text-field outlined
+                <a-text-field variant="outlined"
                               v-else-if="header.value !== 'phoneExtension'"
                               hide-details
                               class="filter-input"
-                              v-model="filters[header.value]" @input="debounceGetUsers"></v-text-field>
+                              v-model="filters[header.value]" @input="debounceGetUsers"></a-text-field>
                 <div v-else style="height: 35px;"></div>
               </th>
             </tr>
@@ -262,7 +261,7 @@
             />
           </div>
 
-          <v-text-field v-model="emailSubject" label="Subject"></v-text-field>
+          <a-text-field v-model="emailSubject" label="Subject"></a-text-field>
           <b>Message </b><span class="count-span pl-2">Characters: {{emailCharacterCount.value}}  Words: {{emailWordCount.value}}</span>
           <quill-editor
               class="py-3 rich-text-editor"

@@ -19,7 +19,7 @@
         </v-toolbar>
         <v-card v-if="addType" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add Org Type</h3>
-          <v-text-field text v-model="newOrgType.orgType"
+          <a-text-field  v-model="newOrgType.orgType"
                         label="Org Type Name" />
           <v-select attach v-model="newOrgType.orgLevelId"
                     :items="levels"
@@ -75,7 +75,7 @@
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': orgTypes.indexOf(item) % 2}">
               <h3>Edit Org Type</h3>
-              <v-text-field text v-model="item.orgType"
+              <a-text-field  v-model="item.orgType"
                             label="Org Type Name" />
               <v-select attach v-model="item.orgLevelId"
                         :items="levels"

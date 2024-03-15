@@ -15,13 +15,13 @@
 
         </v-toolbar>
         <div>
-          <v-text-field
+          <a-text-field
               v-if="editPool"
               label="Custom Pool Name"
               hint="(optional)"
               persistent-hint
               v-model="pool.customName"
-          ></v-text-field>
+          ></a-text-field>
           <div>
             <DatetimePickerInput
                 v-model="pool.startDate"
@@ -214,14 +214,14 @@
                 @click="[addUser = !addUser, userId = null]">
             </a-btn>
           </v-card>
-          <v-text-field
+          <a-text-field
               v-model="userSearch"
               prepend-inner-icon="search"
               label="Search"
               class="mb-2"
               single-line
               hide-details
-          ></v-text-field>
+          ></a-text-field>
           <v-data-table id="tournament-pool-table"
                         :headers="userHeaders"
                         :items="filteredUsers"

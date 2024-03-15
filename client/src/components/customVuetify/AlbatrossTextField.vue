@@ -3,11 +3,28 @@
                 :placeholder="placeholder"
                 :value="value"
                 :type="type"
+                :prepend-icon="prependIcon"
+                :prepend-inner-icon="prependInnerIcon"
+                :append-icon="appendIcon"
+                :append-outer-icon="appendOuterIcon"
                 :clearable="clearable"
                 @input="v => $emit('input', v)"
+                v-on="$listeners"
+                :hint="hint"
+                :single-line="singleLine"
                 :rules="combinedRules"
                 :readonly="readonly"
                 :disabled="disabled"
+                :hide-details="hideDetails"
+                :counter="counter"
+                :dense="density === 'compact'"
+                :color="color"
+                :filled="variant === 'filled'"
+                :clear-icon="clearIcon"
+                :outlined="variant === 'outlined'"
+                :solo="variant === 'solo'"
+                :maxlength="maxlength"
+                :persistent-hint="persistentHint"
                 :class="[customClasses]"
                 :label="label">
   </v-text-field>
@@ -30,6 +47,14 @@ const props = defineProps({
   value: [String, Number],
   placeholder: String, //fields without a defined default will default to null
   label: String,
+  variant: String,
+  hint: String,
+  color: String,
+  clearIcon: String,
+  prependIcon: String,
+  prependInnerIcon: String,
+  appendIcon: String,
+  appendOuterIcon: String,
   type: {
     type: String,
     default: "text"
@@ -42,23 +67,17 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  required: {
-    type: Boolean,
-    default: false
-  },
-  readonly: {
-    type: Boolean,
-    default: false
-  },
-  disabled: {
-    type: Boolean,
-    default: false
-  },
-  clearable: {
-    type: Boolean,
-    default: false
-  },
-  step: Number
+  required: Boolean,
+  readonly: Boolean,
+  disabled: Boolean,
+  clearable: Boolean,
+  hideDetails: Boolean,
+  singleLine: Boolean,
+  persistentHint: Boolean,
+  density: String,
+  step: Number,
+  counter: Boolean,  //this counter and maxlength is not how vuetify defines the props but it is the only combo that actually stops the user from typing when they hit the limit
+  maxlength: Number
 })
 
 const combinedRules = computed(() => {

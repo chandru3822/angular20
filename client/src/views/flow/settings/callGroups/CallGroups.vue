@@ -19,18 +19,18 @@
           </v-toolbar-items>
           <template v-slot:extension>
             <div v-if="editGroup">
-              <v-text-field text class="d-inline-block mt-4 edit-text"
+              <a-text-field  class="d-inline-block mt-4 edit-text"
                             label="Contacts per Phone Number"
                             type="text"
                             tabindex=1
                             v-model="maxCallCount">
-              </v-text-field>
-              <v-text-field text class="d-inline-block mt-4 edit-text"
+              </a-text-field>
+              <a-text-field  class="d-inline-block mt-4 edit-text"
                             type="text"
                             label="Days Per Period"
                             tabindex=1
                             v-model="daysPerPeriod">
-              </v-text-field>
+              </a-text-field>
               <a-btn
                 :disabled="!maxCallCount || !daysPerPeriod"
                 variant="text" icon :large="vuetify.breakpoint.smAndDown"
@@ -48,11 +48,11 @@
         </v-app-bar>
         <v-container>
           <v-card color="transparent" flat v-if="addNew">
-            <v-text-field
+            <a-text-field
                 label="Call Group Name"
                 tabindex=1
                 v-model="newCallGroup.callGroupName"
-            ></v-text-field>
+            ></a-text-field>
             <a-btn
               color="primary"
               :disabled="!newCallGroup.callGroupName"
@@ -63,14 +63,14 @@
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
             <v-card-title class="pt-0">
-              <v-text-field
+              <a-text-field
                 v-model="search"
                 prepend-inner-icon="search"
                 label="Search"
                 single-line
                 hide-details
                 @input="debounceSearch"
-              ></v-text-field>
+              ></a-text-field>
             </v-card-title>
             <v-data-table
                 :headers="headers"

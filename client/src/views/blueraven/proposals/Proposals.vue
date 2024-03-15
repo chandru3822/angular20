@@ -8,10 +8,9 @@
         <v-toolbar class="white elevation-1 mt-3">
           <v-row class="justify-space-between align-center">
             <v-col cols="12" lg="6">
-              <v-text-field
+              <a-text-field
                   class="mt-5"
                   prepend-inner-icon="search"
-                  text
                   label="Search projects..."
                   v-model="searchQuery"
                   @input="searchProjects"

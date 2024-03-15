@@ -3,11 +3,11 @@
     <v-row>
       <v-col cols="12">
         <div class="px-5">
-          <v-text-field v-model="projectStatus.projectStatusType"
+          <a-text-field v-model="projectStatus.projectStatusType"
                         label="Status Type"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
-          ></v-text-field>
+          ></a-text-field>
           <v-autocomplete
               :items="rootStatusTypes"
               v-model="projectStatus.projectStatusTypeId"
@@ -74,12 +74,12 @@
           </div>
 
           <v-card class="fifty-cent">
-            <v-text-field v-model="projectStatus.iconTag"
+            <a-text-field v-model="projectStatus.iconTag"
                           label="Material Icon Tag"
                           hide-details
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
-            ></v-text-field>
+            ></a-text-field>
             <div class="mt-3">
               Preview:
               <v-icon v-if="projectStatus.iconTag">{{ projectStatus.iconTag }}</v-icon>

@@ -134,7 +134,7 @@
             <v-container fluid>
               <v-row no-gutters>
                 <v-col cols="8">
-                  <v-text-field
+                  <a-text-field
                     v-model="search"
                     prepend-inner-icon="search"
                     label="Search"

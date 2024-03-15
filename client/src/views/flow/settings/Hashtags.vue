@@ -22,7 +22,7 @@
             <v-form ref="hashtagForm">
               <div class="flex-display">
                 <v-icon size="14" class="mr-2">mdi-pound</v-icon>
-                <v-text-field v-model="newTag.hashtag"
+                <a-text-field v-model="newTag.hashtag"
                               counter
                               required
                               :rules="hashtagRules"
@@ -30,7 +30,7 @@
                               placeholder="Hashtag"
                               @input="validateNew"
                               label="Add Topic Hashtag">
-                </v-text-field>
+                </a-text-field>
               </div>
               <a-btn
                 variant="text"
@@ -51,14 +51,14 @@
           </v-card>
           <v-card class="square-card">
             <v-card-title class="pt-0">
-              <v-text-field
+              <a-text-field
                   v-model="search"
                   prepend-inner-icon="search"
                   label="Search"
                   single-line
                   hide-details
                   clearable
-              ></v-text-field>
+              ></a-text-field>
             </v-card-title>
             <v-data-table
               :headers="headers"
@@ -84,7 +84,7 @@
                     <div class="flex-display">
                       <v-icon size="14" class="mr-2">mdi-pound</v-icon>
                       <v-form :ref="`editForm${item.id}`" v-if="selectedTagId === item.id">
-                        <v-text-field
+                        <a-text-field
                           class="one-hunned"
                           label="Hashtag"
                           counter
@@ -92,7 +92,7 @@
                           :rules="hashtagRules"
                           :maxlength="tagMaxChars"
                           v-model="item.hashtag">
-                        </v-text-field>
+                        </a-text-field>
                       </v-form>
                       <div v-else>
                         {{ item.hashtag }}

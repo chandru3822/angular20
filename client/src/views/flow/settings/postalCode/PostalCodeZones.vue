@@ -17,11 +17,11 @@
         </v-toolbar>
         <v-container>
           <v-card color="transparent" flat v-if="addNew">
-            <v-text-field
+            <a-text-field
                 label="Zone Name"
                 tabindex=1
                 v-model="newZone.zoneName"
-            ></v-text-field>
+            ></a-text-field>
 
             <a-btn
                 color="primary"
@@ -34,13 +34,13 @@
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
             <v-card-title class="pt-0">
-              <v-text-field
+              <a-text-field
                 v-model="search"
                 prepend-inner-icon="search"
                 label="Search zones"
                 single-line
                 hide-details
-              ></v-text-field>
+              ></a-text-field>
             </v-card-title>
             <v-data-table
               :headers="headers"
