@@ -6,10 +6,13 @@
           <v-toolbar-title class="app-title">Smartlists</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/smartlistv1/null" color="primary">
-              <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE">Add Smartlist</span>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                to="/smartlistv1/null"
+                color="primary"
+                prepend-icon="add"
+                text="Add Smartlist"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
       </v-col>
@@ -63,6 +66,7 @@
 import {getRequest, logError} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 import {useRouter} from "vue-router/composables";
 
 const router = useRouter()

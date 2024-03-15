@@ -11,7 +11,11 @@
               The data you are looking for could not be found.
             </v-card-text>
             <v-card-actions class="justify-center">
-              <v-btn color="primary" to="/">Click Here to Return</v-btn>
+              <AlbatrossButton
+                  color="primary"
+                  to="/"
+                  text="Click Here to Return"
+              ></AlbatrossButton>
             </v-card-actions>
           </v-card>
         </v-col>
@@ -21,5 +25,6 @@
 </template>
 
 <script setup>
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 
 </script>

@@ -6,10 +6,14 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Message Templates</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addTemplate = !addTemplate, newType = {}]" v-if="userStore.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addTemplate ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <AlbatrossButton
+                variant="text"
+                color="primary"
+                @click="[addTemplate = !addTemplate, newType = {}]"
+                v-if="userStore.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')"
+                prepend-icon="add"
+                :text="addTemplate ? 'Cancel' : 'Add New'"
+            ></AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addTemplate" class="text-left pa-5 mb-3 mt-2" flat >
@@ -42,12 +46,18 @@
             </template>
           </v-autocomplete>
 
-          <v-btn :disabled="!newTemplate.title || !newTemplate.message || newTemplate.teamIds.length < 1"
-                 color="primary" class="white--text mr-2"
-                 @click="saveTemplate(newTemplate, true)">
-            Save
-          </v-btn>
-          <v-btn @click="[addTemplate = !addTemplate, newTemplate = {}]">Cancel</v-btn>
+          <AlbatrossButton
+              :disabled="!newTemplate.title || !newTemplate.message || newTemplate.teamIds.length < 1"
+              color="primary"
+              class="mr-2"
+              @click="saveTemplate(newTemplate, true)"
+              text="Save"
+          ></AlbatrossButton>
+          <AlbatrossButton
+              @click="[addTemplate = !addTemplate, newTemplate = {}]"
+              color="unset"
+              text="Cancel"
+          ></AlbatrossButton>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -101,7 +111,13 @@
                 </template>
               </v-autocomplete>
 
-              <v-btn color="primary" class="white--text mr-2" :disabled="!item.title || !item.message || item.teamIds.length < 1" @click="saveTemplate(item, false)">Save</v-btn>
+              <AlbatrossButton
+                  color="primary"
+                  class="mr-2"
+                  :disabled="!item.title || !item.message || item.teamIds.length < 1"
+                  @click="saveTemplate(item, false)"
+                  text="Save"
+              ></AlbatrossButton>
             </td>
           </template>
 
@@ -109,10 +125,22 @@
             <tr  class="text-left" :class="{'shaded-row': filteredTemplates.indexOf(item) % 2}">
               <td class="text-left">{{ item.title }}</td>
               <td>
-                <v-btn small text v-if="!expanded.includes(item) && userStore.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')" @click="expanded = [item]; expandedItem = item">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    v-if="!expanded.includes(item) && userStore.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')"
+                    @click="expanded = [item]; expandedItem = item"
+                    color="unset"
+                    prepend-icon="edit"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    v-if="expanded.includes(item)"
+                    @click="expanded = []"
+                    color="unset"
+                    text="cancel"
+                ></AlbatrossButton>
               </td>
             </tr>
           </template>
@@ -132,6 +160,7 @@ import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 
 const appStore = useAppStore()
 const route = useRoute()

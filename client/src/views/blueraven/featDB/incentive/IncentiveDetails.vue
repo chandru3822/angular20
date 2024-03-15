@@ -19,24 +19,30 @@
           <v-card class="mx-2 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
               <v-col class="form-btns" cols="12">
-                <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
-                  {{ expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All' }}
-                </v-btn>
-                <v-btn v-if="dataWasChanged"
-                       @click="resetForm"
-                       text
-                       color="primary"
-                       class="cancel-link"
-                       style="margin-right: 10px"
-                >Cancel
-                </v-btn>
-                <v-btn id="save-btn"
-                       v-if="userCanEdit"
-                       color="primary"
-                       class="white--text mr-0"
-                       @click="validateForm()"
-                >Save
-                </v-btn>
+                <AlbatrossButton
+                    variant="text"
+                    color="primary"
+                    class="text-capitalize"
+                    @click="toggleMinimizeAll"
+                    :text="expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    v-if="dataWasChanged"
+                    @click="resetForm"
+                    variant="text"
+                    color="primary"
+                    class="cancel-link"
+                    html-style="margin-right: 10px"
+                    text="Cancel"
+                ></AlbatrossButton>
+                <AlbatrossButton
+                    id="save-btn"
+                    v-if="userCanEdit"
+                    color="primary"
+                    class="mr-0"
+                    @click="validateForm()"
+                    text="Save"
+                ></AlbatrossButton>
               </v-col>
             </v-row>
             <v-form ref="incentiveForm">

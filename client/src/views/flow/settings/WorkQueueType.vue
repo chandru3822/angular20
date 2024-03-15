@@ -229,15 +229,27 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
-              <v-btn v-if="!editDefaultFields" text color="primary" @click="editDefaultFields = !editDefaultFields">
-                <v-icon>edit</v-icon>
-              </v-btn>
-              <v-btn v-else text color="primary" class="" @click="saveType()">
-                <v-icon>save</v-icon>
-              </v-btn>
-              <v-btn text color="primary" v-if="editDefaultFields" @click="editDefaultFields = false">
-                cancel
-              </v-btn>
+              <AlbatrossButton
+                  v-if="!editDefaultFields"
+                  variant="text"
+                  color="primary"
+                  @click="editDefaultFields = !editDefaultFields"
+                  prepend-icon="edit"
+              ></AlbatrossButton>
+              <AlbatrossButton
+                  v-else
+                  variant="text"
+                  color="primary"
+                  @click="saveType()"
+                  prepend-icon="save"
+              ></AlbatrossButton>
+              <AlbatrossButton
+                  variant="text"
+                  color="primary"
+                  v-if="editDefaultFields"
+                  @click="editDefaultFields = false"
+                  text="cancel"
+              ></AlbatrossButton>
             </div>
           </v-toolbar-items>
         </v-toolbar>
