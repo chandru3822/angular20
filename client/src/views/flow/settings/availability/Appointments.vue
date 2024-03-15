@@ -352,7 +352,7 @@
         }
       },
       async saveAppt(appt) {
-        if((!appt.allDay && appt.startTime >= appt.endTime) || (appt.allDay && appt.startTime > appt.endTime)) {
+        if((!appt.allDay && appt.startTime >= appt.endTime) || (appt.allDay && appt.startTime.split('T')[0] > appt.endTime.split('T')[0])) {
           this.saveError = true
           this.saveErrorMsg = '* Appointment End must be after Appointment Start'
         } else {
@@ -423,12 +423,10 @@
         })
       },
       async deleteAppointment(deleteAllRecurring) {
-        console.log(`DeleteAllRecurring: ${deleteAllRecurring}`)
         const item = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
-          console.log(item)
           let url = deleteAllRecurring ? `/availability/appointment/recurrence/${item.recurringEventId}` : `/availability/appointment/${item.id}`
 
           const {status} = await deleteRequest(url)
