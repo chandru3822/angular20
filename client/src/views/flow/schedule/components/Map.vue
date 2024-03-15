@@ -3,8 +3,8 @@
           :mapStyle="map.style"
           @load="onMapLoad">
 
-    <div id="find-drive-time" class="d-flex justify-start">
-      <v-btn color="primary" class="rounded-tile-btn ml-4 mr-3" fab tile @click="$emit('close-map')"><v-icon>mdi-chevron-right</v-icon></v-btn>
+    <div id="map-btns" class="d-flex justify-start">
+      <AlbatrossButton id="hide-map-btn" color="primary" size="small" class="rounded-tile-btn ml-4 mr-3" :elevation="5" custom-classes="px-4" @click="$emit('close-map')"><v-icon>mdi-chevron-right</v-icon></AlbatrossButton>
       <v-menu data-app bottom
               offset-y
               content-class="drive-time-menu"
@@ -14,12 +14,12 @@
               :close-on-click="false"
               :close-on-content-click="false">
         <template v-slot:activator="{ on }">
-          <v-btn fab tile outlined v-on="on" small color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></v-btn>
+          <AlbatrossButton id="drive-time-btn" variant="outlined" :activation-handler="on" icon color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></AlbatrossButton>
         </template>
-        < id="drive-time-card" color="white" class="square-card pa-4">
+        <v-card id="drive-time-card" color="white" class="square-card pa-4">
           <div class="d-flex justify-space-between">
             <v-card-title class="label-large pa-0">Find Drive Time</v-card-title>
-            <v-btn icon small @click="menuOpen = false"><v-icon>close</v-icon></v-btn>
+            <AlbatrossButton icon size="small" @click="menuOpen = false"><v-icon>close</v-icon></AlbatrossButton>
           </div>
           <div class="address-container">
             <div class="one-hunned py-3">
@@ -66,6 +66,7 @@
               <div>Drive Distance:</div><span v-if="drivingDistance">{{ drivingDistance }} miles</span>
             </div>
           </div>
+        </v-card>
       </v-menu>
       <slot name="searchMenu"/>
     </div>
@@ -113,6 +114,7 @@ import moment from 'moment'
 import debounce from "lodash.debounce";
 import {getCurrentInstance, ref, watch} from "vue";
 import MapPopUp from "@/views/flow/schedule/components/MapPopUp.vue";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -430,6 +432,14 @@ const onMapLoad = async(event) => {
   border-radius: 0 !important;
 }
 
+.white-background{
+  background-color: white;
+}
+
+#drive-time-btn.rounded-tile-btn {
+  border-radius: 4px;
+}
+
 #drive-time-card > div > div > div.v-list.v-sheet {
   max-height: calc(100vh - 400px);
   overflow-y: auto;
@@ -444,15 +454,12 @@ const onMapLoad = async(event) => {
 
 <style scoped lang="scss">
 
-#find-drive-time > button.rounded-tile-btn.v-btn.v-btn--fab.v-btn--round.v-btn--tile  {
-  border-radius: 4px;
-
-  &.white-background {
-    background-color: white;
-  }
+#hide-map-btn {
+  height: 56px;
+  padding:0;
 }
 
-#find-drive-time {
+#map-btns {
   position: absolute;
   top: 10px;
   left: 10px;

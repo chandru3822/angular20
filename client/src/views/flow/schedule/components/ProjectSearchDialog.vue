@@ -19,6 +19,8 @@ import {getEventStatusTypes} from "@/services/eventStatusTypeService.js";
 import {getStatusTypes} from "@/services/processStepStatusTypeService.js";
 import ProjectSearchResultCard from "@/views/flow/schedule/components/ProjectSearchResultCard.vue";
 import SpinnerInline from "@/components/SpinnerInline.vue";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import AlbatrossButtonSecondary from "@/components/customVuetify/AlbatrossButtonSecondary.vue";
 
 const props = defineProps({
   states: {
@@ -324,7 +326,7 @@ onMounted(() => {
   <v-card id="project-search-card" color="white" style="max-width: 280px; min-width: 280px" class="square-card pa-4 project-search-card" elevation="8"> <!--did this manually instead of using v-menu b/c the dropdowns were getting cut off-->
     <div class="d-flex justify-space-between">
       <v-card-title class="label-large pa-0">Search Projects</v-card-title>
-      <v-btn icon small @click="emit('close-dialog')"><v-icon>close</v-icon></v-btn>
+      <AlbatrossButton icon size="small" @click="emit('close-dialog')"><v-icon>close</v-icon></AlbatrossButton>
     </div>
     <div v-if="!showSearchResults" class="project-search-field-container pt-1">
       <div class="one-hunned pb-3">
@@ -437,28 +439,28 @@ onMounted(() => {
       <v-chip x-small color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">Process Step: {{selectedProcessStepStatusType.processStepStatusType}}</v-chip>
     </div>
     <v-card-actions class="px-0 pb-0">
-      <v-btn @click="clear" text small class="text-capitalize flex-grow-0 body-medium">Reset</v-btn>
-      <v-btn v-if="!showSearchResults"
-          outlined
+      <AlbatrossButtonSecondary @click="clear" text small class="text-capitalize flex-grow-0 body-medium">Reset</AlbatrossButtonSecondary>
+      <AlbatrossButton v-if="!showSearchResults"
+          variant="outlined"
           small
           @click="goGoGadgetMapSearch"
           color="primary"
           class="text-capitalize flex-grow-1 body-medium"
           :disabled="!((state?.id || searchProject?.projectId) && (selectedEventTypes?.length > 0 ||searchEventType?.id) && searchEventStatusType?.id && selectedProcessStepStatusType?.id)"
-      >Go</v-btn>
-      <v-btn v-else
-          outlined
-          small
+      >Go</AlbatrossButton>
+      <AlbatrossButton v-else
+          variant="outlined"
+          size="small"
           @click="showSearchResults = false"
           color="primary"
           class="text-capitalize flex-grow-1 body-medium"
-      >Edit search</v-btn>
+      >Edit search</AlbatrossButton>
     </v-card-actions>
     <div v-if="showSearchResults">
     <div class="d-flex justify-space-between align-baseline py-3">
       <span class="label-medium">Search Results</span>
-      <v-btn text small color="primary" class="text-capitalize" :disabled="!projects || projects.length === 0" @click="toggleAllPinsOnMap">
-        {{allPinsPinned ? 'Hide all pins' : 'Show all pins' }}</v-btn>
+      <AlbatrossButton variant="text" size="small" color="primary" class="text-capitalize" :disabled="!projects || projects.length === 0" @click="toggleAllPinsOnMap">
+        {{allPinsPinned ? 'Hide all pins' : 'Show all pins' }}</AlbatrossButton>
     </div>
     <SpinnerInline :size="20" spinner-color="primary" :centered="true" v-if="listLoading"/>
     <div class="search-results">

@@ -10,7 +10,7 @@
              :showRightCollapseBtn="false"
   >
     <template v-slot:main-column>
-      <v-btn id="map-btn" v-if="!showMap" fab tile absolute right color="primary" class="mt-4 mb-n1" @click=" showHideMap(!showMap)"><v-icon>mdi-map</v-icon></v-btn>
+      <AlbatrossButton id="map-btn" v-if="!showMap" class="absolute-right" color="primary" size="small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></AlbatrossButton>
     <Calendar :map-resources="mapResources"
               ref="calendar"
               :map-open="showMap"
@@ -43,7 +43,7 @@
                @close-map="showHideMap(false)"
           >
             <template v-slot:searchMenu>
-              <v-btn id="search-menu-btn" fab tile outlined @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" small color="primary" class="rounded-tile-btn white-background"><v-icon>mdi-magnify</v-icon></v-btn>
+              <AlbatrossButton id="search-menu-btn" class="rounded-tile-btn" variant="outlined" icon @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" color="primary"><v-icon>mdi-magnify</v-icon></AlbatrossButton>
               <ProjectSearchDialog v-show="searchMenuOpen" :pin-to-map-callback="projectMapMarkersCallback"  :pinned-projects="projectMapMarkers"
                                    :states="states" :start-time="startTime" :end-time="endTime"
                                    @close-dialog="searchMenuOpen = false" @zoom-map="zoomToMap"/>
@@ -71,6 +71,7 @@
   import ProjectModal from "@/views/flow/schedule/components/ProjectModal.vue";
   import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
   import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
@@ -78,13 +79,9 @@
   const route = vueInstance.$route
   const vuetify = vueInstance.$vuetify
 
-  // const initialLoad = ref(true)
   const snackbar = ref({})
-  // const showFilters = ref(true)
-  // const listLoading = ref(false)
   const saveInvalid = ref(true)
   const timezone = ref(null)
-  // const defaultZoom = ref(2.0)
   const startTime = ref(null)
   const endTime = ref(null)
   const mapResources = ref([])
@@ -98,20 +95,12 @@
   const eventStatusTypes = ref([])
   const processStepStatusTypes = ref([])
   const eventTypes = ref([])
-  // const totalProjects = ref(0)
   //used for multi select
   const selectedEventTypes = ref([])
   //used for single select
   const selectedProject = ref({})
-  // const cancelledCompanyEventStatuses = ref([])
   //used for search
   const searchMenuOpen = ref(false)
-  // const searchEventType = ref({})
-  // const searchProcessStepStatusType = ref({})
-  // const searchEventStatusType = ref({})
-  const searchProject = ref({})
-  // const searchProjects = ref([])
-  // const eventTypesChanged = ref(false)
   const search = ref(null)
   // const fieldsSaving = ref(false)
   const projects = ref([])
@@ -124,23 +113,12 @@
   })
   const calendarResourceToSchedule =ref({})
 
-
   const activeComp = computed(() => {
     return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
   })
   const showMap = computed(() => {
     return store.state.schedule.showMap
   })
-
-  // watch(search, (val) => {
-  //   if(!val) {
-  //     searchProject.value = {}
-  //     return
-  //   }
-  //   if(val && (!searchProject.value || searchProject.value.projectName !== val)) {
-  //     getProjectsSearchedFor(val);
-  //   }
-  // })
 
   watch(selectedProject, () => {
         validateSaveEvent()
@@ -185,20 +163,6 @@
           saveInvalid.value = false
         }
       }
-      // const checkForSchedulingConflicts = async() => {
-      //     scheduleProject(false);
-      // }
-      // const cancelDialog = async() => {
-      //   fieldsSaving.value = false
-      //   $refs.value.calendar.getEvents(false, true)
-      // }
-      // const goTo =  (ps, isProject, isProcessStep) => {
-      //   if (isProject) {
-      //     router.push({name: 'projectDetails', params: {projectId: ps.projectId}})
-      //   } else if (isProcessStep) {
-      //     router.push({name: 'projectProcessStep', params: {projectId: ps.projectId, processStepId: ps.projectProcessStepId}, query: { processStepId: ps.processStepId, contactId: ps.contactId }})
-      //   }
-      // }
       const resourceMapCallback =  (newValue) => {
         mapResources.value = newValue
         if(newValue.length > 0){
@@ -220,7 +184,8 @@
       const toggleSelectedProjectMapPin = ()=> {
         selectedProject.value.pinned = !selectedProject.value.pinned
         if(selectedProject.value.pinned){
-          zoomToMap.value({latitude: selectedProject.value.latitude, longitude: selectedProject.value.longitude})
+          showHideMap(true)
+          zoomToMap({latitude: selectedProject.value.latitude, longitude: selectedProject.value.longitude})
         } else if(latitude.value === Math.trunc(selectedProject.value.latitude) && longitude.value === Math.trunc(selectedProject.value.longitude)) {
           resetMapZoom()
         }
@@ -318,27 +283,6 @@
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
-      // const getResources = async(item) => {
-      //   store.commit(AppMutations.SET_LOADING, true)
-      //   try {
-      //     item.resources = []
-      //
-      //     let params = {
-      //       companyId: item.companyId,
-      //       systemListId: item.systemListId,
-      //       systemListOptionIds: item.systemListOptionIds,
-      //       resourceId: item.resourceId
-      //     }
-      //     const {data, status} = await postRequest(`/schedule/projectResources`, params, null, [])
-      //     item.resources = data || []
-      //     handleHidingGlobalLoader(this, status)
-      //   } catch (e) {
-      //     console.error('*** ERROR ***', e)
-      //     snackbar.value = getSnackbar('ERROR', 'Error Retrieving Resources')
-      //     store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-      //     store.commit(AppMutations.SET_LOADING, false)
-      //   }
-      // }
 
       const resetMapZoom = ()=> {
         zoomToMap(
@@ -377,8 +321,12 @@
     height: 30px;
   }
 
-  #map-btn {
+  #map-btn.absolute-right {
+    position: absolute;
+    z-index: 5;
+    right: 16px;
     border-radius: 4px;
+    height: 56px;
   }
 
   #schedule-project-toolbar .v-toolbar__content {
@@ -389,18 +337,15 @@
     border-bottom: solid 1px rgba(0, 0, 0, 0.42);
   }
 
-  #find-drive-time > button.rounded-tile-btn.v-btn.v-btn--fab.v-btn--round.v-btn--tile  {
+  #search-menu-btn.rounded-tile-btn {
+    background-color: white;
     border-radius: 4px;
-
-    &.white-background {
-      background-color: white;
-    }
   }
 
   .project-search-card{
     position: relative;
-    top:40px;
-    right:38px;
+    top:36px;
+    right:34px;
   }
 </style>
 

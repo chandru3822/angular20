@@ -211,7 +211,6 @@
               @change="reloadCalendar"
             />
         </v-col>
-<!--        <v-col><v-btn @click="testEvents">test</v-btn></v-col>-->
       </v-row>
 </v-col>
     </div>
@@ -228,14 +227,14 @@
           <div class="d-flex justify-space-between align-baseline">
             <a class="body-medium overflow-hidden resource-title">{{ resource.title }}</a>
             <div>
-              <v-btn icon x-small @click="toggleMapPinForResource(resource)" class="mx-1">
+              <AlbatrossButton icon size="x-small" @click="toggleMapPinForResource(resource)" class="mx-1">
                 <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
-                <v-icon v-else>mdi-map-marker-off</v-icon>
-              </v-btn>
-              <v-btn v-if="showScheduleBtnForResource(resource)" icon x-small :color="isAssignedResource(resource) ? 'primary lighten-5' : ''" class="mx-1" @click="toggleScheduleResource(resource)">
+                <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
+              </AlbatrossButton>
+              <AlbatrossButton v-if="showScheduleBtnForResource(resource)" icon size="x-small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)">
                 <v-icon>mdi-calendar-plus</v-icon>
-              </v-btn>
-              <v-btn icon x-small color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></v-btn>
+              </AlbatrossButton>
+              <AlbatrossButton icon size="x-small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></AlbatrossButton>
             </div>
           </div>
         </template>
@@ -264,6 +263,7 @@ import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
 import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
 import {computed, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
