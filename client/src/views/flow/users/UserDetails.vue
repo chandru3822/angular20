@@ -72,18 +72,22 @@
         <div v-if="!projectStore.leftSideSplit && user && user.id"
              class="height-one-hunned overflow-y-auto">
           <PageOverview
-            page-name="User"
-            :show-edit-btn="userCanEdit"
-            @clickEdit="[getUserStatusTypes(), tempUser = cloneDeep(user), showEditModal = true]"
-            :details="overviewDetails"
-            :dense="true"
+              page-name="User"
+              :show-edit-btn="userCanEdit"
+              @clickEdit="[getUserStatusTypes(), tempUser = cloneDeep(user), showEditModal = true]"
+              :details="overviewDetails"
+              :dense="true"
           ></PageOverview>
           <v-divider class="mt-4" v-if="user.loginAttempts >= 9"></v-divider>
           <v-card color="#ffcac7" class="pa-4 mx-2 mt-2" v-if="user.loginAttempts >= 9">
             <label>Too Many Attempts, User Account Locked</label><br/>
-            <v-btn v-if="userIsAdmin" @click="unlockUserAccount" color="primary" class="white--text mt-2">
-              Unlock
-            </v-btn>
+            <AlbatrossButton
+                v-if="userIsAdmin"
+                @click="unlockUserAccount"
+                color="primary"
+                class="mt-2"
+                text="Unlock"
+            ></AlbatrossButton>
           </v-card>
           <v-divider></v-divider>
           <SidePanelExpansionPanel header="Company Access" :section-expanded="sectionExpanded">
@@ -95,13 +99,15 @@
                   :close-on-content-click="false"
               >
                 <template v-slot:activator="{ on: menu }">
-                  <v-btn text color="primary"
-                         v-on="{ ...menu }"
-                         x-small
-                         v-if="userIsAdmin"
-                         @click="addUserCompany = !addUserCompany">
-                    <v-icon>add</v-icon>
-                  </v-btn>
+                  <AlbatrossButton
+                      variant="text"
+                      color="primary"
+                      :activation-handler="{ ...menu }"
+                      x-small
+                      v-if="userIsAdmin"
+                      @click="addUserCompany = !addUserCompany"
+                      prepend-icon="add"
+                  ></AlbatrossButton>
                 </template>
                 <v-card class="pa-5">
                   <v-select
@@ -119,14 +125,15 @@
                       item-text="userStatusType"
                       item-value="id"
                   ></v-select>
-                  <v-btn
+                  <AlbatrossButton
                       v-if="userIsAdmin"
                       color="primary"
                       class="mb-2"
                       :disabled="!newCompany.id || !newCompany.companyUserStatusTypeId"
-                      text
-                      @click="saveUserCompany">Add User to Company
-                  </v-btn>
+                      variant="text"
+                      @click="saveUserCompany"
+                      text="Add User to Company"
+                  ></AlbatrossButton>
                 </v-card>
               </v-menu>
             </template>
@@ -134,13 +141,19 @@
               <v-card flat v-for="uc in user.companies"
                       class="user-company-button albatross-body-1">
                 {{ uc.companyName }}
-                <v-btn fab small text color="primary"
-                       v-if="userIsAdmin && user.companies.length > 1"
-                       @click="companyToDelete = uc"><v-icon>delete</v-icon></v-btn>
+                <AlbatrossButton
+                    icon
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    v-if="userIsAdmin && user.companies.length > 1"
+                    @click="companyToDelete = uc"
+                    prepend-icon="delete"
+                ></AlbatrossButton>
               </v-card>
             </template>
           </SidePanelExpansionPanel>
-            <v-divider></v-divider>
+          <v-divider></v-divider>
         </div>
       </template>
       <template v-slot:main-column>
@@ -152,19 +165,23 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0">
-                <v-icon v-if="!projectStore.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
-                <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
-              </v-btn>
+              <AlbatrossButton
+                  variant="text"
+                  color="primary"
+                  @click="setSplitColumnValue()"
+                  class="px-0"
+                  :prepend-icon="!projectStore.manualColumnSplit ? 'mdi-format-columns' : 'mdi-format-align-justify'"
+              ></AlbatrossButton>
               <div>
-                <v-btn color="primary"
-                       class="white--text mt-3"
-                       v-if="userCanEdit"
-                       :loading="fieldsLoading"
-                       :disabled="fieldsSaving"
-                       @click="saveUser()">
-                  Save Fields
-                </v-btn>
+                <AlbatrossButton
+                    color="primary"
+                    class="mt-3"
+                    v-if="userCanEdit"
+                    :loading="fieldsLoading"
+                    :disabled="fieldsSaving"
+                    @click="saveUser()"
+                    text="Save Fields"
+                ></AlbatrossButton>
               </div>
             </v-toolbar-items>
           </v-toolbar>
@@ -174,9 +191,9 @@
                 <!--    process field groups-->
                 <v-form ref="userForm">
                   <v-col
-                    class="pt-0"
-                    v-for="(cfg, index) in customFieldGroups"
-                    :key="index"
+                      class="pt-0"
+                      v-for="(cfg, index) in customFieldGroups"
+                      :key="index"
                   >
                     <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
                       <v-toolbar-title>
@@ -232,8 +249,8 @@
   </div>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {
   handleHidingGlobalLoader,
@@ -241,7 +258,7 @@ import {
   putRequest,
   postRequest,
   getRequestWithParams,
-  getSnackbar, formatPhoneNumber, logError
+  formatPhoneNumber, logError
 } from '@/helpers/helpers'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import cloneDeep from 'lodash.clonedeep'
@@ -252,320 +269,305 @@ import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import PageOverview from '../PageOverview'
 import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: 'User',
-  components: {
-    SidePanelExpansionPanel,
-    PageOverview,
-    ConfirmationDialog,
-    CustomValueInput,
-    ThreeColumnLayout,
-    SpinnerInline,
-    ProjectActivity
-  },
-  data() {
-    return {
-      breadcrumbs: [
-        {
-          text: 'Back to Users',
-          disabled: false,
-          exact: true,
-          to: `/users`
-        },
-      ],
-      userPhoneRule: [
-        v => !!v || 'Field is required',
-        v => (!v || (v && v.length !== 0)) || 'Field is required',
-        v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
-        v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number"
-      ],
-      usernameRule: constants.USERNAME_RULES,
-      passwordRule: constants.PASSWORD_RULES,
-      emailRule: constants.EMAIL_RULES,
-      snackbar: {},
-      companies: [],
-      dirtyCfvs: [],
-      tempUser: {},
-      user: {},
-      formatPhoneNumber,
-      showEditModal: false,
-      cloneDeep,
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-      fieldsSaving: false,
-      fieldsLoading: true,
-      customFieldGroups: [],
-      notes: [],
-      owners: [],
-      userId: parseInt(this.$route.params.id),
-      changeOwner: false,
-      userStatusTypes: [],
-      addUserCompany: false,
-      newCompany: {},
-      sectionExpanded: true,
-      companyUserStatusTypes: [],
-      companyToDelete: null
-    }
-  },
-  computed: {
-    ...mapStores(useUserStore, useAppStore, useProjectStore),
-    userCanEdit() {
-      return this.userStore.userHasFeatureAccessLevel('USERS', 'EDIT')
+const projectStore = useProjectStore()
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+
+const breadcrumbs = ref([
+  {text: 'Back to Users',disabled: false,exact: true,to: `/users`},
+])
+const userPhoneRule = ref([v => !!v || 'Field is required',v => (!v || (v && v.length !== 0)) || 'Field is required',v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number"])
+const usernameRule = ref(constants.USERNAME_RULES)
+const passwordRule = ref(constants.PASSWORD_RULES)
+const emailRule = ref(constants.EMAIL_RULES)
+const companies = ref([])
+const dirtyCfvs = ref([])
+const tempUser = ref({})
+const userEditForm = ref(null)
+const userForm = ref(null)
+const user = ref({})
+const showEditModal = ref(false)
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const fieldsSaving = ref(false)
+const fieldsLoading = ref(true)
+const customFieldGroups = ref([])
+const notes = ref([])
+const owners = ref([])
+const changeOwner = ref(false)
+const userStatusTypes = ref([])
+const addUserCompany = ref(false)
+const newCompany = ref({})
+const sectionExpanded = ref(true)
+const companyUserStatusTypes = ref([])
+const companyToDelete = ref(null)
+
+const userId = computed(() => {
+  return parseInt(route.params.id)
+})
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('USERS', 'EDIT')
+})
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('USERS', 'ADMIN')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const overviewDetails = computed(() => {
+  return [
+    {
+      label: 'User Status',
+      type: constants.OVERVIEW_FIELD_TYPES.STATUS,
+      value: user.value.userStatusType,
+      active: user.value.hasAccess
     },
-    userIsAdmin() {
-      return this.userStore.userHasFeatureAccessLevel('USERS', 'ADMIN')
+    {
+      label: 'Username',
+      type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+      value: user.value.username
     },
-    companyId() {
-      return this.userStore.details.companyId
+    {
+      label: 'Phone number',
+      type: constants.OVERVIEW_FIELD_TYPES.PHONE,
+      value: user.value.phoneNumber
     },
-    overviewDetails() {
-      return [
-        {
-          label: 'User Status',
-          type: constants.OVERVIEW_FIELD_TYPES.STATUS,
-          value: this.user.userStatusType,
-          active: this.user.hasAccess
-        },
-        {
-          label: 'Username',
-          type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
-          value: this.user.username
-        },
-        {
-          label: 'Phone number',
-          type: constants.OVERVIEW_FIELD_TYPES.PHONE,
-          value: this.user.phoneNumber
-        },
-        {
-          label: 'Phone Extension',
-          type: constants.OVERVIEW_FIELD_TYPES.EXTENSION,
-          value: this.user.phoneExtension
-        },
-        {
-          label: 'Email address',
-          type: constants.OVERVIEW_FIELD_TYPES.EMAIL,
-          value: this.user.email
-        },
-      ]
+    {
+      label: 'Phone Extension',
+      type: constants.OVERVIEW_FIELD_TYPES.EXTENSION,
+      value: user.value.phoneExtension
     },
-    companyToDeleteName() {
-      return this.companyToDelete ? this.companyToDelete.companyName : ''
-    }
-  },
-  async created() {
-    this.fieldsLoading = true
-    let requests = [this.getUser(), this.getCompanies(), this.getCustomFieldGroups()]
-    await Promise.all(requests).then(async () => {
-      this.$store.commit(AppMutations.SET_LOADING, false)
-      this.fieldsLoading = false
-    })
-  },
-  methods: {
-    setSplitColumnValue() {
-      //flip the flag
-      this.projectStore.manualColumnSplit = !this.projectStore.manualColumnSplit
+    {
+      label: 'Email address',
+      type: constants.OVERVIEW_FIELD_TYPES.EMAIL,
+      value: user.value.email
     },
-    getCustomFieldValuesToDisplay(values, columnNum) {
-      if (this.projectStore.manualColumnSplit) {
-        return values.filter(function (element, index, values) {
-          return (index % 2 === (columnNum === 1 ? 0 : 1));
-        });
-      } else {
-        return values
-      }
-    },
-    async validateForm() {
-      if (this.$refs.userEditForm.validate()) {
-        this.saveUserSystemFields()
-      }
-    },
-    saveUserSystemFields: async function () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        //temp user holds all the changes in case they cancel. use those values
-        const {data, status} = await putRequest(`/user`, this.tempUser)
-        this.user = cloneDeep(this.tempUser)
-        this.user.userStatusType = data.userStatusType
-        this.user.hasAccess = data.hasAccess
-        this.showEditModal = false
-        this.snackbar = getSnackbar('SUCCESS', 'User Updated')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Fields')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.showEditModal = false
-    },
-    async saveUser() {
-      if (this.$refs.userForm.validate()) {
-        //validation moved to vue form validation with rules
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        // this.user.customFieldGroups = this.customFieldGroups
-        this.fieldsSaving = true
-        try {
-          // save dirty custom field values
-          const {data, status} = await postRequest(`/customFieldValues/user/${this.user.id}`, this.dirtyCfvs)
-          this.dirtyCfvs = []
-          this.customFieldGroups = data
-          this.fieldsSaving = false
-          this.snackbar = getSnackbar('SUCCESS', 'User Saved')
-          this.appStore.showSnack(this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          let errorMsg = e?.message ? 'Error Saving User: ' + e.message : 'Error Saving User'
-          this.snackbar = getSnackbar('ERROR', errorMsg)
-          this.appStore.showSnack(this.snackbar)
-          this.fieldsSaving = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      } else {
-        this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.appStore.showSnack(this.snackbar)
-      }
-    },
-    populateDirtyCfvs(field) {
-      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-      if (!match) {
-        this.dirtyCfvs.push(field)
-      }
-    },
-    async getCustomFieldGroups() {
-      try {
-        const {data, status} = await getRequestWithParams(`/customFieldValues/user/${this.userId}`)
-        this.customFieldGroups = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getUser() {
-      try {
-        const {data, status} = await getRequest(`/user/${this.userId}`)
-        this.user = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving User')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCompanies() {
-      try {
-        const {data, status} = await getRequestWithParams(`/companies/availableForUser`)
-        this.companies = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Companies')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getUserStatusTypes(companyId) {
-      try {
-        let params = {
-          companyId: companyId
-        }
-        const {data, status} = await getRequestWithParams(`/user/statuses`, {params})
-        if (companyId) {
-          //the user status types for adding a user to a user_company
-          this.companyUserStatusTypes = cloneDeep(data)
-        } else {
-          // the user statuses for saving the current user
-          this.userStatusTypes = cloneDeep(data)
-        }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async removeUserCompany() {
-      const uc = this.companyToDelete
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let params = {
-          companyId: uc.id,
-          userId: this.userId
-        }
-        const {data, status} = await postRequest(`/user/removeFromCompany`, params)
-        this.user.companies = data
-        if (this.companyId === uc.id) {
-          this.$router.push({name: 'users'})
-        }
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Removing User Company')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveUserCompany() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let params = {
-          companyId: this.newCompany.id,
-          companyUserStatusTypeId: this.newCompany.companyUserStatusTypeId,
-          userId: this.userId
-        }
-        const {data, status} = await postRequest(`/user/addToCompany`, params)
-        this.user.companies = data
-        this.newCompany = {}
-        this.addUserCompany = false
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving User Company')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveUserStatus() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await postRequest(`/user/${this.userId}/status/${this.user.userStatusTypeId}`)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving User Status')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async unlockUserAccount() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await putRequest(`/user/${this.userId}/unlock`)
-        this.user.loginAttempts = 0
-        this.snackbar = getSnackbar('SUCCESS', 'User Unlocked')
-        this.appStore.showSnack(this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Unlocking User')
-        this.appStore.showSnack(this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getReadOnly: function (field) {
-      return !this.userCanEdit || getCustomFieldReadOnly(field)
-    },
-    filterUserCompanies: function () {
-      let companiesInUse = this.user.companies.map(c => c.id)
-      return this.companies.filter(c => !companiesInUse.includes(c.id))
-    },
+  ]
+})
+const companyToDeleteName = computed(() => {
+  return companyToDelete.value ? companyToDelete.value.companyName : ''
+})
+onMounted(async() => {
+  fieldsLoading.value = true
+  let requests = [getUser(), getCompanies(), getCustomFieldGroups()]
+  await Promise.all(requests).then(async () => {
+    appStore.loading = false
+    fieldsLoading.value = false
+  })
+})
+
+const setSplitColumnValue = () => {
+  //flip the flag
+  projectStore.manualColumnSplit = !projectStore.manualColumnSplit
+}
+const getCustomFieldValuesToDisplay = (values, columnNum) => {
+  if (projectStore.manualColumnSplit) {
+    return values.filter(function (element, index, values) {
+      return (index % 2 === (columnNum === 1 ? 0 : 1));
+    });
+  } else {
+    return values
   }
+}
+const validateForm = async() => {
+  if (userEditForm.value.validate()) {
+    saveUserSystemFields()
+  }
+}
+const saveUserSystemFields = async () => {
+  appStore.loading = true
+  try {
+    //temp user holds all the changes in case they cancel. use those values
+    const {data, status} = await putRequest(`/user`, tempUser.value)
+    user.value = cloneDeep(tempUser.value)
+    user.value.userStatusType = data.userStatusType
+    user.value.hasAccess = data.hasAccess
+    showEditModal.value = false
+    snackbar('SUCCESS', 'User Updated')
+
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error Saving Fields')
+
+    appStore.loading = false
+  }
+  showEditModal.value = false
+}
+const saveUser = async() => {
+  if (userForm.value.validate()) {
+    //validation moved to vue form validation with rules
+    appStore.loading = true
+    // user.value.customFieldGroups = customFieldGroups.value
+    fieldsSaving.value = true
+    try {
+      // save dirty custom field values
+      const {data, status} = await postRequest(`/customFieldValues/user/${user.value.id}`, dirtyCfvs.value)
+      dirtyCfvs.value = []
+      customFieldGroups.value = data
+      fieldsSaving.value = false
+      snackbar('SUCCESS', 'User Saved')
+
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      let errorMsg = e?.message ? 'Error Saving User: ' + e.message : 'Error Saving User'
+      snackbar('ERROR', errorMsg)
+
+      fieldsSaving.value = false
+      appStore.loading = false
+    }
+  } else {
+    snackbar('ERROR', 'Missing Required Fields')
+
+  }
+}
+const populateDirtyCfvs = (field) => {
+  let match = dirtyCfvs.value.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+  if (!match) {
+    dirtyCfvs.value.push(field)
+  }
+}
+const getCustomFieldGroups = async() => {
+  try {
+    const {data, status} = await getRequestWithParams(`/customFieldValues/user/${userId.value}`)
+    customFieldGroups.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Custom Fields')
+
+    appStore.loading = false
+  }
+}
+const getUser = async() => {
+  try {
+    const {data, status} = await getRequest(`/user/${userId.value}`)
+    user.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving User')
+
+    appStore.loading = false
+  }
+}
+const getCompanies = async() => {
+  try {
+    const {data, status} = await getRequestWithParams(`/companies/availableForUser`)
+    companies.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Companies')
+
+    appStore.loading = false
+  }
+}
+const getUserStatusTypes = async(companyId) => {
+  try {
+    let params = {
+      companyId: companyId
+    }
+    const {data, status} = await getRequestWithParams(`/user/statuses`, {params})
+    if (companyId) {
+      //the user status types for adding a user to a user_company
+      companyUserStatusTypes.value = cloneDeep(data)
+    } else {
+      // the user statuses for saving the current user
+      userStatusTypes.value = cloneDeep(data)
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving User Statuses')
+
+    appStore.loading = false
+  }
+}
+const removeUserCompany = async() => {
+  const uc = companyToDelete.value
+  appStore.loading = true
+  try {
+    let params = {
+      companyId: uc.id,
+      userId: userId.value
+    }
+    const {data, status} = await postRequest(`/user/removeFromCompany`, params)
+    user.value.companies = data
+    if (companyId.value === uc.id) {
+      router.push({name: 'users'})
+    }
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Removing User Company')
+
+    appStore.loading = false
+  }
+}
+const saveUserCompany = async() => {
+  appStore.loading = true
+  try {
+    let params = {
+      companyId: newCompany.value.id,
+      companyUserStatusTypeId: newCompany.value.companyUserStatusTypeId,
+      userId: userId.value
+    }
+    const {data, status} = await postRequest(`/user/addToCompany`, params)
+    user.value.companies = data
+    newCompany.value = {}
+    addUserCompany.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving User Company')
+
+    appStore.loading = false
+  }
+}
+const saveUserStatus = async() => {
+  appStore.loading = true
+  try {
+    const {status} = await postRequest(`/user/${userId.value}/status/${user.value.userStatusTypeId}`)
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving User Status')
+
+    appStore.loading = false
+  }
+}
+const unlockUserAccount = async() => {
+  appStore.loading = true
+  try {
+    const {status} = await putRequest(`/user/${userId.value}/unlock`)
+    user.value.loginAttempts = 0
+    snackbar('SUCCESS', 'User Unlocked')
+
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Unlocking User')
+
+    appStore.loading = false
+  }
+}
+const getReadOnly = (field) => {
+  return !userCanEdit.value || getCustomFieldReadOnly(field)
+}
+const filterUserCompanies = () => {
+  let companiesInUse = user.value.companies.map(c => c.id)
+  return companies.value.filter(c => !companiesInUse.includes(c.id))
 }
 </script>
 
