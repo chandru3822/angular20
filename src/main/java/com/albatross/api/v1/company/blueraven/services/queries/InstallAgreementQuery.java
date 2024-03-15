@@ -238,7 +238,7 @@ public class InstallAgreementQuery {
       plh.il_srec_disclosure_form_id,
       pd.contact_name,
       pd.contact_email,
-      coalesce(pd.contact_phone, pd.contact_mobile_phone) as contact_phone,
+      c.search_phones as contact_phone,
       pd.project_name,
       pd.project_state_abbreviation,
       pd.utility_company_name,
@@ -256,6 +256,8 @@ public class InstallAgreementQuery {
       plh.loan_amount::numeric + plh.optional_down_payment::numeric + plh.required_down_payment as total_cost
     from brs.proposal_log_history plh
     inner join brs.project_details pd on pd.project_id = plh.project_id
+    inner join flow.project p on pd.project_id = p.id
+    inner join flow.contact c on p.contact_id = c.id
     where plh.project_id = :projectId and
           plh.proposal_nbr = :proposalNumber
         
