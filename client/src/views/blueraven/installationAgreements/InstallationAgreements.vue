@@ -19,31 +19,23 @@
   </v-container>
 </template>
 
-<script>
-import { mapStores } from 'pinia'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+<script setup>
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
 
-export default {
-  name: 'installationAgreements',
-  computed: {
-    ...mapStores(useUserStore),
-    tabs() {
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+
+    const tabs = computed(() => {
       return [{
         label: 'Installation Agreement Request',
         path: '/installation-agreements/request',
-        display: this.userStore.userHasFeature('INSTALLATION_AGREEMENT')
+        display: userStore.userHasFeature('INSTALLATION_AGREEMENT')
       }]
-    },
-    displayedTabs() {
-      return this.tabs.filter(tab => tab.display)
-    }
-  },
-  data() {
-    return {
-      snackbar: {},
-      model: ''
-    }
-  },
-  methods: {}
-}
+    })
+    const displayedTabs = computed(() => {
+      return tabs.value?.filter(tab => tab.display)
+    })
+    const model = ref('')
 </script>
