@@ -39,6 +39,7 @@ const calendarOptions = ref({
   plugins: [
     resourceTimelinePlugin, interaction, momentTimezonePlugin
   ],
+  schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
   initialView: 'resourceTimelineDay',
   resources: [],
   resourceAreaWidth: 300,
