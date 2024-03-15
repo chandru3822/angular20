@@ -270,14 +270,14 @@ const props = defineProps({
 <td>
 
 ```
-this.$emit('clearSearch')
+this.$emit('clearSearch', param)
 ```
 </td>
 <td>
 
 ```
 const emit = defineEmits(['clearSearch'])
-emit('clearSearch')
+emit('clearSearch', param)
 ```
 </td>
 </tr>
