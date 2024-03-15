@@ -56,12 +56,12 @@
           <template #item.processStepStatusType="{item: projectProcessStep}" class="text-left">
             <div>
               {{ projectProcessStep.processStepStatusType }}
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   color="primary"
                   @click="[showStatusDialog = true, showMainDialog = false, alteringPrimaryFlag = false, selectedPps = projectProcessStep, getAvailableStatuses(projectProcessStep)]"
                   prepend-icon="edit"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </template>
           <template #item.main="{item: projectProcessStep}" class="text-left">
@@ -93,29 +93,29 @@
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <AlbatrossButton
+                  <a-btn
                       @click="[projectProcessStep.changeActiveConfirm = false, alteringPrimaryFlag = false, projectProcessStep.main = false]"
                       color="unset"
                       text="No"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       color="primary"
                       variant="text"
                       @click="[showSelectedPps = false, showMainDialog = true, alteringPrimaryFlag = true, projectProcessStep.changeActiveConfirm = false, showStatusDialog = true, selectedPps = projectProcessStep, getAvailableStatuses(selectedPps)]"
                       text="Yes"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
           </template>
           <template #item.historyHere="{item: projectProcessStep}" class="text-left">
-            <AlbatrossButton
+            <a-btn
                 size="small"
                 variant="text"
                 color="primary"
                 @click="getPpsHistory(projectProcessStep)"
                 prepend-icon="mdi-chart-timeline"
-            ></AlbatrossButton>
+            ></a-btn>
           </template>
 
         </v-data-table>
@@ -169,7 +169,7 @@ import AddProcessStep from '@/views/flow/components/AddProcessStep.vue'
 import PpsHistoryTable from '@/views/flow/components/PpsHistoryTable.vue'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus.vue'
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

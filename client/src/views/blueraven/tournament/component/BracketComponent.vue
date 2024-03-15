@@ -36,17 +36,17 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <AlbatrossButton
+          <a-btn
               @click="[overrideUser = {}, showOverrideModal = false]"
               color="unset"
               text="Cancel"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               @click="overrideMatchUser"
               :disabled="!overrideUser.id"
               color="primary"
               text="Save"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card-actions>
 
       </v-card>
@@ -78,14 +78,14 @@
                 v-model="r.advanceConfirm"
                 width="500">
               <template v-slot:activator="{ on }">
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     size="x-small"
                     :activation-handler="on"
                     class="advance-button"
                     color="unset"
                     prepend-icon="mdi-arrow-top-right"
-                ></AlbatrossButton>
+                ></a-btn>
               </template>
               <v-card>
                 <v-card-title
@@ -103,17 +103,17 @@
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <AlbatrossButton
+                  <a-btn
                       @click="r.advanceConfirm = false"
                       color="unset"
                       text="No"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       color="primary"
                       variant="text"
                       @click="[r.advanceConfirm = true, advanceWinners(r)]"
                       text="Yes"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
@@ -162,7 +162,7 @@ import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const appStore = useAppStore()
 const route = useRoute()

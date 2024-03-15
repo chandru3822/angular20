@@ -23,7 +23,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <AlbatrossButton
+          <a-btn
             color="primary"
             variant="text"
             dark
@@ -62,7 +62,7 @@
           <v-toolbar-title class="title-large">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text"
+            <a-btn variant="text"
                              color="primary"
                              @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd"
                              :prepend-icon="vuetify.breakpoint.smAndDown ? (addnew ? 'close' : 'add') : ''"
@@ -103,7 +103,7 @@
             <template #item="{ header, item, index }">
               <tr  :class="{'shaded-row': customFieldGroups.indexOf(item) % 2, 'mobile-tr': vuetify.breakpoint.xsOnly}">
                 <td style="width: 50px">
-                  <AlbatrossButton variant="text" icon size="small"
+                  <a-btn variant="text" icon size="small"
                                    color="primary" class="handle" v-if="userCanEdit"
                                    prepend-icon="drag_handle"
                   />
@@ -137,7 +137,7 @@
                   <div class="item-icons">
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
-                        <AlbatrossButton variant="text" size="small"
+                        <a-btn variant="text" size="small"
                                          icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
                                          :activation-handler="on"
                                          prepend-icon="mdi-information"
@@ -147,27 +147,27 @@
                       <div class="text-center">(click to copy)</div>
                     </v-tooltip>
                     <div v-if="userCanEdit" class="flex-display">
-                      <AlbatrossButton size="small" variant="text" color="primary"
+                      <a-btn size="small" variant="text" color="primary"
                                        @click="item.edit = !item.edit"
                                        :prepend-icon="item.edit ? 'remove' : 'edit'"
                       />
-                      <AlbatrossButton size="small" variant="text" color="primary"
+                      <a-btn size="small" variant="text" color="primary"
                                        v-if="item.edit"
                                        @click="[saveGroup(item), item.edit = false]"
                                        prepend-icon="save"
                       />
                     </div>
-                    <AlbatrossButton size="small" variant="text" color="primary"
+                    <a-btn size="small" variant="text" color="primary"
                            v-if="userCanAdd"
                            @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded = [item], selectedIndex = index]"
                            :prepend-icon="addField && expanded.includes(item) ? 'remove' : 'add'"
                     />
-                    <AlbatrossButton size="small" variant="text"
+                    <a-btn size="small" variant="text"
                                      color="primary"
                                      @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]"
                                      :prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
                     />
-                    <AlbatrossButton
+                    <a-btn
                       v-if="userCanEdit"
                       size="small"
                       variant="text"
@@ -273,7 +273,7 @@
                                       <br/>
                                       <div class="d-flex">
                                       <v-spacer v-if="isMobile"/>
-                                      <AlbatrossButton color="primary"
+                                      <a-btn color="primary"
                                                        dark class="d-inline-block white--text"
                                                        @click="saveReadOnlyAndWhiteList(cf)"
                                                        prepend-icon="save"
@@ -306,7 +306,7 @@
                                       <br/>
                                       <div class="d-flex">
                                         <v-spacer v-if="isMobile"/>
-                                      <AlbatrossButton color="primary"
+                                      <a-btn color="primary"
                                                        dark class="white--text d-inline-block"
                                                        @click="saveHiddenAndWhiteList(cf)"
                                                        prepend-icon="save"
@@ -346,7 +346,7 @@
                                       <br/>
                                       <div class="d-flex">
                                         <v-spacer v-if="isMobile"/>
-                                      <AlbatrossButton color="primary" dark class="white--text d-inline-block"
+                                      <a-btn color="primary" dark class="white--text d-inline-block"
                                                        @click="saveHiddenAndWhiteList(cf)"
                                                        prepend-icon="save"
                                                        :text="vuetify.breakpoint.mdAndUp ? 'Save Hidden' : ''"
@@ -380,7 +380,7 @@
                         <div>
                         <v-tooltip left>
                           <template v-slot:activator="{ on, attrs }">
-                            <AlbatrossButton variant="text" icon
+                            <a-btn variant="text" icon
                                              color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)"
                                              v-bind="attrs" :activation-handler="on"
                                              prepend-icon="mdi-information"/>
@@ -390,7 +390,7 @@
                         </v-tooltip>
                         <v-menu offset-y v-if="!cf.ancillaryCustomFieldGroupAssignmentId && userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                           <template v-slot:activator="{ on }">
-                            <AlbatrossButton variant="text" size="small"
+                            <a-btn variant="text" size="small"
                                              color="primary" :activation-handler="on"
                                              prepend-icon="mdi-cursor-move"
                             />
@@ -404,15 +404,15 @@
                             </v-list>
 
                         </v-menu>
-                        <AlbatrossButton variant="text" size="small"
+                        <a-btn variant="text" size="small"
                                          color="primary" v-else
                         />
-                        <AlbatrossButton variant="text" color="primary"
+                        <a-btn variant="text" color="primary"
                                          size="small" v-if="userCanEdit"
                                          @click="[$set(cf, 'edit', !cf.edit), getPositions(), resetCurrentField()]"
                                          :prepend-icon="cf.edit ? 'close' : 'edit'"
                         />
-                        <AlbatrossButton v-if="userCanEdit"
+                        <a-btn v-if="userCanEdit"
                                          variant="text" size="small"
                                          color="primary" @click="[cFieldToDelete=cf, cfgToDelete=item]"
                                          prepend-icon="delete"
@@ -457,7 +457,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {ref, onMounted, getCurrentInstance, computed, defineProps, watch} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

@@ -16,7 +16,7 @@
                 :close-on-content-click="false"
             >
               <template #activator="{on}">
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     color="primary"
                     size="small"
@@ -24,7 +24,7 @@
                     @click="[ getAllTags() ]"
                     prepend-icon="add"
                     :text="!isMobile ? 'Add Project Tag' : ''"
-                ></AlbatrossButton>
+                ></a-btn>
               </template>
 
               <v-card class="pa-5">
@@ -52,13 +52,13 @@
                            :key="index">
                 <v-list-item-title>
                   {{ tag.tagName }}
-                  <AlbatrossButton
+                  <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       @click="removeTagFromProject(tag)"
                       prepend-icon="delete"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </v-list-item-title>
               </v-list-item>
             </v-list>
@@ -90,7 +90,7 @@ import {
 } from '@/helpers/helpers'
 import {getCompanyAssignedToProcessStep, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import {DateTime} from "luxon";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

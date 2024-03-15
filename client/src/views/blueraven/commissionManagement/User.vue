@@ -23,13 +23,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="userCanAdd"
                 @click="[planErrorObj = {}, addNewCommissionPlan = !addNewCommissionPlan, newCommissionPlan = {}, getCommissionPlans()]"
                 :prepend-icon="addNewCommissionPlan ? 'remove' : 'add'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -65,19 +65,19 @@
             {{planErrorObj.noteMsg}}
           </div>
           <div>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 class="mr-3"
                 @click="[addNewCommissionPlan = false, savePlan(newCommissionPlan, 2, true)]"
                 :disabled="planErrorObj.dateError || !newCommissionPlan.id || !newCommissionPlan.startDate"
                 text="Save"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 color="primary"
                 variant="text"
                 @click="addNewCommissionPlan = !addNewCommissionPlan"
                 text="Cancel"
-            ></AlbatrossButton>
+            ></a-btn>
           </div>
         </v-card>
         <v-divider v-if="addNewCommissionPlan"></v-divider>
@@ -115,12 +115,12 @@
               <v-textarea filled class="mt-4"
                           v-model="item.note">
               </v-textarea>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   :disabled="!item.endDate && !item.note"
                   @click="[expanded = [], savePlan(item, 2)]"
                   text="Save"
-              ></AlbatrossButton>
+              ></a-btn>
             </td>
           </template>
 
@@ -136,22 +136,22 @@
                 </pre>
               </td>
               <td>
-                <AlbatrossButton
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="[expanded = [item], selectedIndex = index]"
                     v-if="!expanded.includes(item) && userCanEdit"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="[expanded = [], selectedIndex = index]"
                     v-if="expanded.includes(item)"
                     text="cancel"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -166,13 +166,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="userCanAdd"
                 @click="[overrideErrorObj = {}, addNewOverridePlan = !addNewOverridePlan, newOverridePlan = {}, getOverridePlans()]"
                 :prepend-icon="addNewOverridePlan ? 'remove' : 'add'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -207,19 +207,19 @@
           <div class="mb-2" v-if="overrideErrorObj.showNote">
             {{overrideErrorObj.noteMsg}}
           </div>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="mr-3"
               @click="[addNewOverridePlan = false, savePlan(newOverridePlan, 1, true)]"
               :disabled="overrideErrorObj.dateError || !newOverridePlan.id || !newOverridePlan.startDate"
               text="Save"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="primary"
               variant="text"
               @click="addNewOverridePlan = !addNewOverridePlan"
               text="Cancel"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card>
         <v-divider v-if="addNewOverridePlan"></v-divider>
         <v-data-table
@@ -263,12 +263,12 @@
               <div class="mb-2" v-if="item.showNote">
                 {{item.noteMsg}}
               </div>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   :disabled="(!item.endDate && !item.note) || item.dateError "
                   @click="[overrideExpanded = [], savePlan(item, 1)]"
                   text="Save"
-              ></AlbatrossButton>
+              ></a-btn>
             </td>
           </template>
 
@@ -284,22 +284,22 @@
                 </pre>
               </td>
               <td>
-                <AlbatrossButton
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="[overrideExpanded = [item], overrideSelectedIndex = index]"
                     v-if="!overrideExpanded.includes(item) && userCanEdit"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="[overrideExpanded = [], overrideSelectedIndex = index]"
                     v-if="overrideExpanded.includes(item)"
                     text="cancel"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -314,20 +314,20 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="userCanAdd"
                 @click="[addNewReceivingPlan = !addNewReceivingPlan, cloneOverridePlan = {}, getOverridePlans()]"
                 :prepend-icon="addNewReceivingPlan ? 'remove' : 'mdi-content-copy'"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="addOverridePlan()"
                 v-if="userCanAdd"
                 prepend-icon="add"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -355,13 +355,13 @@
               {{ru.name}}
             </div>
           </v-card>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="mr-3"
               @click="clonePlan()"
               :disabled="!cloneOverridePlan.id"
               text="Clone"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card>
         <v-data-table
             :headers="receivingHeaders"
@@ -389,12 +389,12 @@
               <v-textarea filled class="mt-4"
                           v-model="item.note">
               </v-textarea>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   :disabled="!item.endDate && !item.note"
                   @click="[addNewReceivingPlan = false, savePlan(item, 3)]"
                   text="Save"
-              ></AlbatrossButton>
+              ></a-btn>
             </td>
           </template>
 
@@ -407,22 +407,22 @@
                 </pre>
               </td>
               <td>
-                <AlbatrossButton
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="[receivingExpanded = [item], receivingSelectedIndex = index]"
                     v-if="!receivingExpanded.includes(item) && userCanEdit"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="[receivingExpanded = [], receivingSelectedIndex = index]"
                     v-if="receivingExpanded.includes(item)"
                     text="cancel"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -434,7 +434,7 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import moment from 'moment'
 import {handleHidingGlobalLoader, getRequest, postRequest, } from '@/helpers/helpers'

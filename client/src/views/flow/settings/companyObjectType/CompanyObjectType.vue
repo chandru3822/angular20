@@ -15,7 +15,7 @@
                         @click:append-outer="addCustomFieldGroup"
                         label="Custom Field Group" />
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newGroup = {}]"
@@ -43,7 +43,7 @@ import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers";
 import cloneDeep from "lodash.clonedeep";
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"

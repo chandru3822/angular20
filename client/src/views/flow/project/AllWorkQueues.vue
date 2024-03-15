@@ -5,12 +5,12 @@
         <v-toolbar-title class="albatross-header-3">Current Work Queues</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               variant="text"
               @click="expandCurrent = !expandCurrent"
               :prepend-icon="!expandCurrent ? 'mdi-chevron-down' : 'mdi-chevron-up'"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
 
@@ -48,12 +48,12 @@
         <v-toolbar-title class="albatross-header-3">Historic Work Queues</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               variant="text"
               @click="expandHistoric = !expandHistoric"
               :prepend-icon="!expandHistoric ? 'mdi-chevron-down' : 'mdi-chevron-up'"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-card class="square-card" v-if="expandHistoric">
@@ -97,7 +97,7 @@ import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSn
 import SpinnerInline from '@/components/SpinnerInline'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import constants from "@/helpers/constants";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

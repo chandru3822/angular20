@@ -31,13 +31,13 @@
             v-if="batchLoaded && batchId === maxBatchId && userIsAdmin && !voidedBatch"
             width="500">
           <template #activator="{ on }">
-            <AlbatrossButton
+            <a-btn
                 color="red"
                 class="ml-3"
                 :activation-handler="on"
                 :disabled="disableVoidButton()"
                 text="VOID BATCH"
-            ></AlbatrossButton>
+            ></a-btn>
           </template>
           <v-card>
             <v-card-title
@@ -54,36 +54,36 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <AlbatrossButton
+              <a-btn
                   @click="showVoidDialog = false"
                   color="unset"
                   text="No"
-              ></AlbatrossButton>
-              <AlbatrossButton
+              ></a-btn>
+              <a-btn
                   color="primary"
                   variant="text"
                   @click="voidBatch()"
                   text="Yes"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
         <v-spacer></v-spacer>
         <div class="btn-container">
-          <AlbatrossButton
+          <a-btn
               class="mr-3"
               variant="text"
               color="primary"
               v-show="batchLoaded && !voidedBatch"
               @click="exportChase"
               text="Download Chase CSV"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="primary"
               v-show="batchLoaded && !voidedBatch"
               @click="exportPayments"
               text="Export"
-          ></AlbatrossButton>
+          ></a-btn>
         </div>
       </div>
       <div>
@@ -153,7 +153,7 @@ import moment from 'moment'
 import {saveAs} from 'file-saver'
 import {mapState} from "vuex";
 import debounce from "lodash.debounce";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

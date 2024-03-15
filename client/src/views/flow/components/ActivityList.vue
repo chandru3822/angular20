@@ -22,13 +22,13 @@
         <v-spacer></v-spacer>
         <v-menu v-model="a.menuOpen" transition="scale-transition" origin="top right" offset-x left attach>
           <template v-slot:activator="{ on }">
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 size="small"
                 color="primary"
                 :activation-handler="on"
                 prepend-icon="mdi-dots-horizontal"
-            ></AlbatrossButton>
+            ></a-btn>
           </template>
           <v-list dense class="py-1 body-large">
             <v-list-item v-if="a.activityTypeId !== 1"
@@ -96,7 +96,7 @@ import VueClamp from 'vue-clamp'
 import {SearchTypeEnum} from "./ActivityListConstants";
 import SpinnerInline from '@/components/SpinnerInline'
 import InfiniteLoading from 'vue-infinite-loading'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

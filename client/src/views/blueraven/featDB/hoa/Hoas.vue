@@ -14,14 +14,14 @@
         >
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   @click="addItem"
                   color="primary"
                   v-if="userStore.userHasFeatureAccessLevel('HOA', 'ADD')"
                   prepend-icon="add"
                   text="Add New"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </template>
 
@@ -68,15 +68,15 @@
                 {{ item.managementCompany || '' }}
               </td>
               <td class="text-right">
-                <AlbatrossButton
+                <a-btn
                     :to="`/database/hoa/${item.id}/details`"
                     variant="text"
                     size="x-small"
                     fab
                     color="unset"
                     prepend-icon="mdi-arrow-right"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     icon
                     v-if="userStore.userHasFeatureAccessLevel('HOA', 'EDIT')"
                     size="small"
@@ -84,8 +84,8 @@
                     class="mr-3 feat-db-link-icon"
                     @click="editHoa(item)"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     icon
                     v-if="userStore.userHasFeatureAccessLevel('HOA', 'DELETE')"
                     size="small"
@@ -93,7 +93,7 @@
                     class="mr-3 feat-db-link-icon"
                     @click="deleteHoa(item)"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -151,19 +151,19 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               variant="text"
               @click="close"
               text="Cancel"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="primary"
               raised
               @click="newHoaDuplicateCheck"
               :disabled="!editedItem.name?.trim() || !editedItem.companyStateId"
               :text="btnTxt"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -201,7 +201,7 @@
 import constants from "@/helpers/constants";
 import cloneDeep from "lodash.clonedeep";
 import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {deleteRequest, getRequest,  handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";

@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Message Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               v-if="userCanAdd"
@@ -33,14 +33,14 @@
               </a>
             </div>
           </div>
-          <AlbatrossButton
+          <a-btn
             :disabled="!newType.title || !newType.content"
             color="primary"
             class="white--text mr-2"
             @click="saveMessageType(newType, true)"
             text="SAVE"
           />
-          <AlbatrossButton
+          <a-btn
             variant="text"
             color="primary"
             @click="[addNew = !addNew, newType = {}]"
@@ -87,7 +87,7 @@
                 <label>Include Manager:</label>
                 <input class="ml-3" type="checkbox" v-model="item.includeManager">
               </div>
-              <AlbatrossButton
+              <a-btn
                 :disabled="!item.title || !item.description || !item.content"
                 color="primary"
                 class="white--text mr-2"
@@ -98,7 +98,7 @@
           </template>
           <template #item.icons="{ item}">
             <td class="text-right">
-              <AlbatrossButton
+              <a-btn
                 size="small"
                 variant="text"
                 :large="vuetify.breakpoint.smAndDown"
@@ -107,7 +107,7 @@
                 @click="expandItem(item)"
                 prepend-icon="edit"
               />
-              <AlbatrossButton
+              <a-btn
                 size="small"
                 variant="text"
                 :large="vuetify.breakpoint.smAndDown"
@@ -116,7 +116,7 @@
                 @click="expanded = []; item.content = tempItemContent; tempItemContent = ''"
                 text="CANCEL"
               />
-              <AlbatrossButton
+              <a-btn
                 size="small"
                 variant="text"
                 :large="vuetify.breakpoint.smAndDown"
@@ -141,7 +141,7 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import {computed, getCurrentInstance, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import { useAppStore } from '@/stores/AppStorePinia.js'

@@ -13,27 +13,27 @@
 
       <v-card-actions>
         <slot name="actions" v-bind:cancel="cancel" v-bind:ok="ok">
-          <AlbatrossButton
+          <a-btn
               variant="text"
               @click="cancel(false)"
               class="text-capitalize"
               color="unset"
               :text="cancelButtonText"
-          ></AlbatrossButton>
+          ></a-btn>
           <v-spacer />
-          <AlbatrossButton
+          <a-btn
               color="primary"
               @click="ok(true)"
               class="text-capitalize"
               :text="okButtonText"
-          ></AlbatrossButton>
+          ></a-btn>
         </slot>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

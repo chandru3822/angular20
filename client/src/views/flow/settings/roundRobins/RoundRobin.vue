@@ -7,7 +7,7 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <AlbatrossButton
+        <a-btn
             icon
             color="primary"
             v-if="userCanEdit"
@@ -16,7 +16,7 @@
             @click="editRoundRobin = !editRoundRobin"
             :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
         >
-        </AlbatrossButton>
+        </a-btn>
 
       </v-toolbar-items>
     </v-toolbar>
@@ -79,13 +79,13 @@
           <v-simple-checkbox class="pl-2" label="Uses Total Lead Allocation?" v-model="roundRobin.usesTotalLeadAllocation"></v-simple-checkbox>
           </div>
 
-          <AlbatrossButton
+          <a-btn
               color="primary"
               :disabled="!roundRobin.roundRobinName || !roundRobin.companyTimezoneId"
               class=""
               @click="saveRoundRobinInfo()"
               text="Save"
-          ></AlbatrossButton>
+          ></a-btn>
 
         </v-col>
       </v-row>
@@ -115,7 +115,7 @@ import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 const userStore = useUserStore()
 import {useRoute} from "vue-router/composables";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()
 

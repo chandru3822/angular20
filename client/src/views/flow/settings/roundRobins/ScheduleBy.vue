@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 icon
                 color="primary"
                 v-if="userCanAdd"
@@ -16,7 +16,7 @@
                 :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                 :prepend-icon="addScheduler ? 'remove' : 'add'"
             >
-            </AlbatrossButton>
+            </a-btn>
 
           </v-toolbar-items>
         </v-toolbar>
@@ -32,13 +32,13 @@
                           autocomplete="off"
                           attach>
           </v-autocomplete>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="mr-3"
               @click="addUserToRoundRobin(selectedScheduler)"
               :disabled="!selectedScheduler.id"
               text="Add"
-          ></AlbatrossButton>
+          ></a-btn>
 
 
         </v-card>
@@ -75,14 +75,14 @@
             <tr>
               <td class="text-left name-col">{{ item.fullName }}</td>
               <td :class="{'text-right': $vuetify.breakpoint.smAndDown}">
-                <AlbatrossButton
+                <a-btn
                     v-if="userCanEdit"
                     icon
                     color="primary"
                     @click="userToDelete = item"
                     prepend-icon="delete"
                     :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
-                ></AlbatrossButton>
+                ></a-btn>
 
               </td>
             </tr>
@@ -104,7 +104,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useRoute} from "vue-router/composables";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()
 

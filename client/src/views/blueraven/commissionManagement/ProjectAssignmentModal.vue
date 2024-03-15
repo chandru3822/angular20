@@ -15,27 +15,27 @@
     </v-card-text>
     <v-card-actions>
       <v-spacer></v-spacer>
-      <AlbatrossButton
+      <a-btn
           variant="text"
           color="primary"
           class="elevation-0 text-capitalize"
           @click="$emit('cancel')"
           text="Close"
-      ></AlbatrossButton>
-      <AlbatrossButton
+      ></a-btn>
+      <a-btn
           class="ml-2 text-capitalize"
           :disabled="!projectId"
           color="primary"
           @click="saveProjectToPlan()"
           text="Save"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-card-actions>
   </v-card>
 </template>
 
 <script setup>
 import { getSnackbar, postRequestWithRequestParams } from '@/helpers/helpers'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

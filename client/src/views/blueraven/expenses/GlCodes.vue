@@ -6,14 +6,14 @@
           <v-toolbar-title class="app-title">GL Codes</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="[createNew = !createNew, newGlCode = {}]"
                 :prepend-icon="!createNew ? 'add' : 'close'"
                 hide-text-on-mobile
                 :text="createNew ? 'cancel' : 'Add GL Code'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -29,12 +29,12 @@
                         label="Description"
                         v-model="newGlCode.description">
           </v-text-field>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               :disabled="!newGlCode.code || !newGlCode.description"
               @click="saveGlCode(newGlCode, true)"
               text="Save"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card>
         <v-divider v-if="createNew" ></v-divider>
         <v-data-table
@@ -81,37 +81,37 @@
               </td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <AlbatrossButton
+                  <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       @click="editIndex = index"
                       v-if="index !== editIndex"
                       prepend-icon="edit"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       @click="saveGlCode(item, false)"
                       v-if="index === editIndex"
                       prepend-icon="save"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       @click="editIndex = null"
                       v-if="index === editIndex"
                       text="cancel"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       @click="[deleteConfirm=true, itemToDelete=item]"
                       prepend-icon="delete"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </div>
               </td>
             </tr>
@@ -135,7 +135,7 @@ import {handleHidingGlobalLoader, deleteRequest, postRequest, } from '@/helpers/
 import {getGlCodes} from './expenseService'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import constants from "@/helpers/constants.js";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

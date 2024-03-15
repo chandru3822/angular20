@@ -13,9 +13,9 @@
           <div class="header">
             <div class="d-flex">
               <h3 class="">Updated Code</h3>
-              <AlbatrossButton icon class="ml-5" color="primary" size="small"
+              <a-btn icon class="ml-5" color="primary" size="small"
                                v-if="compositionValue"
-                               @click="copyToClipboard" prepend-icon="mdi-content-copy"></AlbatrossButton>
+                               @click="copyToClipboard" prepend-icon="mdi-content-copy"></a-btn>
             </div>
           </div>
         </v-col>
@@ -33,11 +33,11 @@
       </v-row>
       <v-row class="py-3">
         <v-col cols="6">
-          <AlbatrossButton
+          <a-btn
               :disabled="!optionsValue"
-              @click="processBtn" text="Submit"></AlbatrossButton>
-          <AlbatrossButton class="ml-4" variant="text"
-                           @click="doClear" text="Clear"></AlbatrossButton>
+              @click="processBtn" text="Submit"></a-btn>
+          <a-btn class="ml-4" variant="text"
+                           @click="doClear" text="Clear"></a-btn>
         </v-col>
         <v-col cols="6">
           <div v-if="hasError" class="error--text" style="font-size: 20px;">
@@ -51,7 +51,7 @@
 
 <script setup>
 import {getCurrentInstance, onMounted, ref} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {getSnackbar, handleHidingGlobalLoader} from "@/helpers/helpers.js";
 
 const vueInstance = getCurrentInstance().proxy

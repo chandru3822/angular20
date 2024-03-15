@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Processes</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newProcess = {}]"
@@ -23,7 +23,7 @@
                         placeholder="Enter new process name"
                         label="Process">
           </v-text-field>
-          <AlbatrossButton
+          <a-btn
             color="primary"
             :disabled="!newProcess.processName"
             v-if="addNew"
@@ -37,14 +37,14 @@
                 {{p.processName}}
               </v-list-item-content>
               <v-list-item-action class="clickable">
-                <AlbatrossButton
+                <a-btn
                   @click="goToProcess(p.id)"
                   variant="text"
                   color="primary"
                   prepend-icon="edit"
                 />
               </v-list-item-action>
-              <AlbatrossButton
+              <a-btn
                   v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                   @click="processToDelete=p"
                   color="primary"
@@ -70,7 +70,7 @@
 import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'

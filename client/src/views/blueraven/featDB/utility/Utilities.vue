@@ -14,14 +14,14 @@
         >
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   @click="addItem"
                   color="primary"
                   v-if="userStore.userHasFeatureAccessLevel('UTILITY', 'ADD')"
                   prepend-icon="add"
                   text="Add New"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </template>
 
@@ -64,15 +64,15 @@
               <td class="text-left" @click="goToRoute(item.id)" >{{ item.metroArea ? item.metroArea : '' }}</td>
               <td class="text-left" @click="goToRoute(item.id)" >{{ item.state ? item.state : '' }}</td>
               <td class="text-right">
-                <AlbatrossButton
+                <a-btn
                     :to="`/database/utility/${item.id}/details`"
                     variant="text"
                     size="x-small"
                     fab
                     color="unset"
                     prepend-icon="mdi-arrow-right"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     icon
                     color="primary"
                     size="small"
@@ -80,7 +80,7 @@
                     @click.stop="editUtility(item)"
                     v-if="userStore.userHasFeatureAccessLevel('UTILITY', 'EDIT')"
                     prepend-icon="edit"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -136,19 +136,19 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   variant="text"
                   @click="close"
                   text="Cancel"
-              ></AlbatrossButton>
-              <AlbatrossButton
+              ></a-btn>
+              <a-btn
                   color="primary"
                   raised
                   @click="saveUtility"
                   :disabled="!editedItem.name || !editedItem.metroAreaId || !editedItem.companyStateId"
                   :text="utilityBtnTxt"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -161,7 +161,7 @@
 import cloneDeep from 'lodash.clonedeep'
 import { handleHidingGlobalLoader, getRequest, putRequest, postRequest,  } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {getActiveStates} from '@/services/stateService'
 import {FILTER_DEFAULTS, FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'

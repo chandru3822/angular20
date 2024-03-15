@@ -1,7 +1,7 @@
 <template>
   <SidePanelExpansionPanel header="Details" :section-expanded="sectionExpanded" @click="toggleCollapseExpand">
     <template v-if="!hideAdminBtn" v-slot:tool-btn>
-      <AlbatrossButton
+      <a-btn
           variant="text"
           size="small"
           color="primary"
@@ -11,7 +11,7 @@
           :to="`/projectAdmin/${projectId}/processSteps`"
           @click.native.stop
           prepend-icon="mdi-cog"
-      ></AlbatrossButton>
+      ></a-btn>
     </template>
     <template v-slot:expanded-content>
       <v-card outlined v-for="tab in tabs"
@@ -28,7 +28,7 @@
 import {getRequestWithParams, logError} from '@/helpers/helpers'
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

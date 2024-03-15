@@ -20,7 +20,7 @@
                     @click.stop=""
                     ref='fileInput'
                 >
-                <AlbatrossButton
+                <a-btn
                     @click.native.stop="selectFile(type.attachmentTypeId)"
                     @dragenter="dragTypeId=type.attachmentTypeId"
                     @dragleave="dragTypeId=null"
@@ -34,7 +34,7 @@
                     color="primary"
                     class="expansion-panel-btn upload-button"
                     text="Upload"
-                ></AlbatrossButton>
+                ></a-btn>
               </div>
               <span
                   v-else
@@ -70,7 +70,7 @@ import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const appStore = useAppStore()
 const route = useRoute()

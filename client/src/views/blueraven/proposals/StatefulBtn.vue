@@ -1,5 +1,5 @@
 <template>
-  <AlbatrossButton
+  <a-btn
       :class="stateClass"
       :disabled="currentState === 'DISABLED'"
       v-bind="$attrs"
@@ -10,10 +10,10 @@
       <v-icon v-if="currentState === 'SUCCESS'">mdi-check-circle-outline</v-icon>
       <slot v-bind:currentState="currentState"></slot>
     </template>
-  </AlbatrossButton>
+  </a-btn>
 </template>
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

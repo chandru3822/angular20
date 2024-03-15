@@ -20,14 +20,14 @@
             @allow-changed="statusReadOnlyAllowEventListener"
             @checkbox-changed="statusReadOnlyCheckboxEventListener"></multi-select-group>
         <br/>
-        <AlbatrossButton
+        <a-btn
             v-if="userCanEdit"
             color="primary"
             class="d-inline-block"
             @click="saveReadOnlyAndWhiteList()"
             prepend-icon="save"
             text="Save"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-card-text>
     </v-card>
     <v-card color="primary lighten-9" class="square-card mt-5">
@@ -49,14 +49,14 @@
             @allow-changed="ownerReadOnlyAllowEventListener"
             @checkbox-changed="ownerReadOnlyCheckboxEventListener"></multi-select-group>
         <br/>
-        <AlbatrossButton
+        <a-btn
             v-if="userCanEdit"
             color="primary"
             class="d-inline-block"
             @click="saveOwnerReadOnlyAndWhiteList()"
             prepend-icon="save"
             text="Save"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-card-text>
     </v-card>
   </v-container>
@@ -65,7 +65,7 @@
 
 <script setup>
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import cloneDeep from 'lodash.clonedeep'
 import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'

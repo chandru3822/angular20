@@ -5,7 +5,7 @@
                            :is-loading="activeEventsLoading"
                            @click="toggleCollapseExpand">
     <template v-slot:tool-btn>
-      <AlbatrossButton
+      <a-btn
           v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
           variant="text"
           size="small"
@@ -15,7 +15,7 @@
           class="pa-2 mx-2"
           max-width="48px"
           prepend-icon="mdi-format-list-bulleted"
-      ></AlbatrossButton>
+      ></a-btn>
     </template>
     <template v-slot:expanded-content>
       <ActiveEventSnippet class="px-3"
@@ -40,7 +40,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 import ActiveEventSnippet from '@/views/flow/project/ActiveEventSnippet'
 import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

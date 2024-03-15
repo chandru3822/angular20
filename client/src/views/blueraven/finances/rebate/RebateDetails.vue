@@ -20,7 +20,7 @@
       <dt class="left-align">Mailing Address:</dt>
       <!-- if all mailing address fields are null then show the add button -->
       <dd v-if="!editMailing && rebateDetails.mailing_street1 == null && rebateDetails.mailing_city == null && rebateDetails.mailing_state == null && rebateDetails.mailing_postal_code == null">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             size="small"
@@ -29,7 +29,7 @@
             class="mt-n1 px-1"
             prepend-icon="add"
             text="Add"
-        ></AlbatrossButton>
+        ></a-btn>
       </dd>
 
       <!-- if edit mode enabled then show inputs -->
@@ -72,15 +72,15 @@
                         v-model="rebateDetails.mailing_postal_code">
           </v-text-field>
           <div class="d-flex justify-end">
-            <AlbatrossButton
+            <a-btn
                 class="my-2"
                 variant="text"
                 color="primary"
                 size="small"
                 @click="cancelMailingEdit()"
                 text="Cancel"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 class="my-2"
                 variant="text"
                 color="error"
@@ -88,8 +88,8 @@
                 @click="saveMailingAddress(true)"
                 v-if="mailingDetails.mailingStreet1 != null && userCanEdit"
                 text="Remove"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 class="my-2 ml-2"
                 color="primary"
                 size="small"
@@ -97,7 +97,7 @@
                 v-if="userCanEdit"
                 :disabled="!rebateDetails.mailing_street1 || !rebateDetails.mailing_city || !rebateDetails.mailing_state_id || !rebateDetails.mailing_postal_code"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
           </div>
         </div>
       </dd>
@@ -211,13 +211,13 @@
                   <a v-if="item.payment_state_id === 5 && userCanEdit" class="primary--text" @click="openUnvoidDialog(item)">Unvoid</a>
                 </td>
                 <td>
-                  <AlbatrossButton
+                  <a-btn
                       v-if="item.payment_state_id !== 3 && item.payment_state_id !== 2 && userStore.userHasFeatureAccessLevel('REBATES', 'DELETE')"
                       @click="openDeleteDialog(item)"
                       variant="text"
                       color="primary"
                       prepend-icon="delete"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </td>
               </tr>
             </template>
@@ -308,7 +308,7 @@ import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const appStore = useAppStore()
 const route = useRoute()

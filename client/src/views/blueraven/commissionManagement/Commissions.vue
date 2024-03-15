@@ -7,13 +7,13 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             @click="goToDetails({})"
             v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')"
             prepend-icon="add"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-divider></v-divider>
@@ -66,7 +66,7 @@
 
 <script setup>
   import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
   import {getCurrentInstance, computed, ref, onMounted, watch} from 'vue'
   import {useUserStore} from '@/stores/UserStorePinia.js'
   import {useRoute, useRouter} from "vue-router/composables";

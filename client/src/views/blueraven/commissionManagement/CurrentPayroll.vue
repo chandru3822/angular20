@@ -7,25 +7,25 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="flex-display align-center" >
-          <AlbatrossButton
+          <a-btn
               v-if="payrollStatus.action && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')"
               :color="payrollStatus.actionColor"
               class=""
               @click="submitForApproval(payrollStatus.action)"
               :text="payrollStatus.actionText"
-          ></AlbatrossButton>
+          ></a-btn>
           <!-- currently only "Approve" has a secondary action which requires a dialog confirm. will have to update if that changes -->
           <v-dialog
             v-if="payrollStatus.secondaryAction && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')"
             v-model="approveConfirm"
             width="500">
             <template v-slot:activator="{ on }">
-              <AlbatrossButton
+              <a-btn
                   :activation-handler="on"
                   :color="payrollStatus.secondaryActionColor"
                   class="ml-3"
                   :text="payrollStatus.secondaryActionText"
-              ></AlbatrossButton>
+              ></a-btn>
             </template>
             <v-card>
               <v-card-title
@@ -52,18 +52,18 @@
 
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <AlbatrossButton
+                <a-btn
                     @click="approveConfirm = false"
                     color="unset"
                     text="No"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     color="primary"
                     class=""
                     :disabled="null == payDate"
                     @click="submitForApproval(payrollStatus.secondaryAction)"
                     text="Yes"
-                ></AlbatrossButton>
+                ></a-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -93,18 +93,18 @@
                             v-model="currentPayroll.description"></v-text-field>
 
               <div class="text-left">
-                <AlbatrossButton
+                <a-btn
                     color="primary"
                     v-if="userCanEdit"
                     @click="saveChangesToPayroll()"
                     text="Save Changes"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     color="primary"
                     class="ml-3"
                     @click="exportAccountingReview()"
                     text="Export"
-                ></AlbatrossButton>
+                ></a-btn>
               </div>
             </v-card>
           </v-col>
@@ -131,18 +131,18 @@
               ></v-autocomplete>
 
               <div class="text-left">
-                <AlbatrossButton
+                <a-btn
                     color="primary"
                     @click="getAccountingData()"
                     text="Search"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     class="ml-3"
                     variant="text"
                     color="primary"
                     @click="[accountingSearch = {}, getAccountingData()]"
                     text="Reset"
-                ></AlbatrossButton>
+                ></a-btn>
               </div>
             </v-card>
           </v-col>
@@ -226,7 +226,7 @@
                     v-model="item.dialog"
                     width="500">
                     <template v-slot:activator="{ on }">
-                      <AlbatrossButton
+                      <a-btn
                           size="x-small"
                           color="primary"
                           fab
@@ -234,7 +234,7 @@
                           :activation-handler="on"
                           @click="[delete item.adjustment, delete item.adjustmentNote, getAdjustmentHistory(item)]"
                           prepend-icon="add"
-                      ></AlbatrossButton>
+                      ></a-btn>
                     </template>
                     <v-card>
                       <v-card-title class="text-h5 grey lighten-2" primary-title>
@@ -278,17 +278,17 @@
                       <v-divider></v-divider>
                       <v-card-actions>
                         <v-spacer></v-spacer>
-                        <AlbatrossButton
+                        <a-btn
                             @click="item.dialog = false"
                             color="unset"
                             text="Cancel"
-                        ></AlbatrossButton>
-                        <AlbatrossButton
+                        ></a-btn>
+                        <a-btn
                             color="primary"
                             :disabled="adjustmentDisabled(item)"
                             @click="addAdjustment(item)"
                             text="Add"
-                        ></AlbatrossButton>
+                        ></a-btn>
 
                       </v-card-actions>
                     </v-card>
@@ -326,7 +326,7 @@
                     v-model="item.dialog"
                     width="500">
                     <template v-slot:activator="{ on }">
-                      <AlbatrossButton
+                      <a-btn
                           size="x-small"
                           color="primary"
                           fab
@@ -334,7 +334,7 @@
                           :activation-handler="on"
                           @click="[delete item.adjustment, delete item.adjustmentNote, getAdjustmentHistory(item)]"
                           prepend-icon="add"
-                      ></AlbatrossButton>
+                      ></a-btn>
                     </template>
                     <v-card>
                       <v-card-title class="text-h5 grey lighten-2" primary-title>
@@ -378,17 +378,17 @@
                       <v-divider></v-divider>
                       <v-card-actions>
                         <v-spacer></v-spacer>
-                        <AlbatrossButton
+                        <a-btn
                             @click="item.dialog = false"
                             color="unset"
                             text="Cancel"
-                        ></AlbatrossButton>
-                        <AlbatrossButton
+                        ></a-btn>
+                        <a-btn
                             color="primary"
                             :disabled="adjustmentDisabled(item)"
                             @click="addAdjustment(item)"
                             text="Add"
-                        ></AlbatrossButton>
+                        ></a-btn>
                       </v-card-actions>
                     </v-card>
                   </v-dialog>
@@ -425,7 +425,7 @@
 
 <script setup>
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
   import cloneDeep from 'lodash.clonedeep'
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import constants from "@/helpers/constants";

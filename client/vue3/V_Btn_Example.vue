@@ -1,6 +1,6 @@
 <template>
   <div>
-    <AlbatrossButton
+    <a-btn
         id="my-button-id"
         to="/settings/functions"
         variant="text"
@@ -26,15 +26,15 @@
         </div>
       </template>
 
-    </AlbatrossButton>
+    </a-btn>
 
 <!--    a menu opening example-->
     <v-menu v-model="showMenu" transition="scale-transition" offset-y
             min-width="290px" :close-on-content-click="false">
       <template v-slot:activator="{ on }">
-        <AlbatrossButton :activation-handler="on" text="Open Menu">
+        <a-btn :activation-handler="on" text="Open Menu">
 
-        </AlbatrossButton>
+        </a-btn>
       </template>
       <v-card>
         <v-card-text>
@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import {ref} from 'vue'
 
 const showMenu = ref(false)

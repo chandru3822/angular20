@@ -23,7 +23,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <AlbatrossButton
+          <a-btn
             color="primary"
             dark
             class="white--text"
@@ -40,7 +40,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Process Step Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               v-if="userCanEdit"
               variant="text"
               color="primary"
@@ -65,7 +65,7 @@
                             label="Select a Category"
                             item-text="processStepStatusType"
                             attach></v-autocomplete>
-            <AlbatrossButton
+            <a-btn
               color="primary"
               :disabled="!newType.processStepStatusTypeId || !newType.processStepStatusType"
               @click="addNewType"
@@ -111,7 +111,7 @@
                     item-text="processStepStatusType"
                     attach
                   ></v-autocomplete>
-                  <AlbatrossButton
+                  <a-btn
                     v-if="userCanEdit"
                     color="primary"
                     dark
@@ -131,7 +131,7 @@
                     {{item.rootProcessStepStatusType}}
                   </td>
                   <td class="text-right">
-                    <AlbatrossButton
+                    <a-btn
                       size="small"
                       variant="text"
                       color="primary"
@@ -140,7 +140,7 @@
                     />
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
-                        <AlbatrossButton
+                        <a-btn
                           icon
                           color="primary"
                           @click="copyToClipBoard(item.id)"
@@ -152,7 +152,7 @@
                       <span>Process Step Status ID: {{item.id}}</span>
                       <div class="text-center">(click to copy)</div>
                     </v-tooltip>
-                    <AlbatrossButton
+                    <a-btn
                       size="small"
                       variant="text"
                       color="primary"
@@ -160,7 +160,7 @@
                       @click="expanded = [item]"
                       prepend-icon="edit"
                     />
-                    <AlbatrossButton
+                    <a-btn
                       size="small"
                       variant="text"
                       color="primary"
@@ -169,7 +169,7 @@
                       text="CANCEL"
                     />
 
-                    <AlbatrossButton
+                    <a-btn
                       size="small"
                       variant="text"
                       color="primary"
@@ -229,7 +229,7 @@
   import ConfirmationDialog from '@/components/ConfirmationDialog'
 
   import {getCurrentInstance, onMounted, ref, computed} from 'vue'
-  import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import { useAppStore } from '@/stores/AppStorePinia.js'
   const appStore = useAppStore()

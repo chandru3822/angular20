@@ -19,21 +19,21 @@
 
       <div class="d-inline-block text-right pr-4"
            :style="{'min-width': a.expandable ? '150px' : '50px'}">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             class="learn-more-btn text-transform-unset"
             v-if="a.expandable"
             @click="[ markAnnouncement(a, true, true, true), openModal(a)]"
             text="Learn More"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             variant="text"
             size="x-small"
             class="px-1 close-x"
             @click="markAnnouncement(a, false, true, false)"
             prepend-icon="clear"
-        ></AlbatrossButton>
+        ></a-btn>
       </div>
     </v-alert>
   </div>
@@ -43,7 +43,7 @@
 import moment from 'moment'
 import { postRequestWithRequestParams} from "@/helpers/helpers.js";
 import AnnouncementModal from "@/components/AnnouncementModal.vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

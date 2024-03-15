@@ -5,7 +5,7 @@
       <v-col cols="12">
         <v-toolbar flat>
           <v-toolbar-title  class="title-large">
-            <AlbatrossButton fab variant="text" size="small"
+            <a-btn fab variant="text" size="small"
                              color="primary" class="mr-2"
                              :to="null == apiPath ? `/settings/customFields` : `/settings/companyCustomFields`"
                              prepend-icon="mdi-chevron-left"
@@ -14,7 +14,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               v-if="userCanEdit"
               variant="text"
               color="primary"
@@ -193,7 +193,7 @@
                     </v-text-field>
                       <v-tooltip left v-if="!!ddo.id">
                         <template v-slot:activator="{ on, attrs }">
-                          <AlbatrossButton variant="text" icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
+                          <a-btn variant="text" icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
                                  :activation-handler="on" prepend-icon="mdi-information"/>
                         </template>
                         <span>List of Value ID: {{ddo.id}}</span>
@@ -230,7 +230,7 @@
                     </v-text-field>
                       <v-tooltip left v-if="!!ddo.id">
                         <template v-slot:activator="{ on, attrs }">
-                          <AlbatrossButton variant="text" icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
+                          <a-btn variant="text" icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
                                  :activation-handler="on" prepend-icon="mdi-information"/>
                         </template>
                         <span>List of Value ID: {{ddo.id}} </span>
@@ -246,7 +246,7 @@
               </v-list>
             </div>
 
-            <AlbatrossButton
+            <a-btn
               color="primary"
               class="mt-2"
               @click="addOption(customField.listOfValues)"
@@ -293,7 +293,7 @@ import {
 } from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { useUserStore } from '@/stores/UserStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

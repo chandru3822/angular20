@@ -2,7 +2,7 @@
   <v-container v-if="orgId || userId">
     <v-row>
       <v-col>
-        <AlbatrossButton color="primary" v-if="!addNew && userCanAdd" @click="setNew" class="mb-3" text="ADD SCHEDULE"/>
+        <a-btn color="primary" v-if="!addNew && userCanAdd" @click="setNew" class="mb-3" text="ADD SCHEDULE"/>
         <v-card v-if="addNew" flat class="px-3">
           <v-card-title>Add New Schedule</v-card-title>
           <DatetimePickerInput
@@ -93,7 +93,7 @@
                 <td class="text-left px-0" width="150px"  v-if="!useSlotSchedule">
                   <v-tooltip top v-if="index !== 6">
                     <template v-slot:activator="{ on }">
-                      <AlbatrossButton
+                      <a-btn
                         variant="text"
                         size="small"
                         color="primary"
@@ -105,10 +105,10 @@
                     </template>
                     <span>Copy Down</span>
                   </v-tooltip>
-                  <AlbatrossButton variant="text" size="small" v-else/>
+                  <a-btn variant="text" size="small" v-else/>
                   <v-tooltip top v-if="index !== 0">
                     <template v-slot:activator="{ on }">
-                      <AlbatrossButton
+                      <a-btn
                         variant="text"
                         size="small"
                         color="primary"
@@ -120,8 +120,8 @@
                     </template>
                     <span>Copy Up</span>
                   </v-tooltip>
-                  <AlbatrossButton variant="text" size="small" v-else/>
-                  <AlbatrossButton variant="text" size="small" color="primary" @click="[item.startTime = null, item.endTime = null]" prepend-icon="close"/>
+                  <a-btn variant="text" size="small" v-else/>
+                  <a-btn variant="text" size="small" color="primary" @click="[item.startTime = null, item.endTime = null]" prepend-icon="close"/>
                 </td>
 
               </tr>
@@ -132,8 +132,8 @@
           </div>
           <v-card-actions>
             <v-card-actions>
-              <AlbatrossButton variant="text" color="primary" @click="[newSchedule = {}, addNew = false]" text="CANCEL"/>
-              <AlbatrossButton color="primary"  @click="saveSchedule(newSchedule, true)" class="white--text"
+              <a-btn variant="text" color="primary" @click="[newSchedule = {}, addNew = false]" text="CANCEL"/>
+              <a-btn color="primary"  @click="saveSchedule(newSchedule, true)" class="white--text"
                      :disabled="!newSchedule.startDate" text="SAVE"/>
             </v-card-actions>
           </v-card-actions>
@@ -268,25 +268,25 @@
 
                         <v-tooltip top v-if="index !== 6 && userCanEdit">
                           <template v-slot:activator="{ on }">
-                            <AlbatrossButton variant="text" size="small" color="primary" :activation-handler="on"
+                            <a-btn variant="text" size="small" color="primary" :activation-handler="on"
                                              @click="copyTimes(schedule, item, index, 'down')"
                                              prepend-icon="mdi-arrow-collapse-down"
                             />
                           </template>
                           <span>Copy Down</span>
                         </v-tooltip>
-                        <AlbatrossButton variant="text" size="small" v-else/>
+                        <a-btn variant="text" size="small" v-else/>
                         <v-tooltip top v-if="index !== 0 && userCanEdit">
                           <template v-slot:activator="{ on }">
-                            <AlbatrossButton variant="text" color="primary" size="small" :activation-handler="on"
+                            <a-btn variant="text" color="primary" size="small" :activation-handler="on"
                                              @click="copyTimes(schedule, item, index, 'up')"
                                              prepend-icon="mdi-arrow-collapse-up"/>
                           </template>
                           <span>Copy Up</span>
                         </v-tooltip>
 
-                        <AlbatrossButton variant="text" size="small" v-else/>
-                        <AlbatrossButton variant="text" size="small" color="primary"
+                        <a-btn variant="text" size="small" v-else/>
+                        <a-btn variant="text" size="small" color="primary"
                                          @click="[item.startTime = null, item.endTime = null]" v-if="userCanEdit"
                                          prepend-icon="close"
                         />
@@ -300,7 +300,7 @@
                 </div>
                 <v-card-actions>
                   <v-card-actions>
-                    <AlbatrossButton color="primary"  @click="saveSchedule(schedule, false)" class="white--text"
+                    <a-btn color="primary"  @click="saveSchedule(schedule, false)" class="white--text"
                            v-if="userCanEdit || userCanAdd"
                            :disabled="!schedule.startDate" text="SAVE"/>
                   </v-card-actions>
@@ -313,19 +313,19 @@
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.startDate | formatDate('date')}} - {{item.endDate | formatDate('date')}}</td>
               <td class="text-right">
-                <AlbatrossButton size="small" variant="text" color="primary"
+                <a-btn size="small" variant="text" color="primary"
                                  @click="[expanded = [item], selectedIndex = index]"
                                  v-if="!expanded.includes(item)"
                                  :prepend-icon="userCanEdit ? 'edit' : 'mdi-chevron-down'"
                 />
-                <AlbatrossButton size="small"
+                <a-btn size="small"
                                  variant="text"
                                  color="primary"
                                  @click="expanded = []"
                                  v-if="expanded.includes(item)"
                                  text="CANCEL"
                 />
-                <AlbatrossButton size="small"
+                <a-btn size="small"
                                  variant="text"
                                  color="primary"
                                  :disabled="cannotDeleteSchedule(item)"
@@ -355,7 +355,7 @@
   import {handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import {getCurrentInstance, onMounted, ref, toRefs, computed, watch, defineProps} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import { useAppStore } from '@/stores/AppStorePinia.js'

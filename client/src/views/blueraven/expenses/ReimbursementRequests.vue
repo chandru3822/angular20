@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Reimbursement Requests</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="userCanAdd"
@@ -14,7 +14,7 @@
                 :prepend-icon="!createNew ? 'add' : 'close'"
                 hide-text-on-mobile
                 :text="createNew ? 'cancel' : 'Add Reimbursement Request'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -94,12 +94,12 @@
                       background-color="#F2F6F8"
                       v-model="newReimbursementRequest.notes">
           </v-textarea>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               :disabled="!newReimbursementRequest.expenseDate || !newReimbursementRequest.glCodeId || !newReimbursementRequest.budgetTypeId || !newReimbursementRequest.expenseBudgetId || !newReimbursementRequest.amount"
               @click="saveReimbursementRequest(newReimbursementRequest, true)"
               text="Save"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card>
         <v-divider v-if="createNew"></v-divider>
         <v-data-table
@@ -129,20 +129,20 @@
               <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end" v-if="userCanEdit">
-                  <AlbatrossButton
+                  <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       @click="[selectedRequest = item, getTheBudgetsForUser(item.expenseBudgetUserId, true, false), getRequestAttachmentPresignedUrl(item)]"
                       prepend-icon="edit"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       @click="[deleteConfirm = true, itemToDelete = item]"
                       prepend-icon="delete"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </div>
               </td>
             </tr>
@@ -154,31 +154,31 @@
       <v-col cols="12">
         <v-toolbar flat class="cfg-header-bar">
           <v-toolbar-title class="app-title">
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 @click="selectedRequest = {}"
                 color="primary"
                 text="Back"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div class="pt-3">
-              <AlbatrossButton
+              <a-btn
                   @click="validateAndApprove"
                   color="primary"
                   text="Approve & Submit"
-              ></AlbatrossButton>
+              ></a-btn>
               <v-menu v-model="rejectDropdown"
                       bottom offset-y min-width="350"
                       :close-on-content-click="false">
                 <template #activator="{on}">
-                  <AlbatrossButton
+                  <a-btn
                       :activation-handler="on"
                       color="error"
                       class="ml-3"
                       text="Reject"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </template>
                 <v-card class="pa-5">
                   <label>Reason for Rejection: (required)</label>
@@ -188,28 +188,28 @@
                               background-color="#F2F6F8"
                               v-model="selectedRequest.notes">
                   </v-textarea>
-                  <AlbatrossButton
+                  <a-btn
                       @click="rejectRequest(selectedRequest)"
                       :disabled="!selectedRequest.notes"
                       color="error"
                       text="Reject"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       class="ml-3"
                       @click="rejectDropdown = false"
                       variant="text"
                       color="primary"
                       text="Cancel"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </v-card>
               </v-menu>
-              <AlbatrossButton
+              <a-btn
                   class="ml-3"
                   @click="selectedRequest = {}"
                   variant="text"
                   color="primary"
                   text="Cancel"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -334,7 +334,7 @@ import DatetimePickerInput from "@/components/DatetimePickerInput"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import BudgetReportTable from "@/views/blueraven/expenses/BudgetReportTable.vue";
 import SpinnerInline from "@/components/SpinnerInline.vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

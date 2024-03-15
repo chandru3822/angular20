@@ -5,7 +5,7 @@
         <v-toolbar flat class="wqt-header-bar">
           <v-toolbar-title class="title-large">{{ pool.customName || pool.poolType + ' Pool' }}</v-toolbar-title>
           <v-spacer></v-spacer>
-          <AlbatrossButton
+          <a-btn
               icon
               color="primary"
               @click="editPool = !editPool"
@@ -43,7 +43,7 @@
             />
           </div>
 
-          <AlbatrossButton
+          <a-btn
               v-if="editPool"
               color="primary"
               :disabled="!pool.startDate || !pool.endDate || pool.startDate > pool.endDate"
@@ -57,23 +57,23 @@
             <v-toolbar-title class="title-large text-wrap">Winner Background Image</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <AlbatrossButton
+              <a-btn
                   v-if="userCanEdit && !savingImage && !pool.backgroundAttachmentPresignedUrl"
                   :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                   icon
                   color="primary"
                   :prepend-icon="addImage ? 'remove' : 'add'"
                   @click="addImage = !addImage">
-              </AlbatrossButton>
+              </a-btn>
 
-              <AlbatrossButton
+              <a-btn
                   v-else-if="userCanEdit"
                   :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                   icon
                   color="primary"
                   prepend-icon="delete"
                   @click="deleteWinnerBackgroundDialog = true">
-              </AlbatrossButton>
+              </a-btn>
 
               <ConfirmationDialog :open-dialog="deleteWinnerBackgroundDialog"
                                   @confirm="deleteAttachment(pool.backgroundAttachmentId)"
@@ -110,13 +110,13 @@
           <v-toolbar flat class="wqt-header-bar">
             <v-toolbar-title class="title-large">Positions</v-toolbar-title>
             <v-spacer></v-spacer>
-            <AlbatrossButton
+            <a-btn
                 :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                 icon
                 color="primary"
                 prepend-icon="add"
                 @click="addPosition = !addPosition">
-            </AlbatrossButton>
+            </a-btn>
 
           </v-toolbar>
           <v-card flat v-if="addPosition">
@@ -128,19 +128,19 @@
                 item-value="id"
             ></v-autocomplete>
 
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 text="Save"
                 :disabled="!positionId"
                 @click="addPositionToPool">
-            </AlbatrossButton>
+            </a-btn>
 
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 variant="text"
                 text="Cancel"
                 @click="[addPosition = !addPosition, positionId = null]">
-            </AlbatrossButton>
+            </a-btn>
           </v-card>
 
           <v-data-table
@@ -164,13 +164,13 @@
               <tr class="text-left" :class="{'shaded-row': pool.positions.indexOf(item) % 2}">
                 <td class="text-left">{{ item.position }}</td>
                 <td class="text-right">
-                  <AlbatrossButton
+                  <a-btn
                       :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                       icon
                       color="primary"
                       prepend-icon="delete"
                       @click="positionToDelete=item">
-                  </AlbatrossButton>
+                  </a-btn>
                 </td>
               </tr>
             </template>
@@ -182,13 +182,13 @@
           <v-toolbar flat class="wqt-header-bar">
             <v-toolbar-title class="title-large">Users</v-toolbar-title>
             <v-spacer></v-spacer>
-            <AlbatrossButton
+            <a-btn
                 :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                 icon
                 color="primary"
                 prepend-icon="add"
                 @click="addUser = !addUser">
-            </AlbatrossButton>
+            </a-btn>
           </v-toolbar>
           <v-card flat v-if="addUser">
             <v-autocomplete
@@ -200,19 +200,19 @@
                 attach
             ></v-autocomplete>
 
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 text="Save"
                 :disabled="!userId"
                 @click="addUserToPool">
-            </AlbatrossButton>
+            </a-btn>
 
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 text="Cancel"
                 variant="text"
                 @click="[addUser = !addUser, userId = null]">
-            </AlbatrossButton>
+            </a-btn>
           </v-card>
           <v-text-field
               v-model="userSearch"
@@ -243,13 +243,13 @@
               <tr class="text-left" :class="{'shaded-row': pool.users.indexOf(item) % 2}">
                 <td class="text-left">{{ item.fullName }}</td>
                 <td class="text-right">
-                  <AlbatrossButton
+                  <a-btn
                       :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                       icon
                       color="primary"
                       prepend-icon="delete"
                       @click="userToDelete=item">
-                  </AlbatrossButton>
+                  </a-btn>
                 </td>
               </tr>
             </template>
@@ -285,7 +285,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, watch, computed, ref, onMounted} from 'vue'
 import {useRoute} from "vue-router/composables";
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import { useFileStore } from '@/stores/FileStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()

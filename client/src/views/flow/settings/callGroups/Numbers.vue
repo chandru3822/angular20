@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text"
+            <a-btn variant="text"
                              icon
                              :large="vuetify.breakpoint.smAndDown"
                              color="primary" v-if="userCanAdd" @click="[addNumber = !addNumber, newNumber = '']"
@@ -26,7 +26,7 @@
                         v-model="newNumber">
           </v-text-field>
           <div class="error-text mb-3" v-if="showError">{{errorMsg}}</div>
-          <AlbatrossButton color="primary" class="mr-3 white--text" @click="addNumberToGroup()"
+          <a-btn color="primary" class="mr-3 white--text" @click="addNumberToGroup()"
                            :disabled="!newNumber"
                            text="ADD"
           />
@@ -71,7 +71,7 @@
                 <v-select attach style="width: 120px" v-model="item.active" :disabled="!userCanEdit" :items="items" @change="updatePhoneNumber(item)"></v-select>
               </template>
               <template #item.icons="{item}">
-                <AlbatrossButton size="small"
+                <a-btn size="small"
                                  variant="text"
                                  icon
                                  :large="vuetify.breakpoint.smAndDown" color="primary" v-if="userCanDelete"
@@ -93,7 +93,7 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRoute} from "vue-router/composables"

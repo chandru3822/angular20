@@ -8,13 +8,13 @@
         <v-toolbar-title class="title-large">{{ announcement.title }}</v-toolbar-title>
         <v-spacer/>
         <v-toolbar-items>
-          <AlbatrossButton
+          <a-btn
               size="x-small"
               variant="text"
               color="primary"
               @click="closeModal()"
               prepend-icon="close"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
       <div class="px-4 pt-4">
@@ -48,7 +48,7 @@
 import 'quill/dist/quill.snow.css'
 import { quillEditor } from 'vue-quill-editor'
 import SpinnerInline from '@/components/SpinnerInline'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'

@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Event Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newType = {}]"
@@ -27,7 +27,7 @@
                           item-value="id"
                           label="Select a Category"
                           item-text="eventStatusType"></v-autocomplete>
-          <AlbatrossButton
+          <a-btn
             color="primary"
             :disabled="!newType.eventStatusTypeId || !newType.eventStatusType"
             @click="saveType(newType, true)"
@@ -75,7 +75,7 @@
                   :disabled="!userCanEdit"
                   label="Select a Category"
                   item-text="eventStatusType"></v-autocomplete>
-                <AlbatrossButton
+                <a-btn
                   color="primary"
                   dark
                   class="white--text"
@@ -89,7 +89,7 @@
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': index % 2}">
                 <td style="width: 50px">
-                  <AlbatrossButton
+                  <a-btn
                     variant="text"
                     color="primary"
                     size="small"
@@ -105,7 +105,7 @@
                   {{ item.rootEventStatusType }}
                 </td>
                 <td class="text-right">
-                  <AlbatrossButton
+                  <a-btn
                     size="small"
                     variant="text"
                     color="primary"
@@ -113,7 +113,7 @@
                     prepend-icon="mdi-clipboard-list-outline"/>
                   <v-tooltip left>
                     <template v-slot:activator="{ on, attrs }">
-                      <AlbatrossButton
+                      <a-btn
                         color="primary"
                         @click="copyToClipBoard(item.id)" v-bind="attrs"
                         :activation-handler="on"
@@ -124,7 +124,7 @@
                     <span>Event Status Id: {{item.id}}</span>
                     <div class="text-center">(click to copy)</div>
                   </v-tooltip>
-                  <AlbatrossButton
+                  <a-btn
                     icon
                     size="small"
                     variant="text"
@@ -132,14 +132,14 @@
                     v-if="!expanded.includes(item)" @click="expanded = [item]"
                     prepend-icon="edit"
                   />
-                  <AlbatrossButton
+                  <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     v-if="expanded.includes(item)" @click="expanded = []"
                     text="cancel"
                   />
-                  <AlbatrossButton
+                  <a-btn
                     size="small"
                     variant="text"
                     color="primary"
@@ -230,7 +230,7 @@ import {getRequest, deleteRequest, putRequest, defineSortableTable} from '@/help
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {computed, getCurrentInstance, ref, onMounted} from "vue";
-import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'

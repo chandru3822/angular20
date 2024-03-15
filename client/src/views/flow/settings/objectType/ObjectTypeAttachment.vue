@@ -13,7 +13,7 @@
             <v-toolbar-title class="title-large text-wrap">Ancillary Custom Field Groups</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <AlbatrossButton variant="text"
+              <a-btn variant="text"
                                color="primary"
                                v-if="!createNew && userCanAdd"
                                @click="createNew = !createNew"
@@ -31,14 +31,14 @@
                 v-model="newGroup.groupName"
               ></v-text-field>
             </div>
-            <AlbatrossButton
+            <a-btn
               color="primary"
               class="mr-2"
               :disabled="!newGroup.groupName"
               @click="saveFieldGroup()"
               text="SAVE"
             />
-            <AlbatrossButton variant="text" color="primary"
+            <a-btn variant="text" color="primary"
               @click="[newGroup = {}, createNew = false]"
               text="CANCEL"
             />
@@ -70,7 +70,7 @@
 
                     <template #item.draggable="{ item, index }">
                       <td class="draggable-handle-col" :class="{'shaded-row': index % 2 && !isMobile}">
-                      <AlbatrossButton variant="text"
+                      <a-btn variant="text"
                                        icon size="small"
                                        color="primary" class="handle"
                                        v-if="userCanEdit"
@@ -99,7 +99,7 @@
                     <template #item.icons="{item, index}">
                       <td :class="{'shaded-row': index % 2 && !isMobile}">
                         <div class="item-icons text-right">
-                          <AlbatrossButton
+                          <a-btn
                             v-if="userCanAdd"
                             size="small"
                             variant="text"
@@ -107,14 +107,14 @@
                             @click="[addField = !addField, selectedIndex = index, expanded = [item], loadFieldsByParent()]"
                             :prepend-icon="addField && expanded.includes(item) ? 'remove' : 'add'"
                           />
-                          <AlbatrossButton
+                          <a-btn
                             size="small"
                             variant="text"
                             color="primary"
                             @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]"
                             :prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
                           />
-                          <AlbatrossButton size="small"
+                          <a-btn size="small"
                                            color="primary"
                                            variant="text"
                                            @click="cfGroupToDelete = item"
@@ -140,7 +140,7 @@
                           {{ item.fieldName }}
                         </template>
                       </v-autocomplete>
-                      <AlbatrossButton
+                      <a-btn
                         variant="text"
                         color="primary"
                         @click="addField = false"
@@ -216,7 +216,7 @@ import constants from "@/helpers/constants";
 import orderBy from 'lodash.orderby'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { useUserStore } from '@/stores/UserStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

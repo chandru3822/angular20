@@ -248,14 +248,14 @@
               </template>
             </v-autocomplete>
 
-            <AlbatrossButton
+            <a-btn
                 v-if="!isSetter && !isSetterMgr"
                 id="all-reps-btn"
                 variant="outlined"
                 color="primary"
                 @click="funnelAllReps"
                 text="All Reps"
-            ></AlbatrossButton>
+            ></a-btn>
           </div>
         </div>
       </div>
@@ -297,13 +297,13 @@
                       transition="scale-transition"
                       offset-y>
                 <template v-slot:activator="{ on }">
-                  <AlbatrossButton
+                  <a-btn
                       :activation-handler="on"
                       class="custom-dates-btn"
                       color="unset"
                       :text="pipelineDateRange.label"
                       append-icon="mdi-menu-down"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </template>
                 <v-list>
                   <v-list-item v-for="(dateRange, index) in pipelineDateRanges"
@@ -492,12 +492,12 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <AlbatrossButton
+          <a-btn
               class="text-capitalize mr-4 mb-2"
               color="primary"
               @click="closeFunnelDrilldownDialog"
               text="Close"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -519,7 +519,7 @@ import {
   getSetterOffices,
   getSetterReps
 } from '@/services/dashboardService'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

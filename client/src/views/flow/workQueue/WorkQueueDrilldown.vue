@@ -3,14 +3,14 @@
     <v-row v-if="!dataLoading && !errorLoading">
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <AlbatrossButton
+          <a-btn
               variant="text"
               size="small"
               :to="`/workQueue`"
               class="mr-3"
               color="primary"
               prepend-icon="mdi-arrow-left"
-          ></AlbatrossButton>
+          ></a-btn>
           <v-toolbar-title class="app-title" v-if="workQueue && workQueue.workQueueType">{{ workQueue.workQueueType }}
           </v-toolbar-title>
           <v-spacer></v-spacer>
@@ -29,14 +29,14 @@
                 label="Hide events with a start time in the future"
                 @change="filterFutureFollowUps()"
             />
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="exportCsv"
                 v-if="results.length > 0"
                 prepend-icon="mdi-cloud-download"
                 text="Export"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <div v-if="noResults && !dataLoading" class="one-hunned text-center mt-5">
@@ -87,13 +87,13 @@
                 <!--                  {{ item['Project Name'] }}-->
                 <!--                </router-link>-->
                 <a>
-                  <AlbatrossButton
+                  <a-btn
                       variant="text"
                       small
                       :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`"
                       color="unset"
                       :text="item['Project Name']"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </a>
                 <div class="chip-container">
                   <v-chip v-for="(tag, idx) in item.tags"
@@ -132,14 +132,14 @@
                 <router-link  v-if="item['Owner']" class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Owner'] }}
                 </router-link>
-                <AlbatrossButton
+                <a-btn
                     variant="outlined"
                     v-else-if="userCanOwnProcessStep(item)"
                     class="text-capitalize primary--text"
                     @click="assignToUser(item)"
                     color="unset"
                     text="Assign to me">
-                </AlbatrossButton>
+                </a-btn>
               </td>
               <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Active Process Steps']">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
@@ -151,14 +151,14 @@
                      class="remove-left-margin"
                      :class="{'pt-2': item.tags && item.tags.length > 0}">
                   <a >
-                    <AlbatrossButton
+                    <a-btn
                         v-if="item['Project Name']"
                         variant="text"
                         small
                         :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}/event/${item.projectProcessStepEventId}`"
                         color="unset"
                         :text="item['Project Name']"
-                    ></AlbatrossButton>
+                    ></a-btn>
                   </a>
                   <div class="chip-container">
                     <v-chip v-for="(tag, idx) in item.tags"
@@ -195,14 +195,14 @@
                     <v-spacer></v-spacer>
                     {{ item.id }}
                   </router-link>
-                  <AlbatrossButton
+                  <a-btn
                       size="small"
                       icon
                       variant="text"
                       color="primary"
                       @click="[showNotesModal = true, notesPpsIndex = index, itemToUpdate = item]"
                       prepend-icon="mdi-comment-text-multiple"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </div>
               </td>
             </tr>
@@ -251,7 +251,7 @@ import {
   logError, getRequest
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

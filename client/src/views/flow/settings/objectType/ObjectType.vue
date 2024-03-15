@@ -26,7 +26,7 @@
 import constants from '@/helpers/constants'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {ref, onMounted, getCurrentInstance, computed, defineProps, watch} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

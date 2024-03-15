@@ -1,6 +1,6 @@
 <script setup>
 import useRegisterSW from '@/mixins/useRegisterSW'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 
 const vueInstance = getCurrentInstance().proxy
@@ -44,7 +44,7 @@ const handleSWManualUpdates = (registration) => {
       </span>
     </div>
 
-    <AlbatrossButton
+    <a-btn
         class="text-capitalize font-weight-bold"
         :loading="loading"
         :disabled="loading"
@@ -57,14 +57,14 @@ const handleSWManualUpdates = (registration) => {
           <v-icon light>mdi-cached</v-icon>
         </span>
       </template>
-    </AlbatrossButton>
-    <AlbatrossButton
+    </a-btn>
+    <a-btn
         variant="text"
         color="primary"
         class="text-capitalize"
         @click="close"
         text="Cancel"
-    ></AlbatrossButton>
+    ></a-btn>
   </dialog>
 </template>
 

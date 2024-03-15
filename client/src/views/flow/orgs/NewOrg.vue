@@ -4,19 +4,19 @@
       <v-card-title>
         Add Organization
         <v-spacer></v-spacer>
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             class="mr-3"
             to="/orgs"
             text="Cancel"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             color="primary "
             :disabled="loadingInsertFields || (org.schedulable && !org.companyTimezoneId)"
             @click="validate"
             text="Save"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-card-title>
 
       <v-form ref="orgForm">
@@ -94,7 +94,7 @@ import {getOrgTypes, getOrgsByType} from '@/services/orgService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import SpinnerInline from '@/components/SpinnerInline'
 import {getCompanyStates} from "@/services/stateService";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

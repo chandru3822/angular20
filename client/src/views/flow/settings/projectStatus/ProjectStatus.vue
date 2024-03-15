@@ -2,13 +2,13 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             class="pl-1 pr-2 anchor"
             :to="'/settings/projectStatuses'"
             prepend-icon="arrow_left"
             text="BACK"
-        ></AlbatrossButton>
+        ></a-btn>
 
 
         <v-toolbar flat class="app-toolbar">
@@ -35,7 +35,7 @@
 
 <script setup>
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import {getCompanyProjectStatusType} from '@/services/projectStatusTypeService'
 import {handleHidingGlobalLoader, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'

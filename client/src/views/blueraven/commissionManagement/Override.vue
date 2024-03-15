@@ -14,44 +14,44 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="mr-2"
               v-if="userIsAdmin && overrideId"
               @click="showProjectAssignmentModal = true"
               text="Admin"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="primary"
               class="mr-2"
               :disabled="!override.name || !override.positionId || !override.total"
               v-if="userCanEdit"
               @click="saveOverride()"
               text="Save"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="success"
               class="mr-2"
               v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && overrideId && override.status === 'PENDING'"
               :disabled="errorMessages.length > 0"
               @click="approveOverride()"
               text="Approve"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="error"
               class="mr-2"
               v-if="overrideId && override.status !== 'ACTIVE' && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
               :disabled="errorMessages.length > 0"
               @click="openDeleteDialog(override, deleteTypes.OVERRIDE)"
               text="Delete"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="error"
               class="mr-2"
               v-else-if="overrideId && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
               @click="inactivateConfirm=true"
               text="Inactivate"
-          ></AlbatrossButton>
+          ></a-btn>
           <MultiOptionDialog
               :open-dialog="inactivateConfirm"
               :options="inactivateOptions"
@@ -75,12 +75,12 @@
               Are you sure you want to inactivate this plan?
             </div>
           </MultiOptionDialog>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               v-if="overrideId && override && userCanAdd"
               @click="showCloneDialog=true"
               text="Clone"
-          ></AlbatrossButton>
+          ></a-btn>
           <ConfirmationDialog
               :open-dialog="showCloneDialog"
               @confirm="validateStartDates"
@@ -215,13 +215,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="override.status === 'PENDING'"
                 @click="addReceivingUser = !addReceivingUser"
                 :prepend-icon="addReceivingUser ? 'remove' : 'add'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -259,13 +259,13 @@
                           label="Redline M2 Allocation"
                           v-model="newReceivingUser.redLineM2Allocation">
           </v-text-field>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="mr-3"
               @click="addReceivingUserToOverride()"
               :disabled="!newReceivingUser.userId"
               text="Add"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card>
         <v-divider v-if="addAssignedUser"></v-divider>
         <v-data-table
@@ -313,12 +313,12 @@
                             label="Redline M2 Allocation"
                             v-model.number="item.redLineM2Allocation">
               </v-text-field>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   :disabled="!item.m1Allocation || (commissionPositionId === 1 && !item.m2Allocation)"
                   @click="[expanded = [], updateReceivingUser(item)]"
                   text="Save"
-              ></AlbatrossButton>
+              ></a-btn>
             </td>
           </template>
 
@@ -331,28 +331,28 @@
               <td class="text-left">{{item.redLineM1Allocation}}</td>
               <td class="text-left" v-if="commissionPositionId !== 4">{{item.redLineM2Allocation}}</td>
               <td>
-                <AlbatrossButton
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="expanded = [item]"
                     v-if="override.status === 'PENDING' && !expanded.includes(item)"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="expanded = []"
                     v-if="expanded.includes(item)"
                     text="cancel"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     color="primary"
                     variant="text"
                     @click="openDeleteDialog(item, deleteTypes.RECEIVING)"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -367,13 +367,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="userCanAdd"
                 @click="[addAssignedUser = !addAssignedUser, newAssignedUser = {}, userHistory = []]"
                 :prepend-icon="addAssignedUser ? 'remove' : 'add'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -442,13 +442,13 @@
             <div class="mb-2" v-else-if="newAssignedUser.showNote">
               {{newAssignedUser.noteMsg}}
             </div>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 class="mr-3"
                 @click="addAssignedUserToOverride()"
                 :disabled="newAssignedUser.dateError || !newAssignedUser.userId || !newAssignedUser.startDate || errorLoadingUserHistory"
                 text="Add"
-            ></AlbatrossButton>
+            ></a-btn>
           </div>
         </v-card>
         <v-divider v-if="addAssignedUser"></v-divider>
@@ -508,13 +508,13 @@
               <div class="mb-2" v-else-if="item.showNote">
                 {{item.noteMsg}}
               </div>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   class="mr-3"
                   @click="updateAssignedUser(item)"
                   :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory"
                   text="Save"
-              ></AlbatrossButton>
+              ></a-btn>
             </td>
           </template>
 
@@ -525,30 +525,30 @@
               <td class="text-left">{{item.startDate}}</td>
               <td class="text-left">{{item.endDate}}</td>
               <td>
-                <AlbatrossButton
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
                     v-if="override.status === 'PENDING' && !assignedUserExpanded.includes(item)"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     @click="assignedUserExpanded = []"
                     v-if="assignedUserExpanded.includes(item)"
                     color="unset"
                     text="cancel"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     v-if="override.status === 'PENDING'"
                     size="small"
                     variant="text"
                     color="primary"
                     @click="openDeleteDialog(item, deleteTypes.ASSIGNED)"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -567,7 +567,7 @@
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
   import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/ProjectAssignmentModal";
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";

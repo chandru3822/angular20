@@ -7,14 +7,14 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
 
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="!addNew && userCanAdd"
                 @click="[addNew = !addNew, loadDataViews()]"
                 prepend-icon="add"
                 text="Add Field"
-            ></AlbatrossButton>
+            ></a-btn>
 
           </v-toolbar-items>
         </v-toolbar>
@@ -38,7 +38,7 @@
             attach
             item-text="fieldName"
           ></v-autocomplete>
-          <AlbatrossButton
+          <a-btn
               v-if="userCanEdit"
               :disabled="!selectedDataViewField.id"
               color="primary"
@@ -46,13 +46,13 @@
               @click="saveFieldToMilestone()"
               prepend-icon="save"
               text="Save"
-          ></AlbatrossButton>
+          ></a-btn>
 
-          <AlbatrossButton
+          <a-btn
               class="ml-3"
               @click="[addNew = false, selectedDataViewField = {} ]"
               text="cancel"
-          ></AlbatrossButton>
+          ></a-btn>
 
         </div>
         <v-divider class="my-3" v-if="addNew"></v-divider>
@@ -71,7 +71,7 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td style="width: 50px">
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     color="primary"
                     icon
@@ -79,20 +79,20 @@
                     class="handle"
                     v-if="userCanEdit"
                     prepend-icon="drag_handle"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
               <td class="text-left">
                 {{item.fieldName}}
               </td>
               <td class="text-right">
-                <AlbatrossButton
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                     @click.native.stop="[itemToDelete=item, showDeleteDialog=true]"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
 
             </tr>
@@ -114,7 +114,7 @@
 
 <script setup>
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import draggable from 'vuedraggable'
 import {handleHidingGlobalLoader, deleteRequest, putRequest, defineSortableTable, getRequest, postRequest} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";

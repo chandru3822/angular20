@@ -9,14 +9,14 @@
           hide-details
       ></v-text-field>
       <v-spacer />
-      <AlbatrossButton
+      <a-btn
           variant="text"
           color="primary"
           :disabled="isLoading"
           @click="showConfirmDialog = true"
           text="Export"
           prepend-icon="mdi-cloud-download"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-toolbar>
 
     <v-divider />
@@ -78,7 +78,7 @@ import {logError, getRequestWithParams, getRequest, } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ExportDialog from '@/components/ExportDialog'
 import saveAs from 'file-saver'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

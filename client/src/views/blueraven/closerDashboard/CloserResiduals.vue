@@ -4,28 +4,28 @@
       <v-col cols="12">
           <v-toolbar color="white" class="elevation-1">
             <v-toolbar-title class="app-title flex-display">
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   class="mr-2"
                   @click="setViewingDate(false)"
                   :disabled="viewingDataFor === minDate"
                   color="unset"
                   prepend-icon="mdi-chevron-left"
-              ></AlbatrossButton>
+              ></a-btn>
               <input type="month" id="viewing-date" name="viewing-date"
                      :min="minDate"
                      :max="maxDate"
                      :required="true"
                      @input="loadResidualData()"
                      v-model="viewingDataFor">
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   class="ml-2"
                   @click="setViewingDate(true)"
                   :disabled="viewingDataFor === currentMonth"
                   color="unset"
                   prepend-icon="mdi-chevron-right"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
@@ -251,7 +251,7 @@
   import SpinnerInline from '@/components/SpinnerInline'
   import moment from 'moment'
   import {getCurrentInstance, toRefs, ref, computed, onMounted} from "vue";
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
   import {useRoute, useRouter} from "vue-router/composables";
   import { useAppStore } from '@/stores/AppStorePinia.js'
   import {useUserStore} from "@/stores/UserStorePinia.js";

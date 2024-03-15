@@ -49,7 +49,7 @@
         <!--          }}-->
         <!--        </v-col>-->
         <v-col cols="3" md="2" class="text-right pa-0 height-one-hunned">
-          <AlbatrossButton
+          <a-btn
               icon
               v-if="!allowUpload && !loadLinked && displayType.linkable && !item.linkedToSelected"
               :disabled="performingLink"
@@ -61,8 +61,8 @@
               class="px-0 button-position"
           >
             <v-icon size="25">link</v-icon>
-          </AlbatrossButton>
-          <AlbatrossButton
+          </a-btn>
+          <a-btn
               icon
               v-if="!allowUpload && loadLinked"
               :disabled="performingLink"
@@ -74,8 +74,8 @@
               class="px-0 button-position"
           >
             <v-icon size="25">mdi-link-off</v-icon>
-          </AlbatrossButton>
-          <AlbatrossButton
+          </a-btn>
+          <a-btn
               icon
               v-if="allowUpload"
               variant="text"
@@ -87,8 +87,8 @@
               prepend-icon="delete"
           >
             <v-icon size="25">delete</v-icon>
-          </AlbatrossButton>
-          <AlbatrossButton
+          </a-btn>
+          <a-btn
               icon
               variant="text"
               color="primary"
@@ -100,7 +100,7 @@
               prepend-icon="mdi-tray-arrow-down"
           >
             <v-icon size="25" >mdi-tray-arrow-down</v-icon>
-          </AlbatrossButton>
+          </a-btn>
         </v-col>
       </v-row>
     </v-container>
@@ -125,7 +125,7 @@ import {deleteAttachment} from "@/services/attachmentService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

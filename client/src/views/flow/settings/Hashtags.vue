@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Topic Hashtags</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newTag = {}]"
@@ -32,7 +32,7 @@
                               label="Add Topic Hashtag">
                 </v-text-field>
               </div>
-              <AlbatrossButton
+              <a-btn
                 variant="text"
                 color="primary"
                 class="mt-4"
@@ -40,7 +40,7 @@
                 text="Cancel"
               />
 
-              <AlbatrossButton
+              <a-btn
                 color="primary"
                 class="mt-4"
                 :disabled="!newTag.hashtag || !formValid"
@@ -103,7 +103,7 @@
                     {{ item.hashtagType }}
                   </td>
                   <td class="text-right">
-                    <AlbatrossButton
+                    <a-btn
                       variant="text"
                       color="primary"
                       v-if="selectedTagId === item.id"
@@ -119,7 +119,7 @@
                       prepend-icon="edit"
                       class="pr-2"
                     />
-                    <AlbatrossButton
+                    <a-btn
                       variant="text"
                       color="primary"
                       v-if="selectedTagId === item.id"
@@ -127,7 +127,7 @@
                       prepend-icon="close"
                     />
 
-                    <AlbatrossButton
+                    <a-btn
                       size="small"
                       variant="text"
                       color="primary"
@@ -142,7 +142,7 @@
                       top
                     >
                       <template v-slot:activator="{ on, attrs }">
-                        <AlbatrossButton
+                        <a-btn
                           variant="text"
                           size="small"
                           color="primary"
@@ -188,7 +188,7 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 
 import { computed, getCurrentInstance, ref, onMounted } from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'

@@ -40,7 +40,7 @@
              :class="{'justify-space-between' : $vuetify.breakpoint.smAndUp}">
 
           <div class="my-2" :class="{'text-no-wrap' : $vuetify.breakpoint.lgAndUp}">
-            <AlbatrossButton
+            <a-btn
                 class="my-2 mr-3"
                 :color="compare ? 'white' : 'primary'"
                 :class="{'primary--text': compare, '' : !compare}"
@@ -48,8 +48,8 @@
                 @click="[cancelResetKey++, selectedAttachmentsForCompare = [], compare = false]"
                 v-if="compare"
                 text="Cancel Comparison"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 color="primary"
                 class="my-2"
                 size="small"
@@ -57,15 +57,15 @@
                 v-if="compare "
                 :disabled="selectedAttachmentsForCompare.length === 0"
                 text="Confirm Comparison"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 size="small"
                 color="primary"
                 class="my-2"
                 @click="compare = true"
                 v-else-if="!isMobile"
                 text="Compare"
-            ></AlbatrossButton>
+            ></a-btn>
           </div>
           <div class="text-no-wrap display-empty-folder-toggle">
             <label class="mr-3 body-medium"
@@ -141,7 +141,7 @@
                       key="1"
                   >
                 </span>
-                  <AlbatrossButton
+                  <a-btn
                       v-if="allowUpload || forceShowUploadBtn"
                       @click.native.stop="selectFile(type.attachmentTypeId)"
                       :icon="isMobile"
@@ -153,7 +153,7 @@
                       :disabled="dragTypeId === type.attachmentTypeId"
                       :prepend-icon="isMobile ? 'mdi-tray-arrow-up' : ''"
                       :text="!isMobile ? 'Upload' : ''"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </v-row>
               </template>
             </v-expansion-panel-header>
@@ -205,7 +205,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 import cloneDeep from 'lodash.clonedeep'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

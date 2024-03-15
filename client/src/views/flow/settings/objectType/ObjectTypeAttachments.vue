@@ -6,7 +6,7 @@
           <v-toolbar-title class="title-large">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text"
+            <a-btn variant="text"
                              color="primary"
                              @click="getAvailableAttachmentTypes" v-if="userCanAdd"
                              :prepend-icon="addNewType ? 'close' : 'add'"
@@ -62,14 +62,14 @@
               <div style="display: flex; justify-content: flex-end">
                 <router-link class="no-text-decoration pr-3"
                              :to="getAttachmentTypeUrl(item.id)">
-                  <AlbatrossButton
+                  <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     prepend-icon="edit"
                   />
                 </router-link>
-                <AlbatrossButton
+                <a-btn
                   v-if="userCanEdit"
                   size="small"
                   variant="text"
@@ -97,7 +97,7 @@ import {AppMutations} from "@/stores/AppStore";
 import {handleHidingGlobalLoader, deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
 import orderBy from 'lodash.orderby'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"

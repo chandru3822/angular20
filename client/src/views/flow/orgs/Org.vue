@@ -81,7 +81,7 @@
     <ThreeColumnLayout :header-text="org.orgName"
                        :auto-overflow-left="false">
       <template v-slot:back-btn>
-        <AlbatrossButton
+        <a-btn
             icon
             variant="text"
             size="small"
@@ -89,7 +89,7 @@
             class="mr-2"
             @click="goToPath('/orgs')"
             prepend-icon="mdi-view-list"
-        ></AlbatrossButton>
+        ></a-btn>
       </template>
       <template v-slot:left-column>
         <div v-if="!projectStore.leftSideSplit && org && org.id"
@@ -113,15 +113,15 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   color="primary"
                   @click="setSplitColumnValue()"
                   class="px-0"
                   :prepend-icon="!projectStore.manualColumnSplit ? 'mdi-format-columns' : 'mdi-format-align-justify'"
-              ></AlbatrossButton>
+              ></a-btn>
               <div>
-                <AlbatrossButton
+                <a-btn
                     color="primary"
                     class="mt-3"
                     v-if="userCanEdit"
@@ -129,26 +129,26 @@
                     :disabled="fieldsSaving"
                     @click="saveOrg()"
                     text="Save Fields"
-                ></AlbatrossButton>
+                ></a-btn>
               </div>
             </v-toolbar-items>
           </v-toolbar>
           <div v-if="org && org.id && !fieldsLoading" class="org-fields-container">
             <div class="px-4">
-              <AlbatrossButton
+              <a-btn
                   @click="[showChildOrgs = !showChildOrgs, showUsersAssignedToOrg = false]"
                   :text="showChildOrgs ? 'Hide Child Organizations' : 'Show Child Organizations'"
                   color="primary"
                   small
-              > </AlbatrossButton>
+              > </a-btn>
               <br/>
-              <AlbatrossButton
+              <a-btn
                   @click="[showUsersAssignedToOrg = !showUsersAssignedToOrg, showChildOrgs = false]"
                   color="primary"
                   small
                   class="mt-3"
                   :text="showUsersAssignedToOrg ? 'Hide Assigned Users' : 'Show Assigned Users'"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
             <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar px-4" dense
                        v-if="showUsersAssignedToOrg">
@@ -182,14 +182,14 @@
                   <td class="text-left">{{ user.fullName }}</td>
                   <td class="text-left">{{ user.position }}</td>
                   <td class="text-right">
-                    <AlbatrossButton
+                    <a-btn
                         size="small"
                         variant="text"
                         class="anchor"
                         @click="goToPath(`/user/${user.id}/details`, true)"
                         color="unset"
                         prepend-icon="mdi-open-in-new"
-                    ></AlbatrossButton>
+                    ></a-btn>
 
                   </td>
                 </tr>
@@ -231,14 +231,14 @@
                                 v-model="item.activeFlag"/>
                   </td>
                   <td class="text-right">
-                    <AlbatrossButton
+                    <a-btn
                         size="small"
                         variant="text"
                         class="anchor"
                         @click="goToPath(`/org/${item.id}`, true)"
                         color="unset"
                         prepend-icon="mdi-open-in-new"
-                    ></AlbatrossButton>
+                    ></a-btn>
 
                   </td>
                 </tr>
@@ -332,7 +332,7 @@ import cloneDeep from 'lodash.clonedeep'
 import Style from "@/views/blueraven/settings/proposalDesigner/panel/Style";
 import PageOverview from "../PageOverview";
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

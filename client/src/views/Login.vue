@@ -23,7 +23,7 @@
                     Forgot Password
                   </router-link>
                   <v-spacer></v-spacer>
-                  <AlbatrossButton :loading="loginLoading" type="submit" text="Login" />
+                  <a-btn :loading="loginLoading" type="submit" text="Login" />
                 </v-card-actions>
               </v-form>
             </v-card-text>
@@ -38,7 +38,7 @@
 import constants from '@/helpers/constants'
 import axios from 'axios'
 import {getCurrentInstance, onMounted, ref} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton";
+
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRouter} from "vue-router/composables"
 

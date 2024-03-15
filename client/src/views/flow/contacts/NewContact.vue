@@ -4,39 +4,39 @@
       <v-card-title class="title-large-medium">
         Add Contact
         <v-spacer></v-spacer>
-        <AlbatrossButton
+        <a-btn
             v-if="!constants.IS_MOBILE"
             variant="text"
             color="primary"
             class="mr-3 body-medium"
             to="/contacts"
             text="Cancel"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             v-if="!constants.IS_MOBILE"
             color="primary "
             :disabled="loadingInsertFields"
             @click="validate(true)"
             class="body-medium"
             text="Save"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-card-title>
       <v-card-text  v-if="constants.IS_MOBILE">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             class="mr-3 body-medium"
             color="primary"
             to="/contacts"
             text="Cancel"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             color="primary "
             :disabled="loadingInsertFields"
             @click="validate(true)"
             id="qa-add-contact-save"
             class="body-medium"
             text="Save"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-card-text>
       <v-form ref="contactForm">
         <v-container>
@@ -144,7 +144,7 @@ import {saveContact} from '@/services/contactService'
 import {getCompanyStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

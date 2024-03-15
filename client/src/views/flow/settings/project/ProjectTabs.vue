@@ -6,14 +6,14 @@
           <v-toolbar-title class="title-large">Tabs</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="[addNew = !addNew, newTab ={}]"
                 v-if="userCanAdd"
                 prepend-icon="add"
                 :text="addNew ? 'Cancel' : 'Add New'"
-            ></AlbatrossButton>
+            ></a-btn>
 
           </v-toolbar-items>
         </v-toolbar>
@@ -23,12 +23,12 @@
                           placeholder=" "
                           label="Tab Label">
             </v-text-field>
-            <AlbatrossButton
+            <a-btn
                 :disabled="!newTab.tabName"
                 color="primary"
                 @click="saveTab(newTab)"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
 
           </div>
           <v-data-table
@@ -54,7 +54,7 @@
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': tabs.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <AlbatrossButton
+                  <a-btn
                       variant="text"
                       v-if="userCanEdit"
                       icon
@@ -62,7 +62,7 @@
                       color="primary"
                       class="handle"
                       prepend-icon="drag_handle"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </td>
                 <td class="text-left">
                   <v-text-field class="one-hunned" v-if="selectedTabId === item.id" v-model="item.tabName"></v-text-field>
@@ -70,7 +70,7 @@
                 </td>
                 <td class="text-right" :class="{'one-hunned':$vuetify.breakpoint.mdAndDown && selectedTabId !== item.id}">
                   <div class="item-icons" :class="{'d-flex flex-column align-end': $vuetify.breakpoint.xsOnly}">
-                    <AlbatrossButton
+                    <a-btn
                         class="clickable"
                         size="small"
                         variant="text"
@@ -78,9 +78,9 @@
                         v-if="userCanEdit && selectedTabId === item.id"
                         @click="saveTab(item)"
                         prepend-icon="save"
-                    ></AlbatrossButton>
+                    ></a-btn>
 
-                    <AlbatrossButton
+                    <a-btn
                         class="clickable"
                         size="small"
                         variant="text"
@@ -88,9 +88,9 @@
                         v-if="userCanEdit && selectedTabId !== item.id"
                         @click="selectedTabId = item.id"
                         prepend-icon="edit"
-                    ></AlbatrossButton>
+                    ></a-btn>
 
-                    <AlbatrossButton
+                    <a-btn
                         class="clickable"
                         size="small"
                         variant="text"
@@ -98,7 +98,7 @@
                         v-if="userCanEdit"
                         @click="tabToDelete=item"
                         prepend-icon="delete"
-                    ></AlbatrossButton>
+                    ></a-btn>
 
                   </div>
                 </td>
@@ -121,7 +121,7 @@
 
 <script setup>
 
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, defineSortableTable} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import { getCurrentInstance, computed, ref, onMounted } from 'vue'

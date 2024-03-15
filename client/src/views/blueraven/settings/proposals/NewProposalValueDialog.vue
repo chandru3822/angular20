@@ -4,12 +4,12 @@
       <v-form ref="newValueForm" autocomplete="off">
         <v-card>
           <v-toolbar color="primary" dark>
-            <AlbatrossButton
+            <a-btn
                 icon
                 @click="closeDialog"
                 color="unset"
                 prepend-icon="mdi-close"
-            ></AlbatrossButton>
+            ></a-btn>
             <v-toolbar-title>{{ title }}</v-toolbar-title>
           </v-toolbar>
           <v-card-text>
@@ -26,18 +26,18 @@
             </v-container>
           </v-card-text>
           <v-card-actions class="justify-end">
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="closeDialog"
                 text="Close"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 :disabled="!Object.keys(dirtyCfvs).length"
                 color="primary"
                 @click="validateForm()"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-form>
@@ -47,7 +47,7 @@
 <script setup>
 import {getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

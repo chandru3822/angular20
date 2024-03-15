@@ -20,7 +20,7 @@
           <v-toolbar-title v-if="!isMobile" class="title-large">Custom Fields</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text" color="primary"
+            <a-btn variant="text" color="primary"
                    @click="goToCustomField()"
                    v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
                    :prepend-icon="vuetify.breakpoint.smAndDown ? 'add' : ''"
@@ -66,10 +66,10 @@
                 </td>
                 <td class="text-right icon-col">
                   <div class="item-icons">
-                    <AlbatrossButton class="clickable" size="small" variant="text" icon :large="vuetify.breakpoint.smAndDown" color="primary"
+                    <a-btn class="clickable" size="small" variant="text" icon :large="vuetify.breakpoint.smAndDown" color="primary"
                            @click="goToCustomField(item.id)" prepend-icon="edit"
                     />
-                    <AlbatrossButton v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" variant="text"
+                    <a-btn v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" variant="text"
                                      icon :large="vuetify.breakpoint.smAndDown" color="primary" @click="getUsesForField(item)"
                                      prepend-icon="delete"
                     />
@@ -118,7 +118,7 @@ import {
   putRequest
 } from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRouter} from "vue-router/composables"

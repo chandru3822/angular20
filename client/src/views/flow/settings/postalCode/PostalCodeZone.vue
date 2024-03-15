@@ -6,14 +6,14 @@
           <v-toolbar-title class="title-large">{{postalCodeZone.zoneName}}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 @click="savePostalCodeZone"
                 color="primary"
                 v-if="userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')"
                 prepend-icon="save"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -40,13 +40,13 @@
               type="number"
               hide-details
             ></v-text-field>
-            <AlbatrossButton
+            <a-btn
                 class="my-3"
                 @click="[addPostalCode = !addPostalCode, getAvailablePostalCodes()]"
                 color="primary"
                 v-if="userStore.userHasFeatureAccessLevel('USERS', 'EDIT')"
                 text="Add Postal Code to Zone"
-            ></AlbatrossButton>
+            ></a-btn>
             <v-card v-if="addPostalCode" class="pa-3 mb-3">
               <v-autocomplete
                   :items="availablePostalCodes"
@@ -72,13 +72,13 @@
                     {{item.postalCode}}
                   </td>
                   <td class="text-right">
-                    <AlbatrossButton
+                    <a-btn
                         size="small"
                         variant="text"
                         color="primary"
                         @click="[itemToDelete = item, showDeleteDialog = true]"
                         prepend-icon="delete"
-                    ></AlbatrossButton>
+                    ></a-btn>
                   </td>
                 </tr>
               </template>
@@ -97,7 +97,7 @@
 
 <script setup>
 
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
   import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import { getCurrentInstance, computed, ref, onMounted } from 'vue'

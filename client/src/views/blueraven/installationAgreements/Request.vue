@@ -39,13 +39,13 @@
               </div>
 
 
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   raised
                   @click="openLoanApp()"
                   text="Finance Application"
-              ></AlbatrossButton>
-              <AlbatrossButton
+              ></a-btn>
+              <a-btn
                   :disabled="!requestItem.proposalNbr"
                   v-if="requestItem.sunpowerProposal"
                   color="primary"
@@ -53,7 +53,7 @@
                   @click="updateSunpowerApp()"
                   class="mt-5"
                   text="Update / Renew Spwr Quote"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-col>
             <v-col>
               <v-select attach label="Proposal Number"
@@ -96,7 +96,7 @@ import {
 import constants from '@/helpers/constants'
 
 import RequestTable from "@/components/RequestTable";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

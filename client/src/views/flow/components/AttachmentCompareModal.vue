@@ -4,7 +4,7 @@
       <v-card-text class="pb-0 pl-0">
         <v-row class="">
           <v-col :cols="leftCols" class="left-column">
-            <AlbatrossButton
+            <a-btn
                 id="back-btn"
                 color="primary"
                 variant="text"
@@ -12,7 +12,7 @@
                 @click="closeCallback"
                 prepend-icon="mdi-chevron-left"
                 text="Back"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-col>
           <v-col :cols="12 - leftCols">
             <v-toolbar flat dense class="app-toolbar coversheet-title">
@@ -31,13 +31,13 @@
               <v-toolbar-title class="file-name">{{ a.displayName }}</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <AlbatrossButton
+                <a-btn
                     size="x-small"
                     variant="text"
                     color="primary"
                     @click="removeAttachmentFromView(a)"
                     prepend-icon="close"
-                ></AlbatrossButton>
+                ></a-btn>
               </v-toolbar-items>
             </v-toolbar>
             <!--            we removed the preview for now -->
@@ -76,19 +76,19 @@
             <!--              </div>-->
             <!--            </div>-->
             <div class="compare-view-btns">
-              <AlbatrossButton
+              <a-btn
                   size="small"
                   @click="closeModal(a)"
                   class="mr-4"
                   color="unset"
                   text="View"
-              ></AlbatrossButton>
-              <AlbatrossButton
+              ></a-btn>
+              <a-btn
                   size="small"
                   color="primary"
                   :href="a.presignedUrl"
                   text="Download"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </v-col>
         </v-row>
@@ -155,7 +155,7 @@ import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import orderBy from 'lodash.orderby'
 // import VuePdfEmbed from 'vue-pdf-embed/dist/vue2-pdf-embed'
 import SpinnerInline from '@/components/SpinnerInline'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

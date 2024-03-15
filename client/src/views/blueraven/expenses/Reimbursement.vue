@@ -62,19 +62,19 @@
           <div class="receipt-image-background mb-5" v-else>
             <img class="receipt-image" :src="receiptLogo.presignedUrl">
           </div>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               :disabled="!newReimbursement.expenseDate || !selectedBudgetId || !newReimbursement.amount || !newReimbursement.budgetTypeId || !receiptLogo || !receiptLogo.id || !newReimbursement.details"
               @click="submitReimbursementRequest()"
               text="Submit"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               variant="text"
               color="primary"
               class="ml-3"
               @click="newReimbursement = {}"
               text="Clear"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card>
       </v-col>
       <v-col cols="12" sm="6">
@@ -103,12 +103,12 @@
                         item-text="name"
                         item-value="id"
               ></v-select>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   class="ml-3"
                   @click="setDataForMonth"
                   text="Load"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -161,7 +161,7 @@ import moment from 'moment'
 import {getBudgetsForUser, getBudgetTypes, getReimbursementRequestImage} from './expenseService'
 import SpinnerInline from "@/components/SpinnerInline.vue";
 import BudgetReportTable from "@/views/blueraven/expenses/BudgetReportTable.vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

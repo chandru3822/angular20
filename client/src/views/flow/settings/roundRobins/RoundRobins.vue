@@ -6,13 +6,13 @@
           <v-toolbar-title class="title-large">Round Robins</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="[addNew = !addNew, newRoundRobin = {}, getCompanyTimezones()]"
                 v-if="userCanAdd"
                 :text="addNew ? 'Cancel' : 'Add New' "
-            ></AlbatrossButton>
+            ></a-btn>
 
           </v-toolbar-items>
         </v-toolbar>
@@ -36,13 +36,13 @@
                             item-value="id"
                             attach
             ></v-autocomplete>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 :disabled="!newRoundRobin.roundRobinName || !newRoundRobin.distributionTimeFrameDays || !newRoundRobin.distributionTimeFrameDays"
                 @click="addRoundRobin"
                 class="mb-3"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
 
           </v-card>
           <v-divider v-if="addNew"></v-divider>
@@ -94,15 +94,15 @@
                   </td>
 
                   <td class="text-right">
-                    <AlbatrossButton
+                    <a-btn
                         icon
                         color="primary"
                         prevent-default
                         prepend-icon="edit"
                         :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
-                    ></AlbatrossButton>
+                    ></a-btn>
 
-                    <AlbatrossButton
+                    <a-btn
                         v-if="userCanDelete"
                         icon
                         color="primary"
@@ -110,7 +110,7 @@
                         prevent-default
                         prepend-icon="delete"
                         :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
-                    ></AlbatrossButton>
+                    ></a-btn>
 
                   </td>
                 </tr>
@@ -143,7 +143,7 @@ import {
   getSnackbar
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useRouter} from "vue-router/composables";
 import {useUserStore} from '@/stores/UserStorePinia.js'

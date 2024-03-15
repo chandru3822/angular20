@@ -8,11 +8,11 @@
           <v-textarea v-model="vBtnValue" outlined @input="vBtnInput()"
                       ref="inputField" auto-grow
                       label="V-BTN Value" />
-          <AlbatrossButton
+          <a-btn
               :disabled="!vBtnValue"
-              @click="processBtn" text="Submit"></AlbatrossButton>
-          <AlbatrossButton class="ml-4" variant="text"
-              @click="doClear" text="Clear"></AlbatrossButton>
+              @click="processBtn" text="Submit"></a-btn>
+          <a-btn class="ml-4" variant="text"
+              @click="doClear" text="Clear"></a-btn>
         </v-col>
         <v-col cols="6" class="mt-9">
           <v-checkbox dense hide-details label="Auto copy to clipboard?" v-model="autoCopyToClipboard"></v-checkbox>
@@ -27,9 +27,9 @@
         <v-col cols="12">
           <div class="d-flex">
             <h3 class="mb-5">Albatross Button Code</h3>
-            <AlbatrossButton icon class="ml-5" color="primary"
+            <a-btn icon class="ml-5" color="primary"
                 v-if="albatrossButtonValue"
-                @click="copyToClipboard" prepend-icon="mdi-content-copy"></AlbatrossButton>
+                @click="copyToClipboard" prepend-icon="mdi-content-copy"></a-btn>
           </div>
           <v-textarea outlined v-model="albatrossButtonValue" auto-grow>
           </v-textarea>
@@ -42,7 +42,7 @@
 
 <script setup>
 import {getCurrentInstance, onMounted, ref} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import * as prettier from 'prettier'
 import htmlParser from 'prettier/parser-html'
 
@@ -81,7 +81,7 @@ const doClear = () => {
 
 const processBtn = async () => {
   let tempString = vBtnValue.value
-  tempString = tempString.replaceAll('v-btn', 'AlbatrossButton')
+  tempString = tempString.replaceAll('v-btn', 'a-btn')
   tempString = tempString.replaceAll(' dark ', ' ')
   tempString = tempString.replaceAll(' dark\n', ' ')
   tempString = tempString.replaceAll(' text ', ' variant="text" ')
@@ -130,11 +130,11 @@ const processBtn = async () => {
 
   //todo: make cool matcher for multiples but i dont really care right now
   tempString = tempString.replaceAll('<span', '\n<span')
-  tempString = tempString.replaceAll('</span></AlbatrossButton>', '</span>\n</AlbatrossButton>')
+  tempString = tempString.replaceAll('</span></a-btn>', '</span>\n</a-btn>')
 
   tempString = tempString.replaceAll('<v-icon', '\n<v-icon')
-  tempString = tempString.replaceAll('</v-icon></AlbatrossButton>', '</v-icon>\n</AlbatrossButton>')
-  tempString = tempString.replaceAll('</v-icon> </AlbatrossButton>', '</v-icon>\n</AlbatrossButton>')
+  tempString = tempString.replaceAll('</v-icon></a-btn>', '</v-icon>\n</a-btn>')
+  tempString = tempString.replaceAll('</v-icon> </a-btn>', '</v-icon>\n</a-btn>')
 
   let formatted
   try{
@@ -148,7 +148,7 @@ const processBtn = async () => {
   }
 
   let finalValue = formatted ? formatted : tempString
-  finalValue = finalValue.replace('</AlbatrossButton>\n', '</AlbatrossButton>')
+  finalValue = finalValue.replace('</a-btn>\n', '</a-btn>')
   albatrossButtonValue.value = finalValue
 
   if(autoCopyToClipboard.value) {
@@ -167,7 +167,7 @@ const vBtnInput = () => {
   }
 }
 const handleButtonText = (textString) => {
-  const regExString = new RegExp(`(?<=>).*?(?=</AlbatrossButton>)`)
+  const regExString = new RegExp(`(?<=>).*?(?=</a-btn>)`)
   textString = textString.replaceAll('\n', '')
   const textBetween = regExString.exec(textString);
 

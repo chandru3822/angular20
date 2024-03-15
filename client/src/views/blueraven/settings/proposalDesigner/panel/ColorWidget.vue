@@ -3,20 +3,20 @@
     <v-subheader class="pl-0 d-flex">
       <slot name="title" class="flex-grow-1">Color</slot>
       <span v-if="editing">
-        <AlbatrossButton
+        <a-btn
             v-if="editing"
             variant="text"
             @click="editing = false"
             color="unset"
             text="Cancel"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             v-if="editing"
             variant="text"
             @click="on"
             color="unset"
             text="Done"
-        >Done</AlbatrossButton>
+        >Done</a-btn>
       </span>
 
       <div v-else class="color-brick" @click="editing = true" :style="{'background-color' : color }" >
@@ -28,7 +28,7 @@
 </template>
 <script setup>
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 const props = defineProps({
   value: {
     type: String

@@ -9,7 +9,7 @@
                       label="Name"
                       v-model="group.callGroupName">
           </v-text-field>
-          <AlbatrossButton variant="text" color="primary" @click="saveGroupInfo()" prepend-icon="save"/>
+          <a-btn variant="text" color="primary" @click="saveGroupInfo()" prepend-icon="save"/>
         </div>
         <div v-else>
           <b>Call Group Name:</b> {{group.callGroupName}}
@@ -17,7 +17,7 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <AlbatrossButton variant="text" color="primary" v-if="userCanEdit" @click="editGroup = !editGroup" prepend-icon="edit"/>
+        <a-btn variant="text" color="primary" v-if="userCanEdit" @click="editGroup = !editGroup" prepend-icon="edit"/>
       </v-toolbar-items>
       <v-tabs :optional="false" color="primary"
               slot="extension"
@@ -38,7 +38,7 @@
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRoute} from "vue-router/composables"

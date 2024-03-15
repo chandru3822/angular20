@@ -6,13 +6,13 @@
           <v-toolbar-title class="title-large">Postal Codes</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="[addNew = !addNew, newPostalCode = {}, getAllStates()]"
                 v-if="userCanAdd"
                 :text="!addNew ? 'AddNew' : 'Cancel'"
-            ></AlbatrossButton>
+            ></a-btn>
 
           </v-toolbar-items>
         </v-toolbar>
@@ -41,13 +41,13 @@
                 label="State"
                 v-model="newPostalCode.stateId"
               ></v-autocomplete>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   :disabled="!newPostalCode.postalCode || !newPostalCode.placeName || !newPostalCode.stateId"
                   @click="validateForm"
                   class="mb-3"
                   text="Save"
-              ></AlbatrossButton>
+              ></a-btn>
 
             </v-form>
           </v-card>
@@ -108,22 +108,22 @@
                     <v-checkbox disabled readonly v-model="item.salesPartners"></v-checkbox>
                   </td>
                   <td class="text-right">
-                    <AlbatrossButton
+                    <a-btn
                         icon
                         color="primary"
                         :to="`/settings/zip/postalCode/${item.id}`"
                         prepend-icon="edit"
                         :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
-                    ></AlbatrossButton>
+                    ></a-btn>
 
-                    <AlbatrossButton
+                    <a-btn
                         v-if="userCanDelete"
                         icon
                         color="primary"
                         @click="[itemToDelete=item, showDeleteDialog=true]"
                         prepend-icon="delete"
                         :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
-                    ></AlbatrossButton>
+                    ></a-btn>
 
                   </td>
                 </tr>
@@ -146,7 +146,7 @@
 
 <script setup>
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import {
   handleHidingGlobalLoader,
   isNumberOrHyphen,

@@ -6,21 +6,21 @@
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <AlbatrossButton
+      <a-btn
           icon
           color="#ddd"
           html-style="border-radius: 3px"
           v-if="userCanEdit"
           @click.native.stop="handleAddBtnClick(!addMode && !editMode)"
           :prepend-icon="!addMode && !editMode ? 'add' : 'remove'"
-      ></AlbatrossButton>
-      <AlbatrossButton
+      ></a-btn>
+      <a-btn
           icon
           color="#ddd"
           html-style="border-radius: 3px"
           v-if="showExpanded"
           :prepend-icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-toolbar>
     <v-card-text v-if="expanded">
       <v-form v-show="addMode || editMode"
@@ -41,27 +41,27 @@
                     v-model="selectedContact.notes">
         </v-textarea>
         <div class="contact-btns">
-          <AlbatrossButton
+          <a-btn
               color="primary"
               variant="text"
               @click="hideCtrls"
               class="cancel-link"
               text="Cancel"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               v-show="editMode"
               v-if="userCanEdit"
               @click="deleteContact"
               class="error"
               color="unset"
               text="Delete"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               @click="saveContact"
               color="primary"
               :disabled="selectedContact.name === ''"
               :text="addMode ? 'Add' : 'Update'"
-          ></AlbatrossButton>
+          ></a-btn>
         </div>
       </v-form>
       <div v-for="(contact, index) in contacts" :key="contact.id"
@@ -84,14 +84,14 @@
           <dd v-if="contact.notes" class="pa-2" style="background-color: #eee">{{contact.notes}}</dd>
           <dt></dt>
           <dd>
-            <AlbatrossButton
+            <a-btn
                 size="small"
                 color="primary"
                 v-if="userCanEdit && !(addMode || editMode)"
                 @click="editContact(contact)"
                 class="pa-0 mx-0 mt-2 text-capitalize"
                 text="Edit"
-            ></AlbatrossButton>
+            ></a-btn>
           </dd>
         </dl>
         <v-spacer v-if="index !== contacts.length - 1"
@@ -114,7 +114,7 @@ import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const appStore = useAppStore()
 const route = useRoute()

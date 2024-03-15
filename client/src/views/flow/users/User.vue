@@ -18,30 +18,30 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <AlbatrossButton
+          <a-btn
               @click="unsavedFieldsModal = false"
               color="unset"
               text="No"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="primary"
               variant="text"
               @click="[navigationOverride = true, goToPath(toPath)]"
               text="Yes"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
     <v-row>
       <v-col cols="12" style="padding-bottom: 0; padding-top: 0;" class="text-left user-header-breadcrumbs">
-        <AlbatrossButton
+        <a-btn
             size="small"
             variant="text"
             color="primary"
             :to="`/users`"
             prepend-icon="mdi-chevron-left"
             text="Back to users"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-col>
     </v-row>
     <v-row class="user-header">
@@ -78,7 +78,7 @@
           {{user.firstName}} {{user.lastName}}
           <span v-if="null != user.primaryPosition" class="ml-1"> - {{ user.primaryPosition}}</span>
 
-          <AlbatrossButton
+          <a-btn
               class="ml-3 elevation-2"
               size="small"
               fab
@@ -86,7 +86,7 @@
               color="primary"
               @click="masquerade()"
               prepend-icon="mdi-account-switch"
-          ></AlbatrossButton>
+          ></a-btn>
           <v-spacer></v-spacer>
           <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
             <v-tabs background-color="transparent">
@@ -119,7 +119,7 @@ import axios from 'axios'
 import {handleHidingGlobalLoader, getRequest, } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import { useFileStore } from '@/stores/FileStore.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";

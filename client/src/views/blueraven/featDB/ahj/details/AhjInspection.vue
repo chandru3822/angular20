@@ -3,14 +3,14 @@
   <v-card class="inspection-card square-card pb-2" v-if="dataReady">
     <v-row class="px-2" no-gutters>
       <v-col class="ahj-form-btns py-1" cols="12">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             class="text-capitalize"
             @click="toggleMinimizeAll"
             :text="expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             color="primary"
             variant="text"
             v-if="dataWasChanged"
@@ -18,14 +18,14 @@
             class="cancel-link text-capitalize"
             html-style="margin-right: 10px"
             text="Cancel"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             class="text-capitalize mr-0 save-btn"
             v-if="userCanEdit"
             color="primary"
             @click="validateForm()"
             text="Save"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-col>
     </v-row>
     <!-- UPPER SECTION -->
@@ -183,27 +183,27 @@
 
           <v-card-actions class="px-6">
             <v-spacer></v-spacer>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 variant="text"
                 @click="saveDialog = false"
                 class="cancel-link mr-2"
                 text="Cancel"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 v-if="ahjInspection.updateAllInArea.length > 0"
                 class="mr-0 save-btn"
                 color="primary"
                 @click="saveConfirmDialog = true"
                 text="Save"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 v-else
                 class="mr-0 save-btn"
                 color="primary"
                 @click="updateAhjInspection"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -220,19 +220,19 @@
 
           <v-card-actions class="px-6">
             <v-spacer></v-spacer>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 variant="text"
                 @click="saveConfirmDialog = false"
                 class="cancel-link mr-2"
                 text="Cancel"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 class="mr-0 save-btn"
                 color="primary"
                 @click="updateAhjInspection"
                 text="Yes"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -244,7 +244,7 @@
 import cloneDeep from 'lodash.clonedeep'
 import AhjServicingFot from '@/views/blueraven/featDB/components/AhjServicingFots.vue'
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, } from '@/helpers/helpers'
 import orderBy from "lodash.orderby";
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'

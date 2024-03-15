@@ -51,7 +51,7 @@
               @input="valueChanged = true"
               v-model="defaultAppointmentLength"
             ></v-text-field>
-            <AlbatrossButton class="d-inline-block"
+            <a-btn class="d-inline-block"
                              v-if="userIsAdmin && valueChanged"
                              size="small"
                              variant="text"
@@ -81,7 +81,7 @@
 <script setup>
 
   import { handleHidingGlobalLoader, getRequestWithParams, postRequest} from '@/helpers/helpers'
-  import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+
   import {getCurrentInstance, onMounted, ref, computed} from 'vue'
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import { useAppStore } from '@/stores/AppStorePinia.js'

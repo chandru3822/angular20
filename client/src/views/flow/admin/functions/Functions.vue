@@ -6,10 +6,10 @@
           <v-toolbar-title class="app-title">Functions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text"
+            <a-btn variant="text"
                 :text="addNew ? 'Cancel' : 'Add New'"
                    @click="[addNew = !addNew, newFunction = {}, getDataTypes(), getFunctionTypes()]">
-            </AlbatrossButton>
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
@@ -57,12 +57,12 @@
                 label="Run in backend"
             />
           </div>
-          <AlbatrossButton variant="text" text="Cancel" @click="[addNew = !addNew, newFunction = {}]" />
-          <AlbatrossButton
+          <a-btn variant="text" text="Cancel" @click="[addNew = !addNew, newFunction = {}]" />
+          <a-btn
               :disabled="!newFunction || !newFunction.functionName || !newFunction.displayName || !newFunction.dbFunctionTypeId || (newFunction.dbFunctionTypeId === 1 && !newFunction.returnDataTypeId)"
               text="Save" class="mr-2"
               @click="addFunction()">
-          </AlbatrossButton>
+          </a-btn>
         </v-card>
         <v-text-field
             v-model="search"
@@ -98,10 +98,10 @@
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.functionType }}</td>
               <td class="text-right">
-                <AlbatrossButton variant="text" size="small" prepend-icon="edit" @click="goToFunction(item.id)">
-                </AlbatrossButton>
-                <AlbatrossButton variant="text" size="small" prepend-icon="delete" @click="functionToDelete=item">
-                </AlbatrossButton>
+                <a-btn variant="text" size="small" prepend-icon="edit" @click="goToFunction(item.id)">
+                </a-btn>
+                <a-btn variant="text" size="small" prepend-icon="delete" @click="functionToDelete=item">
+                </a-btn>
               </td>
             </tr>
           </template>
@@ -119,7 +119,7 @@
 <script setup>
 import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest} from '@/helpers/helpers'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
-import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
+import a-btn from '@/components/customVuetify/a-btn'
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'

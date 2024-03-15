@@ -8,14 +8,14 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 icon
                 color="primary"
                 v-if="userCanAdd"
                 @click="[addUser = !addUser, selectedUser = {}, getUsers()]"
                 :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                 :prepend-icon="addUser ? 'remove' : 'add'"
-            ></AlbatrossButton>
+            ></a-btn>
 
           </v-toolbar-items>
         </v-toolbar>
@@ -39,13 +39,13 @@
                           item-value="id"
                           attach
           ></v-autocomplete>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="mr-3 mt-5"
               @click="addUserToRoundRobin(selectedUser)"
               :disabled="!selectedUser.id"
               text="Add"
-          ></AlbatrossButton>
+          ></a-btn>
 
         </v-card>
         <v-divider v-if="addUser"></v-divider>
@@ -91,22 +91,22 @@
                             hide-details
                             attach
             ></v-autocomplete>
-            <AlbatrossButton
+            <a-btn
                 class="d-inline-block"
                 size="x-small"
                 variant="text"
                 @click="item.edit = !item.edit"
                 :prepend-icon="!item.edit ? 'edit' : 'close'"
-            ></AlbatrossButton>
+            ></a-btn>
 
-            <AlbatrossButton
+            <a-btn
                 class="d-inline-block"
                 size="x-small"
                 variant="text"
                 v-if="item.edit"
                 @click="saveUserTimezone(item)"
                 prepend-icon="save"
-            ></AlbatrossButton>
+            ></a-btn>
 
           </template>
           <template #item.prescribedAllocation="{item}" class="text-left">
@@ -148,14 +148,14 @@
             <span v-else>--</span>
           </template>
           <template #item.icons="{item}" class="text-right">
-            <AlbatrossButton
+            <a-btn
                 v-if="userCanEdit"
                 icon
                 color="primary"
                 @click="userToDelete = item"
                 prepend-icon="delete"
                 :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
-            ></AlbatrossButton>
+            ></a-btn>
           </template>
 
 
@@ -179,13 +179,13 @@
                 </div>
 
                 <div v-if="header.value === 'icons'">
-                  <AlbatrossButton
+                  <a-btn
                       @click="saveAllocationChanges"
                       color="primary"
                       icon
                       :disabled="!userCanEdit || totalManualAllocation > 100 || !valuesUpdated"
                       prepend-icon="save"
-                  ></AlbatrossButton>
+                  ></a-btn>
 
                 </div>
 
@@ -205,7 +205,7 @@
 
 <script setup>
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import {
   handleHidingGlobalLoader,
   getRequest,

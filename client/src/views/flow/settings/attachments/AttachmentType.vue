@@ -2,7 +2,7 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <AlbatrossButton variant="text" color="primary" class="pl-1 pr-2" :to="'/settings/attachments'"
+        <a-btn variant="text" color="primary" class="pl-1 pr-2" :to="'/settings/attachments'"
                          prepend-icon="arrow_left"
                          text="BACK"
 
@@ -17,14 +17,14 @@
                         label="Event Name"></v-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text" v-if="userCanEdit && !editName" color="primary" class=""
+            <a-btn variant="text" v-if="userCanEdit && !editName" color="primary" class=""
                              @click="[oldName = attachment.attachmentType, editName = !editName]"
                              prepend-icon="edit"/>
-            <AlbatrossButton variant="text" color="primary" class="" v-else-if="userCanEdit"
+            <a-btn variant="text" color="primary" class="" v-else-if="userCanEdit"
                              @click="saveAttachmentType()"
                              prepend-icon="save"
             />
-            <AlbatrossButton variant="text" color="primary" v-if="userCanEdit && editName" class=""
+            <a-btn variant="text" color="primary" v-if="userCanEdit && editName" class=""
                              @click="[attachment.attachmentType = oldName, editName = !editName]"
                              text="CANCEL"
             />
@@ -46,7 +46,7 @@
 import constants from '@/helpers/constants'
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'

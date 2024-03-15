@@ -8,20 +8,20 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="mr-2"
               :disabled="!residualPlan.name"
               @click="savePlan()"
               text="Save"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="success"
               class="mr-2"
               v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && residualPlan.statusType === 'PENDING'"
               :disabled="errorMessages.length > 0"
               @click="approvePlan()"
-          > Approve </AlbatrossButton>
+          > Approve </a-btn>
         </div>
       </v-toolbar-items>
     </v-toolbar>
@@ -84,13 +84,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="residualPlan.statusType === 'PENDING'"
                 @click="[selectedLevel = {}, addLevel = !addLevel]"
                 :prepend-icon="addLevel ? 'remove' : 'add'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -135,12 +135,12 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="[addUser = !addUser, newUser = {}, userHistory = []]"
                 :prepend-icon="addUser ? 'remove' : 'add'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -187,13 +187,13 @@
           <div class="mb-2" v-else-if="newUser.showNote">
             {{newUser.noteMsg}}
           </div>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="mr-3"
               @click="addUserToPlan()"
               :disabled="newUser.dateError || !newUser.userId || !newUser.startDate || errorLoadingUserHistory"
               text="Add"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card>
         <v-card color="white" class="square-card px-5 pt-1 pb-4">
           <v-text-field
@@ -263,13 +263,13 @@
               <div class="mb-2" v-else-if="item.showNote">
                 {{item.noteMsg}}
               </div>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   class="mr-3"
                   @click="updateAssignedUser(item)"
                   :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory"
                   text="Save"
-              ></AlbatrossButton>
+              ></a-btn>
             </td>
           </template>
 
@@ -281,30 +281,30 @@
               <td class="text-left">{{item.endDate}}</td>
               <td>
 
-                <AlbatrossButton
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
                     v-if="residualPlan.statusType === 'PENDING' && !assignedUserExpanded.includes(item)"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="assignedUserExpanded = []"
                     v-if="assignedUserExpanded.includes(item)"
                     text="cancel"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="userToDelete = item"
                     v-if="residualPlan.statusType === 'PENDING'"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -321,7 +321,7 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import moment from 'moment'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest,  getRequestWithParams} from '@/helpers/helpers'

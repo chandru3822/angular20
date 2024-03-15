@@ -35,10 +35,10 @@
                 v-model="projectStatus.setInitialConfirm"
                 width="500">
               <template #activator="{ on }">
-                <AlbatrossButton
+                <a-btn
                     :activation-handler="on"
                     text="Set as Initial"
-                ></AlbatrossButton>
+                ></a-btn>
               </template>
               <v-card>
                 <v-card-title
@@ -56,17 +56,17 @@
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <AlbatrossButton
+                  <a-btn
                       @click="projectStatus.setInitialConfirm = false"
                       text="No"
-                  ></AlbatrossButton>
+                  ></a-btn>
 
-                  <AlbatrossButton
+                  <a-btn
                       color="primary"
                       variant="text"
                       @click="setAsInitial(projectStatus)"
                       text="Yes"
-                  ></AlbatrossButton>
+                  ></a-btn>
 
                 </v-card-actions>
               </v-card>
@@ -87,7 +87,7 @@
           </v-card>
         </div>
         
-        <AlbatrossButton
+        <a-btn
             v-if="userCanEdit"
             :disabled="!projectStatus.projectStatusType || !projectStatus.projectStatusTypeId"
             color="primary"
@@ -95,7 +95,7 @@
             @click="saveType(projectStatus)"
             prepend-icon="save"
             text="Save"
-        ></AlbatrossButton>
+        ></a-btn>
 
       </v-col>
 
@@ -106,7 +106,7 @@
 
 <script setup>
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import {getCompanyProjectStatusType, getProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {handleHidingGlobalLoader, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'

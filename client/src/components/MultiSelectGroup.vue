@@ -16,20 +16,20 @@
           id="focused-toggle"
           @change="allowChanged()"
       >
-        <AlbatrossButton
+        <a-btn
             id="focused-toggle"
             class="text-capitalize fix-toggle-opacity body-medium"
             html-style="width: 50% !important; height: 100%"
             color="unset"
             text="Allow"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             id="focused-toggle"
             class="text-capitalize fix-toggle-opacity body-medium"
             html-style="width: 50% !important; height: 100%"
             color="unset"
             text="Deny"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-btn-toggle>
     </div>
     <v-card-text>
@@ -72,7 +72,7 @@
           >{{ selected.length }} selected</span>
         </template>
       </v-autocomplete>
-      <AlbatrossButton
+      <a-btn
           v-if="userCanEdit && saveButton"
           color="primary"
           class="d-inline-block mt-4"
@@ -80,7 +80,7 @@
           @click="save()"
           prepend-icon="save"
           :text="saveButtonText || 'Save'"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-card-text>
   </v-card>
 
@@ -88,7 +88,7 @@
 
 <script setup>
 import cloneDeep from "lodash.clonedeep";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 
 const vueInstance = getCurrentInstance().proxy

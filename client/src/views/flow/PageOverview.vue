@@ -2,7 +2,7 @@
   <v-container class="pa-0 mobile-background">
     <SidePanelExpansionPanel header="Overview" :is-disabled="!props.isExpandable" :section-expanded="opened">
       <template v-slot:tool-btn>
-        <AlbatrossButton
+        <a-btn
             size="small"
             class="mx-2"
             variant="text"
@@ -13,7 +13,7 @@
           <template v-slot:default>
             <v-icon :size="20">edit</v-icon>
           </template>
-        </AlbatrossButton>
+        </a-btn>
       </template>
       <template v-slot:expanded-content>
         <div v-for="detail in props.details">
@@ -107,14 +107,14 @@
           </div>
           <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.BUTTON" class="mb-4">
             <div class="mt-3">
-              <AlbatrossButton variant="outlined" size="small"
+              <a-btn variant="outlined" size="small"
                                custom-classes="label-medium text-transform-unset px-3 py-1"
                                :to="`/contact/${detail.value}`" target="_blank">
                 <template v-slot:default>
                   Go to contact
                   <v-icon small class="pl-2">mdi-open-in-new</v-icon>
                 </template>
-              </AlbatrossButton>
+              </a-btn>
             </div>
           </div>
           <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.OWNER" :class="{'flex-display': !detail.value}">
@@ -130,7 +130,7 @@
                  small>mdi-phone</v-icon></span>{{ formatPhoneNumber(detail.value.phoneNumber) }}<br/>
           </span>
               <div class="mt-3">
-                <AlbatrossButton
+                <a-btn
                     v-if="teamsAssociatedToUser.length > 0 && userCanViewSms"
                     variant="outlined"
                     size="small"
@@ -148,7 +148,7 @@
                                       :is-inbox="false"
                                       :owner-user-id="detail.value.userId"/>
                   </template>
-                </AlbatrossButton>
+                </a-btn>
               </div>
             </div>
             <span v-else class="d-inline-block detail-item body-medium pl-2">N/A</span>
@@ -166,7 +166,7 @@ import constants from '@/helpers/constants'
 import {getStatusColorClass} from "@/services/projectStatusTypeService";
 import NewMessageDialog from "./settings/inbox/NewMessageDialog";
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import {getCurrentInstance, onMounted, ref, defineProps} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'

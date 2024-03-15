@@ -23,14 +23,14 @@
 
               <v-tooltip left>
                 <template v-slot:activator="{ on, attrs }">
-                  <AlbatrossButton
+                  <a-btn
                       icon
                       class="information-icon"
                       color="var(--v-grey-base)"
                       v-bind="attrs"
                       :activation-handler="on"
                       prepend-icon="mdi-information"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </template>
                 <span>{{ milestone.description }}</span>
               </v-tooltip>
@@ -57,7 +57,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 import StatusTrackerIcon from '@/views/flow/project/StatusTrackerIcon'
 import StatusTrackerItem from '@/views/flow/project/StatusTrackerItem'
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

@@ -6,7 +6,7 @@
           <v-toolbar-title class="title-large">Links</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newLink = { url: ''}]"
@@ -34,7 +34,7 @@
               <p>Validation is not yet in place so be careful which screens you assign a url to.</p>
               <p>If you want to use the value from a cfga, prefix the id with CFGA_ID_. </p>
               <p>For example, you should not add a url using "Project Process Step Event ID" to a Process Step. </p>
-              <AlbatrossButton
+              <a-btn
                 variant="text"
                 outlined
                 color="primary"
@@ -44,7 +44,7 @@
                 :text="p.name"
               />
             </div>
-            <AlbatrossButton
+            <a-btn
               color="primary"
               class="mt-4"
               :disabled="!newLink.link || !newLink.url"
@@ -74,7 +74,7 @@
                       <p :class="{'px-4': vuetify.breakpoint.smAndDown}">Validation is not yet in place so be careful which screens you assign a url to. </p>
                       <p :class="{'px-4': vuetify.breakpoint.smAndDown}"> If you want to use the value from a cfga, prefix the id with CFGA_ID_ </p>
                       <p :class="{'px-4': vuetify.breakpoint.smAndDown}">For example, you should not add a url using "Project Process Step Event ID" to a Process Step. </p>
-                      <AlbatrossButton
+                      <a-btn
                         variant="text"
                         outlined
                         color="primary"
@@ -89,7 +89,7 @@
                 </v-list-item-content>
                 <div :class="{'d-flex flex-row align-center justify-end': vuetify.breakpoint.smAndDown, 'align-self-end': selectedLinkId === a.id && vuetify.breakpoint.smAndDown}"
                       class="px-0">
-                  <AlbatrossButton
+                  <a-btn
                     variant="text"
                     color="primary"
                     :disabled="!a.url || !a.link" v-if="selectedLinkId === a.id && userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
@@ -100,7 +100,7 @@
                     v-else-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
                     color="primary"
                     @click="selectedLinkId = a.id">edit</v-icon>
-                  <AlbatrossButton
+                  <a-btn
                     size="small"
                     variant="text"
                     color="primary"
@@ -108,7 +108,7 @@
                     @click="selectedLinkId = null"
                     prepend-icon="close"
                   />
-                  <AlbatrossButton
+                  <a-btn
                     size="small"
                     variant="text"
                     color="primary"
@@ -135,7 +135,7 @@
   import orderBy from 'lodash.orderby'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest} from '@/helpers/helpers'
   import ConfirmationDialog from '@/components/ConfirmationDialog'
-  import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+
   import {computed, getCurrentInstance, onMounted, ref} from 'vue'
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import { useAppStore } from '@/stores/AppStorePinia.js'

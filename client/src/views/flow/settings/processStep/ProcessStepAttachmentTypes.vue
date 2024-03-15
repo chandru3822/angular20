@@ -6,20 +6,20 @@
           <v-toolbar-title class="title-large">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 @click="[addNewType = !addNewType, getAvailableTypes()]"
                 variant="text"
                 v-if="userCanAdd"
                 color="primary"
                 :prepend-icon="!addNewType ? 'add' : 'close'"
                 :text="addNewType ? 'Cancel' : 'Add Attachment Type'"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 variant="text"
                 @click="expandTypes = !expandTypes"
                 color="unset"
                 :prepend-icon="!expandTypes ? 'mdi-chevron-down' : 'mdi-chevron-up'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-row v-if="addNewType">
@@ -31,12 +31,12 @@
                             item-text="attachmentType"
                             return-object
             ></v-autocomplete>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 :disabled="!newType.id"
                 @click="addTypeToProcessStep"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-col>
         </v-row>
         <v-row v-if="expandTypes">
@@ -79,20 +79,20 @@
                     <div style="display: flex; justify-content: flex-end">
                       <router-link class="no-text-decoration pr-3"
                                    :to="`/settings/processStep/${processStepId}/attachmentType/${item.id}`">
-                        <AlbatrossButton
+                        <a-btn
                             size="small"
                             variant="text"
                             color="primary"
                             prepend-icon="edit"
-                        ></AlbatrossButton>
+                        ></a-btn>
                       </router-link>
-                      <AlbatrossButton
+                      <a-btn
                           size="small"
                           color="primary"
                           variant="text"
                           @click="attachmentTypeToDelete = item"
                           prepend-icon="delete"
-                      ></AlbatrossButton>
+                      ></a-btn>
                     </div>
                   </template>
 
@@ -109,7 +109,7 @@
 
 <script setup>
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import orderBy from 'lodash.orderby'
 import {
   getRequest,

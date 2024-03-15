@@ -8,7 +8,7 @@
       style="z-index: 10"
   >
     <template #activator="{on}">
-      <AlbatrossButton
+      <a-btn
           variant="text"
           color="primary"
           class="text-capitalize add-process-step-menu-btn one-hunned"
@@ -18,7 +18,7 @@
           @blur="clear()"
           :text="title != null ? title : ''"
           prepend-icon="add"
-      ></AlbatrossButton>
+      ></a-btn>
     </template>
 
     <v-card class="pa-5">
@@ -48,13 +48,13 @@
                       item-value="id"
                       placeholder="Select one..."
                       attach/>
-      <AlbatrossButton
+      <a-btn
           class="add-process-step-btn primary"
           :disabled="selectedStep == null || !newPps.existingCompanyProcessStepStatusTypeId || !newPps.initialCompanyProcessStepStatusTypeId"
           @click="addStep"
           color="unset"
           text="Create"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-card>
   </v-menu>
 </template>
@@ -63,7 +63,7 @@
 import { handleHidingGlobalLoader, getRequestWithParams,  logError, postRequest} from '@/helpers/helpers'
 
 import {getActiveAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, ref, toRefs, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

@@ -17,14 +17,14 @@
           <v-toolbar-title class="title-large">Ancillary Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="!createNew && userCanAdd"
                 @click="createNew = !createNew"
                 prepend-icon="add"
                 :text="!constants.IS_MOBILE ? 'Create Group' : ''"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="createNew" text class="text-left one-hunned pa-3 square-card add-new" flat
@@ -36,19 +36,19 @@
               v-model="newGroup.groupName"
             ></v-text-field>
           </div>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="mr-2"
               :disabled="!newGroup.groupName"
               @click="saveFieldGroup()"
               text="Save"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="primary"
               variant="text"
               @click="[newGroup = {}, createNew = false]"
               text="Cancel"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card>
         <v-row>
           <v-col cols="12">
@@ -78,7 +78,7 @@
               <template #item="{ item, index }">
                 <tr  :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
                   <td style="width: 50px">
-                    <AlbatrossButton
+                    <a-btn
                         variant="text"
                         icon
                         size="small"
@@ -86,7 +86,7 @@
                         v-if="userCanEdit"
                         color="unset"
                         prepend-icon="drag_handle"
-                    ></AlbatrossButton>
+                    ></a-btn>
                   </td>
                   <td class="text-left">
                     <div v-if="userCanEdit">
@@ -106,28 +106,28 @@
                   </td>
                   <td class="text-right">
                     <div class="item-icons d-flex justify-end">
-                      <AlbatrossButton
+                      <a-btn
                           v-if="userCanAdd"
                           size="small"
                           variant="text"
                           @click="[addField = !addField, selectedIndex = index, expanded = [item], loadFieldsByParent()]"
                           color="unset"
                           :prepend-icon="addField && expanded.includes(item) ? 'remove' : 'add'"
-                      ></AlbatrossButton>
-                      <AlbatrossButton
+                      ></a-btn>
+                      <a-btn
                           size="small"
                           variant="text"
                           @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]"
                           color="unset"
                           :prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
-                      ></AlbatrossButton>
-                      <AlbatrossButton
+                      ></a-btn>
+                      <a-btn
                           size="small"
                           color="primary"
                           variant="text"
                           @click="cfGroupToDelete = item"
                           prepend-icon="delete"
-                      ></AlbatrossButton>
+                      ></a-btn>
                     </div>
                   </td>
                 </tr>
@@ -149,12 +149,12 @@
                         {{ item.fieldName }}
                       </template>
                     </v-autocomplete>
-                    <AlbatrossButton
+                    <a-btn
                         variant="text"
                         color="primary"
                         @click="addField = false"
                         text="Cancel"
-                    ></AlbatrossButton>
+                    ></a-btn>
                   </v-col>
                   <v-col cols="12" class="px-3 py-0 pt-2 justify"
                          v-if="!addField && (!item.customFields || item.customFields.length === 0)">
@@ -238,7 +238,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
 

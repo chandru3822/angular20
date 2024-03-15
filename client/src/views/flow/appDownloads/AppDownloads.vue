@@ -12,12 +12,12 @@
                 :close-on-content-click="false"
         >
           <template #activator="{on}">
-            <AlbatrossButton
+            <a-btn
                 :activation-handler="on"
                 variant="text"
                 color="primary"
                 text="Build App"
-            ></AlbatrossButton>
+            ></a-btn>
           </template>
 
           <v-card class="pa-5">
@@ -37,13 +37,13 @@
                           hint="example 2.0.1"
                           placeholder="Version..."/>
 
-            <AlbatrossButton
+            <a-btn
                 class="mt-3"
                 :disabled="!newBuild.branch || !newBuild.dataSource || !newBuild.version"
                 @click="testBuild"
                 color="unset"
                 text="Start Build"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-card>
         </v-menu>
       </v-toolbar-items>
@@ -64,7 +64,7 @@ import constants from '@/helpers/constants'
 import AppList from '@/views/flow/appDownloads/AppList'
 import { handleHidingGlobalLoader, putRequest, postRequest } from "@/helpers/helpers";
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

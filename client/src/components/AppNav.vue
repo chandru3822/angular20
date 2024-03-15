@@ -7,14 +7,14 @@
           style="font-size: 18px; text-align: center; background-color: var(--v-error-base); color: white;"
       >
         BE CAREFUL!! YOU ARE MASQUERADING!!
-        <AlbatrossButton
+        <a-btn
             :disabled="clearingMasquerade"
             :loading="clearingMasquerade"
             @click="clearMasquerade()"
             class="primary--text"
             color="unset"
             text="CLEAR"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-col>
       <v-col cols="12" class="pt-0 pb-0">
 
@@ -28,7 +28,7 @@
                   class="account-menu"
                   :close-on-content-click="false">
             <template v-slot:activator="{ on }">
-              <AlbatrossButton
+              <a-btn
                   icon
                   :activation-handler="on"
                   :color="selectedCompany.logoPresignedUrl ? 'transparent' : '#bbbbbb'"
@@ -38,7 +38,7 @@
                        :src="selectedCompany.logoPresignedUrl">
                   <v-icon v-else>mdi-office-building</v-icon>
                 </template>
-              </AlbatrossButton>
+              </a-btn>
             </template>
             <v-list>
               <v-list-item v-for="(item, index) in companies" :key="index"
@@ -48,7 +48,7 @@
               </v-list-item>
             </v-list>
           </v-menu>
-          <AlbatrossButton
+          <a-btn
               icon
               v-else
               to="/home"
@@ -59,15 +59,15 @@
               <img class="header-logo" v-if="selectedCompany.logoPresignedUrl" :src="selectedCompany.logoPresignedUrl">
               <v-icon v-else>mdi-office-building</v-icon>
             </template>
-          </AlbatrossButton>
-          <AlbatrossButton
+          </a-btn>
+          <a-btn
               v-if="showMobileBanner && $route.path !== '/apps'"
               @click="goToPath('/apps')"
               icon
               class="text-capitalize bold px-0"
               color="unset"
               prepend-icon="mdi-download-circle"
-          ></AlbatrossButton>
+          ></a-btn>
           <v-spacer v-if="isMobile"></v-spacer>
           <div v-if="isMobile" class="flex-display flex-align-items-center">
             <v-menu data-app left
@@ -77,7 +77,7 @@
                     class="account-menu"
                     :close-on-content-click="false">
               <template v-slot:activator="{ on }">
-                <AlbatrossButton
+                <a-btn
                     class="account-menu-button label-medium px-3 pages-button"
                     :color="headerColor"
                     size="x-small"
@@ -87,7 +87,7 @@
                     PAGES
                     <v-icon>mdi-chevron-down</v-icon>
                   </template>
-                </AlbatrossButton>
+                </a-btn>
               </template>
               <v-list v-if="displayedTabs.length > 1">
                 <v-list-item v-for="(tab, index) in displayedTabs" :key="index"
@@ -153,7 +153,7 @@ import axios from 'axios'
 import AnnouncementDropdown from '@/components/AnnouncementDropdown.vue'
 import moment from 'moment'
 import {useNotificationStore} from '@/stores/NotificationStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

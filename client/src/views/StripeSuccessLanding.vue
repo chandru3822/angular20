@@ -11,7 +11,7 @@
               <div class="py-4 font-size-16 text-center">
                 Deposit Received. <br/>
 
-                <AlbatrossButton v-if="isMobile"
+                <a-btn v-if="isMobile"
                        class="mt-5" text="Return to Albatross"
                        @click="doAppLaunch()" />
               </div>
@@ -28,7 +28,7 @@
 <script setup>
 import {handleHidingGlobalLoader, postRequestWithRequestParams} from '@/helpers/helpers'
 import {getCurrentInstance, onMounted, ref} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import {useRouter, useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy

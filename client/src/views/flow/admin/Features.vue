@@ -6,11 +6,11 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Features</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton :hide-text-on-mobile="true" prepend-icon="add"
+            <a-btn :hide-text-on-mobile="true" prepend-icon="add"
                              variant="text"
                              text="Blah"
                              @click="[addNew = !addNew, selectedFeature = {}]">
-            </AlbatrossButton>
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
@@ -34,12 +34,12 @@
                 return-object
             ></v-select>
           </div>
-          <AlbatrossButton variant="text" text="Cancel" @click="[addNew = !addNew, selectedFeature = {}]"></AlbatrossButton>
-          <AlbatrossButton :disabled="!selectedFeature || !selectedFeature.featureName || !selectedFeature.featureCode"
+          <a-btn variant="text" text="Cancel" @click="[addNew = !addNew, selectedFeature = {}]"></a-btn>
+          <a-btn :disabled="!selectedFeature || !selectedFeature.featureName || !selectedFeature.featureCode"
                  class="mr-2"
                  @click="saveFeature(true)">
             Save
-          </AlbatrossButton>
+          </a-btn>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -73,11 +73,11 @@
                   <input class="ml-3" type="checkbox" v-model="item.isSystem">
                 </div>
               </div>
-              <AlbatrossButton :disabled="!item.featureName"
+              <a-btn :disabled="!item.featureName"
                      class="mr-2"
                      @click="saveFeature(false, item)">
                 Save
-              </AlbatrossButton>
+              </a-btn>
             </td>
           </template>
 
@@ -86,10 +86,10 @@
               <td class="text-left">{{ item.featureName }}</td>
               <td class="text-left">{{ item.featureCode }}</td>
               <td class="text-right">
-                <AlbatrossButton variant="text" size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
-                </AlbatrossButton>
-                <AlbatrossButton size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></AlbatrossButton>
-                <AlbatrossButton variant="text" size="small" prepend-icon="delete" @click="featureToDelete=item" />
+                <a-btn variant="text" size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                </a-btn>
+                <a-btn size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></a-btn>
+                <a-btn variant="text" size="small" prepend-icon="delete" @click="featureToDelete=item" />
               </td>
             </tr>
           </template>
@@ -117,7 +117,7 @@ import constants from '@/helpers/constants'
 import orderBy from 'lodash.orderby'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
-import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
+import a-btn from '@/components/customVuetify/a-btn'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 

@@ -7,13 +7,13 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
 
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 v-if="canAdd && (!userStore.isParent|| !companies || companies.length === 1)"
                 to="/newContact"
                 color="primary"
                 :text="!constants.IS_MOBILE ? 'Add Contact' : ''"
-            ></AlbatrossButton>
+            ></a-btn>
             <v-menu data-app left
                     v-else-if="canAdd && companies && companies.length > 1"
                     offset-y
@@ -22,13 +22,13 @@
                     class="account-menu"
                     :close-on-content-click="false">
               <template v-slot:activator="{ on }">
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     :activation-handler="on"
                     color="primary"
                     prepend-icon="add"
                     :text="!constants.IS_MOBILE ? 'Add Contact' : ''"
-                ></AlbatrossButton>
+                ></a-btn>
               </template>
               <v-list dense class="pa-3">
                 <v-list-item  @click="menuOpen = false" :to="`/newContact?cid=${c.id}`"
@@ -120,7 +120,7 @@ import {
 import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 import axios from 'axios'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

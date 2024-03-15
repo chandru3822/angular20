@@ -16,8 +16,8 @@
             >
               {{ title }}
               <v-spacer></v-spacer>
-              <AlbatrossButton prepend-icon="expand_more">
-              </AlbatrossButton>
+              <a-btn prepend-icon="expand_more">
+              </a-btn>
             </v-toolbar>
           </template>
           <v-list dense class="pa-3">
@@ -71,7 +71,7 @@
 <script setup>
 import constants from '@/helpers/constants'
 import {getCurrentInstance, computed, ref} from 'vue'
-import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
+import a-btn from '@/components/customVuetify/a-btn'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
 

@@ -7,18 +7,18 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="pt-3">
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="ml-3"
               @click="exportData()"
               text="Export"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               variant="text"
               color="primary"
               @click="$emit('residualDetailModalClosed')"
               text="Close"
-          ></AlbatrossButton>
+          ></a-btn>
         </div>
       </v-toolbar-items>
     </v-toolbar>
@@ -39,13 +39,13 @@
       <template #item="{ item, index }">
         <tr class="text-left" :class="{'shaded-row': index % 2}">
           <td class="text-left">
-            <AlbatrossButton
+            <a-btn
                 variant="outlined"
                 :to="`/project/${item.projectId}/status`"
                 color="unset"
                 :text="item.projectId"
                 text="item.projectId"
-            ></AlbatrossButton>
+            ></a-btn>
           </td>
           <td class="text-left" v-if="typeId !== 4">{{item.state}}</td>
           <td class="text-left" v-if="typeId !== 4">{{item.finalDesignSignedDate | formatDate('date')}}</td>
@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

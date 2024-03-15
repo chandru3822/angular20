@@ -1,27 +1,27 @@
 <template>
   <div>
     <v-btn-toggle v-model="toggle">
-      <AlbatrossButton
+      <a-btn
           variant="text"
           size="small"
           value="all"
           color="unset"
           text="All"
-      ></AlbatrossButton>
-      <AlbatrossButton
+      ></a-btn>
+      <a-btn
           variant="text"
           size="small"
           value="hv"
           color="unset"
           text="H/V"
-      ></AlbatrossButton>
-      <AlbatrossButton
+      ></a-btn>
+      <a-btn
           variant="text"
           size="small"
           value="custom"
           color="unset"
           text="Custom"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-btn-toggle>
 
     <div v-if="toggle === 'all'">
@@ -43,7 +43,7 @@
 <script setup>
 import SizeWidget from './SizeWidget.vue'
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const props = defineProps({
   value: {

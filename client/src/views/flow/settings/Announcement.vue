@@ -2,21 +2,21 @@
   <v-container>
     <v-row class="pt-0" v-if="!dataLoading">
       <v-col cols="12" class="pt-0">
-        <AlbatrossButton variant="text" icon @click="cancel()"
+        <a-btn variant="text" icon @click="cancel()"
                          custom-classes="back-button">
           <template v-slot:default>
             <v-icon x-large>mdi-chevron-left</v-icon>
           </template>
-        </AlbatrossButton>
+        </a-btn>
         <v-toolbar flat id="announcement-admin-header">
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">
             {{ announcementId ? 'Edit Announcement' : 'Add Announcement' }}
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text" @click="validate()" prepend-icon="save"
+            <a-btn variant="text" @click="validate()" prepend-icon="save"
                    v-if="userCanEdit" :loading="saving">
-            </AlbatrossButton>
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-form ref="announcementForm">
@@ -128,13 +128,13 @@
               <!--                      @change="uploadFile(, null)"-->
               <!--                      name="avatar"-->
               <!--                  >-->
-              <AlbatrossButton :size="vueInstance.$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+              <a-btn :size="vueInstance.$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                      v-else class="mb-3"
                      :disabled="!userCanEdit"
                      text="Delete Attachment"
                      append-icon="delete"
                      @click="showDeleteDialog = true">
-              </AlbatrossButton>
+              </a-btn>
             </div>
 
             <div class="company-logo-background" v-if="announcement.presignedUrl">
@@ -174,7 +174,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import moment from 'moment'
 import cloneDeep from 'lodash.clonedeep'
 import isEqual from 'lodash.isequal'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'

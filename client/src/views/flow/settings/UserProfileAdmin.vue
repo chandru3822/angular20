@@ -4,13 +4,13 @@
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title class="title-large" :class="{'ml-n6': constants.IS_MOBILE}">
-            <AlbatrossButton variant="text" icon color="primary" v-if="userIsAdmin && constants.IS_MOBILE" :to="`/settings/userProfile`" prepend-icon="mdi-chevron-left"/>
+            <a-btn variant="text" icon color="primary" v-if="userIsAdmin && constants.IS_MOBILE" :to="`/settings/userProfile`" prepend-icon="mdi-chevron-left"/>
 
             User Profile Admin
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items v-if="!constants.IS_MOBILE">
-            <AlbatrossButton
+            <a-btn
               variant="text" color="primary" v-if="userIsAdmin"
               :to="`/settings/userProfile`" text="Back to User Profile"
             />
@@ -62,7 +62,7 @@ import {handleHidingGlobalLoader, putRequest, getSnackbar} from '@/helpers/helpe
 import constants from '@/helpers/constants'
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()

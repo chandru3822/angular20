@@ -6,7 +6,7 @@
           class="account-menu"
           :close-on-content-click="false">
     <template v-slot:activator="{ on }">
-      <AlbatrossButton
+      <a-btn
           class="account-menu-button label-medium"
           id="tools-menu-btn"
           :color="headerColor"
@@ -18,7 +18,7 @@
           TOOLS
           <v-icon>mdi-chevron-down</v-icon>
         </template>
-      </AlbatrossButton>
+      </a-btn>
     </template>
     <div>
       <v-list>
@@ -97,7 +97,7 @@ import Vue2Filters from 'vue2-filters'
 import SpinnerInline from '@/components/SpinnerInline'
 import { getRequest,  } from '@/helpers/helpers'
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

@@ -12,18 +12,18 @@
           return-object
           single-line
       />
-      <AlbatrossButton
+      <a-btn
           color="primary"
           :disabled="!newComponent"
           @click="add(newComponent)"
           text="Add"
-      ></AlbatrossButton>
+      ></a-btn>
     </div>
   </v-card>
 </template>
 <script setup>
 import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 const store = vueInstance.$store
 
 const TEXT_BLOCK = {

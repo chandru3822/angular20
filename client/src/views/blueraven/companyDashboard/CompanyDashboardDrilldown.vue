@@ -4,12 +4,12 @@
       <span v-if="startDate === endDate" class="drilldown-title">{{ milestone.name }} on {{ startDate | formatDate('date', 'MM/DD/YYYY') }}</span>
       <span v-else class="drilldown-title">{{ milestone.name }} {{ startDate | formatDate('date', 'MM/DD/YYYY') }} - {{ endDate | formatDate('date', 'MM/DD/YYYY') }}</span>
       <v-spacer></v-spacer>
-      <AlbatrossButton
+      <a-btn
           color="primary"
           class="mr-4 mb-2"
           @click="exportCsv()"
           text="Export"
-      ></AlbatrossButton>
+      ></a-btn>
       <a class="close-modal-x pb-3" title="Close" @click="closeCallback">×</a>
     </v-card-title>
     <v-divider></v-divider>
@@ -89,19 +89,19 @@
 
     <v-card-actions>
       <v-spacer></v-spacer>
-      <AlbatrossButton
+      <a-btn
           id="drilldown-close-btn"
           class="text-capitalize mr-4 mb-2"
           color="primary"
           @click="closeCallback"
           text="Close"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-card-actions>
   </v-card>
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import constants from '@/helpers/constants'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import { saveAs } from 'file-saver'

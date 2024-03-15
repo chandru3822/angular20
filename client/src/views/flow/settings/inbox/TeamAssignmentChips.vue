@@ -50,14 +50,14 @@
           </v-radio-group>
           <v-card-actions class="pb-4">
             <v-spacer/>
-            <AlbatrossButton
+            <a-btn
               class="text-capitalize"
               variant="text"
               color="primary"
               @click="showRemoveDialog=false"
               text="CANCEL"
             />
-            <AlbatrossButton
+            <a-btn
               class="text-capitalize white--text"
               depressed
               color="primary"
@@ -80,17 +80,17 @@
           </v-card-text>
           <v-card-actions class="pb-4">
             <v-spacer/>
-            <AlbatrossButton
+            <a-btn
               class="text-capitalize"
               variant="text"
               color="primary"
               @click="showRemoveLastTeamDialog=false"
               text="CANCEL"
             />
-            <AlbatrossButton
+            <a-btn
               class="text-capitalize white--text"
               color="primary"
-              @click="removeTeam(teamToRemove.id)">Remove and Close</AlbatrossButton>
+              @click="removeTeam(teamToRemove.id)">Remove and Close</a-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -107,14 +107,14 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="showRemoveTeamDialog=false"
                 class="text-capitalize mr-2 mb-2"
                 text="Cancel"
             />
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 class="white--text elevation-2 text-capitalize mb-2"
                 @click="removeTeam(teamToRemove.id)"
@@ -128,7 +128,7 @@
         <template v-slot:activator="{on: menu, attrs}">
           <v-tooltip top small>
             <template v-slot:activator="{on: tooltip, attrs}">
-              <AlbatrossButton
+              <a-btn
                 variant="text"
                 icon
                 v-bind="attrs"
@@ -149,7 +149,7 @@
 <script setup>
 import {getSnackbar, getRequest, putRequest} from "@/helpers/helpers";
 import AddTeamDropdown from "@/views/flow/settings/inbox/AddTeamDropdown";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {ref, computed, onMounted, getCurrentInstance, watch, defineProps} from "vue";
 import {useUserStore} from "@/stores/UserStorePinia.js";
 import {useRouter, useRoute} from "vue-router/composables"

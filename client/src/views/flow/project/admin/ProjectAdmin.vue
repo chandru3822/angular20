@@ -5,14 +5,14 @@
         <router-link :to="`/project/${projectId}/status`">{{ project.projectName }}</router-link>
       </div>
       <v-spacer></v-spacer>
-      <AlbatrossButton
+      <a-btn
           color="primary"
           class="float-right mr-1"
           :icon="isMobile"
           @click="deleteProjectConfirm=true"
           prepend-icon="delete"
           :text="isMobile ? '' : 'Delete Project'"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-toolbar>
     <ConfirmationDialog
         :open-dialog="deleteProjectConfirm"
@@ -24,14 +24,14 @@
     </ConfirmationDialog>
     <v-row>
       <v-col cols="12" class="relative">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             class="pl-1 pr-2 anchor"
             :to="`/project/${projectId}/status`"
             color="unset"
             prepend-icon="arrow_left"
             text="Back to Project"
-        ></AlbatrossButton>
+        ></a-btn>
         <v-tabs class="tabs-bar" v-model="activeTab">
           <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
                  class="text-capitalize ma-0"
@@ -52,7 +52,7 @@
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {deleteRequest, getRequest,  logError} from "@/helpers/helpers";
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

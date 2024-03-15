@@ -48,7 +48,7 @@
                     Cancel
                   </router-link>
                   <v-spacer></v-spacer>
-                  <AlbatrossButton :loading="savingPassword" type="submit" text="Submit"></AlbatrossButton>
+                  <a-btn :loading="savingPassword" type="submit" text="Submit"></a-btn>
                 </v-card-actions>
               </v-form>
             </v-card-text>
@@ -65,7 +65,7 @@
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   import {getCurrentInstance, computed, onMounted, ref} from 'vue'
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
   import {useRouter, useRoute} from "vue-router/composables"
   import { useAppStore } from '@/stores/AppStorePinia.js'
   const appStore = useAppStore()

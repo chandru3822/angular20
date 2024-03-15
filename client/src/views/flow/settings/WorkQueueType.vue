@@ -2,7 +2,7 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <AlbatrossButton
+        <a-btn
           variant="text"
           color="primary"
           class="pl-1 pr-2"
@@ -21,9 +21,9 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
-              <AlbatrossButton variant="text" color="primary" v-if="!editType" class="" @click="[editType = !editType]" prepend-icon="edit"/>
-              <AlbatrossButton variant="text" color="primary" class="" v-else @click="saveType()" prepend-icon="save"/>
-              <AlbatrossButton variant="text" color="primary" v-if="editType" class="" @click="[editType = !editType]" text="CANCEL"/>
+              <a-btn variant="text" color="primary" v-if="!editType" class="" @click="[editType = !editType]" prepend-icon="edit"/>
+              <a-btn variant="text" color="primary" class="" v-else @click="saveType()" prepend-icon="save"/>
+              <a-btn variant="text" color="primary" v-if="editType" class="" @click="[editType = !editType]" text="CANCEL"/>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -166,7 +166,7 @@
           @allow-changed="workQueueTypeHiddenAllowEventListener"
           @checkbox-changed="workQueueTypeHiddenCheckboxEventListener"></multi-select-group>
             <br/>
-            <AlbatrossButton v-if="userCanEdit" color="primary" dark class="d-inline-block white--text"
+            <a-btn v-if="userCanEdit" color="primary" dark class="d-inline-block white--text"
                    @click="saveHiddenAndWhiteList()" prepend-icon="save" text="SAVE"/>
       </v-col>
     </v-row>
@@ -177,11 +177,11 @@
           <v-spacer/>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
-              <AlbatrossButton variant="text" color="primary" v-if="!editSchedule" class=""
+              <a-btn variant="text" color="primary" v-if="!editSchedule" class=""
                                @click="[editSchedule = !editSchedule, savePrevSchedule()]" prepend-icon="edit"/>
-              <AlbatrossButton variant="text" color="primary" class="" v-else
+              <a-btn variant="text" color="primary" class="" v-else
                                @click="saveType()" prepend-icon="save"/>
-              <AlbatrossButton variant="text" color="primary" v-if="editSchedule" class=""
+              <a-btn variant="text" color="primary" v-if="editSchedule" class=""
                                @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]" text="CANCEL"/>
             </div>
           </v-toolbar-items>
@@ -229,27 +229,27 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
-              <AlbatrossButton
+              <a-btn
                   v-if="!editDefaultFields"
                   variant="text"
                   color="primary"
                   @click="editDefaultFields = !editDefaultFields"
                   prepend-icon="edit"
-              ></AlbatrossButton>
-              <AlbatrossButton
+              ></a-btn>
+              <a-btn
                   v-else
                   variant="text"
                   color="primary"
                   @click="saveType()"
                   prepend-icon="save"
-              ></AlbatrossButton>
-              <AlbatrossButton
+              ></a-btn>
+              <a-btn
                   variant="text"
                   color="primary"
                   v-if="editDefaultFields"
                   @click="editDefaultFields = false"
                   text="cancel"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -283,7 +283,7 @@
         :company-object-types="filteredCompanyObjectTypes"
       />
 
-      <AlbatrossButton color="primary" class="white--text build-sql" @click="buildSql"
+      <a-btn color="primary" class="white--text build-sql" @click="buildSql"
              v-if="is7oaksAdmin || userId === 2350555" text="BUILD SQL (only 7oaks)"/>
       <div>
         {{ sql }}
@@ -314,7 +314,7 @@ import SmartlistColumn from '@/views/flow/smartlistv1/SmartlistColumn'
 import cloneDeep from 'lodash.clonedeep'
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

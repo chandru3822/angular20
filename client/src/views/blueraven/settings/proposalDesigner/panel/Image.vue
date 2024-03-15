@@ -1,17 +1,17 @@
 <template>
   <v-card flat>
     <ImageSelectorWidget ref="imageSelector" />
-    <AlbatrossButton
+    <a-btn
         @click="openSelectImage('backgroundImage')"
         color="unset"
         text="Open Image"
-    ></AlbatrossButton>
+    ></a-btn>
   </v-card>
 </template>
 <script setup>
 import ImageSelectorWidget from './ImageSelectorWidget'
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const imageSelector = ref(null)
 const emit = defineEmits(['input'])

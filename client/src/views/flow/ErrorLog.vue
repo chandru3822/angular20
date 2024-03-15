@@ -31,7 +31,7 @@
               <td class="text-left">{{ item.errorMessage }}</td>
               <td class="text-left">{{ item.errorLogStatus }}</td>
               <td>
-                <AlbatrossButton size="small" prepend-icon="delete" @click="logToDelete=item" />
+                <a-btn size="small" prepend-icon="delete" @click="logToDelete=item" />
               </td>
             </tr>
           </template>
@@ -49,7 +49,7 @@
 import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, onMounted, ref} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()
 

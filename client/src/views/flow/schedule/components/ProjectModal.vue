@@ -14,7 +14,7 @@ import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/eventStatusTypeService.js";
 import {ScheduleMutations} from "@/stores/ScheduleStore.js";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
@@ -210,16 +210,16 @@ const cancelProjectProcessStepEvent = async() => {
   <v-card-title class="d-flex align-start">
     <span class="label-large pr-1 break-word max-width-half">{{project.projectName}}</span>
     <v-spacer/>
-    <AlbatrossButton class="mx-2" icon size="small" color="primary" @click="emit('toggleProjectMapPin')">
+    <a-btn class="mx-2" icon size="small" color="primary" @click="emit('toggleProjectMapPin')">
       <v-icon v-if="project.pinned">mdi-map-marker</v-icon>
       <v-icon v-else>mdi-map-marker-off</v-icon>
-    </AlbatrossButton>
-    <AlbatrossButton
+    </a-btn>
+    <a-btn
         icon size="small" color="primary"
         @click="show = !show"
     >
       <v-icon>{{ show ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
-    </AlbatrossButton>
+    </a-btn>
   </v-card-title>
   <v-card-subtitle @click="openInNewTab(`/project/${project.projectId}/processStep/${project.projectProcessStepId}/event/${project.projectProcessStepEventId}`)" class="clickable anchor--text pt-2 pb-3">
     {{project.eventName}} <v-icon small class="anchor">mdi-open-in-new</v-icon>
@@ -270,10 +270,10 @@ const cancelProjectProcessStepEvent = async() => {
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in {{timezoneFriendly}}</div>
       </v-card-text>
       <v-card-actions class="pb-4 px-4">
-        <AlbatrossButton color="primary" html-style="width:100%" class="body-medium"
+        <a-btn color="primary" html-style="width:100%" class="body-medium"
                :disabled="fieldsSaving || saveInvalid"
                @click="[fieldsSaving = true, checkForSchedulingConflicts()]"
-        >Schedule</AlbatrossButton>
+        >Schedule</a-btn>
       </v-card-actions>
     </div>
 <!-- ------------------- -->
@@ -287,7 +287,7 @@ const cancelProjectProcessStepEvent = async() => {
       </v-card-text>
       <v-card-actions v-if="userCanEdit" class="pt-1 pb-4 px-4">
         <v-spacer/>
-        <AlbatrossButtonSecondary v-if="project.editableInSchedule" @click="[confirmUnschedule = true, getCancelledCompanyEventStatuses()]" color="primary" size="small" >Unschedule</AlbatrossButtonSecondary>
+        <a-btnSecondary v-if="project.editableInSchedule" @click="[confirmUnschedule = true, getCancelledCompanyEventStatuses()]" color="primary" size="small" >Unschedule</a-btnSecondary>
       </v-card-actions>
     </div>
 <!-- ------------------- -->

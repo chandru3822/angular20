@@ -2,14 +2,14 @@
   <v-card class="design-card square-card">
     <v-row no-gutters class="px-2" id="ahj-permit">
       <v-col class="ahj-form-btns py-1" cols="12">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             class="text-capitalize"
             @click="toggleMinimizeAll"
             :text="expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             v-if="dataWasChanged"
             color="primary"
             variant="text"
@@ -17,14 +17,14 @@
             class="cancel-link"
             html-style="margin-right: 10px"
             text="Cancel"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             class="mr-0 save-btn"
             v-if="userCanEdit"
             color="primary"
             @click="validateForm()"
             text="Save"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-col>
     </v-row>
 
@@ -58,27 +58,27 @@
 
           <v-card-actions class="px-6">
             <v-spacer></v-spacer>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 variant="text"
                 @click="saveDialog = false"
                 class="cancel-link mr-2"
                 text="Cancel"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 v-if="ahjDesign.updateAllInArea?.length > 0"
                 class="mr-0 save-btn"
                 color="primary"
                 @click="saveConfirmDialog = true"
                 text="Save"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 v-else
                 class="mr-0 save-btn"
                 color="primary"
                 @click="updateAhjDesign"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -95,19 +95,19 @@
 
           <v-card-actions class="px-6">
             <v-spacer></v-spacer>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 variant="text"
                 @click="saveConfirmDialog = false"
                 class="cancel-link mr-2"
                 text="Cancel"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 class="mr-0 save-btn"
                 color="primary"
                 @click="updateAhjDesign"
                 text="Yes"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -117,7 +117,7 @@
 
 <script setup>
 import cloneDeep from 'lodash.clonedeep'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, } from '@/helpers/helpers'
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";

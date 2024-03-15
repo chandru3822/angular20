@@ -18,11 +18,11 @@
                         type="search"
                         attach
         ></v-autocomplete>
-        <AlbatrossButton @click="saveUserHomePage"
+        <a-btn @click="saveUserHomePage"
                v-if="!userIsAlbatross"
                text="Save"
                class="mt-4">
-        </AlbatrossButton>
+        </a-btn>
       </v-card-text>
     </v-card>
   </v-container>
@@ -32,7 +32,7 @@
 
 import {handleHidingGlobalLoader, getRequest, putRequest} from "@/helpers/helpers";
 import {computed, getCurrentInstance, onMounted, ref} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'

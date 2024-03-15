@@ -4,22 +4,22 @@
       <v-toolbar-title>Requirements</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <AlbatrossButton
+        <a-btn
             v-if="!showNewRequirementForm && canEdit"
             @click="showNewRequirementForm = true"
             variant="text"
             color="primary"
             text="Add Requirement"
             prepend-icon="add"
-        ></AlbatrossButton>
+        ></a-btn>
 
-        <AlbatrossButton
+        <a-btn
             v-if="showNewRequirementForm"
             variant="text"
             color="primary"
             @click="resetRequirementForm"
             text="Cancel"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-toolbar-items>
     </v-toolbar>
 
@@ -179,7 +179,7 @@
             placeholder="Enter a value"
         />
 
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             class="text-left"
@@ -187,7 +187,7 @@
             @click="addNewRequirement"
             prepend-icon="save"
             text="Save"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-col>
     </v-card>
     <v-data-table
@@ -231,14 +231,14 @@
               edit
             </v-icon>
 
-            <AlbatrossButton
+            <a-btn
                 v-else
                 small
                 variant="text"
                 color="primary"
                 @click="cancelEditRequirement"
                 text="Cancel"
-            ></AlbatrossButton>
+            ></a-btn>
 
             <v-icon
                 class="action-icon"
@@ -385,14 +385,14 @@
                 placeholder="Enter a value"
             />
 
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 :disabled="isSaveExpandedRequirementDisabled"
                 @click="updateRequirement(expandedRequirement)"
                 prepend-icon="save"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
           </td>
         </tr>
       </template>
@@ -409,7 +409,7 @@ import {getRequest, logError, } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {getCurrentInstance, toRefs, computed, ref, onMounted, watch, onUpdated} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

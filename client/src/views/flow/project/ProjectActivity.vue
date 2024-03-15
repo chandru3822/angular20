@@ -47,14 +47,14 @@
       <div v-if="showSmsTab && viewId === 0 && userCanViewSms && !isSidebarCollapsed">
         <v-tooltip bottom small>
           <template v-slot:activator="{on, attrs}">
-            <AlbatrossButton
+            <a-btn
                 icon
                 color="primary"
                 @click="openHistoryDrilldown"
                 v-bind="attrs"
                 :activation-handler="on"
                 prepend-icon="mdi-history"
-            ></AlbatrossButton>
+            ></a-btn>
           </template>
           <span class="albatross-body-3">History</span></v-tooltip>
       </div>
@@ -72,22 +72,22 @@
         >
 
 
-          <AlbatrossButton
+          <a-btn
               :color="toggleFocused === 0 ? 'primary' : 'white'"
               id="focused-toggle"
               :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
               class="text-capitalize my-4 fix-toggle-opacity body-medium"
               html-style="width: 50% !important;"
               text="Focused"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               :color="toggleFocused === 1 ? 'primary' : 'white'"
               id="focused-toggle"
               :class="{'white--text': toggleFocused === 1, 'primary--text' : toggleFocused === 0}"
               class="text-capitalize fix-toggle-opacity body-medium"
               html-style="width: 50% !important;"
               text="All"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-btn-toggle>
       </div>
       <div v-else-if="viewId === 1 && !isSidebarCollapsed" style="width: 168px;" class="mr-2">
@@ -100,22 +100,22 @@
             class="d-inline-block one-hunned body-medium"
             style="opacity: 1 !important;"
         >
-          <AlbatrossButton
+          <a-btn
               :color="toggleTimelineView === 0 ? 'primary' : 'white'"
               :class="{'white--text': toggleTimelineView === 0, 'primary--text' : toggleTimelineView === 1}"
               class="text-capitalize my-4 fix-toggle-opacity body-medium"
               html-style="width: 50% !important;"
               @click="selectNotesActivityView"
               text="Timeline"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               :color="toggleTimelineView === 1 ? 'primary' : 'white'"
               :class="{'white--text': toggleTimelineView === 1, 'primary--text' : toggleTimelineView === 0}"
               class="text-capitalize fix-toggle-opacity body-medium"
               html-style="width: 50% !important;"
               @click="selectNotesActivityView"
               text="Topic"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-btn-toggle>
       </div>
     </template>
@@ -189,7 +189,7 @@ import debounce from 'lodash.debounce'
 import CollapsableRightPanel from "@/layouts/CollapsableRightPanel.vue";
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

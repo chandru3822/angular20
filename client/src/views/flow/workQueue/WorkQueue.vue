@@ -180,11 +180,11 @@
           tracked will be coming up soon!
         </span>
         <v-card-actions class="flex-display justify-end">
-          <AlbatrossButton
+          <a-btn
               @click="showMetricsDialog = false"
               color="unset"
               text="Close"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -203,7 +203,7 @@ import {
   getRequestWithParams,
 
 } from '@/helpers/helpers'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

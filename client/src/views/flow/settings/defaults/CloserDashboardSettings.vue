@@ -6,12 +6,12 @@
           <v-toolbar-title class="title-large">{{ imageType.header }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <div v-if="userCanEdit">
-            <AlbatrossButton variant="text" icon :large="$vuetify.breakpoint.smAndDown" color="primary"
+            <a-btn variant="text" icon :large="$vuetify.breakpoint.smAndDown" color="primary"
                    v-if="!imageType.saving && !imageType.image?.presignedUrl"
                    @click="imageType.add = !imageType.add"
                    :prepend-icon="imageType.add ? 'remove' : 'add'"
             />
-            <AlbatrossButton variant="text" icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else
+            <a-btn variant="text" icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else
                    @click="imageToDelete=imageType"
                    prepend-icon="delete"
             />
@@ -66,7 +66,7 @@ import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()
 import { useFileStore } from '@/stores/FileStore.js'
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 
 const ImageTypeEnum = ref({
   CLOSER_DASH_TOURNAMENT_HEADER_LOGO: {

@@ -58,7 +58,7 @@
                     <span class="owner-position albatross-body-3">{{ processStep.owner.position }}</span>
                   </div>
                 </div>
-                <AlbatrossButton
+                <a-btn
                     v-if="userCanEdit"
                     size="small"
                     icon
@@ -66,7 +66,7 @@
                     class="ml-2"
                     @click="removeOwner"
                     prepend-icon="mdi-close"
-                ></AlbatrossButton>
+                ></a-btn>
               </div>
             </div>
             <div v-if="displayChangeOwner">
@@ -94,7 +94,7 @@
               </v-autocomplete>
             </div>
             <div>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   variant="text"
                   size="small"
@@ -103,7 +103,7 @@
                   :class="{'mt-2': displayChangeOwner}"
                   @click="displayChangeOwner = !displayChangeOwner"
                   :text="displayChangeOwner ? 'cancel' : 'Add Owner'"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -154,14 +154,14 @@
         <div class="pps-subheader headline-small"
              v-if="processStep && processStep.actions && processStep.actions.length > 0">
           Actions
-          <AlbatrossButton
+          <a-btn
               class="back-btn show-unperformable-actions-btn"
               variant="text"
               color="primary"
               :ripple="false"
               @click="showUnperformableActions = !showUnperformableActions"
               :text="showUnperformableActions ? 'Hide Disabled' : 'Show All'"
-          ></AlbatrossButton>
+          ></a-btn>
         </div>
         <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
           <ActionButton
@@ -190,13 +190,13 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   color="primary"
                   class="px-0"
                   @click="collapsedAttachments = !collapsedAttachments"
                   :prepend-icon="collapsedAttachments ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-toolbar-items>
           </v-toolbar>
           <v-col cols="12" class="text-left pt-0 px-0 pb-4" v-if="!collapsedAttachments">
@@ -221,16 +221,16 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <AlbatrossButton
+          <a-btn
               variant="text"
               color="primary"
               @click="setSplitColumnValue()"
               v-if="!isMobile"
               class="px-0"
               :prepend-icon="!projectStore.manualColumnSplit ? 'mdi-format-columns' : 'mdi-format-align-justify'"
-          ></AlbatrossButton>
+          ></a-btn>
           <div>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 class="ml-2 mt-1"
                 :class="{'mt-3': !isMobile}"
@@ -239,7 +239,7 @@
                 @click="[fieldsSaving = true, checkFields()]"
                 :text="!isMobile ? 'Save Fields' : ''"
                 prepend-icon="save"
-            ></AlbatrossButton>
+            ></a-btn>
           </div>
         </v-toolbar-items>
       </v-toolbar>
@@ -253,14 +253,14 @@
           <v-toolbar v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0" color="transparent" class="elevation-0 cfg-name-toolbar" dense>
             <v-toolbar-title>
               <!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
-              <AlbatrossButton
+              <a-btn
                   size="small"
                   variant="text"
                   v-if="cfg.eventId && userStore.userHasFeature('SCHEDULE')"
                   :to="`/schedule?projectProcessStepId=${projectProcessStepId}`"
                   color="unset"
                   prepend-icon="mdi-calendar"
-              ></AlbatrossButton>
+              ></a-btn>
               {{ cfg.groupName }}
             </v-toolbar-title>
             <v-spacer></v-spacer>
@@ -343,7 +343,7 @@ import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList
 import ConfirmationDialog from "../../../components/ConfirmationDialog.vue";
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

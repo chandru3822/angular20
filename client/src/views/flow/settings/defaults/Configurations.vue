@@ -39,10 +39,10 @@
                 </div>
           </template>
               <template #item.icons = "{item, index}">
-                <AlbatrossButton size="small" variant="text" :large="vuetify.breakpoint.smAndDown" icon color="primary" @click="editIndex = index" v-if="index !== editIndex" prepend-icon="edit"/>
-                <AlbatrossButton size="small" variant="text" :large="vuetify.breakpoint.smAndDown" icon color="primary" @click="saveConfigurationValue(item)" v-if="index === editIndex" prepend-icon="save"/>
-                <AlbatrossButton size="small" variant="text" :large="vuetify.breakpoint.smAndDown" icon color="primary" @click="editIndex = null" v-if="index === editIndex && vuetify.breakpoint.smAndDown" prepend-icon="close"/>
-                <AlbatrossButton size="small" variant="text" color="primary" @click="editIndex = null" v-else-if="index === editIndex" text="CANCEL"/>              </template>
+                <a-btn size="small" variant="text" :large="vuetify.breakpoint.smAndDown" icon color="primary" @click="editIndex = index" v-if="index !== editIndex" prepend-icon="edit"/>
+                <a-btn size="small" variant="text" :large="vuetify.breakpoint.smAndDown" icon color="primary" @click="saveConfigurationValue(item)" v-if="index === editIndex" prepend-icon="save"/>
+                <a-btn size="small" variant="text" :large="vuetify.breakpoint.smAndDown" icon color="primary" @click="editIndex = null" v-if="index === editIndex && vuetify.breakpoint.smAndDown" prepend-icon="close"/>
+                <a-btn size="small" variant="text" color="primary" @click="editIndex = null" v-else-if="index === editIndex" text="CANCEL"/>              </template>
         </v-data-table>
       </v-col>
     </v-row>
@@ -53,7 +53,7 @@
 
 import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import {useUserStore} from "@/stores/UserStorePinia.js"
 import { useAppStore } from '@/stores/AppStorePinia.js'

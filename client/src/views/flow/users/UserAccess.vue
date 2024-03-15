@@ -13,14 +13,14 @@
           Access Control
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 @click="saveUserAccess"
                 color="primary"
                 v-if="userStore.userHasFeatureAccessLevel('USERS', 'EDIT')"
                 prepend-icon="save"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <AccessControl v-if="userAccessLoaded"
@@ -73,17 +73,17 @@
                 label="Grant User Access to All Calendars"
                 @change="userOrgCalendars = []"
             />
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="[addCalendar = !addCalendar]"
                 text="Cancel"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 color="primary"
                 @click="[addCalendar = !addCalendar, saveUserOrgCalendars()]"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
           </div>
         </v-card>
         <v-data-table
@@ -134,7 +134,7 @@ import {
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import SpinnerInline from '@/components/SpinnerInline'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";

@@ -10,23 +10,23 @@
           @click:clear="clearSearch"
           v-model="searchText"
       ></v-text-field>
-      <AlbatrossButton
+      <a-btn
           variant="text"
           size="small"
           color="primary"
           @click="changeSortDirection()"
           :prepend-icon="sortDirection === 'desc' ? 'mdi-arrow-up' : 'mdi-arrow-down'"
-      ></AlbatrossButton>
+      ></a-btn>
       <v-menu v-if="sectionType==='project'" v-model="filterMenuOpen" transition="scale-transition" offset-y left attach>
         <template v-slot:activator="{ on }">
-          <AlbatrossButton
+          <a-btn
               variant="text"
               size="small"
               color="primary"
               :activation-handler="on"
               :class="{'primary-lighten-9-bkgrd': filterAltered}"
               prepend-icon="mdi-filter"
-          ></AlbatrossButton>
+          ></a-btn>
         </template>
         <v-list dense class="">
           <v-list-item class="filterCheckbox" v-for="at in activityTypes">
@@ -79,21 +79,21 @@
                       <span v-else class="mr-2" :class="{'body-large': !open, 'label-large': open}">#{{ h.hashtag }}</span>
                       <span class="body-medium grey--text darken-2">{{countedCategoryLabel(h.activities, type.id) }}
                       <span v-if="!searchText || searchText === ''"> | last updated: {{ h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span></span>
-                      <AlbatrossButton
+                      <a-btn
                           v-if="open"
                           icon
                           color="primary"
                           @click.native.stop="changeSortDirectionForTopic(h)"
                           :prepend-icon="h.sortDirection === 'desc' ? 'mdi-arrow-up' : 'mdi-arrow-down'"
-                      ></AlbatrossButton>
-                      <AlbatrossButton
+                      ></a-btn>
+                      <a-btn
                           v-if="open && type.id !== 1 && h.hashtagId !== -1 && !(addActivity && selectedTopics.filter(t => t.id == h.hashtagId).length > 0) && null == editedActivity.id"
                           variant="text"
                           color="primary"
                           class="text-capitalize pa-2"
                           @click.native.stop="[addActivity = true, selectedTopics = [topics.find(t => t.id === h.hashtagId)] ];"
                           text="+ Add note"
-                      ></AlbatrossButton>
+                      ></a-btn>
                     </v-row>
                   </template>
                 </v-expansion-panel-header>
@@ -149,7 +149,7 @@
     </div>
     <div class="activity-footer">
       <v-divider class="my-3 activity-hr"></v-divider>
-      <AlbatrossButton
+      <a-btn
           variant="outlined"
           color="primary"
           class="one-hunned text-capitalize"
@@ -158,7 +158,7 @@
           @click="[addActivity = true, selectedTopics = [] ];"
           prepend-icon="mdi-plus"
           text="Add note"
-      ></AlbatrossButton>
+      ></a-btn>
       <div v-else>
         <!--        <v-textarea outlined v-model="editedActivity.note"></v-textarea>-->
         <Mentionable
@@ -211,21 +211,21 @@
             :label="getLinkLabel()"
         />
         <div class="d-flex" :class="{'mt-6': !$route.params.processStepId && !$route.params.ppsEventId && !editedActivity.linked}">
-          <AlbatrossButton
+          <a-btn
               variant="text"
               color="primary"
               class="text-capitalize"
               @click="[addActivity = false, editedActivity = {}]"
               text="cancel"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="primary"
               class="text-capitalize flex-grow-1"
               :loading="savingActivity"
               @click="saveActivity(null == editedActivity.id);"
               :disabled="!editedActivity.note"
               text="Save"
-          ></AlbatrossButton>
+          ></a-btn>
         </div>
       </div>
 
@@ -256,7 +256,7 @@ import {SearchTypeEnum} from "./ActivityListConstants";
 import SpinnerInline from "@/components/SpinnerInline.vue";
 import constants from "@/helpers/constants";
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

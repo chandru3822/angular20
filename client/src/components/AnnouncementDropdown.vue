@@ -16,7 +16,7 @@
             class="account-menu"
             :close-on-content-click="false">
       <template v-slot:activator="{ on }">
-        <AlbatrossButton
+        <a-btn
             class="account-menu-button label-medium"
             :class="{'announcement-adjust-for-badge': hasUnalertedAnnouncements}"
             :color="constants.ENV_COLOR"
@@ -25,7 +25,7 @@
             <v-icon>mdi-bell</v-icon>
             <v-badge dot class="alert-badge" v-if="hasUnalertedAnnouncements" color="error lighten-1" ></v-badge>
           </template>
-        </AlbatrossButton>
+        </a-btn>
       </template>
       <div>
         <v-list v-if="loadingAgain">
@@ -59,13 +59,13 @@
               <v-list-item-action v-if="item.expandable"
                                   class="announcement-action pr-4">
                 <v-list-item-action-text>
-                  <AlbatrossButton
+                  <a-btn
                       variant="text"
                       color="primary"
                       class="learn-more-btn text-transform-unset"
                       @click="[ item.read = true, openModal(item)]"
                       text="Learn More"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </v-list-item-action-text>
               </v-list-item-action>
             </v-list-item>
@@ -88,7 +88,7 @@ import {getRequestWithParams, } from '@/helpers/helpers'
 
 import AnnouncementModal from "@/components/AnnouncementModal.vue";
 import { useFileStore } from '@/stores/FileStore.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

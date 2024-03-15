@@ -16,13 +16,13 @@
         {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <AlbatrossButton
+          <a-btn
               variant="text"
               color="primary"
               v-if="tournamentOver"
               @click="showWinners = !showWinners"
               prepend-icon="mdi-party-popper"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-text-field
@@ -69,14 +69,14 @@
               <span v-else>{{item.score}}</span>
             </td>
             <td class="text-right">
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   size="small"
                   color="primary"
                   class="clickable"
                   @click="[showModal = true, showScoreUser = item]"
                   prepend-icon="mdi-format-list-bulleted"
-              ></AlbatrossButton>
+              ></a-btn>
             </td>
           </tr>
         </template>
@@ -97,13 +97,13 @@
           {{w.fullName}}
         </div>
       </v-card>
-      <AlbatrossButton
+      <a-btn
           size="x-small"
           fab
           @click="showWinners = !showWinners"
           class="show-score-button"
           prepend-icon="mdi-format-list-bulleted-square"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-card>
   </v-container>
 </template>
@@ -114,7 +114,7 @@ import {getRequest, logError, } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import moment from 'moment'
 import ScoreDrilldown from "./component/ScoreDrilldown"
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

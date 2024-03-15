@@ -34,7 +34,7 @@
               ></v-badge>
             </v-tab>
             <v-spacer></v-spacer>
-            <AlbatrossButton v-if="teamsAssociatedToUser.length > 0" color="primary"
+            <a-btn v-if="teamsAssociatedToUser.length > 0" color="primary"
                     class="justify-end new-message-button mt-3" @click="showNewMessageDialog = true"
                   prepend-icon="message-add-icon"
                   text="NEW MESSAGE"
@@ -236,7 +236,7 @@
       <NewMessageDialog :show-new-message-dialog.sync="showNewMessageDialog" :is-inbox="true" class="pa-0"/>
     </template>
     <template v-slot:collapse-button>
-      <AlbatrossButton class="d-inline-block align-self-center" size="small" variant="text" color="primary"
+      <a-btn class="d-inline-block align-self-center" size="small" variant="text" color="primary"
                        @click="router.push({path: `/inbox`})"
                        prepend-icon="close"
       />
@@ -259,7 +259,7 @@ import NewMessageDialog from "./NewMessageDialog";
 import debounce from 'lodash.debounce'
 import ProjectActivity from "@/views/flow/project/ProjectActivity.vue";
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
 import {useUserStore} from "@/stores/UserStorePinia.js";
 import { useNotificationStore } from '@/stores/NotificationStorePinia.js'

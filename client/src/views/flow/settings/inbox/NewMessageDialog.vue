@@ -113,7 +113,7 @@
                     rows="4"
                     v-model="message">
         </v-textarea>
-        <AlbatrossButton
+        <a-btn
           variant="text"
           icon
           color="primary"
@@ -127,7 +127,7 @@
             </template>
             <span class="albatross-body-3">Templates</span>
           </v-tooltip>
-        </AlbatrossButton>
+        </a-btn>
 
         <v-menu v-model="menuOpen" top left offset-y activator=".templateButton" :close-on-content-click="false">
           <v-card class="template-dialog" width="295px">
@@ -172,22 +172,22 @@
         <v-spacer/>
         <v-card-actions class="pb-0 px-0 pt-6">
           <v-spacer/>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0) || (message.length == 0 && uploadedFiles.length == 0)"
               @click="[assignAndSend = false, sendMessage()]"
               class="send-button"
               variant="text"
               text="Send and don't assign"
-          ></AlbatrossButton>
+          ></a-btn>
 
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="send-button"
               :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0) || (message.length == 0 && uploadedFiles.length == 0)"
               @click="[assignAndSend = true, sendMessage()]"
               text="Send"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card-actions>
       </div>
     </v-card>
@@ -198,7 +198,7 @@
 <script setup>
 import { AppMutations } from '@/stores/AppStore'
 import {getRequest, getRequestWithParams, putRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
 import {useUserStore} from "@/stores/UserStorePinia.js";
 import {useRouter, useRoute} from "vue-router/composables"

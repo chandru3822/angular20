@@ -9,14 +9,14 @@
       style="z-index: 10"
   >
     <template #activator="{on}">
-      <AlbatrossButton
+      <a-btn
           variant="text"
           color="primary"
           size="x-small"
           :activation-handler="on"
           class="commission-detail-button"
           prepend-icon="mdi-information"
-      ></AlbatrossButton>
+      ></a-btn>
     </template>
     <div>
       <v-card v-if="detailsLoading" class="square-card">
@@ -72,7 +72,7 @@
 
 import {getRequestWithParams, } from '@/helpers/helpers'
 import SpinnerInline from '@/components/SpinnerInline'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

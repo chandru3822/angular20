@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Organization Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               @click="[addType = !addType, newType = {}]"
@@ -39,14 +39,14 @@
             <input type="checkbox" class="ml-3" v-model="newOrgType.availableToChildren">
           </div>
 
-          <AlbatrossButton
+          <a-btn
             :disabled="!newOrgType.orgType || !newOrgType.orgLevelId"
             color="primary"
             class="white--text mr-2"
             @click="saveOrgType(newOrgType, true)"
             text="SAVE"
           />
-          <AlbatrossButton
+          <a-btn
             variant="text"
             color="primary"
             @click="[addType = !addType, newOrgType = {}]"
@@ -94,7 +94,7 @@
                 <label>Make available in children:</label>
                 <input type="checkbox" class="ml-3" v-model="item.availableToChildren">
               </div>
-              <AlbatrossButton
+              <a-btn
                 :disabled="!item.orgType || !item.orgLevelId"
                 color="primary"
                 class="white--text mr-2"
@@ -110,7 +110,7 @@
               <td class="text-left">{{ item.level || 'n/a' }}</td>
               <td class="text-left">{{ item.orgParentType || 'n/a' }}</td>
               <td>
-                <AlbatrossButton
+                <a-btn
                   size="small"
                   variant="text"
                   color="primary"
@@ -118,7 +118,7 @@
                   @click="expanded = [item]"
                   prepend-icon="edit"
                 />
-                <AlbatrossButton
+                <a-btn
                   size="small"
                   variant="text"
                   color="primary"
@@ -143,7 +143,7 @@
 
   import {getOrgTypes, getOrgLevels} from '@/services/orgService'
 
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import {computed, getCurrentInstance, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import { useAppStore } from '@/stores/AppStorePinia.js'

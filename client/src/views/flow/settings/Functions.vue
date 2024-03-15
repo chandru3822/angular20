@@ -13,8 +13,8 @@
                 {{f.companyFunctionName}}
               </v-list-item-content>
               <v-list-item-action class="clickable">
-                <AlbatrossButton :to="`/settings/function/${f.id}`" variant="text" prepend-icon="edit">
-                </AlbatrossButton>
+                <a-btn :to="`/settings/function/${f.id}`" variant="text" prepend-icon="edit">
+                </a-btn>
               </v-list-item-action>
             </v-list-item>
           </v-list>
@@ -27,7 +27,7 @@
 
 <script setup>
   import { handleHidingGlobalLoader, getRequest } from '@/helpers/helpers'
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 
   import {computed, getCurrentInstance, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'

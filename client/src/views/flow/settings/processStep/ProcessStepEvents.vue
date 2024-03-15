@@ -6,20 +6,20 @@
           <v-toolbar-title class="title-large">Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 @click="[addNewEvent = !addNewEvent, getAvailableEvents()]"
                 variant="text"
                 color="primary"
                 v-if="userCanAdd"
                 :prepend-icon="!addNewEvent ? 'add' : 'close'"
                 :text="$vuetify.breakpoint.smAndDown ? '' : addNewEvent ? 'Cancel' : 'Add Event'"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="expandEvents = !expandEvents"
                 :prepend-icon="!expandEvents ? 'mdi-chevron-down' : 'mdi-chevron-up'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-row v-if="addNewEvent">
@@ -38,12 +38,12 @@
                       item-value="id"
                       item-text="eventStatusType"
             ></v-select>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 :disabled="!newEvent.id || !newEvent.initialCompanyEventStatusTypeId"
                 @click="addEventToProcessStep"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-col>
         </v-row>
         <v-row v-if="expandEvents">
@@ -70,7 +70,7 @@
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
                   <td style="width: 50px">
-                    <AlbatrossButton
+                    <a-btn
                         variant="text"
                         color="primary"
                         v-if="userCanEdit"
@@ -78,13 +78,13 @@
                         size="small"
                         class="handle"
                         prepend-icon="drag_handle"
-                    ></AlbatrossButton>
+                    ></a-btn>
                   </td>
                   <td class="text-left">{{ item.eventName }}</td>
                   <td class="text-left">{{ item.initialEventStatusType }}</td>
                   <td>
                     <div class="d-flex justify-end" :class="{'flex-column' : $vuetify.breakpoint.smAndDown}">
-                      <AlbatrossButton
+                      <a-btn
                           size="small"
                           variant="text"
                           :to="`/settings/event/${item.eventId}/components`"
@@ -92,23 +92,23 @@
                           :html-html-style="{'text-decoration': 'none'}"
                           prepend-icon="mdi-cogs"
                           color="primary"
-                      ></AlbatrossButton>
-                      <AlbatrossButton
+                      ></a-btn>
+                      <a-btn
                           :disabled="!userCanEdit"
                           size="small"
                           variant="text"
                           color="primary"
                           @click="router.push({ path: `/settings/processStep/${processStepId}/event/${item.id}` })"
                           prepend-icon="edit"
-                      ></AlbatrossButton>
-                      <AlbatrossButton
+                      ></a-btn>
+                      <a-btn
                           :disabled="!userCanDelete"
                           size="small"
                           variant="text"
                           color="primary"
                           @click="[itemToDelete=item, showDeleteDialog=true]"
                           prepend-icon="delete"
-                      ></AlbatrossButton>
+                      ></a-btn>
                     </div>
                   </td>
                 </tr>
@@ -129,7 +129,7 @@
 
 <script setup>
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import orderBy from 'lodash.orderby'
 import {
   getRequest,

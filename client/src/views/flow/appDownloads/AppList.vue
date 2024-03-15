@@ -16,15 +16,15 @@
                         hide-details
                         label="Min Required Build Number"
         ></v-autocomplete>
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             size="x-small"
             @click="editMinVersion = !editMinVersion"
             class="d-inline-block"
             :prepend-icon="!editMinVersion ? 'edit' : 'close'"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             variant="text"
             color="primary"
             size="x-small"
@@ -32,31 +32,31 @@
             @click="saveMinVersion()"
             class="d-inline-block"
             prepend-icon="save"
-        ></AlbatrossButton>
+        ></a-btn>
       </div>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             @click="[addNew = !addNew, newApp = {}]"
             v-if="userCanAdd"
             prepend-icon="add"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             v-if="isIos"
             variant="text"
             color="primary"
             @click="showIos = !showIos"
             prepend-icon="mdi-chevron-down"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             v-else
             variant="text"
             color="primary"
             @click="showAndroid = !showAndroid"
             prepend-icon="mdi-chevron-down"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-card flat class="square-card mt-3 pa-4" v-if="addNew">
@@ -90,12 +90,12 @@
                     v-model.number="newApp.buildNumber">
       </v-text-field>
 
-      <AlbatrossButton
+      <a-btn
           color="primary"
           :disabled="!newApp.versionNumber || !newApp.buildNumber || (!newApp.attachment || !newApp.attachment.name) || (isIos && (!newApp.secondaryAttachment || !newApp.secondaryAttachment.name))"
           @click="saveNewApp"
           text="Save"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-card>
     <v-data-table v-if="(isIos && showIos) || (!isIos && showAndroid)"
                   :headers="filterHeaders"
@@ -117,22 +117,22 @@
       <template #item="{ item, index }">
         <tr :class="{'default-row': item.show, 'shaded-row': index % 2}">
           <td>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 small
                 v-if="isIos"
                 :href="`itms-services://?action=download-manifest&url=https://7oaks-albatross.s3.amazonaws.com/${item.s3Key}`"
                 prepend-icon="download"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 variant="text"
                 color="primary"
                 small
                 v-else
                 :href="item.presignedUrl"
                 prepend-icon="download"
-            ></AlbatrossButton>
+            ></a-btn>
           </td>
           <td class="text-left">
             {{item.buildNumber}}
@@ -147,21 +147,21 @@
             {{item.dateCreated | formatDate('timestamp')}}
           </td>
           <td class="px-0" v-if="userCanEdit">
-            <AlbatrossButton
+            <a-btn
                 v-if="userCanDelete"
                 variant="text"
                 color="primary"
                 @click="appToDelete = item"
                 prepend-icon="delete"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 v-if="userCanEdit"
                 size="small"
                 variant="text"
                 color="primary"
                 @click="appToShowHide = item"
                 :text="item.show ? 'hide' : 'show'"
-            ></AlbatrossButton>
+            ></a-btn>
           </td>
           <td class="text-left">
             <v-checkbox v-if="userCanEdit || userHasBeta"
@@ -195,7 +195,7 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

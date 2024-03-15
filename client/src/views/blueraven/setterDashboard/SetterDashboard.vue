@@ -5,12 +5,12 @@
         <v-app-bar id="date-range-btns-toolbar" class="elevation-1">
           <v-toolbar-items>
             <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
-              <AlbatrossButton  v-for="button in timeIntervalBtns"
+              <a-btn  v-for="button in timeIntervalBtns"
                   variant="text"
                   @click="setTimeInterval(button.timeInterval)"
                   color="unset"
                   :text="button.name"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-btn-toggle>
           </v-toolbar-items>
         </v-app-bar>
@@ -196,7 +196,7 @@ import constants from '@/helpers/constants'
 import { handleHidingGlobalLoader, getRequestWithParams,  } from '@/helpers/helpers'
 
 import SpinnerInline from '@/components/SpinnerInline'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

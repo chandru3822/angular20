@@ -6,7 +6,7 @@
           <v-toolbar-title class="title-large">{{ postalCode.postalCode }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text"
+            <a-btn variant="text"
                              @click="savePostalCode"
                              :disabled="!postalCode.placeName || !postalCode.stateId"
                              color="primary" v-if="userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')"
@@ -94,7 +94,7 @@ import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSna
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import constants from "@/helpers/constants";
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

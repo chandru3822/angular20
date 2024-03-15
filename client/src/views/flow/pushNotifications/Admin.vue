@@ -38,25 +38,25 @@
         </v-col>
       </v-row>
       <v-row>
-        <AlbatrossButton
+        <a-btn
             class="mr-4"
             type="submit"
             :disabled="!isValid"
             color="unset"
             text="submit"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             @click=""
             color="unset"
             text="clear"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-row>
     </v-container>
   </v-form>
 </template>
 <script setup>
 import { getRequest, postRequest } from '@/helpers/helpers'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

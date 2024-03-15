@@ -30,14 +30,14 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <AlbatrossButton
+          <a-btn
               color="primary"
               variant="text"
               dark
               class=""
               @click="deleteError = false"
               text="OK"
-          ></AlbatrossButton>
+          ></a-btn>
 
         </v-card-actions>
       </v-card>
@@ -48,14 +48,14 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Project Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="[addNew = !addNew, newType = {}]"
                 v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
                 prepend-icon="add"
                 :text="addNew ? 'Cancel' : 'Add New'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-9">
@@ -69,12 +69,12 @@
                           label="Select a Category"
                           item-text="projectStatusType"
                           attach></v-autocomplete>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               :disabled="!newType.projectStatusTypeId || !newType.projectStatusType"
               @click="saveNewType(newType)"
               text="Save"
-          ></AlbatrossButton>
+          ></a-btn>
 
         </v-card>
         <v-data-table
@@ -91,7 +91,7 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td style="width: 50px">
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     color="primary"
                     icon
@@ -99,7 +99,7 @@
                     class="handle"
                     v-if="userCanEdit"
                     prepend-icon="drag_handle"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
               <td class="text-left">
                 {{ item.projectStatusType }}
@@ -116,33 +116,33 @@
               <td class="text-right">
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
-                    <AlbatrossButton
+                    <a-btn
                         icon
                         color="primary"
                         @click="copyToClipBoard(item.id)"
                         v-bind="attrs"
                         :activation-handler="on"
                         prepend-icon="mdi-information"
-                    ></AlbatrossButton>
+                    ></a-btn>
                   </template>
                   <span>Project Status ID: {{ item.id }}</span>
                   <div class="text-center">(click to copy)</div>
                 </v-tooltip>
-                <AlbatrossButton
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     :to="`/settings/projectStatus/${item.id}/components`"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                     @click.native.stop="[itemToDelete=item, showDeleteDialog=true]"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
 
               </td>
 
@@ -164,7 +164,7 @@
 
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 
 import draggable from 'vuedraggable'
 import constants from '@/helpers/constants'

@@ -151,7 +151,7 @@
       </template>
       <template v-slot:header-btn>
         <div class="mt-3">
-          <AlbatrossButton
+          <a-btn
               variant="text"
               color="primary"
               v-if="userCanDelete"
@@ -159,7 +159,7 @@
               class="hide-xs"
               @click="deleteContactConfirm = true"
               prepend-icon="delete"
-          ></AlbatrossButton>
+          ></a-btn>
         </div>
       </template>
       <template v-slot:left-column>
@@ -184,7 +184,7 @@
                              :disabled="(null != contact.firstName || null != contact.lastName) && (null != contact.owner && null != contact.owner.userId)">
                     <template v-slot:activator="{ on: tooltip }">
                       <div v-on="{ ...tooltip }" class="d-inline-block">
-                        <AlbatrossButton
+                        <a-btn
                             :activation-handler="{ ...menu }"
                             variant="text"
                             small
@@ -194,7 +194,7 @@
                             class="px-0"
                             @click="getAvailableProcesses"
                             prepend-icon="add"
-                        ></AlbatrossButton>
+                        ></a-btn>
                       </div>
                     </template>
                     <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
@@ -213,7 +213,7 @@
                             return-object
                             class="mt-2 qa-process-selector"
                   ></v-select>
-                  <AlbatrossButton
+                  <a-btn
                       variant="text"
                       color="primary"
                       class="body-medium"
@@ -221,7 +221,7 @@
                       @click="convertToCustomer"
                       id="qa-add-project-button"
                       text="Add Project"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </v-card>
               </v-menu>
             </template>
@@ -285,7 +285,7 @@
                              :disabled="(null != contact.firstName || null != contact.lastName) && (null != contact.owner && null != contact.owner.userId)">
                     <template v-slot:activator="{ on: tooltip }">
                       <div v-on="{ ...tooltip }" class="d-inline-block mt-4">
-                        <AlbatrossButton
+                        <a-btn
                             :activation-handler="{ ...menu }"
                             variant="text"
                             x-small
@@ -294,7 +294,7 @@
                             id="qa-create-project-button"
                             @click="getAvailableProcesses"
                             prepend-icon="add"
-                        ></AlbatrossButton>
+                        ></a-btn>
                       </div>
                     </template>
                     <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
@@ -313,7 +313,7 @@
                             return-object
                             class="mt-2 qa-process-selector"
                   ></v-select>
-                  <AlbatrossButton
+                  <a-btn
                       variant="text"
                       color="primary"
                       class="body-medium"
@@ -321,7 +321,7 @@
                       @click="convertToCustomer"
                       id="qa-add-project-button"
                       text="Add Project"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </v-card>
               </v-menu>
             </v-toolbar-items>
@@ -345,15 +345,15 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   color="primary"
                   @click="setSplitColumnValue()"
                   class="px-0 hide-xs"
                   :prepend-icon="!projectStore.manualColumnSplit ? 'mdi-format-columns' : 'mdi-format-align-justify'"
-              ></AlbatrossButton>
+              ></a-btn>
               <div>
-                <AlbatrossButton
+                <a-btn
                     color="primary"
                     class="body-medium mt-3 hide-xs"
                     v-if="userCanEdit"
@@ -361,8 +361,8 @@
                     :disabled="fieldsSaving"
                     @click="validateFields(true)"
                     text="Save Fields"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     color="primary"
                     class="body-medium mt-3 show-xs"
                     v-if="userCanEdit"
@@ -370,7 +370,7 @@
                     :disabled="fieldsSaving"
                     @click="validateFields(true)"
                     text="Save"
-                ></AlbatrossButton>
+                ></a-btn>
               </div>
             </v-toolbar-items>
           </v-toolbar>
@@ -437,15 +437,15 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   color="primary"
                   @click="setSplitColumnValue()"
                   class="px-0 hide-xs"
                   :prepend-icon="!projectStore.manualColumnSplit ? 'mdi-format-columns' : 'mdi-format-align-justify'"
-              ></AlbatrossButton>
+              ></a-btn>
               <div>
-                <AlbatrossButton
+                <a-btn
                     color="primary"
                     class="body-medium mt-3 hide-xs"
                     v-if="userCanEdit"
@@ -453,8 +453,8 @@
                     :disabled="fieldsSaving"
                     @click="validateFields(true)"
                     text="Save Fields"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     color="primary"
                     class="body-medium mt-3 show-xs"
                     v-if="userCanEdit"
@@ -462,7 +462,7 @@
                     :disabled="fieldsSaving"
                     @click="validateFields(true)"
                     text="Save"
-                ></AlbatrossButton>
+                ></a-btn>
               </div>
             </v-toolbar-items>
           </v-toolbar>
@@ -565,7 +565,7 @@ import PageOverview from "../PageOverview";
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 import {saveContact} from "@/services/contactService";
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

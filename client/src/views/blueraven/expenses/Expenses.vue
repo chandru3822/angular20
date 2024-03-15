@@ -4,7 +4,7 @@
       <v-col cols="12">
         <v-app-bar dense tabs color="white" class="elevation-1 mb-1" id="expense-management-header">
           <v-toolbar-title>
-            <AlbatrossButton
+            <a-btn
                 fab
                 variant="text"
                 v-if="userIsAdmin || userCanManage"
@@ -13,7 +13,7 @@
                 class="mr-2"
                 @click="goToPath()"
                 :prepend-icon="manage ? 'mdi-view-list' : 'settings'"
-            ></AlbatrossButton>
+            ></a-btn>
             Expense Management
           </v-toolbar-title>
           <v-tabs :optional="false" color="primary"
@@ -33,7 +33,7 @@
 
 <script setup>
 import { mapStores } from 'pinia'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

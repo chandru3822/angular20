@@ -10,7 +10,7 @@
     >
       <template #activator="{on, attrs }">
         <!--        TODO: kill overflow so you can't scroll while this is open -->
-        <AlbatrossButton
+        <a-btn
             :activation-handler="on"
             v-bind="attrs"
             :dark="!disabled"
@@ -18,7 +18,7 @@
             color="primary"
             class="text-capitalize"
             text="Next Steps"
-        ></AlbatrossButton>
+        ></a-btn>
       </template>
 
       <v-card class="pa-2">
@@ -38,14 +38,14 @@
                 Proposal needs to be locked before sending documents. Further edits to the proposal will not be possible after
 .value              </span>
 
-              <AlbatrossButton
+              <a-btn
                   class="text-capitalize mt-1"
                   :color="requiredFields.length === 0 && !proposal.locked ? 'primary' : ''"
                   :disabled="requiredFields.length > 0 || proposal.locked || lockingProposal"
                   @click="[lockingProposal = true, lockProposal()]"
                   :prepend-icon="proposal.locked ? 'mdi-lock' : 'mdi-lock-open'"
                   :text="proposal.locked ? 'Proposal Locked' : 'Lock Proposal'"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-list-item-content>
           </v-list-item>
 
@@ -124,23 +124,23 @@
       </v-container>
 
       <template #actions="{ok, cancel}">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             @click="cancel(false)"
             class="text-capitalize"
             color="unset"
             text="Cancel"
-        ></AlbatrossButton>
+        ></a-btn>
         <v-spacer/>
 
-        <AlbatrossButton
+        <a-btn
             color="primary"
             @click="ok({ email: confirmEmail.emailAddress || proposal.email, updated: !confirmEmail.isCorrectEmail })"
             class="text-capitalize"
             :disabled="!isEmailValid"
             :dark="isEmailValid"
             text="Check Credit"
-        ></AlbatrossButton>
+        ></a-btn>
       </template>
     </confirm-dialog>
   </div>
@@ -149,7 +149,7 @@
 import StatefulBtn from '@/views/blueraven/proposals/StatefulBtn'
 import ConfirmDialog from '@/views/blueraven/proposals/ConfirmDialog'
 import {getRequest, logError, postRequest, putRequest} from '@/helpers/helpers'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

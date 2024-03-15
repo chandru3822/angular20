@@ -16,7 +16,7 @@
           <template v-slot:activator="{ on:dialogOn, attrs }">
 
             <v-fade-transition leave-absolute>
-              <AlbatrossButton icon :activation-handler="dialogOn">
+              <a-btn icon :activation-handler="dialogOn">
                 <template #default>
                   <v-tooltip
                     bottom
@@ -29,7 +29,7 @@
                     Available variables
                   </v-tooltip>
                 </template>
-              </AlbatrossButton>
+              </a-btn>
             </v-fade-transition>
           </template>
 
@@ -50,12 +50,12 @@
 
             <v-card-actions>
               <v-spacer/>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   variant="text"
                   @click="dialog = false"
                   text="Done"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -66,7 +66,7 @@
 <script setup>
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {mapState} from "vuex";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const props = defineProps({
   visibility: {

@@ -27,7 +27,7 @@
                       'hide-column-xs': projectStore.leftSideSplit}">
         <div class="mobile-padding-menu-button" :class="{'title-collapsed': projectStore.leftSideSplit,
                       'ml-2': !projectStore.leftSideSplit}">
-          <AlbatrossButton size="small" variant="text" prepend-icon="mdi-menu" @click="collapseSide('left')" />
+          <a-btn size="small" variant="text" prepend-icon="mdi-menu" @click="collapseSide('left')" />
         </div>
         <div v-if="!projectStore.leftSideSplit" class="left-panel-scrollable-area auto-overflow">
           <slot name="left-column"></slot>
@@ -61,7 +61,7 @@
 <script setup>
 import {getRequest, handleHidingGlobalLoader, logError} from '@/helpers/helpers'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import {computed, defineProps, getCurrentInstance, onMounted, ref} from 'vue'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 import {useRouter, useRoute} from 'vue-router/composables'

@@ -6,13 +6,13 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             v-if="!addChildSms && userCanAdd"
             @click="[addChildSms = true, loadChildTemplates()]"
             prepend-icon="add"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
@@ -38,22 +38,22 @@
                       attach
       ></v-autocomplete>
       <div class="mt-3">
-        <AlbatrossButton
+        <a-btn
             :disabled="!selectedTemplate.id"
             color="primary"
             @click="saveSmsToAction()"
             prepend-icon="save"
             text="Save"
-        ></AlbatrossButton>
+        ></a-btn>
 
-        <AlbatrossButton
+        <a-btn
             class="ml-3"
             @click="addChildSms = false"
             variant="text"
             color="primary"
             prepend-icon="remove"
             text="Cancel"
-        ></AlbatrossButton>
+        ></a-btn>
 
       </div>
     </v-card>
@@ -108,14 +108,14 @@
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <AlbatrossButton @click="cp.deleteConfirm = false" text="No"></AlbatrossButton>
+                  <a-btn @click="cp.deleteConfirm = false" text="No"></a-btn>
 
-                  <AlbatrossButton
+                  <a-btn
                       color="primary"
                       variant="text"
                       @click="[cp.archived = true, deleteSmsFromAction(cp.id)]"
                       text="Yes"
-                  ></AlbatrossButton>
+                  ></a-btn>
 
                 </v-card-actions>
               </v-card>
@@ -128,7 +128,7 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 
 import {
   handleHidingGlobalLoader,

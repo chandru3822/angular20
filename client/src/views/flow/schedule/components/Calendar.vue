@@ -227,14 +227,14 @@
           <div class="d-flex justify-space-between align-baseline">
             <a class="body-medium overflow-hidden resource-title">{{ resource.title }}</a>
             <div>
-              <AlbatrossButton icon size="x-small" @click="toggleMapPinForResource(resource)" class="mx-1">
+              <a-btn icon size="x-small" @click="toggleMapPinForResource(resource)" class="mx-1">
                 <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
                 <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
-              </AlbatrossButton>
-              <AlbatrossButton v-if="showScheduleBtnForResource(resource)" icon size="x-small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)">
+              </a-btn>
+              <a-btn v-if="showScheduleBtnForResource(resource)" icon size="x-small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)">
                 <v-icon>mdi-calendar-plus</v-icon>
-              </AlbatrossButton>
-              <AlbatrossButton icon size="x-small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></AlbatrossButton>
+              </a-btn>
+              <a-btn icon size="x-small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></a-btn>
             </div>
           </div>
         </template>
@@ -264,7 +264,7 @@ import {computed, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 
 const appStore = useAppStore()
 const route = useRoute()

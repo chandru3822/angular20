@@ -49,20 +49,20 @@
             <div v-if="newPosition.startDate >= newPosition.endDate" class="error-text mb-2">
               End date must be null or after the start date
             </div>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 class="mr-2"
                 @click="[newPosition = [], addNew = !addNew]"
                 text="Cancel"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 color="primary"
                 class="mr-2"
                 :disabled="!newPosition.positionId || (newPosition.positionId && newPosition.endDate && !newPosition.startDate ) || (newPosition.positionId && newPosition.endDate <= newPosition.startDate )"
                 @click="validate(newPosition)"
                 text="Add"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-form>
         </v-card>
 
@@ -89,14 +89,14 @@
 
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   color="primary"
                   size="x-small"
                   @click="addNew = !addNew"
                   v-if="userCanAdd"
                   prepend-icon="add"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </template>
 
@@ -159,14 +159,14 @@
               <div v-if="item.startDate >= item.endDate" class="error-text mb-2">
                 End date must be null or after the start date
               </div>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   class="mr-2"
                   :disabled="item.startDate >= item.endDate || validatePositionFields(item)"
                   v-if="userCanEdit"
                   @click="savePosition(item)"
                   text="Save"
-              ></AlbatrossButton>
+              ></a-btn>
             </td>
           </template>
 
@@ -183,30 +183,30 @@
                 <span v-else>{{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}</span>
               </td>
               <td width="150" class="d-flex">
-                <AlbatrossButton
+                <a-btn
                     class="align-self-center"
                     variant="text"
                     color="primary"
                     v-if="!expanded.includes(item) && userCanEdit"
                     @click="[handleExpand(item, true), item.primary = item.primaryFlag]"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     class="align-self-center"
                     variant="text"
                     color="primary"
                     v-if="expanded.includes(item)"
                     @click="handleExpand(item, false)"
                     text="cancel"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     v-if="userStore.userHasFeatureAccessLevel('USERS', 'DELETE')"
                     class="align-self-center"
                     variant="text"
                     color="primary"
                     @click="positionToDelete = item"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -228,7 +228,7 @@ import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

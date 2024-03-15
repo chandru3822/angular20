@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Message Templates</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               @click="[addTemplate = !addTemplate, newType = {}]"
@@ -46,13 +46,13 @@
               >{{ newTemplate.teamIds.length }} selected</span>
             </template>
           </v-autocomplete>
-          <AlbatrossButton
+          <a-btn
             variant="text"
             color="primary"
             @click="[addTemplate = !addTemplate, newTemplate = {}]"
             text="CANCEL"
           />
-          <AlbatrossButton
+          <a-btn
             :disabled="!newTemplate.title || !newTemplate.message"
             color="primary"
             class="white--text mr-2"
@@ -113,7 +113,7 @@
 
               </v-autocomplete>
 
-              <AlbatrossButton
+              <a-btn
                 color="primary"
                 class="white--text mr-2"
                 :disabled="!item.title || !item.message" @click="saveTemplate(item, false)"
@@ -127,7 +127,7 @@
               <td class="text-left">{{ item.title }}</td>
               <td class="">{{getTeamsForTemplate(item)}}</td>
               <td class="text-right flex-display align-center">
-                <AlbatrossButton
+                <a-btn
                   size="small"
                   variant="text"
                   color="primary"
@@ -135,14 +135,14 @@
                   @click="expanded = [item]; expandedItem = item;"
                   prepend-icon="edit"
                 />
-                <AlbatrossButton
+                <a-btn
                   size="small"
                   variant="text"
                   color="primary"
                   v-if="!expanded.includes(item) && userCanEdit" @click="templateToDelete=item"
                   prepend-icon="delete"
                 />
-                <AlbatrossButton
+                <a-btn
                   size="small"
                   variant="text"
                   color="primary"
@@ -170,7 +170,7 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
-import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+
 
 import {computed, getCurrentInstance, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'

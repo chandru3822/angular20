@@ -12,6 +12,7 @@ import VueGtag from 'vue-gtag'
 import AlbatrossTextField from '@/components/customVuetify/AlbatrossTextField.vue'
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 
+
 import '@/styles/main.scss'
 import { requestInterceptor, responseInterceptor  } from '@/helpers/interceptors'
 import { useUserStore } from '@/stores/UserStorePinia.js'

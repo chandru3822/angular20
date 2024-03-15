@@ -14,14 +14,14 @@
         >
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   @click="addItem"
                   color="primary"
                   v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'ADD')"
                   prepend-icon="add"
                   text="Add New"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </template>
 
@@ -97,15 +97,15 @@
                 {{ item.status || '' }}
               </td>
               <td class="text-right">
-                <AlbatrossButton
+                <a-btn
                     :to="`/database/incentive/${item.id}/details`"
                     variant="text"
                     size="x-small"
                     fab
                     color="unset"
                     prepend-icon="mdi-arrow-right"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'EDIT')"
                     size="small"
                     icon
@@ -113,8 +113,8 @@
                     class="mr-3 feat-db-link-icon"
                     @click="editIncentive(item)"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     v-if="userStore.userHasFeatureAccessLevel('INCENTIVE', 'DELETE')"
                     size="small"
                     color="primary"
@@ -122,7 +122,7 @@
                     class="mr-3 feat-db-link-icon"
                     @click="deleteIncentive(item)"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -182,19 +182,19 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               variant="text"
               @click="close"
               text="Cancel"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="primary"
               raised
               @click="newIncentiveDuplicateCheck"
               :disabled="!editedItem.name?.trim() || !editedItem.companyStateId"
               :text="btnTxt"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -230,7 +230,7 @@
 import constants from "@/helpers/constants";
 import cloneDeep from "lodash.clonedeep";
 import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {deleteRequest, getRequest,  handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";

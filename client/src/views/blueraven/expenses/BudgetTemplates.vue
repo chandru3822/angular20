@@ -6,14 +6,14 @@
           <v-toolbar-title class="app-title">Budget Templates</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="[createNew = !createNew, newTemplate = {}, expanded = [], getAvailableUsers()]"
                 :prepend-icon="!createNew ? 'add' : 'close'"
                 hide-text-on-mobile
                 :text="createNew ? 'cancel' : 'Add Template'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -31,12 +31,12 @@
                         label="Amount"
                         v-model.number="newTemplate.amount">
           </v-text-field>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               :disabled="!newTemplate.userId || !newTemplate.amount"
               @click="saveTemplate(newTemplate, true)"
               text="Save"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card>
         <v-divider v-if="createNew" ></v-divider>
         <v-data-table
@@ -73,13 +73,13 @@
                               prepend-icon="mdi-currency-usd"
                               v-model.number="item.amount">
                 </v-text-field>
-                <AlbatrossButton
+                <a-btn
                     :disabled="false"
                     color="primary"
                     class="mr-2"
                     @click="saveTemplate(item, false)"
                     text="Save"
-                ></AlbatrossButton>
+                ></a-btn>
               </v-card>
             </td>
           </template>
@@ -92,38 +92,38 @@
                 <div v-if="item.currentMonthBudgetId">
                   Already Exists
                 </div>
-                <AlbatrossButton
+                <a-btn
                     v-else
                     color="primary"
                     @click="generateCurrentMonthBudget(item)"
                     text="Generate"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <AlbatrossButton
+                  <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       v-if="!expanded.includes(item)"
                       @click="[createNew = false, expanded = [item]]"
                       prepend-icon="edit"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       v-if="expanded.includes(item)"
                       @click="expanded = []"
                       text="cancel"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       @click="[deleteConfirm=true, itemToDelete = item]"
                       prepend-icon="delete"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </div>
               </td>
             </tr>
@@ -148,7 +148,7 @@ import moment from 'moment'
 import constants from "@/helpers/constants"
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'

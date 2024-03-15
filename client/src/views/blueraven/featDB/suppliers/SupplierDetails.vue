@@ -19,14 +19,14 @@
           <v-card class="mx-2 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
               <v-col class="form-btns" cols="12">
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     color="primary"
                     class="text-capitalize"
                     @click="toggleMinimizeAll"
                     :text="expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     v-if="dataWasChanged"
                     @click="resetForm"
                     variant="text"
@@ -34,15 +34,15 @@
                     class="cancel-link"
                     html-style="margin-right: 10px"
                     text="Cancel"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     id="save-btn"
                     v-if="userCanEdit"
                     color="primary"
                     class="mr-0"
                     @click="validateForm()"
                     text="Save"
-                ></AlbatrossButton>
+                ></a-btn>
               </v-col>
             </v-row>
             <v-form ref="supplierForm">
@@ -110,7 +110,7 @@ import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const appStore = useAppStore()
 const route = useRoute()

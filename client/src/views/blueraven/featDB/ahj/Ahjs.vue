@@ -14,14 +14,14 @@
         >
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   @click="addItem"
                   color="primary"
                   v-if="userStore.userHasFeatureAccessLevel('AHJ', 'ADD')"
                   prepend-icon="add"
                   text="Add New"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </template>
 
@@ -122,19 +122,19 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   variant="text"
                   @click="close"
                   text="Cancel"
-              ></AlbatrossButton>
-              <AlbatrossButton
+              ></a-btn>
+              <a-btn
                   color="primary"
                   raised
                   @click="saveAhj"
                   :disabled="!editedItem.name || !editedItem.metroAreaId || !editedItem.companyStateId"
                   :text="ahjBtnTxt"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -152,7 +152,7 @@ import cloneDeep from 'lodash.clonedeep'
 import { handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest,  } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getActiveStates} from '@/services/stateService'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {FEAT_DB_TABS, FILTER_DEFAULTS} from "@/views/blueraven/featDB/FeatDbConstants";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'

@@ -31,9 +31,9 @@
                 <label>Has Access:</label>
                 <input class="ml-3" type="checkbox" v-model="item.hasAccess">
               </div>
-              <AlbatrossButton class="mr-2" text="Save"
+              <a-btn class="mr-2" text="Save"
                      @click="saveCompanyUserStatusType(item)">
-              </AlbatrossButton>
+              </a-btn>
             </td>
           </template>
 
@@ -44,10 +44,10 @@
                 <input type="checkbox" v-model="item.hasAccess" disabled readonly>
               </td>
               <td class="text-right">
-                <AlbatrossButton variant="text" size="small" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                <a-btn variant="text" size="small" v-if="!expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
-                </AlbatrossButton>
-                <AlbatrossButton size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></AlbatrossButton>
+                </a-btn>
+                <a-btn size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></a-btn>
               </td>
             </tr>
           </template>
@@ -63,7 +63,7 @@
 import {handleHidingGlobalLoader, putRequest} from '@/helpers/helpers'
 import {getUserStatusTypes} from '@/services/userService'
 import {getCurrentInstance, onMounted, ref} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()

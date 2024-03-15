@@ -6,13 +6,13 @@
         <v-toolbar-title class="app-title">Smartlists</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <AlbatrossButton
+          <a-btn
               variant="text"
               to="/smartlistv1/null"
               color="primary"
               v-if="userCanAdd"
               text="Add Smartlist"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-tabs class="elevation-1">
@@ -42,7 +42,7 @@
 <script setup>
 import { getCurrentInstance } from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

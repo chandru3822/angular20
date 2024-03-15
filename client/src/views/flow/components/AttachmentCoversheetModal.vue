@@ -8,13 +8,13 @@
               <v-toolbar-title class="title-large">Document Summary</v-toolbar-title>
               <v-spacer/>
               <v-toolbar-items v-if="isMobile">
-                <AlbatrossButton
+                <a-btn
                     size="x-small"
                     variant="text"
                     color="primary"
                     @click="closeModal()"
                     prepend-icon="close"
-                ></AlbatrossButton>
+                ></a-btn>
               </v-toolbar-items>
             </v-toolbar>
             <div v-if="saveError" class="error-text mt-3">
@@ -97,24 +97,24 @@
                     <template v-slot:yes>Yes</template>
                     <template v-slot:no>No</template>
                   </ConfirmationDialog>
-                  <AlbatrossButton
+                  <a-btn
                       variant="text"
                       v-if="isExisting"
                       color="primary"
                       size="small"
                       @click="closeModal()"
                       text="Cancel"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       variant="text"
                       v-else
                       color="primary"
                       size="small"
                       @click="confirmClose = true"
                       text="Cancel"
-                  ></AlbatrossButton>
+                  ></a-btn>
                   <div>
-                    <AlbatrossButton
+                    <a-btn
                         size="small"
                         :loading="fieldsSaving"
                         :disabled="customFieldsLoading"
@@ -122,7 +122,7 @@
                         color="primary"
                         @click="saveAndUpload()"
                         :text="isExisting ? 'Save Changes' : 'Save and Upload'"
-                    ></AlbatrossButton>
+                    ></a-btn>
                   </div>
                 </v-toolbar-items>
               </v-toolbar>
@@ -133,21 +133,21 @@
               <v-toolbar-title class="title-large">{{ fileDetails.displayName }}</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <AlbatrossButton
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     v-if="isExisting"
                     :href="existingAttachment.presignedUrl"
                     prepend-icon="mdi-tray-arrow-down"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="x-small"
                     variant="text"
                     color="primary"
                     @click="closeModal()"
                     prepend-icon="close"
-                ></AlbatrossButton>
+                ></a-btn>
               </v-toolbar-items>
             </v-toolbar>
             <div class="mt-3 preview-main-container">
@@ -160,20 +160,20 @@
 
                 </div>
                 <v-toolbar v-if="!isMobile" dense class="page-selection-bar" flat color="transparent">
-                  <AlbatrossButton
+                  <a-btn
                       variant="text"
                       @click="zoomImage(false)"
                       color="unset"
                       prepend-icon="mdi-magnify-minus-outline"
-                  ></AlbatrossButton>
+                  ></a-btn>
                   <v-spacer></v-spacer>
 
-                  <AlbatrossButton
+                  <a-btn
                       variant="text"
                       @click="zoomImage(true)"
                       color="unset"
                       prepend-icon="mdi-magnify-plus-outline"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </v-toolbar>
               </div>
               <div v-else-if="isPdf" class="one-hunned height-one-hunned overflow-auto">
@@ -200,40 +200,40 @@
             </div>
             <div v-if="isPdf && !pdfIsLoading">
               <v-toolbar dense class="page-selection-bar" flat color="transparent">
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     @click="zoomPdf(false)"
                     color="unset"
                     prepend-icon="mdi-magnify-minus-outline"
-                ></AlbatrossButton>
+                ></a-btn>
                 <v-spacer></v-spacer>
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     :disabled="pdfPage <= 1"
                     @click="pdfPage--"
                     class="mr-3"
                     color="unset"
                     prepend-icon="mdi-chevron-left"
-                ></AlbatrossButton>
+                ></a-btn>
 
                 Page {{ pdfPage }} / {{ pdfPageCount }}
 
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     @click="pdfPage++"
                     :disabled="pdfPage >= pdfPageCount"
                     class="ml-3"
                     color="unset"
                     prepend-icon="mdi-chevron-right"
-                ></AlbatrossButton>
+                ></a-btn>
 
                 <v-spacer></v-spacer>
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     @click="zoomPdf(true)"
                     color="unset"
                     prepend-icon="mdi-magnify-plus-outline"
-                ></AlbatrossButton>
+                ></a-btn>
               </v-toolbar>
             </div>
           </v-col>
@@ -271,7 +271,7 @@ import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const appStore = useAppStore()
 const route = useRoute()

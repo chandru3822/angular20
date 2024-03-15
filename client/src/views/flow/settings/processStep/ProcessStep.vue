@@ -2,14 +2,14 @@
   <v-container class="custom-field-group-container" v-if="processStep && processStep.id">
     <v-row>
       <v-col cols="12">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             class="pl-1 pr-2"
             :to="'/settings/processSteps'"
             prepend-icon="arrow_left"
             text="Back"
-        ></AlbatrossButton>
+        ></a-btn>
 
         <div class="flex-display pt-3 px-3 mb-4" style="width: 100%">
           <div style="width: 100%">
@@ -22,32 +22,32 @@
 
           </div>
           <div class="text-right" v-if="userCanEdit">
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="!editName"
                 class=""
                 @click="[oldName = processStep.processStepName, editName = !editName]"
                 prepend-icon="edit"
-            ></AlbatrossButton>
+            ></a-btn>
 
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 class=""
                 v-else
                 @click="saveProcessStep($event,true)"
                 prepend-icon="save"
-            ></AlbatrossButton>
+            ></a-btn>
 
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="editName"
                 class=""
                 @click="[processStep.processStepName = oldName, editName = !editName]"
                 text="cancel"
-            ></AlbatrossButton>
+            ></a-btn>
 
           </div>
         </div>
@@ -71,7 +71,7 @@
 
 <script setup>
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'

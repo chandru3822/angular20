@@ -53,7 +53,7 @@
                 :max-width="375"
             >
               <template #activator="{ on, attrs }">
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     :activation-handler="on"
                     v-bind="attrs"
@@ -61,7 +61,7 @@
                     @click="loadProposalVersions()"
                     color="unset"
                     :text="`v.${proposal.version}`"
-                ></AlbatrossButton>
+                ></a-btn>
               </template>
               <v-card flat color="white" class="pa-4" :elevation="0">
                 <v-autocomplete
@@ -74,13 +74,13 @@
                     label="Select a version..."
                     v-model="proposal.proposalVersionId"
                 />
-                <AlbatrossButton
+                <a-btn
                     color="primary"
                     class="mt-3"
                     :disabled="(!userIsAdmin && !userCanManage) || !proposal.proposalVersionId"
                     @click="updateProposalVersion()"
                     text="Save"
-                ></AlbatrossButton>
+                ></a-btn>
               </v-card>
             </v-menu>
             <next-step-menu
@@ -137,7 +137,7 @@
                 class="configuration-save-container"
                 v-if="canEdit && !proposal.locked"
             >
-              <AlbatrossButton
+              <a-btn
                   depressed
                   variant="text"
                   color="primary"
@@ -145,9 +145,9 @@
                   class="text-capitalize"
                   @click="resetToDefault"
                   text="Reset to Default"
-              ></AlbatrossButton>
+              ></a-btn>
               <v-spacer />
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   depressed
                   :dark="dirtyCfvs.length !== 0"
@@ -155,7 +155,7 @@
                   @click="validateForm()"
                   class="text-capitalize font-weight-bold"
                   text="Save"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </v-card>
         </v-col>
@@ -186,29 +186,29 @@
                   Proposal <span>#{{ proposal.proposalNbr }}</span>
                 </div>
                 <v-spacer />
-                <AlbatrossButton
+                <a-btn
                     v-if="canEdit && !proposal.locked"
                     color="grey lighten-4"
                     class="proposal-container-buttons text-capitalize primary--text"
                     @click="deleteProposal"
                     text="Delete"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     v-if="canEdit && pages && pages.length"
                     color="grey lighten-4"
                     class="proposal-container-buttons text-capitalize primary--text"
                     :disabled="dirtyCfvs.length > 0"
                     @click="duplicate"
                     text="Duplicate"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     v-if="pages && pages.length"
                     color="grey lighten-4"
                     :disabled="dirtyCfvs.length > 0"
                     class="proposal-container-buttons text-capitalize primary--text"
                     @click="downloadPdf"
                     text="Download"
-                ></AlbatrossButton>
+                ></a-btn>
               </div>
             </div>
             <div class="proposal-zoom-lock" v-if="pages && pages.length > 0">
@@ -245,11 +245,11 @@
               custom
               v-slot="{ href, route, navigate, isActive, isExactActive }"
           >
-            <AlbatrossButton
+            <a-btn
                 @click="navigate"
                 color="unset"
                 text="Back to project"
-            ></AlbatrossButton>
+            ></a-btn>
           </router-link>
         </v-col>
       </v-row>
@@ -279,7 +279,7 @@ import { mapState } from 'vuex'
 import Vue2Filters from 'vue2-filters'
 import CommissionDetailsMenu from "@/views/blueraven/proposals/CommissionDetailsMenu.vue";
 import ResidualDetailModal from "@/views/blueraven/commissionManagement/ResidualDetailModal.vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {getCurrentInstance, toRefs, computed, ref, onMounted, watch, onBeforeUnmount, provide} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";

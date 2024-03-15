@@ -14,11 +14,11 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <!--mobile save button-->
-            <AlbatrossButton v-if="isMobile" variant="text" icon large color="primary" @click="validate" prepend-icon="mdi-content-save"/>
+            <a-btn v-if="isMobile" variant="text" icon large color="primary" @click="validate" prepend-icon="mdi-content-save"/>
             <!--normal save button-->
-            <AlbatrossButton v-else variant="text" color="primary" @click="validate" prepend-icon="mdi-content-save" text="SAVE CHANGES"/>
+            <a-btn v-else variant="text" color="primary" @click="validate" prepend-icon="mdi-content-save" text="SAVE CHANGES"/>
             <!--mobile admin button-->
-            <AlbatrossButton
+            <a-btn
               v-if="isMobile && userIsAdmin"
               variant="text"
               icon
@@ -29,15 +29,15 @@
               prepend-icon="mdi-cogs"
             />
             <!--normal admin button-->
-            <AlbatrossButton variant="text" color="primary" v-else-if="userIsAdmin" :to="`/settings/userProfileAdmin`" prepend-icon="mdi-cogs" text="ADMIN"/>
+            <a-btn variant="text" color="primary" v-else-if="userIsAdmin" :to="`/settings/userProfileAdmin`" prepend-icon="mdi-cogs" text="ADMIN"/>
           </v-toolbar-items>
         </v-toolbar>
       </v-col>
     </v-row>
     <v-row>
       <v-col>
-        <AlbatrossButton v-if="!notificationsEnabled" @click="getNotificationToken" text="GET NOTIFIED"/>
-        <AlbatrossButton v-else @click="removeNotificationToken" text="REMOVE NOTIFICATIONS"/>
+        <a-btn v-if="!notificationsEnabled" @click="getNotificationToken" text="GET NOTIFIED"/>
+        <a-btn v-else @click="removeNotificationToken" text="REMOVE NOTIFICATIONS"/>
       </v-col>
     </v-row>
     <v-form ref="userForm">
@@ -161,10 +161,10 @@
         <v-toolbar color="white" flat>
           <v-toolbar-title class="title-large">Profile Image</v-toolbar-title>
           <v-spacer></v-spacer>
-          <AlbatrossButton variant="text" v-if="!savingUserImage && !profileImage.presignedUrl"  @click="addImage = !addImage"
+          <a-btn variant="text" v-if="!savingUserImage && !profileImage.presignedUrl"  @click="addImage = !addImage"
             :prepend-icon="addImage ? 'remove' : 'add'"
           />
-          <AlbatrossButton v-else variant="text" icon :large="isMobile" color="primary" class="mr-2" @click="deleteAttachment(profileImage.id)" prepend-icon="delete"/>
+          <a-btn v-else variant="text" icon :large="isMobile" color="primary" class="mr-2" @click="deleteAttachment(profileImage.id)" prepend-icon="delete"/>
         </v-toolbar>
         <div class="text-center">
           <div class="mt-4" v-if="addImage">
@@ -218,7 +218,7 @@ import { useFirebase } from '@/firebase/firebase.js'
 
 import { onBeforeRouteLeave } from 'vue-router/composables'
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
-import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
 import {useRouter} from "vue-router/composables"

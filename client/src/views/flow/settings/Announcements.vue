@@ -6,14 +6,14 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Announcements</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="goToPath()"
                 v-if="userCanAdd"
                 prepend-icon="add"
                 :text="addNew ? 'Cancel' : 'Add New'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-tabs class="tabs-bar" id="default-settings-tabs">
@@ -45,21 +45,21 @@
                 <span v-else-if="item.showOnMobile">Mobile</span>
               </td>
               <td>
-                <AlbatrossButton
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="goToPath(item.id)"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     v-if="current && userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                     @click.native.stop="[itemToDelete=item, showDeleteDialog=true]"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -79,7 +79,7 @@
 
 <script setup>
 import constants from '@/helpers/constants'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import {deleteRequest, getRequestWithParams, handleHidingGlobalLoader} from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCurrentInstance, ref, computed, onMounted, watch} from "vue";

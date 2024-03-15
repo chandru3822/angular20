@@ -49,17 +49,17 @@
         </table>
       </v-col>
       <v-col cols="6" class="text-right">
-        <AlbatrossButton
+        <a-btn
             color="primary"
             @click="exportResidualReview"
             text="Export"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             color="primary"
             @click="exportResidualReviewForNetSuite"
             class="ml-3"
             text="Export Netsuite"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-col>
     </v-row>
     <v-divider></v-divider>
@@ -141,7 +141,7 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { saveAs } from 'file-saver'
 import constants from "@/helpers/constants";
 import moment from 'moment'

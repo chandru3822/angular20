@@ -66,7 +66,7 @@
                 v-model="openFirstMenu"
                 :close-on-content-click="true">
           <template v-slot:activator="{ on }">
-            <AlbatrossButton class="dropdown-header body-small"
+            <a-btn class="dropdown-header body-small"
                    :activation-handler="on">
               <template v-slot:default>
                 <span v-if="getDropdownById(firstDateRange)?.name === 'CUSTOM' && firstCustom.name != null" class="selected-option body-small">
@@ -80,7 +80,7 @@
                 <v-spacer></v-spacer>
                 <v-icon color="primary">mdi-menu-down</v-icon>
               </template>
-            </AlbatrossButton>
+            </a-btn>
           </template>
           <div>
             <v-list style="height: 400px; overflow-y:auto">
@@ -120,7 +120,7 @@
                 v-model="openSecondMenu"
                 :close-on-content-click="true">
           <template v-slot:activator="{ on }">
-            <AlbatrossButton class="dropdown-header body-small"
+            <a-btn class="dropdown-header body-small"
                    :activation-handler="on"
             >
               <span v-if="getDropdownById(secondDateRange)?.name === 'CUSTOM' && secondCustom.name != null" class="selected-option body-small">
@@ -136,7 +136,7 @@
               </span>
               <v-spacer></v-spacer>
               <v-icon color="primary">mdi-menu-down</v-icon>
-            </AlbatrossButton>
+            </a-btn>
           </template>
           <div>
             <v-list style="height: 400px; overflow-y:auto">
@@ -175,7 +175,7 @@
                 v-model="openThirdMenu"
                 :close-on-content-click="true">
           <template v-slot:activator="{ on }">
-            <AlbatrossButton class="dropdown-header body-small"
+            <a-btn class="dropdown-header body-small"
                    :activation-handler="on"
             >
               <span v-if="getDropdownById(thirdDateRange)?.name === 'CUSTOM' && thirdCustom.name != null" class="selected-option body-small">
@@ -191,7 +191,7 @@
               </span>
               <v-spacer></v-spacer>
               <v-icon color="primary">mdi-menu-down</v-icon>
-            </AlbatrossButton>
+            </a-btn>
           </template>
           <div>
             <v-list style="height: 400px; overflow-y:auto">
@@ -318,7 +318,7 @@
 
 <script setup>
 import constants from '@/helpers/constants'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import moment from 'moment'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import CompanyDashboardDrilldown from './CompanyDashboardDrilldown.vue'

@@ -6,10 +6,10 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Org Filters</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text" :hide-text-on-mobile="true" :prepend-icon="addNew ? 'close' : 'add'"
+            <a-btn variant="text" :hide-text-on-mobile="true" :prepend-icon="addNew ? 'close' : 'add'"
                              :text="addNew ? 'Cancel' : 'Add New'"
                              @click="[addNew = !addNew, newOrgFilter = {}]">
-            </AlbatrossButton>
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
@@ -32,12 +32,12 @@
             <label>Show Type:</label>
             <input type="checkbox" class="ml-3" v-model="newOrgFilter.showType">
           </div>
-          <AlbatrossButton variant="text" text="Cancel" @click="[addNew = !addNew, newOrgFilter = {}]"></AlbatrossButton>
-          <AlbatrossButton :disabled="!newOrgFilter.orgLevelId || !newOrgFilter.rank"
+          <a-btn variant="text" text="Cancel" @click="[addNew = !addNew, newOrgFilter = {}]"></a-btn>
+          <a-btn :disabled="!newOrgFilter.orgLevelId || !newOrgFilter.rank"
                  text="Save" class="mr-2"
                  @click="saveOrgFilter(newOrgFilter, true)">
             Save
-          </AlbatrossButton>
+          </a-btn>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -79,10 +79,10 @@
                 <label>Show Type:</label>
                 <input type="checkbox"  class="ml-3" v-model="item.showType">
               </div>
-              <AlbatrossButton :disabled="!item.orgLevelId || !item.rank"
+              <a-btn :disabled="!item.orgLevelId || !item.rank"
                      text="Save" class="mr-2"
                      @click="saveOrgFilter(item, false)">
-              </AlbatrossButton>
+              </a-btn>
             </td>
           </template>
 
@@ -94,10 +94,10 @@
                 <input type="checkbox" v-model="item.showType" disabled readonly>
               </td>
               <td class="text-right">
-                <AlbatrossButton variant="text" size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
-                </AlbatrossButton>
-                <AlbatrossButton size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></AlbatrossButton>
-                <AlbatrossButton variant="text" size="small" prepend-icon="delete" @click="filterToDelete=item" />
+                <a-btn variant="text" size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                </a-btn>
+                <a-btn size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></a-btn>
+                <a-btn variant="text" size="small" prepend-icon="delete" @click="filterToDelete=item" />
               </td>
             </tr>
           </template>
@@ -121,7 +121,7 @@ import {handleHidingGlobalLoader, deleteRequest, putRequest} from '@/helpers/hel
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
-import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
+import a-btn from '@/components/customVuetify/a-btn'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import {useRouter} from "vue-router/composables"

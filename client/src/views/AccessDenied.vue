@@ -11,7 +11,7 @@
               You do not have access to this page. Please contact an administrator if you feel you have reached this page in error.
             </v-card-text>
             <v-card-actions class="justify-center">
-              <AlbatrossButton to="/" text="Go to Home"></AlbatrossButton>
+              <a-btn to="/" text="Go to Home"></a-btn>
             </v-card-actions>
           </v-card>
         </v-col>
@@ -21,5 +21,5 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 </script>

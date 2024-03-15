@@ -6,20 +6,20 @@
           <v-toolbar-title class="app-title">Tournaments</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 :text="showPreviousYears ? 'HIDE PREVIOUS YEARS' : 'SHOW PREVIOUS YEARS'"
                 @click="showPreviousYears = !showPreviousYears">
-            </AlbatrossButton>
+            </a-btn>
 
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="userCanAdd"
                 text="ADD NEW"
                 @click="[addNew = !addNew, newTournament = { tournamentFormulaFields: [] }]">
-            </AlbatrossButton>
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -70,21 +70,21 @@
               :format="'MMMM DD, YYYY'"
               label="End Date"
             />
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 :disabled="!newTournament.tournamentName || !newTournament.startDate || !newTournament.endDate
                    || (newTournament.startDate >= newTournament.endDate) || !newTournament.tournamentOwnerTypeId || !newTournament.tournamentFormulaId
                    || validateCustomFields()"
                 text="Save"
                 @click="addTournament">
-            </AlbatrossButton>
-            <AlbatrossButton
+            </a-btn>
+            <a-btn
                 variant="text"
                 color="primary"
                 text="Cancel"
                 class="ml-2"
                 @click="[newTournament = { tournamentFormulaFields: [] }, addNew = false]">
-            </AlbatrossButton>
+            </a-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -103,22 +103,22 @@
                 <input type="checkbox" v-model="item.active" readonly disabled>
               </template>
               <template #item.icons="{item}" class="text-right">
-                <AlbatrossButton
+                <a-btn
                     :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
                     icon
                     color="primary"
                     prepend-icon="edit"
                     @click="goToTournament(item.id)">
-                </AlbatrossButton>
+                </a-btn>
 
-                <AlbatrossButton
+                <a-btn
                     v-if="userCanDelete"
                     size="small"
                     variant="text"
                     color="primary"
                     prepend-icon="delete"
                     @click="tournamentToDelete=item">
-                </AlbatrossButton>
+                </a-btn>
               </template>
 
             </v-data-table>
@@ -136,7 +136,7 @@
 <script setup>
 
   import moment from 'moment'
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
   import orderBy from 'lodash.orderby'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'

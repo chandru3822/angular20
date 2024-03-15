@@ -19,12 +19,12 @@
         </v-col>
         <v-col cols="12" sm="4" class="middle-header-bar">
           <div  v-if="showMiddleHeader">
-            <AlbatrossButton
+            <a-btn
                 @click="paymentDropdown = true"
                 color="primary"
                 class="ml-3"
                 text="Mark as Paid"
-            ></AlbatrossButton>
+            ></a-btn>
             <ConfirmationDialog :open-dialog="paymentDropdown" @confirm="confirmPayment"
                                 @close-dialog="paymentDropdown=false">
               <template v-slot:title>Confirm</template>
@@ -85,34 +85,34 @@
                         item-value="id"
               ></v-select>
             </div>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 class="mt-2"
                 small
                 @click="getSubmittedExpenses"
                 text="Show All in Range"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 color="primary"
                 class="mt-2"
                 small
                 @click="exportExpenses(false)"
                 text="Export All in Range"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 color="primary"
                 class="mt-2"
                 small
                 @click="getAllUnpaid"
                 text="Show All Unpaid"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 color="primary"
                 class="mt-2"
                 small
                 @click="exportExpenses(true)"
                 text="Export All Unpaid"
-            ></AlbatrossButton>
+            ></a-btn>
           </div>
         </v-col>
       </v-row>
@@ -164,20 +164,20 @@
             <td>
               <div style="display: flex; justify-content: flex-end"
                    v-if="userCanAdmin || (userCanManage && !item.paidDate)">
-                <AlbatrossButton
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="[selectedExpense = item, getRequestAttachmentPresignedUrl(item), getTheBudgetsForUser(selectedExpense.expenseBudgetUserId)]"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="[deleteConfirm = true, itemToDelete = item]"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
               </div>
             </td>
           </tr>
@@ -188,12 +188,12 @@
       <v-col cols="12">
         <v-toolbar flat class="cfg-header-bar" dense>
           <v-toolbar-title class="app-title">
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="selectedExpense = {}"
                 text="Back"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -282,19 +282,19 @@
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 variant="text"
                 @click="selectedExpense = {}"
                 text="Cancel"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 color="primary"
                 raised
                 :disabled="!selectedExpense.expenseDate || !selectedExpense.glCodeId || !selectedExpense.expenseBudgetUserId || !selectedExpense.expenseBudgetId || !selectedExpense.amount"
                 @click="saveSubmittedExpense(selectedExpense)"
                 text="Save Changes"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -332,7 +332,7 @@ import moment from 'moment'
 import {saveAs} from 'file-saver'
 import cloneDeep from 'lodash.clonedeep'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

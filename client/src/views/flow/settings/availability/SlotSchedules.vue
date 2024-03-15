@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text"
+            <a-btn variant="text"
                              color="primary"
                              @click="[addNew = !addNew, newSchedule = {}]"
                              :text="addNew ? 'CANCEL' : 'ADD NEW'"
@@ -20,7 +20,7 @@
             label="New Schedule Name"
             v-model="newSchedule.scheduleName"
           ></v-text-field>
-          <AlbatrossButton :disabled="!newSchedule.scheduleName"
+          <a-btn :disabled="!newSchedule.scheduleName"
                            @click="saveSchedule(newSchedule)"
                            text="SAVE"
           />
@@ -52,7 +52,7 @@
                 label="Schedule Name"
               />
               <div class="mb-3">
-                <AlbatrossButton
+                <a-btn
                   color="primary"
                   class="mb-2"
                   dark @click="item.slotTimes.push({id: null, startTime: null, endTime: null, archived: false})"
@@ -78,7 +78,7 @@
                       />
                     </v-list-item-content>
                     <v-list-item-action>
-                      <AlbatrossButton variant="text" @click="st.archived = true" prepend-icon="delete"/>
+                      <a-btn variant="text" @click="st.archived = true" prepend-icon="delete"/>
                     </v-list-item-action>
                   </v-list-item>
                 </v-list>
@@ -86,7 +86,7 @@
               <div class="error-text mb-2" v-if="saveError">
                 {{saveErrorMsg}}
               </div>
-              <AlbatrossButton color="primary" class="white--text mr-2"
+              <a-btn color="primary" class="white--text mr-2"
                                @click="saveSchedule(item)"
                                text="SAVE"
               />
@@ -97,15 +97,15 @@
             <tr  class="text-left" :class="{'shaded-row': slotSchedules.indexOf(item) % 2}">
               <td class="text-left">{{ item.scheduleName }}</td>
               <td class="text-right">
-                <AlbatrossButton size="small" variant="text" color="primary"
+                <a-btn size="small" variant="text" color="primary"
                                  v-if="userCanEdit && !expanded.includes(item)"
                                  @click="expanded = [item]" prepend-icon="edit"
                 />
-                <AlbatrossButton size="small" variant="text" color="primary"
+                <a-btn size="small" variant="text" color="primary"
                                  v-if="userCanEdit && expanded.includes(item)"
                                  @click="expanded = []" text="CANCEL"
                 />
-                <AlbatrossButton size="small" variant="text" color="primary" v-if="userCanDelete"
+                <a-btn size="small" variant="text" color="primary" v-if="userCanDelete"
                                  @click="[itemToDelete = item, showDeleteDialog = true]" prepend-icon="delete"
                 />
               </td>
@@ -129,7 +129,7 @@
   import ZonelessTimePickerInput from "./ZonelessTimePickerInput";
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import {getCurrentInstance, onMounted, ref, computed, watch, defineProps} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRoute} from "vue-router/composables"

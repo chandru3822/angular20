@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Positions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               to="/settings/position"
               color="primary"
@@ -53,7 +53,7 @@
                 {{item.orgType}}
               </td>
               <td class="px-0">
-                <AlbatrossButton
+                <a-btn
                   size="small"
                   variant="text"
                   color="primary"
@@ -61,7 +61,7 @@
                   prepend-icon="edit"
                   custom-classes="pa-0"
                 />
-                <AlbatrossButton
+                <a-btn
                   size="small"
                   :disabled="!userCanDelete"
                   variant="text"
@@ -86,7 +86,7 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'

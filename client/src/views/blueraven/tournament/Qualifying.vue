@@ -17,28 +17,28 @@
         {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <AlbatrossButton
+          <a-btn
               variant="text"
               :disabled="bracketsEmpty"
               @click="toggleSelectAllQualifying()"
               v-if="userCanEdit && !pool.advanced"
               color="unset"
               text="Select All Qualifying"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               v-if="userCanEdit"
               :disabled="selectedUsers.length !== tournamentUserCount || pool.advanced || bracketsEmpty || matchesNotGenerated"
               color="primary"
               @click="advanceSelectedToBracket()"
               :text="matchesNotGenerated ? 'Must Generate Matches' : !pool.advanced ? 'Advance Selected to Bracket' : 'Pool Has Been Advanced'"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               v-if="userCanEdit"
               :disabled="selectedUsers.length !== tournamentUserCount || pool.advanced || bracketsEmpty || matchesNotGenerated"
               color="primary"
               @click="advanceSelectedToBracket()"
               :text="matchesNotGenerated ? 'Must Generate Matches' : !pool.advanced ? 'Advance Selected to Bracket' : 'Pool Has Been Advanced'"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
 
@@ -94,14 +94,14 @@
               <span v-else>{{item.score}}</span>
             </td>
             <td class="text-right">
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   size="small"
                   color="primary"
                   class="clickable"
                   @click="[showModal = true, showScoreUser = item]"
                   prepend-icon="mdi-format-list-bulleted"
-              ></AlbatrossButton>
+              ></a-btn>
             </td>
           </tr>
         </template>
@@ -115,7 +115,7 @@
 <script setup>
 
 import {handleHidingGlobalLoader, getRequest, logError, postRequest, } from '@/helpers/helpers'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import constants from '@/helpers/constants'
 import orderBy from "lodash.orderby"
 import ScoreDrilldown from "./component/ScoreDrilldown";

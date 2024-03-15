@@ -17,12 +17,12 @@
       System size: ??kW, Created: {{ d.dateCreated | formatDate('date', 'MMM D, YYYY') }}
     </div>
     <div><a class="albatross-caption" target="_blank" :href="`/project/${projectId}/processStep/${d.projectProcessStepId}`">Open Process Step</a><v-icon class="anchor-icon" x-small>mdi-launch</v-icon></div>
-    <AlbatrossButton
+    <a-btn
         color="primary"
         class="mt-4 one-hunned text-capitalize font-weight-bold"
         @click="addProposal(d)"
         text="Create new proposal"
-    ></AlbatrossButton>
+    ></a-btn>
     <v-list v-if="d.proposals.length > 0">
       <v-list-item
           v-for="(proposal, index) in d.proposals.slice((offset * numberToDisplay),(numberToDisplay + (offset * numberToDisplay)))"
@@ -59,7 +59,7 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

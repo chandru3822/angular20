@@ -4,15 +4,15 @@
       <v-col cols="12" class="pb-0">
         <v-toolbar color="white" class="elevation-1">
           <v-toolbar-title class="app-title">
-            <AlbatrossButton
+            <a-btn
                 v-for="tab in tabs"
                 variant="text"
                 :to="tab.path"
                 color="primary"
-                :class="{'AlbatrossButton--active': isActiveBtn(tab)}"
+                :class="{'a-btn--active': isActiveBtn(tab)}"
                 v-if="hasAccess(tab)"
                 :text="tab.label"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-title>
           <v-spacer></v-spacer>
         </v-toolbar>
@@ -24,7 +24,7 @@
 
 <script setup>
   import constants from '@/helpers/constants'
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
   import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
   import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
   import {useUserStore} from '@/stores/UserStorePinia.js'

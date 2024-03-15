@@ -17,25 +17,25 @@
 
         <v-card-actions>
             <div class="flex-grow-1"></div>
-          <AlbatrossButton
+          <a-btn
               color="grey"
               variant="text"
               @click="$emit('cancel')"
               text="Cancel"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="primary"
               variant="text"
               @click="$emit('confirm')"
               text="Continue"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card-actions>
     </v-card>
 </v-dialog>
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { toRefs } from 'vue'
 
 const props = defineProps({

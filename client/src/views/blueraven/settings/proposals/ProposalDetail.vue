@@ -1,13 +1,13 @@
 <template>
   <div>
-    <AlbatrossButton
+    <a-btn
         variant="text"
         color="primary"
         class="pl-1 pr-2"
         @click="router.back()"
         prepend-icon="arrow_left"
         text="Back"
-    ></AlbatrossButton>
+    ></a-btn>
     <v-toolbar flat class="app-toolbar">
       <v-toolbar-title v-if="detail">
         <span class="app-title">Version {{ detail.version }}</span>
@@ -16,24 +16,24 @@
           Current
         </v-chip>
 
-        <AlbatrossButton
+        <a-btn
             class="ma-2"
             variant="text"
             icon
             color="primary"
             @click="showHistory = true"
             prepend-icon="mdi-history"
-        ></AlbatrossButton>
+        ></a-btn>
         <proposal-version-history :visible.sync="showHistory" :version="detail.version"/>
       </v-toolbar-title>
       <v-spacer/>
       <v-toolbar-items v-if="isDraft">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             @click="confirmation=true"
             text="Publish"
-        ></AlbatrossButton>
+        ></a-btn>
         <ConfirmationDialog
           :open-dialog="confirmation"
           :disable-confirm="!publishNote"
@@ -77,13 +77,13 @@
           autocomplete="off"
         />
         <fragment v-if="isDraft">
-          <AlbatrossButton
+          <a-btn
               v-if="hasChanges"
               variant="text"
               color="primary"
               @click="undoDraftChanges=true"
               text="Undo All Changes"
-          ></AlbatrossButton>
+          ></a-btn>
           <ConfirmationDialog :open-dialog="undoDraftChanges"
                               @confirm="undoAllChanges"
                               @close-dialog="undoDraftChanges=false">
@@ -93,11 +93,11 @@
             </p>
             <template v-slot:yes>Undo all</template>
           </ConfirmationDialog>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               @click.prevent="visible = true"
               text="Add New"
-          ></AlbatrossButton>
+          ></a-btn>
           <NewProposalValueDialog
             v-if="propType"
             :visible="visible"
@@ -161,29 +161,29 @@
                 @click.prevent="editItem(item)" :aria-disabled="item.archived">
               <td v-for="header in headers">
                     <span class="row-actions" v-if="header.value === 'actions'">
-                      <AlbatrossButton
+                      <a-btn
                           size="small"
                           variant="text"
                           color="primary"
                           @click.native.stop="deleteItem(item)"
                           v-if="item.versionId === detail.id"
                           prepend-icon="mdi-undo"
-                      ></AlbatrossButton>
-                      <AlbatrossButton
+                      ></a-btn>
+                      <a-btn
                           size="small"
                           variant="text"
                           color="primary"
                           v-if="!item.archived"
                           @click.native.stop="selectedDeleteItem = item"
                           prepend-icon="mdi-delete"
-                      ></AlbatrossButton>
-                      <AlbatrossButton
+                      ></a-btn>
+                      <a-btn
                           size="small"
                           variant="text"
                           color="primary"
                           disabled
                           v-else
-                      ></AlbatrossButton>
+                      ></a-btn>
                     </span>
 
                 <span v-if="item[header.value]">
@@ -211,7 +211,7 @@ import {AppMutations} from '@/stores/AppStore'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ProposalVersionHistory from "@/views/blueraven/settings/proposals/ProposalVersionHistory.vue";
 import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

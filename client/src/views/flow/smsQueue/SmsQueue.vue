@@ -23,14 +23,14 @@
                   item-value="value"
                   hide-details
         />
-        <AlbatrossButton
+        <a-btn
             color="primary"
             variant="text"
             small
             class="filter-projects-btn"
             @click="getQueue()"
             prepend-icon="mdi-filter"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-toolbar>
     </v-row>
 
@@ -99,7 +99,7 @@
 
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams,  postRequest, putRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

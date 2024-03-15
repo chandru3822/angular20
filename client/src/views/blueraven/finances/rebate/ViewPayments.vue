@@ -21,20 +21,20 @@
           <!--          <label><b>Approved By:</b></label>-->
           <!--          {{ userName }}-->
           <!--          <br/>-->
-          <AlbatrossButton
+          <a-btn
               color="primary"
               @click="approveDialog = true"
               class="ml-3"
               text="Approve and Create Batch"
-          ></AlbatrossButton>
+          ></a-btn>
         </div>
 
         <v-spacer></v-spacer>
-        <AlbatrossButton
+        <a-btn
             color="primary"
             @click="exportPayments"
             text="Export"
-        ></AlbatrossButton>
+        ></a-btn>
       </div>
       <div>
         <v-text-field
@@ -159,19 +159,19 @@
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 variant="text"
                 @click="close"
                 text="Cancel"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 color="primary"
                 raised
                 :disabled="submittingPay"
                 @click="submitPay"
                 text="Submit"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -209,7 +209,7 @@ import {saveAs} from 'file-saver'
 import moment from "moment";
 import debounce from "lodash.debounce";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

@@ -1,5 +1,5 @@
 <template>
-  <AlbatrossButton
+  <a-btn
       v-if="actionResult.actionTypeId === 2 && !actionResult.hideFromWeb"
       :disabled="!canPerformAction"
       color="primary"
@@ -20,18 +20,18 @@
       <v-icon :color="getColor()" v-if="actionResult.alreadyTriggered" class="ml-1" size="20">check</v-icon>
       <v-icon v-if="actionResult.triggerAutomatically">mdi-alpha-a</v-icon>
     </template>
-  </AlbatrossButton>
-  <AlbatrossButton
+  </a-btn>
+  <a-btn
       class="multi-link-button"
       v-else-if="actionResult.actionTypeId === 1 && !actionResult.hideFromWeb"
       @click="followMultipleLinks(actionResult)"
       color="unset"
       :text="actionResult.actionName"
-  ></AlbatrossButton>
+  ></a-btn>
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 
 const vueInstance = getCurrentInstance().proxy

@@ -55,11 +55,11 @@
                           item-value="customFieldGroupAssignmentId"
                 ></v-select>
               </div>
-              <AlbatrossButton
+              <a-btn
                 @click="saveParam(item)"
                 prepend-icon="save"
                 text="Save">
-              </AlbatrossButton>
+              </a-btn>
             </td>
           </template>
 
@@ -92,14 +92,14 @@
               </td>
               <!-- icon column -->
               <td>
-                <AlbatrossButton
+                <a-btn
                   variant="text"
                   color="primary"
                   v-if="userCanEdit && item.parameterTypeId === 3 && !expanded.includes(item)"
                   @click="handleExpand(item, true)"
                   prepend-icon="edit"
                 />
-                <AlbatrossButton
+                <a-btn
                   variant="text"
                   v-if="item.parameterTypeId === 3 && expanded.includes(item)"
                   @click="handleExpand(item, false)"
@@ -128,7 +128,7 @@
 
 <script setup>
   import { handleHidingGlobalLoader, getRequest, postRequest } from '@/helpers/helpers'
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 
   import {getCurrentInstance, computed, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'

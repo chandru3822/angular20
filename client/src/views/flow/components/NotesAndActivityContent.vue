@@ -48,19 +48,19 @@
         />
       </div>
       <div class="text-left mb-2 mt-5">
-        <AlbatrossButton
+        <a-btn
             color="primary"
             :disabled="!note.note || savingNote"
             @click="saveNote(note);"
             text="Save"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             variant="text"
             color="primary"
             v-if="note.note"
             @click="[note={}, dirtyNote = false]"
             text="Cancel"
-        ></AlbatrossButton>
+        ></a-btn>
       </div>
     </v-card>
     <v-divider></v-divider>
@@ -130,18 +130,18 @@
               />
             </div>
             <div class="text-left mb-2">
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   :disabled="!item.note"
                   @click="[item.edit = false, item.noteMenu = false, saveNote(item)]"
                   text="Save"
-              ></AlbatrossButton>
-              <AlbatrossButton
+              ></a-btn>
+              <a-btn
                   variant="text"
                   color="primary"
                   @click="[dirtyNote = false, item.note = item.oldNote, item.edit = false, item.noteMenu = false]"
                   text="cancel"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </td>
         </tr>
@@ -168,12 +168,12 @@
                     :close-on-content-click="true"
                     min-width="290px">
               <template v-slot:activator="{ on }">
-                <AlbatrossButton
+                <a-btn
                     :activation-handler="on"
                     variant="text"
                     color="primary"
                     prepend-icon="mdi-dots-horizontal"
-                ></AlbatrossButton>
+                ></a-btn>
               </template>
               <v-list>
                 <v-list-item @click="[item.showReply = true, expanded=[item]];">
@@ -224,20 +224,20 @@
               </template>
             </Mentionable>
             <div class="text-left py-2">
-              <AlbatrossButton
+              <a-btn
                   color="primary "
                   @click="saveNote(item);"
                   :disabled="!item.reply"
                   text="Save"
-              ></AlbatrossButton>
-              <AlbatrossButton
+              ></a-btn>
+              <a-btn
                   variant="text"
                   color="primary"
                   class="ml-2"
                   v-if="item.reply"
                   @click="[item.reply=null, item.showReply = false, !item.childNotes || item.childNotes.length === 0 ? expanded=[] : null]"
                   text="cancel"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </div>
           <div v-for="(cn, index) in item.childNotes.filter(cn => !cn.archived)" :key="index">
@@ -271,19 +271,19 @@
               </Mentionable>
 
               <div class="text-left mb-2">
-                <AlbatrossButton
+                <a-btn
                     color="primary"
                     class="body-medium"
                     :disabled="!cn.note"
                     @click="[cn.edit = false, cn.noteMenu = false, saveNote(cn)]"
                     text="Save"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     variant="text"
                     color="primary body-medium"
                     @click="[dirtyNote = false, cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]"
                     text="cancel"
-                ></AlbatrossButton>
+                ></a-btn>
               </div>
             </div>
             <v-row v-else class="px-0">
@@ -304,12 +304,12 @@
                         :close-on-content-click="true"
                         min-width="290px">
                   <template v-slot:activator="{ on }">
-                    <AlbatrossButton
+                    <a-btn
                         :activation-handler="on"
                         variant="text"
                         color="unset"
                         prepend-icon="mdi-dots-horizontal"
-                    ></AlbatrossButton>
+                    ></a-btn>
                   </template>
                   <v-list>
                     <v-list-item v-if="cn.createdById === userId || userStore.isSystemAdmin"
@@ -343,7 +343,7 @@ import {getRequest, deleteRequest, postRequest, } from '@/helpers/helpers'
 import {Mentionable} from 'vue-mention'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

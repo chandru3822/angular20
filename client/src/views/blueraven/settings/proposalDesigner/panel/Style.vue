@@ -4,33 +4,33 @@
       <div>
         <v-card-title>Typography</v-card-title>
         <v-btn-toggle v-model="cssStyle.textAlign">
-          <AlbatrossButton
+          <a-btn
               size="small"
               value="left"
               color="unset"
               prepend-icon="mdi-format-align-left"
-          ></AlbatrossButton>
+          ></a-btn>
 
-          <AlbatrossButton
+          <a-btn
               size="small"
               value="center"
               color="unset"
               prepend-icon="mdi-format-align-center"
-          ></AlbatrossButton>
+          ></a-btn>
 
-          <AlbatrossButton
+          <a-btn
               size="small"
               value="right"
               color="unset"
               prepend-icon="mdi-format-align-right"
-          ></AlbatrossButton>
+          ></a-btn>
 
-          <AlbatrossButton
+          <a-btn
               size="small"
               value="justify"
               color="unset"
               prepend-icon="mdi-format-align-justify"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-btn-toggle>
 
         <v-text-field outlined dense
@@ -73,17 +73,17 @@
         <v-card-title>Background</v-card-title>
         <div>
           <image-selector-widget ref="imageSelector" />
-          <AlbatrossButton
+          <a-btn
               @click="openSelectImage('@backgroundImage')"
               color="unset"
               text="Open Image"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               variant="text"
               @click="doUpdateStyles({'@backgroundImage' : undefined })"
               color="unset"
               text="Clear Image"
-          ></AlbatrossButton>
+          ></a-btn>
         </div>
 
         <v-select dense
@@ -142,7 +142,7 @@
 </template>
 <script setup>
 import ImageSelectorWidget from './ImageSelectorWidget'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import SizeWidget from './SizeWidget'
 import ColorWidget from './ColorWidget'
 import SpaceWidget from './SpaceWidget'

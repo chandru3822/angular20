@@ -6,14 +6,14 @@
           <v-toolbar-title class="app-title">Users</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 to="/newUser"
                 color="primary"
                 v-if="userStore.userHasFeatureAccessLevel('USERS', 'ADD')"
                 prepend-icon="add"
                 text="Add User"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-toolbar color="white" class="elevation-1 mt-3">
@@ -36,36 +36,36 @@
           <span class="flex-display justify-end user-selected" @click="selectedUsersDialog = true">{{usersSelected}} user(s) selected</span>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="toggleImages()"
                 :disabled="allUsersLoading"
                 :prepend-icon="constants.IS_MOBILE ? 'mdi-view-grid-outline' : ''"
                 :text="constants.IS_MOBILE ? '' : 'View Images'"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="msgDialog = true"
                 :disabled="allUsersLoading"
                 :prepend-icon="constants.IS_MOBILE ? 'email' : ''"
                 :text="constants.IS_MOBILE ? '' : 'Send Email/Text'"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="handleOrgFilterChange(true)"
                 :prepend-icon="constants.IS_MOBILE ? 'filter_list' : ''"
                 :text="constants.IS_MOBILE ? '' : 'Reset Filters'"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="exportCsv"
                 :prepend-icon="constants.IS_MOBILE ? 'mdi-cloud-download' : ''"
                 :text="constants.IS_MOBILE ? '' : 'Export'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-data-table
@@ -180,11 +180,11 @@
           </template>
         </v-data-table>
         <v-card-actions class="flex-display justify-end">
-          <AlbatrossButton
+          <a-btn
               @click="selectedUsersDialog = false"
               color="unset"
               text="Close"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -282,18 +282,18 @@
           />
 
           <v-card-actions class="flex-display justify-end pt-0 px-0">
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="cancelSendMessageDialog"
                 text="Cancel"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 color="primary"
                 :disabled="disableSendEmail.value"
                 @click="sendMessage(true, false)"
                 text="Send Email"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-card-actions>
         </div>
         <div v-else-if="messageTab == 2" class="pa-6">
@@ -337,14 +337,14 @@
 
               <v-tooltip bottom small>
                 <template v-slot:activator="{on, attrs}">
-                  <AlbatrossButton
+                  <a-btn
                       icon
                       color="primary"
                       v-bind="attrs"
                       :activation-handler="on"
                       class="mt-1 templateButton"
                       prepend-icon="article"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </template>
                 <span class="albatross-body-3">Templates</span>
               </v-tooltip>
@@ -390,32 +390,32 @@
           <span v-if="textFiles.length > 0">Attached {{ attachmentsText }}</span>
 
           <v-card-actions class="flex-display justify-end px-0 pt-0 ml-2">
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="cancelSendMessageDialog"
                 text="Cancel"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 color="primary"
                 :disabled="disableSendText.value"
                 @click="sendMessage(false, true)"
                 text="Send SMS"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-card-actions>
         </div>
       </v-card>
     </v-dialog>
   </v-container>
   <v-container  v-else>
-    <AlbatrossButton
+    <a-btn
         size="small"
         variant="text"
         color="primary"
         @click="toggleImages()"
         prepend-icon="mdi-chevron-left"
         text="Back to users"
-    ></AlbatrossButton>
+    ></a-btn>
 
     <v-row style="width: 90%; margin-left: auto; margin-right: auto;" >
       <v-autocomplete v-for="header of headers"
@@ -445,13 +445,13 @@
                       outlined
                       @change="returnToPageOne()"
       />
-      <AlbatrossButton
+      <a-btn
           variant="text"
           color="primary"
           @click="changeImageFilter(true)"
           :prepend-icon="constants.IS_MOBILE ? 'filter_list' : ''"
           :text="constants.IS_MOBILE ? '' : 'Reset Filters'"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-row>
     <div v-if="userImagesLoading" class="section-spinner">
       <br>
@@ -462,20 +462,20 @@
 
     </user-images>
     <span v-if="!userImagesLoading">{{min((currentPage-1)*(usersPerPage) + 1, totalUsers.value)}} - {{min((currentPage)*(usersPerPage), totalUsers.value)}} of {{totalUsers}} </span>
-    <AlbatrossButton
+    <a-btn
         icon
         :disabled="leftArrowDisabled"
         v-if="!userImagesLoading"
         @click="previousPage()"
         prepend-icon="mdi-arrow-left"
-    ></AlbatrossButton>
-    <AlbatrossButton
+    ></a-btn>
+    <a-btn
         icon
         v-if="!userImagesLoading"
         :disabled="rightArrowDisabled"
         @click="nextPage()"
         prepend-icon="mdi-arrow-right"
-    ></AlbatrossButton>
+    ></a-btn>
   </v-container>
 
 </template>
@@ -496,7 +496,7 @@ import axios from 'axios'
 import UserImages from "./UserImages";
 import UsersFilter from "@/views/flow/users/UsersFilter.vue";
 import { useFileStore } from '@/stores/FileStore.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

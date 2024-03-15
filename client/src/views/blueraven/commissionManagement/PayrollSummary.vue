@@ -22,14 +22,14 @@
 
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   size="x-small"
                   color="primary"
                   :disabled="dataLoading"
                   @click="exportPayrollSummary"
                   prepend-icon="download"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </template>
 
@@ -52,7 +52,7 @@
 
 <script setup>
 import { saveAs } from 'file-saver'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
 import constants from "@/helpers/constants";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'

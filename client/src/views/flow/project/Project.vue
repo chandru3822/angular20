@@ -255,13 +255,13 @@
                   </div>
                 </div>
                 <div class="text-right">
-                  <AlbatrossButton
+                  <a-btn
                       variant="text"
                       color="primary"
                       class="body-medium milestone-button"
                       @click="milestone.menuOpen = false"
                       text="Done"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </div>
               </v-card>
             </v-menu>
@@ -339,7 +339,7 @@ import ThreeColumnLayout from '@/views/ThreeColumnLayout'
 import ThreeColumnLayoutMobile from '@/views/ThreeColumnLayoutMobile'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";

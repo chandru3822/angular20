@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="title-large">Tags</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text" color="primary"
+            <a-btn variant="text" color="primary"
                @click="[addNew = !addNew, newTag = { bgColor: '#878787', fontColor: '#1F3C73'}]"
                v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
                :hide-text-on-mobile="constants.IS_MOBILE"
@@ -49,7 +49,7 @@
                 </div>
               </v-col>
             </v-row>
-            <AlbatrossButton color="primary" class="mt-4" :disabled="!newTag.tagName || !newTag.fontColor || !newTag.bgColor"
+            <a-btn color="primary" class="mt-4" :disabled="!newTag.tagName || !newTag.fontColor || !newTag.bgColor"
                    @click="saveTag(newTag, true)" text="SAVE"/>
           </v-card>
           <div v-else>
@@ -98,18 +98,18 @@
                 <div>
                 <span class="clickable"
                                     v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                  <AlbatrossButton variant="text" size="small" color="primary"
+                  <a-btn variant="text" size="small" color="primary"
                    :disabled="!a.tagName || !a.fontColor || !a.bgColor"
                    v-if="selectedTagId === a.id" @click="saveTag(a, false)" prepend-icon="save"/>
-                  <AlbatrossButton v-else variant="text" size="small" color="primary" @click="selectedTagId = a.id" prepend-icon="edit"/>
+                  <a-btn v-else variant="text" size="small" color="primary" @click="selectedTagId = a.id" prepend-icon="edit"/>
                 </span>
-                <AlbatrossButton
+                <a-btn
                   size="small" variant="text" color="primary"
                   v-if="selectedTagId === a.id"
                   @click="selectedTagId = null"
                   prepend-icon="close"
                 />
-                <AlbatrossButton size="small" variant="text" color="primary"
+                <a-btn size="small" variant="text" color="primary"
                        v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                        @click="tagToDelete=a" prepend-icon="delete"/>
                 <v-tooltip
@@ -118,7 +118,7 @@
                   top
                 >
                   <template v-slot:activator="{ on, attrs }">
-                    <AlbatrossButton
+                    <a-btn
                       variant="text"
                       size="small"
                       color="primary"
@@ -159,7 +159,7 @@ import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()

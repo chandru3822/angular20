@@ -47,32 +47,32 @@
               </v-file-input>
             </v-col>
             <v-col :cols="4">
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   :disabled="!uploadFiles.length"
                   @click="uploadAttachments(uploadFiles)"
                   color="unset"
                   text="Upload"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-col>
           </v-row>
         </v-container>
       </div>
 
       <v-card-actions>
-        <AlbatrossButton
+        <a-btn
             variant="text"
             @click="cancel"
             color="unset"
             text="Cancel"
-        ></AlbatrossButton>
+        ></a-btn>
         <v-spacer></v-spacer>
-        <AlbatrossButton
+        <a-btn
             color="primary"
             @click="ok"
             :disabled="!selected"
             text="Ok"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -83,7 +83,7 @@ import ImgProxy from '@/components/ImgProxy'
 import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
 import {useFileStore} from '@/stores/FileStore.js'
 import {useAppStore} from '@/stores/AppStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const fileStore = useFileStore()
 const appStore = useAppStore()

@@ -9,12 +9,12 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <AlbatrossButton
+        <a-btn
           variant="text"
           color="primary"
           @click="emit('prodStatsDrilldownDialogClosed')"
           text="Close"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-toolbar-items>
     </v-toolbar>
 
@@ -68,14 +68,14 @@
                      {{ item.notes[0].note }}
                   </pre>
               <v-spacer></v-spacer>
-              <AlbatrossButton
+              <a-btn
                 size="small"
                 fab
                 variant="text"
                 color="primary"
                 @click="[item.showNotesModal = true, ytfDoWeNeedThis++]"
                 prepend-icon="mdi-comment-text-multiple"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
             <v-dialog
               :key="ytfDoWeNeedThis"
@@ -101,12 +101,12 @@
                 <v-card-actions>
                   <v-spacer></v-spacer>
 
-                  <AlbatrossButton
+                  <a-btn
                     color="primary"
                     class="mr-2 mb-3"
                     @click="[item.showNotesModal = false, ytfDoWeNeedThis++]"
                     text="Close"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
@@ -120,7 +120,7 @@
 <script setup>
   import constants from '@/helpers/constants'
   import NotesAndActivityContent from '@/views/flow/components/NotesAndActivityContent'
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import {ref, onMounted, computed, watch, getCurrentInstance, defineEmits} from "vue";
 
   const vueInstance = getCurrentInstance().proxy

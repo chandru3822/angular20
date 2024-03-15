@@ -1,5 +1,5 @@
 <template>
-  <AlbatrossButton
+  <a-btn
       height="28px"
       width="28px"
       :activation-handler="on"
@@ -16,14 +16,14 @@
         {{milestone.iconTag || 'blank'}}
       </v-icon>
     </template>
-  </AlbatrossButton>
+  </a-btn>
 </template>
 
 <script setup>
 //NOTE: In the albatross btn, the only thing the :color="milestone.iconColor"
 // is used for is making the outline color correct when needed
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 
 const vueInstance = getCurrentInstance().proxy

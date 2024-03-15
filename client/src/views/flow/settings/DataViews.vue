@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Data Views</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton v-if="is7oaksAdmin"
+            <a-btn v-if="is7oaksAdmin"
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newDataView = {}, getCompanyProcesses()]"
@@ -14,7 +14,7 @@
               :text="!addNew ? 'Add New' : 'Cancel'"
               :prepend-icon="addNew ? 'close' : 'add'"
               >
-            </AlbatrossButton>
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
@@ -40,19 +40,19 @@
           <div class="mb-3 error--text" v-if="saveError">
             {{saveErrorMsg}}
           </div>
-          <AlbatrossButton
+          <a-btn
             :disabled="!newDataView.displayName || !newDataView.viewName || selectedCompanyProcesses.length === 0"
             color="primary"
             class="white--text mr-2"
             @click="validateForm(newDataView, true)"
             text="Save">
-          </AlbatrossButton>
-          <AlbatrossButton
+          </a-btn>
+          <a-btn
             variant="text"
             color="primary"
             @click="[addNew = !addNew, newDataView = {}]"
             text="Cancel">
-          </AlbatrossButton>
+          </a-btn>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -76,11 +76,11 @@
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.viewName }}</td>
               <td class="text-right">
-                <AlbatrossButton
+                <a-btn
                   variant="text"
                   color="primary"
                   prepend-icon="edit">
-                </AlbatrossButton>
+                </a-btn>
 
               </td>
             </tr>
@@ -97,7 +97,7 @@
   import {handleHidingGlobalLoader, getRequest, postRequest} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import { getCurrentInstance, ref, onMounted } from 'vue'
-  import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import { useAppStore } from '@/stores/AppStorePinia.js'
   import {useRouter} from "vue-router/composables"

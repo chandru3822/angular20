@@ -6,7 +6,7 @@
                            @click="toggleCollapseExpand"
   >
     <template v-slot:tool-btn>
-      <AlbatrossButton
+      <a-btn
           variant="text"
           size="small"
           color="primary"
@@ -14,7 +14,7 @@
           @click.native.stop
           :to="`/project/${projectId}/processSteps`"
           prepend-icon="mdi-format-list-bulleted"
-      ></AlbatrossButton>
+      ></a-btn>
     </template>
     <template v-slot:expanded-content>
       <ActiveProjectProcessStepSnippet class="px-3"
@@ -51,7 +51,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

@@ -34,14 +34,14 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="[createNew = !createNew, newBudget = {}, expanded = [], getAvailableUsers()]"
                 :prepend-icon="!createNew ? 'add' : 'close'"
                 hide-text-on-mobile
                 :text="createNew ? 'cancel' : 'Add Budget'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -79,12 +79,12 @@
                       background-color="#F2F6F8"
                       v-model="newBudget.notes">
           </v-textarea>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               :disabled="!newBudget.userId || !newBudget.amount || !selectedYear || !selectedMonth"
               @click="saveBudget(newBudget, true)"
               text="Save"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card>
         <v-divider v-if="createNew" ></v-divider>
         <v-data-table
@@ -141,13 +141,13 @@
                             background-color="#F2F6F8"
                             v-model="item.notes">
                 </v-textarea>
-                <AlbatrossButton
+                <a-btn
                     :disabled="false"
                     color="primary"
                     class="mr-2"
                     @click="saveBudget(item, false)"
                     text="Save"
-                ></AlbatrossButton>
+                ></a-btn>
               </v-card>
             </td>
           </template>
@@ -163,29 +163,29 @@
               <td class="text-left">{{ item.balance | currency('$', 2) }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <AlbatrossButton
+                  <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       v-if="!expanded.includes(item)"
                       @click="[handleItemClick(item), expanded = [item]]"
                       prepend-icon="edit"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       v-if="expanded.includes(item)"
                       @click="expanded = []"
                       text="cancel"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       @click="[deleteConfirm=true, itemToDelete = item]"
                       prepend-icon="delete"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </div>
               </td>
             </tr>
@@ -219,7 +219,7 @@ import moment from 'moment'
 import constants from "@/helpers/constants"
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

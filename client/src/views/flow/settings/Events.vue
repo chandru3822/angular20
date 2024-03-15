@@ -20,7 +20,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <AlbatrossButton
+          <a-btn
             color="primary"
             class="white--text"
             @click="deleteError = false"
@@ -35,7 +35,7 @@
           <v-toolbar-title class="app-title">Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newStep = {}, getResourceFields()]"
@@ -60,7 +60,7 @@
               item-value="id"
             ></v-autocomplete>
 
-            <AlbatrossButton
+            <a-btn
               color="primary"
               :disabled="!newEvent.eventName || !newEvent.resourceCustomFieldId"
               @click="addEvent"
@@ -91,14 +91,14 @@
             >
               <template #item.eventName="{ item }" class="clickable" @click="goToEvent(item.id)">{{item.eventName}}</template>
               <template #item.icons="{item}" class="text-end">
-                    <AlbatrossButton
+                    <a-btn
                       size="small"
                       variant="text"
                       color="primary"
                       @click="goToEvent(item.id)"
                       prepend-icon="edit"
                     />
-                    <AlbatrossButton
+                    <a-btn
                       size="small"
                       variant="text"
                       color="primary"
@@ -124,7 +124,7 @@
 import {getRequest, putRequest, postRequest, handleHidingGlobalLoader} from '@/helpers/helpers'
 import { getEventResourceFields } from "@/services/eventService"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {computed, getCurrentInstance, ref, onMounted} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'

@@ -18,7 +18,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">SMS Teams</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               @click="[addTeam = !addTeam, newType = {}]"
@@ -34,13 +34,13 @@
           <v-text-field text v-model="newTeam.teamName"
                         label="Team Name" />
 
-          <AlbatrossButton
+          <a-btn
             :disabled="!newTeam.teamName"
             color="primary" class="mr-2"
             @click="saveTeam(newTeam, true)"
             text="SAVE"
           />
-          <AlbatrossButton variant="text" color="primary" @click="[addTeam = !addTeam, newTeam = {}]" text="CANCEL"/>
+          <a-btn variant="text" color="primary" @click="[addTeam = !addTeam, newTeam = {}]" text="CANCEL"/>
         </v-card>
         <v-data-table
           :headers="headers"
@@ -65,12 +65,12 @@
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': filterTeams.indexOf(item) % 2}">
               <v-text-field text v-model="item.teamName" label="Team Name" class="px-4"/>
               <v-checkbox dense v-model="item.checked" :value="item.isDefault" :disabled="item.isDefault" class="albatross-body-2 mt-0 px-4" label="Make Default for incoming unprompted customer and internal messages" />
-              <AlbatrossButton :disabled="item.teamName.length < 1" color="primary" class="mr-2" @click="saveTeam(item, false)" text="SAVE"/>
+              <a-btn :disabled="item.teamName.length < 1" color="primary" class="mr-2" @click="saveTeam(item, false)" text="SAVE"/>
               <div class="mb-2">
                 <v-toolbar flat dense color="transparent" class="wqt-header-bar">
                   <v-toolbar-title class="albatross-header-4"><b>Positions</b></v-toolbar-title>
                   <v-spacer></v-spacer>
-                  <AlbatrossButton variant="text" color="primary" @click="addPosition = !addPosition" prepend-icon="add"/>
+                  <a-btn variant="text" color="primary" @click="addPosition = !addPosition" prepend-icon="add"/>
                 </v-toolbar>
                 <v-card flat v-if="addPosition" color="transparent" class="px-4">
                   <v-select
@@ -81,8 +81,8 @@
                     item-value="id"
                   ></v-select>
 
-                  <AlbatrossButton color="primary" :disabled="!positionId" @click="addPositionToTeam" text="SAVE" class="mb-6"/>
-                  <AlbatrossButton variant="text" color="primary" @click="[addPosition = !addPosition, positionId = null]" class="mb-6" text="CANCEL"/>
+                  <a-btn color="primary" :disabled="!positionId" @click="addPositionToTeam" text="SAVE" class="mb-6"/>
+                  <a-btn variant="text" color="primary" @click="[addPosition = !addPosition, positionId = null]" class="mb-6" text="CANCEL"/>
                 </v-card>
 
                 <v-data-table
@@ -108,7 +108,7 @@
                     <tr class="text-left" :class="{'shaded-row': expandedItem.positions.indexOf(item) % 2}">
                       <td class="text-left">{{ item.name }}</td>
                       <td class="text-right">
-                        <AlbatrossButton size="small" variant="text" color="primary" @click="startDelete(DeleteTypeEnum.POSITION, item)" prepend-icon="delete"/>
+                        <a-btn size="small" variant="text" color="primary" @click="startDelete(DeleteTypeEnum.POSITION, item)" prepend-icon="delete"/>
                       </td>
                     </tr>
                   </template>
@@ -120,7 +120,7 @@
                 <v-toolbar dense flat color="transparent" class="wqt-header-bar">
                   <v-toolbar-title class="albatross-header-4"><b>Users</b></v-toolbar-title>
                   <v-spacer></v-spacer>
-                  <AlbatrossButton variant="text" color="primary" @click="addUser = !addUser" prepend-icon="add"/>
+                  <a-btn variant="text" color="primary" @click="addUser = !addUser" prepend-icon="add"/>
                 </v-toolbar>
                 <v-card flat v-if="addUser" color="transparent" class="px-4 mb-6">
                   <v-autocomplete
@@ -132,8 +132,8 @@
                     attach
                   ></v-autocomplete>
 
-                  <AlbatrossButton color="primary" :disabled="!userId" @click="addUserToTeam" text="SAVE"/>
-                  <AlbatrossButton variant="text" color="primary" @click="[addUser = !addUser, userId = null]" text="CANCEL"/>
+                  <a-btn color="primary" :disabled="!userId" @click="addUserToTeam" text="SAVE"/>
+                  <a-btn variant="text" color="primary" @click="[addUser = !addUser, userId = null]" text="CANCEL"/>
                 </v-card>
                 <v-data-table
                   :headers="userHeaders"
@@ -157,7 +157,7 @@
                     <tr class="text-left" :class="{'shaded-row': expandedItem.users.indexOf(item) % 2}">
                       <td class="text-left">{{ item.name }}</td>
                       <td class="text-right">
-                        <AlbatrossButton size="small" variant="text" color="primary" @click="startDelete(DeleteTypeEnum.USER, item)" prepend-icon="delete"/>
+                        <a-btn size="small" variant="text" color="primary" @click="startDelete(DeleteTypeEnum.USER, item)" prepend-icon="delete"/>
                       </td>
                     </tr>
                   </template>
@@ -169,7 +169,7 @@
                 <v-toolbar color="transparent" dense flat class="wqt-header-bar">
                   <v-toolbar-title class="albatross-header-4"><b>Organizations</b></v-toolbar-title>
                   <v-spacer></v-spacer>
-                  <AlbatrossButton variant="text" color="primary" @click="addOrg = !addOrg" prepend-icon="add"/>
+                  <a-btn variant="text" color="primary" @click="addOrg = !addOrg" prepend-icon="add"/>
                 </v-toolbar>
                 <v-card flat v-if="addOrg" color="transparent" class="px-4 mb-6">
                   <v-autocomplete
@@ -181,8 +181,8 @@
                     attach
                   ></v-autocomplete>
 
-                  <AlbatrossButton color="primary" :disabled="!orgId" @click="addOrgToTeam" text="SAVE"/>
-                  <AlbatrossButton variant="text" color="primary" @click="[addOrg = !addOrg, orgId = null]" text="CANCEL"/>
+                  <a-btn color="primary" :disabled="!orgId" @click="addOrgToTeam" text="SAVE"/>
+                  <a-btn variant="text" color="primary" @click="[addOrg = !addOrg, orgId = null]" text="CANCEL"/>
                 </v-card>
                 <v-data-table
                   :headers="orgHeaders"
@@ -206,7 +206,7 @@
                     <tr class="text-left" :class="{'shaded-row': expandedItem.orgs.indexOf(item) % 2}">
                       <td class="text-left">{{ item.name }}</td>
                       <td class="text-right">
-                        <AlbatrossButton size="small" variant="text" color="primary"
+                        <a-btn size="small" variant="text" color="primary"
                                          @click="startDelete(DeleteTypeEnum.ORG, item)" prepend-icon="delete"/>
                       </td>
                     </tr>
@@ -238,14 +238,14 @@
               </td>
               <td class="pl-6"><v-icon v-if="item.isDefault">mdi-check</v-icon></td>
               <td class="text-right">
-                <AlbatrossButton size="small" variant="text" color="primary"
+                <a-btn size="small" variant="text" color="primary"
                                  v-if="!expanded.includes(item) && userStore.userHasFeatureAccessLevel('SMS_INBOX', 'EDIT')"
                                  @click="expanded = [item]; expandedItem = item;" prepend-icon="edit"/>
-                <AlbatrossButton
+                <a-btn
                   v-if="!expanded.includes(item) && userStore.userHasFeatureAccessLevel('SMS_INBOX', 'DELETE')"
                   :disabled="item.isDefault" size="small" variant="text" color="primary"
                   @click="startDelete(DeleteTypeEnum.TEAM, item)" prepend-icon="delete"/>
-                <AlbatrossButton size="small" variant="text" color="primary"
+                <a-btn size="small" variant="text" color="primary"
                                  v-if="expanded.includes(item)" @click="expanded = []" text="CANCEL"/>
               </td>
 
@@ -273,7 +273,7 @@ import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

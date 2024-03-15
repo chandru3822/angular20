@@ -2,7 +2,7 @@
   <v-container id="data-view-container" v-if="viewLoaded">
     <v-row>
       <v-col class="shrink" cols="12">
-        <AlbatrossButton variant="text"
+        <a-btn variant="text"
                          class="pl-1 pr-2 anchor"
                          :to="'/settings/dataViews'"
                          prepend-icon="arrow-left"
@@ -39,14 +39,14 @@
             </div>
           </div>
           <div class="text-right">
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               v-if="!edit"
               class=""
               @click="[oldName = dataView.displayName, edit = !edit, getCompanyProcesses()]"
               prepend-icon="edit"/>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               class=""
@@ -56,7 +56,7 @@
               prepend-icon="save"
             />
 
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               v-if="edit"
@@ -75,7 +75,7 @@
             single-line
             hide-details
           ></v-text-field>
-          <AlbatrossButton
+          <a-btn
             variant="text"
             color="primary"
             class="d-inline-block"
@@ -202,7 +202,7 @@
                 </div>
               </div>
             </v-form>
-            <AlbatrossButton
+            <a-btn
               :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
                               || (selectedDefaultField.objectTypeId === 6 && !newField.processStepEventId) || (selectedDefaultField.objectTypeId === 4 && !newField.processStepId)"
               color="primary" class="white--text mr-2"
@@ -211,7 +211,7 @@
             />
 
 
-            <AlbatrossButton
+            <a-btn
               @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null}, selectedDefaultField = {}, fixData()]"
               variant="text"
               color="primary"
@@ -247,7 +247,7 @@
               <div class="flex-display">
                 <v-text-field text v-model="item.displayName" class="d-inline-block display-name-field"
                               label="Display Name"/>
-                <AlbatrossButton
+                <a-btn
                   variant="text"
                   :disabled="!item.displayName"
                   color="primary" class="white--text mr-2 d-inline-block"
@@ -328,7 +328,7 @@
                   <v-toolbar-title>Child Fields</v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items>
-                    <AlbatrossButton
+                    <a-btn
                       variant="text"
                       color="primary"
                       @click="[addChild = !addChild, childField = {}]"
@@ -359,7 +359,7 @@
                     <div class="mb-3 error--text" v-if="childSaveError">
                       {{ childSaveErrorMsg }}
                     </div>
-                    <AlbatrossButton
+                    <a-btn
                       :disabled="!childField.displayName || !childField.fieldToUpdate || !childField.uniqueBehaviorTypeId"
                       color="primary" class="white--text mr-2"
                       @click="validateChildField(item, childField, true)"
@@ -390,7 +390,7 @@
                               <v-text-field text v-model="childField.displayName"
                                             :rules="requiredRules"
                                             label="Display Name"/>
-                              <AlbatrossButton
+                              <a-btn
                                 variant="text"
                                 :disabled="!childField.displayName"
                                 color="primary" class="white--text mr-2 d-inline-block"
@@ -416,7 +416,7 @@
                       <td style="width: 130px;">
                         <v-tooltip left>
                           <template v-slot:activator="{ on, attrs }">
-                            <AlbatrossButton
+                            <a-btn
                               size="small"
                               color="primary"
                               @click="copyToClipBoard(item.id)"
@@ -428,7 +428,7 @@
                           <span>ID: {{childField.id}}</span>
                           <div class="text-center">(click to copy)</div>
                         </v-tooltip>
-                        <AlbatrossButton
+                        <a-btn
                           size="small"
                           variant="text"
                           color="primary"
@@ -436,7 +436,7 @@
                           @click="[addChild = false, childFieldExpanded = [childField] ]"
                           prepend-icon="edit"
                         />
-                        <AlbatrossButton
+                        <a-btn
                           size="small"
                           variant="text"
                           color="primary"
@@ -459,20 +459,20 @@
               <td class="text-right">
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
-                      <AlbatrossButton
+                      <a-btn
                         size="small"
                         color="primary"
                         :activation-handler="on"
                         @click="copyToClipBoard(item.id)" v-bind="attrs"
                         icon
                         prepend-icon="mdi-information"
-                        ></AlbatrossButton>
+                        ></a-btn>
                   </template>
                   <span>ID: {{item.id}}</span>
                   <div class="text-center">(click to copy)</div>
                 </v-tooltip>
 
-                <AlbatrossButton
+                <a-btn
                   size="small"
                   variant="text"
                   color="primary"
@@ -480,7 +480,7 @@
                   @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getUniqueBehaviorTypes(), addChild = false, childField = {}]"
                   prepend-icon="edit"
                 />
-                <AlbatrossButton
+                <a-btn
                   size="small"
                   variant="text"
                   color="primary"
@@ -503,7 +503,7 @@
 import {handleHidingGlobalLoader, getRequest, postRequest, getRequestWithParams} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import cloneDeep from 'lodash.clonedeep'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 
 import {getCurrentInstance, computed, onMounted, ref} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'

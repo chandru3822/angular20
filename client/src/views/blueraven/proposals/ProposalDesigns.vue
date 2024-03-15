@@ -36,30 +36,30 @@
                         :disabled="!d.edit"
           ></v-text-field>
           <div class="d-flex mt-4">
-            <AlbatrossButton
+            <a-btn
                 size="x-small"
                 variant="text"
                 color="primary"
                 v-if="!d.edit"
                 @click="d.edit = true"
                 prepend-icon="edit"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 size="x-small"
                 variant="text"
                 color="primary"
                 v-if="d.edit"
                 @click="[d.tempDesignName = d.designName, d.edit = false]"
                 prepend-icon="close"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 size="x-small"
                 variant="text"
                 color="primary"
                 v-if="d.edit"
                 @click="saveDesignField(d)"
                 prepend-icon="save"
-            ></AlbatrossButton>
+            ></a-btn>
           </div>
         </div>
         <div v-if="d.attachments.length > 0" style="position: relative;" class="design-image">
@@ -71,7 +71,7 @@
 
           <div class="design-image image-selection-container"
                :style="{'justify-content': d.imageIndex === 0 ? 'end' : d.imageIndex !== 0 ? 'space-between' : ''}">
-            <AlbatrossButton
+            <a-btn
                 size="x-small"
                 v-if="d.imageIndex !== 0"
                 @click="d.imageIndex--"
@@ -79,8 +79,8 @@
                 fab
                 class="image-selection-icon"
                 prepend-icon="mdi-chevron-left"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 size="x-small"
                 v-if="d.imageIndex !== d.attachments.length - 1"
                 @click="d.imageIndex++"
@@ -88,7 +88,7 @@
                 fab
                 class="image-selection-icon"
                 prepend-icon="mdi-chevron-right"
-            ></AlbatrossButton>
+            ></a-btn>
           </div>
         </div>
         <div v-else class="design-image no-image-placeholder">
@@ -105,13 +105,13 @@
           </router-link>
           <v-icon small class="anchor">mdi-open-in-new</v-icon>
         </div>
-        <AlbatrossButton
+        <a-btn
             color="primary"
             class="mt-4 one-hunned text-capitalize font-weight-bold"
             v-if="canEdit"
             @click="addProposal(d)"
             text="Create new proposal"
-        ></AlbatrossButton>
+        ></a-btn>
         <v-list v-if="d.proposals.length > 0">
           <v-list-item
               v-for="(proposal, index) in d.proposals.slice((d.offset * numberToDisplay),(numberToDisplay + (d.offset * numberToDisplay)))"
@@ -153,7 +153,7 @@
           :class="{'disable-new': lockNewRequests || hasActiveDesign || !requestSuccessful}">
 
         <div v-if="canEdit">
-          <AlbatrossButton
+          <a-btn
               variant="text"
               :disabled="lockNewRequests || hasActiveDesign || !requestSuccessful"
               color="primary"
@@ -162,7 +162,7 @@
             <template #default>
               <v-icon :size="60">add</v-icon>
             </template>
-          </AlbatrossButton>
+          </a-btn>
           <div class="mt-5 primary--text"
                :class="{'grey--text text--darken-1': lockNewRequests || hasActiveDesign || !requestSuccessful}">
             Request New Design
@@ -225,20 +225,20 @@
 
         <v-card-actions>
           <v-spacer/>
-          <AlbatrossButton
+          <a-btn
               variant="text"
               color="primary"
               class="text-capitalize"
               @click="showNewDesignRequestForm = false"
               text="Cancel"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="primary"
               class="text-capitalize font-weight-bold"
               :disabled="!newDesignRequest.description"
               @click="requestNewDesign()"
               text="Request"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -263,19 +263,19 @@
 
         <v-card-actions>
           <v-spacer/>
-          <AlbatrossButton
+          <a-btn
               variant="text"
               class="text-capitalize"
               @click="showNewPostalCodeRequestForm = false"
               color="unset"
               text="Cancel"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="primary"
               class="text-capitalize font-weight-bold"
               @click="requestPostalCodeApproval(newDesignRequest.description)"
               text="Request Approval"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -290,7 +290,7 @@ import DatetimePickerInput from '@/components/DatetimePickerInput'
 import constants from '@/helpers/constants'
 import ImgProxy from '@/components/ImgProxy'
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

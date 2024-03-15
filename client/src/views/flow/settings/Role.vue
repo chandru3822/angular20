@@ -9,14 +9,14 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 :disabled="!role.roleName"
                 @click="saveRole"
                 color="primary"
                 prepend-icon="save"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat class="mt-2 pa-5">
@@ -64,7 +64,7 @@
 
   import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import {useRouter} from "vue-router/composables"
   import { useAppStore } from '@/stores/AppStorePinia.js'
   const appStore = useAppStore()

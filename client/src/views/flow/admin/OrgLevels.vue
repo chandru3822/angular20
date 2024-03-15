@@ -6,11 +6,11 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Org Levels</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton :hide-text-on-mobile="true" :prepend-icon="addNew ? 'close' : 'add'"
+            <a-btn :hide-text-on-mobile="true" :prepend-icon="addNew ? 'close' : 'add'"
                              variant="text"
                              :text="addNew ? 'Cancel' : 'Add New'"
                              @click="[addNew = !addNew, newOrgLevel = {}]">
-            </AlbatrossButton>
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
@@ -21,11 +21,11 @@
             <v-text-field text v-model="newOrgLevel.level" type="number"
                           label="Level" />
           </div>
-          <AlbatrossButton variant="text" text="Cancel" @click="[addNew = !addNew, newOrgLevel = {}]"></AlbatrossButton>
-          <AlbatrossButton :disabled="!newOrgLevel.levelName || !newOrgLevel.level"
+          <a-btn variant="text" text="Cancel" @click="[addNew = !addNew, newOrgLevel = {}]"></a-btn>
+          <a-btn :disabled="!newOrgLevel.levelName || !newOrgLevel.level"
                  text="Save" class="mr-2"
                  @click="saveOrgLevel(newOrgLevel, true)">
-          </AlbatrossButton>
+          </a-btn>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -55,10 +55,10 @@
                 <v-text-field text v-model="item.level" type="number"
                               label="Rank" />
               </div>
-              <AlbatrossButton :disabled="!item.levelName || !item.level"
+              <a-btn :disabled="!item.levelName || !item.level"
                      text="Save" class="mr-2"
                      @click="saveOrgLevel(item, false)">
-              </AlbatrossButton>
+              </a-btn>
             </td>
           </template>
 
@@ -67,10 +67,10 @@
               <td class="text-left">{{ item.levelName }}</td>
               <td class="text-left">{{ item.level }}</td>
               <td class="text-right">
-                <AlbatrossButton variant="text" size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
-                </AlbatrossButton>
-                <AlbatrossButton size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></AlbatrossButton>
-                <AlbatrossButton variant="text" size="small" prepend-icon="delete" @click="levelToDelete=item" />
+                <a-btn variant="text" size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                </a-btn>
+                <a-btn size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></a-btn>
+                <a-btn variant="text" size="small" prepend-icon="delete" @click="levelToDelete=item" />
               </td>
             </tr>
           </template>
@@ -93,7 +93,7 @@ import {handleHidingGlobalLoader, deleteRequest, putRequest} from '@/helpers/hel
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
-import AlbatrossButton from '@/components/customVuetify/AlbatrossButton'
+import a-btn from '@/components/customVuetify/a-btn'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRouter} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

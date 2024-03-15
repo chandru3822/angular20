@@ -10,16 +10,16 @@
           >
             <v-col cols="12">
               <v-toolbar flat class="app-toolbar">
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     small
                     class="mr-3"
                     color="primary"
                     @click="router.push('/smartlist')"
                     prepend-icon="mdi-arrow-left"
-                ></AlbatrossButton>
+                ></a-btn>
                 <v-toolbar-title class="app-title">Smartlist Editor</v-toolbar-title>
-                <AlbatrossButton
+                <a-btn
                     v-if="smartlist?.id && userCanView"
                     class="ml-6 mt-3"
                     variant="text"
@@ -27,43 +27,43 @@
                     color="primary"
                     text="View new smartlist editor"
                     prepend-icon="mdi-eye"
-                ></AlbatrossButton>
+                ></a-btn>
                 <v-spacer></v-spacer>
                 <v-toolbar-items>
-                  <AlbatrossButton
+                  <a-btn
                       v-if="smartlist.id"
                       variant="text"
                       color="primary"
                       prepend-icon="mdi-cloud-download"
                       @click="runReport"
                       text="Export"
-                  ></AlbatrossButton>
+                  ></a-btn>
 
-                  <AlbatrossButton
+                  <a-btn
                       v-if="smartlist.id && userCanAdd"
                       variant="text"
                       color="primary"
                       @click="copy"
                       prepend-icon="mdi-content-copy"
                       text="Duplicate"
-                  ></AlbatrossButton>
+                  ></a-btn>
 
-                  <AlbatrossButton
+                  <a-btn
                       v-if="userCanEdit"
                       variant="text"
                       color="primary"
                       @click="validateForm"
                       text="Save"
                       prepend-icon="save"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       variant="text"
                       v-if="canDelete"
                       color="primary"
                       @click="showDeleteDialog=true"
                       text="Delete"
                       prepend-icon="delete"
-                  ></AlbatrossButton>
+                  ></a-btn>
                   <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="[showDeleteDialog = false, deleteSmartlist()]" @close-dialog="showDeleteDialog=false">
                     <template v-slot:title>Confirm</template>
                     Are you sure you want to delete this smartlist?
@@ -182,13 +182,13 @@
           @form-reset="resetRequirementForm = false"
       />
 
-      <AlbatrossButton
+      <a-btn
           color="primary"
           class="build-sql"
           @click="buildSql"
           v-if="is7oaksAdmin || userId === 2350555"
           text="BUILD SQL"
-      ></AlbatrossButton>
+      ></a-btn>
       <div v-if="sql != null" class="pa-5">
         {{ sql }}
       </div>
@@ -209,7 +209,7 @@ import { saveAs } from 'file-saver'
 import {DateTime} from 'luxon'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import Smartlist from '@/views/flow/smartlist/Smartlist'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

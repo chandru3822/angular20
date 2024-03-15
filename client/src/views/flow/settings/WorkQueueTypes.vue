@@ -26,12 +26,12 @@
           ></v-autocomplete>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text" :hide-text-on-mobile="true" :text="addNew ? 'Cancel' : 'Add New'"
+            <a-btn variant="text" :hide-text-on-mobile="true" :text="addNew ? 'Cancel' : 'Add New'"
                              class="mx-2"
                              custom-classes=""
                              :prepend-icon="addNew ? 'close' : 'add'"
                              @click="[addNew = !addNew, newType = {}]" v-if="userCanAdd">
-            </AlbatrossButton>
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -53,13 +53,13 @@
               <input type="checkbox" class="ml-3" v-model="newType.useEventData">
               <span class="no-change-text">* This value cannot be changed after creation.</span>
             </div>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 class="mt-2"
                 :disabled="!newType.workQueueType || !newType.workQueueCategoryId"
                 @click="addNewType"
                 text="Save"
-            ></AlbatrossButton>
+            ></a-btn>
           </div>
           <v-text-field
               v-model="search"
@@ -90,7 +90,7 @@
 
               <tr class="clickable" :class="{'shaded-row': workQueueTypes.indexOf(item) % 2}">
                 <td style="width: 50px" @click="goToDetails(item)">
-                  <AlbatrossButton
+                  <a-btn
                       v-if="(userCanEdit || userIsAdmin) && selectedWorkQueueCategoryId !== -1"
                       variant="text"
                       color="primary"
@@ -98,7 +98,7 @@
                       size="small"
                       class="handle"
                       prepend-icon="drag_handle"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </td>
                 <td class="text-left" @click="goToDetails(item)">
                   {{ item.workQueueType }}
@@ -111,7 +111,7 @@
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
-                    <AlbatrossButton
+                    <a-btn
                         @click="goToDetails(item)"
                         class="clickable"
                         size="small"
@@ -119,8 +119,8 @@
                         color="primary"
                         v-if="userCanEdit || userIsAdmin"
                         prepend-icon="edit"
-                    ></AlbatrossButton>
-                    <AlbatrossButton
+                    ></a-btn>
+                    <a-btn
                         class="clickable"
                         @click="workQueueToDelete=item"
                         size="small"
@@ -128,7 +128,7 @@
                         color="primary"
                         v-if="userCanDelete"
                         prepend-icon="delete"
-                    ></AlbatrossButton>
+                    ></a-btn>
                   </div>
                 </td>
               </tr>
@@ -152,7 +152,7 @@
 import orderBy from 'lodash.orderby'
 import cloneDeep from 'lodash.clonedeep'
 import {getWorkQueueTypes, getWorkQueueCategories} from '@/services/workQueueService'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 
 import {handleHidingGlobalLoader, putRequest, postRequest, defineSortableTable} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";

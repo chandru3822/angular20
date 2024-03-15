@@ -5,48 +5,48 @@
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <AlbatrossButton
+      <a-btn
           icon
           color="#ddd"
           html-style="border-radius: 3px"
           v-if="userCanEdit && showAdd"
           @click.native.stop="handleAddBtnClick(!addMode && !editMode)"
           :prepend-icon="!addMode && !editMode ? 'add' : 'remove'"
-      ></AlbatrossButton>
-      <AlbatrossButton
+      ></a-btn>
+      <a-btn
           icon
           color="#ddd"
           html-style="border-radius: 3px"
           v-if="showExpanded"
           :prepend-icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-      ></AlbatrossButton>
+      ></a-btn>
       <!--      <v-icon v-if="showExpanded" class="white&#45;&#45;text clickable">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>-->
     </v-toolbar>
     <v-card-text v-if="expanded">
       <div v-show="addMode || editMode" class="px-3 pt-4 pb-3">
         <slot name="addOrEdit">Add or Edit</slot>
         <div class="link-btns">
-          <AlbatrossButton
+          <a-btn
               color="primary"
               variant="text"
               @click="hideCtrls"
               class="cancel-link"
               text="Cancel"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               v-show="editMode"
               v-if="userCanEdit"
               @click="deleteItem"
               class="error"
               color="unset"
               text="Delete"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               @click="save"
               color="primary"
               :disabled="addBtnDisabled"
               :text="addMode ? 'Add' : 'Update'"
-          ></AlbatrossButton>
+          ></a-btn>
         </div>
       </div>
       <slot>Default</slot>
@@ -57,7 +57,7 @@
 <script setup>
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
 import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'

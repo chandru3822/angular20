@@ -5,12 +5,12 @@
         <v-app-bar id="date-range-btns-toolbar" class="elevation-1">
           <v-toolbar-items>
             <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
-              <AlbatrossButton v-for="button in timeIntervalBtns"
+              <a-btn v-for="button in timeIntervalBtns"
                   variant="text"
                   @click="setTimeInterval(button.timeInterval)"
                   color="unset"
                   :text="button.name"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-btn-toggle>
           </v-toolbar-items>
         </v-app-bar>
@@ -21,12 +21,12 @@
     <div class="ranking-tables-section-header">
       <span v-if="!userCanViewAll">Your </span>Office Ranking
       <div class="expand-section">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             @click="showOfficeRankingSection = !showOfficeRankingSection"
             color="unset"
             :prepend-icon="!showOfficeRankingSection ? 'mdi-chevron-down' : 'mdi-chevron-up'"
-        ></AlbatrossButton>
+        ></a-btn>
       </div>
     </div>
     <!-- RANKING TABLES FIRST HEADER END -->
@@ -167,12 +167,12 @@
     <div class="ranking-tables-section-header" :class="{'fix-bottom-page-issue': !showCompanyRankingSection}">
       Company Ranking
       <div class="expand-section">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             @click="showCompanyRankingSection = !showCompanyRankingSection"
             color="unset"
             :prepend-icon="!showCompanyRankingSection ? 'mdi-chevron-down' : 'mdi-chevron-up'"
-        ></AlbatrossButton>
+        ></a-btn>
       </div>
     </div>
     <!-- RANKING TABLES SECOND HEADER END -->
@@ -298,7 +298,7 @@ import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
 import {getCurrentInstance, ref, computed, onMounted} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

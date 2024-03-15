@@ -5,7 +5,7 @@
         <v-toolbar flat class="app-toolbar">
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newCategory = { color: '#ffffff'}]" v-if="userCanAdd"
@@ -33,7 +33,7 @@
               </v-avatar>
             </div>
             <v-color-picker v-if="showColor" class="my-3" v-model="newCategory.color" :canvas-height="colorOptions.height" :width="colorOptions.width" :mode="colorOptions.mode" :hide-mode-switch="colorOptions.hideModeSwitch"></v-color-picker>
-            <AlbatrossButton
+            <a-btn
               color="primary"
               :disabled="!newCategory.workQueueCategory"
               @click="addNewCategory"
@@ -63,7 +63,7 @@
             <template #item="{ item }">
               <tr :class="{'shaded-row': workQueueCategories.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <AlbatrossButton variant="text"
+                  <a-btn variant="text"
                                    color="primary"
                                    icon
                                    size="small"
@@ -113,7 +113,7 @@
                                         @allow-changed="workQueueCategoriesHiddenAllowEventListener"
                                         @checkbox-changed="workQueueCategoriesHiddenCheckboxEventListener"></multi-select-group>
                                       <br v-if="!item.hidden">
-                                      <AlbatrossButton color="primary" dark class="d-inline-block white--text"
+                                      <a-btn color="primary" dark class="d-inline-block white--text"
                                              @click="saveHiddenAndWhiteList(item)" prepend-icon="save" text="SAVE HIDDEN"
                                       />
                                     </v-card>
@@ -122,21 +122,21 @@
 
                 <td class="text-right">
                   <div v-if="userCanEdit" class="item-icons">
-                    <AlbatrossButton v-if="selectedWorkQueueCategoryId  === item.id"
+                    <a-btn v-if="selectedWorkQueueCategoryId  === item.id"
                                      class="clickable"
                                      size="small" variant="text"
                                      color="primary"
                                      prepend-icon="save"
                                      @click="saveCategory(item)"
                     />
-                    <AlbatrossButton v-else
+                    <a-btn v-else
                                      class="clickable"
                                      size="small" variant="text"
                                      color="primary"
                                      prepend-icon="edit"
                                      @click="selectedWorkQueueCategoryId = item.id; selectedWorkQueueCategoryDisplayOrder = item.displayOrder"
                     />
-                    <AlbatrossButton
+                    <a-btn
                       :disabled="!userCanDelete"
                       size="small" variant="text"
                       color="primary"
@@ -178,7 +178,7 @@
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import { useAppStore } from '@/stores/AppStorePinia.js'
   const appStore = useAppStore()

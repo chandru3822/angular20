@@ -6,12 +6,12 @@
           <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
           <v-spacer></v-spacer>
           <div v-if="changesMade">
-            <AlbatrossButton
+            <a-btn
               class="mr-2"
               :to="{ path: `/settings/processes`}"
               text="CANCEL"
             />
-            <AlbatrossButton
+            <a-btn
               color="primary white--text"
               @click="saveProcess"
               v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
@@ -24,7 +24,7 @@
             <span v-else :class="{'one-hunned': isMobile}">
               {{  processId ? process.processName : 'New Process Step'}}
             </span>
-            <AlbatrossButton
+            <a-btn
               class="d-inline-block"
               size="small"
               variant="text"
@@ -33,7 +33,7 @@
               @click="saveProcess()"
               prepend-icon="save"
             />
-            <AlbatrossButton
+            <a-btn
               class="d-inline-block"
               size="small"
               variant="text"
@@ -44,7 +44,7 @@
             />
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               @click="getAvailableProcessSteps()"
@@ -88,7 +88,7 @@
             ></v-divider>
             </template>
         </v-autocomplete>
-          <AlbatrossButton
+          <a-btn
             @click="saveDeniedPositions"
             variant="text"
             icon
@@ -117,7 +117,7 @@
                           attach
           ></v-autocomplete>
           <!--  per scott: temporarily removing requirement for orgId        -->
-          <AlbatrossButton
+          <a-btn
             color="primary"
             :disabled="!newProcessStep.processStepId || !newProcessStep.owningPositions || newProcessStep.owningPositions.length === 0"
             @click="assignProcessStep"
@@ -182,13 +182,13 @@
                                 attach
                 ></v-autocomplete>
                 <div class="mt-3 text-center">
-                  <AlbatrossButton
+                  <a-btn
                     color="primary"
                     :disabled="(item.initialStep && !item.companyProcessStepStatusTypeId) || (!item.owningPositions || item.owningPositions.length === 0)"
                     @click="saveProcessStepProcess(item)"
                     text="SAVE"
                   />
-                  <AlbatrossButton
+                  <a-btn
                     variant="text"
                     color="primary"
                     class="ml-3"
@@ -213,14 +213,14 @@
               <template #item.processStepStatusType="{item}" class="text-left">{{ item.processStepStatusType }}</template>
               <template #item.icons="{item}">
                 <div style="display: flex; float: right;">
-                  <AlbatrossButton
+                  <a-btn
                     variant="text"
                     color="primary"
                     @click="[expanded.includes(item) ? expanded = [] : expanded = [item], getActiveProcessAssignedToProcessStep(item)]"
                     v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
                     :prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
                   />
-                  <AlbatrossButton
+                  <a-btn
                     :disabled="!userCanDelete"
                     variant="text"
                     color="primary"
@@ -248,7 +248,7 @@ import {getActiveAssignedToProcessStep} from '@/services/processStepStatusTypeSe
 import { handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'

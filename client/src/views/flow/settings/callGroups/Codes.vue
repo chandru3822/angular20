@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text" icon
+            <a-btn variant="text" icon
                              :large="vuetify.breakpoint.smAndDown"
                              color="primary"
                              v-if="userCanAdd"
@@ -63,7 +63,7 @@
             <tr>
               <td class="text-left code-col">{{item.postalCode}}</td>
               <td class="text-right">
-                <AlbatrossButton size="small" variant="text"
+                <a-btn size="small" variant="text"
                                  icon
                                  :large="vuetify.breakpoint.smAndDown"
                                  color="primary"
@@ -88,7 +88,7 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRoute} from "vue-router/composables"

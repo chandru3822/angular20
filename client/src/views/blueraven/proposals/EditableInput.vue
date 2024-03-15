@@ -3,7 +3,7 @@
     <span v-if="!isEditMode">{{ displayText || name }}</span>
     <v-text-field v-else v-model="name" solo single-line flat autofocus />
     <div v-if="editable">
-      <AlbatrossButton
+      <a-btn
           size="small"
           icon
           color="primary"
@@ -11,20 +11,20 @@
           class="pl-2"
           v-if="editable"
           :prepend-icon="!isEditMode ? 'mdi-pencil' : 'mdi-close'"
-      ></AlbatrossButton>
-      <AlbatrossButton
+      ></a-btn>
+      <a-btn
           size="small"
           icon
           color="primary"
           @click="handleSave"
           v-if="editable && isEditMode"
           prepend-icon="mdi-cloud"
-      ></AlbatrossButton>
+      ></a-btn>
     </div>
   </div>
 </template>
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

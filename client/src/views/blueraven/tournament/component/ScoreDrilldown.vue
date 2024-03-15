@@ -7,12 +7,12 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             @click="$emit('scoreDialogClosed')"
             text="Close"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-data-table
@@ -83,7 +83,7 @@ import {getRequest, logError, } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import sumBy from 'lodash.sumby'
 import {getRequestWithParams} from "@/helpers/helpers"
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

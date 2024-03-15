@@ -4,7 +4,7 @@
         History
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
-        <AlbatrossButton
+        <a-btn
           variant="text"
           icon
           color="primary"
@@ -43,7 +43,7 @@
 </template>
 
 <script setup>
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import { ref } from "vue"
 
   const props = defineProps({

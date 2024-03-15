@@ -57,13 +57,13 @@
                       transition="scale-transition"
                       offset-y>
                 <template v-slot:activator="{ on }">
-                  <AlbatrossButton
+                  <a-btn
                       :activation-handler="on"
                       class="custom-dates-btn"
                       color="unset"
                       :text="apptsCreatedPipelineDateRange.label"
                       prepend-icon="mdi-menu-down"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </template>
                 <v-list>
                   <v-list-item v-for="(dateRange, index) in apptsCreatedPipelineDateRanges"
@@ -386,14 +386,14 @@
               </template>
             </v-autocomplete>
 
-            <AlbatrossButton
+            <a-btn
                 v-if="!isCloser && !isCloserMgr"
                 id="all-reps-btn"
                 variant="outlined"
                 color="primary"
                 @click="funnelAllReps"
                 text="All Reps"
-            ></AlbatrossButton>
+            ></a-btn>
 
           </div>
         </div>
@@ -449,20 +449,20 @@
             <tr class="funnel-tr">
               <th class="funnel-th view-btns">
                 <div class="view-btns-container">
-                  <AlbatrossButton
+                  <a-btn
                       class="funnel-btn black--text"
                       @click="viewSelected('standard')"
                       :class="{'white--text': viewSelect === 'standard', 'primary--text': viewSelect !== 'standard', 'elevation-2': viewSelect !== 'standard'}"
                       :color="viewSelect === 'standard' ? 'primary' : 'secondary'"
                       text="Standard View"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       class="funnel-btn black--text"
                       @click="viewSelected('apptDateCohort')"
                       :class="{'white--text': viewSelect === 'apptDateCohort', 'primary--text': viewSelect !== 'apptDateCohort', 'elevation-2': viewSelect !== 'apptDateCohort'}"
                       :color="viewSelect === 'apptDateCohort' ? 'primary' : 'secondary'"
                       text="Appt Date Cohort"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </div>
               </th>
               <th class="funnel-th">TODAY</th>
@@ -495,13 +495,13 @@
                         transition="scale-transition"
                         offset-y>
                   <template v-slot:activator="{ on }">
-                    <AlbatrossButton
+                    <a-btn
                         :activation-handler="on"
                         class="custom-dates-btn"
                         color="unset"
                         :text="apptsToFdcPipelineDateRange.label"
                         prepend-icon="mdi-menu-down"
-                    ></AlbatrossButton>
+                    ></a-btn>
                   </template>
                   <v-list>
                     <v-list-item v-for="(dateRange, index) in apptsToFdcPipelineDateRanges"
@@ -614,12 +614,12 @@
           <v-card-title class="mb-1">
             <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
             <v-spacer></v-spacer>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 class="mr-4 mb-2"
                 @click="exportDrilldownCsv()"
                 text="Export"
-            ></AlbatrossButton>
+            ></a-btn>
             <a class="close-modal-x pb-3" title="Close" @click="closeFunnelDrilldownDialog">×</a>
           </v-card-title>
           <v-divider></v-divider>
@@ -778,12 +778,12 @@
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <AlbatrossButton
+            <a-btn
                 class="text-capitalize mr-4 mb-2"
                 color="primary"
                 @click="closeFunnelDrilldownDialog"
                 text="Close"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -809,7 +809,7 @@ import {
   getCloserOffices,
   getCloserReps
 } from '@/services/dashboardService'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

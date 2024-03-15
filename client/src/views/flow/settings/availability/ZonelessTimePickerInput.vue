@@ -30,18 +30,18 @@
     :ampm-in-title="true"
   >
     <v-spacer></v-spacer>
-    <AlbatrossButton
+    <a-btn
         variant="text"
         color="primary"
         @click="cancel()"
         text="Cancel"
-    ></AlbatrossButton>
-    <AlbatrossButton
+    ></a-btn>
+    <a-btn
         variant="text"
         color="primary"
         @click="saveTime()"
         text="OK"
-    ></AlbatrossButton>
+    ></a-btn>
   </v-time-picker>
 </v-menu>
 </template>
@@ -49,7 +49,7 @@
 
 <script setup>
 import {onMounted, ref, toRefs, computed, watch, defineProps} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 
 const props = defineProps({
   value: String,

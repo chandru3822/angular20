@@ -13,45 +13,45 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="mr-2"
               v-if="userIsAdmin && planId"
               @click="showProjectAssignmentModal = true"
               text="Admin"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="primary"
               class="mr-2"
               :disabled="!commission.name || !commission.positionId"
               v-if="userCanEdit"
               @click="savePlan()"
               text="Save"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               color="success"
               class="mr-2"
               v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && commission.statusType === 'PENDING'"
               :disabled="errorMessages.length > 0"
               @click="approvePlan()"
-          > Approve </AlbatrossButton>
+          > Approve </a-btn>
           <ConfirmationDialog :open-dialog="showDeleteConfirm" @confirm="[deleteConfirm = true, deletePlan()]"
                               @close-dialog="showDeleteConfirm=false">
             Are you sure you want to delete this plan?
           </ConfirmationDialog>
-          <AlbatrossButton
+          <a-btn
               v-if="planId && !commission.approved && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
               @click="showDeleteConfirm = true"
               color="error"
               text="delete"
-          ></AlbatrossButton>
-          <AlbatrossButton
+          ></a-btn>
+          <a-btn
               v-else-if="planId && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
               @click="inactivateConfirm = true"
               color="error"
               class="mr-2"
               text="Inactivate"
-          ></AlbatrossButton>
+          ></a-btn>
           <ConfirmationDialog :open-dialog="inactivateConfirm" :hide-confirm="planHasActiveUsers()"
                               @confirm="inactivatePlan" @close-dialog="inactivateConfirm = false">
             <template v-if="planHasActiveUsers()" v-slot:title>Error</template>
@@ -70,13 +70,13 @@
             </div>
             <template v-if="!planHasActiveUsers()" v-slot:yes>Inactivate</template>
           </ConfirmationDialog>
-          <AlbatrossButton
+          <a-btn
               v-if="planId && commission && commission.users && userCanAdd && commission.users.filter(u => {return u.endDate == null}).length > 0"
               color="primary"
               class="ml-3"
               @click="cloneDialog = true"
               text="Clone"
-          > </AlbatrossButton>
+          > </a-btn>
           <ConfirmationDialog :open-dialog="cloneDialog"
                               :disable-confirm="(commission.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||
                               (commission.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"
@@ -190,13 +190,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="commission.statusType === 'PENDING'"
                 @click="[selectedMilestone = {}, addMilestone = !addMilestone, getMilestones()]"
                 :prepend-icon="addMilestone ? 'remove' : 'add'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -230,13 +230,13 @@
           <div class="error-text mb-3" v-if="milestoneError">
             {{ milestoneErrorMsg }}
           </div>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="mr-3"
               @click="addMilestoneToPlan()"
               :disabled="!selectedMilestone.id || (!selectedMilestone.allocation && !selectedMilestone.min) || milestoneError"
               text="Add"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card>
         <v-divider v-if="addMilestone"></v-divider>
         <v-data-table
@@ -284,12 +284,12 @@
               <div class="error-text mb-3" v-if="milestoneError">
                 {{ milestoneErrorMsg }}
               </div>
-              <AlbatrossButton
+              <a-btn
                   :disabled="!item.allocation || (commission.positionId === 4 && !item.min) || milestoneError"
                   @click="[milestoneExpanded = [], updateMilestone(item)]"
                   color="primary"
                   text="Save"
-              ></AlbatrossButton>
+              ></a-btn>
             </td>
           </template>
 
@@ -300,29 +300,29 @@
               <td class="text-left" v-if="commission.positionId === 4">{{ item.max }}</td>
               <td class="text-left">{{ item.allocation }}</td>
               <td>
-                <AlbatrossButton
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="milestoneExpanded = [item]"
                     v-if="commission.statusType === 'PENDING' && !milestoneExpanded.includes(item)"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="milestoneExpanded = []"
                     v-if="milestoneExpanded.includes(item)"
                     text="cancel"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="milestoneToDelete=item"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -337,13 +337,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="commission.statusType === 'PENDING'"
                 @click="[selectedSource = {}, addSource = !addSource, getSources()]"
                 :prepend-icon="addSource ? 'remove' : 'add'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -374,13 +374,13 @@
                       item-text="milestoneType"
                       item-value="milestoneId"
             ></v-select>
-            <AlbatrossButton
+            <a-btn
                 color="primary"
                 class="mr-3"
                 @click="addSourceToPlan()"
                 :disabled="!selectedSource.id || !selectedSource.feeTypeId || !selectedSource.feeAmount"
                 text="Add"
-            ></AlbatrossButton>
+            ></a-btn>
           </div>
         </v-card>
         <v-divider v-if="addSource"></v-divider>
@@ -421,12 +421,12 @@
                         item-text="milestoneType"
                         item-value="milestoneId"
               ></v-select>
-              <AlbatrossButton
+              <a-btn
                   :disabled="!item.feeAmount || !item.feeTypeId || !item.milestoneId"
                   @click="[sourceExpanded = [], updateSource(item)]"
                   color="primary"
                   text="Save"
-              ></AlbatrossButton>
+              ></a-btn>
             </td>
           </template>
 
@@ -437,30 +437,30 @@
               <td class="text-left">{{ item.feeType }}</td>
               <td class="text-left">{{ item.milestoneType }}</td>
               <td>
-                <AlbatrossButton
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="sourceExpanded = [item]"
                     v-if="commission.statusType === 'PENDING' && !sourceExpanded.includes(item)"
                     prepend-icon="edit"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="sourceExpanded = []"
                     v-if="sourceExpanded.includes(item)"
                     text="cancel"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     v-if="commission.statusType === 'PENDING'"
                     size="small"
                     variant="text"
                     color="primary"
                     @click="sourceToDelete=item"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -475,13 +475,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="[addUser = !addUser, newUser = {}, userHistory = []]"
                 v-if="userCanAdd"
                 :prepend-icon="addUser ? 'remove' : 'add'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -549,13 +549,13 @@
           <div class="mb-2" v-else-if="newUser.showNote">
             {{ newUser.noteMsg }}
           </div>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               class="mr-3"
               @click="addUserToPlan()"
               :disabled="newUser.dateError || !newUser.userId || !newUser.startDate || errorLoadingUserHistory"
               text="Add"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card>
         <v-divider v-if="addUser"></v-divider>
         <v-data-table
@@ -615,13 +615,13 @@
               <div class="mb-2" v-else-if="item.showNote">
                 {{ item.noteMsg }}
               </div>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   class="mr-3"
                   @click="updateAssignedUser(item)"
                   :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory"
                   text="Save"
-              ></AlbatrossButton>
+              ></a-btn>
             </td>
           </template>
 
@@ -633,30 +633,30 @@
               <td class="text-left">{{ item.startDate }}</td>
               <td class="text-left">{{ item.endDate }}</td>
               <td>
-                <AlbatrossButton
+                <a-btn
                     v-if="commission.statusType === 'PENDING' && !assignedUserExpanded.includes(item)"
                     size="small"
                     variant="text"
                     color="primary"
                     prepend-icon="edit"
                     @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     @click="assignedUserExpanded = []"
                     v-if="assignedUserExpanded.includes(item)"
                     text="cancel"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     v-if="commission.statusType === 'PENDING'"
                     size="small"
                     variant="text"
                     color="primary"
                     @click="userToDelete=item"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -687,7 +687,7 @@
 <script setup>
 import moment from 'moment'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {
   handleHidingGlobalLoader,
   getRequest,

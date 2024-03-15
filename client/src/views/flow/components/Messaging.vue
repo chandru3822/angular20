@@ -36,7 +36,7 @@
       <template v-slot:activator="{on: menu, attrs}">
         <v-tooltip bottom small>
           <template v-slot:activator="{on: tooltip, attrs}">
-            <AlbatrossButton
+            <a-btn
                 icon
                 color="primary"
                 v-bind="attrs"
@@ -45,7 +45,7 @@
                 html-style="display: none"
                 small
                 prepend-icon="article"
-            ></AlbatrossButton>
+            ></a-btn>
           </template>
           <span class="albatross-body-3">Templates</span>
         </v-tooltip>
@@ -88,7 +88,7 @@ import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const appStore = useAppStore()
 const route = useRoute()

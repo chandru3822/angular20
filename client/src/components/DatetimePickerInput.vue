@@ -41,18 +41,18 @@
         @click:date="saveDate()"
     >
       <v-spacer></v-spacer>
-      <AlbatrossButton
+      <a-btn
           variant="text"
           color="primary"
           @click="cancel()"
           text="Cancel"
-      ></AlbatrossButton>
-      <AlbatrossButton
+      ></a-btn>
+      <a-btn
           variant="text"
           color="primary"
           @click="saveDate()"
           text="OK"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-date-picker>
 
     <v-time-picker
@@ -63,20 +63,20 @@
         :ampm-in-title="true"
     >
       <v-spacer></v-spacer>
-      <AlbatrossButton
+      <a-btn
           variant="text"
           color="primary"
           class="qa-date-cancel"
           @click="cancel()"
           text="Cancel"
-      ></AlbatrossButton>
-      <AlbatrossButton
+      ></a-btn>
+      <a-btn
           variant="text"
           color="primary"
           class="qa-date-ok"
           @click="saveTime()"
           text="OK"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-time-picker>
   </v-menu>
 </template>
@@ -85,7 +85,7 @@
 import {DateTime} from 'luxon'
 import moment from 'moment'
 import constants from '@/helpers/constants'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

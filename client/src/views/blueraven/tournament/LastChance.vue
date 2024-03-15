@@ -16,12 +16,12 @@
         {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <AlbatrossButton
+          <a-btn
               v-if="userCanEdit && !dataLoading && selectedUsers.length > 0"
               color="primary"
               @click="moveUsersToWinnersPool()"
               text="Advance Users To Next Round"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-text-field
@@ -71,14 +71,14 @@
               <span v-else>{{item.score}}</span>
             </td>
             <td class="text-right">
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   size="small"
                   color="primary"
                   class="clickable"
                   @click="[showModal = true, showScoreUser = item]"
                   prepend-icon="mdi-format-list-bulleted"
-              ></AlbatrossButton>
+              ></a-btn>
             </td>
           </tr>
         </template>
@@ -88,7 +88,7 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {handleHidingGlobalLoader, getRequest, logError, postRequest, } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ScoreDrilldown from "./component/ScoreDrilldown"

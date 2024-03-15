@@ -27,7 +27,7 @@
           </template>
               <template #item.icons="{item}">
                 <div style="display: flex; justify-content: flex-end">
-                  <AlbatrossButton size="small" variant="text"
+                  <a-btn size="small" variant="text"
                                    :large="vuetify.breakpoint.smAndDown"
                                    icon color="primary" @click="goToDetails(item)"
                                    prepend-icon="edit"
@@ -43,7 +43,7 @@
 
 <script setup>
 import {getRequest, logError} from '@/helpers/helpers'
-import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+
 import {getCurrentInstance, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRouter} from "vue-router/composables"

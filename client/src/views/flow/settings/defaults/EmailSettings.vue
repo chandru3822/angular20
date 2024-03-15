@@ -6,20 +6,20 @@
           <v-toolbar-title class="title-large">Email Settings</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="addNew"
                 @click="addEmail()"
                 :disabled="!addFormValid"
                 prepend-icon="save"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="[addNew = !addNew, newEmail = {}]"
                 :text="addNew ? 'Cancel' : 'Add New'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
       </v-col>
@@ -88,15 +88,15 @@
                 <v-checkbox v-if="index == editIndex" v-model="item.checked" :value="item.isDefault" :disabled="item.isDefault" label="Default"></v-checkbox>
               </template>
               <template #item.icons="{item, index}">
-                <AlbatrossButton
+                <a-btn
                     icon
                     color="primary"
                     @click="editIndex = index"
                     v-if="index !== editIndex"
                     prepend-icon="edit"
                     :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     icon
                     color="primary"
                     @click="updateEmailAddress(item)"
@@ -104,23 +104,23 @@
                     v-if="index === editIndex"
                     prepend-icon="save"
                     :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     size="small"
                     variant="text"
                     color="primary"
                     v-if="index === editIndex"
                     @click="clearChanges()"
                     text="cancel"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     :disabled="item.isDefault"
                     icon
                     color="primary"
                     @click="emailToDelete=item"
                     prepend-icon="delete"
                     :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
-                ></AlbatrossButton>
+                ></a-btn>
               </template>
         </v-data-table>
       </v-col>
@@ -128,14 +128,14 @@
       Are you sure you want to delete this email address: <strong>{{emailToDeleteAddress}}</strong>?
     </ConfirmationDialog>
 
-    <AlbatrossButton
+    <a-btn
         v-if="is7oaksAdmin"
         class="mt-5"
         :loading="emailQueueProcessing"
         color="primary"
         @click="processEmailQueue()"
         text="Force email queue processing"
-    ></AlbatrossButton>
+    ></a-btn>
   </v-container>
 </template>
 
@@ -151,7 +151,7 @@ import {
 import {AppMutations} from "@/stores/AppStore";
 import constants from "@/helpers/constants";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue"
 import {useUserStore} from "@/stores/UserStorePinia.js"
 import { useAppStore } from '@/stores/AppStorePinia.js'

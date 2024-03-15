@@ -28,7 +28,7 @@
                               label="Confirm New Password" id="newPasswordConfirm" type="password"></v-text-field>
                 <v-card-actions>
                 <v-spacer></v-spacer>
-                <AlbatrossButton :loading="loginLoading" type="submit" text="Save" />
+                <a-btn :loading="loginLoading" type="submit" text="Save" />
                 </v-card-actions>
               </v-form>
             </v-card-text>
@@ -43,7 +43,7 @@
   import constants from '@/helpers/constants'
   import axios from 'axios'
   import {getCurrentInstance, ref} from 'vue'
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
   import { useUserStore } from '@/stores/UserStorePinia.js'
 
   const vueInstance = getCurrentInstance().proxy

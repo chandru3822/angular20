@@ -8,7 +8,7 @@
 *
 */
 import moment from 'moment'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 
 const props = defineProps({
   projectId: Number,
@@ -51,10 +51,10 @@ const togglePinToMap = () => {
     <span class="label-medium pr-1 break-word max-width-half">{{projectName}}</span>
     <v-chip v-if="status" small color="success lighten-4" class="grey--text text--darken-4 body-small">{{status}}</v-chip>
     <v-spacer/>
-    <AlbatrossButton icon size="small" color="primary" @click.native.stop="togglePinToMap">
+    <a-btn icon size="small" color="primary" @click.native.stop="togglePinToMap">
     <v-icon v-if="pinned">mdi-map-marker</v-icon>
     <v-icon v-else>mdi-map-marker-off</v-icon>
-    </AlbatrossButton>
+    </a-btn>
   </v-card-title>
   <v-card-text class="grey--text text--darken-4">
     <div class="body-medium">{{event}} ({{processStep}})</div>

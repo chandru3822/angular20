@@ -29,21 +29,21 @@
     </v-select>
     <v-card-actions class="pt-1 pb-0 px-0">
       <v-spacer/>
-      <AlbatrossButton
+      <a-btn
           class="text-capitalize"
           @click="exitDialogue"
           variant="text"
           color="primary"
           text="Cancel"
-      ></AlbatrossButton>
+      ></a-btn>
 
-      <AlbatrossButton
+      <a-btn
           color="primary"
           class="text-capitalize"
           :disabled="!selectedSmsTeam"
           @click="joinConversation"
           text="Join"
-      ></AlbatrossButton>
+      ></a-btn>
     </v-card-actions>
   </v-card>
   </v-dialog>
@@ -51,7 +51,7 @@
 
 <script setup>
 import {ref, defineProps} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 
 const props = defineProps({
   showJoinConversationDialog: Boolean,

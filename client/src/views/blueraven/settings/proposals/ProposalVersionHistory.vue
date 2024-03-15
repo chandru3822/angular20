@@ -83,12 +83,12 @@
 
       <v-card-actions>
         <v-spacer/>
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             @click="close()"
             text="Close"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-card-actions>
     </v-card>
     <v-card v-if="!loading && error">
@@ -98,12 +98,12 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer/>
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             @click="close()"
             text="Close"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -112,7 +112,7 @@
 import {getRequest} from "@/helpers/helpers";
 import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 
 const props = defineProps(['visible', 'version'])
 const emit = defineEmits(['update:visible'])

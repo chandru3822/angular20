@@ -6,7 +6,7 @@
           class="account-menu"
           :close-on-content-click="false">
     <template v-slot:activator="{ on }">
-      <AlbatrossButton
+      <a-btn
           class="account-menu-button"
           :color="headerColor"
           :activation-handler="on">
@@ -18,7 +18,7 @@
             <img name="accountImg" v-else src="../assets/flow/user_img_placeholder.png">
           </v-avatar>
         </template>
-      </AlbatrossButton>
+      </a-btn>
     </template>
     <div>
       <v-list two-line>
@@ -64,7 +64,7 @@
 <script setup>
 import constants from '@/helpers/constants'
 import { useFileStore } from '@/stores/FileStore.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

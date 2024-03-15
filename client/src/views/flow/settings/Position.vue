@@ -17,7 +17,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               :disabled="!position.position || (!position.orgTypeId && !clonePositionId)"
               @click="savePosition"
@@ -26,7 +26,7 @@
               prepend-icon="save"
               text="SAVE"
             />
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               @click="router.push('/settings/positions')"
@@ -136,7 +136,7 @@
   import {getOrgTypes} from '@/services/orgService'
   import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
   import {handleHidingGlobalLoader, getRequest, putRequest, postRequest} from '@/helpers/helpers'
-  import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+
   import {getCurrentInstance, onMounted, ref, computed, watch} from 'vue'
   import {onBeforeRouteLeave} from 'vue-router/composables'
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue'

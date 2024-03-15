@@ -22,12 +22,12 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <AlbatrossButton
+          <a-btn
             color="primary"
             dark
             @click="deleteError = false"
             text="OK"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -37,7 +37,7 @@
           <v-toolbar-title class="title-large">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+            <a-btn v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               variant="text"
               @click="[addNew = !addNew, newType = {}]"
               color="primary"
@@ -45,7 +45,7 @@
               :text="!addNew ? 'Add New' : 'Cancel'"
               :prepend-icon="addNew ? 'close' : 'add'"
             >
-            </AlbatrossButton>
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -55,7 +55,7 @@
                           placeholder="Enter a type"
                           label="Attachment Type">
             </v-text-field>
-            <AlbatrossButton v-if="addNew"
+            <a-btn v-if="addNew"
                              color="primary"
                              :disabled="!newType.attachmentType"
                              @click="addNewType"
@@ -86,7 +86,7 @@
                 <tr :class="{'shaded-row': index % 2}">
                   <td class="text-left clickable" @click="goToType(item.id)">{{ item.attachmentType }}</td>
                   <td class="text-right" :class="{'d-flex flex-column align-end': vuetify.breakpoint.xsOnly}">
-                    <AlbatrossButton
+                    <a-btn
                       size="small"
                       variant="text"
                       color="primary"
@@ -114,7 +114,7 @@
 <script setup>
   import { getCurrentInstance, ref, computed, onMounted} from "vue";
   import orderBy from 'lodash.orderby'
-  import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+
   import {
     handleHidingGlobalLoader,
     getRequest,

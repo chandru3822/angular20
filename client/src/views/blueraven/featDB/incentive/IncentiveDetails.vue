@@ -19,14 +19,14 @@
           <v-card class="mx-2 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
               <v-col class="form-btns" cols="12">
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     color="primary"
                     class="text-capitalize"
                     @click="toggleMinimizeAll"
                     :text="expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     v-if="dataWasChanged"
                     @click="resetForm"
                     variant="text"
@@ -34,15 +34,15 @@
                     class="cancel-link"
                     html-style="margin-right: 10px"
                     text="Cancel"
-                ></AlbatrossButton>
-                <AlbatrossButton
+                ></a-btn>
+                <a-btn
                     id="save-btn"
                     v-if="userCanEdit"
                     color="primary"
                     class="mr-0"
                     @click="validateForm()"
                     text="Save"
-                ></AlbatrossButton>
+                ></a-btn>
               </v-col>
             </v-row>
             <v-form ref="incentiveForm">
@@ -97,7 +97,7 @@
 
 <script setup>
 import cloneDeep from "lodash.clonedeep"
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {getRequest, getRequestWithParams,  handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue"
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";

@@ -5,12 +5,12 @@
     <div class="ranking-tables-section-header">
       Leaderboard
       <div class="expand-section">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             @click="showLeaderboard = !showLeaderboard"
             color="unset"
             :prepend-icon="!showLeaderboard ? 'mdi-chevron-down' : 'mdi-chevron-up'"
-        ></AlbatrossButton>
+        ></a-btn>
       </div>
     </div>
     <!-- BOOKING TABLES FIRST HEADER END -->
@@ -73,7 +73,7 @@
   import SpinnerInline from '@/components/SpinnerInline'
   import DatetimePickerInput from "@/components/DatetimePickerInput";
   import {getCurrentInstance, ref, computed, onMounted} from "vue";
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
   import { useAppStore } from '@/stores/AppStorePinia.js'
   import {useUserStore} from "@/stores/UserStorePinia.js";
 

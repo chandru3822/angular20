@@ -4,22 +4,22 @@
       <v-toolbar-title>Columns</v-toolbar-title>
       <v-spacer />
       <v-toolbar-items>
-        <AlbatrossButton
+        <a-btn
             v-if="!showNewFieldForm && canEdit"
             variant="text"
             color="primary"
             prepend-icon="add"
             @click="showNewFieldForm = true"
             text="Add Field"
-        ></AlbatrossButton>
+        ></a-btn>
 
-        <AlbatrossButton
+        <a-btn
             v-if="showNewFieldForm"
             variant="text"
             color="primary"
             @click="resetNewFieldForm"
             text="Cancel"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-toolbar-items>
     </v-toolbar>
 
@@ -93,7 +93,7 @@
           />
         </template>
 
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             class="text-left"
@@ -101,7 +101,7 @@
             @click="addNewField"
             text="Save"
             prepend-icon="save"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-col>
     </v-card>
 
@@ -180,7 +180,7 @@ import {
 import constants from '@/helpers/constants'
 import draggable from 'vuedraggable'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

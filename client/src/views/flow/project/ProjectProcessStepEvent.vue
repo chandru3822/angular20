@@ -26,7 +26,7 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <AlbatrossButton
+          <a-btn
               v-if="(selectedEvent.startTime === null && selectedEvent.allowAllUserDeletion) || userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')"
               size="small"
               variant="text"
@@ -34,7 +34,7 @@
               class="align-self-end"
               @click="showDeleteDialog = true"
               prepend-icon="delete"
-          ></AlbatrossButton>
+          ></a-btn>
           <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteEvent"
                               @close-dialog="showDeleteDialog=false">
             Are you sure you want to delete this event: <strong>{{ selectedEvent.eventName }}</strong>?
@@ -56,14 +56,14 @@
         <div v-if="selectedEvent && selectedEvent.eventActions && selectedEvent.eventActions.length > 0">
           <div class="action-subheader albatross-header-3">
             Actions
-            <AlbatrossButton
+            <a-btn
                 class="back-btn show-unperformable-actions-btn"
                 variant="text"
                 color="primary"
                 :ripple="false"
                 @click="showUnperformableActions = !showUnperformableActions"
                 :text="showUnperformableActions ? 'Hide Disabled' : 'Show All'"
-            ></AlbatrossButton>
+            ></a-btn>
           </div>
         </div>
         <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
@@ -82,13 +82,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 class="px-0"
                 @click="collapsedAttachments = !collapsedAttachments"
                 :prepend-icon="collapsedAttachments ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-row>
@@ -115,7 +115,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 size="small"
@@ -123,9 +123,9 @@
                 v-if="!isMobile"
                 class="px-0"
                 :prepend-icon="!projectStore.manualColumnSplit ? 'mdi-format-columns' : 'mdi-format-align-justify'"
-            ></AlbatrossButton>
+            ></a-btn>
             <div>
-              <AlbatrossButton
+              <a-btn
                   class="ml-2 mt-1"
                   :class="{'mt-3': !isMobile}"
                   @click="checkFieldsForUnique"
@@ -134,7 +134,7 @@
                   color="primary"
                   prepend-icon="save"
                   :text="!isMobile ? 'Save Fields' : ''"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -188,7 +188,7 @@
               item-value="id"
               @input="[statusChanged = true, defaultValuesChanged = true]"
           ></v-autocomplete>
-          <AlbatrossButton
+          <a-btn
               color="primary"
               v-if="selectedEvent.uniqueBehaviorTypeId === 1 && !uniqueAlreadyHasValue"
               class="mb-4 text-capitalize"
@@ -196,7 +196,7 @@
               id="qa-round-robin-button"
               @click="toggleRoundRobinView"
               :text="toggleViewButtonText"
-          ></AlbatrossButton>
+          ></a-btn>
           <!--show startTime, endTime, and resource fields-->
           <v-container v-if="!showRoundRobin" class="px-4" :class="{'pt-0': selectedEvent.uniqueBehaviorTypeId !== 1}">
             <div v-if="!uniqueAlreadyHasValue && selectedEvent.uniqueBehaviorTypeId === 1" class="title-large pt-1">Manual Assignment</div>
@@ -285,7 +285,7 @@
                   </div>
                 </v-col>
                 <div class="text-right flex-display flex-wrap justify-end one-hunned" v-if="availabilityDateField.dateValue">
-                  <AlbatrossButton
+                  <a-btn
                       color="primary"
                       class="text-capitalize mr-2 mb-4"
                       :outlined="!!selectedTimeSlot.scheduledStartTime"
@@ -295,8 +295,8 @@
                       id="qa-round-robin-search-remote"
                       @click="getAvailableTimeSlots(true)"
                       text="Search Remote Appt. Slots"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       color="primary"
                       class="text-capitalize mr-2 mb-4"
                       :outlined="!!selectedTimeSlot.scheduledStartTime"
@@ -306,8 +306,8 @@
                       id="qa-round-robin-search"
                       @click="getAvailableTimeSlots(false)"
                       text="Search In-person Appt. Slots"
-                  ></AlbatrossButton>
-                  <AlbatrossButton
+                  ></a-btn>
+                  <a-btn
                       color="primary"
                       class="text-capitalize mb-4"
                       v-if="availabilityDateField.dateValue"
@@ -315,7 +315,7 @@
                       @click="saveCloserAppointment"
                       id="qa-round-robin-save"
                       text="Save Appointment"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </div>
               </v-row>
             </v-card-text>
@@ -403,7 +403,7 @@ import ConfirmationDialog from '@/components/ConfirmationDialog'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import ActionButton from "./ActionButton";
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

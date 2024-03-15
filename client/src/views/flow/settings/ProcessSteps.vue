@@ -23,7 +23,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <AlbatrossButton
+          <a-btn
             color="primary"
             variant="text"
             dark
@@ -40,7 +40,7 @@
           <v-toolbar-title class="app-title">Process Steps</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newStep = {}]"
@@ -58,7 +58,7 @@
                 tabindex=1
                 v-model="newStep.processStepName"
             ></v-text-field>
-            <AlbatrossButton
+            <a-btn
               color="primary"
               :disabled="!newStep.processStepName"
               @click="addProcessStep"
@@ -89,7 +89,7 @@
             >
 
                   <template #item.processStepName="{item}" >
-                    <AlbatrossButton
+                    <a-btn
                       size="small"
                       variant="text"
                       :to="`/settings/processStep/${item.id}/components`"
@@ -98,7 +98,7 @@
                     />
                   </template>
                   <template #item.icons="{item}" >
-                    <AlbatrossButton
+                    <a-btn
                       size="small"
                       variant="text"
                       color="primary"
@@ -108,7 +108,7 @@
                     <v-tooltip top :disabled="!(item.workQueueTypes.length > 0 || item.usedByProcess)">
                       <template v-slot:activator="{ on: tooltip }">
                         <div v-on="{ ...tooltip }" class="d-inline-block">
-                          <AlbatrossButton
+                          <a-btn
                             size="small"
                             variant="text"
                             color="primary"
@@ -143,7 +143,7 @@
 
 
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRouter} from "vue-router/composables"
   import { useAppStore } from '@/stores/AppStorePinia.js'

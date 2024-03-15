@@ -27,13 +27,13 @@
                     max-height="350"
                     :close-on-content-click="!isMobile">
               <template v-slot:activator="{ on }">
-                <AlbatrossButton
+                <a-btn
                     variant="text"
                     color="primary"
                     @click="loadProjectAttachmentTypes()"
                     :activation-handler="on"
                     prepend-icon="mdi-tray-arrow-up"
-                ></AlbatrossButton>
+                ></a-btn>
               </template>
               <v-list dense class="pa-3">
                 <template v-for="(item, index) in attachmentTypes">
@@ -57,15 +57,15 @@
                 </template>
               </v-list>
             </v-menu>
-            <AlbatrossButton
+            <a-btn
                 v-if="!isMobile"
                 variant="text"
                 color="primary"
                 @click="setSplitColumnValue()"
                 :prepend-icon="!projectStore.manualColumnSplit ? 'mdi-format-columns' : 'mdi-format-align-justify'"
-            ></AlbatrossButton>
+            ></a-btn>
             <div class="align-self-center">
-              <AlbatrossButton
+              <a-btn
                   v-if="userCanEdit"
                   color="primary"
                   :icon="isMobile"
@@ -73,7 +73,7 @@
                   @click="updateFieldGroups()"
                   prepend-icon="save"
                   :text="!isMobile ? 'Save Fields' : ''"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -173,7 +173,7 @@ import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
 import { useFileStore } from '@/stores/FileStore.js'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useProjectStore} from '@/stores/ProjectStorePinia.js'

@@ -2,19 +2,19 @@
   <v-container class="pt-0">
     <v-row>
       <v-col >
-        <AlbatrossButton
+        <a-btn
             color="primary"
             :disabled="payrollSummary.length === 0"
             @click="exportPayrollSummary"
             text="Export"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             color="primary"
             class="ml-3"
             :disabled="!currentPayroll.id || payrollSummary.length === 0"
             @click="exportAllOverrides"
             text="Export All Overrides"
-        ></AlbatrossButton>
+        ></a-btn>
         <v-data-table
             :headers="headers"
             :items="payrollSummary"
@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import constants from "@/helpers/constants";
 import {handleHidingGlobalLoader, getRequest, } from '@/helpers/helpers'
 import { saveAs } from 'file-saver'

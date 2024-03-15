@@ -8,11 +8,11 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text" icon :large="vuetify.breakpoint.smAndDown"
+            <a-btn variant="text" icon :large="vuetify.breakpoint.smAndDown"
                              color="primary" v-if="userCanEdit" @click="editGroup = !editGroup"
                              :prepend-icon="editGroup ? 'mid-close' : 'edit'"
             />
-            <AlbatrossButton variant="text" color="primary"
+            <a-btn variant="text" color="primary"
                              @click="[addNew = !addNew, newCallGroup = {}]" v-if="userCanAdd"
                              text="ADD NEW"
             />
@@ -31,7 +31,7 @@
                             tabindex=1
                             v-model="daysPerPeriod">
               </v-text-field>
-              <AlbatrossButton
+              <a-btn
                 :disabled="!maxCallCount || !daysPerPeriod"
                 variant="text" icon :large="vuetify.breakpoint.smAndDown"
                 color="primary"
@@ -53,7 +53,7 @@
                 tabindex=1
                 v-model="newCallGroup.callGroupName"
             ></v-text-field>
-            <AlbatrossButton
+            <a-btn
               color="primary"
               :disabled="!newCallGroup.callGroupName"
               @click="addCallGroup"
@@ -94,13 +94,13 @@
                 <v-select attach style="width: 100px" v-model="item.active" :disabled="!userCanEdit" :items="items" @change="updateCallGroup(item)"></v-select>
               </template>
               <template #item.icons="{item}" class="text-right">
-                <AlbatrossButton size="small" variant="text"
+                <a-btn size="small" variant="text"
                                  icon
                                  :large="vuetify.breakpoint.smAndDown"
                                  color="primary" @click="goToCallGroup(item.id)"
                                  prepend-icon="edit"
                 />
-                <AlbatrossButton
+                <a-btn
                   v-if="userCanDelete"
                   size="small"
                   variant="text"
@@ -128,7 +128,7 @@
   import { handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRouter} from "vue-router/composables"

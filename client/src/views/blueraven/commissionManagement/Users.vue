@@ -34,13 +34,13 @@
             <template #item="{ item, index }">
               <tr class="vertical-top" :class="{'shaded-row': index % 2}">
                 <td class="text-left pt-1" >
-                  <AlbatrossButton
+                  <a-btn
                       variant="text"
                       class="anchor"
                       :to="`/commissionManagement/users/${item.id}`"
                       color="unset"
                       :text="item.name"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </td>
                 <td class="text-left pt-1" >
                   {{ item.orgName }}
@@ -83,7 +83,7 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {handleHidingGlobalLoader, getRequest, } from '@/helpers/helpers'
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'

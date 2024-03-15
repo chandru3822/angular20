@@ -4,19 +4,19 @@
       <v-card-title>
         Add User
         <v-spacer></v-spacer>
-        <AlbatrossButton
+        <a-btn
             variant="text"
             color="primary"
             class="mr-3"
             to="/users"
             text="Cancel"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             color="primary "
             @click="validate"
             :disabled="loadingUserInsertFields || (newPosition.positionId != null && newPosition.endDate && !newPosition.startDate) || ((newPosition.startDate != null || newPosition.endDate != null) && !newPosition.positionId)"
             text="Save"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-card-title>
 
       <v-form ref="userForm">
@@ -116,12 +116,12 @@
                   </v-autocomplete>
                 </div>
               </div>
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   class="mr-2"
                   @click="[userPositionPanel = undefined, newPosition = {}]"
                   text="Clear"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-expansion-panel-content>
           </v-expansion-panel>
         </v-expansion-panels>
@@ -144,7 +144,7 @@ import {getUserStatusTypes} from '@/services/userService'
 import DatetimePickerInput from '@/components/DatetimePickerInput'
 import keyBy from 'lodash.keyby'
 import {getOrgFilters} from '@/services/orgService'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

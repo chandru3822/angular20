@@ -56,19 +56,19 @@
           <slot name="dialogContent"></slot>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <AlbatrossButton
+            <a-btn
                 @click="closeDialog"
                 color="primary"
                 variant="text"
                 class="text-capitalize mr-2 mb-2"
                 text="cancel"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 @click="[$emit('submitRequest'), closeDialog()]"
                 color="primary"
                 class="elevation-2 text-capitalize mr-2 mb-2"
                 text="Submit"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -80,7 +80,7 @@
 <script setup>
 import constants from "@/helpers/constants";
 import debounce from "lodash.debounce";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

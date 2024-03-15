@@ -22,7 +22,7 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <AlbatrossButton
+        <a-btn
             @click.native="no"
             variant="text"
             color="primary"
@@ -31,8 +31,8 @@
           <template #default>
             <slot name="no">Cancel</slot>
           </template>
-        </AlbatrossButton>
-        <AlbatrossButton
+        </a-btn>
+        <a-btn
             v-if="!hideConfirm"
             color="primary"
             class="elevation-2 text-capitalize mr-2 mb-2"
@@ -43,7 +43,7 @@
           <template #default>
             <slot name="yes">Delete</slot>
           </template>
-        </AlbatrossButton>
+        </a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -54,7 +54,7 @@
  * The confirmation dialog that should be used throughout the application
  * @author jkburnett
  */
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

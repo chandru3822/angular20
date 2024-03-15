@@ -6,7 +6,7 @@
           <v-toolbar-title class="title-large">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text"
+            <a-btn variant="text"
                              color="primary"
                              v-if="!createNew && userCanAdd"
                              @click="createNew = !createNew"
@@ -24,14 +24,14 @@
               v-model="newGroup.groupName"
             ></v-text-field>
           </div>
-          <AlbatrossButton
+          <a-btn
             color="primary"
             class="mr-2"
             :disabled="!newGroup.groupName"
             @click="saveFieldGroup()"
             text="SAVE"
           />
-          <AlbatrossButton variant="text" color="primary"
+          <a-btn variant="text" color="primary"
             @click="[newGroup = {}, createNew = false]"
             text="CANCEL"
           />
@@ -62,7 +62,7 @@
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
                   <td style="width: 50px">
-                    <AlbatrossButton variant="text"
+                    <a-btn variant="text"
                                      icon
                                      size="small"
                                      class="handle"
@@ -88,21 +88,21 @@
                   </td>
                   <td>
                     <div class="item-icons" :class="{'d-flex flex-column align-end': vuetify.breakpoint.xsOnly}">
-                      <AlbatrossButton v-if="userCanAdd"
+                      <a-btn v-if="userCanAdd"
                                        size="small"
                                        variant="text"
                                        color="primary"
                                        @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]"
                                        :prepend-icon="addField && expanded.includes(item) ? 'remove' : 'add'"
                       />
-                      <AlbatrossButton
+                      <a-btn
                         size="small"
                         variant="text"
                         color="primary"
                         @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]"
                         :prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
                       />
-                      <AlbatrossButton
+                      <a-btn
                         size="small"
                         color="primary"
                         variant="text"
@@ -138,7 +138,7 @@
                         {{ item.fieldName }}
                       </template>
                     </v-autocomplete>
-                    <AlbatrossButton
+                    <a-btn
                       variant="text"
                       color="primary"
                       @click="addField = false"
@@ -178,7 +178,7 @@
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
-                                  <AlbatrossButton
+                                  <a-btn
                                     variant="text"
                                     size="small"
                                     color="primary"
@@ -240,7 +240,7 @@ import cloneDeep from 'lodash.clonedeep'
 import orderBy from "lodash.orderby"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import { useUserStore } from '@/stores/UserStorePinia.js'

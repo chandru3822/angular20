@@ -31,7 +31,7 @@
             <template #item="{ item, index }">
               <tr>
                 <td style="width: 50px">
-                  <AlbatrossButton variant="text" color="primary" icon size="small" class="handle" v-if="userCanEdit" prepend-icon="drag_handle"/>
+                  <a-btn variant="text" color="primary" icon size="small" class="handle" v-if="userCanEdit" prepend-icon="drag_handle"/>
                 </td>
                 <td class="text-left group-name-col">
                   <v-text-field text
@@ -44,18 +44,18 @@
                   <div class="item-icons" v-if="!isMobile">
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
-                        <AlbatrossButton variant="text" icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                        <a-btn variant="text" icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
                                :activation-handler="on" prepend-icon="mdi-information"/>
                       </template>
                       <span>Custom Field Group Id: {{ item.id }}</span>
                       <div class="text-center">(click to copy)</div>
                     </v-tooltip>
                     <div v-if="userCanEdit" class="flex-display">
-                      <AlbatrossButton size="small" variant="text" color="primary"
+                      <a-btn size="small" variant="text" color="primary"
                              @click="item.edit = !item.edit"
                              :prepend-icon="item.edit ? 'remove' : 'edit'"
                       />
-                      <AlbatrossButton size="small" variant="text" color="primary"
+                      <a-btn size="small" variant="text" color="primary"
                              v-if="item.edit"
                              @click="[saveGroup(item), item.edit = false]"
                              prepend-icon="save"
@@ -67,7 +67,7 @@
                       <template v-slot:activator="{ on: menu }">
                         <v-tooltip bottom>
                           <template v-slot:activator="{ on: tooltip }">
-                            <AlbatrossButton
+                            <a-btn
                               variant="text"
                               size="small"
                               color="primary"
@@ -86,7 +86,7 @@
                         </v-list-item>
                       </v-list>
                     </v-menu>
-                    <AlbatrossButton
+                    <a-btn
                       size="small"
                       variant="text"
                       color="primary"
@@ -94,11 +94,11 @@
                       @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded[n] = [item], selectedIndex = index]"
                       :prepend-icon="addField && expanded[n].includes(item) ? 'remove' : 'add'"
                     />
-                    <AlbatrossButton size="small" variant="text" color="primary"
+                    <a-btn size="small" variant="text" color="primary"
                            @click="[expanded[n].includes(item) ? expanded[n] = [] : expanded[n] = [item], selectedIndex = index]"
                            :prepend-icon="expanded[n].includes(item) ? 'expand_less' : 'expand_more'"
                     />
-                    <AlbatrossButton v-if="userCanEdit"
+                    <a-btn v-if="userCanEdit"
                                      size="small" variant="text" color="primary" @click="cfgToDelete=item"
                                      prepend-icon="delete"
                     />
@@ -107,7 +107,7 @@
                   <div class="item-icons" v-else>
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
-                        <AlbatrossButton variant="text" icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                        <a-btn variant="text" icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
                                :activation-handler="on"
                                prepend-icon="mdi-information"
                         />
@@ -115,21 +115,21 @@
                       <span>Custom Field Group Id: {{item.id}}</span>
                       <div class="text-center">(click to copy)</div>
                     </v-tooltip>
-                    <AlbatrossButton size="small" variant="text" icon color="primary"
+                    <a-btn size="small" variant="text" icon color="primary"
                            @click="[expanded[n].includes(item) ? expanded[n] = [] : expanded[n] = [item], selectedIndex = index]"
                            :prepend-icon="expanded[n].includes(item) ? 'expand_less' : 'expand_more'"
                     />
-                    <AlbatrossButton size="small" variant="text" color="primary"
+                    <a-btn size="small" variant="text" color="primary"
                                      v-if="userCanAdd"
                                      @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded[n] = [item], selectedIndex = index]"
                                      :prepend-icon="addField && expanded[n].includes(item) ? 'remove' : 'add'"
                     />
                       <div v-if="userCanEdit" class="flex-display">
-                        <AlbatrossButton size="small" variant="text" color="primary"
+                        <a-btn size="small" variant="text" color="primary"
                                          @click="item.edit = !item.edit"
                                          :prepend-icon="item.edit ? 'remove' : 'edit'"
                         />
-                        <AlbatrossButton size="small" variant="text" color="primary"
+                        <a-btn size="small" variant="text" color="primary"
                                v-if="item.edit"
                                @click="[saveGroup(item), item.edit = false]"
                                prepend-icon="save"
@@ -140,7 +140,7 @@
                         <template v-slot:activator="{ on: menu }">
                           <v-tooltip bottom>
                             <template v-slot:activator="{ on: tooltip }">
-                              <AlbatrossButton variant="text" size="small" color="primary" :activation-handler="{...tooltip, ...menu}"
+                              <a-btn variant="text" size="small" color="primary" :activation-handler="{...tooltip, ...menu}"
                                                v-if="objectType && objectType.customColumns"
                                                prepend-icon="mdi-cursor-move"
                               />
@@ -155,7 +155,7 @@
                           </v-list-item>
                         </v-list>
                       </v-menu>
-                    <AlbatrossButton
+                    <a-btn
                       v-if="userCanEdit"
                       size="small"
                       variant="text"
@@ -328,7 +328,7 @@
                                   </template>
                                 </v-autocomplete>
 
-                                <AlbatrossButton
+                                <a-btn
                                   color="primary"
                                   dark
                                   class="d-inline-block white--text"
@@ -391,7 +391,7 @@
                                   </template>
                                 </v-autocomplete>
 
-                                <AlbatrossButton
+                                <a-btn
                                   color="primary"
                                   dark
                                   class="white--text d-inline-block"
@@ -418,7 +418,7 @@
                                           @change="changedMinMax(cf)"
                                           :disabled="!userCanEdit"
                                           v-model.number="cf.maxValue"/>
-                            <AlbatrossButton
+                            <a-btn
                               variant="text"
                               color="primary"
                               @click="saveMinMax(cf)"
@@ -429,7 +429,7 @@
                         </v-list-item-content>
                         <v-tooltip left>
                           <template v-slot:activator="{ on, attrs }">
-                            <AlbatrossButton
+                            <a-btn
                               variant="text"
                               color="primary"
                               @click="copyToClipBoard(cf.customFieldGroupAssignmentId)"
@@ -441,7 +441,7 @@
                           <span>Custom Field Group Assignment Id: {{ cf.customFieldGroupAssignmentId }}</span>
                           <div class="text-center">(click to copy)</div>
                         </v-tooltip>
-                        <AlbatrossButton
+                        <a-btn
                           v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                           size="small"
                           variant="text"
@@ -482,7 +482,7 @@
 import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import {useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

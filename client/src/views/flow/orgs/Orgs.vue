@@ -12,13 +12,13 @@
                 class="fix-switch-color mt-5 mr-3"
                 label="Include Inactive"
             />
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="exportCsv"
                 prepend-icon="mdi-cloud-download"
                 :text="!constants.IS_MOBILE ? 'Export' : ''"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-data-table
@@ -95,7 +95,7 @@
 import {  handleHidingGlobalLoader, getRequestWithParams,  } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import { saveAs } from 'file-saver'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

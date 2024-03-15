@@ -43,10 +43,10 @@
 
     <v-card-actions>
       <v-spacer></v-spacer>
-      <AlbatrossButton variant="text" color="primary" @click="cancel()"
+      <a-btn variant="text" color="primary" @click="cancel()"
         text="CANCEL"
       />
-      <AlbatrossButton :disabled="!teamToSave || !ownersToSave"
+      <a-btn :disabled="!teamToSave || !ownersToSave"
                        :loading="teamSaving"
              color="primary" class="white--text" @click="addTeamDetails()"
              text="SAVE"
@@ -59,7 +59,7 @@
 import {getRequest, postRequest} from "@/helpers/helpers";
 import { useUserStore } from '@/stores/UserStorePinia.js'
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {ref, onMounted, getCurrentInstance, computed, defineProps} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

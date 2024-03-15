@@ -119,12 +119,12 @@
               ></DatetimePickerInput>
             </v-col>
             <v-col cols="3" md="2">
-              <AlbatrossButton
+              <a-btn
                 color="primary"
                 :disabled="selectedInstallationCrews.length < 1"
                 @click="getDashboardValues()"
                 text="Go"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-col>
           </v-row>
           <v-row>
@@ -203,12 +203,12 @@
           ></DatetimePickerInput>
         </v-col>
         <v-col cols="3" md="2">
-          <AlbatrossButton
+          <a-btn
             color="primary"
             class="mr-2 mb-3"
             @click="getPerformanceMetrics"
             text="Go"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-col>
       </v-row>
     </template>
@@ -329,12 +329,12 @@
               </v-col>
             </v-row>
             <v-col cols="5" md="2">
-              <AlbatrossButton
+              <a-btn
                 color="primary"
                 :disabled="selectedInstallationCrews.length < 1"
                 @click="getDashboardValues()"
                 text="Go"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-col>
           </v-row>
           <v-row>
@@ -418,12 +418,12 @@
         </v-col>
       </v-row>
       <v-col cols="5" md="2">
-        <AlbatrossButton
+        <a-btn
           color="primary"
           class="mr-2 mb-3"
           @click="getPerformanceMetrics"
           text="Go"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-col>
     </template>
 
@@ -470,7 +470,7 @@ import constants from '@/helpers/constants'
 import ProductionStatsDrilldown from "./ProductionStatsDrilldown"
 import cloneDeep from "lodash.clonedeep";
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 import {ref, onMounted, computed, watch, getCurrentInstance} from "vue";
 import {useAppStore} from "@/stores/AppStorePinia.js";
 

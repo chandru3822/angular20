@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Roles</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
               variant="text"
               to="/settings/role"
               color="primary"
@@ -38,7 +38,7 @@
               <td class="text-left">{{item.roleName}}</td>
               <!-- icon column -->
               <td class="text-right">
-                <AlbatrossButton
+                <a-btn
                   variant="text"
                   color="primary"
                   @click="clickRow(item.id)"
@@ -48,7 +48,7 @@
                     v-model="item.deleteConfirm"
                     width="500">
                   <template v-slot:activator="{ on }">
-                    <AlbatrossButton
+                    <a-btn
                       variant="text"
                       activation-handler="on"
                       prepend-icon="delete"
@@ -70,11 +70,11 @@
 
                     <v-card-actions>
                       <v-spacer></v-spacer>
-                      <AlbatrossButton
+                      <a-btn
                           @click="item.deleteConfirm = false"
                           text="NO"
                       />
-                      <AlbatrossButton
+                      <a-btn
                           color="primary"
                           variant="text"
                           @click="[item.archived = true, deleteRole(item.id)]"
@@ -98,7 +98,7 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
 
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import {useRouter} from "vue-router/composables"
   import { useAppStore } from '@/stores/AppStorePinia.js'
   const appStore = useAppStore()

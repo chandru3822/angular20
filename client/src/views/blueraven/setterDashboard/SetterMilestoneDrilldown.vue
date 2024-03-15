@@ -42,12 +42,12 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <AlbatrossButton
+        <a-btn
             class="text-capitalize mr-4 mb-2"
             color="primary"
             @click="closeMilestoneDialog"
             text="Close"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -57,7 +57,7 @@
 <script setup>
 import moment from "moment";
 import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

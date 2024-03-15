@@ -2,14 +2,14 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             class="pl-1 pr-2 anchor"
             :to="'/settings/events'"
             color="unset"
             prepend-icon="arrow_left"
             text="Back"
-        ></AlbatrossButton>
+        ></a-btn>
         <v-toolbar id="event-name-toolbar" flat class="app-toolbar">
           <span class="headline-small" v-if="!editName">{{ event.eventName }}</span>
           <v-text-field v-else color="primary" class=""
@@ -20,23 +20,23 @@
                         label="Event Name"></v-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="userCanEdit && !editName"
                 class=""
                 @click="[oldName = event.eventName, editName = !editName]"
                 prepend-icon="edit"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 variant="text"
                 color="primary"
                 class=""
                 v-else-if="userCanEdit"
                 @click="saveEventName()"
                 prepend-icon="save"
-            ></AlbatrossButton>
-            <AlbatrossButton
+            ></a-btn>
+            <a-btn
                 variant="text"
                 color="primary"
                 v-if="userCanEdit && editName"
@@ -44,7 +44,7 @@
                 @click="[event.eventName = oldName, editName = !editName]"
                 :prepend-icon="$vuetify.breakpoint.smAndDown ? 'close': ''"
                 :text="$vuetify.breakpoint.smAndDown ? '' : 'cancel'"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-tabs class="tabs-bar" v-model="activeTab">
@@ -64,7 +64,7 @@
 <script setup>
 
 import {AppMutations} from "@/stores/AppStore";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import {getRequest, putRequest} from "@/helpers/helpers";
 import {useRoute} from "vue-router/composables"
 

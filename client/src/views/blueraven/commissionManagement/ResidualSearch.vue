@@ -10,18 +10,18 @@
           </v-col>
           <v-col cols="12" sm="6">
             <div class="text-left">
-              <AlbatrossButton
+              <a-btn
                   color="primary"
                   @click="getPayrollData"
                   text="Search"
-              ></AlbatrossButton>
-              <AlbatrossButton
+              ></a-btn>
+              <a-btn
                   variant="text"
                   color="primary"
                   class="ml-3"
                   @click="payrollSearch = {}"
                   text="Reset"
-              ></AlbatrossButton>
+              ></a-btn>
             </div>
           </v-col>
         </v-row>
@@ -66,14 +66,14 @@
               <td class="text-left">{{item.description}}</td>
               <td class="text-left">{{item.currentPay || 0 | currency('$', 2)}}</td>
               <td class="text-left">
-                <AlbatrossButton
+                <a-btn
                     class="clickable"
                     size="small"
                     variant="text"
                     color="primary"
                     @click="viewDetails(item)"
                     prepend-icon="mdi-dots-horizontal-circle"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -85,7 +85,7 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import constants from "@/helpers/constants";
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {

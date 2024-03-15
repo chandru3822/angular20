@@ -4,38 +4,38 @@
       <v-toolbar-title class="title-large">Proposal Versions</v-toolbar-title>
       <v-spacer />
       <v-toolbar-items>
-        <AlbatrossButton
+        <a-btn
             class="toolbar-btn-text"
             variant="text"
             color="primary"
             :to="`{'name' : 'proposalDesigner'}`"
             text="Designer"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             class="toolbar-btn-icon"
             icon
             size="large"
             color="primary"
             :to="`{'name' : 'proposalDesigner'}`"
             prepend-icon="edit"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-toolbar-items>
       <v-toolbar-items v-if="canCreateVersion">
-        <AlbatrossButton
+        <a-btn
             class="toolbar-btn-text"
             variant="text"
             color="primary"
             @click="create"
             text="Create New Version"
-        ></AlbatrossButton>
-        <AlbatrossButton
+        ></a-btn>
+        <a-btn
             class="toolbar-btn-icon"
             icon
             size="large"
             color="primary"
             @click="create"
             prepend-icon="mdi-plus"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-divider />
@@ -72,14 +72,14 @@
             <span> {{ item.dateModified | formatDate('timestamp') }}</span>
           </template>
           <template #item.actions="{item}">
-            <AlbatrossButton
+            <a-btn
                 class="ma-2"
                 variant="text"
                 icon
                 color="primary"
                 @click.navive.stop="showHistory(item.version)"
                 prepend-icon="mdi-history"
-            ></AlbatrossButton>
+            ></a-btn>
           </template>
         </v-data-table>
 
@@ -94,7 +94,7 @@
 import { getRequestWithParams, postRequest } from '@/helpers/helpers'
 import ProposalVersionHistory from "@/views/blueraven/settings/proposals/ProposalVersionHistory.vue";
 import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

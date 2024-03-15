@@ -8,11 +8,11 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton icon  color="primary" v-if="userCanAdd"
+            <a-btn icon  color="primary" v-if="userCanAdd"
                              @click="[reloadAvailable(), addCode = !addCode, newCode = {}]"
                              :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                              :prepend-icon="addCode ? 'remove' : 'add'">
-            </AlbatrossButton>
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -26,8 +26,8 @@
               v-model="newCode"
           ></v-autocomplete>
           <div class="error-text mb-3" v-if="showError">{{ errorMsg }}</div>
-          <AlbatrossButton color="primary" class="mr-3 " @click="addCodeToRoundRobin()"
-                           :disabled="!newCode.id" text="Add"></AlbatrossButton>
+          <a-btn color="primary" class="mr-3 " @click="addCodeToRoundRobin()"
+                           :disabled="!newCode.id" text="Add"></a-btn>
         </v-card>
         <v-divider v-if="addCode"></v-divider>
         <v-card-title class="pt-0">
@@ -62,14 +62,14 @@
             <tr>
               <td class="text-left code-col">{{ item.postalCode }}</td>
               <td :class="{'text-right': $vuetify.breakpoint.smAndDown}">
-                <AlbatrossButton
+                <a-btn
                     v-if="userCanEdit"
                     icon
                     color="primary"
                     @click="[itemToDelete=item, showDeleteDialog=true]"
                     prepend-icon="delete"
                     :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
-                ></AlbatrossButton>
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -89,7 +89,7 @@
 import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

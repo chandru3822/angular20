@@ -20,7 +20,7 @@
 
 import {getCurrentInstance, computed, defineProps, defineEmits} from 'vue'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -72,7 +72,7 @@ const isMobile = computed(() => {
 
   <v-row id="conversation-activity-container" ref="conversationActivityContainer" class="pa-0 pt-4 d-flex flex-column flex-nowrap" no-gutters>
     <div v-if="isSidebarCollapsed" class="pl-3 pt-2">
-      <AlbatrossButton class="d-inline-block align-self-center"
+      <a-btn class="d-inline-block align-self-center"
              :class="{'title-collapsed':isSidebarCollapsed}"
              size="small"
              variant="text"
@@ -83,14 +83,14 @@ const isMobile = computed(() => {
             <v-icon>mdi-menu</v-icon>
           </slot>
         </template>
-      </AlbatrossButton>
+      </a-btn>
     </div>
     <div v-else class="conversation-activity-header-container d-flex flex-column  one-hunned">
       <div class="pt-0 pl-6 d-flex align-center conversation-activity-header title-no-collapse headline-small">
           <slot name="title" v-if="!isSidebarCollapsed">Sidebar Title</slot>
         <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
         <slot name="header-actions" v-if="!isSidebarCollapsed"/>
-        <AlbatrossButton  v-if="!isMobile" class="d-inline-block align-self-center"
+        <a-btn  v-if="!isMobile" class="d-inline-block align-self-center"
                 :class="{'title-collapsed':isSidebarCollapsed}" size="small"
                 variant="text" color="primary" @click="collapseButtonClicked">
           <template #default>
@@ -98,7 +98,7 @@ const isMobile = computed(() => {
               <v-icon>mdi-menu</v-icon>
             </slot>
           </template>
-        </AlbatrossButton>
+        </a-btn>
       </div>
       <slot v-if="!isSidebarCollapsed" name="header-second-line"/>
       <!-- i show this line regardless of selected tab so that the mb-3 sticks around. otherwise need to add it to the element above for only options 0 & 1-->
@@ -118,7 +118,7 @@ const isMobile = computed(() => {
           class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
       >
         <v-col v-for="(option, index) in viewOptions" :cols="12/viewOptions.length" class="px-0">
-          <AlbatrossButton
+          <a-btn
               v-if="option.visible"
               variant="text"
               :color="selectedOption === index ? 'white' : 'primary'"
@@ -128,7 +128,7 @@ const isMobile = computed(() => {
               :dark="selectedOption === index"
               :class="{'section-selected': selectedOption===index}"
               :prepend-icon="option.icon"
-          ></AlbatrossButton>
+          ></a-btn>
         </v-col>
       </v-row>
     </div>

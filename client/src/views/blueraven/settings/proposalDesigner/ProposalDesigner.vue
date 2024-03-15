@@ -3,7 +3,7 @@
     <div class="toolbar">
       <v-tooltip bottom>
         <template #activator="{on, attrs}">
-          <AlbatrossButton
+          <a-btn
               v-bind="attrs"
               :activation-handler="on"
               @click="save"
@@ -12,13 +12,13 @@
               icon
               color="unset"
               :prepend-icon="isSaveable ? 'cloud' : 'mdi-cloud-outline'"
-          ></AlbatrossButton>
+          ></a-btn>
         </template>
         <span>Save</span>
       </v-tooltip>
       <v-tooltip bottom>
         <template #activator="{on, attrs}">
-          <AlbatrossButton
+          <a-btn
               v-bind="attrs"
               :activation-handler="on"
               @click="undo"
@@ -27,13 +27,13 @@
               icon
               color="unset"
               prepend-icon="undo"
-          ></AlbatrossButton>
+          ></a-btn>
         </template>
         <span>Undo</span>
       </v-tooltip>
       <v-tooltip bottom>
         <template #activator="{on, attrs}">
-          <AlbatrossButton
+          <a-btn
               v-bind="attrs"
               :activation-handler="on"
               @click="redo"
@@ -42,13 +42,13 @@
               icon
               color="unset"
               prepend-icon="redo"
-          ></AlbatrossButton>
+          ></a-btn>
         </template>
         <span>Redo</span>
       </v-tooltip>
       <v-tooltip bottom>
         <template #activator="{on, attrs}">
-          <AlbatrossButton
+          <a-btn
               v-bind="attrs"
               :activation-handler="on"
               @click="reset"
@@ -57,13 +57,13 @@
               variant="text"
               color="unset"
               prepend-icon="mdi-nuke"
-          ></AlbatrossButton>
+          ></a-btn>
         </template>
         <span>Reset</span>
       </v-tooltip>
       <v-tooltip bottom>
         <template #activator="{on, attrs}">
-          <AlbatrossButton
+          <a-btn
               v-bind="attrs"
               :activation-handler="on"
               @click="downloadPreview"
@@ -72,7 +72,7 @@
               variant="text"
               color="unset"
               prepend-icon="mdi-file-pdf-box"
-          ></AlbatrossButton>
+          ></a-btn>
         </template>
         <span>Generate PDF Preview</span>
       </v-tooltip>
@@ -103,7 +103,7 @@
                 <v-card-title>
                   <v-tooltip>
                     <template #activator="{on, attrs}">
-                      <AlbatrossButton
+                      <a-btn
                           v-bind="attrs"
                           :activation-handler="on"
                           @click="focusViewport"
@@ -112,7 +112,7 @@
                           variant="text"
                           color="unset"
                           prepend-icon="mdi-image-filter-center-focus-weak"
-                      ></AlbatrossButton>
+                      ></a-btn>
                     </template>
                     <span>Focus</span>
                   </v-tooltip>
@@ -170,7 +170,7 @@ import {AppMutations} from '@/stores/AppStore'
 import {VuexUndoRedoMixin} from './mixin/VuexUndoRedoMixin'
 import {Editor} from "@tiptap/vue-2";
 import {getExtensions} from "@/views/blueraven/settings/proposalDesigner/blocks/text/utils";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

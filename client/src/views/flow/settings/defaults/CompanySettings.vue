@@ -18,15 +18,7 @@
                         class="body-large"
                         label="Company Name">
           </a-text-field>
-          <v-text-field v-model="company.companyName"
-                        placeholder="Enter a value"
-                        required
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        class="body-large"
-                        label="Company Name">
-          </v-text-field>
-          <v-text-field v-model="company.defaultPassword"
+          <a-text-field v-model="company.defaultPassword"
                         placeholder="Enter a value"
                         required
                         :rules="[passwordRule]"
@@ -34,7 +26,7 @@
                         :disabled="!userCanEdit"
                         class="body-large"
                         label="Default Password">
-          </v-text-field>
+          </a-text-field>
           <a-text-field v-model.number="company.minuteIncrement"
                         placeholder="Enter a value"
                         required
@@ -51,59 +43,44 @@
                         :disabled="!userCanEdit"
                         label="Minute Increment">
           </a-text-field>
-<!--          <v-text-field v-model.number="company.minuteIncrement"-->
-<!--                        placeholder="Enter a value"-->
-<!--                        required-->
-<!--                        :rules="rules"-->
-<!--                        @input="forceInteger"-->
-<!--                        :step="1"-->
-<!--                        :key="damnKeyThing"-->
-<!--                        type="number"-->
-<!--                        class="minute-increment-field body-large"-->
-<!--                        :readonly="!userCanEdit"-->
-<!--                        :disabled="!userCanEdit"-->
-<!--                        label="Minute Increment">-->
-<!--          </v-text-field>-->
           <div>
             <div class="color-swatch d-inline-block mr-3"
                  :style="{'background-color': company.bannerColor}"></div>
-            <v-text-field v-model="company.bannerColor"
+            <a-text-field v-model="company.bannerColor"
                           placeholder="Enter a color HEX"
-                          required
                           clearable
                           :rules="[hexRule]"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           class="body-large color-field d-inline-block"
                           label="Banner Color">
-            </v-text-field>
+            </a-text-field>
           </div>
           <div>
             <div class="color-swatch d-inline-block mr-3"
                  :style="{'background-color': company.primaryColor}"></div>
-            <v-text-field v-model="company.primaryColor"
+            <a-text-field v-model="company.primaryColor"
                           placeholder="Enter a color HEX"
-                          required
                           clearable
                           :rules="[hexRule]"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           class="body-large color-field d-inline-block"
                           label="Primary Color">
-            </v-text-field>
+            </a-text-field>
 
             <div>
-              <AlbatrossButton text="Primary" class="mr-3" color="primary"/>
-              <AlbatrossButton text="Lighten 3" class="mr-3" color="primary lighten-3"/>
-              <AlbatrossButton text="Lighten 5" class="mr-3" color="primary lighten-5"/>
-              <AlbatrossButton text="Lighten 9" class="mr-3" color="primary lighten-9"/>
+              <a-btn text="Primary" class="mr-3" color="primary"/>
+              <a-btn text="Lighten 3" class="mr-3" color="primary lighten-3"/>
+              <a-btn text="Lighten 5" class="mr-3" color="primary lighten-5"/>
+              <a-btn text="Lighten 9" class="mr-3" color="primary lighten-9"/>
             </div>
           </div>
         </v-col>
       </v-row>
       <v-row>
         <v-col cols="12" class="text-center">
-          <AlbatrossButton :large="vuetify.breakpoint.smAndDown"
+          <a-btn :large="vuetify.breakpoint.smAndDown"
                  :disabled="!company.companyName || !company.defaultPassword || ((company.minuteIncrement || company.minuteIncrement === 0) && (company.minuteIncrement < 0 || company.minuteIncrement > 60))"
                  color="primary" @click="saveCompany" v-if="userCanEdit"
                  :class="{'one-hunned': vuetify.breakpoint.smAndDown}"
@@ -121,14 +98,14 @@
           <v-toolbar-title class="title-large">Test User Password</v-toolbar-title>
         </v-toolbar>
         <div class="px-3">
-          <v-text-field v-model="testUserPassword"
+          <a-text-field v-model="testUserPassword"
                         placeholder="Enter a new password"
                         required
                         :rules="[passwordRule]"
                         class="body-large"
                         label="Test User Password">
-          </v-text-field>
-          <AlbatrossButton :large="vuetify.breakpoint.smAndDown" :disabled="!testUserPassword"
+          </a-text-field>
+          <a-btn :large="vuetify.breakpoint.smAndDown" :disabled="!testUserPassword"
                  color="primary" @click="saveTestUserPassword"
                  prepend-icon="mdi-content-save"
                  text="SAVE TEST USER PASSWORD"
@@ -143,11 +120,11 @@
           <v-toolbar-title class="title-large">{{logoType.header}}</v-toolbar-title>
           <v-spacer></v-spacer>
           <div v-if="userCanEdit">
-            <AlbatrossButton variant="text" icon :large="vuetify.breakpoint.smAndDown" color="primary"
+            <a-btn variant="text" icon :large="vuetify.breakpoint.smAndDown" color="primary"
                    v-if="!logoType.saving && !logoType.image?.presignedUrl" @click="logoType.add = !logoType.add"
                    :prepend-icon="logoType.add ? 'remove' : 'add'"
             />
-            <AlbatrossButton variant="text" icon :large="vuetify.breakpoint.smAndDown" color="primary" v-else
+            <a-btn variant="text" icon :large="vuetify.breakpoint.smAndDown" color="primary" v-else
                    @click="logoToDelete=logoType"
                    prepend-icon="delete"
             />
@@ -194,7 +171,6 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
-import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 import {getCurrentInstance, onMounted, ref, computed} from 'vue'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'

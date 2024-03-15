@@ -4,7 +4,7 @@
           @load="onMapLoad">
 
     <div id="map-btns" class="d-flex justify-start">
-      <AlbatrossButton id="hide-map-btn" color="primary" size="small" class="rounded-tile-btn ml-4 mr-3" :elevation="5" custom-classes="px-4" @click="$emit('close-map')"><v-icon>mdi-chevron-right</v-icon></AlbatrossButton>
+      <a-btn id="hide-map-btn" color="primary" size="small" class="rounded-tile-btn ml-4 mr-3" :elevation="5" custom-classes="px-4" @click="$emit('close-map')"><v-icon>mdi-chevron-right</v-icon></a-btn>
       <v-menu data-app bottom
               offset-y
               content-class="drive-time-menu"
@@ -14,12 +14,12 @@
               :close-on-click="false"
               :close-on-content-click="false">
         <template v-slot:activator="{ on }">
-          <AlbatrossButton id="drive-time-btn" variant="outlined" :activation-handler="on" icon color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></AlbatrossButton>
+          <a-btn id="drive-time-btn" variant="outlined" :activation-handler="on" icon color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></a-btn>
         </template>
         <v-card id="drive-time-card" color="white" class="square-card pa-4">
           <div class="d-flex justify-space-between">
             <v-card-title class="label-large pa-0">Find Drive Time</v-card-title>
-            <AlbatrossButton icon size="small" @click="menuOpen = false"><v-icon>close</v-icon></AlbatrossButton>
+            <a-btn icon size="small" @click="menuOpen = false"><v-icon>close</v-icon></a-btn>
           </div>
           <div class="address-container">
             <div class="one-hunned py-3">
@@ -113,7 +113,7 @@ import moment from 'moment'
 import debounce from "lodash.debounce";
 import {getCurrentInstance, ref, watch} from "vue";
 import MapPopUp from "@/views/flow/schedule/components/MapPopUp.vue"
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'

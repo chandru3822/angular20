@@ -2,7 +2,7 @@
   <v-container v-if="orgId || userId" id="appointment-container">
     <v-row>
       <v-col>
-        <AlbatrossButton v-if="!addNew && userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')"
+        <a-btn v-if="!addNew && userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')"
                          @click="addNew = !addNew" color="primary" class="mb-3" text="ADD APPOINTMENT"/>
         <v-card v-if="addNew" flat class="px-3">
           <v-card-title>Add Schedule</v-card-title>
@@ -62,12 +62,12 @@
           </div>
           <v-card-actions>
             <v-card-actions>
-              <AlbatrossButton variant="text"
+              <a-btn variant="text"
                                color="primary"
                                @click="[newAppt = {}, addNew = false]"
                                text="CANCEL"
               />
-              <AlbatrossButton color="primary"
+              <a-btn color="primary"
                                @click="saveAppt(newAppt)" class="white--text"
                                :disabled="!newAppt.startTime || !newAppt.endTime || !newAppt.title || newAppt.title.length > 50"
                                text="SAVE"
@@ -167,7 +167,7 @@
 
                 <v-card-actions>
                   <v-card-actions>
-                    <AlbatrossButton
+                    <a-btn
                       color="primary"
                       @click="saveAppt(appt)"
                       class="white--text"
@@ -186,7 +186,7 @@
               <td class="text-left">{{item.title}}</td>
               <td><input type="checkbox" :disabled="true" v-model="item.allDay"></td>
               <td class="text-left">
-                <AlbatrossButton
+                <a-btn
                   size="small"
                   variant="text"
                   color="primary"
@@ -194,9 +194,9 @@
                   v-if="!expanded.includes(item) && userCanEdit"
                   prepend-icon="edit"
                 />
-                <AlbatrossButton size="small" variant="text" color="primary" @click="expanded = []"
+                <a-btn size="small" variant="text" color="primary" @click="expanded = []"
                        v-if="expanded.includes(item)" text="CANCEL"/>
-                <AlbatrossButton size="small" variant="text" color="primary"
+                <a-btn size="small" variant="text" color="primary"
                        v-if="userStore.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE')"
                        @click="[itemToDelete=item, showDeleteDialog=true]"
                        prepend-icon="delete"
@@ -230,7 +230,7 @@
   import MultiOptionDialog from '@/components/MultiOptionDialog'
   import { DateTime } from 'luxon'
 
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import {getCurrentInstance, onMounted, toRefs, ref, computed, watch, defineProps} from "vue";
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import {useRoute} from "vue-router/composables"

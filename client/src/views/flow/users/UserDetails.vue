@@ -81,13 +81,13 @@
           <v-divider class="mt-4" v-if="user.loginAttempts >= 9"></v-divider>
           <v-card color="#ffcac7" class="pa-4 mx-2 mt-2" v-if="user.loginAttempts >= 9">
             <label>Too Many Attempts, User Account Locked</label><br/>
-            <AlbatrossButton
+            <a-btn
                 v-if="userIsAdmin"
                 @click="unlockUserAccount"
                 color="primary"
                 class="mt-2"
                 text="Unlock"
-            ></AlbatrossButton>
+            ></a-btn>
           </v-card>
           <v-divider></v-divider>
           <SidePanelExpansionPanel header="Company Access" :section-expanded="sectionExpanded">
@@ -99,7 +99,7 @@
                   :close-on-content-click="false"
               >
                 <template v-slot:activator="{ on: menu }">
-                  <AlbatrossButton
+                  <a-btn
                       variant="text"
                       color="primary"
                       :activation-handler="{ ...menu }"
@@ -107,7 +107,7 @@
                       v-if="userIsAdmin"
                       @click="addUserCompany = !addUserCompany"
                       prepend-icon="add"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </template>
                 <v-card class="pa-5">
                   <v-select
@@ -125,7 +125,7 @@
                       item-text="userStatusType"
                       item-value="id"
                   ></v-select>
-                  <AlbatrossButton
+                  <a-btn
                       v-if="userIsAdmin"
                       color="primary"
                       class="mb-2"
@@ -133,7 +133,7 @@
                       variant="text"
                       @click="saveUserCompany"
                       text="Add User to Company"
-                  ></AlbatrossButton>
+                  ></a-btn>
                 </v-card>
               </v-menu>
             </template>
@@ -141,7 +141,7 @@
               <v-card flat v-for="uc in user.companies"
                       class="user-company-button albatross-body-1">
                 {{ uc.companyName }}
-                <AlbatrossButton
+                <a-btn
                     icon
                     size="small"
                     variant="text"
@@ -149,7 +149,7 @@
                     v-if="userIsAdmin && user.companies.length > 1"
                     @click="companyToDelete = uc"
                     prepend-icon="delete"
-                ></AlbatrossButton>
+                ></a-btn>
               </v-card>
             </template>
           </SidePanelExpansionPanel>
@@ -165,15 +165,15 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <AlbatrossButton
+              <a-btn
                   variant="text"
                   color="primary"
                   @click="setSplitColumnValue()"
                   class="px-0"
                   :prepend-icon="!projectStore.manualColumnSplit ? 'mdi-format-columns' : 'mdi-format-align-justify'"
-              ></AlbatrossButton>
+              ></a-btn>
               <div>
-                <AlbatrossButton
+                <a-btn
                     color="primary"
                     class="mt-3"
                     v-if="userCanEdit"
@@ -181,7 +181,7 @@
                     :disabled="fieldsSaving"
                     @click="saveUser()"
                     text="Save Fields"
-                ></AlbatrossButton>
+                ></a-btn>
               </div>
             </v-toolbar-items>
           </v-toolbar>
@@ -270,7 +270,7 @@ import ConfirmationDialog from '@/components/ConfirmationDialog'
 import PageOverview from '../PageOverview'
 import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";

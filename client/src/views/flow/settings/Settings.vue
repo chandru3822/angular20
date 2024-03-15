@@ -19,7 +19,7 @@
             >
               {{ title }}
               <v-spacer></v-spacer>
-              <AlbatrossButton
+              <a-btn
                 variant="text"
                 prepend-icon="expand-more"
               />
@@ -29,7 +29,7 @@
         </v-menu>
         <v-card v-else class=" left-menu square-card d-flex">
           <SettingsMenu class="px-5 py-2 settings-container" :menu-list="items" :companyObjectItems="companyObjectTypes" :class="{'hidden': leftCollapsed}"></SettingsMenu>
-          <AlbatrossButton
+          <a-btn
             size="small"
             variant="text"
             color="primary"
@@ -52,7 +52,7 @@
 import { handleHidingGlobalLoader, getRequest } from '@/helpers/helpers'
 import SettingsMenu from './SettingsMenu'
 import {getCurrentInstance, onMounted, ref, computed} from 'vue'
-import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

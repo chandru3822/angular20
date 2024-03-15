@@ -15,28 +15,28 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <AlbatrossButton
+        <a-btn
             @click="cancel"
             variant="text"
             color="primary"
             class="text-capitalize mr-2 mb-2"
         >
           <slot name="cancel">Cancel</slot>
-        </AlbatrossButton>
-        <AlbatrossButton
+        </a-btn>
+        <a-btn
             v-for="(option, index) in options"
             @click="select(index)"
             color="primary"
             class="text-capitalize mr-2 mb-2"
             :text="option"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
 import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
 
 const vueInstance = getCurrentInstance().proxy

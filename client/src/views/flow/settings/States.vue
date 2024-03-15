@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">States</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text" color="primary" v-if="userCanAdd" @click="[addNew = !addNew, selectedState = {}]"
+            <a-btn variant="text" color="primary" v-if="userCanAdd" @click="[addNew = !addNew, selectedState = {}]"
                              :hide-text-on-mobile="constants.IS_MOBILE"
                              :prepend-icon="constants.IS_MOBILE ? 'add' : ''" :text="addNew ? 'CANCEL' : 'ADD NEW'"
             />
@@ -26,10 +26,10 @@
                 attach
             ></v-autocomplete>
           </div>
-          <AlbatrossButton :disabled="!selectedState || !selectedState.id"
+          <a-btn :disabled="!selectedState || !selectedState.id"
                  color="primary" class="white--text mr-2"
                  @click="saveCompanyState(selectedState, true)" text="SAVE"/>
-          <AlbatrossButton variant="text" color="primary" @click="[addNew = !addNew, selectedState = {}]" text="CANCEL"/>
+          <a-btn variant="text" color="primary" @click="[addNew = !addNew, selectedState = {}]" text="CANCEL"/>
         </v-card>
         <v-data-table
             id="states-settings-table"
@@ -63,7 +63,7 @@
                 <label>Active:</label>
                 <input class="ml-3" type="checkbox" v-model="item.active">
               </div>
-              <AlbatrossButton :disabled="!item.mapLatitude || !item.mapLongitude || !item.mapZoom"
+              <a-btn :disabled="!item.mapLatitude || !item.mapLongitude || !item.mapZoom"
                      color="primary" class="white--text mr-2"
                      @click="saveCompanyState(item, false)" text="SAVE"/>
             </td>
@@ -72,13 +72,13 @@
             <input type="checkbox" v-model="item.active" disabled readonly>
           </template>
           <template #item.icons="{ item}">
-            <AlbatrossButton size="small" icon variant="text" :large="vuetify.breakpoint.smAndDown" color="primary"
+            <a-btn size="small" icon variant="text" :large="vuetify.breakpoint.smAndDown" color="primary"
                              v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]"
                              prepend-icon="edit"/>
-            <AlbatrossButton size="small" icon :large="vuetify.breakpoint.smAndDown" color="primary"
+            <a-btn size="small" icon :large="vuetify.breakpoint.smAndDown" color="primary"
                              v-if="userCanEdit && expanded.includes(item)"
                              @click="expanded = []" text="CANCEL"/>
-            <AlbatrossButton size="small" icon variant="text" :large="vuetify.breakpoint.smAndDown" color="primary"
+            <a-btn size="small" icon variant="text" :large="vuetify.breakpoint.smAndDown" color="primary"
                              v-if="userCanDelete" @click="stateToDelete=item" prepend-icon="delete"/>
           </template>
 
@@ -99,7 +99,7 @@
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import { useAppStore } from '@/stores/AppStorePinia.js'
 
