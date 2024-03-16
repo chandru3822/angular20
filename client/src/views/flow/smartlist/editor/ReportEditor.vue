@@ -10,12 +10,12 @@
         >
           <v-toolbar-title class="one-hunned">
             <div class="d-flex justify-start align-center">
-              <v-btn
-                icon
-                @click="router.push('/smartlist')"
-              >
-                <v-icon>mdi-chevron-left</v-icon>
-              </v-btn>
+              <a-btn
+                  icon
+                  @click="router.push('/smartlist')"
+                  color="unset"
+                  prepend-icon="mdi-chevron-left"
+              ></a-btn>
 
               <a-text-field
                 v-show="isEditingReportName"
@@ -38,15 +38,14 @@
 
               </span>
               <span class="owner-display pl-2">{{ (isOwner) ? 'Owner' : report.owner }}</span>
-              <v-btn
-                v-if="report?.id && canView"
-                color="primary"
-                text
-                @click="router.push(`/smartlistv1/${report.id}`)"
-              >
-                <v-icon class="mr-1">mdi-eye</v-icon>
-                View old smartlist editor
-              </v-btn>
+              <a-btn
+                  v-if="report?.id && canView"
+                  color="primary"
+                  variant="text"
+                  @click="router.push(`/smartlistv1/${report.id}`)"
+                  prepend-icon="mdi-eye"
+                  text="View old smartlist editor"
+              ></a-btn>
             </div>
           </v-toolbar-title>
           <v-toolbar-items>
@@ -72,16 +71,15 @@
               @updated-owner="updateOwner"
             />
 
-            <v-btn
-              id="reportEditor-save"
-              text
-              color="primary"
-              :disabled="!hasUnsavedChanges || (isEditing && !canEdit)"
-              @click="saveClicked"
-            >
-              <v-icon>save</v-icon>
-              Save
-            </v-btn>
+            <a-btn
+                id="reportEditor-save"
+                variant="text"
+                color="primary"
+                :disabled="!hasUnsavedChanges || (isEditing && !canEdit)"
+                @click="saveClicked"
+                prepend-icon="save"
+                text="Save"
+            ></a-btn>
 
             <SmartlistExport
               :smartlist="report"
@@ -212,19 +210,18 @@
       </v-card-text>
 
       <v-card-actions class="justify-end">
-        <v-btn
-          text
-          @click="showSaveDialog = false"
-        >
-          Cancel
-        </v-btn>
+        <a-btn
+            variant="text"
+            @click="showSaveDialog = false"
+            color="unset"
+            text="Cancel"
+        ></a-btn>
 
-        <v-btn
-          color="primary"
-          @click="[showSaveDialog = false, save()]"
-        >
-          Save
-        </v-btn>
+        <a-btn
+            color="primary"
+            @click="[showSaveDialog = false, save()]"
+            text="Save"
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -242,19 +239,14 @@
       </v-card-text>
 
       <v-card-actions class="justify-end">
-        <v-btn
-          text
-          @click="unsavedPromiseResolve(false)"
-        >
-          Leave Without Saving
-        </v-btn>
+        <a-btn
+            variant="text"
+            @click="unsavedPromiseResolve(false)"
+            color="unset"
+            text="Leave Without Saving"
+        ></a-btn>
 
-        <v-btn
-          color="primary"
-          @click="unsavedPromiseResolve(true)"
-        >
-          Save
-        </v-btn>
+        <a-btn color="primary" @click="unsavedPromiseResolve(true)" text="Save"></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -272,19 +264,18 @@
       </v-card-text>
 
       <v-card-actions class="justify-end">
-        <v-btn
-          text
-          @click="[revertObjectType(), showDataViewDialog = false]"
-        >
-          Cancel
-        </v-btn>
+        <a-btn
+            variant="text"
+            @click="[revertObjectType(), showDataViewDialog = false]"
+            color="unset"
+            text="Cancel"
+        ></a-btn>
 
-        <v-btn
-          color="primary"
-          @click="[showDataViewDialog = false, toggleDataView()]"
-        >
-          Save
-        </v-btn>
+        <a-btn
+            color="primary"
+            @click="[showDataViewDialog = false, toggleDataView()]"
+            text="Save"
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

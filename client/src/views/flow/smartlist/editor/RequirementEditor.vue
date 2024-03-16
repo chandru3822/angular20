@@ -26,12 +26,12 @@
         @focus="onFieldFocus"
       >
         <template #append>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
       </v-autocomplete>
 
@@ -58,12 +58,12 @@
         @blur="afterPsEventSelected"
       >
         <template #append>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
       </v-autocomplete>
 
@@ -83,12 +83,12 @@
         @change="afterOperatorSelected"
       >
         <template #append v-if="isEditorInUse">
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
       </v-autocomplete>
 
@@ -118,12 +118,12 @@
         @change="afterValueSelected(false)"
       >
         <template #append>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
       </v-combobox>
 
@@ -140,12 +140,12 @@
         v-if="isEditing && requirement?.displayValue && operator?.displayValue && value?.displayValue && !showSecondaryValueInput"
         class="px-2"
       >
-        <v-btn
-          icon
-          @click.stop="[reset(), emit('cancelled')]"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
+        <a-btn
+            icon
+            @click.native.stop="[reset(), emit('cancelled')]"
+            color="unset"
+            prepend-icon="mdi-close"
+        ></a-btn>
       </span>
 
       <v-autocomplete
@@ -171,19 +171,18 @@
         </template>
 
         <template #append>
-          <v-btn
+          <a-btn
             v-if="value !== null && value.length > 0"
             icon
             @click="afterValueSelected(true)"
-          >
-            <v-icon>mdi-check</v-icon>
-          </v-btn>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+            prepend-icon="mdi-check"
+          ></a-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
       </v-autocomplete>
 
@@ -197,19 +196,19 @@
         @change="add"
       >
         <template #append>
-          <v-btn
+          <a-btn
             v-if="secondaryValue !== null && secondaryValue.trim().length > 0"
             icon
             @click="afterValueSelected(true)"
+            prepend-icon="mdi-check"
           >
-            <v-icon>mdi-check</v-icon>
-          </v-btn>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          </a-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
       </a-text-field>
     </v-col>

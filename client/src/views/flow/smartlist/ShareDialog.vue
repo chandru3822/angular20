@@ -138,21 +138,19 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn
-          @click.native="emit('dialog-closed')"
-          text
-          color="primary"
-          class="text-capitalize mr-2 mb-2"
-        >
-          Cancel
-        </v-btn>
-        <v-btn
-          color="primary"
-          class="white--text elevation-2 text-capitalize mr-2 mb-2"
-          @click="updateAccess"
-        >
-          Save
-        </v-btn>
+        <a-btn
+            @click.native="emit('dialog-closed')"
+            variant="text"
+            color="primary"
+            class="text-capitalize mr-2 mb-2"
+            text="Cancel"
+        ></a-btn>
+        <a-btn
+            color="primary"
+            class="elevation-2 text-capitalize mr-2 mb-2"
+            @click="updateAccess"
+            text="Save"
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -174,21 +172,19 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn
-          @click.native="openOwnershipDialog = false"
-          text
-          color="primary"
-          class="text-capitalize mr-2 mb-2"
-        >
-          Cancel
-        </v-btn>
-        <v-btn
-          color="primary"
-          class="white--text elevation-2 text-capitalize mr-2 mb-2"
-          @click="updateOwner"
-        >
-          Transfer
-        </v-btn>
+        <a-btn
+            @click.native="openOwnershipDialog = false"
+            variant="text"
+            color="primary"
+            class="text-capitalize mr-2 mb-2"
+            text="Cancel"
+        ></a-btn>
+        <a-btn
+            color="primary"
+            class="elevation-2 text-capitalize mr-2 mb-2"
+            @click="updateOwner"
+            text="Transfer"
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

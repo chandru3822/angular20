@@ -1,14 +1,14 @@
 <template>
-  <v-btn
+  <a-btn
     @click.stop="copySmartlist"
     :icon="!showText"
-    :text="showText"
+    :variant="showText ? 'text' : ''"
     class="pa-5"
     :disabled="disabled"
+    prepend-icon="mdi-content-copy"
+    :text="showText ? 'Duplicate' : ''"
   >
-    <v-icon>mdi-content-copy</v-icon>
-    <span v-if="showText">Duplicate</span>
-  </v-btn>
+  </a-btn>
 </template>
 
 <script setup>

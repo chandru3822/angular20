@@ -26,18 +26,14 @@
     </template>
 
     <template #top>
-      <v-btn
-        v-if="isSystemAdmin"
-        fab
-        absolute
-        bottom
-        right
-        color="info"
-        class="mb-16"
-        @click="getQuery"
-      >
-        <v-icon>mdi-database-eye-outline</v-icon>
-      </v-btn>
+      <a-btn
+          v-if="isSystemAdmin"
+          html-style="position:absolute; bottom: 10px; right: 10px;"
+          color="info"
+          class="mb-16"
+          @click="getQuery"
+          prepend-icon="mdi-database-eye-outline"
+      ></a-btn>
     </template>
   </v-data-table>
 </template>

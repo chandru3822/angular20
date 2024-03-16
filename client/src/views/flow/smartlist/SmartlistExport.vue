@@ -1,14 +1,13 @@
 <template>
-  <v-btn
+  <a-btn
     @click.stop="exportSmartlist"
     :icon="!showText"
-    :text="showText"
+    :variant="showText ? 'text' : ''"
     class="pa-5"
     :disabled="disabled"
+    :text="showText ? 'Export' : ''"
   >
-    <v-icon>mdi-tray-arrow-down</v-icon>
-    <span v-if="showText">Export</span>
-  </v-btn>
+  </a-btn>
 </template>
 
 <script setup>

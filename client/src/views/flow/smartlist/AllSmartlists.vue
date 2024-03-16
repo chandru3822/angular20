@@ -38,15 +38,15 @@
           <td class="d-flex align-center">
             {{ smartlist.dateLastExported | formatDate('date') }}
 
-            <v-btn
-              v-if="smartlist.dateLastExported"
-              text
-              icon
-              class="btn-metrics pa-5"
-              @click.stop="[showMetricsDialog = true, getMetrics(smartlist.id)]"
-            >
-              <v-icon>mdi-information</v-icon>
-            </v-btn>
+            <a-btn
+                v-if="smartlist.dateLastExported"
+                variant="text"
+                icon
+                class="btn-metrics pa-5"
+                @click.stop="[showMetricsDialog = true, getMetrics(smartlist.id)]"
+                color="unset"
+                prepend-icon="mdi-information"
+            ></a-btn>
           </td>
           <td class="td-action">
             <smartlist-copy
@@ -113,13 +113,12 @@
 
         <v-card-actions>
           <v-spacer/>
-          <v-btn
-            color="primary"
-            class="white--text elevation-2 text-capitalize mr-2 mb-2"
-            @click="[showMetricsDialog = false, metrics = []]"
-          >
-            Close
-          </v-btn>
+          <a-btn
+              color="primary"
+              class="elevation-2 text-capitalize mr-2 mb-2"
+              @click="[showMetricsDialog = false, metrics = []]"
+              text="Close"
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

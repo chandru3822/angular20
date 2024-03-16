@@ -1,24 +1,26 @@
 <template>
-<v-btn
-  @click.stop="showDialog = true"
+<a-btn
+  @click.native.stop="showDialog = true"
   :icon="!showText"
-  :text="showText"
+  :variant="showText ? 'text' : ''"
   class="pa-5"
   :disabled="!smartlistId || disabled"
 >
-  <v-icon>mdi-delete</v-icon>
-  <span v-if="showText">Delete</span>
+  <template #default>
+    <v-icon>mdi-delete</v-icon>
+    <span v-if="showText">Delete</span>
 
-  <ConfirmationDialog
-    v-if="showDialog"
-    :parent-close="true"
-    :open-dialog="showDialog"
-    @confirm="deleteSmartlist"
-    @close-dialog="showDialog = false"
-  >
-    Do you want to delete this smartlist?
-  </ConfirmationDialog>
-</v-btn>
+    <ConfirmationDialog
+      v-if="showDialog"
+      :parent-close="true"
+      :open-dialog="showDialog"
+      @confirm="deleteSmartlist"
+      @close-dialog="showDialog = false"
+    >
+      Do you want to delete this smartlist?
+    </ConfirmationDialog>
+  </template>
+</a-btn>
 </template>
 
 <script setup>
