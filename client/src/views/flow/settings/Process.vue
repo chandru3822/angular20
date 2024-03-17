@@ -128,7 +128,7 @@
           v-model="search"
           class="mb-3 px-3 col-12"
           :style="{width: isMobile ? '100%' : '250px'}"
-          append-icon="mdi-magnify"
+          append-inner-icon="mdi-magnify"
           label="Search"
           single-line
           hide-details

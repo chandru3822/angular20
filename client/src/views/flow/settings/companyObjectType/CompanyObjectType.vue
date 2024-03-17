@@ -11,7 +11,7 @@
           <a-text-field v-if="addNew"
                         v-model="newGroup.groupName"
                         placeholder="Enter new group name"
-                        append-outer-icon="save"
+                        append-icon="save"
                         @click:append-outer="addCustomFieldGroup"
                         label="Custom Field Group" />
           <v-toolbar-items>

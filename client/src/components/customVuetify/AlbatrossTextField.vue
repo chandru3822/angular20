@@ -5,8 +5,8 @@
                 :type="type"
                 :prepend-icon="prependIcon"
                 :prepend-inner-icon="prependInnerIcon"
-                :append-icon="appendIcon"
-                :append-outer-icon="appendOuterIcon"
+                :append-icon="appendInnerIcon"
+                :append-outer-icon="appendIcon"
                 :clearable="clearable"
                 @input="v => $emit('input', v)"
                 v-on="$listeners"
@@ -53,8 +53,10 @@ const props = defineProps({
   clearIcon: String,
   prependIcon: String,
   prependInnerIcon: String,
+  //vue2's appendIconOuter = appendIcon in vue3
+  //vue2's appendIcon = appendInnerIcon in vue3
   appendIcon: String,
-  appendOuterIcon: String,
+  appendInnerIcon: String,
   type: {
     type: String,
     default: "text"

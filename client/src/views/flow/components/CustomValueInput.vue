@@ -75,7 +75,7 @@
             v-model.number="field.numericValue"
             @change="props.callback(field)"
             autocomplete="off"
-            :append-icon="appendIcon ? appendIcon : null"
+            :append-inner-icon="appendIcon ? appendIcon : null"
             @click:append="props.appendCallback(field.numericValue)"
         />
 

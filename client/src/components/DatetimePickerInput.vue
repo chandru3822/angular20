@@ -16,7 +16,7 @@
           :placeholder="placeholder"
           :rules="getRequiredRule()"
           :prepend-icon="hidePrependIcon ? '' : 'event'"
-          :append-icon="showAppendIcon ? 'event' : ''"
+          :append-inner-icon="showAppendIcon ? 'event' : ''"
           readonly
           color="primary"
           class="datetime-picker-input"
