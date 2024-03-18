@@ -227,11 +227,16 @@
           <div class="d-flex justify-space-between align-baseline">
             <a class="body-medium overflow-hidden resource-title">{{ resource.title }}</a>
             <div>
-              <AlbatrossButton icon size="x-small" @click="toggleMapPinForResource(resource)" class="mx-1">
+              <v-tooltip bottom>
+                <template v-slot:activator="{on}">
+              <AlbatrossButton icon size="x-small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
                 <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
                 <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
               </AlbatrossButton>
-              <v-tooltip bottom right>
+                </template>
+                Pin on map
+              </v-tooltip>
+              <v-tooltip bottom>
                 <template v-slot:activator="{on}">
               <AlbatrossButton v-if="showScheduleBtnForResource(resource)" icon size="x-small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">
                 <v-icon>mdi-calendar-plus</v-icon>
@@ -288,6 +293,7 @@ const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
     })
 
 
+
 const calendarOptions = ref({
   plugins: [
     resourceTimelinePlugin, interaction, momentTimezonePlugin
@@ -315,9 +321,9 @@ const calendarOptions = ref({
     }
   },
   headerToolbar:{
-    left: 'prev,customToday,next',
+    left: vuetify.breakpoint.mdAndUp ? 'prev,customToday,next': 'prev,next',
     center: 'title',
-    right: 'resourceTimelineDay,resourceTimelineWeek'
+    right: vuetify.breakpoint.mdAndUp ? 'resourceTimelineDay,resourceTimelineWeek': ''
   },
   titleFormat:{ month: 'long',
     year: 'numeric',
@@ -660,7 +666,7 @@ const isMobile = computed(() => {
           //if we came from an event, preselect the correct Resource TYPES
           if(props.preselectedEvent){
             if(props.preselectedEvent.systemListId === 3){
-              selectedOrgTypes.value = orgTypes.value.filter(ot => props.preselectedEvent.systemListOptionIds.includes(ot.id))
+              selectedOrgTypes.value = orgTypes?.value.filter(ot => props.preselectedEvent.systemListOptionIds.includes(ot.id))
             }
           }
 
@@ -1017,6 +1023,12 @@ const isMobile = computed(() => {
   height: 20px;
 }
 
+#calendar-container .fc-toolbar-title {
+  @media(max-width: 960px) {
+    font-size: 1.25rem;
+  }
+}
+
 .background-event {
   font-size: 11px;
   padding-left: 5px;
@@ -1043,13 +1055,6 @@ const isMobile = computed(() => {
     transform-origin: center;
   }
 
-
-//#calendar-container .fc-timeline-bg-harness .fc-event:hover {
-//    max-width: unset;
-//    width: fit-content;
-//    z-index: 20;
-//
-//}
 
   #calendar-container .fc-event.event-tile:hover {
     color: inherit !important;
@@ -1103,7 +1108,10 @@ const isMobile = computed(() => {
 .resource-title {
   text-overflow: ellipsis;
   max-width: 60%;
-}
+  @media(max-width: 960px) {
+    max-width: 30%;
+  }
+  }
 
 #calendar-container {
   height: 100%;
@@ -1117,8 +1125,12 @@ const isMobile = computed(() => {
   border-bottom: 1px black solid;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
   z-index: 1;
-  background-color: var(--v-grey-lighten4)
-}
+  background-color: var(--v-grey-lighten4);
+  @media(max-width: 960px) {
+    max-height:50%;
+    overflow-y: scroll;
+  }
+  }
 .calendar-resize-container {
   /* without this when you resize the screen the calendar goes whackadoodle */
   //flex: 1 1 auto;
