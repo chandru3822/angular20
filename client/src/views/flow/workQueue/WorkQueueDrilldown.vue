@@ -73,11 +73,7 @@
           <template #item="{ item, index }">
             <tr class="clickable v-data-table-row" :class="{'shaded-row': index % 2}">
               <td class="text-left pl-1" v-if="useProcessStepHeaders && item['Project Name']" :class="{'pt-2': item.tags && item.tags.length > 0}">
-<!--                <router-link class="router-link-td elevation-0 square-card"-->
-<!--                             :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">-->
-<!--                  {{ item['Project Name'] }}-->
-<!--                </router-link>-->
-                <a >
+                <a>
                   <v-btn text small
                          :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                     {{ item['Project Name'] }}
@@ -96,6 +92,16 @@
                   </v-chip>
                 </div>
               </td>
+              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Event Name']">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item['Event Name'] }}
+                </router-link>
+              </td>
+              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Event Status']">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item['Event Status'] }}
+                </router-link>
+              </td>
               <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Process Step Name']">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Process Step Name'] }}
@@ -106,6 +112,16 @@
                   {{ item['Process Step Status Type'] }}
                 </router-link>
               </td>
+              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Process Step Event Status']">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item['Process Step Event Status'] }}
+                </router-link>
+              </td>
+              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Event Start Time']">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item['Event Start Time'] }}
+                </router-link>
+              </td>
               <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Days In Queue']">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['Days In Queue'] }}
@@ -114,6 +130,11 @@
               <td class="text-left" v-if="useProcessStepHeaders && headerLinks['State Abbreviation']">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   {{ item['State Abbreviation'] }}
+                </router-link>
+              </td>
+              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Project State']">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item['Project State'] }}
                 </router-link>
               </td>
               <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Owner']">
@@ -151,9 +172,9 @@
                     </v-chip>
                   </div>
                 </div>
-                  <router-link v-else class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
-                    {{ getColumnValue(item, c) }}
-                  </router-link>
+                <router-link v-else class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ getColumnValue(item, c) }}
+                </router-link>
               </td>
               <td class="note-created-at" v-if="queueHasNotes">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
@@ -282,13 +303,6 @@ export default {
     }
   },
   watch: {
-    //this is used if you are calling paginated results. which doesn't happen with smartlists, they just return the entire data set
-    // options: {
-    //   handler () {
-    //     this.getWorkDetails()
-    //   },
-    //   deep: true,
-    // },
     page() {
       let table = this.$refs['pageable-table'];
       let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
@@ -311,13 +325,16 @@ export default {
       try {
         const {data, status} = await getRequest(`/workQueueType/${this.workQueueTypeId}`)
         this.workQueue = data
-        this.workQueue.defaultColumnDisplay.forEach((h) => {
+        let wq_headers = this.workQueue?.useEventData ? this.workQueue.defaultEventColumnDisplay : this.workQueue.defaultColumnDisplay
+        wq_headers.forEach((h) => {
           this.headers.push({
             text: h.text,
             value: h.value,
             show: h.show,
           })
+
           this.headerLinks[h.value] = h.show
+
         })
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -398,7 +415,6 @@ export default {
         } else {
           path = `/workQueue/${this.workQueueTypeId}`;
         }
-
         const {data, status} = await getRequestWithParams(path, {
           params: {
             smartlistId: this.smartlistId,
@@ -411,12 +427,9 @@ export default {
         })
         // this.results = data.content
         // this.totalItems = data.totalElements
-        this.results = data?.data || []
 
-        console.log(this.workQueue.defaultColumnDisplay)
-        console.log(this.results)
-
-        this.workQueue.defaultColumnDisplay.forEach((dc) => {
+        let wq_headers = this.workQueue?.useEventData ? this.workQueue.defaultEventColumnDisplay : this.workQueue.defaultColumnDisplay
+        wq_headers.forEach((dc) => {
           if (dc.show === false) {
             data?.data.forEach((r) => {
               delete r[dc.value]
@@ -426,9 +439,49 @@ export default {
             })
           }
         })
+        this.customColumns = data?.headers || []
+        this.customColumns.forEach(c => {
+          let addToHeaders = true
+          this.headers.forEach((h) => {
+            if ((h.value === c.name) || (h.value === 'Event '.concat(c.name))) {
+              addToHeaders = false
+            }
+          })
+          // if (c.name === 'Process Step Status' || c.name === 'Event Process Step Status' || c.name === 'Project Name' || c.name === 'Process Step Name' || c.name === 'Days In Queue') {
+          //   addToHeaders = false
+          // }
+          if (addToHeaders) {
+            this.headers.push({
+              text: c.name,
+              value: c.name,
+              sort: (a, b) => {
+                //dataTypeId = 6 is an int
+                if ([4, 6].includes(c.dataTypeId)) {
+                  return (a === null) - (b === null) || a - b
+                }
+                  //if it is a date, format the string as a date and sort by that value
+                  //without the .toString() this fails for numeric values
+                //this does a lot of extra checking we probably dont need now that we know the data type id of the column, but i am keeping it cuz i am not sure what it all does
+                else if ([1, 2].includes(c.dataTypeId) && ((null != a && a.toString().match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.toString().match(/^\d{4}-\d{2}-\d{2}/))
+                  || ((null != a && !isNaN(Date.parse(a)) || (null != b && !isNaN(Date.parse(b))))))) {
+                  //todo: keep an eye on if Date.parse returns false for regular numbers and such
+                  //note: firefox doesn't support date formats with hyphens. only with /
 
+                  return (null != a ? new Date(a.replace(/-/g, '/')) : a) - (null != b ? new Date(b.replace(/-/g, '/')) : b)
+                } else {
+                  //otherwise sort normally
+                  //nulls were sorting super weird when the normal options had special characters in them, like '#BQ-1234', setting nulls to '' before sorting seems to fix that, plus saves some null checks for localeCompare
+                  let newA = null == a ? '' : a.trim().toLowerCase()
+                  let newB = null == b ? '' : b.trim().toLowerCase()
+                  return newA.localeCompare(newB)
+                }
+              },
+              show: true // always show custom columns
+            })
+          }
+        })
 
-
+        this.results = data?.data || []
         this.noResults = this.results?.length === 0
         this.useProcessStepHeaders = this.results?.length > 0 && 'Owning Positions' in this.results[0]
 
@@ -463,36 +516,6 @@ export default {
         //process step default fields dont need it as they are treated differently
         // 1 = date, 2 = timestamp, 4 = numeric, 6 = int
 
-        this.customColumns = data?.headers || []
-        this.customColumns.forEach(c => {
-          this.headers.push({
-            text: c.name,
-            value: c.name,
-            sort: (a, b) => {
-              //dataTypeId = 6 is an int
-              if ([4,6].includes(c.dataTypeId) ) {
-                return (a === null) - (b === null) || a - b
-              }
-              //if it is a date, format the string as a date and sort by that value
-              //without the .toString() this fails for numeric values
-              //this does a lot of extra checking we probably dont need now that we know the data type id of the column, but i am keeping it cuz i am not sure what it all does
-              else if ( [1,2].includes(c.dataTypeId) && ((null != a && a.toString().match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.toString().match(/^\d{4}-\d{2}-\d{2}/))
-                  || ((null != a && !isNaN(Date.parse(a)) || (null != b && !isNaN(Date.parse(b))))))) {
-                //todo: keep an eye on if Date.parse returns false for regular numbers and such
-                //note: firefox doesn't support date formats with hyphens. only with /
-
-                return ( null != a ? new Date(a.replace(/-/g, '/')) : a) - ( null != b ? new Date(b.replace(/-/g, '/')) : b )
-              } else {
-                //otherwise sort normally
-                //nulls were sorting super weird when the normal options had special characters in them, like '#BQ-1234', setting nulls to '' before sorting seems to fix that, plus saves some null checks for localeCompare
-                let newA = null == a ? '' : a.trim().toLowerCase()
-                let newB = null == b ? '' : b.trim().toLowerCase()
-                return newA.localeCompare(newB)
-              }
-            },
-            show: true
-          })
-        })
         if (this.queueHasNotes) {
 
           //add the notes column to the end
@@ -535,7 +558,7 @@ export default {
         this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
         if (this.cachedFilters[this.workQueueTypeId]) {
           Object.keys(this.cachedFilters[this.workQueueTypeId]).forEach(key => {
-            this.workQueue.defaultColumnDisplay.forEach((dc) => {
+            wq_headers.forEach((dc) => {
               if(dc.value === key && dc.show === true) {
                 this.filters[key] = this.cachedFilters[this.workQueueTypeId][key]
               }
