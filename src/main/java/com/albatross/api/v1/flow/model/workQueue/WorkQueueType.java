@@ -18,6 +18,7 @@ public class WorkQueueType {
       longWindowDurationType, shortWindowDurationType, expectedCycleDurationType;
     private List<WorkQueueTypeSchedule> schedule;
     private List<WorkQueueTypeDefaultColumns> defaultColumnDisplay;
+    private List<WorkQueueTypeDefaultColumns> defaultEventColumnDisplay;
     private Double expectedTarget;
     private Boolean archived, inverseExpectation, useEventData, hidden, hiddenAllow;
   private List<WhiteListedPosition> hiddenWhiteListedPositions;
