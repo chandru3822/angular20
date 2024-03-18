@@ -1,9 +1,9 @@
-update flow.work_queue_type
-SET default_event_column_display = json('[' ||
-                                        '{"value": "Event Project Name",          "text": "Project",                      "show": true},' ||
-                                        '{"value": "Event Name",                  "text": "Event Name",                   "show": true},' ||
-                                        '{"value": "Event Status",                "text": "Event Status",                 "show": true},' ||
-                                        '{"value": "Event Process Step Name",     "text": "Process Step Name",            "show": true},' ||
-                                        '{"value": "Event Process Step Status",   "text": "Process Step Event Status",    "show": true},' ||
-                                        '{"value": "Event Days In Queue",         "text": "Days In Queue",                "show": true},' ||
-                                        '{"value": "Event Start Time",            "text": "Event Start Time",             "show": true}]' )
+-- update flow.work_queue_type
+-- SET default_event_column_display = json('[' ||
+--                                         '{"value": "Event Project Name",          "text": "Project",                      "show": true},' ||
+--                                         '{"value": "Event Name",                  "text": "Event Name",                   "show": true},' ||
+--                                         '{"value": "Event Status",                "text": "Event Status",                 "show": true},' ||
+--                                         '{"value": "Event Process Step Name",     "text": "Process Step Name",            "show": true},' ||
+--                                         '{"value": "Event Process Step Status",   "text": "Process Step Event Status",    "show": true},' ||
+--                                         '{"value": "Event Days In Queue",         "text": "Days In Queue",                "show": true},' ||
+--                                         '{"value": "Event Start Time",            "text": "Event Start Time",             "show": true}]' )

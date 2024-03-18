@@ -185,6 +185,9 @@ public class SrecDTO {
   @JsonProperty("seller_marketing_name")
   private String sellerMarketingName;
 
+  @JsonProperty("installer_marketing_name")
+  private String installerMarketingName;
+
   @JsonProperty("customer_address_email")
   private String customerAddressEmail;
 
@@ -242,6 +245,12 @@ public class SrecDTO {
   @JsonProperty("smart_inverter_rebate_submission")
   private String smartInverterRebateSubmission;
 
+  @JsonProperty("explanatory_information")
+  private String explanatoryInformation;
+
+  @JsonProperty("transfer_requirements")
+  private String transferRequirements;
+
   public SrecDTO() {
     this.formType = "purchase_form";
     this.vendorId = 39;
@@ -257,7 +266,7 @@ public class SrecDTO {
     this.installerAddressState = "UT";
     this.installerAddressZip = "84097";
     this.installerAddressPhone = "3854820045";
-    this.installerAddressEmail = "incentives@blueravensolar.com";
+    this.installerAddressEmail = "environmentalattributes@blueravensolar.com";
     this.installerName1 = "Blue Raven Solar";
     this.intermediaryDue = "N/A";
     this.repairsIncluded = "Yes";
@@ -280,13 +289,14 @@ public class SrecDTO {
     this.maintenanceIncluded = "No";
     this.mechanicWaiverDate = "N/A";
     this.panelWarrantyYears = 25;
-    this.sellerAddressEmail = "incentives@blueravensolar.com";
+    this.sellerAddressEmail = "environmentalattributes@blueravensolar.com";
     this.sellerAddressPhone = "3854820045";
     this.sellerAddressState = "UT";
     this.expectedProjectLife = 25;
     this.interconnectionParty = "Approved Vendor";
     this.intermediaryPayments = 0;
     this.sellerMarketingName = "Blue Raven Solar";
+	this.installerMarketingName = "Blue Raven Solar";
     this.installWarrantyParty = "Approved Vendor";
     this.installWarrantyYears = 10;
     this.installerLegalName = "Blue Raven Solar, LLC";
@@ -302,5 +312,7 @@ public class SrecDTO {
     this.installCompletionDateDays = 77;
     this.projectPerformanceExplanation = "system performance is based on the Aurora software we use";
     this.smartInverterRebateSubmission = "No";
+	this.explanatoryInformation = "Customer is contractually obligated to provide production for the next 15 years. If the customer moves, or the system goes offline; the customer must complete the necessary actions to give production data to the Company.";
+	this.transferRequirements = "Customer must provide contact information for the new homeowner and proof of ownership. Customer must also explain how the system cost will be paid off, either by the new homeowner or themselves.";
   }
 }

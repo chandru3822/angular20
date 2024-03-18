@@ -162,10 +162,17 @@ public class InstallAgreementService {
 
     body.setDepositOwed(srec.getTotalCost());
     body.setReferenceNumber(srec.getProjectId().toString());
-    body.setProjectSizeKwDc(srec.getSystemSize());
-    body.setProjectSizeKwAc(srec.getSystemSizeAc());
+
+	var systemSizeKw = new BigDecimal(srec.getSystemSize()).divide(new BigDecimal(1000));
+    var systemSizeAcKw = new BigDecimal(srec.getSystemSizeAc()).divide(new BigDecimal(1000));
+
+    body.setProjectSizeKwDc(systemSizeKw.toString());
+    body.setProjectSizeKwAc(systemSizeAcKw.toString());
     body.setGrossElectricProduction(srec.getYearOneKwhOutput());
-    body.setExpectedRecValue(srec.getSrecValue().toString());
+
+	var srecValue = new BigDecimal(srec.getSrecValue().toString()).divide(new BigDecimal("0.9"), 2, RoundingMode.HALF_UP);
+
+    body.setExpectedRecValue(srecValue.toString());
     body.setRecCustomerPayment(srec.getSrecValue().toString());
 
     if (isFinanced) {
