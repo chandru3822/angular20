@@ -231,9 +231,14 @@
                 <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
                 <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
               </AlbatrossButton>
-              <AlbatrossButton v-if="showScheduleBtnForResource(resource)" icon size="x-small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)">
+              <v-tooltip bottom right>
+                <template v-slot:activator="{on}">
+              <AlbatrossButton v-if="showScheduleBtnForResource(resource)" icon size="x-small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">
                 <v-icon>mdi-calendar-plus</v-icon>
               </AlbatrossButton>
+                </template>
+                Assign to Event
+              </v-tooltip>
               <AlbatrossButton icon size="x-small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></AlbatrossButton>
             </div>
           </div>
