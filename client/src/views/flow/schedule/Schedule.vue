@@ -378,12 +378,6 @@
     bottom: 10px;
   }
 
-  .unschedule-button {
-    position: absolute;
-    bottom: 10px;
-    right: 25px;
-  }
-
   .map-field-label {
     font-size: 12px;
     color: var(--v-primary-base);

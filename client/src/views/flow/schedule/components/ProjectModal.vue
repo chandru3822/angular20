@@ -32,7 +32,6 @@ const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'
 const fieldsSaving = ref(false)
 const conflictingEvents = ref()
 const saveInvalid = ref(true)
-const confirmUnschedule = ref(false)
 const cancelledCompanyEventStatuses = ref()
 const timezoneFriendly = ref(store.state.schedule.timezone.value)
 
@@ -122,20 +121,6 @@ const scheduleCalendarResourceToProject = (resource) => {
   }
   setSelectedResourceInStore(props.project.resource.id)
   validateSaveEvent()
-}
-
-const getCancelledCompanyEventStatuses = async () => {
-  try {
-    const {data} = await getCancelledCompanyStatusTypesAssignedToPpsEvent(props.project.projectProcessStepId, props.project.projectProcessStepEventId)
-    cancelledCompanyEventStatuses.value = data
-    if(data?.length === 1) {
-      props.project.cancelledCompanyStatusType = data[0]
-    }
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    let snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-  }
 }
 
 
@@ -287,7 +272,6 @@ const cancelProjectProcessStepEvent = async() => {
       </v-card-text>
       <v-card-actions v-if="userCanEdit" class="pt-1 pb-4 px-4">
         <v-spacer/>
-        <AlbatrossButtonSecondary v-if="project.editableInSchedule" @click="[confirmUnschedule = true, getCancelledCompanyEventStatuses()]" color="primary" size="small" >Unschedule</AlbatrossButtonSecondary>
       </v-card-actions>
     </div>
 <!-- ------------------- -->
@@ -311,21 +295,6 @@ const cancelProjectProcessStepEvent = async() => {
     <template v-slot:no>Cancel</template>
     <template v-slot:yes>Schedule Anyway</template>
 
-  </ConfirmationDialog>
-  <ConfirmationDialog :open-dialog="confirmUnschedule" @close-dialog="confirmUnschedule = false" @confirm="cancelProjectProcessStepEvent">
-    <template v-slot:title>Unschedule</template>
-    Are you sure you want to unschedule and remove {{project.projectName}} {{project.eventName}} event from {{project.resourceName}}’s calendar?
-    <v-autocomplete
-        v-model="project.companyEventStatusTypeId"
-        :items="cancelledCompanyEventStatuses"
-        label="Event's new status"
-        :disabled="false"
-        item-text="eventStatusType"
-        item-value="id"
-        @input="[statusChanged = true, defaultValuesChanged = true]"
-        class="mt-2"
-    />
-    <template v-slot:yes>Unschedule</template>
   </ConfirmationDialog>
 </v-card>
 </template>
