@@ -169,7 +169,10 @@ public class InstallAgreementService {
     body.setProjectSizeKwDc(systemSizeKw.toString());
     body.setProjectSizeKwAc(systemSizeAcKw.toString());
     body.setGrossElectricProduction(srec.getYearOneKwhOutput());
-    body.setExpectedRecValue(srec.getSrecValue().toString());
+
+	var srecValue = new BigDecimal(srec.getSrecValue().toString()).divide(new BigDecimal("0.9"), 2, RoundingMode.HALF_UP);
+
+    body.setExpectedRecValue(srecValue.toString());
     body.setRecCustomerPayment(srec.getSrecValue().toString());
 
     if (isFinanced) {
