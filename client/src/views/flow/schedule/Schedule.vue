@@ -43,7 +43,7 @@
                @close-map="showHideMap(false)"
           >
             <template v-slot:searchMenu>
-              <AlbatrossButton id="search-menu-btn" class="rounded-tile-btn" variant="outlined" icon @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" color="primary"><v-icon>mdi-magnify</v-icon></AlbatrossButton>
+              <AlbatrossButton v-if="vuetify.breakpoint.mdAndUp" id="search-menu-btn" class="rounded-tile-btn" variant="outlined" icon @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" color="primary"><v-icon>mdi-magnify</v-icon></AlbatrossButton>
               <ProjectSearchDialog v-show="searchMenuOpen" :pin-to-map-callback="projectMapMarkersCallback"  :pinned-projects="projectMapMarkers"
                                    :states="states" :start-time="startTime" :end-time="endTime"
                                    @close-dialog="searchMenuOpen = false" @zoom-map="zoomToMap"/>
