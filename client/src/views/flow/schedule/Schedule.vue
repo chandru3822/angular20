@@ -311,6 +311,12 @@
 </script>
 
 <style lang="scss">
+
+#schedule-container {
+  @media(max-width: 960px) {
+    overflow-x: clip;
+  }
+  }
   #schedule-container .v-data-table__wrapper {
     height: calc(40vh - 118px);
     //this is smaller because it is the inner wrapper of the table
