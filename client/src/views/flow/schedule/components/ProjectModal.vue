@@ -33,7 +33,7 @@ const fieldsSaving = ref(false)
 const conflictingEvents = ref()
 const saveInvalid = ref(true)
 const cancelledCompanyEventStatuses = ref()
-const timezoneFriendly = ref(store.state.schedule.timezone.value)
+const timezoneFriendly = ref(store.state.schedule.timezone.friendlyValue)
 
 watch(() => props.resourceFromCalendar, () => {
   if(props.resourceFromCalendar.id) {
@@ -45,9 +45,8 @@ watch(() => props.resourceFromCalendar, () => {
   }
 })
 
-watch(() => store.state.schedule.timezone.value, (value) => {
-  console.log('hit the watcher')
-  timezoneFriendly.value = value
+watch(() => store.state.schedule.timezone.friendlyValue, (fv) => {
+  timezoneFriendly.value = fv
 })
 
 const setSelectedResourceInStore = (resourceId) => {
@@ -214,7 +213,7 @@ const cancelProjectProcessStepEvent = async() => {
   <!-- Everything below only shows when expanded -->
   <div v-show="show">
     <!--  When the event hasn't been scheduled  -->
-    <div v-if="userCanEdit && project.processStepStatusTypeId === 1 && project.editableInSchedule">
+    <div v-if="userCanEdit && project.editableInSchedule">
       <v-card-text class="py-0">
         <v-autocomplete v-model="project.resource"
                         :items="project.resources"
@@ -234,7 +233,7 @@ const cancelProjectProcessStepEvent = async() => {
         <DatetimePickerInput
             v-model="project.start"
             :timezone="timezone.value"
-            :readonly="project.startFieldReadOnly"
+            :readonly="project.startFieldReadOnly || !userCanEdit"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="Start Time"
@@ -245,7 +244,7 @@ const cancelProjectProcessStepEvent = async() => {
         <DatetimePickerInput
             v-model="project.end"
             :timezone="timezone.value"
-            :readonly="project.endFieldReadOnly || !userCanEdit || project.processStepStatusTypeId !== 1 || project.eventStatusTypeId !== 1"
+            :readonly="project.endFieldReadOnly || !userCanEdit "
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="End Time"
@@ -262,7 +261,7 @@ const cancelProjectProcessStepEvent = async() => {
       </v-card-actions>
     </div>
 <!-- ------------------- -->
-    <div v-else>
+    <div v-else-if="project.start || project.end || project.resourceName">
       <v-card-text class="py-0 body-large">
         Scheduled for
         <span v-if="eventIsSameDay()">{{project.start | formatDate('timestamp','MMMM DD YYYY, h:mm a')}} - {{project.end | formatDate('timestamp','h:mm a')}}</span>
@@ -273,6 +272,11 @@ const cancelProjectProcessStepEvent = async() => {
       <v-card-actions v-if="userCanEdit" class="pt-1 pb-4 px-4">
         <v-spacer/>
       </v-card-actions>
+    </div>
+    <div v-else>
+      <v-card-text class="py-0 pb-4 body-large">
+      Not Scheduled, please use the project event page to schedule.
+      </v-card-text>
     </div>
 <!-- ------------------- -->
   </div>

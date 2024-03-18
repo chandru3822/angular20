@@ -132,7 +132,8 @@
       fetchEventTypes()
       if(route.query && route.query.projectProcessStepEventId) {
         //projectId, eventId, processStepStatusTypeId
-        getSingleProject(null, null, null,null, parseInt(route.query.projectProcessStepEventId))
+        getSingleProject(null, null, null,null, parseInt(route.query.projectProcessStepEventId), true)
+
       }
     })
 
@@ -181,9 +182,9 @@
           zoomToMap(newValue[0], 8)
         }
       }
-      const toggleSelectedProjectMapPin = ()=> {
+      const toggleSelectedProjectMapPin = (onload)=> {
         selectedProject.value.pinned = !selectedProject.value.pinned
-        if(selectedProject.value.pinned){
+        if(selectedProject.value.pinned && !onload){
           showHideMap(true)
           zoomToMap({latitude: selectedProject.value.latitude, longitude: selectedProject.value.longitude})
         } else if(latitude.value === Math.trunc(selectedProject.value.latitude) && longitude.value === Math.trunc(selectedProject.value.longitude)) {
@@ -199,7 +200,7 @@
         calendarResourceToSchedule.value = resource
       }
 
-      const getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) => {
+      const getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId, onLoad) => {
         try {
           let params = {
             projectId,
@@ -215,6 +216,9 @@
           project.coordinates = [ project.longitude, project.latitude ]
           project.pinned = false
             selectedProject.value = project
+          if(onLoad === true){
+            toggleSelectedProjectMapPin(onLoad)
+          }
           store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, project.resourceId)
           selectedProject.value.resource = { id: selectedProject.value.resourceId, name: selectedProject.value.resourceName }
         } catch (e) {
