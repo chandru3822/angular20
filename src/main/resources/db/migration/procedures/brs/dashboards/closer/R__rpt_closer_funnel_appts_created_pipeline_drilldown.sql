@@ -27,32 +27,24 @@ BEGIN
   case
     when p_funnel_id = 34 then RETURN QUERY
       select array_to_json(array_agg(row_to_json(funnel_rows)))
-      from (select pd.closer_name                 as owner_name,
-                   o.org_name                        office,
-                   s.abbreviation     state,
-                   pd.company_project_status_type as status_type,
-                   concat(c.first_name,' ',c.last_name)                    customer_name,
+      from (select concat(c.first_name,' ',c.last_name)                    customer_name,
                    c.id,
-                   pd.project_id,
-                   pd.source_name,
-                   pd.system_size,
-                   pd.primary_financier_name         financier,
-                   pd.closer_appointment_start       appointment_date,
-                   pd.cancelled_date,
-                   pd.project_created_date        as date_created
+                   lov.name as source_name,
+                   concat(u2.first_name,' ',u2.last_name) as contact_owner,
+                   s.state,
+                   c.date_created
             from flow.contact c
              inner join flow.contact_custom_field_value ccfv on ccfv.contact_id = c.id and
                                                                 custom_field_group_assignment_id = 395 and
                                                                 ccfv.int_value = any(p_source_ids)
-              left join flow.company_state cs on cs.id = c.company_state_id
-              left join flow.state s on s.id = cs.state_id
-              left join flow.project p on p.contact_id = c.id
-              left join brs.project_details pd on pd.project_id = p.id
-              left join flow.user_position up on up.id = pd.closer_user_position_id
-              left join flow.org o on o.id = up.org_id
+            inner join flow.list_of_value lov on lov.id = ccfv.int_value
+            left join flow.user_position u on u.id = c.owner_user_position_id
+            left join flow."user" u2 on u2.id = u.user_id
+            left join flow.company_state cs on cs.id = c.company_state_id
+            left join flow.state s on s.id = cs.state_id
             where ((c.date_created at time zone 'UTC') at time zone
                    'US/Mountain')::date between p_start_date and p_end_date
-            order by owner_name, c.date_created) as funnel_rows;
+            order by customer_name, c.date_created) as funnel_rows;
     else return query
       select array_to_json(array_agg(row_to_json(funnel_rows)))
       from (select pd.closer_name                 as owner_name,
