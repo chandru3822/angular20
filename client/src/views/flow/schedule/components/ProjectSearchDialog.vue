@@ -259,10 +259,11 @@ const clear = () => {
   selectedProcessStepStatusType.value = {}
   projects.value = []
   showSearchResults.value = false
+  toggleAllPinsOnMap(true)
 }
 
-const toggleAllPinsOnMap = () => {
-  if(allPinsPinned.value){
+const toggleAllPinsOnMap = (forceClear) => {
+  if(allPinsPinned.value || forceClear){
     props.pinToMapCallback([])
   } else {
     props.pinToMapCallback(projects.value)
