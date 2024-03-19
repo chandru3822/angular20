@@ -138,14 +138,19 @@ $default-text: rgba(0,0,0,0.87);
   color: #9E9E9E !important;
 }
 /* theme the calendar */
-.fc-button-primary {
-  color: white;
+.fc-button-primary.fc-prev-button, .fc-button-primary.fc-customToday-button, .fc-button-primary.fc-next-button, .fc-button-primary.fc-button-active {
+  color: white !important;
   background-color: var(--v-primary-base) !important;
   border-color: var(--v-primary-base) !important;
 }
 
+.fc-button-primary{
+  color: var(--v-primary-base) !important;
+  background-color: white !important;
+}
+
 .fc-button-primary:hover {
-  color: white;
+  color: white !important;
   background-color: var(--v-primary-base) !important;
   border-color: var(--v-primary-base) !important;
 }

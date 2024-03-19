@@ -293,7 +293,7 @@ const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
     })
 
 
-
+const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
 const calendarOptions = ref({
   plugins: [
     resourceTimelinePlugin, interaction, momentTimezonePlugin
@@ -346,44 +346,44 @@ const calendarOptions = ref({
 })
 const snackbar = ref({})
 const calendarLoading = ref(false)
-    const includeCancelled = ref(false)
-    const calendarInitialRender = ref(true)
-    const calendarApi = ref(null)
-    const calendarStart = ref(null)
-    const calendarView = ref(null)
-    const calendarStartTime = ref(null)
-    const calendarEndTime = ref(null)
-    const countSelected = ref(0)
-    const maxSelectionAllowed = ref(10)
-    const countErrorMessage = ref('Maximum Selection Reached')
-    //filters
-    const selectedStates = ref([])
-    const masterOrgs = ref([])
-    const orgValuesChanged = ref(false)
-    const orgs = ref([])
-    const selectedOrgs = ref([])
-    const orgsLoading = ref(true)
-    const usersLoading = ref(true)
-    const userValuesChanged = ref(false)
-    const masterUsers = ref([])
-    const users = ref([])
-    const selectedUsers = ref([])
-    const orgTypes = ref([])
-    const orgTypeValuesChanged = ref(false)
-    const selectedOrgTypes = ref([])
-    const orgTypesLoading = ref(true)
-    const positions = ref([])
-    const positionValuesChanged = ref(false)
-    const selectedPositions =  ref([])
-    const previousStateCount =  ref(0)
-    const previousTypeCount =  ref(0)
-    const previousPositionCount =  ref(0)
-    const positionsLoading =  ref(true)
+const includeCancelled = ref(false)
+const calendarInitialRender = ref(true)
+const calendarApi = ref(null)
+const calendarStart = ref(null)
+const calendarView = ref(null)
+const calendarStartTime = ref(null)
+const calendarEndTime = ref(null)
+const countSelected = ref(0)
+const maxSelectionAllowed = ref(10)
+const countErrorMessage = ref('Maximum Selection Reached')
+//filters
+const selectedStates = ref([])
+const masterOrgs = ref([])
+const orgValuesChanged = ref(false)
+const orgs = ref([])
+const selectedOrgs = ref([])
+const orgsLoading = ref(true)
+const usersLoading = ref(true)
+const userValuesChanged = ref(false)
+const masterUsers = ref([])
+const users = ref([])
+const selectedUsers = ref([])
+const orgTypes = ref([])
+const orgTypeValuesChanged = ref(false)
+const selectedOrgTypes = ref([])
+const orgTypesLoading = ref(true)
+const positions = ref([])
+const positionValuesChanged = ref(false)
+const selectedPositions =  ref([])
+const previousStateCount =  ref(0)
+const previousTypeCount =  ref(0)
+const previousPositionCount =  ref(0)
+const positionsLoading =  ref(true)
 
-    const mapResourceEvents =  ref([])
-    const checkedResources =  ref([])
-    const daySelector =  ref(false)
-    const dayOptions =  ref([])
+const mapResourceEvents =  ref([])
+const checkedResources =  ref([])
+const daySelector =  ref(false)
+const dayOptions =  ref([])
 const timezone =  ref(store.state.schedule.timezone.value)
 const timezones = ref([
   { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
@@ -619,7 +619,8 @@ const isMobile = computed(() => {
         })
       }
       const showScheduleBtnForResource = (resource) => {
-        if(props.preselectedEvent) {
+        // v-if="userCanEdit && project.editableInSchedule"
+        if(props.preselectedEvent && userCanEdit && props.preselectedEvent.editableInSchedule) {
           if (props.preselectedEvent.systemListId === 2) {
             const allowedPositions = resource.extendedProps?.userPositions?.filter(p => props.preselectedEvent.systemListOptionIds.includes(p.positionId))
             return allowedPositions?.length > 0
