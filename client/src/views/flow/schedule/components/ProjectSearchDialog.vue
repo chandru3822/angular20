@@ -345,7 +345,6 @@ onMounted(() => {
         <v-autocomplete v-model="searchProject"
                         :items="searchProjects"
                         :search-input.sync="search"
-                        item-text="projectName"
                         clearable
                         :key="0"
                         :disabled="!!state?.id"
@@ -359,7 +358,10 @@ onMounted(() => {
                         return-object
                         attach
         >
-          <template slot="item" slot-scope="data">
+          <template v-slot:selection="data">
+            {{ data.item?.projectName }} - {{ data.item?.projectId }}
+          </template>
+          <template v-slot:item="data">
             <!-- HTML that describe how select should render items when the select is open -->
             {{ data.item.projectName }} - {{ data.item.projectId }}
           </template>
