@@ -185,9 +185,14 @@
       const toggleSelectedProjectMapPin = (onload)=> {
         selectedProject.value.pinned = !selectedProject.value.pinned
         if(selectedProject.value.pinned && !onload){
+          //if pinning b/c we're loading the page with a selected project, we don't want to show the map if it's hidden
           showHideMap(true)
           zoomToMap({latitude: selectedProject.value.latitude, longitude: selectedProject.value.longitude})
+        } else if(selectedProject.value.pinned && showMap.value === true){
+          //if we're loading the page with a selected project and the map is already open, zoom into the project pin
+          zoomToMap({latitude: selectedProject.value.latitude, longitude: selectedProject.value.longitude})
         } else if(latitude.value === Math.trunc(selectedProject.value.latitude) && longitude.value === Math.trunc(selectedProject.value.longitude)) {
+          //if we're UNpinning a map pin and we're currently zoomed into that map pin, reset the zoom to default
           resetMapZoom()
         }
       }

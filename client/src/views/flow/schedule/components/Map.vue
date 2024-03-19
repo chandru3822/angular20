@@ -313,15 +313,15 @@ const resetDriveTime = () => {
 //   selectAddress2.value = false
 // }
 const selectAddressForDriveTime = (marker) => {
-  if (selectAddress1) {
+  if (selectAddress1.value) {
     address1.value = marker.street1 + ', ' + marker.city + ', ' + marker.stateAbbreviation + ' ' + marker.postalCode
     selectAddress1.value = false
     //dont move out of if statement, because we dont want the colors to change unless they are selecting an address for drive time
     marker.oldColor = marker.color || defaultEmptyColor.value
     marker.color = drivingMarkerColor.value
     //get a list of all addresses selectedFirst and unset them, then set this one to selectedFirst
-    let firstMarkers = markers.value.filter(m => m.selectedFirst)
-    let firstResourceMarkers = mapResources.value.filter(m => m.selectedFirst)
+    let firstMarkers = props.markers.filter(m => m.selectedFirst)
+    let firstResourceMarkers = props.mapResources.filter(m => m.selectedFirst)
     firstMarkers?.forEach(m => {
       m.selectedFirst = false
       m.color = m.oldColor
@@ -341,8 +341,8 @@ const selectAddressForDriveTime = (marker) => {
     marker.oldColor = marker.color || defaultEmptyColor.value
     marker.color = drivingMarkerColor.value
     //get a list of all addresses selectedSecond and unset them, then set this one to selectedSecond
-    let secondMarkers = markers.value.filter(m => m.selectedSecond)
-    let secondResourceMarkers = mapResources.value.filter(m => m.selectedSecond)
+    let secondMarkers = props.markers.filter(m => m.selectedSecond)
+    let secondResourceMarkers = props.mapResources.filter(m => m.selectedSecond)
     secondMarkers?.forEach(m => {
       m.selectedSecond = false
       m.color = m.oldColor
