@@ -130,7 +130,10 @@ BEGIN
                          inner join brs.project_details pd on pd.project_id = p.id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
-                    and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
+                    and case when p_query_commissions is false then
+                      (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
+                        else
+                          p.user_position_id = any(v_position_ids) end
                     and
                               ((p.id::text like '%' || v_clean_name_search_term || '%') or
                               (p.project_name_search like '%' || v_clean_name_search_term || '%') or
@@ -170,7 +173,9 @@ BEGIN
                          inner join brs.project_details pd on pd.project_id = p.id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
-                    and (c.owner_org_ids && v_org_ids)
+                    and case when p_query_commissions is false then
+                      (c.owner_org_ids && v_org_ids)
+                        else p.user_position_id = any(v_position_ids) end
                     and
                               ((c.contact_email_search like '%' || v_clean_email_search_term || '%') or
                               (c.contact_mobile_search like '%' || v_clean_phone_search_term || '%') or
@@ -247,7 +252,10 @@ BEGIN
                       inner join brs.project_details pd on pd.project_id = p.id
                where c.company_id = any (v_company_ids)
                  and p.archived is not true
-                 and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
+                 and case when p_query_commissions is false then
+                            (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
+                          else
+                            p.user_position_id = any(v_position_ids) end
                  and case
                        when p_company_project_status_type_id is not null then
                          cpst.id = p_company_project_status_type_id
