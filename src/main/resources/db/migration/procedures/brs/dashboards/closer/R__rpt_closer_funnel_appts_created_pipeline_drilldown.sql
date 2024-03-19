@@ -41,6 +41,9 @@ BEGIN
                    pd.cancelled_date,
                    pd.project_created_date        as date_created
             from flow.contact c
+             inner join flow.contact_custom_field_value ccfv on ccfv.contact_id = c.id and
+                                                                custom_field_group_assignment_id = 395 and
+                                                                ccfv.int_value = any(p_source_ids)
               left join flow.company_state cs on cs.id = c.company_state_id
               left join flow.state s on s.id = cs.state_id
               left join flow.project p on p.contact_id = c.id
