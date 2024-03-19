@@ -517,7 +517,7 @@ export default {
         this.workQueueLoading = true;
         const {data, status} = await getRequest(`/workQueueType/${this.workQueueTypeId}`)
         this.workQueueType = data
-        this.defaultFields = this.workQueueType?.useEventData ? this.workQueueType?.defaultEventColumnDisplay : this.workQueueType?.defaultColumnDisplay
+        this.defaultFields = this.workQueueType?.defaultColumnDisplay
         if (this.workQueueType.schedule.length < 1) {
           this.workQueueType.schedule = this.noScheduleDefault;
         }
@@ -629,20 +629,12 @@ export default {
     updateDefaultFields(fieldName) {
       let fName = fieldName.text
       let fShow = fieldName.show
-      if(this.workQueueType.useEventData) {
-        this.workQueueType?.defaultEventColumnDisplay.forEach((c) => {
-          if (fName === c.text) {
-            c.show = !fShow
-          }
-        })
-      } else {
-        this.workQueueType?.defaultColumnDisplay.forEach((c) => {
-          if (fName === c.text) {
-            c.show = !fShow
-          }
-        })
-      }
-      this.defaultFields = this.workQueueType.useEventData ? this.workQueueType?.defaultEventColumnDisplay : this.workQueueType?.defaultColumnDisplay
+      this.workQueueType?.defaultColumnDisplay.forEach((c) => {
+        if (fName === c.text) {
+          c.show = !fShow
+        }
+      })
+      this.defaultFields = this.workQueueType?.defaultColumnDisplay
     },
   },
 }
