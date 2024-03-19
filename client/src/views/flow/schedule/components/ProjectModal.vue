@@ -19,6 +19,7 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
+const vuetify = vueInstance.$vuetify
 
 const emit = defineEmits(['toggleProjectMapPin'])
 
@@ -27,7 +28,7 @@ const props = defineProps({
   timezone:Object,
   resourceFromCalendar:Object,
 })
-const show = ref(true)
+const show = ref(vuetify.breakpoint.mdAndUp)
 const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
 const fieldsSaving = ref(false)
 const conflictingEvents = ref()
