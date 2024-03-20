@@ -7,5 +7,5 @@ import java.time.LocalDate;
 @Data
 public class CompanyPeriod {
   String label, shortLabel;
-  LocalDate startDate, endDate;
+  LocalDate startDate, endDate, trendStart, trendEnd;
 }

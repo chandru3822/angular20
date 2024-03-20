@@ -124,6 +124,11 @@ public class CloserDashboardController {
     return closerDashboardService.getReps(request);
   }
 
+  @GetMapping(value = "/appointmentTypes")
+  public List<AppointmentType> getAppointmentTypes() {
+    return closerDashboardService.getAppointmentTypes();
+  }
+
   @PostMapping(value = "/funnel/standard")
   public String funnelStandard(@RequestBody FunnelRequest funnelRequest) {
     return closerDashboardService.funnelStandard(funnelRequest);
@@ -134,10 +139,10 @@ public class CloserDashboardController {
     return closerDashboardService.funnelDrilldownStandard(funnelRequest);
   }
 
-  @PostMapping(value = "/funnel/apptDateCohort")
-  public String funnelApptDateCohort(@RequestBody FunnelRequest funnelRequest) {
-    return closerDashboardService.funnelApptDateCohort(funnelRequest);
-  }
+//  @PostMapping(value = "/funnel/apptDateCohort")
+//  public String funnelApptDateCohort(@RequestBody FunnelRequest funnelRequest) {
+//    return closerDashboardService.funnelApptDateCohort(funnelRequest);
+//  }
 
   @PostMapping(value = "/funnelDrilldown/apptDateCohort")
   public String funnelDrilldownApptDateCohort(@RequestBody FunnelRequest funnelRequest) {
