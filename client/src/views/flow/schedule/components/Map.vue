@@ -97,7 +97,9 @@
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
-      <MapPopUp :marker="m"/>
+      <MglPopup :close-button="false" :offset="36">
+        <MapPopUp :marker="m"/>
+      </MglPopup>
     </MglMarker>
     <MglNavigationControl :showCompass="false" position="top-right"/>
   </MglMap>
