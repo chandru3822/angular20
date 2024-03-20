@@ -27,15 +27,17 @@
                             v-model="newEventStatusTypeId"
                             item-text="eventStatusType"
                             item-value="id"
+                            hide-details
                             :loading="companyStatusesLoading"
                             autocomplete="off"
-                            @input="assignStatusTypeToEvent"
             >
-              <template v-slot:item="{data}">
+              <template v-slot:item="data">
                 <!-- HTML that describes how select should render items when the select is open -->
                 {{ data.item.eventStatusType }} ({{ data.item.rootEventStatusType }})
               </template>
             </v-autocomplete>
+            <v-checkbox v-model="newEventStatusEditableInSchedule" label="Editable in Schedule"/>
+            <AlbatrossButton @click="assignStatusTypeToEvent">Save</AlbatrossButton>
           </v-card>
           <v-data-table
             v-if="expandEsst"
@@ -127,6 +129,7 @@ const companyStatusesLoading = ref(false)
 const addNewEventStatusType = ref(false)
 const newType = ref({})
 const newEventStatusTypeId = ref(null)
+const newEventStatusEditableInSchedule = ref(false)
 
 const eventHeaders = ref([
   {text: 'Status Type', value: 'statusType', show: true},
@@ -169,7 +172,8 @@ const assignStatusTypeToEvent = async  () => {
   store.commit(AppMutations.SET_LOADING, true)
   try {
     newType.value.eventId = route.params.id
-    const {data} = await postRequest(`/event/status/assignCompanyStatus/${newEventStatusTypeId.value}/toEvent/${eventId.value}`)
+    newType.value.editableInSchedule
+    const {data} = await postRequest(`/event/status/assignCompanyStatus/${newEventStatusTypeId.value}/toEvent/${eventId.value}?editableInSchedule=${newEventStatusEditableInSchedule.value}`)
     event.value.companyEventStatusTypes.push(data)
     // reset fields
     addNewEventStatusType.value = false
