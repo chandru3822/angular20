@@ -9,7 +9,7 @@
 */
 import {getCurrentInstance, ref, watch} from "vue";
 import {AppMutations} from "@/stores/AppStore.js";
-import {handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
+import {getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/eventStatusTypeService.js";
@@ -152,7 +152,7 @@ const scheduleProject = async(forceSave) => {
     // this.$refs.calendar.getEvents(false, true) todo: figure out what this should change to
     handleHidingGlobalLoader(vueInstance, status)
     fieldsSaving.value = false
-    let snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
+    let snackbar = getSnackbar('SUCCESS', 'Job Scheduled')
     store.commit(AppMutations.SHOW_SNACK, snackbar)
   } catch (e) {
     if(e.status === 409){
