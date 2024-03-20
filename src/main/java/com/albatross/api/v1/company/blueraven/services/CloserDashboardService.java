@@ -231,28 +231,28 @@ public class CloserDashboardService {
 
   public String apptsCreatedPipeline(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_appts_created_pipeline(:startDate::date, :endDate::date, array[ :brsProvidedSourceIds ]::bigint[], array[ :selfGenSourceIds ]::bigint[], :currentUserId::bigint)";
+        "select brs.rpt_closer_funnel_appts_created_pipeline(:startDate::date, :endDate::date, :trendStart::date, :trendEnd::date, array[ :brsProvidedSourceIds ]::bigint[], array[ :selfGenSourceIds ]::bigint[], array[ :leadsCreatedSourceIds ]::bigint[])";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", funnelRequest.getStart());
     parameters.addValue("endDate", funnelRequest.getEnd());
+    parameters.addValue("trendStart", funnelRequest.getTrendStart());
+    parameters.addValue("trendEnd", funnelRequest.getTrendEnd());
     parameters.addValue("brsProvidedSourceIds", funnelRequest.getBrsProvidedSources());
     parameters.addValue("selfGenSourceIds", funnelRequest.getSelfGenSources());
-    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
+    parameters.addValue("leadsCreatedSourceIds", funnelRequest.getLeadsCreatedSources());
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
 
   public String apptsCreatedPipelineDrilldown(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_appts_created_pipeline_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :sourceIds ]::bigint[], :currentUserId::bigint)";
-
+        "select brs.rpt_closer_funnel_appts_created_pipeline_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :sourceIds ]::bigint[])";
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", funnelRequest.getStart());
     parameters.addValue("endDate", funnelRequest.getEnd());
     parameters.addValue("funnelId", funnelRequest.getFunnelId());
     parameters.addValue("sourceIds", funnelRequest.getSources());
-    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
@@ -326,39 +326,54 @@ public class CloserDashboardService {
     return null == results ? "[]" : results;
   }
 
+  public List<AppointmentType> getAppointmentTypes(){
+    List<AppointmentType> appointmentTypes = new ArrayList<>();
+    appointmentTypes.add(new AppointmentType("Round Robin", (long) 1));
+    appointmentTypes.add(new AppointmentType("Manual", (long) 2));
+
+    return appointmentTypes;
+  }
+
   public String funnelStandard(FunnelRequest funnelRequest) {
     String sqlQuery;
     sqlQuery =
-        "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :currentUserId::bigint)";
+        "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, :trendStart::date, :trendEnd::date, array[ :userIds ]::bigint[], array[ :appointmentTypeIds ]::bigint[], array[ :leadSourceIds ]::bigint[], :hideInactive::boolean)";
 
     return runFunnelQuery(
         sqlQuery,
         funnelRequest.getStart(),
         funnelRequest.getEnd(),
+        funnelRequest.getTrendStart(),
+        funnelRequest.getTrendEnd(),
         funnelRequest.getUsers(),
-        funnelRequest.getOrgs());
+        funnelRequest.getAppointmentTypeIds(),
+        funnelRequest.getLeadSourceIds(),
+        funnelRequest.getHideInactive());
   }
 
-  public String funnelApptDateCohort(FunnelRequest funnelRequest) {
-    String sqlQuery =
-        "select brs.rpt_closer_funnel_appt_date_cohort(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :currentUserId::bigint)";
-
-    return runFunnelQuery(
-        sqlQuery,
-        funnelRequest.getStart(),
-        funnelRequest.getEnd(),
-        funnelRequest.getUsers(),
-        funnelRequest.getOrgs());
-  }
+//  public String funnelApptDateCohort(FunnelRequest funnelRequest) {
+//    String sqlQuery =
+//        "select brs.rpt_closer_funnel_appt_date_cohort(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :currentUserId::bigint)";
+//
+//    return runFunnelQuery(
+//        sqlQuery,
+//        funnelRequest.getStart(),
+//        funnelRequest.getEnd(),
+//        funnelRequest.getUsers(),
+//        funnelRequest.getOrgs());
+//  }
 
   private String runFunnelQuery(
-      String sqlQuery, String start, String end, List<Long> userIds, List<Long> orgIds) {
+      String sqlQuery, String start, String end, String trendStart, String trendEnd, List<Long> userIds, List<Long> appointmentTypeIds, List<Long> leadSourceIds, Boolean hideInactive) {
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", start);
     parameters.addValue("endDate", end);
+    parameters.addValue("trendStart", trendStart);
+    parameters.addValue("trendEnd", trendEnd);
     parameters.addValue("userIds", userIds);
-    parameters.addValue("orgIds", orgIds);
-    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
+    parameters.addValue("appointmentTypeIds", appointmentTypeIds);
+    parameters.addValue("leadSourceIds", leadSourceIds);
+    parameters.addValue("hideInactive", hideInactive);
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
@@ -534,6 +549,12 @@ public class CloserDashboardService {
       CloserDashboardDateRange periodRange = new CloserDashboardDateRange();
       periodRange.setId(11);
       Collections.reverse(companyPeriods);
+      for(int x=1; x<companyPeriods.size(); x++){
+        if(x > 0){
+          companyPeriods.get(x).setTrendStart(companyPeriods.get(x-1).getStartDate());
+          companyPeriods.get(x).setTrendEnd(companyPeriods.get(x-1).getEndDate());
+        }
+      }
       periodRange.setPeriodList(companyPeriods);
       periodRange.setTrendText("the period before the selected period");
       periodRange.setFriendlyName("Period");
