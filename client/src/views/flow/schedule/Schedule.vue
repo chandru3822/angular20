@@ -164,11 +164,12 @@
           saveInvalid.value = false
         }
       }
-      const resourceMapCallback =  (newValue) => {
+      const resourceMapCallback =  (newValue, addPin) => {
         mapResources.value = newValue
-        if(newValue.length > 0){
+        if(newValue.length > 0 && addPin){
+          //only show the map if we're adding a pin, not when removing a pin
           showHideMap(true)
-          let zoomObj = newValue[0]
+          let zoomObj = newValue[newValue.length-1] //choose the most recently added one?
           zoomToMap({latitude: zoomObj.coordinates[1], longitude: zoomObj.coordinates[0]})
         }
         else {
