@@ -819,8 +819,8 @@ const isMobile = computed(() => {
           handlePopulatingMapPins(true, r, false, idx === checkedResources.value.length - 1)
         })
       }
-      const handlePopulatingMapPins = (isChecked, resource, doCallback) => {
-        if(isChecked) {
+      const handlePopulatingMapPins = (addPin, resource, doCallback) => {
+        if(addPin) {
           let calendarApi = refs.eventCalendar.getApi()
 
           let resourceEvents = calendarApi.getEvents().filter(e => {
@@ -848,7 +848,7 @@ const isMobile = computed(() => {
           })
         }
         if(doCallback) {
-          props.callback(mapResourceEvents.value, isChecked)
+          props.callback(mapResourceEvents.value, addPin)
         }
         let calendarApi = refs.eventCalendar.getApi()
       }
