@@ -384,7 +384,7 @@ const mapResourceEvents =  ref([])
 const checkedResources =  ref([])
 const daySelector =  ref(false)
 const dayOptions =  ref([])
-const timezone =  ref(store.state.schedule.timezone.value)
+const timezone =  ref(store.state.schedule.timezone.value || store.state.user.details.timezone.value)
 const timezones = ref([
   { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
   { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
@@ -500,6 +500,7 @@ const isMobile = computed(() => {
       watch(() => store.state.user.details.timezone, () => {
         //when the app timezone changes, update the schedule timezone to match
         timezone.value = store.state.user.details.timezone
+        debugger
       })
       watch(timezone, () => {
         //when the value of the timezone changes (either via the time zone dropdown selector or a change in the user store timezone value),
