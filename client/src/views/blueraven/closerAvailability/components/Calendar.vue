@@ -72,7 +72,7 @@ const calendarOptions = ref({
     weekday: 'long'
   },
   height: '100%',
-  timeZone: store.state.schedule.timezone.value || {},
+  timeZone: store.state.user.details.timezone.value || {},
 
   customButtons: {
     customToday: {
