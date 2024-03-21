@@ -55,10 +55,6 @@ const state =ref({}),
     search= ref(null),
       itemsPerPage = 20,
     page = ref(0),
-    footerProps= ref({
-      'items-per-page-options': [25, 50, 100],
-      'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-    }),
     snackbar=ref({}),
     listLoading = ref(false),
     // initialLoad = ref(true)
@@ -78,6 +74,10 @@ watch(search, async(val) => {
       await getProjectsSearchedFor(val);
     }
 })
+
+const getProjectSearchDisplay = (item) => {
+  return`${item.projectName} ${item.projectId}`
+}
 
 const fetchEventTypes = async() => {
   try {
@@ -128,12 +128,15 @@ const fetchStatusTypes = async() => {
   }
 }
 const searchForProjects = async(search) => {
+  searchProjectsLoading.value = true
   try {
     let params = {
       search
     }
     const {data} = await postRequest(`/schedule/projects/search`, params)
     searchProjects.value = data
+    searchProjects.value.forEach(sp => sp.displayName = getProjectSearchDisplay(sp))
+    searchProjectsLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar.value = getSnackbar('ERROR', 'Error Searching Projects')
@@ -199,16 +202,10 @@ const getProjects = async(resetQuery) => {
   }
 }
 const getProjectsSearchedFor = async(search) => {
-  // cancel pending call
-  clearTimeout(_timerId.value);
-
-  searchProjectsLoading.value = true
-
-  // delay new call 500ms
-  _timerId.value = setTimeout(async () => {
-    //todo:_this
-    await searchForProjects(search)
-    searchProjectsLoading.value = false
+  clearTimeout(_timerId.value);  // cancel pending call
+      // delay new call 500ms
+  _timerId.value = setTimeout( () => {
+    searchForProjects(search)
   }, 500)
 },
  getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) => {
@@ -343,26 +340,23 @@ onMounted(() => {
         ></v-autocomplete>
         <v-autocomplete v-model="searchProject"
                         :items="searchProjects"
+                        :loading="searchProjectsLoading"
+                        cache-items
                         :search-input.sync="search"
                         clearable
-                        :key="0"
-                        :disabled="!!state?.id"
-                        text
-                        hide-details
-                        class="pb-2"
                         label="Project"
-                        autocomplete="off"
-                        :loading="searchProjectsLoading"
+                        item-text="displayName"
                         item-value="projectId"
+                        autocomplete="off"
+                        :disabled="!!state?.id"
+                        hide-details
                         return-object
                         attach
         >
-          <template v-slot:selection="data">
-            {{ data.item?.projectName }} - {{ data.item?.projectId }}
-          </template>
+
           <template v-slot:item="data">
             <!-- HTML that describe how select should render items when the select is open -->
-            {{ data.item.projectName }} - {{ data.item.projectId }}
+            {{ data.item.displayName }}
           </template>
         </v-autocomplete>
         <!--only show the other fields once state or project has been selected-->
