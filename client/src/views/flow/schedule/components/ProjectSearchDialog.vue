@@ -10,7 +10,7 @@
 
 import constants from "@/helpers/constants.js";
 import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
-import {getSnackbar, postRequest} from "@/helpers/helpers.js";
+import {getSnackbar, postRequest, postRequestWithRequestParams} from "@/helpers/helpers.js";
 import {AppMutations} from "@/stores/AppStore.js";
 import axios from "axios";
 
@@ -53,13 +53,8 @@ const state =ref({}),
     eventTypesChanged= ref(false),
     searchProjectsLoading= ref(false),
     search= ref(null),
-    options= ref({
-      itemsPerPage: 100
-    }),
-    footerProps= ref({
-      'items-per-page-options': [25, 50, 100],
-      'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-    }),
+      itemsPerPage = 20,
+    page = ref(0),
     snackbar=ref({}),
     listLoading = ref(false),
     // initialLoad = ref(true)
@@ -79,6 +74,10 @@ watch(search, async(val) => {
       await getProjectsSearchedFor(val);
     }
 })
+
+const getProjectSearchDisplay = (item) => {
+  return`${item.projectName} ${item.projectId}`
+}
 
 const fetchEventTypes = async() => {
   try {
@@ -129,12 +128,15 @@ const fetchStatusTypes = async() => {
   }
 }
 const searchForProjects = async(search) => {
+  searchProjectsLoading.value = true
   try {
     let params = {
       search
     }
     const {data} = await postRequest(`/schedule/projects/search`, params)
     searchProjects.value = data
+    searchProjects.value.forEach(sp => sp.displayName = getProjectSearchDisplay(sp))
+    searchProjectsLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar.value = getSnackbar('ERROR', 'Error Searching Projects')
@@ -157,8 +159,6 @@ const getProjects = async(resetQuery) => {
     // todo: should we remove this.$route.query params if the button is clicked?
     // this.$route.query = {}
   }
-
-  const {page, itemsPerPage} = options.value
   localStorage.setItem('scheduleState', JSON.stringify(state.value))
   localStorage.setItem('scheduleEventTypes', JSON.stringify(selectedEventTypes.value))
   localStorage.setItem('scheduleProcessStepStatusType', JSON.stringify(selectedProcessStepStatusType.value))
@@ -170,7 +170,7 @@ const getProjects = async(resetQuery) => {
         source.value.cancel();
       }
       source.value = CancelToken.source();
-      const {data} = await postRequest(`/schedule/projects`, {
+      const {data} = await postRequestWithRequestParams(`/schedule/projects`, {
         source: source.value,
         cancelToken: source.value.token,
         eventIds: selectedEventTypes.value?.length > 0 ? selectedEventTypes.value.map(o => o.id) : [],
@@ -182,11 +182,9 @@ const getProjects = async(resetQuery) => {
         companyStateId: state.value.id,
         startTime: store.state.schedule.startTime,
         endTime: store.state.schedule.endTime,
-        page: 0,
-        search:"",
-        size: itemsPerPage
-      })
-      projects.value = data.content || []
+        search:""
+      }, { size: itemsPerPage, page: page.value})
+      projects.value = projects.value.concat(data.content || [])
       projects.value.forEach(d => {
         d.coordinates = [ d.longitude, d.latitude ]
       })
@@ -204,16 +202,10 @@ const getProjects = async(resetQuery) => {
   }
 }
 const getProjectsSearchedFor = async(search) => {
-  // cancel pending call
-  clearTimeout(_timerId.value);
-
-  searchProjectsLoading.value = true
-
-  // delay new call 500ms
-  _timerId.value = setTimeout(async () => {
-    //todo:_this
-    await searchForProjects(search)
-    searchProjectsLoading.value = false
+  clearTimeout(_timerId.value);  // cancel pending call
+      // delay new call 500ms
+  _timerId.value = setTimeout( () => {
+    searchForProjects(search)
   }, 500)
 },
  getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) => {
@@ -284,6 +276,10 @@ const toggleOneMapPin = ({addPin, id, project}) => {
   }
   props.pinToMapCallback(pinnedList)
 }
+const showLoadMoreBtn = computed(() => {
+  const visibleSearchResults = itemsPerPage *(page.value + 1)
+  return (totalProjects.value - visibleSearchResults) > 0 && !listLoading.value && projects.value.length > 0
+})
 
 const allPinsPinned = computed(() => {
   let allPinned = true
@@ -344,26 +340,23 @@ onMounted(() => {
         ></v-autocomplete>
         <v-autocomplete v-model="searchProject"
                         :items="searchProjects"
+                        :loading="searchProjectsLoading"
+                        cache-items
                         :search-input.sync="search"
                         clearable
-                        :key="0"
-                        :disabled="!!state?.id"
-                        text
-                        hide-details
-                        class="pb-2"
                         label="Project"
-                        autocomplete="off"
-                        :loading="searchProjectsLoading"
+                        item-text="displayName"
                         item-value="projectId"
+                        autocomplete="off"
+                        :disabled="!!state?.id"
+                        hide-details
                         return-object
                         attach
         >
-          <template v-slot:selection="data">
-            {{ data.item?.projectName }} - {{ data.item?.projectId }}
-          </template>
+
           <template v-slot:item="data">
             <!-- HTML that describe how select should render items when the select is open -->
-            {{ data.item.projectName }} - {{ data.item.projectId }}
+            {{ data.item.displayName }}
           </template>
         </v-autocomplete>
         <!--only show the other fields once state or project has been selected-->
@@ -464,7 +457,6 @@ onMounted(() => {
       <AlbatrossButton variant="text" size="small" color="primary" class="text-capitalize" :disabled="!projects || projects.length === 0" @click="toggleAllPinsOnMap">
         {{allPinsPinned ? 'Hide all pins' : 'Show all pins' }}</AlbatrossButton>
     </div>
-    <SpinnerInline :size="20" spinner-color="primary" :centered="true" v-if="listLoading"/>
     <div class="search-results">
       <span v-if="(!projects || projects.length === 0) && !listLoading" class="body-medium">No projects found</span>
     <div v-for="p in projects">
@@ -484,7 +476,9 @@ onMounted(() => {
           class="clickable"
       />
     </div>
+      <AlbatrossButton v-if="showLoadMoreBtn" variant="text" size="small" class="my-2" @click="[page++, getProjects(false)]">Load More</AlbatrossButton>
     </div>
+      <SpinnerInline :size="20" spinner-color="primary" :centered="true" v-if="listLoading"/>
     </div>
   </v-card>
 
