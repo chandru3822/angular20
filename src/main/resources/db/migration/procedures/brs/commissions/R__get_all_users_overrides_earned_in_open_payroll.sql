@@ -77,7 +77,7 @@ BEGIN
                else foo.plan_total  end                                                                                  as plan_total
       from (select pd.project_id                                      as project_id,
                    u.first_name || ' ' || u.last_name        as closer,
-                   pd.closer_employee_id,
+                   ucfv.text_value as closer_employee_id,
                    pd.project_name::character varying                            as project_name,
                    pd.system_size                            as system_size,
                    opru1.m1_allocation + opru1.m2_allocation as user_allocation,
@@ -109,6 +109,7 @@ BEGIN
                    inner join brs.override_plan_receiving_user opru1
                               on opru1.override_plan_id = op.id
                    inner join flow.user u on u.id = opru1.user_id
+                   left join flow.user_custom_field_value ucfv on ucfv.user_id = u.id and ucfv.custom_field_group_assignment_id = 19176
             where p1.id = p_payroll_id
               and ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null))
               and op.position_id = 1
