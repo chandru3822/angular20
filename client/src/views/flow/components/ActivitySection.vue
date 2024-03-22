@@ -340,6 +340,9 @@ export default {
         if(this.$refs.activityList) {
           this.$refs.activityList.infiniteStateLoaded(true)
         }
+        const emailRegex = /\((([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))\)/g
+        sortedList = sortedList.map(activity => ({...activity, note: activity.note.replaceAll(emailRegex, '')}))
+
         return sortedList
       }
       // return []
