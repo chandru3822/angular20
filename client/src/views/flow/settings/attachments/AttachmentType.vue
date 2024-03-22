@@ -26,7 +26,10 @@
             />
             <a-btn variant="text" color="primary" v-if="userCanEdit && editName" class=""
                              @click="[attachment.attachmentType = oldName, editName = !editName]"
-                             text="CANCEL"
+                             text="Cancel"
+                   hide-text-on-mobile
+                   :icon="vuetify.breakpoint.smAndDown"
+                   :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
             />
           </v-toolbar-items>
         </v-toolbar>
@@ -59,6 +62,7 @@ const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const userStore = useUserStore()
 const route = useRoute()
+const vuetify = vueInstance.$vuetify
 
 const editName = ref(false)
 const oldName = ref(null)

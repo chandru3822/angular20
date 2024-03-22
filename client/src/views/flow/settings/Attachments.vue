@@ -73,6 +73,7 @@
               ></a-text-field>
             </v-card-title>
             <v-data-table
+                id="attachments-table"
               :headers="headers"
               :items="filterTypes"
               :fixed-header="true"
@@ -83,7 +84,7 @@
               class="elevation-1 square-card"
             >
               <template #item="{ item, index }">
-                <tr :class="{'shaded-row': index % 2}">
+                <tr :class="{'shaded-row': index % 2, 'mobile-tr': vuetify.breakpoint.xsOnly}">
                   <td class="text-left clickable" @click="goToType(item.id)">{{ item.attachmentType }}</td>
                   <td class="text-right" :class="{'d-flex flex-column align-end': vuetify.breakpoint.xsOnly}">
                     <a-btn
@@ -237,6 +238,48 @@
 #attachment-type-container .v-data-table__wrapper {
   height: calc(100vh - 310px);
   min-height: 300px;
+}
+
+@media (max-width: 770px) {
+  #attachments-table {
+    padding-bottom: 12px;
+    div.v-data-footer {
+      display: inline-block;
+      width: 100%;
+      padding-bottom: 12px;
+
+      div.v-data-footer__select {
+        justify-content: center;
+      }
+
+      div.v-data-footer__pagination {
+
+      }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: calc(50% - 36px);
+
+
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
+    }
+  }
+}
+
+.mobile-tr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: thin solid rgba(0, 0, 0, 0.12);
+  width: calc(100vw - 100px);
+  td {
+    border-bottom: none !important;
+  }
 }
 
 </style>

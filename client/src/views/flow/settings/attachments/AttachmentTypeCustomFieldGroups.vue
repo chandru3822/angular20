@@ -33,7 +33,7 @@
           />
           <a-btn variant="text" color="primary"
             @click="[newGroup = {}, createNew = false]"
-            text="CANCEL"
+            text="Cancel"
           />
         </v-card>
         <v-row>
@@ -142,7 +142,8 @@
                       variant="text"
                       color="primary"
                       @click="addField = false"
-                      text="CANCEL"
+                      text="Cancel"
+
                     />
                   </v-col>
                   <v-col cols="12" class="px-3 py-0 pt-2 justify"
