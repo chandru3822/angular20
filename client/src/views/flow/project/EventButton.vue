@@ -77,7 +77,7 @@ const goToPath = (path) => {
 }
 
 .active-event {
-  background-color: var(--v-active-base) !important;
+  background-color: var(--v-primary-lighten9) !important;
 }
 
 .event-button {
