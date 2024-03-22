@@ -568,11 +568,9 @@ where p.id = :proposalId
 select unnest(int_array_value) as id
 from flow.user_custom_field_value ucfv
          inner join flow.custom_field_group_assignment cfga on ucfv.custom_field_group_assignment_id = cfga.id
-         inner join
-     flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
          inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id
 where cfga.custom_field_id = 12855
-  and cfg.id = 97
   and cot.object_type_id = 3 --user
   and ucfv.user_id = :userId
     """;
