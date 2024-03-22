@@ -82,18 +82,16 @@
                 </th>
               </template>
 
-              <template #item="{ item, index }">
-                <tr class="clickable" @click="goToRoundRobin(item)">
-                  <td class="text-left">
+              <template #item.roundRobinName="{ item, index }">
                     {{ item.roundRobinName }}
-                  </td>
-                  <td class="text-left">{{ item.distributionTimeFrameDays }}</td>
-                  <td class="text-left">{{ item.schedulableFutureDays }}</td>
-                  <td class="text-left">
+              </template>
+                  <template #item.distributionTimeFrameDays="{item, index}" class="text-left">{{ item.distributionTimeFrameDays }}</template>
+                  <template #item.schedulableFutureDays="{item, index}" class="text-left">{{ item.schedulableFutureDays }}</template>
+                  <template #item.usesTotalLeadAlllocation="{item, index}" class="text-left">
                     <input type="checkbox" readonly disabled v-model="item.usesTotalLeadAllocation"/>
-                  </td>
+                  </template>
 
-                  <td class="text-right">
+                  <template #item.icons="{item, index}" class="text-right">
                     <a-btn
                         icon
                         color="primary"
@@ -112,10 +110,7 @@
                         :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                     ></a-btn>
 
-                  </td>
-                </tr>
-              </template>
-
+                  </template>
             </v-data-table>
           </v-card>
         </v-container>
@@ -290,5 +285,6 @@ const closeDeleteDialog = () => {
   min-height: 300px;
   border-top: solid 1px #E0E0E0;
 }
+
 </style>
 
