@@ -3,7 +3,7 @@
     <v-breadcrumbs :items="breadcrumbs" class="pl-3 pt-1 pb-3 back-link"></v-breadcrumbs>
     <v-app-bar color="white" tabs flat class="elevation-1 call-group-bar">
       <v-toolbar-title class="pt-2">
-        <div v-if="editGroup">
+        <div v-if="editGroup" style="margin-top:30px">
           <a-text-field  class="d-inline-block mt-4 edit-text"
                         type="text"
                         label="Name"
@@ -17,10 +17,10 @@
         </div>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-toolbar-items>
+      <v-toolbar-items style="margin-top: 30px">
         <a-btn
           variant="text" color="primary"
-          v-if="userCanEdit" @click="editGroup = !editGroup" prepend-icon="edit"
+          v-if="userCanEdit" @click="editGroup = !editGroup" :prepend-icon="editGroup ? 'close' : 'edit'"
         />
       </v-toolbar-items>
       <v-tabs :optional="false" color="primary"

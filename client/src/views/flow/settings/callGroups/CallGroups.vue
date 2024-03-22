@@ -14,7 +14,10 @@
             />
             <a-btn variant="text" color="primary"
                              @click="[addNew = !addNew, newCallGroup = {}]" v-if="userCanAdd"
-                             text="ADD NEW"
+                             :text="addNew ? 'Cancel' : 'Add New'"
+                   hide-text-on-mobile
+                   :icon="vuetify.breakpoint.smAndDown"
+                   :prepend-icon="vuetify.breakpoint.smAndDown ? addNew ? 'close' : 'add' : ''"
             />
           </v-toolbar-items>
           <template v-slot:extension>
@@ -57,7 +60,8 @@
               color="primary"
               :disabled="!newCallGroup.callGroupName"
               @click="addCallGroup"
-              text="SAVE"
+              text="Save"
+              class="mb-3"
             />
           </v-card>
           <v-divider v-if="addNew"></v-divider>

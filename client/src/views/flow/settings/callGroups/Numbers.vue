@@ -28,7 +28,7 @@
           <div class="error-text mb-3" v-if="showError">{{errorMsg}}</div>
           <a-btn color="primary" class="mr-3 white--text" @click="addNumberToGroup()"
                            :disabled="!newNumber"
-                           text="ADD"
+                           text="Add"
           />
         </v-card>
         <v-divider v-if="addNumber"></v-divider>
