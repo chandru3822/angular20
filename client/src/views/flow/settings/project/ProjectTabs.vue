@@ -11,7 +11,7 @@
                 color="primary"
                 @click="[addNew = !addNew, newTab ={}]"
                 v-if="userCanAdd"
-                prepend-icon="add"
+                :prepend-icon="addNew ? 'close' : 'add'"
                 :text="addNew ? 'Cancel' : 'Add New'"
             ></a-btn>
 

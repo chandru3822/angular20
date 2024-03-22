@@ -16,6 +16,7 @@
             user
             :allow="projectObjectType.statusReadOnlyAllow"
             :contentLoading="objectTypeDetailsLoading"
+            :full-size="vuetify.breakpoint.smAndDown"
             @selected-changed="statusReadOnlySelectedEventListener"
             @allow-changed="statusReadOnlyAllowEventListener"
             @checkbox-changed="statusReadOnlyCheckboxEventListener"></multi-select-group>
@@ -77,6 +78,7 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
 
 
 const positions = ref([])
