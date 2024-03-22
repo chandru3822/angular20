@@ -638,7 +638,7 @@ const  updateDefaultFields = (fieldName) => {
   let fName = fieldName.text
   let fShow = fieldName.show
 
-  workQueueType.value.defaultColumnDisplay.forEach((c) => {
+  workQueueType.value?.defaultColumnDisplay.forEach((c) => {
     if (fName === c.text) {
       c.show = !fShow
       console.log(`Updated ${c.text} field from ${fShow} to ${c.show}`)
