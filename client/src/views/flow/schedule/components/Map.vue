@@ -411,7 +411,7 @@ const changeMapLocation = async() => {
   try {
     center.value = props.latitude && props.longitude ? [props.longitude, props.latitude] : defaultCenter.value
     let currentZoom = props.zoom ?? defaultZoom.value
-    await asyncActions.value.flyTo({
+    await asyncActions.value?.flyTo({
       center: center.value,
       zoom: currentZoom,
       speed: 2
