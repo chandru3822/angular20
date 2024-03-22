@@ -16,12 +16,12 @@ begin
     into v_commissions
   from (
   select pd.company_project_status_type "statusType",
-         sum(coalesce(fd.total_commissions,0)) - sum(coalesce(fd.total_commissions_paid_to_date,0)) "totalByStatus",
-         sum(coalesce(fd.commissions_earned_m1,0)) - sum(coalesce(fd.total_commissions_paid_to_date,0)) as "commissionAtFdc",
+         round(sum(coalesce(fd.total_commissions,0)) - sum(coalesce(fd.total_commissions_paid_to_date,0))) "totalByStatus",
+         round(sum(coalesce(fd.commissions_earned_m1,0)) - sum(coalesce(fd.total_commissions_paid_to_date,0))) as "commissionAtFdc",
          case when sum(coalesce(fd.commissions_earned_m2,0)) > 0 then
-                sum(coalesce(fd.commissions_earned_m2,0))
+                round(sum(coalesce(fd.commissions_earned_m2,0)))
               else
-                sum(coalesce(fd.total_commissions,0)) - sum(coalesce(fd.commissions_earned_m1,0))
+                round(sum(coalesce(fd.total_commissions,0)) - sum(coalesce(fd.commissions_earned_m1,0)))
            end
                                                                                                         as "commissionAtSubstantialCompletion"
   from flow.project p
