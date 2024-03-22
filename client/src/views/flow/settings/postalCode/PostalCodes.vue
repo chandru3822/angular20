@@ -11,7 +11,7 @@
                 color="primary"
                 @click="[addNew = !addNew, newPostalCode = {}, getAllStates()]"
                 v-if="userCanAdd"
-                :text="!addNew ? 'AddNew' : 'Cancel'"
+                :text="!addNew ? 'Add New' : 'Cancel'"
             ></a-btn>
 
           </v-toolbar-items>
@@ -70,44 +70,40 @@
               :fixed-header="true"
               :options.sync="options"
               :footer-props="footerProps"
-              :mobile-breakpoint="0"
               :loading="dataLoading"
               class="elevation-1 round-robin-table table-striped"
             >
-
-              <template #item="{ item, index }">
-                <tr class="clickable">
-                  <td class="text-left">
+                  <template #item.postalCode="{item, index}" class="text-left">
                     <router-link :to="`/settings/zip/postalCode/${item.id}`">{{ item.postalCode }}</router-link>
-                  </td>
-                  <td class="text-left">
+                  </template>
+                  <template #item.placeName="{item, index}" class="text-left">
                     <router-link :to="`/settings/zip/postalCode/${item.id}`">{{ item.placeName }}</router-link>
-                  </td>
-                  <td class="text-left">
+                  </template>
+                  <template #item.zoneName="{item, index}" class="text-left">
                     <router-link :to="`/settings/zip/zone/${item.postalCodeZoneId}`">{{ item.zoneName }}</router-link>
-                  </td>
-                  <td class="text-left">
+                  </template>
+                  <template #item.state="{item, index}" class="text-left">
                     {{ item.stateAbbreviation }}
-                  </td>
-                  <td class="text-left">
+                  </template>
+                  <template #item.roundRobinName="{item, index}" class="text-left">
                     <router-link :to="`/settings/roundRobin/${item.roundRobinId}/codes`">{{ item.roundRobinName }}</router-link>
-                  </td>
-                  <td class="text-left">
+                  </template>
+                  <template #item.callGroupName="{item, index}" class="text-left">
                     <router-link :to="`/settings/callGroup/${item.callGroupId}/codes`">{{ item.callGroupName }}</router-link>
-                  </td>
-                  <td class="text-left">
-                    <v-checkbox disabled readonly v-model="item.disqualified"></v-checkbox>
-                  </td>
-                  <td class="text-left">
-                    <v-checkbox disabled readonly v-model="item.selfGen"></v-checkbox>
-                  </td>
-                  <td class="text-left">
-                    <v-checkbox disabled readonly v-model="item.insideSales"></v-checkbox>
-                  </td>
-                  <td class="text-left">
-                    <v-checkbox disabled readonly v-model="item.salesPartners"></v-checkbox>
-                  </td>
-                  <td class="text-right">
+                  </template>
+                  <template #item.disqualified="{item, index}" class="text-left">
+                    <v-checkbox disabled readonly dense hide-details v-model="item.disqualified"></v-checkbox>
+                  </template>
+                  <template #item.selfGenOnly="{item, index}" class="text-left">
+                    <v-checkbox disabled readonly dense hide-details v-model="item.selfGen"></v-checkbox>
+                  </template>
+                  <template #item.insideSales="{item, index}" class="text-left">
+                    <v-checkbox disabled readonly dense hide-details v-model="item.insideSales"></v-checkbox>
+                  </template>
+                  <template #item.salesPartners="{item, index}" class="text-left">
+                    <v-checkbox disabled readonly dense hide-details v-model="item.salesPartners"></v-checkbox>
+                  </template>
+                  <template #item.icons="{item, index}" class="text-right">
                     <a-btn
                         icon
                         color="primary"
@@ -125,10 +121,7 @@
                         :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                     ></a-btn>
 
-                  </td>
-                </tr>
-              </template>
-
+                  </template>
             </v-data-table>
           </v-card>
         </v-container>
@@ -306,6 +299,9 @@ onMounted(() => {
   height: calc(100vh - 300px);
   min-height: 300px;
   border-top: solid 1px #E0E0E0;
+}
+#postal-codes > div.row > div > div > div > div.v-data-table.round-robin-table.v-data-table--mobile > div.v-data-table__wrapper > table > tbody > tr > td {
+  min-height: 36px;
 }
 </style>
 
