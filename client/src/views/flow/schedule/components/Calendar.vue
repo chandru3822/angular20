@@ -227,13 +227,23 @@
           <div class="d-flex justify-space-between align-baseline">
             <a class="body-medium overflow-hidden resource-title">{{ resource.title }}</a>
             <div>
-              <a-btn icon size="x-small" @click="toggleMapPinForResource(resource)" class="mx-1">
+              <v-tooltip bottom>
+                <template v-slot:activator="{on}">
+              <a-btn icon size="x-small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
                 <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
                 <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
               </a-btn>
-              <a-btn v-if="showScheduleBtnForResource(resource)" icon size="x-small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)">
+                </template>
+                Pin on map
+              </v-tooltip>
+              <v-tooltip bottom>
+                <template v-slot:activator="{on}">
+              <a-btn v-if="showScheduleBtnForResource(resource)" icon size="x-small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">
                 <v-icon>mdi-calendar-plus</v-icon>
               </a-btn>
+                </template>
+                Assign to Event
+              </v-tooltip>
               <a-btn icon size="x-small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></a-btn>
             </div>
           </div>
@@ -289,7 +299,7 @@ const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
     })
 
 const timezone = computed(() => {
-  return  userStore.timezone
+  return store.state.schedule.timezone?.value || userStore.timezone
 })
 
 const calendarOptions = ref({
@@ -319,9 +329,9 @@ const calendarOptions = ref({
     }
   },
   headerToolbar:{
-    left: 'prev,customToday,next',
+    left: vuetify.breakpoint.mdAndUp ? 'prev,customToday,next': 'prev,next',
     center: 'title',
-    right: 'resourceTimelineDay,resourceTimelineWeek'
+    right: vuetify.breakpoint.mdAndUp ? 'resourceTimelineDay,resourceTimelineWeek': ''
   },
   titleFormat:{ month: 'long',
     year: 'numeric',
@@ -343,44 +353,44 @@ const calendarOptions = ref({
   }
 })
 const calendarLoading = ref(false)
-    const includeCancelled = ref(false)
-    const calendarInitialRender = ref(true)
-    const calendarApi = ref(null)
-    const calendarStart = ref(null)
-    const calendarView = ref(null)
-    const calendarStartTime = ref(null)
-    const calendarEndTime = ref(null)
-    const countSelected = ref(0)
-    const maxSelectionAllowed = ref(10)
-    const countErrorMessage = ref('Maximum Selection Reached')
-    //filters
-    const selectedStates = ref([])
-    const masterOrgs = ref([])
-    const orgValuesChanged = ref(false)
-    const orgs = ref([])
-    const selectedOrgs = ref([])
-    const orgsLoading = ref(true)
-    const usersLoading = ref(true)
-    const userValuesChanged = ref(false)
-    const masterUsers = ref([])
-    const users = ref([])
-    const selectedUsers = ref([])
-    const orgTypes = ref([])
-    const orgTypeValuesChanged = ref(false)
-    const selectedOrgTypes = ref([])
-    const orgTypesLoading = ref(true)
-    const positions = ref([])
-    const positionValuesChanged = ref(false)
-    const selectedPositions =  ref([])
-    const previousStateCount =  ref(0)
-    const previousTypeCount =  ref(0)
-    const previousPositionCount =  ref(0)
-    const positionsLoading =  ref(true)
+const includeCancelled = ref(false)
+const calendarInitialRender = ref(true)
+const calendarApi = ref(null)
+const calendarStart = ref(null)
+const calendarView = ref(null)
+const calendarStartTime = ref(null)
+const calendarEndTime = ref(null)
+const countSelected = ref(0)
+const maxSelectionAllowed = ref(10)
+const countErrorMessage = ref('Maximum Selection Reached')
+//filters
+const selectedStates = ref([])
+const masterOrgs = ref([])
+const orgValuesChanged = ref(false)
+const orgs = ref([])
+const selectedOrgs = ref([])
+const orgsLoading = ref(true)
+const usersLoading = ref(true)
+const userValuesChanged = ref(false)
+const masterUsers = ref([])
+const users = ref([])
+const selectedUsers = ref([])
+const orgTypes = ref([])
+const orgTypeValuesChanged = ref(false)
+const selectedOrgTypes = ref([])
+const orgTypesLoading = ref(true)
+const positions = ref([])
+const positionValuesChanged = ref(false)
+const selectedPositions =  ref([])
+const previousStateCount =  ref(0)
+const previousTypeCount =  ref(0)
+const previousPositionCount =  ref(0)
+const positionsLoading =  ref(true)
 
-    const mapResourceEvents =  ref([])
-    const checkedResources =  ref([])
-    const daySelector =  ref(false)
-    const dayOptions =  ref([])
+const mapResourceEvents =  ref([])
+const checkedResources =  ref([])
+const daySelector =  ref(false)
+const dayOptions =  ref([])
 const timezones = ref([
   { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
   { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
@@ -610,7 +620,8 @@ const isMobile = computed(() => {
         })
       }
       const showScheduleBtnForResource = (resource) => {
-        if(props.preselectedEvent) {
+        // v-if="userCanEdit && project.editableInSchedule"
+        if(props.preselectedEvent && userCanEdit && props.preselectedEvent.editableInSchedule) {
           if (props.preselectedEvent.systemListId === 2) {
             const allowedPositions = resource.extendedProps?.userPositions?.filter(p => props.preselectedEvent.systemListOptionIds.includes(p.positionId))
             return allowedPositions?.length > 0
@@ -656,7 +667,7 @@ const isMobile = computed(() => {
           //if we came from an event, preselect the correct Resource TYPES
           if(props.preselectedEvent){
             if(props.preselectedEvent.systemListId === 3){
-              selectedOrgTypes.value = orgTypes.value.filter(ot => props.preselectedEvent.systemListOptionIds.includes(ot.id))
+              selectedOrgTypes.value = orgTypes?.value.filter(ot => props.preselectedEvent.systemListOptionIds.includes(ot.id))
             }
           }
 
@@ -805,8 +816,8 @@ const isMobile = computed(() => {
           handlePopulatingMapPins(true, r, false, idx === checkedResources.value.length - 1)
         })
       }
-      const handlePopulatingMapPins = (isChecked, resource, doCallback) => {
-        if(isChecked) {
+      const handlePopulatingMapPins = (addPin, resource, doCallback) => {
+        if(addPin) {
           let calendarApi = refs.eventCalendar.getApi()
 
           let resourceEvents = calendarApi.getEvents().filter(e => {
@@ -834,7 +845,7 @@ const isMobile = computed(() => {
           })
         }
         if(doCallback) {
-          props.callback(mapResourceEvents.value, isChecked)
+          props.callback(mapResourceEvents.value, addPin)
         }
         let calendarApi = refs.eventCalendar.getApi()
       }
@@ -1008,6 +1019,12 @@ const isMobile = computed(() => {
   height: 20px;
 }
 
+#calendar-container .fc-toolbar-title {
+  @media(max-width: 960px) {
+    font-size: 1.25rem;
+  }
+}
+
 .background-event {
   font-size: 11px;
   padding-left: 5px;
@@ -1034,13 +1051,6 @@ const isMobile = computed(() => {
     transform-origin: center;
   }
 
-
-//#calendar-container .fc-timeline-bg-harness .fc-event:hover {
-//    max-width: unset;
-//    width: fit-content;
-//    z-index: 20;
-//
-//}
 
   #calendar-container .fc-event.event-tile:hover {
     color: inherit !important;
@@ -1094,7 +1104,10 @@ const isMobile = computed(() => {
 .resource-title {
   text-overflow: ellipsis;
   max-width: 60%;
-}
+  @media(max-width: 960px) {
+    max-width: 30%;
+  }
+  }
 
 #calendar-container {
   height: 100%;
@@ -1108,8 +1121,12 @@ const isMobile = computed(() => {
   border-bottom: 1px black solid;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
   z-index: 1;
-  background-color: var(--v-grey-lighten4)
-}
+  background-color: var(--v-grey-lighten4);
+  @media(max-width: 960px) {
+    max-height:50%;
+    overflow-y: scroll;
+  }
+  }
 .calendar-resize-container {
   /* without this when you resize the screen the calendar goes whackadoodle */
   //flex: 1 1 auto;

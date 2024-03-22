@@ -668,8 +668,8 @@ public class EventQuery {
 
   //language=PostgreSQL
   public final static String assignStatusToEvent = """
-      insert into flow.event_company_event_status_type(event_id, company_event_status_type_id, created_by_id)
-        values (:eventId, :companyEventStatusTypeId, :createdById)
+      insert into flow.event_company_event_status_type(event_id, company_event_status_type_id, created_by_id, editable_in_schedule)
+        values (:eventId, :companyEventStatusTypeId, :createdById, :editableInSchedule)
     """;
 
   public final static String updateEditableInScheduleForStatusType = """

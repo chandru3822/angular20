@@ -189,21 +189,21 @@ const getSelectableUsers = () => {
     selectableUsers.value = teamToSave.value.users;
   }
 
-  // If User only has View permission, they can only add themselves
-  if (userCanView.value && !userCanManage.value) {
-    selectableUsers.value = selectableUsers.value.filter(u => u.userId === userId.value)
-  }
+    // If User only has View permission, they can only add themselves
+    if (userCanView.value && !userCanManage.value) {
+      selectableUsers.value = selectableUsers.value.filter(u => u.userId === userId.value)
+    }
 
-  selectableUsers.value.sort((a,b)=>{
-    if(a.name < b.name) {
-      return -1
+    selectableUsers.value.sort((a,b)=>{
+      if(a.name < b.name) {
+        return -1
+      }
+      if(a.name > b.name) {
+        return 1
+      }
+      return 0
+    })
     }
-    if(a.name > b.name) {
-      return 1
-    }
-    return 0
-  })
-}
 
 </script>
 

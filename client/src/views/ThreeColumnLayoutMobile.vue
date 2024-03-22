@@ -38,6 +38,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['selectMenuItem'])
 
+const showRight = ref(props.rightOpen)
+
 const showMenu=ref(false)
 const toggleMenu = (forceClose) => {
     if(forceClose){
@@ -89,7 +91,7 @@ const chooseSelectedView = (view, id) => {
     <slot name="main-column"/>
     </v-col>
   </v-row>
-    <v-navigation-drawer v-if="useRightPanelMobile" v-model="rightOpen" width="85%" right absolute temporary clipped touchless><!--touchless makes it so moving the map around doesn't trigger the sidebar closing-->
+    <v-navigation-drawer v-if="useRightPanelMobile" v-model="rightOpen" width="85%" right absolute temporary clipped stateless><!--stateless makes it so clicking content doesn't trigger the sidebar to close-->
       <slot name="right-column"/>
     </v-navigation-drawer>
 

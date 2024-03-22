@@ -1,7 +1,7 @@
 <template>
   <v-card id="stats-drilldown" class="square-card">
-      <v-card-title class="albatross-header-4">
-        History
+    <v-card-title class="albatross-header-4">
+      History
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
         <a-btn
@@ -30,14 +30,14 @@
 
       <template v-slot:header.team_name="{ header }"><th class="pl-2">{{header.text}}</th></template>
 
-          <template #item.team_name="{ item }" class="text-left pl-6">{{item.team_name }}</template>
-          <template #item.userName="{ item }" class="text-left">{{item.userName }}</template>
-          <template #item.date_created="{ item }" class="text-left">{{item.date_created | formatDate('timestamp', 'M/D/YYYY h:mm a')}}
-            <br/> <span class="performed-span">performed by {{item.addedBy }}</span>
-          </template>
-          <template #item.date_removed="{ item }" class="text-left">{{item.date_removed | formatDate('timestamp', 'M/D/YYYY h:mm a')}}
-            <div v-if="item.date_removed"><span class="performed-span">performed by {{item.removedBy }}</span></div>
-          </template>
+      <template #item.team_name="{ item }" class="text-left pl-6">{{item.team_name }}</template>
+      <template #item.userName="{ item }" class="text-left">{{item.userName }}</template>
+      <template #item.date_created="{ item }" class="text-left">{{item.date_created | formatDate('timestamp', 'M/D/YYYY h:mm a')}}
+        <br/> <span class="performed-span">performed by {{item.addedBy }}</span>
+      </template>
+      <template #item.date_removed="{ item }" class="text-left">{{item.date_removed | formatDate('timestamp', 'M/D/YYYY h:mm a')}}
+        <div v-if="item.date_removed"><span class="performed-span">performed by {{item.removedBy }}</span></div>
+      </template>
     </v-data-table>
   </v-card>
 </template>
@@ -106,13 +106,13 @@
 </style>
 
 <style lang="scss" scoped>
-  #stats-drilldown {
-    width: 800px;
-    min-height: 300px;
-  }
-  .performed-span {
-    font-size: 0.70rem;
-    color: var(--v-grey-darken1);
-  }
+#stats-drilldown {
+  width: 800px;
+  min-height: 300px;
+}
+.performed-span {
+  font-size: 0.70rem;
+  color: var(--v-grey-darken1);
+}
 </style>
 

@@ -9,7 +9,7 @@
 */
 import {getCurrentInstance, computed, ref, watch} from "vue";
 import {AppMutations} from "@/stores/AppStore.js";
-import {handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
+import {getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/eventStatusTypeService.js";
@@ -26,6 +26,7 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
 
 const emit = defineEmits(['toggleProjectMapPin'])
 
@@ -34,18 +35,17 @@ const props = defineProps({
   timezone:Object,
   resourceFromCalendar:Object,
 })
-const show = ref(true)
+const show = ref(vuetify.breakpoint.mdAndUp)
 const fieldsSaving = ref(false)
 const conflictingEvents = ref()
 const saveInvalid = ref(true)
-const confirmUnschedule = ref(false)
 const cancelledCompanyEventStatuses = ref()
 
 const userCanEdit = computed(() => {
   return  userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
 })
 const timezoneFriendly = computed(() => {
-  return  userStore.timezone?.value
+  return  store.state.schedule.timezone.friendlyValue
 })
 
 watch(() => props.resourceFromCalendar, () => {
@@ -57,6 +57,7 @@ watch(() => props.resourceFromCalendar, () => {
     validateSaveEvent()
   }
 })
+
 
 const setSelectedResourceInStore = (resourceId) => {
   if(resourceId){
@@ -171,7 +172,7 @@ const scheduleProject = async(forceSave) => {
     // this.$refs.calendar.getEvents(false, true) todo: figure out what this should change to
     handleHidingGlobalLoader(vueInstance, status)
     fieldsSaving.value = false
-    snackbar('SUCCESS', 'Successfully Scheduled Project')
+    snackbar('SUCCESS', 'Job Scheduled')
   } catch (e) {
     if(e.status === 409){
       conflictingEvents.value = e.data;
@@ -229,7 +230,7 @@ const cancelProjectProcessStepEvent = async() => {
   <!-- Everything below only shows when expanded -->
   <div v-show="show">
     <!--  When the event hasn't been scheduled  -->
-    <div v-if="userCanEdit && project.processStepStatusTypeId === 1 && project.editableInSchedule">
+    <div v-if="userCanEdit && project.editableInSchedule">
       <v-card-text class="py-0">
         <v-autocomplete v-model="project.resource"
                         :items="project.resources"
@@ -249,7 +250,7 @@ const cancelProjectProcessStepEvent = async() => {
         <DatetimePickerInput
             v-model="project.start"
             :timezone="timezone.value"
-            :readonly="project.startFieldReadOnly"
+            :readonly="project.startFieldReadOnly || !userCanEdit"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="Start Time"
@@ -260,7 +261,7 @@ const cancelProjectProcessStepEvent = async() => {
         <DatetimePickerInput
             v-model="project.end"
             :timezone="timezone.value"
-            :readonly="project.endFieldReadOnly || !userCanEdit || project.processStepStatusTypeId !== 1 || project.eventStatusTypeId !== 1"
+            :readonly="project.endFieldReadOnly || !userCanEdit "
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="End Time"
@@ -277,7 +278,7 @@ const cancelProjectProcessStepEvent = async() => {
       </v-card-actions>
     </div>
 <!-- ------------------- -->
-    <div v-else>
+    <div v-else-if="project.start || project.end || project.resourceName">
       <v-card-text class="py-0 body-large">
         Scheduled for
         <span v-if="eventIsSameDay()">{{project.start | formatDate('timestamp','MMMM DD YYYY, h:mm a')}} - {{project.end | formatDate('timestamp','h:mm a')}}</span>
@@ -287,8 +288,12 @@ const cancelProjectProcessStepEvent = async() => {
       </v-card-text>
       <v-card-actions v-if="userCanEdit" class="pt-1 pb-4 px-4">
         <v-spacer/>
-        <a-btnSecondary v-if="project.editableInSchedule" @click="[confirmUnschedule = true, getCancelledCompanyEventStatuses()]" color="primary" size="small" >Unschedule</a-btnSecondary>
       </v-card-actions>
+    </div>
+    <div v-else>
+      <v-card-text class="py-0 pb-4 body-large">
+      Not Scheduled, please use the project event page to schedule.
+      </v-card-text>
     </div>
 <!-- ------------------- -->
   </div>
@@ -311,21 +316,6 @@ const cancelProjectProcessStepEvent = async() => {
     <template v-slot:no>Cancel</template>
     <template v-slot:yes>Schedule Anyway</template>
 
-  </ConfirmationDialog>
-  <ConfirmationDialog :open-dialog="confirmUnschedule" @close-dialog="confirmUnschedule = false" @confirm="cancelProjectProcessStepEvent">
-    <template v-slot:title>Unschedule</template>
-    Are you sure you want to unschedule and remove {{project.projectName}} {{project.eventName}} event from {{project.resourceName}}’s calendar?
-    <v-autocomplete
-        v-model="project.companyEventStatusTypeId"
-        :items="cancelledCompanyEventStatuses"
-        label="Event's new status"
-        :disabled="false"
-        item-text="eventStatusType"
-        item-value="id"
-        @input="[statusChanged = true, defaultValuesChanged = true]"
-        class="mt-2"
-    />
-    <template v-slot:yes>Unschedule</template>
   </ConfirmationDialog>
 </v-card>
 </template>

@@ -425,7 +425,7 @@ public class BlueravenProposalService {
     Map<String, Object> params = new HashMap<>();
     params.put("proposalVersionId", proposalVersionId);
     params.put("projectProcessStepId", proposal.getProjectProcessStepId());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.getTrueUserId());
 
     Long id = sqlCache.updateBySqlReturningId(ProposalQuery.insert, params, "id").longValue();
     return getProposal(id, currentUser.getId());

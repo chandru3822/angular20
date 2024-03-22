@@ -43,7 +43,7 @@
                @close-map="showHideMap(false)"
           >
             <template v-slot:searchMenu>
-              <a-btn id="search-menu-btn" class="rounded-tile-btn" variant="outlined" icon @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" color="primary"><v-icon>mdi-magnify</v-icon></a-btn>
+              <a-btn id="search-menu-btn" v-if="vuetify.breakpoint.mdAndUp" class="rounded-tile-btn" variant="outlined" icon @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" color="primary"><v-icon>mdi-magnify</v-icon></a-btn>
               <ProjectSearchDialog v-show="searchMenuOpen" :pin-to-map-callback="projectMapMarkersCallback"  :pinned-projects="projectMapMarkers"
                                    :states="states" :start-time="startTime" :end-time="endTime"
                                    @close-dialog="searchMenuOpen = false" @zoom-map="zoomToMap"/>
@@ -143,7 +143,8 @@
       fetchEventTypes()
       if(route.query && route.query.projectProcessStepEventId) {
         //projectId, eventId, processStepStatusTypeId
-        getSingleProject(null, null, null,null, parseInt(route.query.projectProcessStepEventId))
+        getSingleProject(null, null, null,null, parseInt(route.query.projectProcessStepEventId), true)
+
       }
     })
 
@@ -174,11 +175,12 @@
           saveInvalid.value = false
         }
       }
-      const resourceMapCallback =  (newValue) => {
+      const resourceMapCallback =  (newValue, addPin) => {
         mapResources.value = newValue
-        if(newValue.length > 0){
+        if(newValue.length > 0 && addPin){
+          //only show the map if we're adding a pin, not when removing a pin
           showHideMap(true)
-          let zoomObj = newValue[0]
+          let zoomObj = newValue[newValue.length-1] //choose the most recently added one?
           zoomToMap({latitude: zoomObj.coordinates[1], longitude: zoomObj.coordinates[0]})
         }
         else {
@@ -192,12 +194,17 @@
           zoomToMap(newValue[0], 8)
         }
       }
-      const toggleSelectedProjectMapPin = ()=> {
+      const toggleSelectedProjectMapPin = (onload)=> {
         selectedProject.value.pinned = !selectedProject.value.pinned
-        if(selectedProject.value.pinned){
+        if(selectedProject.value.pinned && !onload){
+          //if pinning b/c we're loading the page with a selected project, we don't want to show the map if it's hidden
           showHideMap(true)
           zoomToMap({latitude: selectedProject.value.latitude, longitude: selectedProject.value.longitude})
+        } else if(selectedProject.value.pinned && showMap.value === true){
+          //if we're loading the page with a selected project and the map is already open, zoom into the project pin
+          zoomToMap({latitude: selectedProject.value.latitude, longitude: selectedProject.value.longitude})
         } else if(latitude.value === Math.trunc(selectedProject.value.latitude) && longitude.value === Math.trunc(selectedProject.value.longitude)) {
+          //if we're UNpinning a map pin and we're currently zoomed into that map pin, reset the zoom to default
           resetMapZoom()
         }
       }
@@ -210,7 +217,7 @@
         calendarResourceToSchedule.value = resource
       }
 
-      const getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) => {
+      const getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId, onLoad) => {
         try {
           let params = {
             projectId,
@@ -226,6 +233,9 @@
           project.coordinates = [ project.longitude, project.latitude ]
           project.pinned = false
             selectedProject.value = project
+          if(onLoad === true){
+            toggleSelectedProjectMapPin(onLoad)
+          }
           store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, project.resourceId)
           selectedProject.value.resource = { id: selectedProject.value.resourceId, name: selectedProject.value.resourceName }
         } catch (e) {
@@ -318,6 +328,12 @@
 </script>
 
 <style lang="scss">
+
+#schedule-container {
+  @media(max-width: 960px) {
+    overflow-x: clip;
+  }
+  }
   #schedule-container .v-data-table__wrapper {
     height: calc(40vh - 118px);
     //this is smaller because it is the inner wrapper of the table
@@ -387,12 +403,6 @@
   .schedule-row-go-button {
     position: absolute;
     bottom: 10px;
-  }
-
-  .unschedule-button {
-    position: absolute;
-    bottom: 10px;
-    right: 25px;
   }
 
   .map-field-label {
