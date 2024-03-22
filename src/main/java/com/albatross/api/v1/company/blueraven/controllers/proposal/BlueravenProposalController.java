@@ -104,7 +104,7 @@ public class BlueravenProposalController {
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public Optional<Proposal> getProposal(@PathVariable Long proposalId,
                                         @AuthenticationPrincipal UserAccountDetails details) {
-    return proposalService.getProposal(proposalId, details.getTrueUserId());
+    return proposalService.getProposal(proposalId, details.getId());
   }
 
   @GetMapping(value = "/{proposalId}/commissionDetails")

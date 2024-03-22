@@ -400,7 +400,7 @@ public class BlueravenProposalService {
 
     blueravenCustomFieldValueService.updateCustomFieldValues(cfvs, unlockedProposal.getId(), ObjectType.PROPOSAL);
 
-    return getProposal(proposalId, currentUser.getTrueUserId());
+    return getProposal(proposalId, currentUser.getId());
   }
 
   private Optional<CustomFieldValue> getCustomFieldValue(Proposal proposal, Long cfgaId) {
@@ -425,10 +425,10 @@ public class BlueravenProposalService {
     Map<String, Object> params = new HashMap<>();
     params.put("proposalVersionId", proposalVersionId);
     params.put("projectProcessStepId", proposal.getProjectProcessStepId());
-    params.put("userId", currentUser.getId());
+    params.put("userId", currentUser.getTrueUserId());
 
     Long id = sqlCache.updateBySqlReturningId(ProposalQuery.insert, params, "id").longValue();
-    return getProposal(id, currentUser.getTrueUserId());
+    return getProposal(id, currentUser.getId());
   }
 
   private Long getProposalVersion(Long processStepId, Long currentUserId) {
@@ -524,7 +524,7 @@ public class BlueravenProposalService {
     //insert values immediately in to proposal log history
     getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, true);
 
-    return getProposal(proposalId, currentUser.getTrueUserId());
+    return getProposal(proposalId, currentUser.getId());
   }
 
   private void validateProposalDiscount(BigDecimal amount, Proposal proposal) {
