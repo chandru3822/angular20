@@ -117,8 +117,8 @@ export default {
           bg: '#ffffff'
         },
         sentMessage: {
-          bg: 'var(--v-primary-lighten3)',
-          text: '#ffffff'
+          bg: 'var(--v-primary-lighten9)',
+          text: 'var(--v-neutrals-base)'
         },
         receivedMessage: {
           bg: 'var(--v-grey-lighten3)',

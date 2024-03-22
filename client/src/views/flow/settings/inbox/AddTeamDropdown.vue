@@ -43,146 +43,143 @@
 
     <v-card-actions>
       <v-spacer></v-spacer>
-      <AlbatrossButton variant="text" color="primary" @click="cancel()" text="CANCEL"/>
-      <AlbatrossButton :disabled="!teamToSave || !ownersToSave"
-             color="primary" class="white--text" @click="addTeamDetails()" text="SAVE"/>
+      <v-btn text color="primary" @click="cancel()">Cancel</v-btn>
+      <v-btn :disabled="!teamToSave || !ownersToSave"
+             color="primary" class="white--text" @click="addTeamDetails()">Save</v-btn>
     </v-card-actions>
   </v-card>
 </template>
 
-<script setup>
+<script>
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, postRequest} from "@/helpers/helpers";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-import {ref, onMounted, getCurrentInstance, defineProps} from "vue";
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const route = vueInstance.$route
-const vuetify = vueInstance.$vuetify
-
-const teamToSave = ref('')
-const selectableTeams = ref([])
-const existingTeams = ref({})
-const ownersToSave = ref([])
-const selectableUsers = ref([])
-const userCanView = ref(store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'))
-const userCanManage = ref(store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE'))
-const userId = ref(store.state.user.details.id)
-
-const emit = defineEmits(['closeTeamAdded'])
-
-const props = defineProps({
-  smsTeamOwners:[],
-  defaultTeamId: Number,
-  projectId: Number,
-  ownerUserId: Number
-})
-
-onMounted(async () =>{
-  await getTeams()
-  if(props.defaultTeamId) {
-    teamToSave.value = selectableTeams.value.find(team => props.defaultTeamId === team.id)
-    getSelectableUsers()
-  }
-})
-
-const getTeams = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
-  try {
-    const {data, status} = await getRequest(`/smsTeam/users`)
-    selectableTeams.value = data.sort((a,b)=>{
-      if(a.teamName < b.teamName) {
-        return -1
-      }
-      if(a.teamName > b.teamName) {
-        return 1
-      }
-      return 0
-    })
-    store.commit(AppMutations.SET_LOADING, false)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    store.commit(AppMutations.SET_LOADING, false)
-    snackbar('ERROR', 'Error retrieving teams')
-
-  }
-}
-const addTeamDetails = async () => {
-  let params = {
-    id: teamToSave.value.id,
-    users: ownersToSave.value
-  }
-  try {
-    if (props.projectId) {
-      await postRequest(`/messaging/addTeam/project/${props.projectId}`, params)
+export default {
+  name: "AddTeamDropdown",
+  props: {
+    smsTeamOwners:[],
+    defaultTeamId: Number,
+    projectId: Number,
+    ownerUserId: Number
+  },
+  data () {
+    return {
+      teamToSave: '',
+      selectableTeams: [],
+      existingTeams: {},
+      ownersToSave: [],
+      selectableUsers: [],
+      userCanView: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
+      userCanManage: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE'),
+      userId: this.$store.state.user.details.id,
     }
-    else if (props.ownerUserId) {
-      await postRequest(`/messaging/addTeam/user/${props.ownerUserId}`, params)
+  },
+  async created() {
+    await(this.getTeams())
+    if(this.defaultTeamId) {
+      this.teamToSave = this.selectableTeams.find(team => this.defaultTeamId === team.id)
+      this.getSelectableUsers()
     }
+  },
+  methods: {
+    async getTeams() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/smsTeam/users`)
+        this.selectableTeams = data.sort((a,b)=>{
+          if(a.teamName < b.teamName) {
+            return -1
+          }
+          if(a.teamName > b.teamName) {
+            return 1
+          }
+          return 0
+        })
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.snackbar = getSnackbar('ERROR', 'Error retrieving teams')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    async addTeamDetails() {
+      let params = {
+        id: this.teamToSave.id,
+        users: this.ownersToSave
+      }
+      try {
+        if (this.projectId) {
+          await postRequest(`/messaging/addTeam/project/${this.projectId}`, params)
+        }
+        else if (this.ownerUserId) {
+          await postRequest(`/messaging/addTeam/user/${this.ownerUserId}`, params)
+        }
 
-    const snackbarText = (!ownersToSave.value || ownersToSave.value.length === 0 ) ? 'Team added':
-        (isTeamAlreadyAdded(teamToSave.value) ? 'Conversation assigned' : `Conversation assigned and ${teamToSave.value.teamName} team added`)
-    snackbar('SUCCESS', snackbarText)
-    teamToSave.value = '';
-    selectableUsers.value = []
-    ownersToSave.value = []
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error adding team')
-  }
-  emit('closeTeamAdded')
-}
-const cancel = () => {
-  teamToSave.value = ''
-  ownersToSave.value = []
-  emit('closeTeamAdded')
-}
-const isTeamAlreadyAdded = (team) => {
-  let teamAlreadyAdded = false
-     props.smsTeamOwners.forEach(owner => {
-       if (owner.id === team.id) {
-         teamAlreadyAdded = true
-         return true
-       }
-     })
-   return teamAlreadyAdded
-}
-const getSelectableUsers = () => {
-  let teamAlreadyAdded = false;
-  selectableUsers.value = [];
-  ownersToSave.value = [];
-  props.smsTeamOwners.forEach(owner => {
-    // If this is the team being added has already been added
-    if (owner.id === teamToSave.value.id) {
-      teamAlreadyAdded = true;
-      teamToSave.value.users.forEach(u => {
-        if (!owner.users.filter(u2 => u2.userId === u.userId).length > 0) {
-          selectableUsers.value.push(u);
+        const snackbarText = (!this.ownersToSave || this.ownersToSave.length === 0 ) ? 'Team added':
+          (this.isTeamAlreadyAdded(this.teamToSave) ? 'Conversation assigned' : `Conversation assigned and ${this.teamToSave.teamName} team added`)
+        this.snackbar = getSnackbar('SUCCESS', snackbarText)
+        this.teamToSave = '';
+        this.selectableUsers = []
+        this.ownersToSave = []
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error adding team')
+      }
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      this.$emit('closeTeamAdded')
+    },
+    cancel() {
+      this.teamToSave = ''
+      this.ownersToSave = []
+      this.$emit('closeTeamAdded')
+    },
+    isTeamAlreadyAdded(team) {
+      let teamAlreadyAdded = false
+      this.smsTeamOwners.forEach(owner => {
+        if (owner.id === team.id) {
+          teamAlreadyAdded = true
+          return true
         }
       })
-    }
-  })
-  // If the team hasn't been added, all users can be selected
-  if (!teamAlreadyAdded) {
-    selectableUsers.value = teamToSave.value.users;
-  }
+      return teamAlreadyAdded
+    },
+    getSelectableUsers() {
+      let teamAlreadyAdded = false;
+      this.selectableUsers = [];
+      this.ownersToSave = [];
+      this.smsTeamOwners.forEach(owner => {
+        // If this is the team being added has already been added
+        if (owner.id === this.teamToSave.id) {
+          teamAlreadyAdded = true;
+          this.teamToSave.users.forEach(u => {
+            if (!owner.users.filter(u2 => u2.userId === u.userId).length > 0) {
+              this.selectableUsers.push(u);
+            }
+          })
+        }
+      })
+      // If the team hasn't been added, all users can be selected
+      if (!teamAlreadyAdded) {
+        this.selectableUsers = this.teamToSave.users;
+      }
 
-  // If User only has View permission, they can only add themselves
-  if (userCanView.value && !userCanManage.value) {
-    selectableUsers.value = selectableUsers.value.filter(u => u.userId === userId.value)
-  }
+      // If User only has View permission, they can only add themselves
+      if (this.userCanView && !this.userCanManage) {
+        this.selectableUsers = this.selectableUsers.filter(u => u.userId === this.userId)
+      }
 
-  selectableUsers.value.sort((a,b)=>{
-    if(a.name < b.name) {
-      return -1
+      this.selectableUsers.sort((a,b)=>{
+        if(a.name < b.name) {
+          return -1
+        }
+        if(a.name > b.name) {
+          return 1
+        }
+        return 0
+      })
     }
-    if(a.name > b.name) {
-      return 1
-    }
-    return 0
-  })
+  }
 }
 </script>
 
