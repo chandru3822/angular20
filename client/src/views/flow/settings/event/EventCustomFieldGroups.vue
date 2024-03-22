@@ -13,6 +13,9 @@
                        color="primary"
                        v-if="userCanEdit"
                        text="Save Default Event Fields"
+                       hide-text-on-mobile
+                       :icon="vuetify.breakpoint.smAndDown"
+                       :prepend-icon="vuetify.breakpoint.smAndDown ? 'save' : ''"
                 />
               </div>
             </v-toolbar-items>
@@ -218,7 +221,7 @@
               hide-default-header
               :sort-desc="[false]"
               :sort-by="['groupOrder']"
-              class="elevation-1 fix-column-width-bug event-cfg-table square-card"
+              class="elevation-1 event-cfg-table square-card"
             >
               <template #no-data>
                 <span class="default-text-color">No custom field groups for this event</span>
@@ -229,14 +232,14 @@
               </template>
 
               <template #item="{ item, index }">
-                <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
+                <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2, 'mobile-tr': vuetify.breakpoint.xsOnly}">
                   <td style="width: 50px">
                     <a-btn variant="text" icon size="small"
                                      class="handle" v-if="userCanEdit"
                                      prepend-icon="drag_handle"
                     />
                   </td>
-                  <td class="text-left">
+                  <td class="text-left" :class="{'mb-4': vuetify.breakpoint.xsOnly && item.edit}">
                     <div v-if="userCanEdit">
                       <a-text-field
                                     v-if="item.edit"
@@ -250,7 +253,10 @@
                         {{ item.groupName }}
                       </a>
                     </div>
-                    <span v-else>{{ item.groupName }}</span>
+                    <span v-else>
+                      <span v-if="isMobile" class="label-medium">Name: </span>
+                      {{ item.groupName }}
+                    </span>
                   </td>
                   <td>
                     <div class="item-icons">
@@ -285,7 +291,7 @@
               </template>
 
               <template #expanded-item="{ headers, item }">
-                <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2}">
+                <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2, 'mobile-width': vuetify.breakpoint.smAndDown}">
                   <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                     <h3 class="text-left">Add New Field</h3>
                     <v-radio-group v-model="newFieldType"
@@ -1262,14 +1268,32 @@ const copyToClipBoard = (textValue) => {
 
 .snippet-selector-grid {
   display: grid;
-  grid-template-columns: 2fr 3fr 3fr 2fr;
+  grid-template-columns: 2fr;
   column-gap: 2rem;
   align-items: baseline;
   padding: 1rem;
   margin-right: 1rem;
+
+  @media (min-width: 960px) {
+    grid-template-columns: 2fr 3fr 3fr 2fr;
+  }
 }
 .snippet-selector-background {
   background-color: var(--v-grey-lighten4);
 }
-
+.mobile-width {
+  width: calc(100vw - 100px);
+}
+</style>
+<style lang="scss">
+tr.mobile-tr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: thin solid rgba(0, 0, 0, 0.12);
+  width: 100%;
+  td {
+    border-bottom: none !important;
+  }
+}
 </style>
