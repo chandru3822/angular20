@@ -5,7 +5,7 @@
         <v-tabs class="tabs-bar" id="default-settings-tabs">
           <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path"
                  class="text-capitalize ma-0 label-medium"
-                 :style="{'margin-left': (index === 0 && vuetify.breakpoint.smAndDown) ? '12px !important' : '0'}">
+                 :style="{'margin-left': (index === 0 && $vuetify.breakpoint.smAndDown) ? '12px !important' : '0'}">
             {{ tab.label }}
           </v-tab>
         </v-tabs>
@@ -16,46 +16,52 @@
   </v-container>
 </template>
 
-<script setup>
+<script>
 import constants from '@/helpers/constants'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-import {getCurrentInstance, ref, computed} from "vue";
 
-const vueInstance = getCurrentInstance().proxy
-const vuetify = vueInstance.$vuetify
-const store = vueInstance.$store
+export default {
+  name: 'Defaults',
 
-const tabs = ref([
-  {
-    label: 'Settings',
-    path: `/settings/company/settings`,
-    display: store.getters.userHasFeature('SETTINGS')
+  computed: {
+    displayedTabs () {
+      return this.tabs.filter(tab => tab.display)
+    },
   },
-  {
-    label: 'Configurations',
-    path: `/settings/company/configurations`,
-    display: store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
+  data() {
+    return {
+      constants,
+      tabs: [
+        {
+          label: 'Settings',
+          path: `/settings/company/settings`,
+          display: this.$store.getters.userHasFeature('SETTINGS')
+        },
+        {
+          label: 'Configurations',
+          path: `/settings/company/configurations`,
+          display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
+        },
+        {
+          label: 'Email',
+          path: `/settings/company/email`,
+          display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
+        },
+        {
+          label: 'Message Types',
+          path: `/settings/company/messageTypes`,
+          display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
+        },
+        {
+          label: 'Closer Dashboard',
+          path:`/settings/company/closerDashboard`,
+          display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS','ADMIN')
+        }
+      ]
+    }
   },
-  {
-    label: 'Email',
-    path: `/settings/company/email`,
-    display: store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
-  },
-  {
-    label: 'Message Types',
-    path: `/settings/company/messageTypes`,
-    display: store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
-  },
-  {
-    label: 'Closer Dashboard',
-    path:`/settings/company/closerDashboard`,
-    display: store.getters.userHasFeatureAccessLevel('SETTINGS','ADMIN')
-  }
-])
-
-const displayedTabs = computed(() => {
-  return tabs.value.filter(tab => tab.display)
-})
+  created() {},
+  methods: {}
+}
 </script>
 <style lang="scss">
 @media (max-width: 959px) {

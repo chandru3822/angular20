@@ -38,7 +38,7 @@
           :server-items-length="totalProjects"
           :loading="isProjectsLoading"
           :class="{'fix-column-width-bug': !isMobile}"
-          @click:row.stop="goToRoute"
+          @click:row="goToRoute"
         >
           <template #no-data>
             <span class="default-text-color">No available projects</span>

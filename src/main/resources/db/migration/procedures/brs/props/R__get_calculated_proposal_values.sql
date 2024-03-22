@@ -1846,7 +1846,7 @@ BEGIN
 
   --raise notice 'Carlins new value11111111 %',(coalesce(v_total_system_cost,0) - coalesce(v_storage_cost_with_fees,0) - ((coalesce(v_total_ancillary_costs,0) - coalesce(v_ancillary_percent_cap_down_payment,0))/(1-v_dealer_fee)))/(v_system_size*1000);
 
-  if v_non_solar_cap is not null and ((coalesce(v_total_ancillary_costs,0) - coalesce(v_ancillary_percent_cap_down_payment,0))/(1-v_dealer_fee))/v_total_system_cost > coalesce(v_non_solar_cap,0) then
+  if v_non_solar_cap is not null and round(((coalesce(v_total_ancillary_costs,0) - coalesce(v_ancillary_percent_cap_down_payment,0))/(1-v_dealer_fee))/v_total_system_cost,2) > coalesce(v_non_solar_cap,0) then
     raise exception 'Ancillary Costs exceed the maximum allowable value.';
   end if;
 

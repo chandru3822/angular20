@@ -28,289 +28,264 @@
         </v-chip>
       </span>
 
-      <v-chip v-if="(conversation && conversation.showAssignToMeButton) || showAssignToMeButton && !reloading && !readOnly"
-              label
-              class="white--text text-capitalize clickable"
-              :ripple="false"
-              :class="unassignedTeamExits ? 'unassigned-join-button' : 'assigned-join-button'"
-              @click.stop="$emit('joinConversation')">
-        <span>Join</span>
-      </v-chip>
-      <span v-if="readOnly">This user is either no longer active or the user’s position cannot receive SMS from Albatross</span>
-      <v-dialog v-model="showRemoveDialog" max-width="709px">
-        <v-card class="pt-6 pl-6">
-          <v-card-title class="albatross-header-4-new pa-0">What would you like to do?</v-card-title>
-          <v-radio-group v-model="removeOption">
-            <v-radio :key="0" :value="0" class="albatross-body-1 remove-dialog-option mb-4">
-              <template v-slot:label><div class="default-text-color"> Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> from the conversation</div></template></v-radio>
-            <v-radio :key="1" :value="1" class="albatross-body-1 remove-dialog-option mb-0" color="grey darken-4" :mesaages="[`This will also remove other ${teamToRemove.teamName} team members on the conversation`]">
-              <template v-slot:label><div class="default-text-color">Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> and <strong>&nbsp;{{teamToRemove.teamName}}&nbsp;</strong> team from the conversation</div></template>
-            </v-radio>
-            <span class="albatross-body-3 remove-dialog-option-info px-8 pt-n4">This will also remove other {{teamToRemove.teamName}} team members on the conversation</span>
-          </v-radio-group>
-          <v-card-actions class="pb-4">
-            <v-spacer/>
-            <AlbatrossButton
-              class="text-capitalize"
-              variant="text"
-              color="primary"
-              @click="showRemoveDialog=false"
-              text="CANCEL"
-            />
-            <AlbatrossButton
-              class="text-capitalize white--text"
-              depressed
-              color="primary"
-              @click="confirmChoice"
-              text="CONFIRM"
-            />
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <v-dialog v-model="showRemoveLastTeamDialog" max-width="600px">
-        <v-card class="pt-6">
-          <v-card-title
-              class="albatross-header-4-new pt-0"
-              primary-title>
-            Remove Team
-          </v-card-title>
-          <v-card-text class="default-text-color albatross-body-1 px-6">
-           <div>Because no other team is on the conversation, this action will remove the team and close the conversation.</div>
-            <div>Are you sure you want to remove {{teamToRemove.teamName}} team and close conversation?</div>
-          </v-card-text>
-          <v-card-actions class="pb-4">
-            <v-spacer/>
-            <AlbatrossButton
-              class="text-capitalize"
-              variant="text"
-              color="primary"
-              @click="showRemoveLastTeamDialog=false"
-              text="CANCEL"
-            />
-            <AlbatrossButton
-              class="text-capitalize white--text"
-              color="primary"
-              @click="removeTeam(teamToRemove.id)">Remove and Close</AlbatrossButton>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <v-dialog v-model="showRemoveTeamDialog" max-width="509px">
-        <v-card>
-          <v-card-title
-              class="albatross-header-4-new"
-              primary-title>
-            Remove Team
-          </v-card-title>
-          <v-card-text class="albatross-body-1 pb-2 default-text-color">
-            <div>This action will remove the team from the conversation. </div>
-            <div>Are you sure you want to remove <b>{{teamToRemove.teamName}}</b> team?</div>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <AlbatrossButton
-                variant="text"
-                color="primary"
-                @click="showRemoveTeamDialog=false"
-                class="text-capitalize mr-2 mb-2"
-                text="Cancel"
-            />
-            <AlbatrossButton
-                color="primary"
-                class="white--text elevation-2 text-capitalize mb-2"
-                @click="removeTeam(teamToRemove.id)"
-                text="REMOVE"
-            />
-          </v-card-actions>
-        </v-card>
+    <v-chip v-if="(conversation && conversation.showAssignToMeButton) || showAssignToMeButton && !reloading && !readOnly"
+            label
+            class="white--text text-capitalize clickable"
+            :ripple="false"
+            :class="unassignedTeamExits ? 'unassigned-join-button' : 'assigned-join-button'"
+            @click.stop="$emit('joinConversation')">
+      <span>Join</span>
+    </v-chip>
+    <span v-if="readOnly">This user is either no longer active or the user’s position cannot receive SMS from Albatross</span>
+    <v-dialog v-model="showRemoveDialog" max-width="709px">
+      <v-card class="pt-6 pl-6">
+        <v-card-title class="albatross-header-4-new pa-0">What would you like to do?</v-card-title>
+        <v-radio-group v-model="removeOption">
+          <v-radio :key="0" :value="0" class="albatross-body-1 remove-dialog-option mb-4">
+            <template v-slot:label><div class="default-text-color"> Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> from the conversation</div></template></v-radio>
+          <v-radio :key="1" :value="1" class="albatross-body-1 remove-dialog-option mb-0" color="grey darken-4" :mesaages="[`This will also remove other ${teamToRemove.teamName} team members on the conversation`]">
+            <template v-slot:label><div class="default-text-color">Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> and <strong>&nbsp;{{teamToRemove.teamName}}&nbsp;</strong> team from the conversation</div></template>
+          </v-radio>
+          <span class="albatross-body-3 remove-dialog-option-info px-8 pt-n4">This will also remove other {{teamToRemove.teamName}} team members on the conversation</span>
+        </v-radio-group>
+        <v-card-actions class="pb-4">
+          <v-spacer/>
+          <v-btn class="text-capitalize" text color="primary" @click="showRemoveDialog=false">Cancel</v-btn>
+          <v-btn class="text-capitalize white--text" depressed color="primary" @click="confirmChoice">Confirm</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="showRemoveLastTeamDialog" max-width="600px">
+      <v-card class="pt-6">
+        <v-card-title
+          class="albatross-header-4-new pt-0"
+          primary-title>
+          Remove Team
+        </v-card-title>
+        <v-card-text class="default-text-color albatross-body-1 px-6">
+          <div>Because no other team is on the conversation, this action will remove the team and close the conversation.</div>
+          <div>Are you sure you want to remove {{teamToRemove.teamName}} team and close conversation?</div>
+        </v-card-text>
+        <v-card-actions class="pb-4">
+          <v-spacer/>
+          <v-btn class="text-capitalize" text color="primary" @click="showRemoveLastTeamDialog=false">Cancel</v-btn>
+          <v-btn class="text-capitalize white--text" color="primary" @click="removeTeam(teamToRemove.id)">Remove and Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="showRemoveTeamDialog" max-width="509px">
+      <v-card>
+        <v-card-title
+          class="albatross-header-4-new"
+          primary-title>
+          Remove Team
+        </v-card-title>
+        <v-card-text class="albatross-body-1 pb-2 default-text-color">
+          <div>This action will remove the team from the conversation. </div>
+          <div>Are you sure you want to remove <b>{{teamToRemove.teamName}}</b> team?</div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            text color="primary"
+            @click="showRemoveTeamDialog=false"
+            class="text-capitalize mr-2 mb-2"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            class="white--text elevation-2 text-capitalize mb-2"
+            @click="removeTeam(teamToRemove.id)">
+            Remove
+          </v-btn>
+        </v-card-actions>
+      </v-card>
 
-      </v-dialog>
-      <v-menu offset-y :close-on-content-click="false" v-model="teamsMenuOpen" v-if="userCanView && !readOnly">
-        <template v-slot:activator="{on, attrs}">
-          <v-tooltip top small>
-            <template v-slot:activator="{on, attrs}">
-              <AlbatrossButton
-                variant="text"
-                icon
-                v-bind="attrs"
-                :activation-handler="on"
-                size="large"
-                class="align-self-baseline"
-                prepend-icon="mdi-plus"
-                text="Add Member"
-              />
-            </template>
+    </v-dialog>
+    <v-menu offset-y :close-on-content-click="false" v-model="teamsMenuOpen" v-if="userCanView && !readOnly">
+      <template v-slot:activator="{on, attrs}">
+        <v-btn icon v-bind="attrs" v-on="on" large class="align-self-baseline">
+          <v-tooltip top small><template v-slot:activator="{on, attrs}">
+            <v-icon color="primary" @click="" v-bind="attrs" v-on="on">
+              mdi-plus
+            </v-icon>
+          </template>
+            <span class="albatross-body-3">Add Member</span>
           </v-tooltip>
-        </template>
-        <AddTeamDropdown :sms-team-owners="smsTeamOwners" :project-id="projectId" :owner-user-id="userId" @closeTeamAdded="teamAdded()"></AddTeamDropdown>
-      </v-menu>
+        </v-btn>
+      </template>
+      <AddTeamDropdown :sms-team-owners="smsTeamOwners" :project-id="projectId" :owner-user-id="userId" @closeTeamAdded="teamAdded()"></AddTeamDropdown>
+    </v-menu>
   </v-chip-group>
 </template>
 
-<script setup>
+<script>
 import {getSnackbar, getRequest, putRequest} from "@/helpers/helpers";
 import AddTeamDropdown from "@/views/flow/settings/inbox/AddTeamDropdown";
 import {AppMutations} from "@/stores/AppStore";
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-import {ref, onMounted, getCurrentInstance, watch, defineProps} from "vue";
-
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const route = vueInstance.$route
-const router = vueInstance.$router
-const vuetify = vueInstance.$vuetify
-
-const props = defineProps({
-  smsTeamOwners: Array,
-  teamNamesAssociatedToUser: Array,
-  projectId: Number,
-  conversation: Object,
-  showSelectedStyles: Boolean,
-  showAssignToMeButton: Boolean,
-  reloading: Boolean,
-  userId: Number
-})
-const userCanManage = ref(store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE'))
-const userCanView = ref(store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'))
-const loggedInUserId = ref(store.state.user.details.id)
-const showRemoveDialog = ref(false)
-const showRemoveLastTeamDialog = ref(false)
-const showRemoveTeamDialog = ref(false)
-const userToRemove = ref('')
-const teamToRemove = ref({})
-const removeOption = ref(0)
-const teamsMenuOpen = ref(false)
-const unassignedTeamMenuOpen = ref(false)
-const selectedProjectId = ref(null)
-const selectedUserId = ref(null)
-const readOnly = ref(false)
-
-const emit = defineEmits(['updateOwner'])
-
-
-
-onMounted(() => {
-  selectedProjectId.value = parseInt(route.params.projectId) | null
-  selectedUserId.value = parseInt(route.params.userId) | null
-
-  if (props.userId) {
-    getSmsAccess()
-  }
-})
-watch(vueInstance.$route.params.projectId, () => {
-  selectedProjectId.value = parseInt(route.params.projectId) | null
-})
-watch(vueInstance.$route.params.userId, () => {
-  selectedUserId.value = parseInt(route.params.userId) | null
-})
-const teamAdded = () => {
-  teamsMenuOpen.value = false
-  unassignedTeamMenuOpen.value = false
-  emit('updateOwner')
-}
-const close =  (user) => {
-  userToRemove.value = user
-  teamToRemove.value = getTeamToRemoveBySmsTeamId(user.smsTeamId)
-  showRemoveDialog.value = true
-}
-const closeTeam =  (team) => {
-  teamToRemove.value = team
-  if(props.smsTeamOwners.length === 1){
-    showRemoveLastTeamDialog.value = true
-  } else {
-    showRemoveTeamDialog.value = true
-  }
-  }
-const getTeamToRemoveBySmsTeamId = (smsTeamId)=> {
- return props.smsTeamOwners.find(team => team.id === smsTeamId)
-}
-const confirmChoice = ()=> {
-  switch (removeOption.value){
-    case 0: removeUser()
-         break
-    case 1: removeTeam(teamToRemove.value.id)
-        break
-  }
-  removeOption.value  = 0
-  showRemoveDialog.value  = false
-}
-const removeTeam = async (teamId) => {
-  showRemoveTeamDialog.value = false
-  showRemoveLastTeamDialog.value = false
-  try {
-    let removeTeamUrl = ''
-    if (props.projectId) {
-      removeTeamUrl = `/messaging/removeTeam/project/`+ props.projectId + '/' + teamId
+export default {
+  name: "TeamAssignmentChips",
+  components: {
+    AddTeamDropdown
+  },
+  props: {
+    smsTeamOwners: Array,
+    teamNamesAssociatedToUser: Array,
+    projectId: Number,
+    conversation: Object,
+    showSelectedStyles: Boolean,
+    showAssignToMeButton: Boolean,
+    reloading: Boolean,
+    userId: Number
+  },
+  data (){
+    return {
+      userCanManage: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE'),
+      userCanView: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
+      loggedInUserId: this.$store.state.user.details.id,
+      showRemoveDialog: false,
+      showRemoveLastTeamDialog: false,
+      showRemoveTeamDialog: false,
+      userToRemove:'',
+      teamToRemove:{},
+      removeOption:0,
+      teamsMenuOpen: false,
+      unassignedTeamMenuOpen: false,
+      selectedProjectId: null,
+      selectedUserId: null,
+      readOnly: false
     }
-    else if (props.userId) {
-      removeTeamUrl = `/messaging/removeTeam/user/`+ props.userId + '/' + teamId
+  },
+  watch: {
+    '$route.params.projectId': function () {
+      this.selectedProjectId = parseInt(this.$route.params.projectId) | null
+    },
+    '$route.params.userId': function () {
+      this.selectedUserId = parseInt(this.$route.params.userId) | null
     }
+  },
+  created() {
+    this.selectedProjectId = parseInt(this.$route.params.projectId) | null
+    this.selectedUserId = parseInt(this.$route.params.userId) | null
 
-    await putRequest(removeTeamUrl)
-    // If the project/user is currently opened on the right panel, navigate back to main inbox to close it
-    if (route.path.includes('inboxConversation') && (route.path.includes(props.projectId) || route.path.includes(props.userId))) {
-      await router.push({path: `/inbox`})
+    if (this.userId) {
+      this.getSmsAccess()
     }
-    snackbar('SUCCESS', 'Team removed')
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error removing team')
-  }
-
-  emit('updateOwner')
-}
-const removeUser = async () => {
-  try {
-    if (props.projectId) {
-      const bodyData = {
-        projectId: props.projectId,
-        smsTeamId: userToRemove.value.smsTeamId,
-        userId: userToRemove.value.userId,
-        name: userToRemove.value.name,
-        archived: userToRemove.value.archived
+  },
+  methods: {
+    teamAdded() {
+      this.teamsMenuOpen = false
+      this.unassignedTeamMenuOpen = false
+      this.$emit('updateOwner')
+    },
+    close (user) {
+      this.userToRemove=user
+      this.teamToRemove = this.getTeamToRemoveBySmsTeamId(user.smsTeamId)
+      this.showRemoveDialog = true
+    },
+    closeTeam (team) {
+      this.teamToRemove = team
+      if(this.smsTeamOwners.length === 1){
+        this.showRemoveLastTeamDialog = true
+      } else {
+        this.showRemoveTeamDialog = true
       }
-      await putRequest(`/messaging/removeOwner/project/`+ props.projectId, bodyData)
-    }
-    else if (props.userId) {
-      const bodyData = {
-        ownerUserId: props.userId,
-        smsTeamId: userToRemove.value.smsTeamId,
-        userId: userToRemove.value.userId,
-        name: userToRemove.value.name,
-        archived: userToRemove.value.archived
+    },
+    getTeamToRemoveBySmsTeamId(smsTeamId){
+      return this.smsTeamOwners.find(team => team.id === smsTeamId)
+    },
+    confirmChoice(){
+      switch (this.removeOption){
+        case 0: this.removeUser()
+          break
+        case 1: this.removeTeam(this.teamToRemove.id)
+          break
       }
-      await putRequest(`/messaging/removeOwner/user/`+ props.userId, bodyData)
-    }
-    snackbar('SUCCESS', 'Unassigned')
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error removing team')
+      this.removeOption = 0
+      this.showRemoveDialog = false
+    },
+    async removeTeam(teamId) {
+      this.showRemoveTeamDialog=false
+      this.showRemoveLastTeamDialog = false
+      try {
+        let removeTeamUrl = ''
+        if (this.projectId) {
+          removeTeamUrl = `/messaging/removeTeam/project/`+ this.projectId + '/' + teamId
+        }
+        else if (this.userId) {
+          removeTeamUrl = `/messaging/removeTeam/user/`+ this.userId + '/' + teamId
+        }
+
+        await putRequest(removeTeamUrl)
+        // If the project/user is currently opened on the right panel, navigate back to main inbox to close it
+        if (this.$route.path.includes('inboxConversation') && (this.$route.path.includes(this.projectId) || this.$route.path.includes(this.userId))) {
+          await this.$router.push({path: `/inbox`})
+        }
+
+        this.snackbar = getSnackbar('SUCCESS', 'Team removed')
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error removing team')
+      }
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      this.$emit('updateOwner')
+    },
+    async removeUser() {
+      try {
+        if (this.projectId) {
+          const bodyData = {
+            projectId: this.projectId,
+            smsTeamId: this.userToRemove.smsTeamId,
+            userId: this.userToRemove.userId,
+            name: this.userToRemove.name,
+            archived: this.userToRemove.archived
+          }
+          await putRequest(`/messaging/removeOwner/project/`+ this.projectId, bodyData)
+        }
+        else if (this.userId) {
+          const bodyData = {
+            ownerUserId: this.userId,
+            smsTeamId: this.userToRemove.smsTeamId,
+            userId: this.userToRemove.userId,
+            name: this.userToRemove.name,
+            archived: this.userToRemove.archived
+          }
+          await putRequest(`/messaging/removeOwner/user/`+ this.userId, bodyData)
+        }
+        this.snackbar = getSnackbar('SUCCESS', 'Unassigned')
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error removing team')
+      }
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      this.$emit('updateOwner')
+    },
+    unassignedTeamExits() {
+      let unassignedExists = false;
+      this.smsTeamOwners.forEach(team => {
+        if (team.users.length === 0 && this.teamNamesAssociatedToUser.includes(team.teamName)) {
+          unassignedExists = true;
+        }
+      });
+
+      return unassignedExists;
+    },
+    async getSmsAccess() {
+      try {
+        const { data, status } = await getRequest(`/user/smsAccess/${this.userId}`)
+        this.readOnly = !data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving SMS Access')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 
-  emit('updateOwner')
 }
-const unassignedTeamExits = () => {
-  let unassignedExists = false;
-  props.smsTeamOwners.forEach(team => {
-    if (team.users.length === 0 && props.teamNamesAssociatedToUser.includes(team.teamName)) {
-      unassignedExists = true;
-    }
-  });
-
-  return unassignedExists;
-}
-const getSmsAccess = async () => {
-  try {
-    const { data, status } = await getRequest(`/user/smsAccess/${props.userId}`)
-    readOnly.value = !data
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving SMS Access')
-    store.commit(AppMutations.SET_LOADING, false)
-  }
-}
-
 </script>
 
 <style lang="scss" scoped>

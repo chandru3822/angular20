@@ -2,10 +2,16 @@ drop function if exists brs.get_system_size_and_price_by_monthly_usage(p_state_a
                                                                        p_average_monthly_bill numeric,
                                                                        p_utility_id integer,
                                                                        p_number_of_batteries integer);
+drop function if exists brs.get_system_size_and_price_by_monthly_usage(p_state_abbrev text,
+                                                                       p_average_monthly_bill numeric,
+                                                                       p_utility_id integer,
+                                                                       p_number_of_batteries integer,
+                                                                       p_battery_brand text);
 CREATE OR REPLACE FUNCTION brs.get_system_size_and_price_by_monthly_usage(p_state_abbrev text,
                                                                           p_average_monthly_bill numeric,
                                                                           p_utility_id integer,
-                                                                          p_number_of_batteries integer)
+                                                                          p_number_of_batteries integer,
+                                                                          p_battery_brand text)
   returns table
           (
             average_production_factor                          numeric,
@@ -150,36 +156,23 @@ declare
   v_dealer_redline_price numeric;
 
 BEGIN
+  v_battery_price = 0::numeric;
+  if p_battery_brand is not null and p_number_of_batteries is not null then
+
+    select
+      (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 157)') ->> 'value')::numeric as cash_price_storage
+    into v_battery_price
+    from brs.get_proposal_version_value(v_version_id, array [(155, p_number_of_batteries, null, null)::ProposalFieldFilter,
+      (412, p_battery_brand, null, null)::ProposalFieldFilter,
+      (102, null, 20065, null)::ProposalFieldFilter],
+                                        'PROPOSAL_STORAGE_DETAILS');
+
+  end if;
   select sapf.average_production_factor, s.id
   into v_average_production_factor,v_state_id
   from brs.state_average_production_factor sapf
          inner join flow.state s on s.abbreviation = p_state_abbrev
   where sapf.state_id = s.id;
-  v_battery_price = 0::numeric;
-  if p_number_of_batteries > 0 then
-    if v_state_id in (12, 44, 47, 33, 37, 6) then
-      v_battery_price = case
-                        when p_number_of_batteries = 1 then
-                          17000::numeric
-                        when p_number_of_batteries = 2 then
-                          26000::numeric
-                        when p_number_of_batteries = 3 then
-                          35000::numeric
-                        when p_number_of_batteries = 4 then
-                          44000::numeric end;
-    else
-      v_battery_price = case
-                        when p_number_of_batteries = 1 then
-                          19000::numeric
-                        when p_number_of_batteries = 2 then
-                          28000::numeric
-                        when p_number_of_batteries = 3 then
-                          37000::numeric
-                        when p_number_of_batteries = 4 then
-                          46000::numeric end;
-
-    end if;
-  end if;
 
   select max(version::bigint)
   into v_version_id

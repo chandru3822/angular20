@@ -44,55 +44,55 @@
           </v-col>
         </v-row>
       </v-form>
-        <v-data-table
-            :headers="headers"
-            :items="emailValues"
-            :items-per-page="-1"
-            hide-default-footer
-            class="elevation-1 square-card table-striped"
-        >
-          <template #item.name="{ item, index }">
-                <v-text-field text
-                              type="text"
-                              :ref="`senderName-edit-${item.id}`"
-                              :rules="senderRequiredRule"
-                              v-if="index === editIndex"
-                              v-model="item.senderName">
-                </v-text-field>
-                <div v-else>
-                  {{item.senderName}}
-                </div>
-          </template>
-              <template #item.value="{item, index}" class="text-left">
-                <v-text-field text
-                              type="text"
-                              :ref="`emailAddress-edit-${item.id}`"
-                              :rules="emailRules"
-                              v-if="index === editIndex"
-                              v-model="item.emailAddress">
-                </v-text-field>
-                <div v-else style="overflow-wrap: anywhere">
-                  {{ item.emailAddress }}
-                </div>
-              </template>
-              <template #item.isDefault="{item, index}" class="text-center">
-                <v-icon v-show="item.isDefault" v-if="index !== editIndex" class="centered">mdi-check</v-icon>
-                <v-checkbox v-if="index == editIndex" v-model="item.checked" :value="item.isDefault" :disabled="item.isDefault" label="Default"></v-checkbox>
-              </template>
-              <template #item.icons="{item, index}">
-                <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="editIndex = index" v-if="index !== editIndex">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="updateEmailAddress(item)" :disabled="!isEditValid(item)" v-if="index === editIndex">
-                  <v-icon>save</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="index === editIndex" @click="clearChanges()">
-                  cancel
-                </v-btn>
-                <v-btn :disabled="item.isDefault" small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="emailToDelete=item"><v-icon>delete</v-icon></v-btn>
-              </template>
-        </v-data-table>
-      </v-col>
+      <v-data-table
+        :headers="headers"
+        :items="emailValues"
+        :items-per-page="-1"
+        hide-default-footer
+        class="elevation-1 square-card table-striped"
+      >
+        <template #item.name="{ item, index }">
+          <v-text-field text
+                        type="text"
+                        :ref="`senderName-edit-${item.id}`"
+                        :rules="senderRequiredRule"
+                        v-if="index === editIndex"
+                        v-model="item.senderName">
+          </v-text-field>
+          <div v-else>
+            {{item.senderName}}
+          </div>
+        </template>
+        <template #item.value="{item, index}" class="text-left">
+          <v-text-field text
+                        type="text"
+                        :ref="`emailAddress-edit-${item.id}`"
+                        :rules="emailRules"
+                        v-if="index === editIndex"
+                        v-model="item.emailAddress">
+          </v-text-field>
+          <div v-else style="overflow-wrap: anywhere">
+            {{ item.emailAddress }}
+          </div>
+        </template>
+        <template #item.isDefault="{item, index}" class="text-center">
+          <v-icon v-show="item.isDefault" v-if="index !== editIndex" class="centered">mdi-check</v-icon>
+          <v-checkbox v-if="index == editIndex" v-model="item.checked" :value="item.isDefault" :disabled="item.isDefault" label="Default"></v-checkbox>
+        </template>
+        <template #item.icons="{item, index}">
+          <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="editIndex = index" v-if="index !== editIndex">
+            <v-icon>edit</v-icon>
+          </v-btn>
+          <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="updateEmailAddress(item)" :disabled="!isEditValid(item)" v-if="index === editIndex">
+            <v-icon>save</v-icon>
+          </v-btn>
+          <v-btn small text color="primary" v-if="index === editIndex" @click="clearChanges()">
+            cancel
+          </v-btn>
+          <v-btn :disabled="item.isDefault" small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="emailToDelete=item"><v-icon>delete</v-icon></v-btn>
+        </template>
+      </v-data-table>
+    </v-col>
     <ConfirmationDialog :open-dialog="!!emailToDelete" @confirm="deleteEmailAddress" @close-dialog="emailToDelete=null">
       Are you sure you want to delete this email address: <strong>{{emailToDeleteAddress}}</strong>?
     </ConfirmationDialog>
@@ -105,7 +105,7 @@
   </v-container>
 </template>
 
-<script setup>
+<script>
 import {
   getRequest,
   putRequest,
@@ -118,148 +118,154 @@ import {
 import {AppMutations} from "@/stores/AppStore";
 import constants from "@/helpers/constants";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
-const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
-const store = vueInstance.$store
-
-const addFormValid = ref(false)
-const emailQueueProcessing = ref(false)
-const is7oaksAdmin = ref(store.getters.isFullAdmin)
-const headers = ref([
-  {text: 'Sender Name', value: 'name', show: true},
-  {text: 'Email Address', value: 'value', show: true},
-  {text: 'Default', value: 'isDefault', show: true, align:'center'},
-  {text: null, value: 'icons', show: true, sortable: false}
-])
-const emailValues = ref([])
-const companyId = ref(store.state.user.details.companyId)
-const userId = ref(store.state.user.details.id)
-const editIndex = ref(null)
-const newEmail = ref({})
-const addNew = ref(false)
-const senderRequiredRule = ref([v => !!v || 'Sender name is required'])
-const emailRules = ref(constants.EMAIL_RULES)
-const emailToDelete = ref(null)
-
-const emailToDeleteAddress = computed(() => {
-  return emailToDelete.value ? emailToDelete.value.emailAddress : ''
-})
-
-onMounted(async () => {
-  getEmailSenders()
-})
-
-const getEmailSenders = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
-  try {
-    const {data, status} = await getRequest(`/emailAddress/${companyId.value}`, null)
-    emailValues.value = data;
-    emailValues.value.map( email => email.checked = email.isDefault)
-    handleHidingGlobalLoader(vueInstance, status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Email Addresses')
-
-    store.commit(AppMutations.SET_LOADING, false)
-  }
-}
-const clearChanges = async () => {
-  await getEmailSenders()
-    editIndex.value = null
-}
-const isEditValid = (item) => {
-  const itemId = item.id
-  const senderNameRef = vueInstance.$refs[`senderName-edit-${itemId}`]
-  const emailAddressRef = vueInstance.$refs[`emailAddress-edit-${itemId}`]
-  if(senderNameRef && emailAddressRef){
-    return senderNameRef.valid && emailAddressRef.valid
-  } else if (senderNameRef && !emailAddressRef){
-    return senderNameRef.valid
-  } else if (!senderNameRef && emailAddressRef) {
-    return emailAddressRef.valid
-  } else return !!(item.senderName && item.emailAddress);
-}
-const updateEmailAddress = async (item) => {
-  store.commit(AppMutations.SET_LOADING, true)
-  try {
-    item.modifiedById = userId.value;
-    item.companyId = companyId.value;
-    const confirmChangeDefault = (item.checked !== item.isDefault)
-    item.isDefault = item.checked;
-    const {data, status} = await putRequestWithRequestParams('/emailAddress/updateEmailAddress', item, {updateDefault: confirmChangeDefault})
-    emailValues.value = data;
-    editIndex.value = null
-    handleHidingGlobalLoader(vueInstance, status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Email Address')
-
-    store.commit(AppMutations.SET_LOADING, false)
-  }
-}
-const addEmail = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
-  try {
-    vueInstance.$refs.emailSettingsForm.validate();
-    if(!addFormValid.value) {
-      throw {data: false};
+export default {
+  name: "EmailSettings",
+  components: {ConfirmationDialog},
+  data() {
+    return {
+      addFormValid: false,
+      emailQueueProcessing: false,
+      is7oaksAdmin: this.$store.getters.isFullAdmin,
+      headers: [
+        {text: 'Sender Name', value: 'name', show: true},
+        {text: 'Email Address', value: 'value', show: true},
+        {text: 'Default', value: 'isDefault', show: true, align:'center'},
+        {text: null, value: 'icons', show: true, sortable: false}
+      ],
+      emailValues: [],
+      companyId: this.$store.state.user.details.companyId,
+      userId: this.$store.state.user.details.id,
+      editIndex: null,
+      newEmail: {},
+      addNew: false,
+      senderRequiredRule: [v => !!v || 'Sender name is required'],
+      emailRules: constants.EMAIL_RULES,
+      emailToDelete: null,
+      constants
     }
-    const makeDefault = newEmail.value.checked || false
-    newEmail.value.isDefault = makeDefault;
-    newEmail.value.createdById = userId.value;
-    newEmail.value.companyId=companyId.value;
-    const {data, status} = await postRequestWithRequestParams('/emailAddress/saveEmailAddress', newEmail.value, {updateDefault: makeDefault})
-    emailValues.value = data;
-    newEmail.value = null;
-    addNew.value = false;
-    handleHidingGlobalLoader(vueInstance, status)
-  } catch (e) {
-    if(e.data != false) {
-      console.error('*** ERROR ***', e)
+  },
+  computed:{
+    emailToDeleteAddress(){
+      return this.emailToDelete ? this.emailToDelete.emailAddress : ''
     }
-    snackbar('ERROR', 'Error Adding Email Address')
+  },
+  async created() {
+    this.getEmailSenders()
+  },
+  methods: {
+    async getEmailSenders() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/emailAddress/${this.companyId}`, null)
+        this.emailValues = data;
+        this.emailValues.map( email => email.checked = email.isDefault)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Email Addresses')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async clearChanges() {
+      await this.getEmailSenders()
+      this.editIndex = null
+    },
+    isEditValid(item){
+      const itemId = item.id
+      const senderNameRef = this.$refs[`senderName-edit-${itemId}`]
+      const emailAddressRef = this.$refs[`emailAddress-edit-${itemId}`]
+      if(senderNameRef && emailAddressRef){
+        return senderNameRef.valid && emailAddressRef.valid
+      } else if (senderNameRef && !emailAddressRef){
+        return senderNameRef.valid
+      } else if (!senderNameRef && emailAddressRef) {
+        return emailAddressRef.valid
+      } else return !!(item.senderName && item.emailAddress);
+    },
+    async updateEmailAddress(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        item.modifiedById = this.userId;
+        item.companyId = this.companyId;
+        const confirmChangeDefault = (item.checked !== item.isDefault)
+        item.isDefault = item.checked;
+        const {data, status} = await putRequestWithRequestParams('/emailAddress/updateEmailAddress', item, {updateDefault: confirmChangeDefault})
+        this.emailValues = data;
+        this.editIndex = null
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Email Address')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
 
-    store.commit(AppMutations.SET_LOADING, false)
-  }
-}
-const deleteEmailAddress = async () => {
-  const item = emailToDelete.value
-  store.commit(AppMutations.SET_LOADING, true)
-  try {
-    if(item.isDefault){
-      throw {data: false}
-    }
-    item.modifiedById = userId.value;
-    const {status} = await putRequest('/emailAddress/archiveEmailAddress', item)
-    emailValues.value.splice(emailValues.value.indexOf(item), 1);//remove deleted address from list
-    editIndex.value = null
-    handleHidingGlobalLoader(vueInstance, status)
-  } catch (e) {
-    if(e.data != false) {
-      console.error('*** ERROR ***', e)
-    }
-    snackbar('ERROR', 'Error Updating Email Address')
-    store.commit(AppMutations.SET_LOADING, false)
-  }
-  emailToDelete.value = null
-}
-const cancelDelete = (item) => {
-  item.deleteConfirm = false
-}
-const processEmailQueue = async () => {
-  emailQueueProcessing.value = true
-  try {
-    await postRequest(`/emailAddress/processEmailQueue`, null, null)
-    emailQueueProcessing.value = false
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Processing Email Queue')
+    async addEmail() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.$refs.emailSettingsForm.validate();
+        if(!this.addFormValid) {
+          throw {data: false};
+        }
+        const makeDefault = this.newEmail.checked || false
+        this.newEmail.isDefault = makeDefault;
+        this.newEmail.createdById = this.userId;
+        this.newEmail.companyId=this.companyId;
+        const {data, status} = await postRequestWithRequestParams('/emailAddress/saveEmailAddress', this.newEmail, {updateDefault: makeDefault})
+        this.emailValues = data;
+        this.newEmail = null;
+        this.addNew = false;
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        if(e.data != false) {
+          console.error('*** ERROR ***', e)
+        }
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Email Address')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
 
-    emailQueueProcessing.value = false
+    async deleteEmailAddress() {
+      const item = this.emailToDelete
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        if(item.isDefault){
+          throw {data: false}
+        }
+        item.modifiedById = this.userId;
+        const {status} = await putRequest('/emailAddress/archiveEmailAddress', item)
+        this.emailValues.splice(this.emailValues.indexOf(item), 1);//remove deleted address from list
+        this.editIndex = null
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        if(e.data != false) {
+          console.error('*** ERROR ***', e)
+        }
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Email Address')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+      this.emailToDelete = null
+    },
+    cancelDelete(item){
+      item.deleteConfirm = false
+    },
+    async processEmailQueue() {
+      this.emailQueueProcessing = true
+      try {
+        await postRequest(`/emailAddress/processEmailQueue`, null, null)
+        this.emailQueueProcessing = false
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Processing Email Queue')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.emailQueueProcessing = false
+      }
+    },
   }
 }
 </script>
