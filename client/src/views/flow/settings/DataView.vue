@@ -61,7 +61,10 @@
               color="primary"
               v-if="edit"
               @click="[dataView.displayName = oldName, edit = !edit, fixData()]"
-              text="cancel"/>
+              text="Cancel"
+              hide-text-on-mobile
+              :prepend-icon="isMobile ? 'close' : ''"
+            />
           </div>
         </div>
         <v-divider class="mt-3 mb-1"></v-divider>
@@ -81,7 +84,7 @@
             class="d-inline-block"
             v-if="!addNew"
             @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects(), fixData()]"
-            :hide-text-on-mobile="constants.IS_MOBILE"
+            :hide-text-on-mobile="isMobile"
             :text="!addNew ? 'Add New Field' : 'Cancel'"
             :prepend-icon="addNew ? 'close' : 'add'"
           />
@@ -207,7 +210,7 @@
                               || (selectedDefaultField.objectTypeId === 6 && !newField.processStepEventId) || (selectedDefaultField.objectTypeId === 4 && !newField.processStepId)"
               color="primary" class="white--text mr-2"
               @click="validateFields(newField, true)"
-              text="save"
+              text="Save"
             />
 
 
@@ -222,6 +225,7 @@
         </v-card>
         <v-divider></v-divider>
         <v-data-table
+            id="data-view-settings-table"
           v-if="dataView.dataViewFieldConfigs && !addNew"
           :headers="headers"
           single-expand
@@ -442,7 +446,7 @@
                           color="primary"
                           v-if="childFieldExpanded.includes(childField)"
                           @click="childFieldExpanded = []"
-                          text="cancel"
+                          text="Cancel"
                         />
                       </td>
                     </tr>
@@ -456,7 +460,7 @@
             <tr class="text-left" :class="{'shaded-row': dataView.dataViewFieldConfigs.indexOf(item) % 2}">
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.fieldToUpdate }}</td>
-              <td class="text-right">
+              <td class="text-right d-flex">
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
                       <a-btn
@@ -486,7 +490,7 @@
                   color="primary"
                   v-if="expanded.includes(item)"
                   @click="expanded = []"
-                  text="cancel"
+                  text="Cancel"
                 />
               </td>
             </tr>
@@ -869,13 +873,47 @@ const saveChildFieldConfig = async (primaryField, childField, isNew) => {
     appStore.loading = false
   }
 }
+const isMobile = computed(() => vuetify.breakpoint.smAndDown)
 </script>
 
 <style lang="scss">
 #data-view-container .v-data-table__wrapper {
-  max-height: calc(100vh - 350px);
+  max-height: calc(100vh - 300px);
   min-height: 90px;
 }
+
+@media (max-width: 770px) {
+  #data-view-settings-table {
+    padding-bottom: 48px;
+    div.v-data-footer {
+      display: inline-flex;
+      width: 100%;
+      justify-content: center;
+      height: fit-content;
+
+      div.v-data-footer__select {
+        justify-content: center;
+      }
+
+      div.v-data-footer__pagination {
+
+      }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: calc(50% - 36px);
+
+
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
+    }
+  }
+}
+
 </style>
 
 <style lang="scss" scoped>

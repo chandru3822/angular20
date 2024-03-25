@@ -1,16 +1,16 @@
 <template>
-  <v-container>
+  <v-container id="data-views-settings">
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Data Views</v-toolbar-title>
+          <v-toolbar-title v-if="!isMobile" class="app-title">Data Views</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn v-if="is7oaksAdmin"
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newDataView = {}, getCompanyProcesses()]"
-              :hide-text-on-mobile="constants.IS_MOBILE"
+              :hide-text-on-mobile="isMobile"
               :text="!addNew ? 'Add New' : 'Cancel'"
               :prepend-icon="addNew ? 'close' : 'add'"
               >
@@ -55,6 +55,7 @@
           </a-btn>
         </v-card>
         <v-data-table
+            id="data-views-settings-table"
             :headers="headers"
             :items="dataViews"
             :fixed-header="true"
@@ -96,7 +97,7 @@
 <script setup>
   import {handleHidingGlobalLoader, getRequest, postRequest} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import { getCurrentInstance, ref, onMounted } from 'vue'
+  import {getCurrentInstance, ref, onMounted, computed} from 'vue'
 
   import { useUserStore } from '@/stores/UserStorePinia.js'
   import { useAppStore } from '@/stores/AppStorePinia.js'
@@ -108,6 +109,7 @@
   const userStore = useUserStore()
   const appStore = useAppStore()
   const router = useRouter()
+  const vuetify = vueInstance.$vuetify
 
   const addNew = ref(false)
   const saveError = ref(false)
@@ -198,4 +200,12 @@
       appStore.loading = false
     }
   }
+
+  const isMobile = computed(() => vuetify.breakpoint.smAndDown)
 </script>
+
+<style>
+#data-views-settings-table > div.v-data-table__wrapper {
+overflow-x: hidden;
+}
+</style>
