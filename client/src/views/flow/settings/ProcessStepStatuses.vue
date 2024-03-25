@@ -37,7 +37,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Process Step Status Types</v-toolbar-title>
+          <v-toolbar-title v-if="!vuetify.breakpoint.smAndDown" class="app-title">Process Step Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn
@@ -45,9 +45,10 @@
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newType = {}]"
-              :hide-text-on-mobile="constants.IS_MOBILE"
-              :prepend-icon="constants.IS_MOBILE ? 'add' : ''"
-              :text="addNew ? 'CANCEL' : 'ADD NEW'"
+              hide-text-on-mobile
+              :prepend-icon="vuetify.breakpoint.smAndDown ? addNew ? 'close' : 'add' : ''"
+              :text="addNew ? 'Cancel' : 'Add New'"
+
             />
           </v-toolbar-items>
         </v-toolbar>
@@ -69,7 +70,7 @@
               color="primary"
               :disabled="!newType.processStepStatusTypeId || !newType.processStepStatusType"
               @click="addNewType"
-              text="SAVE"
+              text="Save"
             />
           </v-card>
           <v-card class="square-card">
@@ -118,7 +119,7 @@
                     class="white--text mr-4"
                     :disabled="!item.processStepStatusType || !item.processStepStatusTypeId"
                     @click="saveType(item, false)"
-                    text="SAVE"
+                    text="Save"
                   />
                 </td>
               </template>
@@ -166,7 +167,9 @@
                       color="primary"
                       v-if="expanded.includes(item)"
                       @click="expanded = []"
-                      text="CANCEL"
+                      text="Cancel"
+                      hide-text-on-mobile
+                      :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
                     />
 
                     <a-btn
@@ -237,6 +240,7 @@
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
   const userStore = useUserStore()
+  const vuetify= vueInstance.$vuetify
 
   const search = ref('')
   const statusTypes = ref([])
