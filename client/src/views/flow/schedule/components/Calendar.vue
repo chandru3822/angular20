@@ -834,12 +834,16 @@ const isMobile = computed(() => {
               projectName: re.extendedProps.projectName,
               processStepName: re.extendedProps.processStepName,
               city: re.extendedProps.city,
+              projectId: re.extendedProps.projectId,
+              projectProcessStepId: re.extendedProps.projectProcessStepId,
               projectProcessStepEventId: re.extendedProps.projectProcessStepEventId,
               stateAbbreviation: re.extendedProps.stateAbbreviation,
               postalCode: re.extendedProps.postalCode,
               street1: re.extendedProps.street1,
               color: resource.extendedProps.color,
-              coordinates: [ re.extendedProps.longitude, re.extendedProps.latitude]
+              coordinates: [ re.extendedProps.longitude, re.extendedProps.latitude],
+              start: re.startStr,
+              end: re.endStr
             }
             mapResourceEvents.value.push(eventObj)
           })
@@ -1103,6 +1107,17 @@ const isMobile = computed(() => {
   position: relative;
   z-index: 0;
 //  this keeps the calendar from being in front of the filter dropdowns.
+}
+
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th > div > div > div > table > tbody > tr > th.fc-slot > div > a.fc-timeline-slot-cushion{
+  cursor: default !important;
+  color: var(--v-grey-darken1)
+}
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th > div > div{
+  ::-webkit-scrollbar {
+    height: 0 !important;  /* Remove scrollbar space */
+    background: transparent !important;  /* Optional: just make scrollbar invisible */
+  }
 }
 </style>
 

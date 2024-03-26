@@ -12,18 +12,20 @@ DECLARE
   v_value              text;
   v_commission_plan_id bigint;
   v_override_plan_id   bigint;
-  v_ppscfv_id          bigint;
+  v_ppscfv_fdc_id      bigint;
+  v_ppscfv_booking_id  bigint;
+  v_is_booking boolean;
 BEGIN
   if p_unique_behavior_code in ('COMMISSION_EARNED_M1_TRIGGER', 'COMMISSION_EARNED_M2_TRIGGER') then
 
     if p_project_id is not null then
-      select id
-      into v_commission_plan_id
+      select id,is_booking
+      into v_commission_plan_id,v_is_booking
       from brs.project_commission pc
       where pc.project_id = p_project_id;
 
       select v.id
-      into v_ppscfv_id
+      into v_ppscfv_fdc_id
       from flow.project_process_step pps
              inner join flow.project_process_step_custom_field_value v
                         on v.project_process_step_id = pps.id and v.custom_field_group_assignment_id = 1251
@@ -31,15 +33,32 @@ BEGIN
         and pps.process_step_id = 175
         and v.date_value is not null;
 
-      if v_commission_plan_id is null and v_ppscfv_id is not null then
+      if v_ppscfv_fdc_id is null then
+        select v.id
+        into v_ppscfv_booking_id
+        from flow.project_process_step pps
+               inner join flow.project_process_step_custom_field_value v
+                          on v.project_process_step_id = pps.id and v.custom_field_group_assignment_id in (11,25361)
+        where pps.project_id = p_project_id
+          and pps.process_step_id in (4,3617)
+          and v.date_value is not null;
+      end if;
+
+      if v_is_booking is true then
+        delete from brs.project_commission pc2
+        where pc2.project_id = p_project_id;
+        v_commission_plan_id = null;
+      end if;
+
+      if v_commission_plan_id is null and (v_ppscfv_fdc_id is not null or v_ppscfv_booking_id is not null) then
         perform from brs.insert_commissions_on_project(p_project_id);
       end if;
 
-      if v_ppscfv_id is not null then
+      if (v_ppscfv_fdc_id is not null or v_ppscfv_booking_id is not null) then
         if p_unique_behavior_code = 'COMMISSION_EARNED_M1_TRIGGER' then
           select *
           into v_value
-          from brs.get_commissions_earned(p_project_id, 'M1');
+          from brs.get_commissions_earned(p_project_id, 'M1',case when v_ppscfv_fdc_id is null and v_ppscfv_booking_id is not null then true else false end );
         else
           select *
           into v_value
@@ -57,7 +76,7 @@ BEGIN
       where po.project_id = p_project_id;
 
       select v.id
-      into v_ppscfv_id
+      into v_ppscfv_fdc_id
       from flow.project_process_step pps
              inner join flow.project_process_step_custom_field_value v
                         on v.project_process_step_id = pps.id and v.custom_field_group_assignment_id = 1251
@@ -65,11 +84,11 @@ BEGIN
         and pps.process_step_id = 175
         and v.date_value is not null;
 
-      if v_override_plan_id is null and v_ppscfv_id is not null then
+      if v_override_plan_id is null and v_ppscfv_fdc_id is not null then
         perform from brs.insert_commissions_on_project(p_project_id);
       end if;
 
-      if v_ppscfv_id is not null then
+      if v_ppscfv_fdc_id is not null then
         if p_unique_behavior_code = 'OVERRIDES_EARNED_M1_TRIGGER' then
           select *
           into v_value
@@ -85,13 +104,13 @@ BEGIN
 
     if p_project_id is not null then
 
-      select id
-      into v_commission_plan_id
+      select id,is_booking
+      into v_commission_plan_id,v_is_booking
       from brs.project_commission pc
       where pc.project_id = p_project_id;
 
       select v.id
-      into v_ppscfv_id
+      into v_ppscfv_fdc_id
       from flow.project_process_step pps
              inner join flow.project_process_step_custom_field_value v
                         on v.project_process_step_id = pps.id and v.custom_field_group_assignment_id = 1251
@@ -99,13 +118,30 @@ BEGIN
         and pps.process_step_id = 175
         and v.date_value is not null;
 
-      if (v_commission_plan_id is null) and v_ppscfv_id is not null then
+      if v_ppscfv_fdc_id is null then
+        select v.id
+        into v_ppscfv_booking_id
+        from flow.project_process_step pps
+               inner join flow.project_process_step_custom_field_value v
+                          on v.project_process_step_id = pps.id and v.custom_field_group_assignment_id in (11,25361)
+        where pps.project_id = p_project_id
+          and pps.process_step_id in (4,3617)
+          and v.date_value is not null;
+      end if;
+
+      if v_is_booking is true then
+        delete from brs.project_commission pc2
+        where pc2.project_id = p_project_id;
+        v_commission_plan_id = null;
+      end if;
+
+      if (v_commission_plan_id is null) and (v_ppscfv_fdc_id is not null or v_ppscfv_booking_id is not null) then
         perform from brs.insert_commissions_on_project(p_project_id);
       end if;
 
       select *
       into v_value
-      from brs.get_total_commissions_amount(p_project_id);
+      from brs.get_total_commissions_amount(p_project_id,case when v_ppscfv_fdc_id is null and v_ppscfv_booking_id is not null then true else false end );
     end if;
 
   elsif p_unique_behavior_code = 'TOTAL_OVERRIDES_TRIGGER' then
@@ -118,7 +154,7 @@ BEGIN
 
 
       select v.id
-      into v_ppscfv_id
+      into v_ppscfv_fdc_id
       from flow.project_process_step pps
              inner join flow.project_process_step_custom_field_value v
                         on v.project_process_step_id = pps.id and v.custom_field_group_assignment_id = 1251
@@ -126,7 +162,7 @@ BEGIN
         and pps.process_step_id = 175
         and v.date_value is not null;
 
-      if (v_override_plan_id is null) and v_ppscfv_id is not null then
+      if (v_override_plan_id is null) and v_ppscfv_fdc_id is not null then
         perform from brs.insert_commissions_on_project(p_project_id);
       end if;
       select *
