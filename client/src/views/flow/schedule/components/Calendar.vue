@@ -1104,6 +1104,11 @@ const isMobile = computed(() => {
   z-index: 0;
 //  this keeps the calendar from being in front of the filter dropdowns.
 }
+
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th > div > div > div > table > tbody > tr > th.fc-slot > div > a.fc-timeline-slot-cushion{
+  cursor: default !important;
+  color: var(--v-grey-darken1)
+}
 </style>
 
 <style lang="scss" scoped>
