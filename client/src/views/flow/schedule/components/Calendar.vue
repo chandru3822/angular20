@@ -841,7 +841,9 @@ const isMobile = computed(() => {
               postalCode: re.extendedProps.postalCode,
               street1: re.extendedProps.street1,
               color: resource.extendedProps.color,
-              coordinates: [ re.extendedProps.longitude, re.extendedProps.latitude]
+              coordinates: [ re.extendedProps.longitude, re.extendedProps.latitude],
+              start: re.startStr,
+              end: re.endStr
             }
             mapResourceEvents.value.push(eventObj)
           })
