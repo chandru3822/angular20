@@ -168,7 +168,6 @@ const map = ref({
   accessToken: constants.MAPBOX_ACCESS_TOKEN,
   style: constants.MAPBOX_STYLE
 })
-// mapboxOptions: {},
 const drivingDuration = ref(0)
 const drivingDistance = ref(0)
 const options = ref({
@@ -177,6 +176,7 @@ const options = ref({
 const asyncActions = ref()
 
 const selectAddress = ((suggestion, isFirst) => {
+  debugger
   if (isFirst) {
     address1.value = suggestion.label
     showAddress1List.value = false
@@ -217,6 +217,7 @@ const debounceSearchAddress = debounce(function (address, isFirst) {
   clearMarkerSelectionForOne(isFirst)
   searchAddress(address, isFirst)
 }, 500)
+
 const searchAddress = async(address, isFirst) => {
   if (isFirst) {
     if (address1.value.length >= 2) {
@@ -298,27 +299,7 @@ const resetDriveTime = () => {
   markerCount.value++
   suggestions.value = []
 }
-// const clearColors = () => {
-//   props.markers.forEach(m => {
-//     if (m.oldColor !== undefined) {
-//       m.color = m.oldColor
-//       m.selectedFirst = false
-//       m.selectedSecond = false
-//     }
-//   })
-//   props.mapResources.forEach(m => {
-//     if (m.oldColor !== undefined) {
-//       m.color = m.oldColor
-//       m.selectedFirst = false
-//       m.selectedSecond = false
-//     }
-//   })
-//   resetDriveTime();
-//   showAddress1List.value = false
-//   showAddress2List.value = false
-//   selectAddress1.value = false
-//   selectAddress2.value = false
-// }
+
 const selectAddressForDriveTime = (marker) => {
   if (selectAddress1.value) {
     address1.value = marker.street1 + ', ' + marker.city + ', ' + marker.stateAbbreviation + ' ' + marker.postalCode
@@ -389,7 +370,6 @@ const loadDriveTime = async() => {
 const getDirections = async(firstPair, secondPair) => {
   drivingDistance.value = 0
   drivingDuration.value = 0
-
   try {
     let params = {
       latLongPairs: firstPair + ';' + secondPair

@@ -1,5 +1,6 @@
 drop function if exists brs.get_commissions_earned(p_project_ids bigint, p_code text);
-CREATE OR REPLACE FUNCTION brs.get_commissions_earned(p_project_id bigint, p_code text)
+drop function if exists brs.get_commissions_earned(p_project_ids bigint, p_code text,p_from_booking boolean);
+CREATE OR REPLACE FUNCTION brs.get_commissions_earned(p_project_id bigint, p_code text,p_from_booking boolean default false)
   RETURNS NUMERIC AS
 $BODY$
 DECLARE
@@ -34,7 +35,7 @@ BEGIN
          primary_financier,
          desired_commission_amount,
          commission_strategy_id
-  from brs.get_commission_data(p_project_id)
+  from brs.get_commission_data(p_project_id,p_from_booking)
   into v_cancelled_date,
     v_interest_rate,
     v_loan_term,
@@ -64,7 +65,7 @@ BEGIN
     and pps.process_step_id = 175
     and ppscfv.date_value is not null;
 
-  if v_commission_strategy_id = 23610 and p_code = 'M1' and v_milestone_1 is not null then
+  if v_commission_strategy_id = 23610 and p_code = 'M1' and (v_milestone_1 is not null or p_from_booking is true) then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;
@@ -121,7 +122,7 @@ BEGIN
                                on cpsa.commission_plan_id = cp.id and cpsa.source_id = v_source_id
                                  and cpsa.milestone_id = 1
               WHERE p1.id = p_project_id
-                and v_milestone_1 is not null), 0)
+                and (v_milestone_1 is not null or p_from_booking is true)), 0)
     into v_total;
 
   elsif p_code = 'M2' then

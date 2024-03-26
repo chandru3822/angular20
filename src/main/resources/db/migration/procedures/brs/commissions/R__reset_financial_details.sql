@@ -5,17 +5,31 @@ declare
   x record;
 BEGIN
 
+  if p_project_id is not null then
+    perform
+           brs.insert_commissions_on_project(p_project_id);
+  else
+    select
+      brs.insert_commissions_on_project(p.project_id)
+    from brs.project_details p
+    where p.installation_agreement_signed_date is not null and p.final_design_complete_date is null;
+  end if;
+
   for x in
     select foo.project_id,
-           brs.get_commissions_earned(foo.project_id, 'M1') as commission_earned_m1,
+           brs.get_commissions_earned(foo.project_id, 'M1',case when foo.final_design_complete_date is null and foo.installation_agreement_signed_date is not null then
+                                                              true else false end) as commission_earned_m1,
            brs.get_overrides_earned(foo.project_id, 'M1')   as overrides_earned_m1,
            brs.get_commissions_earned(foo.project_id, 'M2') as commission_earned_m2,
            brs.get_overrides_earned(foo.project_id, 'M2')   as overrides_earned_m2,
-           brs.get_total_commissions_amount(foo.project_id) as total_commissions,
+           brs.get_total_commissions_amount(foo.project_id,case when foo.final_design_complete_date is null and foo.installation_agreement_signed_date is not null then
+                                                              true else false end) as total_commissions,
            brs.get_total_overrides_amount(foo.project_id)   as total_overrides
-    from (select pd.project_id
+    from (select pd.project_id,
+                pd.final_design_complete_date,
+                pd.installation_agreement_signed_date
           from brs.project_details pd
-          where pd.final_design_complete_date is not null
+          where (pd.final_design_complete_date is not null or pd.installation_agreement_signed_date is not null)
             and case when p_project_id is not null then  project_id = p_project_id
                 else 1=1 end
          ) as foo
