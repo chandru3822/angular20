@@ -353,7 +353,6 @@ const calendarStart = ref(null)
 const calendarView = ref(null)
 const calendarStartTime = ref(null)
 const calendarEndTime = ref(null)
-const countSelected = ref(0)
 const maxSelectionAllowed = ref(10)
 const countErrorMessage = ref('Maximum Selection Reached')
 //filters
@@ -479,11 +478,14 @@ const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
 })
 
+const countSelected = computed(() => {
+  return selectedOrgs.value?.length + selectedUsers.value?.length
+})
+
     onMounted (async () => {
       calendarApi.value = refs.eventCalendar.getApi()
       calendarStart.value = calendarApi.value.getDate()
       setCalendarStartAndEndTimes()
-      countSelected.value = selectedOrgs.value?.length + selectedUsers.value?.length
       await getSchedulingOrgs()
       await getSchedulingUsers()
       await fetchSchedulingOrgTypes()
@@ -730,7 +732,6 @@ const isMobile = computed(() => {
         }
       }
       const limiter = () => {
-        countSelected.value = selectedOrgs.value?.length + selectedUsers.value?.length
         orgs.value.forEach(o => {
           let match = selectedOrgs.value.find(so => so.id === o.id)
           o.disabled = !match && countSelected.value >= maxSelectionAllowed.value
