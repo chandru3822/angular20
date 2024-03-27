@@ -94,9 +94,9 @@ BEGIN
                                        c.phone,
                                        c.mobile) contact1)::jsonb as contact,
                          pst.project_status_type  as root_project_status_type,
-                         pd.closer_name
+                         case when c.company_id = 3 then
+                            (select pd.closer_name from brs.project_details pd where pd.project_id = p.id) end as closer_name
                   from flow.project p
-                         inner join brs.project_details pd on pd.project_id = p.id
                          inner join flow.company_project_status_type cpst
                                     on cpst.id = p.company_project_status_type_id
                          inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
@@ -134,7 +134,8 @@ BEGIN
                                        c.phone,
                                        c.mobile) contact1)::jsonb as contact,
                          pst.project_status_type  as root_project_status_type,
-                         pd.closer_name
+                         case when c.company_id = 3 then
+                                  (select pd.closer_name from brs.project_details pd where pd.project_id = p.id) end as closer_name
                   from flow.project p
                          inner join flow.company_project_status_type cpst
                                     on cpst.id = p.company_project_status_type_id
@@ -142,7 +143,6 @@ BEGIN
                          inner join flow.contact c on c.id = p.contact_id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
-                         inner join brs.project_details pd on pd.project_id = p.id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
                     and
@@ -175,20 +175,20 @@ BEGIN
                          pst.project_status_type  as root_project_status_type,
                          pd.closer_name
                   from flow.project p
-                         inner join brs.project_details pd on pd.project_id = p.id
                          inner join flow.company_project_status_type cpst
                                     on cpst.id = p.company_project_status_type_id
                          inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
                          inner join flow.contact c on c.id = p.contact_id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
+                         inner join brs.project_details pd on pd.project_id = p.id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
                     and
                     (
-                     ((trim(lower(translate(building_permit_number, E'/()_.,-:\n\r\t ', '')))) like '%' || v_clean_permit_term || '%') or
-                     ((trim(lower(translate(electrical_permit_number, E'/()_.,-:\n\r\t ', '')))) like '%' || v_clean_permit_term || '%') or
-                     ((trim(lower(translate(mpu_permit_number, E'/()_.,-:\n\r\t ', '')))) like '%' || v_clean_permit_term || '%')
+                     ((trim(lower(translate(pd.building_permit_number, E'/()_.,-:\n\r\t ', '')))) like '%' || v_clean_permit_term || '%') or
+                     ((trim(lower(translate(pd.electrical_permit_number, E'/()_.,-:\n\r\t ', '')))) like '%' || v_clean_permit_term || '%') or
+                     ((trim(lower(translate(pd.mpu_permit_number, E'/()_.,-:\n\r\t ', '')))) like '%' || v_clean_permit_term || '%')
                       )
                     and case
                           when p_company_project_status_type_id is not null then
@@ -247,7 +247,8 @@ BEGIN
                                     c.phone,
                                     c.mobile) contact1)::jsonb as contact,
                       pst.project_status_type  as root_project_status_type,
-                      pd.closer_name
+                      case when c.company_id = 3 then
+                               (select pd.closer_name from brs.project_details pd where pd.project_id = p.id) end as closer_name
                from flow.project p
                       inner join flow.company_project_status_type cpst
                                  on cpst.id = p.company_project_status_type_id
@@ -255,7 +256,6 @@ BEGIN
                       inner join flow.contact c on c.id = p.contact_id
                       left join flow.company_state cs on cs.id = p.company_state_id
                       left join flow.state s on s.id = cs.state_id
-                 inner join brs.project_details pd on pd.project_id = p.id
                where c.company_id = any (v_company_ids)
                  and p.archived is not true
                  and case
