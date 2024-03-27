@@ -2,7 +2,7 @@
   <div id="calendar-container">
 
     <div id="calendar-filter-container" class="pa-6 pt-4">
-<v-col cols="11">
+<v-col cols="11" class="pa-0">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0 d-flex align-baseline">
         <v-col id="states-filter-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
@@ -48,6 +48,7 @@
         </v-col>
         <v-col id="org-resource-types-filter-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete v-model="selectedOrgTypes"
+                          allow-overflow
                     :items="sortedOrgTypes"
                     label="Organization Resource Types"
                     multiple
@@ -234,7 +235,8 @@
                 <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
               </AlbatrossButton>
                 </template>
-                Pin on map
+                <span v-if="isResourceOnMap(resource)">Remove pin from map</span>
+                <span v-else>Pin on map</span>
               </v-tooltip>
               <v-tooltip bottom>
                 <template v-slot:activator="{on}">
@@ -353,7 +355,6 @@ const calendarStart = ref(null)
 const calendarView = ref(null)
 const calendarStartTime = ref(null)
 const calendarEndTime = ref(null)
-const countSelected = ref(0)
 const maxSelectionAllowed = ref(10)
 const countErrorMessage = ref('Maximum Selection Reached')
 //filters
@@ -406,13 +407,13 @@ const selectAllStates = computed( () => {
   return props.states.length === selectedStates.value.length
 })
 const selectSomeStates = computed(() => {
-  return selectedStates.value.length > 0 && !selectAllStates
+  return selectedStates.value.length > 0 && !selectAllStates.value
 })
 const iconStates = computed(() => {
   if (props.states.length === selectedStates.value.length) {
     return 'check_box'
   }
-  if (selectSomeStates) {
+  if (selectSomeStates.value) {
     return 'indeterminate_check_box'
   }
   return 'check_box_outline_blank'
@@ -479,11 +480,14 @@ const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
 })
 
+const countSelected = computed(() => {
+  return selectedOrgs.value?.length + selectedUsers.value?.length
+})
+
     onMounted (async () => {
       calendarApi.value = refs.eventCalendar.getApi()
       calendarStart.value = calendarApi.value.getDate()
       setCalendarStartAndEndTimes()
-      countSelected.value = selectedOrgs.value?.length + selectedUsers.value?.length
       await getSchedulingOrgs()
       await getSchedulingUsers()
       await fetchSchedulingOrgTypes()
@@ -594,10 +598,10 @@ const isMobile = computed(() => {
       //filter functions
       const toggleSelectAllStates =  async() => {
         await nextTick(() => {
-          if (selectAllStates) {
+          if (selectAllStates.value) {
             selectedStates.value = []
           } else {
-            selectedStates.value = cloneDeep(states.value)
+            selectedStates.value = cloneDeep(props.states)
           }
         })
       }
@@ -612,7 +616,7 @@ const isMobile = computed(() => {
       }
       const toggleSelectAllPositions =  () => {
         nextTick(() => {
-          if (selectAllPositions) {
+          if (selectAllPositions.value) {
             selectedPositions.value = []
           } else {
             selectedPositions.value = cloneDeep(positions.value)
@@ -730,7 +734,6 @@ const isMobile = computed(() => {
         }
       }
       const limiter = () => {
-        countSelected.value = selectedOrgs.value?.length + selectedUsers.value?.length
         orgs.value.forEach(o => {
           let match = selectedOrgs.value.find(so => so.id === o.id)
           o.disabled = !match && countSelected.value >= maxSelectionAllowed.value
