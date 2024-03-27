@@ -357,7 +357,7 @@ public class CloserDashboardService {
 
   public String funnelDrilldownStandard(FunnelRequest funnelRequest) {
     String sqlQuery =
-        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, false, :currentUserId::bigint)";
+        "select brs.rpt_closer_funnel_standard_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], :isCheckedInColumn::boolean, array[ :appointmentTypeIds ]::bigint[], array[ :leadSourceIds ]::bigint[], :hideInactive::boolean)";
 
     return runFunnelDrilldownQuery(
         sqlQuery,
@@ -365,23 +365,25 @@ public class CloserDashboardService {
         funnelRequest.getEnd(),
         funnelRequest.getFunnelId(),
         funnelRequest.getUsers(),
-        funnelRequest.getOrgs(),
-        funnelRequest.getIsCheckedInColumn());
+        funnelRequest.getIsCheckedInColumn(),
+        funnelRequest.getAppointmentTypeIds(),
+        funnelRequest.getLeadSourceIds(),
+        funnelRequest.getHideInactive());
   }
 
-  public String funnelDrilldownApptDateCohort(FunnelRequest funnelRequest) {
-    String sqlQuery =
-        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, true, :currentUserId::bigint)";
-
-    return runFunnelDrilldownQuery(
-        sqlQuery,
-        funnelRequest.getStart(),
-        funnelRequest.getEnd(),
-        funnelRequest.getFunnelId(),
-        funnelRequest.getUsers(),
-        funnelRequest.getOrgs(),
-        funnelRequest.getIsCheckedInColumn());
-  }
+//  public String funnelDrilldownApptDateCohort(FunnelRequest funnelRequest) {
+//    String sqlQuery =
+//        "select brs.rpt_closer_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::bigint, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCheckedInColumn::boolean, true, :currentUserId::bigint)";
+//
+//    return runFunnelDrilldownQuery(
+//        sqlQuery,
+//        funnelRequest.getStart(),
+//        funnelRequest.getEnd(),
+//        funnelRequest.getFunnelId(),
+//        funnelRequest.getUsers(),
+//        funnelRequest.getOrgs(),
+//        funnelRequest.getIsCheckedInColumn());
+//  }
 
   private String runFunnelDrilldownQuery(
       String sqlQuery,
@@ -389,16 +391,20 @@ public class CloserDashboardService {
       String end,
       int funnelId,
       List<Long> userIds,
-      List<Long> orgIds,
-      Boolean isCheckedInColumn) {
+      Boolean isCheckedInColumn,
+      List<Long> appointmentTypeIds,
+      List<Long> leadSourceIds,
+      Boolean hideInactive) {
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("startDate", start);
     parameters.addValue("endDate", end);
     parameters.addValue("funnelId", funnelId);
     parameters.addValue("userIds", userIds);
-    parameters.addValue("orgIds", orgIds);
     parameters.addValue("isCheckedInColumn", isCheckedInColumn);
-    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
+    parameters.addValue("appointmentTypeIds", appointmentTypeIds);
+    parameters.addValue("leadSourceIds", leadSourceIds);
+    parameters.addValue("hideInactive", hideInactive);
+    System.out.println(parameters);
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }

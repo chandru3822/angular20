@@ -30,7 +30,7 @@ BEGIN
       from (select concat(c.first_name,' ',c.last_name)                    customer_name,
                    c.id,
                    lov.name as source_name,
-                   concat(u2.first_name,' ',u2.last_name) as contact_owner,
+                   concat(u2.first_name,' ',u2.last_name) as owner_name,
                    s.state,
                    c.date_created
             from flow.contact c
