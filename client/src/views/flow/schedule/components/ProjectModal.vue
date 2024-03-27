@@ -262,7 +262,7 @@ const cancelProjectProcessStepEvent = async() => {
       </v-card-actions>
     </div>
 <!-- ------------------- -->
-    <div v-else-if="project.start || project.end || project.resourceName">
+    <div v-else-if="project.start || project.end">
       <v-card-text class="py-0 body-large">
         Scheduled for
         <span v-if="eventIsSameDay()">{{project.start | formatDate('timestamp','MMMM DD YYYY, h:mm a')}} - {{project.end | formatDate('timestamp','h:mm a')}}</span>
