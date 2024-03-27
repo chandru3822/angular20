@@ -140,10 +140,10 @@ public class CloserDashboardController {
 //    return closerDashboardService.funnelApptDateCohort(funnelRequest);
 //  }
 
-  @PostMapping(value = "/funnelDrilldown/apptDateCohort")
-  public String funnelDrilldownApptDateCohort(@RequestBody FunnelRequest funnelRequest) {
-    return closerDashboardService.funnelDrilldownApptDateCohort(funnelRequest);
-  }
+//  @PostMapping(value = "/funnelDrilldown/apptDateCohort")
+//  public String funnelDrilldownApptDateCohort(@RequestBody FunnelRequest funnelRequest) {
+//    return closerDashboardService.funnelDrilldownApptDateCohort(funnelRequest);
+//  }
 
   @GetMapping(value = "/dropdownValues")
   public List<CloserDashboardDateRange> getDropdownValues(@RequestParam java.time.LocalDate today) {
