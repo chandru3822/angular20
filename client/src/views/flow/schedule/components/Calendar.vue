@@ -2,7 +2,7 @@
   <div id="calendar-container">
 
     <div id="calendar-filter-container" class="pa-6 pt-4">
-<v-col cols="11">
+<v-col cols="11" class="pa-0">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0 d-flex align-baseline">
         <v-col id="states-filter-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
@@ -235,7 +235,8 @@
                 <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
               </AlbatrossButton>
                 </template>
-                Pin on map
+                <span v-if="isResourceOnMap(resource)">Remove pin from map</span>
+                <span v-else>Pin on map</span>
               </v-tooltip>
               <v-tooltip bottom>
                 <template v-slot:activator="{on}">
