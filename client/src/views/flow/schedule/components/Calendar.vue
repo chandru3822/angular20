@@ -48,6 +48,7 @@
         </v-col>
         <v-col id="org-resource-types-filter-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete v-model="selectedOrgTypes"
+                          allow-overflow
                     :items="sortedOrgTypes"
                     label="Organization Resource Types"
                     multiple
@@ -405,13 +406,13 @@ const selectAllStates = computed( () => {
   return props.states.length === selectedStates.value.length
 })
 const selectSomeStates = computed(() => {
-  return selectedStates.value.length > 0 && !selectAllStates
+  return selectedStates.value.length > 0 && !selectAllStates.value
 })
 const iconStates = computed(() => {
   if (props.states.length === selectedStates.value.length) {
     return 'check_box'
   }
-  if (selectSomeStates) {
+  if (selectSomeStates.value) {
     return 'indeterminate_check_box'
   }
   return 'check_box_outline_blank'
@@ -596,10 +597,10 @@ const countSelected = computed(() => {
       //filter functions
       const toggleSelectAllStates =  async() => {
         await nextTick(() => {
-          if (selectAllStates) {
+          if (selectAllStates.value) {
             selectedStates.value = []
           } else {
-            selectedStates.value = cloneDeep(states.value)
+            selectedStates.value = cloneDeep(props.states)
           }
         })
       }
@@ -614,7 +615,7 @@ const countSelected = computed(() => {
       }
       const toggleSelectAllPositions =  () => {
         nextTick(() => {
-          if (selectAllPositions) {
+          if (selectAllPositions.value) {
             selectedPositions.value = []
           } else {
             selectedPositions.value = cloneDeep(positions.value)
