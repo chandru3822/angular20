@@ -152,6 +152,10 @@ public class GoodleapService {
     jsonHeaders.setBasicAuth(apiKey);
     jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
 
+    if (pd.getCloserEmail() == null) {
+      throw new RuntimeException("Unable to find Closer details");
+    }
+
     String closerPhoneNumber = "";
     if (pd.getCloserPhone() != null) {
       closerPhoneNumber = pd.getCloserPhone().replaceAll("[^\\d]+", "");
@@ -188,9 +192,9 @@ public class GoodleapService {
     projectDetails.put("enrollments", enrollments);
 
     JSONObject closerDetails = new JSONObject();
-    closerDetails.put("firstName", s(pd.getCloserFirstName()));
-    closerDetails.put("lastName", s(pd.getCloserLastName()));
-    closerDetails.put("email", s(pd.getCloserEmail()));
+    closerDetails.put("firstName", pd.getCloserFirstName());
+    closerDetails.put("lastName", pd.getCloserLastName());
+    closerDetails.put("email", pd.getCloserEmail());
     closerDetails.put("phone", closerPhoneNumber);
 
     projectDetails.put("submittingUser", closerDetails);
@@ -207,7 +211,7 @@ public class GoodleapService {
       JSONObject data = new JSONObject(response.getBody());
       return data.getString("link");
     } catch (Exception e) {
-      throw new RuntimeException("Unable to generate loan stipulations for project ID: " + pd.getProjectId());
+      throw new RuntimeException(e.getMessage());
     }
   }
 
