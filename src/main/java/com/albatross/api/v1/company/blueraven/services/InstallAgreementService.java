@@ -450,42 +450,12 @@ public class InstallAgreementService {
               "Unable to generate GoodLeap application due to existing Sunlight application.");
           }
         }
-        String bothStreets = "";
-        if (pd.getMailingStreet1() != null) {
-          bothStreets += pd.getMailingStreet1();
-        }
-        if (pd.getMailingStreet2() != null) {
-          bothStreets += " " + pd.getMailingStreet2();
-        }
-
-        bothStreets = bothStreets.trim();
-        String phoneNumber = "";
-        if (pd.getPhone() != null) {
-          phoneNumber = pd.getPhone().replaceAll("[^\\d]+", "");
-          if (phoneNumber.length() > 10 && phoneNumber.charAt(0) == '1') {
-            phoneNumber = phoneNumber.substring(1);
-          }
-        }
 
         try {
-          String financeOption = null != pd.getFinancialOption() ? pd.getFinancialOption() : getFinanceOption(pd.getLoanType(), pd.getLoanTerm(), pd.getInterestRate(), pd.getProposalLogHistoryId());
-          URIBuilder b = new URIBuilder(goodleapNewLoanUrl + financeOption + ".html");
-          b.addParameter("fname", s(pd.getCustomerFirstName()));
-          b.addParameter("lname", s(pd.getCustomerLastName()));
-          b.addParameter("street", bothStreets);
-          b.addParameter("city", s(pd.getCity()));
-          b.addParameter("state", s(pd.getMailingState()));
-          b.addParameter("zip", s(pd.getPostalCode()));
-          b.addParameter("email", s(pd.getCustomerEmail()));
-          b.addParameter("phone", phoneNumber);
-          b.addParameter("srfn", s(pd.getCloserFirstName()));
-          b.addParameter("srln", s(pd.getCloserLastName()));
-          b.addParameter("sre", s(pd.getCloserEmail()));
-          b.addParameter("cost", s(pd.getLoanAmount()));
-          b.addParameter("refnum", s(pd.getProjectId()));
-          return b.build().toString().replaceAll("\\+", "%20");
-        } catch (URISyntaxException e) {
+          goodleapNewLoanUrl = goodleapService.generateApplication(pd);
+        } catch (Exception e) {
           log.error("IARQ: uri error={}", e.getMessage());
+          return goodleapNewLoanUrl;
         }
       }
       sunlightService.setCreditLastCheckedBy(projectId, "GoodLeap");
