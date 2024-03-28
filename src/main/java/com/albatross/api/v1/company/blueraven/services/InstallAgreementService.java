@@ -454,7 +454,7 @@ public class InstallAgreementService {
         try {
           goodleapNewLoanUrl = goodleapService.generateApplication(pd);
         } catch (Exception e) {
-          log.error("IARQ: uri error={}", e.getMessage());
+          log.error("IARQ: Error generating GoodLeap loan application for project ID " + pd.getProjectId() + " error={}", e.getMessage());
           return goodleapNewLoanUrl;
         }
       }
