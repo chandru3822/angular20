@@ -443,8 +443,8 @@ const onMapLoad = async(event) => {
 
 #map-btns {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 16px;
+  left: 0px;
 }
 
 .drive-time-buttons {
