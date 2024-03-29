@@ -344,14 +344,24 @@ const calendarOptions = ref({
     }
   },
   headerToolbar:{
-    left: vuetify.breakpoint.mdAndUp ? 'prev,customToday,next': 'prev,next',
+    left: vuetify.breakpoint.mdAndUp ? 'prev,next': 'prev,next',
     center: 'title',
     right: vuetify.breakpoint.mdAndUp ? 'resourceTimelineDay,resourceTimelineWeek': ''
   },
-  titleFormat:{ month: 'long',
-    year: 'numeric',
-    day: 'numeric',
-    weekday: 'long'
+  views:{
+    resourceTimelineDay:{
+      titleFormat:{ month: 'long',
+        year: 'numeric',
+        day: 'numeric',
+        weekday: 'long'
+      }
+    },
+    resourceTimelineWeek:{
+      titleFormat:{ month: 'short',
+        year: 'numeric',
+        day: 'numeric'
+      },
+    }
   },
   height: '100%',
   timeZone: store.state.schedule.timezone.value || {},
