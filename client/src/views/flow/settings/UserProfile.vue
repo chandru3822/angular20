@@ -113,10 +113,10 @@
         </v-col>
       </v-row>
     </v-form>
-    <v-divider class="mt-3 mb-3" v-if="smsTeams && smsTeams.length > 0"></v-divider>
+    <v-divider class="mt-3 mb-3"></v-divider>
     <v-row>
       <v-col cols="12" md="6">
-        <h3 class="title-medium">Preferences</h3>
+        <h3 class="title-medium pb-2">Preferences</h3>
         <v-card flat color="transparent">
           <v-autocomplete v-if="!userIsAlbatross && showOnUserProfile('Default Home Page')"
                           v-model="user.homePageCompanyFeatureId"
