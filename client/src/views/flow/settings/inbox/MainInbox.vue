@@ -4,6 +4,7 @@
     :header-hidden="true"
     :right-hidden="!$route.params.projectId && !$route.params.userId"
     :left-hidden="true"
+    :half-n-half="true"
     :auto-overflow-left="true"
     :show-right-collapse-btn="false"
     @closeRight="$router.push({path: `/inbox`})"
