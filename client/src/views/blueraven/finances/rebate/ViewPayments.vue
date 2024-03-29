@@ -80,7 +80,7 @@
               {{ it.projectName ? it.projectName : '' }}</a></td>
             <td class="text-left" v-else>{{ it.projectName ? it.projectName : '' }}</td>
             <td class="text-left">
-              <router-link :to="`/project/${it.projectId}/status`">{{ it.projectId }}</router-link>
+              <router-link :to="`/project/${it.projectId}/${projectPath}`">{{ it.projectId }}</router-link>
             </td>
             <td class="text-left">{{ it.substantialCompletionDate | formatDate('date') }}</td>
             <td class="text-left">{{ it.financier ? it.financier : '' }}</td>
@@ -186,7 +186,7 @@
 </template>
 
 <script>
-import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getProjectPath} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {AppMutations} from '@/stores/AppStore'
 import {saveAs} from 'file-saver'
@@ -263,7 +263,8 @@ export default {
       newPayDialog: false,
       passwordInput: '',
       searchQuery: '',
-      filteredPayments: []
+      filteredPayments: [],
+      projectPath: getProjectPath(this).pathSuffix,
     }
   },
   computed: {

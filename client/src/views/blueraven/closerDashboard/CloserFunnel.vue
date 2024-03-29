@@ -650,7 +650,7 @@
                   <td class="customer-name">{{ item.customer_name || '' }}</td>
                   <td>
                     <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')"
-                                 :to="`/project/${item.project_id}/status`">
+                                 :to="`/project/${item.project_id}/${defaultProjectPage}`">
                       {{ item.project_id }}
                     </router-link>
                     <div v-else>{{ item.project_id || '' }}</div>
@@ -776,7 +776,7 @@ import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
 import moment from 'moment'
 import constants from '@/helpers/constants'
-import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getProjectPath} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
 import { saveAs } from 'file-saver'
@@ -797,6 +797,7 @@ export default {
     return {
       snackbar: {},
       constants,
+      defaultProjectPage: '',
       funnelDrilldownDialog: false,
       currentUserId: null,
       currentUserOrgId: null,
@@ -2152,6 +2153,7 @@ export default {
     /* FUNNEL-RELATED CODE END */
   },
   async created() {
+    this.defaultProjectPage = getProjectPath(this).pathSuffix
     this.currentUserId = this.$store.state.user.details.id
 
     if (this.$store.state.user.details.userPositions?.length > 0) {

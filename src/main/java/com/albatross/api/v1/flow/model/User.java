@@ -53,7 +53,9 @@ public class User {
       companyAbbreviation,
       position,
       homePagePath,
-      title; // title used for scheduling tool resource name
+      title, // title used for scheduling tool resource name
+      defaultProjectPage;
+
   private Long companyUserStatusId, userStatusTypeId, notificationTypeId;
   private List<Company> companies;
   private List<FeatureAccessControl> featureAccess;
