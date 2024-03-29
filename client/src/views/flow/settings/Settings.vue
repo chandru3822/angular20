@@ -80,7 +80,7 @@ export default {
         show: true
       }, {
         path: '/settings/userProfile',
-        title: 'User Profile',
+        title: 'Account',
         show: true
       }, {
         header: 'Company',

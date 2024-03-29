@@ -8,7 +8,7 @@
         </div>
         <div class="project-subtitle">
           Project ID:
-          <router-link :to="`/project/${project.id}/status`">{{ project.id }}</router-link>
+          <router-link :to="`/project/${project.id}/${projectPath}`">{{ project.id }}</router-link>
           <br/>
           Address: {{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}
           <br/>
@@ -248,7 +248,14 @@
 
 <script>
 
-import {formatPhoneNumber, getRequest, handleHidingGlobalLoader, logError, postRequest} from '@/helpers/helpers'
+import {
+  formatPhoneNumber,
+  getProjectPath,
+  getRequest,
+  handleHidingGlobalLoader,
+  logError,
+  postRequest
+} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
 import DatetimePickerInput from '@/components/DatetimePickerInput'
@@ -295,13 +302,15 @@ export default {
       requestSuccessful: false,
       projectId: this.$route.params.projectId,
       timezone: this.$store.state.user.details.timezone?.value,
-      formatPhoneNumber
+      formatPhoneNumber,
+      projectPath: '',
     }
   },
   async created() {
     this.getProposalProject()
     this.getCompletedProposalDesigns()
     await this.getActiveDesign()
+    this.projectPath = getProjectPath(this).pathSuffix
   },
   computed: {
     canEdit() {

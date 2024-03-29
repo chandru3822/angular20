@@ -22,7 +22,7 @@
 </template>
 <script>
 
-import {getRequestWithParams, logError} from '@/helpers/helpers'
+import {getRequestWithParams, logError, getProjectPath } from '@/helpers/helpers'
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 import {ProjectMutations} from "@/stores/ProjectStore";
 
@@ -95,8 +95,15 @@ export default {
           tabName: 'Current Work Queues',
           uniqueIdentifier: 'tab_work_queues'
         })
-        this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
+        const projectPath = getProjectPath(this)
+        if (projectPath && this.tabs?.length > 0) {
+            const someFilters = data.filter((d) => d.uniqueIdentifier === projectPath.tabName)
+            this.selectedTab = someFilters.length > 0 ? someFilters[0] : {}
+        } else {
+          this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
+        }
         this.tabChangeCallback(this.selectedTab)
+
         // use this line to preselect the docs tab for testing purposes
         // this.selectedTab = this.tabs?.length > 0 ? data[this.tabs?.length - 1] : {}
       } catch (e) {

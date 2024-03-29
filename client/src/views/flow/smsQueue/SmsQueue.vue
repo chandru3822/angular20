@@ -59,7 +59,7 @@
             {{ item.objectTypeId === 1 ? 'Project' : 'User'}}
           </td>
           <td class="text-left sent-to-column">
-            <router-link v-if="item.projectId" text :to="`/project/${item.projectId}/status`">
+            <router-link v-if="item.projectId" text :to="`/project/${item.projectId}/${defaultProjectPage}`">
               {{ item.projectName }} - {{ item.projectStatusType}}
             </router-link>
             <router-link v-else text :to="`/user/${item.sentToUserId}/details`">
@@ -97,7 +97,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar, postRequest, putRequest} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar, postRequest, putRequest, getProjectPath} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
@@ -106,6 +106,7 @@ export default {
     return {
       snackbar: {},
       constants,
+      defaultProjectPage: getProjectPath(this).pathSuffix,
       model: {},
       expanded: [],
       queue: [],

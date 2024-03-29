@@ -13,7 +13,7 @@
           <a v-if="!isSidebarCollapsed && messageProperties.projectName"
              v-bind="attrs" v-on="on"
              class="d-inline-block clickable conversation-name-link"
-             :href="`/project/${projectId}/status`">
+             :href="`/project/${projectId}/${defaultProjectPage}`">
             {{ messageProperties.projectName }}
             <v-chip class="customer-chip" style="margin-left: 4px;" small>
               <span >Customer</span>
@@ -176,7 +176,7 @@ import Messaging from '@/views/flow/components/Messaging'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import { ProjectMutations } from '@/stores/ProjectStore'
 import { AppMutations } from '@/stores/AppStore'
-import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
+import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, getProjectPath} from '@/helpers/helpers'
 import TeamAssignmentChips from '@/views/flow/settings/inbox/TeamAssignmentChips'
 import OwnershipHistoryDrilldown from '@/views/flow/settings/inbox/OwnershipHistoryDrilldown'
 import AddTeamDropdown from '@/views/flow/settings/inbox/AddTeamDropdown'
@@ -264,6 +264,7 @@ export default {
       toggleFocusedXs: 0,
       toggleTimelineView: this.$store.state.project.notesActivityView,
       hideEmptyFolderStatus: false,
+      defaultProjectPage: getProjectPath(this).pathSuffix
     }
   },
   created() {
