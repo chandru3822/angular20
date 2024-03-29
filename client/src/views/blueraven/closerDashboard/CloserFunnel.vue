@@ -669,7 +669,7 @@
                   <td>{{ item.status_type || '' }}</td>
                   <td class="customer-name">{{ item.customer_name || '' }}</td>
                   <td>
-                    <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')"
+                    <router-link text v-if="item.project_id && userStore.userHasFeature('PROJECTS')"
                                  :to="`/project/${item.project_id}/${defaultProjectPage}`">
                       {{ item.project_id }}
                     </router-link>
@@ -829,6 +829,7 @@ const currentUserOrgId = ref(null)
 const dropdownValuesLoading = ref(true)
 const isCloser = ref(false)
 const isCloserMgr = ref(false)
+const isCloserDistrictMgr = ref(false)
 const selectedFunnel = ref({})
 const isCloserRegional = ref(false)
 const headers = ref([

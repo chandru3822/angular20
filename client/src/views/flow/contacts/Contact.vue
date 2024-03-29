@@ -229,7 +229,7 @@
               <div>
                 <v-card flat v-for="p in contact.projects"
                         class="project-button albatross-body-1"
-                        :to="`/project/${p.id}/${projectPath}`">
+                        :to="`/project/${p.id}/${defaultProjectPage}`">
                   <div class="body-large" >{{ p.projectName }} </div>
                   <div class="body-small" :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
                 </v-card>
@@ -923,7 +923,7 @@ const convertToCustomer = async() => {
 
     // router.push({name: 'projectDetails', params: {projectId: data.id}, query: { checkAddress: true }})
     // ^^ i cant figure out why but doing the routing by name, param, query doesn't load the proper modal on the project screen when needed but it work by hard-coded path
-    let path = data.companyStateId ? `/project/${data.id}/${defaultProjectPage}` : `/project/${data.id}/${defaultProjectPage}?checkAddress=true`
+    let path = data.companyStateId ? `/project/${data.id}/${defaultProjectPage.value}` : `/project/${data.id}/${defaultProjectPage.value}?checkAddress=true`
     router.push(path)
     handleHidingGlobalLoader( status)
   } catch (e) {

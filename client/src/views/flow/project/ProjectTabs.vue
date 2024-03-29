@@ -110,7 +110,7 @@ const getProjectTabs = async () => {
       tabName: 'Current Work Queues',
       uniqueIdentifier: 'tab_work_queues'
     })
-    const projectPath = getProjectPath().pathSuffix
+    const projectPath = getProjectPath()
     if (projectPath && tabs.value?.length > 0) {
       const someFilters = data.filter((d) => d.uniqueIdentifier === projectPath.tabName)
       selectedTab.value = someFilters.length > 0 ? someFilters[0] : {}

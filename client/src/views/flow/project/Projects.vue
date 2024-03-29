@@ -145,8 +145,8 @@ const isMobile = computed(() => {
 })
 
 const goToRoute = (project) => {
-  const defaultProjectPage = ref(getProjectPath().pathSuffix)
-  router.push({path: `/project/${project.id}/${defaultProjectPage}`})
+  const defaultProjectPage = getProjectPath().pathSuffix
+  router.push({path:`/project/${project.id}/${defaultProjectPage}`})
 }
 const getProjects = async() => {
   const {page, itemsPerPage} = options.value

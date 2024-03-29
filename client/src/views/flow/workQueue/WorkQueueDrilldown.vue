@@ -132,9 +132,9 @@
                   {{ item['Owner'] }}
                 </router-link>
                 <a-btn
-                    variant="outlined"
                     @click="assignToUser(item)"
-                    variant="text"
+                    variant="outlined"
+                    border
                     v-else-if="userCanOwnProcessStep(item)"
                     class="text-capitalize primary--text"
                     color="unset"
@@ -392,7 +392,7 @@ const exportCsv = async() => {
     appStore.loading = true
     const {data, status} = await getRequestWithParams(`/smartlistv1/${smartlistId.value}/csv`, {
       params: {
-        timezone: timezone
+        timezone: timezone.value
       }
     })
     let blob = new Blob([data], {
@@ -424,7 +424,7 @@ const getWorkDetails = async() => {
         smartlistId: smartlistId.value,
         userPositionId: userPositionId.value,
         unassigned: unassigned.value,
-        timezone: timezone
+        timezone: timezone.value
         // page: page - 1,
         // size: itemsPerPage
       }

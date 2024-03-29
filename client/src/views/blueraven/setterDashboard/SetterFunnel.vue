@@ -533,6 +533,8 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 
+const userOfficeId = ref(null)
+const userOffice = ref(null)
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const setterPipelineLoading = ref(false)
 const repsLoading = ref(true)

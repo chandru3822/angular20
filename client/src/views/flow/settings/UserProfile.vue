@@ -85,19 +85,9 @@
                         @change="setFieldsDirty"
                         label="Phone">
           </a-text-field>
-          <v-select attach v-model="user.notificationTypeId"
-                    :items="userNotificationTypes"
-                    label="Notification"
-                    v-if="showOnUserProfile('Notification')"
-                    item-text="userNotificationType"
-                    item-value="id"
-                    @change="setFieldsDirty"
-                    autocomplete="off">
-          </v-select>
           <a-text-field v-model="user.newPassword"
                         v-if="!userIsMasquerading && showOnUserProfile('Password')"
                         placeholder="Enter a new password"
-                        required
                         type="password"
                         autocomplete="new-password"
                         :rules="[passwordRule]"
@@ -107,13 +97,21 @@
           <a-text-field v-model="user.newPasswordConfirm"
                         v-if="!userIsMasquerading && showOnUserProfile('Password')"
                         placeholder="Verify password"
-                        required
+                        :required="user.newPassword?.length > 0"
                         type="password"
                         autocomplete="new-password"
                         :rules="[passwordRule]"
                         @change="setFieldsDirty"
                         label="Confirm Password">
           </a-text-field>
+        </v-col>
+      </v-row>
+    </v-form>
+    <v-divider class="mt-3 mb-3" v-if="smsTeams && smsTeams.length > 0"></v-divider>
+    <v-row v-if="smsTeams && smsTeams.length > 0">
+      <v-col cols="12" md="6">
+        <h3 class="title-medium">Preferences</h3>
+        <v-card flat color="transparent">
           <v-autocomplete v-if="!userIsAlbatross && showOnUserProfile('Default Home Page')"
                           v-model="user.homePageCompanyFeatureId"
                           :items="homePages"
@@ -126,9 +124,31 @@
                           @change="setFieldsDirty"
                           attach
           ></v-autocomplete>
-        </v-col>
-      </v-row>
-    </v-form>
+          <v-autocomplete v-if="!userIsAlbatross && showOnUserProfile('Default Project Page')"
+                          v-model="user.defaultProjectPage"
+                          :items="projectPages"
+                          label="Default Project Page"
+                          clearable
+                          item-text="tabName"
+                          item-value="uniqueIdentifier"
+                          autocomplete="off"
+                          type="search"
+                          @change="setFieldsDirty"
+                          attach
+          ></v-autocomplete>
+          <v-select attach
+                    v-model="user.notificationTypeId"
+                    :items="userNotificationTypes"
+                    label="Notification"
+                    v-if="showOnUserProfile('Notification')"
+                    item-text="userNotificationType"
+                    item-value="id"
+                    @change="setFieldsDirty"
+                    autocomplete="off">
+          </v-select>
+        </v-card>
+      </v-col>
+    </v-row>
     <v-divider class="mt-3 mb-3" v-if="smsTeams && smsTeams.length > 0"></v-divider>
     <v-row v-if="smsTeams && smsTeams.length > 0">
       <v-col cols="12" md="6">
@@ -250,6 +270,7 @@ const dirtyCfvs = ref([])
 const timeValue = ref(moment.utc().format('YYYY-MM-DDTHH:mm:ssZ'))
 const user = ref({})
 const homePages = ref([])
+const projectPages = ref([])
 const userIsAlbatross = ref(false)
 const userIsMasquerading = ref(userStore.details?.masqueradingUserId != null)
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
@@ -298,6 +319,7 @@ onMounted(async () => {
     await getAllUserProfileDefaultFields()
     await getUserProfileCustomFields()
     await getHomePages()
+    await getProjectPages()
     await getUser(false)
     await getSmsTeams()
   }
@@ -375,6 +397,58 @@ const getHomePages = async () => {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Retrieving Home Pages')
     appStore.loading = false
+  }
+}
+const getProjectPages = async () => {
+  try {
+    const {data, status} = await getRequest(`/objectTypeTab/project`, null, [])
+    data.unshift({
+      archived: false,
+      companyObjectTypeId: 1,
+      displayOrder: data.length,
+      id: -5,
+      tabName: "All Events",
+      uniqueIdentifier: "tab_events"
+    })
+    data.unshift({
+      archived: false,
+      companyObjectTypeId: 1,
+      displayOrder: data.length,
+      id: -4,
+      tabName: "All Process Steps",
+      uniqueIdentifier: "tab_processSteps"
+    })
+    data.unshift({
+      archived: false,
+      companyObjectTypeId: 1,
+      displayOrder: data.length,
+      id: -3,
+      tabName: "Status",
+      uniqueIdentifier: "tab_status"
+    })
+    data.push({
+      archived: false,
+      companyObjectTypeId: 1,
+      displayOrder: data.length,
+      id: -1,
+      tabName: 'Uploaded and Linked Documents',
+      uniqueIdentifier: 'tab_documents'
+    })
+    data.push({
+      archived: false,
+      companyObjectTypeId: 1,
+      displayOrder: data.length + 1,
+      id: -2,
+      tabName: 'Current Work Queues',
+      uniqueIdentifier: 'tab_work_queues'
+    })
+
+    projectPages.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Project Pages')
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
 const getUser = async (userIsAlbatross) => {
