@@ -5,6 +5,7 @@ import moment from 'moment'
 import Sortable from "sortablejs";
 import cloneDeep from "lodash.clonedeep";
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useUserStore } from "@/stores/UserStorePinia.js";
 
 export function getSnackbar(type, text, displayMsgAsHtml) {
   //if you need a custom snackbar build it in your component
@@ -351,4 +352,20 @@ export function getEventColorClass (index) {
         'event-tile-dark-grey', 'event-tile-maroon', 'event-tile-navy', 'event-tile-olive'
     ]
     return colorClassList[index%20]
+}
+
+export function getProjectPath() {
+  const userStore = useUserStore()
+  const projectPathSuffix = userStore.details.defaultProjectPage
+  if (projectPathSuffix === null || projectPathSuffix === 'tab_status') {
+    return {pathSuffix: 'status', tabName: 'status'}
+  } else if (projectPathSuffix === 'tab_processSteps') {
+    return {pathSuffix: 'processSteps', tabName: 'processSteps'}
+  } else if (projectPathSuffix === 'tab_events') {
+    return {pathSuffix: 'events', tabName: 'events'}
+  } else if (projectPathSuffix === 'tab_work_queues') {
+    return {pathSuffix: 'workQueues', tabName: 'workQueues'}
+  } else{
+    return {pathSuffix: 'details', tabName: projectPathSuffix}
+  }
 }

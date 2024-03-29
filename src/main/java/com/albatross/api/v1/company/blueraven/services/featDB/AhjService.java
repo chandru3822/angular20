@@ -67,8 +67,10 @@ public class AhjService {
 
   @Transactional
   public void deleteAhj(Long id) {
+    User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
+    params.put("userId", currentUser.trueUserId());
 
     sqlCache.updateBySql(AhjQuery.delete, params);
   }

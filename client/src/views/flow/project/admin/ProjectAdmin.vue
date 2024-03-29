@@ -2,7 +2,7 @@
   <div id="project-admin-container">
     <v-toolbar flat color="#E3E3E3" class="project-header">
       <div class="app-title albatross-header-1">
-        <router-link :to="`/project/${projectId}/status`">{{ project.projectName }}</router-link>
+        <router-link :to="`/project/${projectId}/${defaultProjectPage}`">{{ project.projectName }}</router-link>
       </div>
       <v-spacer></v-spacer>
       <a-btn
@@ -27,7 +27,7 @@
         <a-btn
             variant="text"
             class="pl-1 pr-2 anchor"
-            :to="`/project/${projectId}/status`"
+            :to="`/project/${projectId}/${defaultProjectPage}`"
             color="unset"
             prepend-icon="arrow_left"
             text="Back to Project"
@@ -50,7 +50,7 @@
 <script setup>
 
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import {deleteRequest, getRequest,  logError} from "@/helpers/helpers";
+import {deleteRequest, getProjectPath, getRequest, logError} from "@/helpers/helpers";
 
 
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
@@ -67,6 +67,7 @@ const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const projectId = ref(parseInt(route.params.projectId))
 const project = ref({})
 const deleteProjectConfirm = ref(false)

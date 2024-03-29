@@ -8,7 +8,7 @@
         </div>
         <div class="project-subtitle">
           Project ID:
-          <router-link :to="`/project/${project.id}/status`">{{ project.id }}</router-link>
+          <router-link :to="`/project/${project.id}/${defaultProjectPage}`">{{ project.id }}</router-link>
           <br/>
           Address: {{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}
           <br/>
@@ -283,7 +283,14 @@
 </template>
 
 <script setup>
-import {formatPhoneNumber, getRequest, handleHidingGlobalLoader, logError, postRequest} from '@/helpers/helpers'
+import {
+  formatPhoneNumber,
+  getProjectPath,
+  getRequest,
+  handleHidingGlobalLoader,
+  logError,
+  postRequest
+} from '@/helpers/helpers'
 
 import moment from 'moment'
 import DatetimePickerInput from '@/components/DatetimePickerInput'
@@ -319,7 +326,7 @@ const dateSortFn = (prop = 'dateCreated') => {
     return 0
   }
 }
-
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const designs = ref([])
 const cardHeight = ref(575)
 const minDate = ref(moment().format('YYYY-MM-DDTHH:mm:ssZ'))

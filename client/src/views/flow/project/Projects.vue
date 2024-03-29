@@ -70,7 +70,7 @@
 
 <script setup>
 
-import {logError, getRequestWithParams} from '@/helpers/helpers'
+import {logError, getRequestWithParams, getProjectPath} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 import axios from 'axios'
@@ -145,7 +145,8 @@ const isMobile = computed(() => {
 })
 
 const goToRoute = (project) => {
-  router.push({name: 'projectStatus', params: {projectId: project.id}})
+  const defaultProjectPage = ref(getProjectPath().pathSuffix)
+  router.push({path: `/project/${project.id}/${defaultProjectPage}`})
 }
 const getProjects = async() => {
   const {page, itemsPerPage} = options.value

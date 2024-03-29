@@ -13,7 +13,7 @@
           <a v-if="!isSidebarCollapsed && messageProperties.projectName"
              v-bind="attrs" v-on="on"
              class="d-inline-block clickable conversation-name-link"
-             :href="`/project/${projectId}/status`">
+             :href="`/project/${projectId}/${defaultProjectPage}`">
             {{ messageProperties.projectName }}
             <v-chip class="customer-chip" style="margin-left: 4px;" small>
               <span >Customer</span>
@@ -180,7 +180,7 @@ import ActivitySection from '@/views/flow/components/ActivitySection'
 import Messaging from '@/views/flow/components/Messaging'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 
-import {getRequest,  handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
+import {getProjectPath, getRequest, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import TeamAssignmentChips from '@/views/flow/settings/inbox/TeamAssignmentChips'
 import OwnershipHistoryDrilldown from '@/views/flow/settings/inbox/OwnershipHistoryDrilldown'
 import AddTeamDropdown from '@/views/flow/settings/inbox/AddTeamDropdown'
@@ -229,7 +229,7 @@ const emit = defineEmits(['closeRight'])
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
 })
-
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const userHasTeam = ref(false)
 const userAssigned = ref(false)
 const showJoinConversationDialog = ref(false)

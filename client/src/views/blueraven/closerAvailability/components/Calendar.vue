@@ -34,7 +34,6 @@ const calendarStartTime = ref(null)
 const calendarEndTime = ref(null)
 const calendarLoading = ref(false)
 
-const countSelected = ref(0)
 const maxSelectionAllowed = ref(10)
 const countErrorMessage = ref('Maximum Selection Reached')
 
@@ -368,8 +367,11 @@ const getAvailability = async(info) => {
   }
 }
 
+const countSelected = computed(() => {
+  return selectedUsers.value?.length
+})
+
 const limiter = () => {
-  countSelected.value = selectedUsers.value?.length
   roundRobinUsers.value.forEach(u => {
     let match = selectedUsers.value.find(su => su.id === u.id)
     u.disabled = !match && countSelected.value >= maxSelectionAllowed.value

@@ -88,7 +88,7 @@
               {{ it.projectName ? it.projectName : '' }}</a></td>
             <td class="text-left" v-else>{{ it.projectName ? it.projectName : '' }}</td>
             <td class="text-left">
-              <router-link :to="`/project/${it.projectId}/status`">{{ it.projectId }}</router-link>
+              <router-link :to="`/project/${it.projectId}/${defaultProjectPage}`">{{ it.projectId }}</router-link>
             </td>
             <td class="text-left">{{ it.substantialCompletionDate | formatDate('date') }}</td>
             <td class="text-left">{{ it.financier ? it.financier : '' }}</td>
@@ -201,7 +201,7 @@
 </template>
 
 <script setup>
-import {handleHidingGlobalLoader, getRequest, postRequest, } from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, postRequest, getProjectPath,} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 import {saveAs} from 'file-saver'
@@ -222,6 +222,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100, 500],
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'

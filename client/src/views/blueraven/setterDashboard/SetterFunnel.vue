@@ -451,7 +451,7 @@
                 <td class="customer-name">{{ item.customer_name || '' }}</td>
                 <td>
                   <router-link text v-if="item.project_id && userStore.userHasFeature('PROJECTS')"
-                               :to="`/project/${item.project_id}/status`">
+                               :to="`/project/${item.project_id}/${defaultProjectPage}`">
                     {{ item.project_id }}
                   </router-link>
                   <div v-else>{{ item.project_id || '' }}</div>
@@ -509,7 +509,7 @@
 import cloneDeep from 'lodash.clonedeep'
 import moment from 'moment'
 import constants from '@/helpers/constants'
-import {postRequest, } from '@/helpers/helpers'
+import {getProjectPath, postRequest,} from '@/helpers/helpers'
 
 import SpinnerInline from '@/components/SpinnerInline'
 import {
@@ -533,6 +533,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const setterPipelineLoading = ref(false)
 const repsLoading = ref(true)
 const dropdownValuesLoading = ref(true)

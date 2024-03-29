@@ -59,7 +59,7 @@
             {{ item.objectTypeId === 1 ? 'Project' : 'User'}}
           </td>
           <td class="text-left sent-to-column">
-            <router-link v-if="item.projectId" text :to="`/project/${item.projectId}/status`">
+            <router-link v-if="item.projectId" text :to="`/project/${item.projectId}/${defaultProjectPage}`">
               {{ item.projectName }} - {{ item.projectStatusType}}
             </router-link>
             <router-link v-else text :to="`/user/${item.sentToUserId}/details`">
@@ -97,7 +97,14 @@
 
 <script setup>
 
-import {handleHidingGlobalLoader, getRequest, getRequestWithParams,  postRequest, putRequest} from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  getRequestWithParams,
+  postRequest,
+  putRequest,
+  getProjectPath
+} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
@@ -113,6 +120,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const model = ref({})
 const expanded = ref([])
 const queue = ref([])

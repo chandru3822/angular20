@@ -25,7 +25,7 @@
 </template>
 <script setup>
 
-import {getRequestWithParams, logError} from '@/helpers/helpers'
+import {getProjectPath, getRequestWithParams, logError} from '@/helpers/helpers'
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
@@ -110,7 +110,13 @@ const getProjectTabs = async () => {
       tabName: 'Current Work Queues',
       uniqueIdentifier: 'tab_work_queues'
     })
-    selectedTab.value = tabs.value?.length > 0 ? data[0] : {}
+    const projectPath = getProjectPath().pathSuffix
+    if (projectPath && tabs.value?.length > 0) {
+      const someFilters = data.filter((d) => d.uniqueIdentifier === projectPath.tabName)
+      selectedTab.value = someFilters.length > 0 ? someFilters[0] : {}
+    } else {
+      selectedTab.value = tabs.value?.length > 0 ? data[0] : {}
+    }
     props.tabChangeCallback(selectedTab.value)
   } catch (e) {
     logError(e)

@@ -229,7 +229,7 @@
               <div>
                 <v-card flat v-for="p in contact.projects"
                         class="project-button albatross-body-1"
-                        :to="`/project/${p.id}/status`">
+                        :to="`/project/${p.id}/${projectPath}`">
                   <div class="body-large" >{{ p.projectName }} </div>
                   <div class="body-small" :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
                 </v-card>
@@ -329,7 +329,7 @@
           <div class="mx-2 mobile-content-padding">
             <v-card flat v-for="p in contact.projects"
                     class="project-button albatross-body-1"
-                    :to="`/project/${p.id}/status`">
+                    :to="`/project/${p.id}/${defaultProjectPage}`">
               <div class="body-large" >{{ p.projectName }} </div>
               <div :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
               <!--            <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>-->
@@ -549,8 +549,7 @@ import {
   postRequest,
   formatPhoneNumber,
   getRequestWithParams,
-
-  logError
+  getSnackbar, logError, postRequestWithRequestParams, getProjectPath
 } from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getCompanyStates} from '@/services/stateService'
@@ -581,6 +580,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const states = ref([])
 const countries = ref([])
 const showEditModal = ref(false)
@@ -923,7 +923,7 @@ const convertToCustomer = async() => {
 
     // router.push({name: 'projectDetails', params: {projectId: data.id}, query: { checkAddress: true }})
     // ^^ i cant figure out why but doing the routing by name, param, query doesn't load the proper modal on the project screen when needed but it work by hard-coded path
-    let path = data.companyStateId ? `/project/${data.id}/status` : `/project/${data.id}/status?checkAddress=true`
+    let path = data.companyStateId ? `/project/${data.id}/${defaultProjectPage}` : `/project/${data.id}/${defaultProjectPage}?checkAddress=true`
     router.push(path)
     handleHidingGlobalLoader( status)
   } catch (e) {

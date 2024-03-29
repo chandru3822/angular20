@@ -6,7 +6,7 @@
 
       <dt class="left-align">Project ID:</dt>
       <dd>
-        <router-link :to="`/project/${rebateDetails.project_id}/status`">{{rebateDetails.project_id}}</router-link>
+        <router-link :to="`/project/${rebateDetails.project_id}/${defaultProjectPage}`">{{rebateDetails.project_id}}</router-link>
         <br/>
       </dd>
       <dt class="left-align">Customer Address:</dt>
@@ -300,7 +300,14 @@
 </template>
 <script setup>
 
-import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, } from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  deleteRequest,
+  putRequest,
+  postRequest,
+  getProjectPath,
+} from '@/helpers/helpers'
 import moment from "moment";
 import {getCompanyStates} from '@/services/stateService'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -328,6 +335,7 @@ const displayedTabs = computed(() => {
   return tabs.value.filter(tab => tab.display)
 })
 
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const model = ref('')
 const projectIdIn = ref(parseInt(route.params.id))
 const headers = ref([

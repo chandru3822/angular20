@@ -669,8 +669,8 @@
                   <td>{{ item.status_type || '' }}</td>
                   <td class="customer-name">{{ item.customer_name || '' }}</td>
                   <td>
-                    <router-link text v-if="item.project_id && userStore.userHasFeature('PROJECTS')"
-                                 :to="`/project/${item.project_id}/status`">
+                    <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')"
+                                 :to="`/project/${item.project_id}/${defaultProjectPage}`">
                       {{ item.project_id }}
                     </router-link>
                     <div v-else>{{ item.project_id || '' }}</div>
@@ -798,8 +798,8 @@ import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
 import moment from 'moment'
 import constants from '@/helpers/constants'
-import {handleHidingGlobalLoader, getRequest, postRequest, } from '@/helpers/helpers'
-
+import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getProjectPath} from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
 import { saveAs } from 'file-saver'
 import {
@@ -823,6 +823,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const funnelDrilldownDialog = ref(false)
 const currentUserOrgId = ref(null)
 const dropdownValuesLoading = ref(true)
@@ -1576,11 +1577,11 @@ const regionLoad = async(preSelectLists) => {
     regionData.value = res
 
 
-    if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
-      regionModel.value = regionData.value.filter(od => od.active)
-    } else if (preSelectLists) {
-      regionModel.value = cloneDeep(regionData.value)
-    }
+        if (preSelectLists && (this.isCloserMgr || this.isCloserRegional)) {
+          this.regionModel = this.regionData.filter(od => od.active)
+        } else if (preSelectLists) {
+          this.regionModel = cloneDeep(this.regionData)
+        }
 
     if (!initialPageLoad.value) {
       districtLoad(preSelectLists, true)
