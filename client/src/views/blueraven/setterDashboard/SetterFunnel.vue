@@ -440,7 +440,7 @@
                 <td>{{ item.setter_name || '' }}</td>
                 <td class="customer-name">{{ item.customer_name || '' }}</td>
                 <td>
-                  <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}/status`">
+                  <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}/${projectPath}`">
                     {{ item.project_id }}
                   </router-link>
                   <div v-else>{{ item.project_id || '' }}</div>
@@ -491,7 +491,7 @@
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
   import constants from '@/helpers/constants'
-  import { postRequest, getSnackbar } from '@/helpers/helpers'
+  import { postRequest, getSnackbar, getProjectPath } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
   import {
@@ -510,6 +510,7 @@
     data: () => ({
       snackbar: {},
       constants,
+      projectPath: '',
       setterPipelineLoading: false,
       repsLoading: true,
       dropdownValuesLoading: true,
@@ -718,6 +719,7 @@
         this.funnelDrilldownSearch = ''
       }
     },
+
     methods: {
       doRepWatcher() {
         if(this.repValuesChanged) {
@@ -1431,6 +1433,7 @@
       /* FUNNEL-RELATED CODE END */
     },
     async created () {
+      this.projectPath = getProjectPath(this).pathSuffix
       this.currentUserId = this.$store.state.user.details.id
       let userPositions = this.$store.state.user.details.userPositions
 

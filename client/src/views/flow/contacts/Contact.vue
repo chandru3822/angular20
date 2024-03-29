@@ -219,7 +219,7 @@
               <div>
                 <v-card flat v-for="p in contact.projects"
                         class="project-button albatross-body-1"
-                        :to="`/project/${p.id}/status`">
+                        :to="`/project/${p.id}/${projectPath}`">
                   <div class="body-large" >{{ p.projectName }} </div>
                   <div class="body-small" :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
                 </v-card>
@@ -523,7 +523,7 @@ import {
   postRequest,
   formatPhoneNumber,
   getRequestWithParams,
-  getSnackbar, logError, postRequestWithRequestParams
+  getSnackbar, logError, postRequestWithRequestParams, getProjectPath
 } from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getCompanyStates} from '@/services/stateService'
@@ -608,7 +608,8 @@ export default {
       showMobileSummary: true,
       showMobileAssociatedProjects: false,
       showMobileNotes: false,
-      showMobileDocuments: false
+      showMobileDocuments: false,
+      projectPath: ''
 
     }
   },
@@ -670,6 +671,7 @@ export default {
       this.fieldsLoading = false
     })
     this.getUserPositionIds();
+    this.projectPath = getProjectPath(this).pathSuffix
   },
   beforeRouteLeave(to, from, next) {
     // called when the route that renders this component is about to

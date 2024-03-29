@@ -34,11 +34,11 @@
         <slot name="left-column"></slot>
         </div>
       </v-col>
-      <v-col class="project-section center-panel py-0 px-0" @click="$emit('end-notes-timer')" :class="{'white-bg': this.centerWhiteBg, 'hide-column-xs': !$store.state.project.leftSideSplit, 'halvsies': this.leftHidden,}">
+      <v-col class="project-section center-panel py-0 px-0" @click="$emit('end-notes-timer')" :class="{'white-bg': this.centerWhiteBg, 'hide-column-xs': !$store.state.project.leftSideSplit, 'halvsies': this.halfNHalf,}">
         <slot name="main-column"></slot>
       </v-col>
       <v-col id="right-column" class="project-section right-column pa-0" :class="{'hidden': this.rightHidden,
-                                                                                                  'halvsies': this.leftHidden,
+                                                                                                  'halvsies': this.halfNHalf,
                                                                                                   'collapsed': this.$store.state.project.rightSideSplit && showRightCollapseBtn,
                                                                                                   'white-bg': this.rightSideWhiteBg,
                                                                                                   'hide-column-xs': true  }">
@@ -77,6 +77,7 @@ export default {
     leftHidden: Boolean,
     rightCollapsed: Boolean,
     rightHidden: Boolean,
+    halfNHalf: Boolean,
     rightSideWhiteBg: {
       type: Boolean,
       default: true

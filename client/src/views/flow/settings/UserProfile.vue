@@ -10,7 +10,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat elevation="0" class="app-toolbar">
-          <v-toolbar-title class="title-large">User Profile</v-toolbar-title>
+          <v-toolbar-title class="title-large">Account</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <!--mobile save button-->
@@ -90,15 +90,6 @@
                         @change="setFieldsDirty"
                         label="Phone">
           </v-text-field>
-          <v-select attach v-model="user.notificationTypeId"
-                    :items="userNotificationTypes"
-                    label="Notification"
-                    v-if="showOnUserProfile('Notification')"
-                    item-text="userNotificationType"
-                    item-value="id"
-                    @change="setFieldsDirty"
-                    autocomplete="off">
-          </v-select>
           <v-text-field v-model="user.newPassword"
                         v-if="!userIsMasquerading && showOnUserProfile('Password')"
                         placeholder="Enter a new password"
@@ -119,6 +110,14 @@
                         @change="setFieldsDirty"
                         label="Confirm Password">
           </v-text-field>
+        </v-col>
+      </v-row>
+    </v-form>
+    <v-divider class="mt-3 mb-3" v-if="smsTeams && smsTeams.length > 0"></v-divider>
+    <v-row v-if="smsTeams && smsTeams.length > 0">
+      <v-col cols="12" md="6">
+        <h3 class="title-medium">Preferences</h3>
+        <v-card flat color="transparent">
           <v-autocomplete v-if="!userIsAlbatross && showOnUserProfile('Default Home Page')"
                           v-model="user.homePageCompanyFeatureId"
                           :items="homePages"
@@ -131,14 +130,27 @@
                           @change="setFieldsDirty"
                           attach
           ></v-autocomplete>
-        </v-col>
-      </v-row>
-    </v-form>
-    <v-divider class="mt-3 mb-3" v-if="smsTeams && smsTeams.length > 0"></v-divider>
-    <v-row v-if="smsTeams && smsTeams.length > 0">
-      <v-col cols="12" md="6">
-        <h3 class="title-medium">Notification Preferences</h3>
-        <v-card flat color="transparent">
+          <v-autocomplete v-if="!userIsAlbatross && showOnUserProfile('Default Project Page')"
+                          v-model="user.defaultProjectPage"
+                          :items="projectPages"
+                          label="Default Project Page"
+                          clearable
+                          item-text="tabName"
+                          item-value="uniqueIdentifier"
+                          autocomplete="off"
+                          type="search"
+                          @change="setFieldsDirty"
+                          attach
+          ></v-autocomplete>
+          <v-select attach v-model="user.notificationTypeId"
+                    :items="userNotificationTypes"
+                    label="Notification"
+                    v-if="showOnUserProfile('Notification')"
+                    item-text="userNotificationType"
+                    item-value="id"
+                    @change="setFieldsDirty"
+                    autocomplete="off">
+          </v-select>
           <div v-for="item in smsTeams" class="unassigned-notif-div d-flex">
             <span class="mt-4">{{ item.teamName }} SMS Team:</span>
             <v-checkbox class="pl-4 py-0" @change="checkForDeselect(item)" v-model="item.receiveUnassignedNotifications" label="Receive notifications for team's unassigned messages"></v-checkbox>
@@ -149,7 +161,7 @@
     <v-divider class="mt-3 mb-3" v-if="userProfileCustomFields && userProfileCustomFields.length > 0"></v-divider>
     <v-row v-if="userProfileCustomFields && userProfileCustomFields.length > 0">
       <v-col cols="12" md="6">
-        <h3 class="title-medium pb-2">Custom Fields</h3>
+        <h3 class="title-medium pb-2">Miscellaneous</h3>
         <SpinnerInline v-if="loadingUserProfileCustomFields" :text="'Checking For Additional Fields...'" :size="20" color="primary"/>
         <CustomValueInput v-for="(cf, idx) in userProfileCustomFields"
                           :key="idx"
@@ -256,6 +268,7 @@ export default {
       timeValue: moment.utc().format('YYYY-MM-DDTHH:mm:ssZ'),
       user: {},
       homePages: [],
+      projectPages: [],
       userIsAlbatross: false,
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('USERS', 'ADMIN'),
       userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
@@ -305,6 +318,7 @@ export default {
       await this.getUserProfileDefaultFields()
       this.getUserProfileCustomFields()
       this.getHomePages()
+      this.getProjectPages()
       this.getUser(false)
       this.getSmsTeams()
     }
@@ -387,6 +401,60 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async getProjectPages () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/objectTypeTab/project`, null, [])
+        data.unshift({
+          archived: false,
+          companyObjectTypeId: 1,
+          displayOrder: data.length,
+          id: -5,
+          tabName: "All Events",
+          uniqueIdentifier: "tab_events"
+        })
+        data.unshift({
+          archived: false,
+          companyObjectTypeId: 1,
+          displayOrder: data.length,
+          id: -4,
+          tabName: "All Process Steps",
+          uniqueIdentifier: "tab_processSteps"
+        })
+        data.unshift({
+          archived: false,
+          companyObjectTypeId: 1,
+          displayOrder: data.length,
+          id: -3,
+          tabName: "Status",
+          uniqueIdentifier: "tab_status"
+        })
+        data.push({
+          archived: false,
+          companyObjectTypeId: 1,
+          displayOrder: data.length,
+          id: -1,
+          tabName: 'Uploaded and Linked Documents',
+          uniqueIdentifier: 'tab_documents'
+        })
+        data.push({
+          archived: false,
+          companyObjectTypeId: 1,
+          displayOrder: data.length + 1,
+          id: -2,
+          tabName: 'Current Work Queues',
+          uniqueIdentifier: 'tab_work_queues'
+        })
+
+        this.projectPages = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Project Pages')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async getUser (userIsAlbatross) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -401,9 +469,12 @@ export default {
       }
     },
     async saveUser () {
+      // this.user.featureAccess is null so we copy the value over from the store. Otherwise the Navbar tabs disappear when you save :/
+      this.user.featureAccess = this.$store.state.user.details.featureAccess
       this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await putRequest(`/user?userIsAlbatross=${this.userIsAlbatross}`, this.user)
+      this.$store.commit(UserMutations.SET_DETAILS, this.user)
+      try {                                                                                                     // setting timezone to null otherwise the query fails and throws and error
+        const {data, status} = await putRequest(`/user?userIsAlbatross=${this.userIsAlbatross}`, {...this.user, timezone: null})
         if(data && data.id && this.dirtyCfvs?.length > 0) {
           await postRequest(`/customFieldValues/user/${data.id}`, this.dirtyCfvs)
         }
