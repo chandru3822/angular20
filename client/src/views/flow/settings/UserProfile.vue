@@ -405,12 +405,13 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/objectTypeTab/project`, null, [])
+        data.forEach(d => d.tabName = d.tabName.concat(' (Details)'))
         data.unshift({
           archived: false,
           companyObjectTypeId: 1,
           displayOrder: data.length,
           id: -5,
-          tabName: "All Events",
+          tabName: "View All Events",
           uniqueIdentifier: "tab_events"
         })
         data.unshift({
@@ -418,7 +419,7 @@ export default {
           companyObjectTypeId: 1,
           displayOrder: data.length,
           id: -4,
-          tabName: "All Process Steps",
+          tabName: "View All Process Steps",
           uniqueIdentifier: "tab_processSteps"
         })
         data.unshift({
@@ -426,7 +427,7 @@ export default {
           companyObjectTypeId: 1,
           displayOrder: data.length,
           id: -3,
-          tabName: "Status",
+          tabName: "Status Tracker",
           uniqueIdentifier: "tab_status"
         })
         data.push({
@@ -434,7 +435,7 @@ export default {
           companyObjectTypeId: 1,
           displayOrder: data.length,
           id: -1,
-          tabName: 'Uploaded and Linked Documents',
+          tabName: 'Uploaded and Linked Documents (Details)',
           uniqueIdentifier: 'tab_documents'
         })
         data.push({
@@ -442,7 +443,7 @@ export default {
           companyObjectTypeId: 1,
           displayOrder: data.length + 1,
           id: -2,
-          tabName: 'Current Work Queues',
+          tabName: 'Current Work Queues (Details)',
           uniqueIdentifier: 'tab_work_queues'
         })
 
@@ -469,10 +470,8 @@ export default {
       }
     },
     async saveUser () {
-      // this.user.featureAccess is null so we copy the value over from the store. Otherwise the Navbar tabs disappear when you save :/
-      this.user.featureAccess = this.$store.state.user.details.featureAccess
       this.$store.commit(AppMutations.SET_LOADING, true)
-      this.$store.commit(UserMutations.SET_DETAILS, this.user)
+      this.$store.commit(UserMutations.SET_DEFAULT_PROJECT_PAGE, this.user.defaultProjectPage)
       try {                                                                                                     // setting timezone to null otherwise the query fails and throws and error
         const {data, status} = await putRequest(`/user?userIsAlbatross=${this.userIsAlbatross}`, {...this.user, timezone: null})
         if(data && data.id && this.dirtyCfvs?.length > 0) {
