@@ -1,7 +1,7 @@
 <template>
   <div id="calendar-container">
 
-    <div id="calendar-filter-container" class="pa-6 pt-4">
+    <div id="calendar-filter-container" class="pa-6 pt-0">
 <v-col cols="11" class="pa-0">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0 d-flex align-baseline">
