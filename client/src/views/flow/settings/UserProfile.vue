@@ -108,7 +108,7 @@
       </v-row>
     </v-form>
     <v-divider class="mt-3 mb-3" v-if="smsTeams && smsTeams.length > 0"></v-divider>
-    <v-row v-if="smsTeams && smsTeams.length > 0">
+    <v-row>
       <v-col cols="12" md="6">
         <h3 class="title-medium">Preferences</h3>
         <v-card flat color="transparent">
@@ -146,7 +146,7 @@
                     @change="setFieldsDirty"
                     autocomplete="off">
           </v-select>
-          <div v-for="item in smsTeams" class="unassigned-notif-div d-flex">
+          <div v-if="smsTeams && smsTeams.length > 0" v-for="item in smsTeams" class="unassigned-notif-div d-flex">
             <span class="mt-4">{{ item.teamName }} SMS Team:</span>
             <v-checkbox class="pl-4 py-0" @change="checkForDeselect(item)" v-model="item.receiveUnassignedNotifications" label="Receive notifications for team's unassigned messages"></v-checkbox>
           </div>

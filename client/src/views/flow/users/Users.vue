@@ -99,29 +99,117 @@
                   :style="{width: header.width ? header.width : 'auto',
                           'padding-bottom': !header.orgFilter && !header.statusFilter ? '13px !important' : ''}">
                 {{ header.text }}
-                <UsersFilter v-if="header.orgFilter"
-                             :items="header.orgs.map((o) => ({id: o.id, name: o.orgName}))"
-                             @list-updated="handleUpdateOrgListEmit($event, header.level)"
-                ></UsersFilter>
+                <v-autocomplete v-model="filters.orgs[header.level]"
+                                :items="header.orgs"
+                                v-if="header.orgFilter"
+                                item-text="orgName"
+                                item-value="id"
+                                return-object
+                                multiple
+                                placeholder="Select..."
+                                height="35px"
+                                outlined
+                                class="user-filter-select"
+                                @change="handleOrgFilterChange(false, header.level)"
+                >
+                  <template
+                    slot="selection"
+                    slot-scope="{ item, index }"
+                  >
+                    <v-chip small v-if="index === 0 && filters.orgs[header.level] && filters.orgs[header.level].length < 2">
+                      <span>{{ item.orgName }}</span>
+                    </v-chip>
+                    <span
+                      v-if="index === 1 && filters.orgs[header.level] && filters.orgs[header.level].length >= 2"
+                      class="primary--text text-caption"
+                    >{{ filters.orgs[header.level].length }} selected</span>
+                  </template>
+                  <template #item="{ item }">
+                    <div class="v-list-item__action">
+                      <div class="v-simple-checkbox">
+                        <div class="v-input--selection-controls__ripple primary--text">
 
-                <UsersFilter v-else-if="header.statusFilter"
-                             :items="statuses.map((s) => ({id: s.id, name: s.userStatusType}))"
-                             :default-checked-items="filters.statuses"
-                             :has-default="true"
-                             @list-updated="handleUpdateStatusesListEmit"
-                ></UsersFilter>
-                <UsersFilter v-else-if="header.positionFilter"
-                             :items="positions.map((p) => ({id: p.id, name: p.position}))"
-                             @list-updated="handleUpdatePositionsListEmit"
-                ></UsersFilter>
+                        </div>
+                        <i v-if="itemChecked(header.level, item)" aria-hidden="true" class="v-icon notranslate material-icons theme--light">check_box</i>
+                        <i v-else aria-hidden="true" class="v-icon notranslate material-icons theme--light">check_box_outline_blank</i>
+                      </div>
+                    </div>
+                    <div v-if="header.showType">{{item.orgName}} ({{item.orgType}})</div>
+                    <div v-else>{{item.orgName}}</div>
+                  </template>
+                </v-autocomplete>
+                <v-autocomplete v-model="filters.statuses"
+                                :items="statuses"
+                                v-else-if="header.statusFilter"
+                                multiple
+                                item-text="userStatusType"
+                                item-value="id"
+                                outlined
+                                placeholder="Select..."
+                                height="35px"
+                                class="user-filter-select"
+                                @input="getUsers(true)"
+                >
+                  <v-list-item
+                    slot="prepend-item"
+                    ripple
+                    @click="toggleSelectAllStatuses()"
+                  >
+                    <v-list-item-action>
+                      <v-icon>{{ icon }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item>
+                  <v-divider
+                    slot="prepend-item"
+                    class="mt-2"
+                  ></v-divider>
+                  <template
+                    slot="selection"
+                    slot-scope="{ item, index }"
+                  >
+                    <v-chip small v-if="index === 0 && filters.statuses.length < 2">
+                      <span>{{ item.userStatusType }}</span>
+                    </v-chip>
+                    <span
+                      v-if="index === 1 && filters.statuses.length >= 2"
+                      class="primary--text text-caption"
+                    >{{ filters.statuses.length }} selected</span>
+                  </template>
+                </v-autocomplete>
+                <v-autocomplete v-model="filters.positions"
+                                :items="positions"
+                                v-else-if="header.positionFilter"
+                                item-text="position"
+                                item-value="id"
+                                multiple
+                                placeholder="Select..."
+                                height="35px"
+                                outlined
+                                class="user-filter-select"
+                                @input="getUsers(true)"
+                >
+                  <template
+                    slot="selection"
+                    slot-scope="{ item, index }"
+                  >
+                    <v-chip small v-if="index === 0 && filters.positions && filters.positions.length < 2">
+                      <span>{{ item.position }}</span>
+                    </v-chip>
+                    <span
+                      v-if="index === 1 && filters.positions && filters.positions.length >= 2"
+                      class="primary--text text-caption"
+                    >{{ filters.positions.length }} selected</span>
+                  </template>
+                </v-autocomplete>
                 <v-checkbox v-else-if="header.selectFilter"
                             :disabled="allUsersLoading"
                             v-model="selectAllUsers" @change="toggleSelectAllUsers()"></v-checkbox>
-                <a-text-field variant="outlined"
+                <v-text-field outlined
                               v-else-if="header.value !== 'phoneExtension'"
                               hide-details
                               class="filter-input"
-                              v-model="filters[header.value]" @input="debounceGetUsers"></a-text-field>
+                    v-model="filters[header.value]" @input="debounceGetUsers"></v-text-field>
                 <div v-else style="height: 35px;"></div>
               </th>
             </tr>
@@ -130,7 +218,7 @@
 
           <template #item="{ item, index }">
             <tr
-                :class="{'shaded-row': index % 2}" v-if="!showImages"
+              :class="{'shaded-row': index % 2}" v-if="!showImages"
             >
               <td><v-checkbox v-model="item.selected" :disabled="allUsersLoading" @change="toggleSingleSelect(item)"></v-checkbox></td>
               <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.firstName}}</td>
@@ -156,12 +244,12 @@
           <span class="text-h5">Selected Users</span>
         </v-card-title>
         <v-data-table
-            :headers="usersTableHeaders"
-            :items="selectedUsersDetails"
-            :footer-props="footerProps"
-            :fixed-header="true"
-            disable-sort
-            class="elevation-1"
+          :headers="usersTableHeaders"
+          :items="selectedUsersDetails"
+          :footer-props="footerProps"
+          :fixed-header="true"
+          disable-sort
+          class="elevation-1"
         >
           <template #no-data>
             <span class="default-text-color">No users available</span>
@@ -179,11 +267,10 @@
           </template>
         </v-data-table>
         <v-card-actions class="flex-display justify-end">
-          <a-btn
-              @click="selectedUsersDialog = false"
-              color="unset"
-              text="Close"
-          ></a-btn>
+          <v-btn
+            @click="selectedUsersDialog = false">
+            Close
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -191,47 +278,47 @@
     <v-dialog v-model="msgDialog" max-width="800px">
       <v-card>
         <v-card-title class="body-large justify-space-between" primary-title>
-          Send Bulk Emails/Texts
-          <a class="close-modal-x pb-3" title="Close" @click="cancelSendMessageDialog">×</a>
+            Send Bulk Emails/Texts
+            <a class="close-modal-x pb-3" title="Close" @click="cancelSendMessageDialog">×</a>
         </v-card-title>
-        <v-toolbar-items>
-          <v-tabs color="primary" slot="extension" slider-color="primary" class="message-tabs">
+          <v-toolbar-items>
+        <v-tabs color="primary" slot="extension" slider-color="primary" class="message-tabs">
             <v-tab @click="messageTab = 1">
               Emails
             </v-tab>
             <v-tab @click="messageTab = 2">
               SMS
             </v-tab>
-          </v-tabs>
-        </v-toolbar-items>
+        </v-tabs>
+          </v-toolbar-items>
         <v-divider></v-divider>
         <div v-if="messageTab == 1"  class="pa-6">
           <label class="mr-2">To:</label>
           <v-autocomplete
-              v-model="selectedUsers"
-              :items="allUsers"
-              multiple
-              clearable
-              label="Select user(s)"
-              item-text="fullName"
-              item-value="id"
-              height="35px"
-              @click:clear="clearUsersAutocomplete()"
-              class="d-inline-block mr-3 user-autocomplete">
+            v-model="selectedUsers"
+            :items="allUsers"
+            multiple
+            clearable
+            label="Select user(s)"
+            item-text="fullName"
+            item-value="id"
+            height="35px"
+            @click:clear="clearUsersAutocomplete()"
+            class="d-inline-block mr-3 user-autocomplete">
             <v-divider
-                slot="prepend-item"
-                class="mt-2"
+              slot="prepend-item"
+              class="mt-2"
             ></v-divider>
             <template
-                slot="selection"
-                slot-scope="{ item, index }"
+              slot="selection"
+              slot-scope="{ item, index }"
             >
               <v-chip small v-if="index === 0 && selectedUsers && selectedUsers.length < 2">
                 <span>{{ item.fullName }}</span>
               </v-chip>
               <span
-                  v-if="index === 1 && selectedUsers && selectedUsers.length >= 2"
-                  class="primary--text text-caption"
+                v-if="index === 1 && selectedUsers && selectedUsers.length >= 2"
+                class="primary--text text-caption"
               >{{ selectedUsers.length }} selected</span>
             </template>
 
@@ -261,45 +348,44 @@
             />
           </div>
 
-          <a-text-field v-model="emailSubject" label="Subject"></a-text-field>
-          <b>Message </b><span class="count-span pl-2">Characters: {{emailCharacterCount.value}}  Words: {{emailWordCount.value}}</span>
-          <quill-editor
-              class="py-3 rich-text-editor"
-              v-model="emailMessage"
-              @change="onEmailMessageChange($event)"
-          />
+            <v-text-field v-model="emailSubject" label="Subject"></v-text-field>
+            <b>Message </b><span class="count-span pl-2">Characters: {{this.emailCharacterCount}}  Words: {{this.emailWordCount}}</span>
+            <quill-editor
+                class="py-3 rich-text-editor"
+                v-model="emailMessage"
+                @change="onEmailMessageChange($event)"
+            />
 
-          <v-file-input
-              dense
-              outlined
-              multiple
-              v-model="emailFile"
-              label="Upload attachment(s)"
-              @change="uploadEmailAttachment"
-              @click:clear="[emailFile=null, emailAttachments = []]"
-              style="width: 255px"
-          />
+            <v-file-input
+                dense
+                outlined
+                multiple
+                v-model="emailFile"
+                label="Upload attachment(s)"
+                @change="uploadEmailAttachment"
+                @click:clear="[emailFile=null, emailAttachments = []]"
+                style="width: 255px"
+            />
 
-          <v-card-actions class="flex-display justify-end pt-0 px-0">
-            <a-btn
-                variant="text"
-                color="primary"
-                @click="cancelSendMessageDialog"
-                text="Cancel"
-            ></a-btn>
-            <a-btn
-                color="primary"
-                :disabled="disableSendEmail.value"
-                @click="sendMessage(true, false)"
-                text="Send Email"
-            ></a-btn>
-          </v-card-actions>
+            <v-card-actions class="flex-display justify-end pt-0 px-0">
+              <v-btn
+                text color="primary"
+                @click="cancelSendMessageDialog">
+                Cancel
+              </v-btn>
+              <v-btn
+                color="primary" class="white--text"
+                :disabled="this.disableSendEmail"
+                @click="sendMessage(true, false)">
+                Send Email
+              </v-btn>
+            </v-card-actions>
         </div>
         <div v-else-if="messageTab == 2" class="pa-6">
             <span>You will not be assigned to bulk conversations sent from this screen. If you wish to stay on top of
             conversations, use Inbox to send messages. <br></span>
-          <label class="mr-2">To:</label>
-          <v-autocomplete
+            <label class="mr-2">To:</label>
+            <v-autocomplete
               v-model="selectedUsers"
               :items="allUsers"
               multiple
@@ -309,23 +395,23 @@
               height="35px"
               @click:clear="clearUsersAutocomplete()"
               class="d-inline-block mr-3 user-autocomplete">
-            <v-divider
+              <v-divider
                 slot="prepend-item"
                 class="mt-2"
-            ></v-divider>
-            <template
+              ></v-divider>
+              <template
                 slot="selection"
                 slot-scope="{ item, index }"
-            >
-              <v-chip small v-if="index === 0 && selectedUsers && selectedUsers.length < 2">
-                <span>{{ item.fullName }}</span>
-              </v-chip>
-              <span
+              >
+                <v-chip small v-if="index === 0 && selectedUsers && selectedUsers.length < 2">
+                  <span>{{ item.fullName }}</span>
+                </v-chip>
+                <span
                   v-if="index === 1 && selectedUsers && selectedUsers.length >= 2"
                   class="primary--text text-caption"
-              >{{ selectedUsers.length }} selected</span>
-            </template>
-          </v-autocomplete>
+                >{{ selectedUsers.length }} selected</span>
+              </template>
+            </v-autocomplete>
 
           <div class="flex-display justify-end">
             <v-textarea solo v-model="textMessage"
@@ -1165,10 +1251,18 @@ const handleImageFilterChange = async (reset, selectedLevelHere) => {
     getOrgFilters();
   }
 
-  selectAllUsers.value = false
+  this.selectAllUsers = false
   //reload the users
 }
-const fetchTeamsForUser = async() => {
+const itemChecked = (level, item) => {
+  if (filters.value.orgs[level] && filters.value.orgs[level].length > 0) {
+    let match = filters.value.orgs[level].find(of => of.id === item.id)
+    return match != null
+  } else {
+    return false;
+  }
+}
+const fetchTeamsForUser = async () => {
   try {
     conversationIsLoading.value = true
     const { data, status } = await getRequest(`/smsTeam/getTeamsForUser`)
@@ -1177,19 +1271,19 @@ const fetchTeamsForUser = async() => {
     for (let team of teamsAssociatedToUser.value){
       templateTeams.value.push(team.id);
     }
-    handleHidingGlobalLoader( status)
-    await getSmsTeamTemplates();
+    handleHidingGlobalLoader(this, status)
+    await this.getSmsTeamTemplates();
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching SMS Teams')
-
-    conversationIsLoading.value = false
+    this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
+    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    this.conversationIsLoading = false
   }
 }
 const getSmsTeamTemplates = async() => {
   try {
-    selectedTemplate.value = null
-    if (teamsAssociatedToUser.value.length < 1) {
+    this.selectedTemplate = null
+    if (this.teamsAssociatedToUser.length < 1) {
       return
     }
 
@@ -1482,4 +1576,3 @@ const exportCsv = async() => {
 }
 
 </style>
-
