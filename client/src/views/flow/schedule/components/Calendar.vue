@@ -1086,7 +1086,13 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
   border-left-width: 20px;
   height: 20px;
 }
-
+.fc h2.fc-toolbar-title{
+  //headline-large
+  font-family: lato;
+  font-weight: 600;
+  font-size: 1.375rem;
+  line-height: 1.4;
+}
 #calendar-container .fc-toolbar-title {
   @media(max-width: 960px) {
     font-size: 1.25rem;
