@@ -16,10 +16,7 @@
                     item-value="id"
                     @blur="filterOrgsAndUsers"
           >
-            <template
-              slot="selection"
-              slot-scope="{ item, index }"
-            >
+            <template v-slot:selection="{ item, index }">
               <div v-if="index === 0 && selectedStates.length < 3">
                 <v-chip small close @click:close="selectedStates.splice(idx, 1)"
                         v-for="(ss, idx) in selectedStates">
@@ -38,12 +35,16 @@
               <v-list-item-action>
                 <v-icon>{{ iconStates }}</v-icon>
               </v-list-item-action>
-              <v-list-item-title>Select All</v-list-item-title>
+              <v-list-item-title class="wrap-dropdown-item">Select All</v-list-item-title>
             </v-list-item>
             <v-divider
               slot="prepend-item"
               class="mt-2"
             ></v-divider>
+
+            <template v-slot:item="{item}">
+              <span class="wrap-dropdown-item">{{ item.state }}</span>
+            </template>
           </v-autocomplete>
         </v-col>
         <v-col id="org-resource-types-filter-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
@@ -81,12 +82,16 @@
               <v-list-item-action>
                 <v-icon>{{ iconOrgTypes }}</v-icon>
               </v-list-item-action>
-              <v-list-item-title>Select All</v-list-item-title>
+              <v-list-item-title class="wrap-dropdown-item">Select All</v-list-item-title>
             </v-list-item>
             <v-divider
                 slot="prepend-item"
                 class="mt-2"
             ></v-divider>
+            <template v-slot:item="{item}">
+              <!--The only purpose of this template is to allow the items to wrap-->
+              <span class="wrap-dropdown-item">{{ item.orgType }}</span>
+            </template>
           </v-autocomplete>
         </v-col>
 <!--        <v-col id="placeholder-col-1" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
@@ -114,6 +119,10 @@
               <span v-if="index === 0" class="primary--text text-caption">
                 {{ selectedOrgs.length }} selected
               </span>
+            </template>
+            <template v-slot:item="{item}">
+              <!--The only purpose of this template is to allow the items to wrap-->
+              <span class="wrap-dropdown-item">{{ item.orgName }}</span>
             </template>
           </v-autocomplete>
         </v-col>
@@ -154,12 +163,16 @@
               <v-list-item-action>
                 <v-icon>{{ iconPositions }}</v-icon>
               </v-list-item-action>
-              <v-list-item-title>Select All</v-list-item-title>
+              <v-list-item-title class="wrap-dropdown-item">Select All</v-list-item-title>
             </v-list-item>
             <v-divider
                 slot="prepend-item"
                 class="mt-2"
             ></v-divider>
+            <template v-slot:item="{item}">
+              <!--The only purpose of this template is to allow the items to wrap-->
+              <span class="wrap-dropdown-item">{{ item.position }}</span>
+            </template>
           </v-autocomplete>
 
         </v-col>
@@ -188,6 +201,10 @@
               <span v-if="index === 0" class="primary--text text-caption">
                 {{ selectedUsers.length }} selected
               </span>
+            </template>
+            <template v-slot:item="{item}">
+              <!--The only purpose of this template is to allow the items to wrap-->
+              <span class="wrap-dropdown-item">{{ item.fullName }}</span>
             </template>
           </v-autocomplete>
         </v-col>
@@ -1137,6 +1154,10 @@ padding-bottom: 8px;
     max-width: 30%;
   }
   }
+
+.wrap-dropdown-item {
+  white-space: normal;
+}
 
 #calendar-container {
   height: 100%;
