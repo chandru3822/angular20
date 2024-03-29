@@ -1038,6 +1038,10 @@ const countSelected = computed(() => {
     font-size: 1.25rem;
   }
 }
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th:nth-child(1) > div > div > table > thead > tr > th,
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th > div > div > div > table > tbody > tr.fc-timeline-header-row.fc-timeline-header-row-chrono > th {
+padding-bottom: 8px;
+}
 
 .background-event {
   font-size: 11px;
