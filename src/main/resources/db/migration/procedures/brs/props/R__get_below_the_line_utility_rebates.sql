@@ -60,11 +60,12 @@ BEGIN
 
     loop
       v_utility_rebate_amount = 0::numeric;
---       raise notice 'below the line minimum_tsrf_for_qualification = %',x.minimum_tsrf_for_qualification;
---       raise notice 'below the line rebate_amount = % ',x.rebate_amount;
---       raise notice 'below the line rebate_cap_amount = % ',x.rebate_cap_amount;
---       raise notice 'below the line rebate_cap_percent_of_total = % ',x.rebate_cap_percent_of_total;
---       raise notice 'below the line rebate = % ',x.rebate;
+--        raise notice 'below the line minimum_tsrf_for_qualification = %',x.minimum_tsrf_for_qualification;
+--        raise notice 'below the line rebate_amount = % ',x.rebate_amount;
+--        raise notice 'below the line rebate_cap_amount = % ',x.rebate_cap_amount;
+--        raise notice 'below the line rebate_cap_percent_of_total = % ',x.rebate_cap_percent_of_total;
+--        raise notice 'below the line rebate = % ',x.rebate;
+--       raise notice 'unit_type_id = % ',x.unit_type_id;
 
       if x.minimum_tsrf_for_qualification is not null then
         select *
@@ -72,7 +73,8 @@ BEGIN
         from brs.get_rebate_for_utility_with_tsrf(p_aurora_design_summary,
                                                   x.rebate_cap_amount,
                                                   x.rebate_amount,
-                                                  x.minimum_tsrf_for_qualification);
+                                                  x.minimum_tsrf_for_qualification,
+                                                  x.unit_type_id::bigint);
       else
 
         select brs.get_amount_by_unit_type(p_system_size, 'PROPOSAL_REBATE',
@@ -81,7 +83,6 @@ BEGIN
                                            null,
                                            null)
         into v_utility_rebate_amount;
-
         if x.rebate_cap_amount is not null then
           v_utility_rebate_amount = least(v_utility_rebate_amount::numeric, x.rebate_cap_amount::numeric);
         elsif x.rebate_cap_percent_of_total is not null then
@@ -89,6 +90,8 @@ BEGIN
             least(v_utility_rebate_amount, x.rebate_cap_percent_of_total * p_total_system_cost);
         end if;
       end if;
+      raise notice 'v_utility_rebate_amount^^^^^^^^^^^^^^^^^^^^^^^^^^^55555555555 = %',v_utility_rebate_amount;
+
       if x.first_year_cap_on_rebate is not null and x.first_year_cap_on_rebate = 462 then
         v_below_the_line_utility_rebate_first_year_cap =
             coalesce(v_below_the_line_utility_rebate_first_year_cap,0) + least(coalesce(v_utility_rebate_amount, 0), x.max_amount_captured_first_year);
@@ -98,7 +101,7 @@ BEGIN
                                   least((coalesce(p_storage_capacity,0) * x.odoe_battery_rebate_amount * 1000)::numeric,
                                         x.odoe_battery_rebate_cap_amount);
       end if;
-      --raise notice 'below the line v_utility_rebate_amount^^^^^^^^^^^^^^^^^^^^^^^^^^^ = %',v_utility_rebate_amount;
+      raise notice 'below the line v_utility_rebate_amount^^^^^^^^^^^^^^^^^^^^^^^^^^^ = %',v_utility_rebate_amount;
       v_below_the_line_utility_rebate_amount = coalesce(v_below_the_line_utility_rebate_amount,0) + coalesce(round(v_utility_rebate_amount,2), 0);
       v_rebates = COALESCE(v_rebates, '{}'::jsonb) || jsonb_build_object(x.rebate, round(v_utility_rebate_amount,2));
      -- raise notice 'v_below_the_line_utility_rebate_amount*************************************** = %',v_below_the_line_utility_rebate_amount;
