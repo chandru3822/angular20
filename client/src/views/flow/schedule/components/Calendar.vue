@@ -32,9 +32,7 @@
               slot="prepend-item"
               ripple
               @click="toggleSelectAllStates()">
-              <v-list-item-action>
-                <v-icon>{{ iconStates }}</v-icon>
-              </v-list-item-action>
+                <v-icon class="mr-4">{{ iconStates }}</v-icon>
               <v-list-item-title class="wrap-dropdown-item">Select All</v-list-item-title>
             </v-list-item>
             <v-divider
@@ -43,6 +41,7 @@
             ></v-divider>
 
             <template v-slot:item="{item}">
+              <v-icon class="mr-4">{{selectedStates.findIndex(s => s.stateId === item.stateId) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
               <span class="wrap-dropdown-item">{{ item.state }}</span>
             </template>
           </v-autocomplete>
@@ -79,7 +78,7 @@
                 slot="prepend-item"
                 ripple
                 @click="toggleSelectAllOrgTypes()">
-              <v-list-item-action>
+              <v-list-item-action class="mr-4">
                 <v-icon>{{ iconOrgTypes }}</v-icon>
               </v-list-item-action>
               <v-list-item-title class="wrap-dropdown-item">Select All</v-list-item-title>
@@ -90,6 +89,7 @@
             ></v-divider>
             <template v-slot:item="{item}">
               <!--The only purpose of this template is to allow the items to wrap-->
+              <v-icon class="mr-4">{{selectedOrgTypes.findIndex(ot => ot.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
               <span class="wrap-dropdown-item">{{ item.orgType }}</span>
             </template>
           </v-autocomplete>
@@ -122,6 +122,7 @@
             </template>
             <template v-slot:item="{item}">
               <!--The only purpose of this template is to allow the items to wrap-->
+              <v-icon class="mr-4">{{selectedOrgs.findIndex(o => o.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
               <span class="wrap-dropdown-item">{{ item.orgName }}</span>
             </template>
           </v-autocomplete>
@@ -160,7 +161,7 @@
                 slot="prepend-item"
                 ripple
                 @click="toggleSelectAllPositions()">
-              <v-list-item-action>
+              <v-list-item-action class="mr-4">
                 <v-icon>{{ iconPositions }}</v-icon>
               </v-list-item-action>
               <v-list-item-title class="wrap-dropdown-item">Select All</v-list-item-title>
@@ -171,6 +172,7 @@
             ></v-divider>
             <template v-slot:item="{item}">
               <!--The only purpose of this template is to allow the items to wrap-->
+              <v-icon class="mr-4">{{selectedPositions.findIndex(p => p.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
               <span class="wrap-dropdown-item">{{ item.position }}</span>
             </template>
           </v-autocomplete>
@@ -204,6 +206,7 @@
             </template>
             <template v-slot:item="{item}">
               <!--The only purpose of this template is to allow the items to wrap-->
+              <v-icon class="mr-4">{{selectedUsers.findIndex(u => u.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
               <span class="wrap-dropdown-item">{{ item.fullName }}</span>
             </template>
           </v-autocomplete>
@@ -361,7 +364,7 @@ const calendarOptions = ref({
         calendarApi.gotoDate(new Date)
         handlePinsOnDayChange()
       }
-    },
+    }
   }
 })
 const snackbar = ref({})
@@ -398,7 +401,7 @@ const previousStateCount =  ref(0)
 const previousTypeCount =  ref(0)
 const previousPositionCount =  ref(0)
 const positionsLoading =  ref(true)
-
+const mapPinnedResources = ref([])
 const mapResourceEvents =  ref([])
 const checkedResources =  ref([])
 const daySelector =  ref(false)
@@ -522,7 +525,6 @@ const countSelected = computed(() => {
       watch(() => store.state.user.details.timezone, () => {
         //when the app timezone changes, update the schedule timezone to match
         timezone.value = store.state.user.details.timezone
-        debugger
       })
       watch(timezone, () => {
         //when the value of the timezone changes (either via the time zone dropdown selector or a change in the user store timezone value),
@@ -556,7 +558,7 @@ const countSelected = computed(() => {
         calendarApi.refetchEvents()
       }
       const isResourceOnMap = (resource) => {
-        return props.mapResources.findIndex(mr => resource.id === mr.id) >=0
+        return mapPinnedResources.value?.findIndex(rId => resource.id === rId) >=0
       }
       const isAssignedResource = (resource) => {
         let result = false
@@ -868,10 +870,12 @@ const countSelected = computed(() => {
             }
             mapResourceEvents.value.push(eventObj)
           })
+          mapPinnedResources.value.push(resource.id)
         } else {
           mapResourceEvents.value = mapResourceEvents.value.filter(r => {
             return r.id !== resource?.id
           })
+          mapPinnedResources.value = mapPinnedResources.value.filter(rId => resource?.id !== rId)
         }
         if(doCallback) {
           props.callback(mapResourceEvents.value, addPin)
@@ -956,57 +960,80 @@ const countSelected = computed(() => {
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
-      const goGetEventsNow = async (info, successCallback, failureCallback) => {
-        if (selectedOrgs.value.length > 0 || selectedUsers.value.length > 0) {
-          //i do this here instead of on its own because all of the code above here has to happen for get availability as well
-          calendarLoading.value = true
-         const availabilityData = await getAvailability(info);
-          try {
-            let params = {
-              orgIds: selectedOrgs.value?.length > 0 ? selectedOrgs.value.map(o => o.masterId) : [],
-              // this was the old way. leaving here in case
-              // userPositionIds: this.getUserPositionIds(),
-              userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
-              startTime: info.start,
-              endTime: info.end,
-              includeCancelled: includeCancelled.value
-            }
-            const {data} = await postRequest(`/schedule`, params)
-            data.forEach(d => {
-              d.id = d.eventId
-              // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-              // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
-              d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
-              d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName}`
-              d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
-              let matchingResource = calendarOptions.value.resources.find(r => r.id === d.resourceId)
-              if(d.eventStatusTypeId === 3) {
-                d.colorForBorder = '#919191'
-                d.textColor = '#919191'
-              } else {
-                d.colorForBorder = matchingResource?.color
-                d.textColor = 'var(--v-primary-base)'
-                d.classNames=['event-tile', matchingResource?.eventColorClass]
-              }
-            })
-            // console.log('the events: ',data)
-            let events = cloneDeep(data)
-            events = events.concat(availabilityData)
-            successCallback(events)
-            calendarLoading.value = false
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            snackbar.value = getSnackbar('ERROR', 'Error Retrieving Events')
-            store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-            failureCallback(e)
-            calendarLoading.value = false
-          } finally {
-            orgValuesChanged.value = false
-            userValuesChanged.value = false
-          }
-        }
-        successCallback([])
+const goGetEventsNow = async (info, successCallback, failureCallback) => {
+  mapResourceEvents.value = []
+  if (selectedOrgs.value.length > 0 || selectedUsers.value.length > 0) {
+    //i do this here instead of on its own because all of the code above here has to happen for get availability as well
+    calendarLoading.value = true
+    const availabilityData = await getAvailability(info);
+    try {
+      let params = {
+        orgIds: selectedOrgs.value?.length > 0 ? selectedOrgs.value.map(o => o.masterId) : [],
+        // this was the old way. leaving here in case
+        // userPositionIds: this.getUserPositionIds(),
+        userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
+        startTime: info.start,
+        endTime: info.end,
+        includeCancelled: includeCancelled.value
       }
+      const {data} = await postRequest(`/schedule`, params)
+      data.forEach(d => {
+        d.id = d.eventId
+        // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
+        // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
+        d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
+        d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName}`
+        d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
+        let matchingResource = calendarOptions.value.resources.find(r => r.id === d.resourceId)
+        if(d.eventStatusTypeId === 3) {
+          d.colorForBorder = '#919191'
+          d.textColor = '#919191'
+        } else {
+          d.colorForBorder = matchingResource?.color
+          d.textColor = 'var(--v-primary-base)'
+          d.classNames=['event-tile', matchingResource?.eventColorClass]
+        }
+        if(isResourceOnMap(matchingResource)) {
+
+          let eventObj = {
+            id: matchingResource.id,
+            projectName: d.projectName,
+            processStepName: d.processStepName,
+            city: d.city,
+            projectId: d.projectId,
+            projectProcessStepId: d.projectProcessStepId,
+            projectProcessStepEventId: d.projectProcessStepEventId,
+            stateAbbreviation: d.stateAbbreviation,
+            postalCode: d.postalCode,
+            street1: d.street1,
+            color: matchingResource.color,
+            coordinates: [d.longitude, d.latitude],
+            start: d.startStr,
+            end: d.endStr
+          }
+          mapResourceEvents.value.push(eventObj)
+        }
+
+      })
+      props.callback(mapResourceEvents.value, true)
+      // console.log('the events: ',data)
+      let events = cloneDeep(data)
+      events = events.concat(availabilityData)
+      successCallback(events)
+      calendarLoading.value = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar.value = getSnackbar('ERROR', 'Error Retrieving Events')
+      store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+      failureCallback(e)
+      calendarLoading.value = false
+    } finally {
+      orgValuesChanged.value = false
+      userValuesChanged.value = false
+    }
+  }
+  successCallback([])
+}
       const handleEventClick = (info) => {
         if(info.event.title && info.event.display === 'auto') {
           let props = info.event.extendedProps
