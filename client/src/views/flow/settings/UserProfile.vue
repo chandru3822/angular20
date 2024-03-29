@@ -10,7 +10,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat elevation="0" class="app-toolbar">
-          <v-toolbar-title class="title-large">User Profile</v-toolbar-title>
+          <v-toolbar-title class="title-large">Account</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <!--mobile save button-->
@@ -146,14 +146,6 @@
                     @change="setFieldsDirty"
                     autocomplete="off">
           </v-select>
-        </v-card>
-      </v-col>
-    </v-row>
-    <v-divider class="mt-3 mb-3" v-if="smsTeams && smsTeams.length > 0"></v-divider>
-    <v-row v-if="smsTeams && smsTeams.length > 0">
-      <v-col cols="12" md="6">
-        <h3 class="title-medium">Notification Preferences</h3>
-        <v-card flat color="transparent">
           <div v-for="item in smsTeams" class="unassigned-notif-div d-flex">
             <span class="mt-4">{{ item.teamName }} SMS Team:</span>
             <v-checkbox class="pl-4 py-0" @change="checkForDeselect(item)" v-model="item.receiveUnassignedNotifications" label="Receive notifications for team's unassigned messages"></v-checkbox>
@@ -164,7 +156,7 @@
     <v-divider class="mt-3 mb-3" v-if="userProfileCustomFields && userProfileCustomFields.length > 0"></v-divider>
     <v-row v-if="userProfileCustomFields && userProfileCustomFields.length > 0">
       <v-col cols="12" md="6">
-        <h3 class="title-medium pb-2">Custom Fields</h3>
+        <h3 class="title-medium pb-2">Miscellaneous</h3>
         <SpinnerInline v-if="loadingUserProfileCustomFields" :text="'Checking For Additional Fields...'" :size="20" color="primary"/>
         <CustomValueInput v-for="(cf, idx) in userProfileCustomFields"
                           :key="idx"
@@ -465,6 +457,7 @@ const getUser = async (userIsAlbatross) => {
 }
 const saveUser = async () => {
   appStore.loading = true
+  userStore.details.defaultProjectPage = user.value.defaultProjectPage
   try {
     const {data, status} = await putRequest(`/user?userIsAlbatross=${userIsAlbatross.value}`, user.value)
     if(data && data.id && dirtyCfvs.value?.length > 0) {
@@ -586,7 +579,6 @@ const goToPath = (path, targetBlank) => {
     router.push(path)
   }
 }
-
 </script>
 
 <style scoped lang="scss">
