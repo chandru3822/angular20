@@ -250,7 +250,7 @@
             <div>
               <v-tooltip bottom>
                 <template v-slot:activator="{on}">
-              <AlbatrossButton icon size="x-small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
+              <AlbatrossButton icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
                 <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
                 <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
               </AlbatrossButton>
@@ -260,13 +260,13 @@
               </v-tooltip>
               <v-tooltip bottom>
                 <template v-slot:activator="{on}">
-              <AlbatrossButton v-if="showScheduleBtnForResource(resource)" icon size="x-small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">
+              <AlbatrossButton v-if="showScheduleBtnForResource(resource)" icon size="small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">
                 <v-icon>mdi-calendar-plus</v-icon>
               </AlbatrossButton>
                 </template>
                 Assign to Event
               </v-tooltip>
-              <AlbatrossButton icon size="x-small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></AlbatrossButton>
+              <AlbatrossButton icon size="small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></AlbatrossButton>
             </div>
           </div>
         </template>
@@ -324,6 +324,7 @@ const calendarOptions = ref({
   initialView: 'resourceTimelineDay',
   resources: [],
   resourceAreaWidth: 300,
+  resourceGroupLaneClassNames:['resourceLaneClass'],
   schedulerLicenseKey: constants.FULL_CALENDAR_LICENSE_KEY,
   eventSources:[
     (info, successCallback, failureCallback) => goGetEventsNow(info, successCallback, failureCallback)
@@ -1093,6 +1094,10 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
   font-size: 1.375rem;
   line-height: 1.4;
 }
+.resource-lane-class {
+  height: 54px !important;
+  color: mediumpurple !important;
+}
 #calendar-container .fc-toolbar-title {
   @media(max-width: 960px) {
     font-size: 1.25rem;
@@ -1233,8 +1238,6 @@ padding-bottom: 8px;
   text-overflow: ellipsis;
   overflow: hidden;
 }
-
-
 
 .border-bottom {
   border-bottom: 1px solid #C7C7CC;
