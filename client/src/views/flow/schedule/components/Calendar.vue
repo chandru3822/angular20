@@ -271,7 +271,7 @@
           </div>
         </template>
         <template v-slot:eventContent="{event}">
-          <span v-if="event.title !== 'null'" class="event-title text-no-wrap">{{event.title}}</span>
+          <span v-if="event.title !== 'null'" class="event-title body-medium text-no-wrap">{{event.title}}</span>
 <!--yes, 'null' is intentionally a string because that's how it comes back from the calendar-->
         </template>
       </FullCalendar>
@@ -993,7 +993,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
         // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
         // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
         d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
-        d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName}`
+        d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
         d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
         let matchingResource = calendarOptions.value.resources.find(r => r.id === d.resourceId)
         if(d.eventStatusTypeId === 3) {
@@ -1085,7 +1085,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
 
 .event-tile{
   border-left-width: 20px;
-  height: 20px;
+  height: 28px;
 }
 .fc h2.fc-toolbar-title{
   //headline-large
