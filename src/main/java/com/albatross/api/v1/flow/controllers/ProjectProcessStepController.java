@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepLogic;
 import com.albatross.api.v1.flow.model.projectProcessStep.*;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
+import com.albatross.api.v1.flow.services.AutoTriggerHandlerService;
 import com.albatross.api.v1.flow.services.CustomFieldGroupAssignmentService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepRequirementService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
@@ -43,6 +44,8 @@ public class ProjectProcessStepController {
   private final CustomFieldGroupAssignmentService cfgaService;
 
   private final SqlCache sqlCache;
+
+  private final AutoTriggerHandlerService autoTriggerHandlerService;
 
   @GetMapping(value = "/{projectProcessStepId}")
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(
@@ -337,7 +340,7 @@ public class ProjectProcessStepController {
   public ResponseEntity<Void> updateProjectProcessStepStatus(
     @PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     try {
-      List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
+
       projectProcessStepService.setStatus(
         projectProcessStepId,
         status.getProcessStepStatusTypeId(),
@@ -346,38 +349,7 @@ public class ProjectProcessStepController {
 
       // @TODO: Few dupes of this code fragment. Combine when there if free time... lol... free
       // time... good one
-      try {
-        actionResults.add(projectProcessStepService.performAutoTriggerActions(
-          projectProcessStepId, securityService.getCurrentUserDetails()));
-
-        // check for any actions using this PS - Status as a requirement - NOT including SELF
-        // (because that creates a potential infinite loop) if active
-        // run auto triggers for those actions
-        List<ProjectProcessStep> steps =
-          sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds,
-            Map.of("projectProcessStepIds", List.of(projectProcessStepId)),
-            ProjectProcessStep.class);
-        for (ProjectProcessStep step : steps) {
-          // only run if the referring PPS is active
-          if (step.getProcessStepStatusTypeId() == 1) {
-            actionResults.add(projectProcessStepService.performAutoTriggerActions(
-              step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
-          }
-        }
-
-        boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
-        List<Long> ppsIds = new ArrayList<>();
-        ppsIds.add(projectProcessStepId);
-        projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, null, ppsIds);
-
-      } catch (Exception e) {
-        final String errMessage =
-
-            "PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s".formatted(
-            projectProcessStepId, e.getMessage());
-        log.error(errMessage);
-        throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
-      }
+      autoTriggerHandlerService.handlePpsAutoTriggersAfterStatusUpdate(projectProcessStepId);
 
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (RuntimeException e) {

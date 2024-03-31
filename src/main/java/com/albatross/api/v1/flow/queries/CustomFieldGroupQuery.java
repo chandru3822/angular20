@@ -65,6 +65,58 @@ public class CustomFieldGroupQuery {
        """;
 
   //language=PostgreSQL
+  public final static String getCustomFieldsByCfgaIds = """
+    select null as id,
+                                        cfga.custom_field_group_id as "customFieldGroupId",
+                                        cfga.id as "customFieldGroupAssignmentId",
+                                        cfga.field_order as "fieldOrder",
+                                        cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                        cfga.hidden as "customFieldGroupAssignmentHidden",
+                                        case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
+                                        cf.system_readonly as "systemReadonly",
+                                        cf.list_of_value_id as "listOfValueId",
+                                        cf.company_system_list_id as "companySystemListId",
+                                        cf.system_list_option_ids as "systemListOptionIds",
+                                        cf.id as "customFieldId",
+                                        cf.field_name as "fieldName",
+                                        cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
+                                        cf.custom_field_sql as "customFieldSql",
+                                        cf.company_data_type_id as "companyDataTypeId",
+                                        cfga.show_on_insert as "showOnInsert",
+                                        cfga.show_on_user_profile as "showOnUserProfile",
+                                        cfga.required,
+                                        cfga.required as "requireOnInsert",
+                                        cdt.data_type_id as "dataTypeId",
+                                        cdt.has_list_values as "hasListValues",
+                                        coalesce((
+                                                   SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                                                   FROM (
+                                                                select
+                                                                  lov.id,
+                                                                  lov.name,
+                                                                  lov.code,
+                                                                  lov.parent_id,
+                                                                  lov.display_order,
+                                                                  lov.archived
+                                                                from flow.list_of_value lov
+                                                                where lov.parent_id is not null
+                                                                  and lov.parent_id = cf.list_of_value_id
+                                                                  and lov.archived is not true
+                                                                order by
+                                                                  case when cf.sort_list_values_alphabetically is true  then lov.name end,
+                                                                  case when cf.sort_list_values_alphabetically is false then lov.display_order end
+                                                        ) listOfValues), '[]') AS "listOfValues"
+                                 from flow.custom_field_group_assignment cfga
+                                        inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                        inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                        join unnest(array[ :cfgaIds ]::bigint[] ) with ordinality as x (id, ordering) on cfga.id = x.id
+                                 where cfga.id = any( array [ :cfgaIds ]::bigint[] )
+                                   and cfga.archived is not true
+                                   and cf.company_id = :companyId
+                                 order by x.ordering
+  """;
+
+  //language=PostgreSQL
   public final static String getInsertFieldsByType = """
     select cfg.id,
                cfg.group_name as "groupName",

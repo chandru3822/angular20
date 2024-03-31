@@ -27,6 +27,7 @@ import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -46,6 +47,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -92,6 +94,9 @@ public class ProjectProcessStepService {
 
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
+
+  @Value(value = "${app.ignoreAuroraErrors:false}")
+  private Boolean ignoreAuroraErrors;
 
   public List<Attachment> getProjectProcessStepAttachments(Long projectProcessStepId, Boolean isMobile, Boolean linked) {
     HashMap<String, Object> params = new HashMap<>();
@@ -171,6 +176,49 @@ public class ProjectProcessStepService {
     params.put("projectProcessStepId", projectProcessStepId);
     params.put("attachmentId", attachmentId);
     params.put("createdById", user.trueUserId());
+
+    sqlCache.updateBySql(ProjectProcessStepQuery.addAttachment, params);
+
+    return attachmentService.findById(attachmentId);
+  }
+
+  public Attachment addAttachmentByInputStream(@NonNull Long ppsId, @NonNull Long attachmentTypeId, Long contentLength, String contentType, String filename, InputStream inputStream, String displayName){
+    User currentUser = securityService.getCurrentUser();
+
+    //had to change this so that a parent looking at a child project could still see project statuses
+    HashMap<String, Object> p2 = new HashMap<>();
+    p2.put("projectProcessStepId", ppsId);
+    Long companyId = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getCompanyId, p2, Long.class);
+
+    // get keyPattern from attachmentType
+    AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
+    String key =
+      String.format(
+        currentUser.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+
+    ObjectMetadata metadata = new ObjectMetadata();
+    metadata.setContentLength(contentLength);
+    metadata.setContentType(contentType);
+
+    final PutObjectRequest putObjectRequest = new PutObjectRequest(storageBucket, key, inputStream, metadata);
+    s3.putObject(putObjectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("filename", CleanString.cleanFilename(filename));
+    params.put("contentType", contentType);
+    params.put("key", key);
+    params.put("size", contentLength);
+    params.put("createdById", currentUser.trueUserId());
+    params.put("companyId", companyId);
+    params.put("displayName", displayName.length() > 100 ? displayName.substring(0, 100) : displayName);
+    params.put("attachmentTypeId", attachmentTypeId);
+
+    Long attachmentId = sqlCache.updateBySqlReturningId(AttachmentQuery.create, params, "id").longValue();
+
+    params.clear();
+    params.put("projectProcessStepId", ppsId);
+    params.put("attachmentId", attachmentId);
+    params.put("createdById", currentUser.trueUserId());
 
     sqlCache.updateBySql(ProjectProcessStepQuery.addAttachment, params);
 
@@ -1249,6 +1297,8 @@ public class ProjectProcessStepService {
           if (functionAbbreviation.equals("brs")) {
             var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService);
             functionClass.marketoEnabled = marketoEnabled;
+            //this is dumb but i really dont want to fill in the info on the design for dev-ing stuff
+            functionClass.ignoreAuroraErrors = ignoreAuroraErrors;
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             Object backendActionResult = method.invoke(functionClass, childFunction, systemValues);
             if(null != backendActionResult) {

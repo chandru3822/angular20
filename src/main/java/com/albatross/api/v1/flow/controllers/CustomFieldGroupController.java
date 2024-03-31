@@ -4,6 +4,7 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
+import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.FieldInUse;
 import com.albatross.api.v1.flow.services.CustomFieldGroupService;
 import lombok.Data;
@@ -178,4 +179,9 @@ public class CustomFieldGroupController {
   public void updateFieldShowOrRequire(@RequestBody CustomField customField) {
     customFieldGroupService.updateFieldShowOrRequire(customField);
   }
+
+    @GetMapping(value = "/getCustomFieldsByCfgaIds")
+    public List<CustomFieldValue> getCustomFieldsByCfgaIds (@RequestParam List<Long> cfgaIds) {
+        return customFieldGroupService.getCustomFieldsByCfgaIds(cfgaIds);
+    }
 }

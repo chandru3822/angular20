@@ -5,6 +5,7 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.project.Project;
+import com.albatross.api.v1.flow.services.AutoTriggerHandlerService;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.ProjectService;
@@ -31,12 +32,10 @@ import java.util.Optional;
 public class CustomFieldValueController {
 
   private final CustomFieldValueService customFieldValueService;
-
   private final ProjectProcessStepService projectProcessStepService;
-
   private final ProjectService projectService;
-
   private final SecurityService securityService;
+  private final AutoTriggerHandlerService autoTriggerHandlerService;
 
   // gets for all types
   @GetMapping(value = "/contact/{id}")
@@ -170,34 +169,16 @@ public class CustomFieldValueController {
       @RequestBody List<CustomFieldValue> values,
       @PathVariable Long projectId,
       @PathVariable Long projectProcessStepId) {
+
     List<CustomFieldGroup> groups =
         customFieldValueService.updateCustomFieldValues(
             values, projectProcessStepId, ObjectType.PROCESS_STEP);
 
-    List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
-    try {
-      actionResults.add(projectProcessStepService.performAutoTriggerActions(
-          projectProcessStepId, securityService.getCurrentUserDetails()));
-
-      // grab all PPS where the updated fields are ancillary and perform auto triggers there
-      List<Long> cfgaIds =
-          values.stream().map(CustomFieldValue::getCustomFieldGroupAssignmentId).toList();
-      if (!cfgaIds.isEmpty()) {
-        List<Long> ppsIds =
-            projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
-        for (Long ppsId : ppsIds) {
-          // Don't re-check the ppsId we just previously did
-          if (!ppsId.equals(projectProcessStepId)) {
-            actionResults.add(projectProcessStepService.performAutoTriggerActions(
-                ppsId, securityService.getCurrentUserDetails()));
-          }
-        }
-        boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
-        projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, null, ppsIds);
+      try {
+         autoTriggerHandlerService.handlePpsAutoTriggersAfterCfvUpdate(projectId, projectProcessStepId, values);
+      } catch (Exception e) {
+          throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
       }
-    } catch (Exception e) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-    }
 
     return groups;
   }
