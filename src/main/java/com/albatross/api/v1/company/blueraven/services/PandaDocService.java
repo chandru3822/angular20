@@ -247,7 +247,7 @@ public class PandaDocService {
    * @throws Exception
    */
   public void validate(Long projectId, String financier, JSONObject tokens) throws Exception {
-    final Set<String> ALLOWED_FINANCIERS = new HashSet<>(Arrays.asList("cash", "loanpal", "goodleap", "sunlight", "sunpower",
+    final Set<String> ALLOWED_FINANCIERS = new HashSet<>(Arrays.asList("cash", "loanpal", "enfin", "goodleap", "sunlight", "sunpower",
                                                                                 "skeps", "dividend", "credit", "credit human"));
     if (installAgreementRepository.isCashProject(financier)) {
       validateCashProject(projectId, tokens);
