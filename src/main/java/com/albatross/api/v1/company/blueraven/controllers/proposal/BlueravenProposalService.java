@@ -14,11 +14,9 @@ import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.Lo
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.UnapprovedPostalCodeProposalException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalDesignMapper;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalMapper;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalPostalCodeStatus;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalResource;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.*;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.query.ProposalQuery;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.query.ProposalToolQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroupService;
@@ -50,23 +48,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.StandardCharsets;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -113,57 +106,57 @@ public class BlueravenProposalService {
     return result;
   }
 
-    public void syncDesign(Long ppsId, String designId) {
-      try {
-        //set the process step status
-        projectProcessStepService.setStatus(
-          ppsId,
-          2L, //root: complete
-          2L, //company complete
-          3L); //cancelled for any existing actives (should never be one)
+  public void syncDesign(Long ppsId, String designId) {
+    try {
+      //set the process step status
+      projectProcessStepService.setStatus(
+        ppsId,
+        2L, //root: complete
+        2L, //company complete
+        3L); //cancelled for any existing actives (should never be one)
 
-        //handle auto triggers again
-        autoTriggerHandlerService.handlePpsAutoTriggersAfterStatusUpdate(ppsId);
+      //handle auto triggers again
+      autoTriggerHandlerService.handlePpsAutoTriggersAfterStatusUpdate(ppsId);
 
-        AuroraProxy.AssetList results = auroraProxy.getDesignAssets(designId);
-        //only upload to our side for CAD Auto Screenshot types and only do 1 of them
-        Optional<AuroraAssetDTO> asset = results.getAssets().stream().filter(a -> a.getAssetType().equals("CAD Auto Screenshot")).findFirst();
+      AuroraProxy.AssetList results = auroraProxy.getDesignAssets(designId);
+      //only upload to our side for CAD Auto Screenshot types and only do 1 of them
+      Optional<AuroraAssetDTO> asset = results.getAssets().stream().filter(a -> a.getAssetType().equals("CAD Auto Screenshot")).findFirst();
 
-        if(asset.isPresent()) {
-          String filename = asset.get().getFilename() != null ? asset.get().getFilename() : "Aurora_Sales_AI_Upload.png";
-          Resource resource = getResourceFromUrl(asset.get().getUrl());
+      if (asset.isPresent()) {
+        String filename = asset.get().getFilename() != null ? asset.get().getFilename() : "Aurora_Sales_AI_Upload.png";
+        Resource resource = getResourceFromUrl(asset.get().getUrl());
 
-          if(resource != null) {
-            try (InputStream attachmentStream = resource.getInputStream()) {
-              projectProcessStepService.addAttachmentByInputStream(
-                ppsId,
-                936L, //attachment type for 2D Proposal Image
-                resource.contentLength(),
-                MediaType.IMAGE_PNG_VALUE,
-                filename,
-                attachmentStream,
-                filename);
-            }
+        if (resource != null) {
+          try (InputStream attachmentStream = resource.getInputStream()) {
+            projectProcessStepService.addAttachmentByInputStream(
+              ppsId,
+              936L, //attachment type for 2D Proposal Image
+              resource.contentLength(),
+              MediaType.IMAGE_PNG_VALUE,
+              filename,
+              attachmentStream,
+              filename);
           }
         }
-      } catch (IOException e) {
-        throw new RuntimeException(e);
       }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    public Resource getResourceFromUrl(String url) {
-      WebClient build = WebClient.builder()
-        .baseUrl(url)
-        .codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs().maxInMemorySize(1024 * 1024 * 10)).build();
+  public Resource getResourceFromUrl(String url) {
+    WebClient build = WebClient.builder()
+      .baseUrl(url)
+      .codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs().maxInMemorySize(1024 * 1024 * 10)).build();
 
-      return build
-        .get()
-        .accept(MediaType.APPLICATION_JSON)
-        .retrieve()
-        .bodyToMono(Resource.class)
-        .doOnError((e) -> log.error("[AURORA] Error processing asset, error={}", e.getMessage()))
-        .block();
-    }
+    return build
+      .get()
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(Resource.class)
+      .doOnError((e) -> log.error("[AURORA] Error processing asset, error={}", e.getMessage()))
+      .block();
+  }
 
     public AuroraDesignDTO doProposalAiRequest(Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
         //this function needs to:
@@ -202,38 +195,38 @@ public class BlueravenProposalService {
         }
     }
 
-    public void handleNewPpsForAuroraDesign(Long projectId, String designId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, Boolean designByAuroraValue) {
-      //insert a new Create Proposal Design Process Step
-      Long ppsId = insertProjectProcessStep(projectId, 3507L);
+  public void handleNewPpsForAuroraDesign(Long projectId, String designId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, Boolean designByAuroraValue) {
+    //insert a new Create Proposal Design Process Step
+    Long ppsId = insertProjectProcessStep(projectId, 3507L);
 
-      //add the design id to the custom field values
-      com.albatross.api.v1.flow.model.CustomFieldValue designFieldValue = new com.albatross.api.v1.flow.model.CustomFieldValue();
-      designFieldValue.setTextValue(designId);
-      designFieldValue.setCustomFieldGroupAssignmentId(22560L);
-      values.add(designFieldValue);
+    //add the design id to the custom field values
+    com.albatross.api.v1.flow.model.CustomFieldValue designFieldValue = new com.albatross.api.v1.flow.model.CustomFieldValue();
+    designFieldValue.setTextValue(designId);
+    designFieldValue.setCustomFieldGroupAssignmentId(22560L);
+    values.add(designFieldValue);
 
-      //add the Designed By Aurora boolean custom field value here
-      com.albatross.api.v1.flow.model.CustomFieldValue designedByAuroraFieldValue = new com.albatross.api.v1.flow.model.CustomFieldValue();
-      designedByAuroraFieldValue.setBooleanValue(designByAuroraValue);
-      designedByAuroraFieldValue.setCustomFieldGroupAssignmentId(26962L);
-      values.add(designedByAuroraFieldValue);
+    //add the Designed By Aurora boolean custom field value here
+    com.albatross.api.v1.flow.model.CustomFieldValue designedByAuroraFieldValue = new com.albatross.api.v1.flow.model.CustomFieldValue();
+    designedByAuroraFieldValue.setBooleanValue(designByAuroraValue);
+    designedByAuroraFieldValue.setCustomFieldGroupAssignmentId(26962L);
+    values.add(designedByAuroraFieldValue);
 
-      //insert/update the custom field values
-      customFieldValueService.updateCustomFieldValues(values, ppsId, com.albatross.api.v1.flow.enums.ObjectType.PROCESS_STEP);
+    //insert/update the custom field values
+    customFieldValueService.updateCustomFieldValues(values, ppsId, com.albatross.api.v1.flow.enums.ObjectType.PROCESS_STEP);
 
-      //set the process step status
-      projectProcessStepService.setStatus(
-        ppsId,
-        1L, //root: active
-        1649L, //company Pending Aurora Adjustments
-        3L); //cancelled for any existing actives (should never be one)
+    //set the process step status
+    projectProcessStepService.setStatus(
+      ppsId,
+      1L, //root: active
+      1649L, //company Pending Aurora Adjustments
+      3L); //cancelled for any existing actives (should never be one)
 
-      //do auto triggers at the end - per lowry
-      autoTriggerHandlerService.handlePpsAutoTriggersAfterCfvUpdate(projectId, ppsId, values);
-      autoTriggerHandlerService.handlePpsAutoTriggersAfterStatusUpdate(ppsId);
+    //do auto triggers at the end - per lowry
+    autoTriggerHandlerService.handlePpsAutoTriggersAfterCfvUpdate(projectId, ppsId, values);
+    autoTriggerHandlerService.handlePpsAutoTriggersAfterStatusUpdate(ppsId);
 
-      //return the design id
-    }
+    //return the design id
+  }
 
   public List<ProposalDesign> getProposalDesigns(@NonNull Long projectId) {
     List<ProposalDesign> results =
@@ -270,7 +263,7 @@ public class BlueravenProposalService {
 
     // create new "create proposal design" step (active, cancel others)
     Long ppsId = insertProjectProcessStep(projectId, CREATE_PROPOSAL_DESIGN_ID);
-//    log.debug("the new ppsId is: {}", ppsId);
+
     // upload attachments to the new step
     if (null != attachments && !attachments.isEmpty()) {
       for (MultipartFile a : attachments) {
@@ -347,74 +340,69 @@ public class BlueravenProposalService {
   private static final Long financialProductFieldId = 128L;
   private static final Long rebatesFieldId = 415L;
   private static final Long commissionStrategyFieldId = 467L;
-
+  private static final Long flowPanelBrandFieldId = 204L;
+  private static final Long brsPanelBrandFieldId = 138L;
 
   public Optional<Proposal> getProposal(@NonNull Long proposalId, Long userId) {
-
     Optional<Long> userOrgId = findUserOrgId(userId);
-
-//    TODO: filter out cfgs that are hidden based on the user on the server
     Optional<Proposal> result =
       sqlCache.getBySql(
         ProposalQuery.get,
         Map.of("proposalId", proposalId),
         new ProposalMapper<>(Proposal.class, om));
 
-    result.ifPresent(this::filterCustomFieldsByVisibility);
+    if (result.isEmpty()) {
+      return result;
+    }
 
-    // handle custom list of values
-    result.ifPresent(
-      proposal ->
-        blueravenCustomFieldGroupService.handleCustomListOfValue(
-          proposal.getCustomFieldGroups(), 3L, proposal.getProjectId()));
+    Proposal proposal = result.get();
+
+    List<ProposalStepCustomFieldValue> proposalDesignStepValues = getProjectProcessStepValues(proposal.getProjectProcessStepId());
+
+    //initially filter out any fields that don't match their visibility property
+    filterCustomFieldsByVisibility(proposal, proposalDesignStepValues);
+
+    // then populate the list of values
+    blueravenCustomFieldGroupService.handleCustomListOfValue(
+      proposal.getCustomFieldGroups(), 3L, proposal.getProjectId());
+
+    Long proposalVersionId = proposal.getProposalVersionId();
 
     // a little post-processing to filter out records that are not part of the current proposal version
-    result.ifPresent(proposal -> proposal.getCustomFieldGroups()
+    proposal.getCustomFieldGroups()
       .forEach(cfg -> cfg.getCustomFieldValues().stream()
         .filter(cfv -> cfv.getCustomFieldId() != null)
         .filter(CustomFieldValue::getHasListValues)
         .forEach(cfv -> {
-          // BRS needs to filter out financial products by state
           if (financialProductFieldId.equals(cfv.getCustomFieldId())) {
-            filterValuesByCustomFieldId(proposal.getProposalVersionId(), cfv, excludedStateCustomFieldId, proposal.getStateId());
+            // BRS needs to filter out financial products by state
+            filterCustomFieldValues(cfv,
+              excludeValuesByCustomFieldId(proposal.getProposalVersionId(), cfv, excludedStateCustomFieldId, proposal.getStateId(), "PROPOSAL_FINANCE_PRODUCTS"), true);
+
+            proposalDesignStepValues.stream()
+              .filter(p -> p.getFieldId().equals(flowPanelBrandFieldId))
+              .findFirst()
+              .ifPresent(proposalStepCustomFieldValue ->
+                filterCustomFieldValues(cfv,
+                  getProposalVersionValues(proposalVersionId, cfv.getCustomFieldId(), new ProposalFieldFilter(brsPanelBrandFieldId, null, Long.valueOf(proposalStepCustomFieldValue.getValue().toString()), null), "PROPOSAL_FINANCE_PRODUCTS"), true));
           }
 
           //BRS needs to filter out dealers by associated org
           if (dealerFieldId.equals(cfv.getCustomFieldId()) && userOrgId.isPresent()) {
-            List<Long> ids = filterDealersByOrg(proposal.getProposalVersionId(), userOrgId.get());
-            if (!ids.isEmpty()) {
-              List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
-                .filter(v -> ids.contains(v.getId()))
-                .sorted(Comparator.comparing(ListOfValue::getName))
-                .toList();
-
-              cfv.setListOfValues(listOfValues);
-            }
+            filterCustomFieldValues(cfv, filterDealersByOrg(proposalVersionId, userOrgId.get()), true);
           }
 
           if (rebatesFieldId.equals(cfv.getCustomFieldId())) {
-            List<Long> ids = filterRebatesByStateAndUtility(proposal.getProposalVersionId(), proposal.getStateId(), proposal.getUtilityCompanyId());
-            List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
-              .filter(v -> ids.contains(v.getId()))
-              .sorted(Comparator.comparing(ListOfValue::getName))
-              .toList();
-
-            cfv.setListOfValues(listOfValues);
+            filterCustomFieldValues(cfv, filterRebatesByStateAndUtility(proposalVersionId, proposal.getStateId(), proposal.getUtilityCompanyId()), false);
           }
 
           if (commissionStrategyFieldId.equals(cfv.getCustomFieldId())) {
-            List<Long> ids = filterCommissionStrategiesByUser(proposal.getProposalVersionId(), userId);
-            List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
-              .filter(v -> ids.contains(v.getId()))
-              .sorted(Comparator.comparing(ListOfValue::getName))
-              .toList();
-
-            cfv.setListOfValues(listOfValues);
+            filterCustomFieldValues(cfv, filterCommissionStrategiesByUser(proposalVersionId, userId), false);
           }
-        })));
+        }));
 
     //filter out any custom fields that _should_ have a list of values but don't (previously filtered)
-    result.ifPresent(proposal -> proposal.getCustomFieldGroups()
+    proposal.getCustomFieldGroups()
       .forEach(cfg -> {
         List<CustomFieldValue> list = cfg.getCustomFieldValues().stream()
           .filter(cfv -> {
@@ -426,9 +414,23 @@ public class BlueravenProposalService {
           .toList();
 
         cfg.setCustomFieldValues(list);
-      }));
+      });
 
-    return result;
+    return Optional.of(proposal);
+  }
+
+  private void filterCustomFieldValues(CustomFieldValue cfv, List<Long> filter, boolean skipIfEmpty) {
+    if (filter == null || (filter.isEmpty() && skipIfEmpty)) {
+      // only filter if we get some results back... otherwise, we are assuming not filtering is required
+      return;
+    }
+
+    List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
+      .filter(v -> filter.contains(v.getId()))
+      .sorted(Comparator.comparing(ListOfValue::getName))
+      .toList();
+
+    cfv.setListOfValues(listOfValues);
   }
 
   private List<Long> filterCommissionStrategiesByUser(@NonNull Long proposalVersionId, @NonNull Long userId) {
@@ -456,31 +458,41 @@ public class BlueravenProposalService {
     return sqlCache.queryBySql(ProposalQuery.filterRebatesByStateAndUtility, params, new SingleColumnRowMapper<>(Long.class));
   }
 
-  private void filterValuesByCustomFieldId(Long proposalVersionId, CustomFieldValue cfv, Long filterKeyId, Object filterVal) {
-    List<Long> customFieldFilteredValues = proposalVersionService.getProposalValueFilterIdsByCustomFieldAndValue(proposalVersionId, cfv.getCustomFieldId(), filterKeyId, filterVal)
+  private List<Long> getProposalVersionValues(Long proposalVersionid, Long customFieldId, ProposalFieldFilter filter, String objectCode) {
+    try (Connection connection = sqlCache.getSqlJdbc().getJdbcTemplate().getDataSource().getConnection()) {
+
+      Map<String, Object> params = new HashMap<>();
+      params.put("versionId", proposalVersionid);
+      params.put("fieldId", customFieldId);
+      params.put("objectCode", objectCode);
+
+      if (filter != null) {
+        Array customFieldFilters = connection.createArrayOf("ProposalFieldFilter", new Object[]{filter});
+        params.put("filters", customFieldFilters);
+      } else {
+        params.put("filters", null);
+      }
+      return sqlCache.queryBySql(ProposalToolQuery.findProposalVersionValues, params, new SingleColumnRowMapper<>(Long.class));
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  //exclusions
+  private List<Long> excludeValuesByCustomFieldId(Long proposalVersionId, CustomFieldValue cfv, Long filterKeyId, Object filterVal, String objectCode) {
+    return proposalVersionService.getProposalValueFilterIdsByCustomFieldAndValue(proposalVersionId, cfv.getCustomFieldId(), filterKeyId, filterVal, objectCode)
       .stream()
       .filter(Objects::nonNull)
       .toList();
-
-    // only filter if we get some results back... otherwise, we are assuming not filtering is required
-    if (!customFieldFilteredValues.isEmpty()) {
-      List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
-        .filter(v -> customFieldFilteredValues.contains(v.getId()))
-        .sorted(Comparator.comparing(ListOfValue::getName))
-        .toList();
-
-      cfv.setListOfValues(listOfValues);
-    }
   }
 
   /**
    * Filters the custom fields of a proposal based on the visibility of their custom field group assignment
    *
    * @param proposal the proposal to filter the custom fields for
+   * @param values
    */
-  private void filterCustomFieldsByVisibility(Proposal proposal) {
-    List<ProposalStepCustomFieldValue> values = getProjectProcessStepValues(proposal.getProjectProcessStepId());
-
+  private void filterCustomFieldsByVisibility(Proposal proposal, List<ProposalStepCustomFieldValue> values) {
     if (values.isEmpty()) {
       return;
     }

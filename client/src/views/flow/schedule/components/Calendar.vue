@@ -246,7 +246,7 @@
       <FullCalendar ref="eventCalendar" id="event-calendar" :options="calendarOptions">
         <template v-slot:resourceLabelContent="{resource, index}">
           <div class="d-flex justify-space-between align-baseline">
-            <a class="body-medium overflow-hidden resource-title">{{ resource.title }}</a>
+            <span class="body-large overflow-hidden resource-title">{{ resource.title }}</span>
             <div>
               <v-tooltip bottom>
                 <template v-slot:activator="{on}">
@@ -321,6 +321,7 @@ const calendarOptions = ref({
   plugins: [
     resourceTimelinePlugin, interaction, momentTimezonePlugin
   ],
+  firstDay: 1,
   initialView: 'resourceTimelineDay',
   resources: [],
   resourceAreaWidth: 300,
@@ -1196,8 +1197,8 @@ padding-bottom: 8px;
 
 <style lang="scss" scoped>
 .resource-title {
-  text-overflow: ellipsis;
   max-width: 60%;
+  white-space: break-spaces;
   @media(max-width: 960px) {
     max-width: 30%;
   }
