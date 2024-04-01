@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.queries.CloserDashboardQuery;
 import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQuery;
+import com.albatross.api.v1.flow.enums.DataType;
 import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.org.Org;
@@ -416,6 +417,33 @@ public class CloserDashboardService {
 
     List<LeaderboardBooking> results = sqlCache.queryBySql(CloserDashboardQuery.getLeaderboardBookings, params, LeaderboardBooking.class);
     return results;
+  }
+
+  public List<FunnelColumn> getFunnelColumns(Long id, boolean isCheckedInColumn) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("funnelId", id);
+
+    ArrayList<FunnelColumn> allColumns = new ArrayList<>();
+    allColumns.add(new FunnelColumn(27L, "Owner", "owner_name", 0L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(28L, "Office", "office", 1L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(29L, "State", "state",2L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(30L, "Metro", "metro_area", 3L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(31L, "Status", "status_type", 4L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(32L, "Project Name", "project_name", 5L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(33L, "Project ID", "project_id", 6L, DataType.INTEGER.getId(), DataType.INTEGER.getDataType()));
+    allColumns.add(new FunnelColumn(34L, "Source", "source_name", 8L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(35L, "System Size", "system_size", 9L, DataType.NUMERIC.getId(), DataType.NUMERIC.getDataType()));
+    allColumns.add(new FunnelColumn(36L, "Financier", "financier", 10L, DataType.TEXT.getId(), DataType.TEXT.getDataType()));
+    allColumns.add(new FunnelColumn(37L, "Appointment Date", "appointment_date", 11L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType()));
+    allColumns.add(new FunnelColumn(38L, "Cancelled Date", "cancelled_date", 12L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType()));
+    if (isCheckedInColumn) {
+      // checked in column should always be last
+      allColumns.add(new FunnelColumn(39L, "Checked In Time", "checked_in_time", 25L, DataType.TIMESTAMP.getId(), DataType.TIMESTAMP.getDataType()));
+    }
+
+    List<FunnelColumn> results = sqlCache.queryBySql(CloserDashboardQuery.getFunnelColumns, params, FunnelColumn.class);
+    allColumns.addAll(results);
+    return allColumns;
   }
 
   public ArrayList<CloserDashboardDateRange> getDropdownValues(LocalDate today) {
