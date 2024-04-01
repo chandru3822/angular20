@@ -73,7 +73,7 @@
             type="number"
             :variant="variant"
             v-model.number="field.numericValue"
-            @change="props.callback(field)"
+            @change="handleInput(field)"
             autocomplete="off"
             :append-inner-icon="appendIcon ? appendIcon : null"
             @click:append="props.appendCallback(field.numericValue)"
@@ -94,7 +94,7 @@
             :label="getFieldName()"
             :hide-details="hideDetails"
             v-model="field.textValue"
-            @change="props.callback(field)"
+            @change="handleInput(field)"
             autocomplete="off"
         />
 
@@ -111,7 +111,7 @@
             :rules="rules"
             type="number"
             v-model.number="field.intValue"
-            @change="props.callback(field)"
+            @change="handleInput(field)"
             autocomplete="off"
         />
 
@@ -473,7 +473,9 @@ const getListOfValues = ()  => {
   return field.value?.listOfValues || []
 }
 const handleInput = (val)  => {
-  props.callback(field.value, val === null)
+  if(props.callback) {
+    props.callback(field.value, val === null)
+  }
 }
 const selectSelf = () => {
   switch(field.value.companySystemListId) {

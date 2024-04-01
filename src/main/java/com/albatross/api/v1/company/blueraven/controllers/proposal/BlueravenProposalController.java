@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
+import com.albatross.api.aurora.AuroraDesignDTO;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.InvalidStateApiException;
@@ -28,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,10 +61,41 @@ public class BlueravenProposalController {
     return proposalService.getProposalProjects(query, pageable);
   }
 
+  @PostMapping(value = "/projects/{projectId}/ai")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
+  public AuroraDesignDTO doProposalAiRequest(@PathVariable Long projectId,
+                                             @RequestBody List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+    //this is called to generate an initial aurora design
+    return proposalService.doProposalAiRequest(projectId, values);
+  }
+
+  @PostMapping(value = "/projects/{projectId}/ai/design/{designId}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
+  public void handleNewPpsForAuroraDesign(@PathVariable Long projectId,
+                                  @PathVariable String designId,
+                                  @RequestParam(required = false) Boolean designByAuroraValue,
+                                  @RequestBody List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+    //this is only called after duplicating an aurora design
+    proposalService.handleNewPpsForAuroraDesign(projectId, designId, values, null != designByAuroraValue ? designByAuroraValue : false);
+  }
+
+  @PostMapping(value = "/pps/{ppsId}/design/{designId}/sync")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
+  public void syncDesign(@PathVariable Long ppsId,
+                         @PathVariable String designId) {
+    proposalService.syncDesign(ppsId, designId);
+  }
+
   @GetMapping(value = "/projects/{projectId}/designs")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public List<ProposalDesign> getProposalDesigns(@PathVariable Long projectId) {
     return proposalService.getProposalDesigns(projectId);
+  }
+
+  @GetMapping(value = "/projects/{projectId}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
+  public Optional<ProposalProjectDetails> getProposalProject(@PathVariable Long projectId) {
+    return proposalService.getProposalProjectById(projectId);
   }
 
   @GetMapping(value = "/projects/{projectId}/designs/active")

@@ -1,5 +1,9 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
+import com.albatross.api.aurora.AuroraAssetDTO;
+import com.albatross.api.aurora.AuroraDesignDTO;
+import com.albatross.api.aurora.AuroraProjectDTO;
+import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.config.AppProperties;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
@@ -24,9 +28,7 @@ import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.customFieldValues.CustomFieldValueQuery;
-import com.albatross.api.v1.flow.services.AttachmentService;
-import com.albatross.api.v1.flow.services.ProjectProcessStepService;
-import com.albatross.api.v1.flow.services.ProjectService;
+import com.albatross.api.v1.flow.services.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
@@ -41,17 +43,30 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -66,13 +81,16 @@ public class BlueravenProposalService {
   private final ObjectMapper om;
   private final BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
   private final BlueravenCustomFieldValueService blueravenCustomFieldValueService;
+  private final CustomFieldValueService customFieldValueService;
   private final ProjectProcessStepService projectProcessStepService;
+  private final AutoTriggerHandlerService autoTriggerHandlerService;
   private final ProjectService projectService;
   private final ProposalTemplateService proposalTemplateService;
   private final AttachmentService attachmentService;
   private final AppProperties appProperties;
   private final SecurityService securityService;
   private final ProposalVersionService proposalVersionService;
+  private final AuroraProxy auroraProxy;
 
   public Page<ProposalProject> getProposalProjects(String query, Pageable pageable) {
     Map<String, Object> params = new HashMap<>();
@@ -86,6 +104,136 @@ public class BlueravenProposalService {
     return new PageImpl<>(
       results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
+
+  public Optional<ProposalProjectDetails> getProposalProjectById(Long id) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    Optional<ProposalProjectDetails> result = sqlCache.getBySql(ProposalQuery.getProjectById, params, ProposalProjectDetails.class);
+    return result;
+  }
+
+    public void syncDesign(Long ppsId, String designId) {
+      try {
+        //set the process step status
+        projectProcessStepService.setStatus(
+          ppsId,
+          2L, //root: complete
+          2L, //company complete
+          3L); //cancelled for any existing actives (should never be one)
+
+        //handle auto triggers again
+        autoTriggerHandlerService.handlePpsAutoTriggersAfterStatusUpdate(ppsId);
+
+        AuroraProxy.AssetList results = auroraProxy.getDesignAssets(designId);
+        //only upload to our side for CAD Auto Screenshot types and only do 1 of them
+        Optional<AuroraAssetDTO> asset = results.getAssets().stream().filter(a -> a.getAssetType().equals("CAD Auto Screenshot")).findFirst();
+
+        if(asset.isPresent()) {
+          String filename = asset.get().getFilename() != null ? asset.get().getFilename() : "Aurora_Sales_AI_Upload.png";
+          Resource resource = getResourceFromUrl(asset.get().getUrl());
+
+          if(resource != null) {
+            try (InputStream attachmentStream = resource.getInputStream()) {
+              projectProcessStepService.addAttachmentByInputStream(
+                ppsId,
+                936L, //attachment type for 2D Proposal Image
+                resource.contentLength(),
+                MediaType.IMAGE_PNG_VALUE,
+                filename,
+                attachmentStream,
+                filename);
+            }
+          }
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    public Resource getResourceFromUrl(String url) {
+      WebClient build = WebClient.builder()
+        .baseUrl(url)
+        .codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs().maxInMemorySize(1024 * 1024 * 10)).build();
+
+      return build
+        .get()
+        .accept(MediaType.APPLICATION_JSON)
+        .retrieve()
+        .bodyToMono(Resource.class)
+        .doOnError((e) -> log.error("[AURORA] Error processing asset, error={}", e.getMessage()))
+        .block();
+    }
+
+    public AuroraDesignDTO doProposalAiRequest(Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+        //this function needs to:
+        //try/catch creating an aurora project
+        //if successful, try/catch creating an aurora design with that project
+        //if successful, create a Create Proposal Design process step
+        //populate Utility Company, Estimated Annual Consumption, Design Name, and Design ID fields on that process step
+        //set that process step status
+        //either returns the aurora design url or just the design ID and frontend can handle url
+        //https://v2.aurorasolar.com/projects/656dd9db-3657-4595-8344-a30f225b5686/designs/b9cfac2b-0f06-4e79-90cb-94f84e675a6d/e-proposal
+        try {
+            Optional<com.albatross.api.v1.flow.model.CustomFieldValue> nameFieldValue = values.stream().filter(v -> v.getCustomFieldGroupAssignmentId() == 26300).findFirst();
+            if(nameFieldValue.isPresent()) {
+                Project project = projectService.getProject(projectId).orElseThrow(NotFoundException::new);
+                AuroraProjectDTO auroraProject = auroraProxy.createProject(project);
+                if(null != auroraProject.getId()) {
+                    AuroraDesignDTO auroraDesign = auroraProxy.createDesign(auroraProject.getId(), nameFieldValue.get().getTextValue());
+                    if(null != auroraDesign.getId()) {
+                        handleNewPpsForAuroraDesign(projectId, auroraDesign.getId(), values, true);
+                        return auroraDesign;
+                    } else {
+                        throw new RuntimeException("Error: Unable to create DESIGN for project: " + projectId);
+                    }
+                } else {
+                    throw new RuntimeException("Error: Unable to create PROJECT for project: " + projectId);
+                }
+            } else {
+                throw new RuntimeException("Error: No design name given for project: " + projectId);
+            }
+        } catch (Exception e) {
+            log.error("AURORA: {}", e.getMessage());
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    e.getMessage(),
+                    new Exception());
+        }
+    }
+
+    public void handleNewPpsForAuroraDesign(Long projectId, String designId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, Boolean designByAuroraValue) {
+      //insert a new Create Proposal Design Process Step
+      Long ppsId = insertProjectProcessStep(projectId, 3507L);
+
+      //add the design id to the custom field values
+      com.albatross.api.v1.flow.model.CustomFieldValue designFieldValue = new com.albatross.api.v1.flow.model.CustomFieldValue();
+      designFieldValue.setTextValue(designId);
+      designFieldValue.setCustomFieldGroupAssignmentId(22560L);
+      values.add(designFieldValue);
+
+      //add the Designed By Aurora boolean custom field value here
+      com.albatross.api.v1.flow.model.CustomFieldValue designedByAuroraFieldValue = new com.albatross.api.v1.flow.model.CustomFieldValue();
+      designedByAuroraFieldValue.setBooleanValue(designByAuroraValue);
+      designedByAuroraFieldValue.setCustomFieldGroupAssignmentId(26962L);
+      values.add(designedByAuroraFieldValue);
+
+      //insert/update the custom field values
+      customFieldValueService.updateCustomFieldValues(values, ppsId, com.albatross.api.v1.flow.enums.ObjectType.PROCESS_STEP);
+
+      //set the process step status
+      projectProcessStepService.setStatus(
+        ppsId,
+        1L, //root: active
+        1649L, //company Pending Aurora Adjustments
+        3L); //cancelled for any existing actives (should never be one)
+
+      //do auto triggers at the end - per lowry
+      autoTriggerHandlerService.handlePpsAutoTriggersAfterCfvUpdate(projectId, ppsId, values);
+      autoTriggerHandlerService.handlePpsAutoTriggersAfterStatusUpdate(ppsId);
+
+      //return the design id
+    }
 
   public List<ProposalDesign> getProposalDesigns(@NonNull Long projectId) {
     List<ProposalDesign> results =
