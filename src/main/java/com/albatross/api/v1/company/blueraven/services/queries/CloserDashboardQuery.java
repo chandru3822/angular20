@@ -258,4 +258,14 @@ public class CloserDashboardQuery {
    having count(1) > 1
    order by booking_count desc, closer_name;
     """;
+
+  //language=PostgreSQL
+  public final static String getFunnelColumns = """
+    select dmc.id, dmc.title, dmc.display_value as field_name, dmc.display_order, dmc.data_type_id, dt.data_type
+    from brs.dashboard_milestone_column dmc
+    inner join brs.dashboard_milestone dm on dmc.dashboard_milestone_id = dm.id
+    inner join brs.funnel f on dm.id = f.dashboard_milestone_id
+    inner join flow.data_type dt on dmc.data_type_id = dt.id
+    where f.id = :funnelId;
+    """;
 }

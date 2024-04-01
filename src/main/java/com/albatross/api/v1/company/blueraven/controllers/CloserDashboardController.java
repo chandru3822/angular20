@@ -149,4 +149,9 @@ public class CloserDashboardController {
   public List<CloserDashboardDateRange> getDropdownValues(@RequestParam java.time.LocalDate today) {
     return closerDashboardService.getDropdownValues(today);
   }
+
+  @GetMapping(value = "/funnel/{id}/columns")
+  public List<FunnelColumn> getFunnelColumns(@PathVariable Long id, @RequestParam(required = false) boolean isCheckedInColumn) {
+    return closerDashboardService.getFunnelColumns(id, isCheckedInColumn);
+  }
 }
