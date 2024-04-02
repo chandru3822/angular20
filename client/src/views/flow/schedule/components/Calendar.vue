@@ -925,7 +925,7 @@ const countSelected = computed(() => {
 
             d.groupId = Number(`${d.systemListTypeId}${d.resourceId}`)
             d.resourceId = Number(`${d.systemListTypeId}${d.resourceId}`)
-            d.backgroundColor = 'var(--v-grey-darken1)'
+            d.backgroundColor = 'rgba(0,0,0,.1)'
 
 
 
@@ -965,7 +965,7 @@ const countSelected = computed(() => {
               //these values have already been pre-appended with the 1 or 2
               groupId: r.id,
               resourceId: r.id,
-              backgroundColor: 'var(--v-grey-darken1)'
+              backgroundColor: 'rgba(0,0,0,.1)'
             })
           })
           return data;
@@ -1114,10 +1114,7 @@ const createSnackbar = (text) => {
   font-size: 1.375rem;
   line-height: 1.4;
 }
-.resource-lane-class {
-  height: 54px !important;
-  color: mediumpurple !important;
-}
+
 #calendar-container .fc-toolbar-title {
   @media(max-width: 960px) {
     font-size: 1.25rem;
@@ -1134,11 +1131,13 @@ padding-bottom: 8px;
   cursor: default;
   margin-left: 1px;
   margin-right: 1px;
-  opacity: 1;
+  opacity: 1 !important;
   color: black;
   overflow: hidden;
   border: solid 1px black;
 }
+
+
   #calendar-container .fc-timeline-event {
     /*height: inherit;*/
     border-radius: 5px;
@@ -1212,11 +1211,7 @@ padding-bottom: 8px;
     background: transparent !important;  /* Optional: just make scrollbar invisible */
   }
 }
-#event-calendar > div.fc-header-toolbar.fc-toolbar.fc-toolbar-ltr > div > div > {
-  button.fc-next-button.fc-button.fc-button-primary, button.fc-prev-button.fc-button.fc-button-primary{
-    padding-top:0;
-  }
-}
+
 </style>
 
 <style lang="scss" scoped>

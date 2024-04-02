@@ -313,7 +313,7 @@ const getAvailability = async(info) => {
       }
       d.groupId = `${d.resourceId}`
       d.resourceId = `${d.resourceId}`
-      d.backgroundColor = 'var(--v-grey-darken1)'
+      d.backgroundColor = 'rgba(0,0,0,.1)'
 
     if(!d.isSlotTime && d.display === 'inverse-background') {
       //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
@@ -351,7 +351,7 @@ const getAvailability = async(info) => {
         //these values have already been pre-appended with the 1 or 2
         groupId: r.id,
         resourceId: r.id,
-        backgroundColor: 'var(--v-error-base)'
+        backgroundColor: 'rgba(180, 34, 31, .3)'
       })
     })
     return data;
