@@ -432,6 +432,11 @@ const onMapLoad = async(event) => {
   }
 }
 
+.mapboxgl-ctrl-top-right .mapboxgl-ctrl {
+  margin-top:16px;
+  margin-right:16px;
+}
+
 </style>
 
 <style scoped lang="scss">

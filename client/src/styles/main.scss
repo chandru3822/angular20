@@ -155,6 +155,24 @@ $default-text: rgba(0,0,0,0.87);
   border-color: var(--v-primary-base) !important;
 }
 
+.fc .fc-bg-event {
+  opacity: 100% !important;
+}
+.fc h2.fc-toolbar-title{
+  //headline-large
+  font-family: lato;
+  font-weight: 600;
+  font-size: 1.375rem;
+  line-height: 1.4;
+}
+
+//fix the alignment on the prev and next buttons
+div.fc-header-toolbar.fc-toolbar.fc-toolbar-ltr > div > div > {
+  button.fc-next-button.fc-button.fc-button-primary, button.fc-prev-button.fc-button.fc-button-primary{
+    padding-top:0;
+  }
+}
+
 /* theme the date time picker */
 .theme-datetime .vdatetime-popup__header,
 .theme-datetime .vdatetime-calendar__month__day--selected > span > span,
