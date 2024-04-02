@@ -925,7 +925,8 @@ const countSelected = computed(() => {
 
             d.groupId = Number(`${d.systemListTypeId}${d.resourceId}`)
             d.resourceId = Number(`${d.systemListTypeId}${d.resourceId}`)
-            d.backgroundColor = 'rgba(0,0,0,.1)'
+            d.backgroundColor = 'rgba(0,0,0,.25)'
+            d.classNames = 'pl-2'
 
 
 
