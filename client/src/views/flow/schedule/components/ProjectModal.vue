@@ -233,7 +233,7 @@ const cancelProjectProcessStepEvent = async() => {
         />              <!--setting the 'active' prop this way forces the value to appear when when click the schedule button on the calendar-->
         <DatetimePickerInput
             v-model="project.start"
-            :timezone="timezone.value"
+            :timezone="timezone?.value"
             :readonly="project.startFieldReadOnly || !userCanEdit"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
@@ -244,7 +244,7 @@ const cancelProjectProcessStepEvent = async() => {
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in {{timezoneFriendly}}</div>
         <DatetimePickerInput
             v-model="project.end"
-            :timezone="timezone.value"
+            :timezone="timezone?.value"
             :readonly="project.endFieldReadOnly || !userCanEdit "
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"

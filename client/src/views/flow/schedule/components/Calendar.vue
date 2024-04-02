@@ -346,7 +346,7 @@ const calendarOptions = ref({
     }
   },
   headerToolbar:{
-    left: vuetify.breakpoint.mdAndUp ? 'prev,next': 'prev,next',
+    left: vuetify.breakpoint.mdAndUp ? 'prev,customToday,next': 'prev,next',
     center: 'title',
     right: vuetify.breakpoint.mdAndUp ? 'resourceTimelineDay,resourceTimelineWeek': ''
   },
@@ -529,10 +529,15 @@ const countSelected = computed(() => {
         filterOrgsAndUsers()
       }
     })
-    watch(() => store.state.schedule.timezone.value, (value) => {
+    watch(() => store.state.schedule.timezone.value, (value, oldValue) => {
         //when the schedule timezone value changes, update the calendar plugin's timezone
         let calendarApi = refs.eventCalendar.getApi()
         calendarApi.setOption('timeZone', store.state.schedule.timezone.value)
+      //and show a snackbar if the timezones don't match
+      if(store.state.user.details.timezone.value !== timezone.value.value) {
+        let snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
+        store.commit(AppMutations.SHOW_SNACK, snackbar)
+      }
       })
       watch(() => store.state.user.details.timezone, () => {
         //when the app timezone changes, update the schedule timezone to match
@@ -1057,7 +1062,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
 
       const changeTimezone = async (tz) => {
         //update the timezone in the schedule store
-        await store.dispatch(ScheduleActions.CHANGE_TIMEZONE, tz)
+        await store.dispatch(ScheduleActions.CHANGE_TIMEZONE_SCHEDULE, tz)
       }
 
       const getFormattedDate = (date) => {
@@ -1079,6 +1084,20 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
         store.commit(ScheduleMutations.SET_END_TIME, calendarEndTime.value)
         props.dateCallback(calendarStartTime.value, calendarEndTime.value)
       }
+
+//this snackbar is different from others so we built it here
+const createSnackbar = (text) => {
+  return {
+    y: 'bottom',
+    x: null,
+    mode: '',
+    timeout: 5000,
+    text: text,
+    color: 'grey darken-3',
+    fontClass: 'secondary--text',
+    enabled: true
+  }
+}
 
 </script>
 
@@ -1191,6 +1210,11 @@ padding-bottom: 8px;
   ::-webkit-scrollbar {
     height: 0 !important;  /* Remove scrollbar space */
     background: transparent !important;  /* Optional: just make scrollbar invisible */
+  }
+}
+#event-calendar > div.fc-header-toolbar.fc-toolbar.fc-toolbar-ltr > div > div > {
+  button.fc-next-button.fc-button.fc-button-primary, button.fc-prev-button.fc-button.fc-button-primary{
+    padding-top:0;
   }
 }
 </style>
