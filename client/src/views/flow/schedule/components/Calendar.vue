@@ -550,12 +550,22 @@ const countSelected = computed(() => {
       })
 
       // whenever selectedUsers or selectedOrgs changes, concat them both into resources
-    watch(selectedUsers, () => {
+    watch(selectedUsers, (newValue, oldValue) => {
         calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
-        handleResourceColors()
+      if(oldValue.length > newValue.length) {
+        //if we're removing users
+        const removedUsers = oldValue.filter(oldUser => newValue.indexOf(oldUser) < 0)
+        handlePinsOnSelectedResourceChange(removedUsers)
+      }
+      handleResourceColors()
       })
-      watch(selectedOrgs, () => {
+      watch(selectedOrgs, (newValue, oldValue) => {
         calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
+        if(oldValue.length > newValue.length) {
+          //if we're removing users
+          const removedOrgs = oldValue.filter(oldOrg => newValue.indexOf(oldOrg) < 0)
+          handlePinsOnSelectedResourceChange(removedOrgs)
+        }
         handleResourceColors()
         refs.orgSelector.setSearch('')//prevents weird scroll bug
       })
@@ -852,6 +862,14 @@ const countSelected = computed(() => {
       //map functions
       const toggleMapPinForResource = (resource) => {
         handlePopulatingMapPins(!isResourceOnMap(resource), resource, true)
+      }
+
+      const handlePinsOnSelectedResourceChange = (removedResource) => {
+        for(let resource of removedResource) {
+          if (isResourceOnMap(resource)) {
+            toggleMapPinForResource(resource)
+          }
+        }
       }
 
       const handlePinsOnDayChange = () => {
