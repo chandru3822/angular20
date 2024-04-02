@@ -53,7 +53,7 @@ begin
 
       end loop;
 
-    select json_agg(row_to_json(commission))
+    select row_to_json(commission)
     into v_commissions
     from (
       select v_status_name as "statusType",
