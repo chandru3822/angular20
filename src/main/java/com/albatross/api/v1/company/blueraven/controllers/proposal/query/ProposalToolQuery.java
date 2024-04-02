@@ -322,6 +322,13 @@ public class ProposalToolQuery {
                           inner join version_values vv on a.proposal_group_uuid = vv.proposal_group_uuid);
         """;
 
+  public static final String findProposalVersionValues = """
+select (jsonb_path_query(get_proposal_version_value,
+                         '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFieldId)'
+            , jsonb_build_object('targetFieldId', :fieldId)) -> 'intValue')::int
+from brs.get_proposal_version_value(:versionId, :filters, :objectCode);
+  """;
+
   //language=PostgreSQL
   public final static String findFilterableValues = """
       with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
@@ -366,6 +373,7 @@ public class ProposalToolQuery {
                                                                                                          field_id
                             from brs.proposal_version_custom_field_value_vw
                             where proposal_version_id <= :versionId
+                              and case when :objectCode is not null then object_code = :objectCode else 1 = 1 end
                               and proposal_group_uuid not in (select distinct proposal_group_uuid
                                                               from brs.proposal_version_custom_field_group
                                                               where archived is not null
