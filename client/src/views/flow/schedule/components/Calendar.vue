@@ -1212,6 +1212,11 @@ padding-bottom: 8px;
     background: transparent !important;  /* Optional: just make scrollbar invisible */
   }
 }
+#event-calendar > div.fc-header-toolbar.fc-toolbar.fc-toolbar-ltr > div > div > {
+  button.fc-next-button.fc-button.fc-button-primary, button.fc-prev-button.fc-button.fc-button-primary{
+    padding-top:0;
+  }
+}
 </style>
 
 <style lang="scss" scoped>
