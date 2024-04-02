@@ -539,8 +539,7 @@ export default {
         if (status === 204 || status === 200) {
           //sync updates the pps status to complete and grabs assets from Aurora and uploads them to our side
           // let designId = "ba92c16d-b674-464d-a220-3dd0a0b4daf8" <--use to test a design that for sure has the right asset you need
-          postRequest(`/proposal/pps/${this.activeDesign.projectProcessStepId}/design/${this.activeDesign.designId}/sync`, {})
-          await postRequest(`/proposal/pps/${this.activeDesign.projectProcessStepId}/design/${designId}/sync`, {}, 'blueraven')
+          await postRequest(`/proposal/pps/${this.activeDesign.projectProcessStepId}/design/${this.activeDesign.designId}/sync`, {}, 'blueraven')
 
           //reload the required data for the screen
           await this.pageLoadOrRefresh()
