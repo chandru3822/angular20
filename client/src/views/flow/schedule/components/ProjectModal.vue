@@ -7,20 +7,20 @@
 *@description
 *
 */
-import {getCurrentInstance, ref, watch} from "vue";
-import {AppMutations} from "@/stores/AppStore.js";
-import {getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
-import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
-import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/eventStatusTypeService.js";
-import {ScheduleMutations} from "@/stores/ScheduleStore.js";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue'
+import { AppMutations } from '@/stores/AppStore.js'
+import { getRequest, getSnackbar, handleHidingGlobalLoader, postRequest } from '@/helpers/helpers.js'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import { ScheduleMutations } from '@/stores/ScheduleStore.js'
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+import { getEventDefaultFieldReadOnly } from '@/services/customFieldService.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
 const vuetify = vueInstance.$vuetify
-
+const route = vueInstance.$route
 const emit = defineEmits(['toggleProjectMapPin'])
 
 const props = defineProps({
@@ -30,11 +30,16 @@ const props = defineProps({
 })
 const show = ref(vuetify.breakpoint.mdAndUp)
 const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
+const userCanManage = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'MANAGE'))
+const userIsAdmin = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN'))
 const fieldsSaving = ref(false)
 const conflictingEvents = ref()
 const saveInvalid = ref(true)
 const cancelledCompanyEventStatuses = ref()
 const timezoneFriendly = ref(store.state.schedule.timezone.friendlyValue)
+const event = ref(null)
+const ppsId = ref(route.query.projectProcessStepId)
+const ppsEventId = ref(route.query.projectProcessStepEventId)
 
 watch(() => props.resourceFromCalendar, () => {
   if(props.resourceFromCalendar.id) {
@@ -48,6 +53,57 @@ watch(() => props.resourceFromCalendar, () => {
 
 watch(() => store.state.schedule.timezone.friendlyValue, (fv) => {
   timezoneFriendly.value = fv
+})
+
+const isUserWhitelisted = computed(() => {
+	if(event.value?.readonlyWhiteListedPositions) {
+		for (let wlp of event.value?.readonlyWhiteListedPositions) {
+			let match = store.state.user.details.userPositions.find(up => up.positionId === wlp.positionId)
+			if (match) {
+				return true //if the user has a position that matches any of the whiteList positions, the user should see the event
+			}
+		}
+		return false //if we go through all the whiteList positions and haven't found a match, the user should not see the event
+	}
+})
+
+const isEventEditableByThisUserIgnoringReadOnly = computed(() => {
+	//can the user edit the field if the readonly setting is false
+	// if events admin/manager then they can edit any event fields regardless of event/process step status
+	return userIsAdmin.value || userCanManage.value || (userCanEdit.value && event.value?.eventStatusTypeId === 1 && event.value?.processStepStatusTypeId === 1)
+})
+
+const isEventReadyOnly = computed(() => {
+	return !store.getters.isFullAdmin && ((event.value?.readonly && !isUserWhitelisted.value) || !isEventEditableByThisUserIgnoringReadOnly.value)
+})
+
+//this logic comes from ProjectProcessStepEvent.vue. We want the readonly logic here to match that
+const isResourceReadOnly = computed(() => {
+	return (!store.getters.isFullAdmin &&
+			getEventDefaultFieldReadOnly(store, event.value?.resourceWhiteListedPositions, event.value?.resourceReadOnly, event.value?.resourceReadOnlyAllow)) ||
+		isEventReadyOnly.value
+})
+
+const isStartReadOnly = computed(() => {
+	return (!store.getters.isFullAdmin &&
+		getEventDefaultFieldReadOnly(store, event.value?.startTimeWhiteListedPositions, event.value?.startTimeReadOnly, event.value?.startTimeReadOnlyAllow)) ||
+		isEventReadyOnly.value
+})
+
+const isEndReadOnly = computed(() => {
+	return (!store.getters.isFullAdmin &&
+			getEventDefaultFieldReadOnly(store, event.value?.endTimeWhiteListedPositions, event.value?.endTimeReadOnly, event.value?.endTimeReadOnlyAllow)) ||
+		isEventReadyOnly.value
+})
+
+onMounted(async () => {
+	try {
+		const {data} = await getRequest(`/projectProcessStep/${ppsId.value}/event/${ppsEventId.value}`)
+		event.value = data
+	} catch (e) {
+		let snackbar = getSnackbar('ERROR', 'Failed to fetch event details')
+		store.commit(AppMutations.SHOW_SNACK, snackbar)
+	}
 })
 
 const setSelectedResourceInStore = (resourceId) => {
@@ -200,6 +256,7 @@ const cancelProjectProcessStepEvent = async() => {
         <v-autocomplete v-model="project.resource"
                         :items="project.resources"
                         :label="project.resourceFieldName  || 'Resource'"
+						:disabled="isResourceReadOnly"
                         placeholder=" "
                         return-object
                         clearable
@@ -220,7 +277,7 @@ const cancelProjectProcessStepEvent = async() => {
         <DatetimePickerInput
             v-model="project.start"
             :timezone="timezone?.value"
-            :readonly="project.startFieldReadOnly || !userCanEdit"
+            :readonly="isStartReadOnly"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="Start Time"
@@ -231,7 +288,7 @@ const cancelProjectProcessStepEvent = async() => {
         <DatetimePickerInput
             v-model="project.end"
             :timezone="timezone?.value"
-            :readonly="project.endFieldReadOnly || !userCanEdit "
+            :readonly="isEndReadOnly"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="End Time"
