@@ -178,7 +178,6 @@ const options = ref({
 const asyncActions = ref()
 
 const selectAddress = ((suggestion, isFirst) => {
-  debugger
   if (isFirst) {
     address1.value = suggestion.label
     showAddress1List.value = false
