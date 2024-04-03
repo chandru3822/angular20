@@ -70,7 +70,7 @@
             </div>
             <div class="mt-2 body-large">
               <div>Drive Time:</div> <span class="label-large" v-if="drivingDuration">{{ drivingDuration }}</span>
-              <div>Drive Distance:</div><span class="label-large" v-if="drivingDistance">{{ drivingDistance }} miles</span>
+              <div class="mt-2">Drive Distance:</div><span class="label-large" v-if="drivingDistance">{{ drivingDistance }} miles</span>
             </div>
           </div>
         </v-card>

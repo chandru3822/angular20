@@ -138,7 +138,7 @@
                           return-object
                           item-text="position"
                           item-value="id"
-                          @input="poitionValuesChanged = true"
+                          @input="positionValuesChanged = true"
                           @blur="filterOrgsAndUsers"
                           attach
           >
@@ -693,7 +693,7 @@ const countSelected = computed(() => {
         return false
       }
       const getSchedulingOrgs = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        orgsLoading.value = true
         try {
           const {data, status} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
             params: {
@@ -743,7 +743,7 @@ const countSelected = computed(() => {
         }
       }
       const getPositions = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        positionsLoading.value = true
         try {
           const {data, status} = await getRequest(`/position/schedulable`, null, [])
           positions.value = data
