@@ -252,7 +252,7 @@ const cancelProjectProcessStepEvent = async() => {
       <v-card-text class="py-0 body-large">
         Scheduled for
         <span v-if="eventIsSameDay()">{{project.start | formatDate('timestamp','MMMM DD YYYY, h:mm a')}} - {{project.end | formatDate('timestamp','h:mm a')}}</span>
-        <span v-else> {{project.startDate | formatDate('timestamp','MMMM DD YYYY, h:mm a')}} - {{project.end | formatDate('timestamp','MMMM DD YYYY, h:mm a')}}</span>
+        <span v-else> {{project.start | formatDate('timestamp','MMMM DD YYYY, h:mm a')}} - {{project.end | formatDate('timestamp','MMMM DD YYYY, h:mm a')}}</span>
         with {{project.resourceName}}
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in US/Mountain Time</div>
       </v-card-text>
