@@ -84,7 +84,7 @@
 
                @click="selectAddressForDriveTime(currentProjectMarker)"
                color="var(--v-primary-base)">
-      <MglPopup :close-button="false" :offset="36">
+      <MglPopup :close-button="false" :offset="popupOffset">
         <MapPopUp :marker="currentProjectMarker"/>
       </MglPopup>
     </MglMarker>
@@ -94,7 +94,7 @@
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
-      <MglPopup :close-button="false" :offset="36">
+      <MglPopup :close-button="false" :offset="popupOffset">
         <MapPopUp :marker="m"/>
       </MglPopup>
     </MglMarker>
@@ -104,7 +104,7 @@
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
-      <MglPopup :close-button="false" :offset="36">
+      <MglPopup :close-button="false" :offset="popupOffset">
         <MapPopUp :marker="m"/>
       </MglPopup>
     </MglMarker>
@@ -162,6 +162,7 @@ const distanceDivisionMetric = ref(1609.34)
 const durationDivisionMetric = ref(60)
 const defaultZoom = ref(2.0)
 const suggestions = ref([])
+const popupOffset = ref(0)
 // they do these coordinates backwards to comply with geoJSON whatever that is.
 //center of the USA
 const defaultCenter = ref([-98.5795, 39.8283])
