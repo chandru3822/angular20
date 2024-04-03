@@ -436,23 +436,23 @@ public class BlueravenProposalService {
           if (financialProductFieldId.equals(cfv.getCustomFieldId())) {
             // BRS needs to filter out financial products by state
             filterCustomFieldValues(cfv,
-              excludeValuesByCustomFieldId(proposal.getProposalVersionId(), cfv, excludedStateCustomFieldId, proposal.getStateId(), "PROPOSAL_FINANCE_PRODUCTS"), true, true);
+              excludeValuesByCustomFieldId(proposal.getProposalVersionId(), cfv, excludedStateCustomFieldId, proposal.getStateId(), "PROPOSAL_FINANCE_PRODUCTS"), true);
 
             proposalDesignStepValues.stream()
               .filter(p -> p.getFieldId().equals(flowPanelBrandFieldId))
               .findFirst()
               .ifPresent(proposalStepCustomFieldValue ->
                 filterCustomFieldValues(cfv,
-                  getProposalVersionValues(proposalVersionId, cfv.getCustomFieldId(), brsPanelBrandFieldId, Long.valueOf(proposalStepCustomFieldValue.getValue().toString()), "PROPOSAL_FINANCE_PRODUCTS"), true, false));
+                  getProposalVersionValues(proposalVersionId, cfv.getCustomFieldId(), brsPanelBrandFieldId, Long.valueOf(proposalStepCustomFieldValue.getValue().toString()), "PROPOSAL_FINANCE_PRODUCTS"), true));
           }
 
           //BRS needs to filter out dealers by associated org
           if (dealerFieldId.equals(cfv.getCustomFieldId()) && userOrgId.isPresent()) {
-            filterCustomFieldValues(cfv, filterDealersByOrg(proposalVersionId, userOrgId.get()), true, true);
+            filterCustomFieldValues(cfv, filterDealersByOrg(proposalVersionId, userOrgId.get()), true);
           }
 
           if (rebatesFieldId.equals(cfv.getCustomFieldId())) {
-            filterCustomFieldValues(cfv, filterRebatesByStateAndUtility(proposalVersionId, proposal.getStateId(), proposal.getUtilityCompanyId()), false, true);
+            filterCustomFieldValues(cfv, filterRebatesByStateAndUtility(proposalVersionId, proposal.getStateId(), proposal.getUtilityCompanyId()), false);
           }
 
           if (commissionStrategyFieldId.equals(cfv.getCustomFieldId())) {
@@ -478,21 +478,14 @@ public class BlueravenProposalService {
     return Optional.of(proposal);
   }
 
-  private void filterCustomFieldValues(CustomFieldValue cfv, List<Long> filter, boolean skipIfEmpty, boolean include) {
+  private void filterCustomFieldValues(CustomFieldValue cfv, List<Long> filter, boolean skipIfEmpty) {
     if (filter == null || (filter.isEmpty() && skipIfEmpty)) {
       // only filter if we get some results back... otherwise, we are assuming not filtering is required
       return;
     }
 
     List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
-      .filter(v -> {
-        if (include) {
-          return filter.contains(v.getId());
-        } else {
-          //exclude the values in the filter
-          return !filter.contains(v.getId());
-        }
-      })
+      .filter(v -> filter.contains(v.getId()))
       .sorted(Comparator.comparing(ListOfValue::getName))
       .toList();
 
