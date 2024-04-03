@@ -137,7 +137,7 @@
       }
     })
   watch(() => store.state.schedule.timezone.value, (value, oldValue) => {
-    timezone.value = value
+    timezone.value = store.state.schedule.timezone
   })
   const loadTimezone = () => {
         if(store.state.schedule.timezone?.value === null) {

@@ -34,6 +34,24 @@ public class ProposalQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getDesignedByAuroraValue = """
+    select boolean_value
+    from flow.project_process_step_custom_field_value ppscfv
+    inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+    where ppscfv.custom_field_group_assignment_id = 26962 --designed by aurora
+      and ppscfv.project_process_step_id = (
+          select ppscfv.project_process_step_id
+            from flow.project_process_step_custom_field_value ppscfv
+            inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+            where ppscfv.custom_field_group_assignment_id = 22560 -- aurora design id
+            and pps.project_id = :projectId
+            and ppscfv.text_value = :firstDesignId
+            order by pps.date_created
+            limit 1
+        )
+    """;
+
+  //language=PostgreSQL
   public final static String getProjectsCount = """
           select count(distinct pps.project_id)
           from flow.project_process_step pps
