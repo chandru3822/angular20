@@ -324,24 +324,12 @@ public class ProposalToolQuery {
 
   //language=PostgreSQL
   public static final String findProposalVersionValues = """
-with matched as (
     select (jsonb_path_query(get_proposal_version_value,
                              '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFieldId)'
                 , jsonb_build_object('targetFieldId', :fieldId)) -> 'intValue')::int as id
     from brs.get_proposal_version_value(:versionId, null::ProposalFieldFilter[], :objectCode)
     where  jsonb_path_exists(get_proposal_version_value, '$.fields[*] ? (@.fieldId == $customFieldId && @.intValue == $intValue)',
-                                jsonb_build_object('customFieldId', :customFieldId, 'intValue', :intValue))
-    ),
-     excluded as (select (jsonb_path_query(
-                           get_proposal_version_value,
-                           '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFieldId)'
-                       , jsonb_build_object('targetFieldId', :fieldId)) -> 'intValue')::int as id
-           from brs.get_proposal_version_value(:versionId, null::ProposalFieldFilter[], :objectCode)
-           where not jsonb_path_exists(get_proposal_version_value, '$.fields[*] ? (@.fieldId == $customFieldId)',
-                                       jsonb_build_object('customFieldId', :customFieldId)))
-select unnest(case
-                  when exists(select 1 from matched) then (select array_agg(id) from matched)
-                  else (select array_agg(id) from excluded) end) as id
+                             jsonb_build_object('customFieldId', :customFieldId, 'intValue', :intValue))
   """;
 
   //language=PostgreSQL
