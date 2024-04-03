@@ -366,7 +366,7 @@ export default {
     return {
       designs: [],
       projectLoaded: false,
-      cardHeight: 575,
+      cardHeight: 600,
       minDate: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
       offset: 0,
       numberToDisplay: 3,
