@@ -23,7 +23,7 @@
             class="rounded-tile-btn white-background mr-3 pa-5">
             <v-icon>mdi-car</v-icon></AlbatrossButton>
         </template>
-        <v-card id="drive-time-card" color="white" class="square-card pa-4">
+        <v-card id="drive-time-card" color="white" class="pa-4">
           <div class="d-flex justify-space-between">
             <v-card-title class="label-large pa-0">Find Drive Time</v-card-title>
             <AlbatrossButton icon size="small" @click="menuOpen = false"><v-icon>close</v-icon></AlbatrossButton>

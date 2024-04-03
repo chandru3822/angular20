@@ -319,7 +319,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-card id="project-search-card" color="white" style="max-width: 280px; min-width: 280px" class="square-card pa-4 project-search-card" elevation="8"> <!--did this manually instead of using v-menu b/c the dropdowns were getting cut off-->
+  <v-card id="project-search-card" color="white" style="max-width: 280px; min-width: 280px" class="pa-4 project-search-card" elevation="8"> <!--did this manually instead of using v-menu b/c the dropdowns were getting cut off-->
     <div class="d-flex justify-space-between">
       <v-card-title class="label-large pa-0">Search Projects</v-card-title>
       <AlbatrossButton icon size="small" @click="emit('close-dialog')"><v-icon>close</v-icon></AlbatrossButton>
