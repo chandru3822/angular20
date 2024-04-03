@@ -428,7 +428,7 @@ onMounted(() => {
       </div>
     </div>
     <div v-else class="body-small">
-      <v-chip small color="primary lighten-9" v-if="state.state" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{state.state}} </v-chip>
+      <v-chip small color="primary lighten-9" v-if="state?.state" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{state.state}} </v-chip>
       <v-chip small color="primary lighten-9" v-if="searchProject?.projectName" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{searchProject.projectName}} </v-chip>
       <v-chip small color="primary lighten-9" v-if="searchEventType?.eventName" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{searchEventType.eventName}} </v-chip>
       <v-chip small v-for="e in selectedEventTypes" color="primary lighten-9" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{e.eventName}} </v-chip>
