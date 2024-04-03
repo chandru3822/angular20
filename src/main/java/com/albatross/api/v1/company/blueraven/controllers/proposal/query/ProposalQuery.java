@@ -46,6 +46,7 @@ public class ProposalQuery {
             where ppscfv.custom_field_group_assignment_id = 22560 -- aurora design id
             and pps.project_id = :projectId
             and ppscfv.text_value = :firstDesignId
+            order by pps.date_created
             limit 1
         )
     """;
