@@ -178,6 +178,22 @@ const options = ref({
 })
 const asyncActions = ref()
 
+
+const emit = defineEmits(['close-search-menu'])
+watch( menuOpen, () => {
+  if(menuOpen.value) {
+    emit('close-search-menu')
+  }
+})
+
+const closeMenu = () => {
+  menuOpen.value = false
+}
+
+defineExpose({
+  closeMenu
+})
+
 const selectAddress = ((suggestion, isFirst) => {
   if (isFirst) {
     address1.value = suggestion.label

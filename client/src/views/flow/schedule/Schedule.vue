@@ -32,6 +32,7 @@
       <v-row class="map-row">
         <v-col cols="12" class="pa-0 ml-3">
           <Map v-if="showMap"
+               ref="mapChild"
                :latitude="latitude"
                :current-project-marker="selectedProject"
                :markers="projectMapMarkers"
@@ -41,9 +42,10 @@
                :start-time="startTime"
                :end-time="endTime"
                @close-map="showHideMap(false)"
+               @close-search-menu="searchMenuOpen = false"
           >
             <template v-slot:searchMenu>
-              <AlbatrossButton v-if="vuetify.breakpoint.mdAndUp" id="search-menu-btn" class="rounded-tile-btn pa-5" variant="outlined" icon @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" color="primary"><v-icon>mdi-magnify</v-icon></AlbatrossButton>
+              <AlbatrossButton v-if="vuetify.breakpoint.mdAndUp" id="search-menu-btn" class="rounded-tile-btn pa-5" variant="outlined" icon @click="openSearchModal()" color="primary"><v-icon>mdi-magnify</v-icon></AlbatrossButton>
               <ProjectSearchDialog v-show="searchMenuOpen" :pin-to-map-callback="projectMapMarkersCallback"  :pinned-projects="projectMapMarkers"
                                    :states="states" :start-time="startTime" :end-time="endTime"
                                    @close-dialog="searchMenuOpen = false" @zoom-map="zoomToMap"/>
@@ -112,6 +114,7 @@
     'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
   })
   const calendarResourceToSchedule =ref({})
+  const mapChild =ref()
 
   const activeComp = computed(() => {
     return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
@@ -139,6 +142,11 @@
   watch(() => store.state.schedule.timezone.value, (value, oldValue) => {
     timezone.value = store.state.schedule.timezone
   })
+  const openSearchModal = () => {
+    searchMenuOpen.value = !searchMenuOpen.value
+    mapChild.value.closeMenu()
+
+  }
   const loadTimezone = () => {
         if(store.state.schedule.timezone?.value === null) {
           timezone.value = store.state.user.details.timezone
