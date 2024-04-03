@@ -40,6 +40,7 @@ const timezoneFriendly = ref(store.state.schedule.timezone.friendlyValue)
 const event = ref(null)
 const ppsId = ref(route.query.projectProcessStepId)
 const ppsEventId = ref(route.query.projectProcessStepEventId)
+const saveError = ref(null)
 
 watch(() => props.resourceFromCalendar, () => {
   if(props.resourceFromCalendar.id) {
@@ -163,6 +164,9 @@ const scheduleCalendarResourceToProject = (resource) => {
 
 
 const validateSaveEvent = () => {
+  //reset this error when validating
+  saveError.value = null
+
   saveInvalid.value = !!(!props.project || !props.project.start || !props.project.end
       || !props.project.resource || !props.project.resource.id || (props.project.start >= props.project.end) ||
       //if all 3 fields are read only, dont let them save
@@ -170,7 +174,14 @@ const validateSaveEvent = () => {
   console.log('save invalid?', saveInvalid.value)
 }
 const checkForSchedulingConflicts = async() => {
-  await scheduleProject(false);
+  //this is dumb but sometimes the timestamp formatting is different and not equal when it is actually equal.
+  //so this checks for that and puts the message on the field cuz ashi doesn't want to disable the btn in this scenario
+  if((new Date(props.project.start)).valueOf() >= (new Date(props.project.end)).valueOf()) {
+    saveError.value = 'End Date must be After Start Date'
+    fieldsSaving.value = false
+  }else {
+    await scheduleProject(false);
+  }
 }
 const cancelDialog = async() => {
   conflictingEvents.value = null
@@ -252,7 +263,7 @@ const cancelProjectProcessStepEvent = async() => {
   <div v-show="show">
     <!--  When the event hasn't been scheduled  -->
     <div v-if="userCanEdit && project.editableInSchedule">
-      <v-card-text class="py-0">
+      <v-card-text class="py-0" id="randa-test">
         <v-autocomplete v-model="project.resource"
                         :items="project.resources"
                         :label="project.resourceFieldName  || 'Resource'"
@@ -281,6 +292,7 @@ const cancelProjectProcessStepEvent = async() => {
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="Start Time"
+            custom-content-class="map-project-modal-date-picker-position"
             hide-details
             @input="validateSaveEvent()"
         />
@@ -292,9 +304,13 @@ const cancelProjectProcessStepEvent = async() => {
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="End Time"
+            custom-content-class="map-project-modal-date-picker-position"
             hide-details
             @input="validateSaveEvent()"
         />
+        <div class="body-small red--text text--darken-2 py-2" v-if="null != saveError">
+          {{saveError}}
+        </div>
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in {{timezoneFriendly}}</div>
       </v-card-text>
       <v-card-actions class="pb-4 px-4">
@@ -358,5 +374,15 @@ const cancelProjectProcessStepEvent = async() => {
   //okay yes, this is more than half but I don't feel like changing the name
   //it's so the name wraps instead of the buttons
   max-width: 70%;
+}
+</style>
+
+<style lang="scss">
+@media (min-width: 769px) {
+  .map-project-modal-date-picker-position {
+    position: absolute;
+    top: unset !important;
+    bottom: 300px;
+  }
 }
 </style>
