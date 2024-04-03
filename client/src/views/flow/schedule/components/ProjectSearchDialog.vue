@@ -448,7 +448,7 @@ onMounted(() => {
       <AlbatrossButton v-else
           variant="outlined"
           size="small"
-          @click="showSearchResults = false"
+          @click="[showSearchResults = false, toggleAllPinsOnMap(true)]"
           color="primary"
           class="text-capitalize flex-grow-1 body-medium"
       >Edit search</AlbatrossButton>
