@@ -721,7 +721,7 @@ const countSelected = computed(() => {
         }
       }
       const fetchSchedulingOrgTypes = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        orgTypesLoading.value = true
         try {
           const {data, status} = await getSchedulingOrgTypes()
           orgTypes.value = data
