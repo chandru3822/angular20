@@ -271,7 +271,12 @@
           </div>
         </template>
         <template v-slot:eventContent="{event}">
-          <span v-if="event.title !== 'null'" class="event-title body-medium text-no-wrap">{{event.title}}</span>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <span v-if="event.title !== 'null'" v-bind="attrs" v-on="on" class="event-title body-medium text-no-wrap">{{event.title}}</span>
+            </template>
+            <span>{{event.title}}</span>
+          </v-tooltip>
 <!--yes, 'null' is intentionally a string because that's how it comes back from the calendar-->
         </template>
       </FullCalendar>
@@ -350,6 +355,9 @@ const calendarOptions = ref({
     center: 'title',
     right: vuetify.breakpoint.mdAndUp ? 'resourceTimelineDay,resourceTimelineWeek': ''
   },
+  slotMinWidth:40,
+  slotMinTime:"06:00:00",
+  slotMaxTime:"21:00:00",
   views:{
     resourceTimelineDay:{
       titleFormat:{ month: 'long',
@@ -363,6 +371,7 @@ const calendarOptions = ref({
         year: 'numeric',
         day: 'numeric'
       },
+      slotMinWidth:76,
     }
   },
   height: '100%',
@@ -1126,6 +1135,7 @@ const createSnackbar = (text) => {
   border-left-width: 20px;
   height: 28px;
 }
+
 .fc h2.fc-toolbar-title{
   //headline-large
   font-family: lato;
@@ -1173,21 +1183,21 @@ padding-bottom: 8px;
   }
 
 
-  #calendar-container .fc-event.event-tile:hover {
-    color: inherit !important;
-    max-width: unset;
-    width: fit-content;
-    -webkit-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-    -moz-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-    box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-    z-index: 5;
-
-    span {
-      max-width: unset;
-      width: fit-content;
-      padding-right: 4px;
-    }
-  }
+  //#calendar-container .fc-event.event-tile:hover {
+  //  color: inherit !important;
+  //  max-width: unset;
+  //  width: fit-content;
+  //  -webkit-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
+  //  -moz-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
+  //  box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
+  //  z-index: 5;
+  //
+  //  span {
+  //    max-width: unset;
+  //    width: fit-content;
+  //    padding-right: 4px;
+  //  }
+  //}
 
   #calendar-container .fc-rows tr,
   #calendar-container .fc-rows tr .fc-widget-content div{
@@ -1241,6 +1251,15 @@ padding-bottom: 8px;
     max-width: 30%;
   }
   }
+.v-tooltip__content {
+  background-color: white;
+  color: var(--v-grey-darken4);
+  outline-color: black;
+}
+.v-tooltip__content.menuable__content__active {
+opacity: 1;
+  filter:  drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
+}
 
 .wrap-dropdown-item {
   white-space: normal;
