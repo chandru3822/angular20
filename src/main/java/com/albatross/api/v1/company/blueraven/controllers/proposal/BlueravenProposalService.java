@@ -385,7 +385,7 @@ public class BlueravenProposalService {
               .findFirst()
               .ifPresent(proposalStepCustomFieldValue ->
                 filterCustomFieldValues(cfv,
-                  getProposalVersionValues(proposalVersionId, cfv.getCustomFieldId(), new ProposalFieldFilter(brsPanelBrandFieldId, null, Long.valueOf(proposalStepCustomFieldValue.getValue().toString()), null), "PROPOSAL_FINANCE_PRODUCTS"), true));
+                  getProposalVersionValues(proposalVersionId, cfv.getCustomFieldId(), brsPanelBrandFieldId, Long.valueOf(proposalStepCustomFieldValue.getValue().toString()), "PROPOSAL_FINANCE_PRODUCTS"), true));
           }
 
           //BRS needs to filter out dealers by associated org
@@ -459,24 +459,15 @@ public class BlueravenProposalService {
     return sqlCache.queryBySql(ProposalQuery.filterRebatesByStateAndUtility, params, new SingleColumnRowMapper<>(Long.class));
   }
 
-  private List<Long> getProposalVersionValues(Long proposalVersionId, Long customFieldId, ProposalFieldFilter filter, String objectCode) {
-    try (Connection connection = sqlCache.getSqlJdbc().getJdbcTemplate().getDataSource().getConnection()) {
+  private List<Long> getProposalVersionValues(Long proposalVersionId, Long targetCustomFieldId, Long customFieldId, Long intValue, String objectCode) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("versionId", proposalVersionId);
+    params.put("fieldId", targetCustomFieldId);
+    params.put("objectCode", objectCode);
+    params.put("customFieldId", customFieldId);
+    params.put("intValue", intValue);
 
-      Map<String, Object> params = new HashMap<>();
-      params.put("versionId", proposalVersionId);
-      params.put("fieldId", customFieldId);
-      params.put("objectCode", objectCode);
-
-      if (filter != null) {
-        Array customFieldFilters = connection.createArrayOf("ProposalFieldFilter", new Object[]{filter});
-        params.put("filters", customFieldFilters);
-      } else {
-        params.put("filters", null);
-      }
-      return sqlCache.queryBySql(ProposalToolQuery.findProposalVersionValues, params, new SingleColumnRowMapper<>(Long.class));
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    return sqlCache.queryBySql(ProposalToolQuery.findProposalVersionValues, params, new SingleColumnRowMapper<>(Long.class));
   }
 
   //exclusions
