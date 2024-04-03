@@ -438,44 +438,15 @@ export default {
       try {
         this.savingNewAiDesign = true
         // get the aurora project id for the first design we return from our side
-        const {data, status} = await getRequest(`/aurora/design/${this.firstDesignId}`, 'blueraven')
+        const {data, status} = await postRequest(`/proposal/projects/${this.projectId}/ai/design/${this.firstDesignId}/duplicate`, this.aiRequestFields, 'blueraven')
 
-        if(data?.projectId) {
-          let projectId = data.projectId
-          //get all aurora designs using that aurora projectId
-          const {data: designData, status} = await getRequest(`/aurora/project/${projectId}/designs`, 'blueraven')
+        if(null != data?.design?.id) {
+            //open the new design in sales mode
+            let url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
+            window.open(url, '_blank')
 
-
-          if(designData?.designs && designData?.designs.length > 0) {
-            //duplicate the first created design in aurora (the first created is the LAST design in the returned array)
-            let firstAuroraDesignId = designData?.designs.pop()?.id
-
-            let params = {
-              designName: this.aiRequestFields.find(f => f.customFieldGroupAssignmentId === 26300)?.textValue
-            }
-            //find the pps that is using that first aurora design and see if it was designedByAurora. use that value when creating the new pps
-            let designedByAurora = this.designs?.find(d => d.designId === firstAuroraDesignId)?.designedByAuroraAi || false;
-            const {data: designCopy, status} = await postRequestWithRequestParams(`/aurora/design/${firstAuroraDesignId}/duplicate`, {},
-                params, 'blueraven')
-
-            if(designCopy?.design?.id) {
-
-              //create the new pps for this
-              let designByAuroraParams = {
-                designByAuroraValue: designedByAurora
-              }
-              await postRequestWithRequestParams(`/proposal/projects/${this.projectId}/ai/design/${designData?.designs[0].id}`, this.aiRequestFields,
-                  designByAuroraParams, 'blueraven')
-
-              //open the new design in sales mode
-              let url = `https://v2.aurorasolar.com/projects/${projectId}/designs/${designCopy.design.id}/e-proposal`
-              window.open(url, '_blank')
-
-              //reload the active design
-              await this.getActiveDesign()
-            }
-          }
-
+            //reload the active design
+            await this.getActiveDesign()
         } else {
           this.$snackbar('ERROR', 'Failed to find Aurora Project')
         }

@@ -10,7 +10,7 @@
              :showRightCollapseBtn="false"
   >
     <template v-slot:main-column>
-      <AlbatrossButton id="map-btn" v-if="!showMap" class="absolute-right" color="primary" size="small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></AlbatrossButton>
+      <AlbatrossButton id="map-btn" v-if="!showMap" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></AlbatrossButton>
     <Calendar :map-resources="mapResources"
               ref="calendar"
               :map-open="showMap"
@@ -43,7 +43,7 @@
                @close-map="showHideMap(false)"
           >
             <template v-slot:searchMenu>
-              <AlbatrossButton v-if="vuetify.breakpoint.mdAndUp" id="search-menu-btn" class="rounded-tile-btn" variant="outlined" icon @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" color="primary"><v-icon>mdi-magnify</v-icon></AlbatrossButton>
+              <AlbatrossButton v-if="vuetify.breakpoint.mdAndUp" id="search-menu-btn" class="rounded-tile-btn pa-5" variant="outlined" icon @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" color="primary"><v-icon>mdi-magnify</v-icon></AlbatrossButton>
               <ProjectSearchDialog v-show="searchMenuOpen" :pin-to-map-callback="projectMapMarkersCallback"  :pinned-projects="projectMapMarkers"
                                    :states="states" :start-time="startTime" :end-time="endTime"
                                    @close-dialog="searchMenuOpen = false" @zoom-map="zoomToMap"/>
@@ -357,9 +357,10 @@
   #map-btn.absolute-right {
     position: absolute;
     z-index: 5;
-    right: 16px;
+    right: 24px;
     border-radius: 4px;
-    height: 56px;
+    height: 46px;
+    width: 46px;
   }
 
   #schedule-project-toolbar .v-toolbar__content {

@@ -211,7 +211,12 @@ const cancelProjectProcessStepEvent = async() => {
                         @click:clear="setSelectedResourceInStore(null)"
                         class="pb-2"
                         :active="!!resourceFromCalendar"
-        />              <!--setting the 'active' prop this way forces the value to appear when when click the schedule button on the calendar-->
+        >              <!--setting the 'active' prop this way forces the value to appear when when click the schedule button on the calendar-->
+
+          <template v-slot:item="data">
+            <div class="body-large">{{data.item.name}}</div>
+          </template>
+        </v-autocomplete>
         <DatetimePickerInput
             v-model="project.start"
             :timezone="timezone?.value"

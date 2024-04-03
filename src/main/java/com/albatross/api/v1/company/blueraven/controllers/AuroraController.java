@@ -1,6 +1,7 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
-import com.albatross.api.aurora.AuroraDesignDTO;
+import com.albatross.api.aurora.AuroraDesignWrappedDTO;
+import com.albatross.api.aurora.AuroraDesignListDTO;
 import com.albatross.api.aurora.AuroraProxy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,13 +29,13 @@ public class AuroraController {
   }
 
   @GetMapping(value = "/project/{projectId}/designs")
-  public String getDesignsForProject(@PathVariable String projectId) throws IOException {
+  public AuroraDesignListDTO getDesignsForProject(@PathVariable String projectId) throws IOException {
     return auroraProxy.getDesignsForProject(projectId);
   }
 
   @PostMapping(value = "/design/{designId}/duplicate")
-  public AuroraDesignDTO duplicateAuroraDesign(@PathVariable String designId,
-                                               @RequestParam(required = false) String designName) throws IOException {
+  public AuroraDesignWrappedDTO duplicateAuroraDesign(@PathVariable String designId,
+                                                      @RequestParam(required = false) String designName) throws IOException {
     return auroraProxy.duplicateDesign(designId, designName);
   }
 
