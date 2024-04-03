@@ -174,22 +174,21 @@ const cancelProjectProcessStepEvent = async() => {
 <template>
 <v-card id="map-project-modal" :class="{'pb-4': !userCanEdit}" elevation="10">
 <!--  title and subtitle always show, even when collapsed-->
-  <v-card-title class="d-flex align-start">
+  <v-card-title class="d-flex align-start clickable"  @click="show = !show">
     <span class="label-large pr-1 break-word max-width-half">{{project.projectName}}</span>
     <v-spacer/>
-    <AlbatrossButton class="mx-2" icon size="small" color="primary" @click="emit('toggleProjectMapPin')">
+    <AlbatrossButton class="mx-2" icon size="small" color="primary" @click.native.stop="emit('toggleProjectMapPin')">
       <v-icon v-if="project.pinned">mdi-map-marker</v-icon>
       <v-icon v-else>mdi-map-marker-off</v-icon>
     </AlbatrossButton>
     <AlbatrossButton
         icon size="small" color="primary"
-        @click="show = !show"
     >
       <v-icon>{{ show ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
     </AlbatrossButton>
   </v-card-title>
-  <v-card-subtitle @click="openInNewTab(`/project/${project.projectId}/processStep/${project.projectProcessStepId}/event/${project.projectProcessStepEventId}`)" class="clickable anchor--text pt-2 pb-3">
-    {{project.eventName}} <v-icon small class="anchor">mdi-open-in-new</v-icon>
+  <v-card-subtitle class="clickable anchor pt-2 pb-5">
+    <span @click="openInNewTab(`/project/${project.projectId}/processStep/${project.projectProcessStepId}/event/${project.projectProcessStepEventId}`)">{{project.eventName}} <v-icon small class="anchor">mdi-open-in-new</v-icon></span>
   </v-card-subtitle>
   <!-- ------------------- -->
 
@@ -258,8 +257,7 @@ const cancelProjectProcessStepEvent = async() => {
     </div>
     <div v-else>
       <v-card-text class="py-0 pb-4 body-large">
-      Not Scheduled, please use the project event page to schedule.
-      </v-card-text>
+        This event hasn't been scheduled. Please use the project page to schedule.      </v-card-text>
     </div>
 <!-- ------------------- -->
   </div>
@@ -293,5 +291,10 @@ const cancelProjectProcessStepEvent = async() => {
   right: 24px;
   width: 280px;
   z-index: 10;
+}
+.max-width-half{
+  //okay yes, this is more than half but I don't feel like changing the name
+  //it's so the name wraps instead of the buttons
+  max-width: 70%;
 }
 </style>
