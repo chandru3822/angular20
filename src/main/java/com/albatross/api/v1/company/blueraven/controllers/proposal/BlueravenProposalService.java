@@ -456,7 +456,7 @@ public class BlueravenProposalService {
           }
 
           if (commissionStrategyFieldId.equals(cfv.getCustomFieldId())) {
-            filterCustomFieldValues(cfv, filterCommissionStrategiesByUser(proposalVersionId, userId), false, true);
+            filterCustomFieldValues(cfv, filterCommissionStrategiesByUser(proposalVersionId, userId), false);
           }
         }));
 
