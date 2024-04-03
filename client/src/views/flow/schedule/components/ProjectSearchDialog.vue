@@ -319,24 +319,24 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-card id="project-search-card" color="white" style="max-width: 280px; min-width: 280px" class="square-card pa-4 project-search-card" elevation="8"> <!--did this manually instead of using v-menu b/c the dropdowns were getting cut off-->
+  <v-card id="project-search-card" color="white" style="max-width: 280px; min-width: 280px" class="pa-4 project-search-card" elevation="8"> <!--did this manually instead of using v-menu b/c the dropdowns were getting cut off-->
     <div class="d-flex justify-space-between">
       <v-card-title class="label-large pa-0">Search Projects</v-card-title>
       <AlbatrossButton icon size="small" @click="emit('close-dialog')"><v-icon>close</v-icon></AlbatrossButton>
     </div>
     <div v-if="!showSearchResults" class="project-search-field-container pt-1">
       <div class="one-hunned pb-3">
-        <v-autocomplete attach v-model="state" class="pb-2"
-                        :items="states"
-                        label="State"
-                        clearable
-                        return-object
-                        hide-details
-                        dense
-                        item-text="state"
-                        item-value="id"
-                        @click:clear="clear"
-                        :disabled="!!searchProject?.projectId"
+        <v-autocomplete attach v-model="state" class="pb-2 body-large"
+        :items="states"
+        label="State"
+        clearable
+        return-object
+        hide-details
+        dense
+        item-text="state"
+        item-value="id"
+        @click:clear="clear"
+        :disabled="!!searchProject?.projectId"
         ></v-autocomplete>
         <v-autocomplete v-model="searchProject"
                         :items="searchProjects"
@@ -351,6 +351,7 @@ onMounted(() => {
                         :disabled="!!state?.id"
                         hide-details
                         return-object
+                        class="body-large"
                         attach
         >
 
