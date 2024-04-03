@@ -14,7 +14,14 @@
               :close-on-click="false"
               :close-on-content-click="false">
         <template v-slot:activator="{ on }">
-          <AlbatrossButton id="drive-time-btn" variant="outlined" :activation-handler="on" icon color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></AlbatrossButton>
+          <AlbatrossButton
+            id="drive-time-btn"
+            variant="outlined"
+            :activation-handler="on"
+            icon
+            color="primary"
+            class="rounded-tile-btn white-background mr-3 pa-5">
+            <v-icon>mdi-car</v-icon></AlbatrossButton>
         </template>
         <v-card id="drive-time-card" color="white" class="square-card pa-4">
           <div class="d-flex justify-space-between">
