@@ -36,8 +36,8 @@
                             v-model="address1"
                             @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"></v-text-field>
               <v-list ref="dropdownMenu1" v-if="showAddress1List">
-                <v-list-item v-for="(suggestion, idx) in suggestions">
-                  <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, true)">
+                <v-list-item v-for="(suggestion, idx) in suggestions" class="px-0">
+                  <v-card class="pa-2 addressSuggestion" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, true)">
                     <span class="dropdown-item text-decoration-none" >
                       {{ formatLabel(suggestion.label, 'start') }}<span>{{
                         formatLabel(suggestion.label, 'middle')
@@ -57,8 +57,8 @@
                             v-model="address2"
                             @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"></v-text-field>
               <v-list ref="dropdownMenu2" v-if="showAddress2List">
-                <v-list-item v-for="(suggestion, idx) in suggestions">
-                  <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, false)">
+                <v-list-item v-for="(suggestion, idx) in suggestions" class="px-0">
+                  <v-card class="pa-2 addressSuggestion" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, false)">
                     <span class="dropdown-item text-decoration-none">
                       {{ formatLabel(suggestion.label, 'start') }}<span>{{
                         formatLabel(suggestion.label, 'middle')
@@ -431,7 +431,6 @@ const onMapLoad = async(event) => {
 #drive-time-card > div > div > div.v-list.v-sheet {
   max-height: calc(100vh - 400px);
   overflow-y: auto;
-
   .v-list-item {
     //padding: 0;
     //looked at removing the padding on the child as shown in figma, but it looks odd with the scrollbar
@@ -468,6 +467,10 @@ const onMapLoad = async(event) => {
   position: relative;
   top:40px;
   right:38px;
+}
+
+.addressSuggestion {
+  border-color: var(--v-grey-lighten1);
 }
 
 

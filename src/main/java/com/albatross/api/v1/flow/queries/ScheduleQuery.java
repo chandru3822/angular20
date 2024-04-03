@@ -295,6 +295,7 @@ public class ScheduleQuery {
                    else ps.company_id = :companyId end
           and ps.archived is not true
           and p.archived is false
+          and ppse.archived is false
           and case when :isParent then
                        p.company_state_id in (select id from flow.company_state where state_id = (select state_id from flow.company_state where id = :companyStateId))
                    else p.company_state_id = :companyStateId end
