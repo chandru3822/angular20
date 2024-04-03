@@ -326,17 +326,17 @@ onMounted(() => {
     </div>
     <div v-if="!showSearchResults" class="project-search-field-container pt-1">
       <div class="one-hunned pb-3">
-        <v-autocomplete attach v-model="state" class="pb-2"
-                        :items="states"
-                        label="State"
-                        clearable
-                        return-object
-                        hide-details
-                        dense
-                        item-text="state"
-                        item-value="id"
-                        @click:clear="clear"
-                        :disabled="!!searchProject?.projectId"
+        <v-autocomplete attach v-model="state" class="pb-2 body-large"
+        :items="states"
+        label="State"
+        clearable
+        return-object
+        hide-details
+        dense
+        item-text="state"
+        item-value="id"
+        @click:clear="clear"
+        :disabled="!!searchProject?.projectId"
         ></v-autocomplete>
         <v-autocomplete v-model="searchProject"
                         :items="searchProjects"
@@ -351,6 +351,7 @@ onMounted(() => {
                         :disabled="!!state?.id"
                         hide-details
                         return-object
+                        class="body-large"
                         attach
         >
 
