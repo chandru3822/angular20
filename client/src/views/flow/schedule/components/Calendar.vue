@@ -246,7 +246,8 @@
       <FullCalendar ref="eventCalendar" id="event-calendar" :options="calendarOptions">
         <template v-slot:resourceLabelContent="{resource, index}">
           <div class="d-flex justify-space-between align-baseline">
-            <span class="body-large overflow-hidden resource-title">{{ resource.title }}</span>
+            <a v-if="resource.id.charAt(0)==='1'" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`" target="_blank" class="body-large overflow-hidden resource-title">{{resource.title}}</a>
+            <span v-else class="body-large overflow-hidden resource-title">{{ resource.title }}</span>
             <div>
               <v-tooltip bottom>
                 <template v-slot:activator="{on}">
