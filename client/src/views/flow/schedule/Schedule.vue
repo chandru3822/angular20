@@ -178,7 +178,8 @@
       const projectMapMarkersCallback = (newValue)=> {
         projectMapMarkers.value = newValue
         showHideMap(true)
-        if(newValue.length > 0){
+        // for now only doing this if 1 project is pinned until further definition from ashi
+        if(newValue.length === 1){
           zoomToMap(newValue[0], 8)
         }
       }
