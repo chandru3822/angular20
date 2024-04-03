@@ -4,7 +4,7 @@
           @load="onMapLoad">
 
     <div id="map-btns" class="d-flex justify-start">
-      <AlbatrossButton id="hide-map-btn" color="primary" size="small" class="rounded-tile-btn ml-4 mr-3" :elevation="5" custom-classes="px-4" @click="$emit('close-map')"><v-icon>mdi-chevron-right</v-icon></AlbatrossButton>
+      <AlbatrossButton id="hide-map-btn" color="primary" size="x-small" class="rounded-tile-btn ml-4 mr-3" :elevation="5" custom-classes="px-4" @click="$emit('close-map')"><v-icon>mdi-chevron-right</v-icon></AlbatrossButton>
       <v-menu data-app bottom
               offset-y
               content-class="drive-time-menu"
@@ -449,7 +449,8 @@ const onMapLoad = async(event) => {
 <style scoped lang="scss">
 
 #hide-map-btn {
-  height: 56px;
+  height: 46px;
+  width: 46px;
   padding:0;
 }
 
