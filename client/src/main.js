@@ -37,7 +37,12 @@ Vue.filter('formatDate', function(value, type, format, inputFormat) {
   //  TYPES: 'date', 'timestamp'
   */
 
-  const timezone = store?.state?.user?.details?.timezone?.value
+  let timezone = store?.state?.user?.details?.timezone?.value
+
+  //The schedule screen has it's own timezone. Use that if user is on schedule screen, else default to regular timezone
+  if (router.currentRoute.name === 'schedule' && store?.state?.schedule?.timezone?.value) {
+	  timezone = store.state.schedule.timezone.value
+  }
 
   if (!type || (type === 'timestamp' && !timezone)) {
     console.error('TYPE IS REQUIRED, TIMEZONE IS REQUIRED FOR TIMESTAMPS')
