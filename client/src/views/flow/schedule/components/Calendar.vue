@@ -357,8 +357,8 @@ const calendarOptions = ref({
     right: vuetify.breakpoint.mdAndUp ? 'resourceTimelineDay,resourceTimelineWeek': ''
   },
   slotMinWidth:40,
-  slotMinTime:"06:00:00",
-  slotMaxTime:"21:00:00",
+  slotMinTime:"04:00:00",
+  slotMaxTime:"23:00:00",
   views:{
     resourceTimelineDay:{
       titleFormat:{ month: 'long',
