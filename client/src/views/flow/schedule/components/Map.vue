@@ -31,7 +31,7 @@
           <div class="address-container">
             <div class="one-hunned py-3">
               <v-text-field text outlined label="Starting Point" placeholder="Select pin or enter address" autocomplete="new-password"
-                            @click="[address1 = '', drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
+                            @click="[drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
                             hide-details
                             v-model="address1"
                             @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"></v-text-field>
@@ -52,7 +52,7 @@
           <div class="address-container">
             <div class="one-hunned">
               <v-text-field text outlined label="Destination" placeholder="Select pin or enter address" autocomplete="new-password"
-                            @click="[address2 = '', drivingDistance = 0, drivingDuration = 0, selectAddress2 = true, selectAddress1 = false]"
+                            @click="[drivingDistance = 0, drivingDuration = 0, selectAddress2 = true, selectAddress1 = false]"
                             hide-details
                             v-model="address2"
                             @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"></v-text-field>
@@ -69,8 +69,8 @@
               </v-list>
             </div>
             <div class="mt-2 body-large">
-              <div>Drive Time:</div> <span v-if="drivingDuration">{{ drivingDuration }}</span>
-              <div>Drive Distance:</div><span v-if="drivingDistance">{{ drivingDistance }} miles</span>
+              <div>Drive Time:</div> <span class="label-large" v-if="drivingDuration">{{ drivingDuration }}</span>
+              <div>Drive Distance:</div><span class="label-large" v-if="drivingDistance">{{ drivingDistance }} miles</span>
             </div>
           </div>
         </v-card>

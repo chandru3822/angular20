@@ -101,6 +101,7 @@ const fetchEventStatusTypes = async() => {
   try {
     const {data} = await getEventStatusTypes()
     eventStatusTypes.value = data
+    console.log(data)
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -427,12 +428,12 @@ onMounted(() => {
       </div>
     </div>
     <div v-else class="body-small">
-      <v-chip x-small color="primary lighten-9" v-if="state.state" class="mr-1 px-2 grey--text text--darken-3">{{state.state}} </v-chip>
-      <v-chip x-small color="primary lighten-9" v-if="searchProject?.projectName" class="mr-1 px-2 grey--text text--darken-3">{{searchProject.projectName}} </v-chip>
-      <v-chip x-small color="primary lighten-9" v-if="searchEventType?.eventName" class="mr-1 px-2 grey--text text--darken-3">{{searchEventType.eventName}} </v-chip>
-      <v-chip x-small v-for="e in selectedEventTypes" color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">{{e.eventName}} </v-chip>
-      <v-chip x-small color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">Event: {{searchEventStatusType.eventStatusType}}</v-chip>
-      <v-chip x-small color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">Process Step: {{selectedProcessStepStatusType.processStepStatusType}}</v-chip>
+      <v-chip small color="primary lighten-9" v-if="state.state" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{state.state}} </v-chip>
+      <v-chip small color="primary lighten-9" v-if="searchProject?.projectName" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{searchProject.projectName}} </v-chip>
+      <v-chip small color="primary lighten-9" v-if="searchEventType?.eventName" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{searchEventType.eventName}} </v-chip>
+      <v-chip small v-for="e in selectedEventTypes" color="primary lighten-9" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{e.eventName}} </v-chip>
+      <v-chip small color="primary lighten-9" class="mb-1 mr-1 px-2 grey--text text--darken-3">Event: {{searchEventStatusType.eventStatusType}}</v-chip>
+      <v-chip small color="primary lighten-9" class="mb-1 mr-1 px-2 grey--text text--darken-3">Process Step: {{selectedProcessStepStatusType.processStepStatusType}}</v-chip>
     </div>
     <v-card-actions class="px-0 pb-0">
       <AlbatrossButton @click="clear" variant="text" small class="text-capitalize flex-grow-0 body-medium">Reset</AlbatrossButton>
@@ -474,7 +475,7 @@ onMounted(() => {
           :pinned="isOnePinned(p)"
           @pinToMap="toggleOneMapPin"
           @click="openProjectEvent(p)"
-          class="clickable"
+          class="clickable mb-3"
       />
     </div>
       <AlbatrossButton v-if="showLoadMoreBtn" variant="text" size="small" class="my-2" @click="[page++, getProjects(false)]">Load More</AlbatrossButton>
