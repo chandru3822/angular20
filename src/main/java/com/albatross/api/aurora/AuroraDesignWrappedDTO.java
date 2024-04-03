@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 @JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT, use = JsonTypeInfo.Id.NAME)
 @JsonTypeName("design")
-public class AuroraDesignDTO {
+public class AuroraDesignWrappedDTO {
 
     //note: this is the aurora unique id
     @JsonInclude(JsonInclude.Include.NON_NULL)

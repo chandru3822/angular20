@@ -82,14 +82,14 @@ public class AuroraProxy {
                 .trim();
     }
 
-  public String getDesignsForProject(@NotBlank String projectId) throws IOException {
+  public AuroraDesignListDTO getDesignsForProject(@NotBlank String projectId) throws IOException {
     try {
-      ResponseEntity<String> res = client
+      ResponseEntity<AuroraDesignListDTO> res = client
         .get()
         .uri("/tenants/%s/projects/%s/designs".formatted(tenantId, projectId))
         .header("Authorization", "Bearer " + tokenV2022)
         .retrieve()
-        .toEntity(String.class)
+        .toEntity(AuroraDesignListDTO.class)
         .timeout(Duration.ofSeconds(30))
         .onErrorMap(Exception.class, e -> e)
         .block();
@@ -158,22 +158,22 @@ public class AuroraProxy {
         }
     }
 
-    public AuroraDesignDTO createDesign(String auroraProjectId, String designName) throws IOException {
+    public AuroraDesignWrappedDTO createDesign(String auroraProjectId, String designName) throws IOException {
         try {
 
-            AuroraDesignDTO design = new AuroraDesignDTO();
+            AuroraDesignWrappedDTO design = new AuroraDesignWrappedDTO();
 
             design.setProjectId(auroraProjectId);
             design.setName(designName);
 
             RestClient client = RestClient.builder().baseUrl(host).build();
-            ResponseEntity<AuroraDesignDTO> res = client.post()
+            ResponseEntity<AuroraDesignWrappedDTO> res = client.post()
                     .uri("/tenants/%s/designs".formatted(tenantId))
                     .header("Authorization", "Bearer " + tokenV2022)
                     .body(design)
                     .contentType(MediaType.APPLICATION_JSON)
                     .retrieve()
-                    .toEntity(AuroraDesignDTO.class);
+                    .toEntity(AuroraDesignWrappedDTO.class);
 
             if (res != null && res.getStatusCode() != HttpStatus.OK) {
                 throw new RuntimeException("Received unexpected response code " + res.getStatusCodeValue());
@@ -187,19 +187,19 @@ public class AuroraProxy {
         }
     }
 
-  public AuroraDesignDTO duplicateDesign(String designId, String designName) throws IOException {
+  public AuroraDesignWrappedDTO duplicateDesign(String designId, String designName) throws IOException {
     try {
-      AuroraDesignDTO design = new AuroraDesignDTO();
+      AuroraDesignWrappedDTO design = new AuroraDesignWrappedDTO();
       design.setName(designName);
 
       RestClient client = RestClient.builder().baseUrl(host).build();
-      ResponseEntity<AuroraDesignDTO> res = client.post()
+      ResponseEntity<AuroraDesignWrappedDTO> res = client.post()
         .uri("/tenants/%s/designs/%s/duplicate".formatted(tenantId, designId))
         .header("Authorization", "Bearer " + tokenV2022)
         .body(design)
         .contentType(MediaType.APPLICATION_JSON)
         .retrieve()
-        .toEntity(AuroraDesignDTO.class);
+        .toEntity(AuroraDesignWrappedDTO.class);
 
       if (res != null && res.getStatusCode() != HttpStatus.OK) {
         throw new RuntimeException("Received unexpected response code " + res.getStatusCodeValue());

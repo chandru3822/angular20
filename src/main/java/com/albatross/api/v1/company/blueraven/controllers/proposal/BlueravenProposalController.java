@@ -1,6 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
-import com.albatross.api.aurora.AuroraDesignDTO;
+import com.albatross.api.aurora.AuroraDesignWrappedDTO;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.InvalidStateApiException;
@@ -29,7 +29,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -63,10 +62,19 @@ public class BlueravenProposalController {
 
   @PostMapping(value = "/projects/{projectId}/ai")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
-  public AuroraDesignDTO doProposalAiRequest(@PathVariable Long projectId,
-                                             @RequestBody List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+  public AuroraDesignWrappedDTO doProposalAiRequest(@PathVariable Long projectId,
+                                                    @RequestBody List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
     //this is called to generate an initial aurora design
     return proposalService.doProposalAiRequest(projectId, values);
+  }
+
+  @PostMapping(value = "/projects/{projectId}/ai/design/{designId}/duplicate")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
+  public AuroraDesignWrappedDTO duplicateExistingProposalAi(@PathVariable Long projectId,
+                                                            @PathVariable String designId,
+                                                            @RequestBody List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+    //this is called to generate an aurora design from an existing one
+    return proposalService.duplicateExistingProposalAi(projectId, designId, values);
   }
 
   @PostMapping(value = "/projects/{projectId}/ai/design/{designId}")
