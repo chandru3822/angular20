@@ -53,27 +53,9 @@ watch(() => store.state.schedule.timezone.friendlyValue, (fv) => {
 const setSelectedResourceInStore = (resourceId) => {
   if(resourceId){
     store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, resourceId)
-    let snackbar = createSnackbar('Resource assigned')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
   }
   else {
     store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, null)
-    let snackbar = createSnackbar('Resource unassigned')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-  }
-}
-
-//this snackbar is different from others so we built it here
-const createSnackbar = (text) => {
-  return {
-    y: 'bottom',
-    x: null,
-    mode: '',
-    timeout: 5000,
-    text: text,
-    color: 'grey darken-3',
-    fontClass: 'secondary--text',
-    enabled: true
   }
 }
 

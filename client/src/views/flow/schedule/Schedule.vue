@@ -19,7 +19,7 @@
               :callback="resourceMapCallback"
               :date-callback="dateCallback"
               @scheduleResource="scheduleResourceToCurrentProject"
-              @unscheduleResource="calendarResourceToSchedule = {}"
+              @unscheduleResource="unscheduleResourceFromCurrentProject"
     />
       <ProjectModal
           v-if="selectedProject.projectId"
@@ -200,7 +200,28 @@
 
       const scheduleResourceToCurrentProject = (resource)=> {
         calendarResourceToSchedule.value = resource
+        let snackbar = createSnackbar('Resource assigned')
+        store.commit(AppMutations.SHOW_SNACK, snackbar)
       }
+      const unscheduleResourceFromCurrentProject = ()=> {
+        calendarResourceToSchedule.value = {}
+        let snackbar = createSnackbar('Resource unassigned')
+        store.commit(AppMutations.SHOW_SNACK, snackbar)
+      }
+
+  //this snackbar is different from others so we built it here
+  const createSnackbar = (text) => {
+    return {
+      y: 'bottom',
+      x: null,
+      mode: '',
+      timeout: 5000,
+      text: text,
+      color: 'grey darken-3',
+      fontClass: 'secondary--text',
+      enabled: true
+    }
+  }
 
       const getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId, onLoad) => {
         try {
