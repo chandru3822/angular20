@@ -178,7 +178,7 @@ public class ScheduleService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
     List<ScheduleEvent> results = sqlCache.queryBySql(ScheduleQuery.getProjects, params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
-    Integer total = 10000; //todo come back and check later
+    Integer total = sqlCache.queryForObjectBySql(ScheduleQuery.getProjectsCount, params, Integer.class);
     return new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
