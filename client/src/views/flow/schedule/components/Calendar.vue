@@ -274,7 +274,7 @@
         <template v-slot:eventContent="{event}">
           <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
             <template v-slot:activator="{ on, attrs }">
-              <span v-if="event.title !== 'null'" v-bind="attrs" v-on="on" class="event-title body-medium text-no-wrap">{{event.title}}</span>
+              <span v-if="event.title !== 'null'" v-bind="attrs" v-on="on" :class="{'text-no-wrap':event.display !== 'background'}" class="event-title body-medium">{{event.title}}</span>
             </template>
             <span>{{event.title}}</span>
           </v-tooltip>
@@ -959,6 +959,7 @@ const countSelected = computed(() => {
 
 
             if(!d.isSlotTime && d.display === 'inverse-background') {
+              d.backgroundColor= 'rgba(255,255,255,0)'
               //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
               //do start time
               if(d.daylightSavings && !moment(d.start).isDST()) {
@@ -977,7 +978,7 @@ const countSelected = computed(() => {
             }
 
             if(d.display === 'background'){
-              d.title = d.title + ': ' + moment(d.start).format('h:mm') + '-' + moment(d.end).format('h:mm')
+              d.title = d.title + ': ' + getFormattedDate(d.start, 'hh:mm') + '-' + getFormattedDate(d.end)
             }
           })
 
@@ -994,7 +995,7 @@ const countSelected = computed(() => {
               //these values have already been pre-appended with the 1 or 2
               groupId: r.id,
               resourceId: r.id,
-              backgroundColor: 'rgba(0,0,0,.1)'
+              backgroundColor: 'rgba(255,255,255,0)'
             })
           })
           return data;
@@ -1120,7 +1121,7 @@ const createSnackbar = (text) => {
     y: 'bottom',
     x: null,
     mode: '',
-    timeout: 5000,
+    timeout: -1,
     text: text,
     color: 'grey darken-3',
     fontClass: 'secondary--text',
