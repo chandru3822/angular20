@@ -1121,7 +1121,7 @@ const createSnackbar = (text) => {
     y: 'bottom',
     x: null,
     mode: '',
-    timeout: 5000,
+    timeout: -1,
     text: text,
     color: 'grey darken-3',
     fontClass: 'secondary--text',
