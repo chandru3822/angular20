@@ -274,7 +274,7 @@
         <template v-slot:eventContent="{event}">
           <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
             <template v-slot:activator="{ on, attrs }">
-              <span v-if="event.title !== 'null'" v-bind="attrs" v-on="on" class="event-title body-medium text-no-wrap">{{event.title}}</span>
+              <span v-if="event.title !== 'null'" v-bind="attrs" v-on="on" :class="{'text-no-wrap':event.display !== 'background'}" class="event-title body-medium">{{event.title}}</span>
             </template>
             <span>{{event.title}}</span>
           </v-tooltip>
@@ -978,7 +978,7 @@ const countSelected = computed(() => {
             }
 
             if(d.display === 'background'){
-              d.title = d.title + ': ' + moment(d.start).format('h:mm') + '-' + moment(d.end).format('h:mm')
+              d.title = d.title + ': ' + getFormattedDate(d.start, 'hh:mm') + '-' + getFormattedDate(d.end)
             }
           })
 
