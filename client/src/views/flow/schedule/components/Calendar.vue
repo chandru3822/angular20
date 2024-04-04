@@ -1279,7 +1279,7 @@ opacity: 1;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
   z-index: 1;
   background-color: var(--v-grey-lighten4);
-  @media(max-width: 960px) {
+  @media(max-width: 600px) {
     max-height:50%;
     overflow-y: scroll;
   }
