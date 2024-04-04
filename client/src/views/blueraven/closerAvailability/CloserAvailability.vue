@@ -52,7 +52,7 @@ export default {
 
 <style lang="scss" scoped>
 #closer-availability-container {
-  height: calc(100vh - 100px);
+  height: calc(100vh - 60px);
 }
 </style>
 
