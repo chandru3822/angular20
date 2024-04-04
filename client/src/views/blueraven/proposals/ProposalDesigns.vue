@@ -159,7 +159,7 @@
         </div>
       </v-card>
       <v-card
-          v-if="!hasActiveDesign && (closerApptRequirementsMet || designs.length > 0)"
+          v-if="!hasActiveDesign && (closerApptRequirementsMet || designs.length > 0 || hasActiveAiDesign)"
           color="transparent"
           width="355"
           :height="cardHeight"
