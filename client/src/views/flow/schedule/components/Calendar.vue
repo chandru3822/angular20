@@ -959,6 +959,7 @@ const countSelected = computed(() => {
 
 
             if(!d.isSlotTime && d.display === 'inverse-background') {
+              d.backgroundColor= 'rgba(255,255,255,0)'
               //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
               //do start time
               if(d.daylightSavings && !moment(d.start).isDST()) {
@@ -994,7 +995,7 @@ const countSelected = computed(() => {
               //these values have already been pre-appended with the 1 or 2
               groupId: r.id,
               resourceId: r.id,
-              backgroundColor: 'rgba(0,0,0,.1)'
+              backgroundColor: 'rgba(255,255,255,0)'
             })
           })
           return data;
