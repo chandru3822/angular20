@@ -300,6 +300,9 @@ export default {
         console.error('*** ERROR ***', e)
         if (e.data.message != null) {
           this.snackbar = getSnackbar('ERROR', e.data.message)
+        }
+        else if (e.data.detail != null) {
+          this.snackbar = getSnackbar('ERROR', e.data.detail)
         } else {
           this.snackbar = getSnackbar('ERROR', 'Error generating Finance Application')
         }
