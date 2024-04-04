@@ -138,7 +138,7 @@
                           return-object
                           item-text="position"
                           item-value="id"
-                          @input="poitionValuesChanged = true"
+                          @input="positionValuesChanged = true"
                           @blur="filterOrgsAndUsers"
                           attach
           >
@@ -357,8 +357,8 @@ const calendarOptions = ref({
     right: vuetify.breakpoint.mdAndUp ? 'resourceTimelineDay,resourceTimelineWeek': ''
   },
   slotMinWidth:40,
-  slotMinTime:"06:00:00",
-  slotMaxTime:"21:00:00",
+  slotMinTime:"04:00:00",
+  slotMaxTime:"23:00:00",
   views:{
     resourceTimelineDay:{
       titleFormat:{ month: 'long',
@@ -693,7 +693,7 @@ const countSelected = computed(() => {
         return false
       }
       const getSchedulingOrgs = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        orgsLoading.value = true
         try {
           const {data, status} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
             params: {
@@ -721,7 +721,7 @@ const countSelected = computed(() => {
         }
       }
       const fetchSchedulingOrgTypes = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        orgTypesLoading.value = true
         try {
           const {data, status} = await getSchedulingOrgTypes()
           orgTypes.value = data
@@ -743,7 +743,7 @@ const countSelected = computed(() => {
         }
       }
       const getPositions = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        positionsLoading.value = true
         try {
           const {data, status} = await getRequest(`/position/schedulable`, null, [])
           positions.value = data
@@ -1279,7 +1279,7 @@ opacity: 1;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
   z-index: 1;
   background-color: var(--v-grey-lighten4);
-  @media(max-width: 960px) {
+  @media(max-width: 600px) {
     max-height:50%;
     overflow-y: scroll;
   }

@@ -31,13 +31,13 @@
           <div class="address-container">
             <div class="one-hunned py-3">
               <v-text-field text outlined label="Starting Point" placeholder="Select pin or enter address" autocomplete="new-password"
-                            @click="[address1 = '', drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
+                            @click="[drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
                             hide-details
                             v-model="address1"
                             @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"></v-text-field>
               <v-list ref="dropdownMenu1" v-if="showAddress1List">
-                <v-list-item v-for="(suggestion, idx) in suggestions">
-                  <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, true)">
+                <v-list-item v-for="(suggestion, idx) in suggestions" class="px-0">
+                  <v-card class="pa-2 addressSuggestion" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, true)">
                     <span class="dropdown-item text-decoration-none" >
                       {{ formatLabel(suggestion.label, 'start') }}<span>{{
                         formatLabel(suggestion.label, 'middle')
@@ -52,13 +52,13 @@
           <div class="address-container">
             <div class="one-hunned">
               <v-text-field text outlined label="Destination" placeholder="Select pin or enter address" autocomplete="new-password"
-                            @click="[address2 = '', drivingDistance = 0, drivingDuration = 0, selectAddress2 = true, selectAddress1 = false]"
+                            @click="[drivingDistance = 0, drivingDuration = 0, selectAddress2 = true, selectAddress1 = false]"
                             hide-details
                             v-model="address2"
                             @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"></v-text-field>
               <v-list ref="dropdownMenu2" v-if="showAddress2List">
-                <v-list-item v-for="(suggestion, idx) in suggestions">
-                  <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, false)">
+                <v-list-item v-for="(suggestion, idx) in suggestions" class="px-0">
+                  <v-card class="pa-2 addressSuggestion" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, false)">
                     <span class="dropdown-item text-decoration-none">
                       {{ formatLabel(suggestion.label, 'start') }}<span>{{
                         formatLabel(suggestion.label, 'middle')
@@ -69,8 +69,8 @@
               </v-list>
             </div>
             <div class="mt-2 body-large">
-              <div>Drive Time:</div> <span v-if="drivingDuration">{{ drivingDuration }}</span>
-              <div>Drive Distance:</div><span v-if="drivingDistance">{{ drivingDistance }} miles</span>
+              <div>Drive Time:</div> <span class="label-large" v-if="drivingDuration">{{ drivingDuration }}</span>
+              <div class="mt-2">Drive Distance:</div><span class="label-large" v-if="drivingDistance">{{ drivingDistance }} miles</span>
             </div>
           </div>
         </v-card>
@@ -84,7 +84,7 @@
 
                @click="selectAddressForDriveTime(currentProjectMarker)"
                color="var(--v-primary-base)">
-      <MglPopup :close-button="false" :offset="36">
+      <MglPopup :close-button="false" :offset="popupOffset">
         <MapPopUp :marker="currentProjectMarker"/>
       </MglPopup>
     </MglMarker>
@@ -94,7 +94,7 @@
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
-      <MglPopup :close-button="false" :offset="36">
+      <MglPopup :close-button="false" :offset="popupOffset">
         <MapPopUp :marker="m"/>
       </MglPopup>
     </MglMarker>
@@ -104,7 +104,7 @@
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
-      <MglPopup :close-button="false" :offset="36">
+      <MglPopup :close-button="false" :offset="popupOffset">
         <MapPopUp :marker="m"/>
       </MglPopup>
     </MglMarker>
@@ -162,6 +162,7 @@ const distanceDivisionMetric = ref(1609.34)
 const durationDivisionMetric = ref(60)
 const defaultZoom = ref(2.0)
 const suggestions = ref([])
+const popupOffset = ref(0)
 // they do these coordinates backwards to comply with geoJSON whatever that is.
 //center of the USA
 const defaultCenter = ref([-98.5795, 39.8283])
@@ -177,8 +178,23 @@ const options = ref({
 })
 const asyncActions = ref()
 
+
+const emit = defineEmits(['close-search-menu'])
+watch( menuOpen, () => {
+  if(menuOpen.value) {
+    emit('close-search-menu')
+  }
+})
+
+const closeMenu = () => {
+  menuOpen.value = false
+}
+
+defineExpose({
+  closeMenu
+})
+
 const selectAddress = ((suggestion, isFirst) => {
-  debugger
   if (isFirst) {
     address1.value = suggestion.label
     showAddress1List.value = false
@@ -432,11 +448,14 @@ const onMapLoad = async(event) => {
 #drive-time-card > div > div > div.v-list.v-sheet {
   max-height: calc(100vh - 400px);
   overflow-y: auto;
-
   .v-list-item {
     //padding: 0;
     //looked at removing the padding on the child as shown in figma, but it looks odd with the scrollbar
   }
+}
+
+#map .mapboxgl-popup-content {
+  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12) !important;
 }
 
 .mapboxgl-ctrl-top-right .mapboxgl-ctrl {
@@ -469,6 +488,10 @@ const onMapLoad = async(event) => {
   position: relative;
   top:40px;
   right:38px;
+}
+
+.addressSuggestion {
+  border-color: var(--v-grey-lighten1);
 }
 
 

@@ -4,7 +4,7 @@
   :close-on-content-click="false"
   transition="scale-transition"
   offset-y
-  content-class="qa-date-menu"
+  :content-class="contentClass"
   max-width="290px"
   min-width="290px"
 >
@@ -81,6 +81,7 @@ export default {
     dense: String,
     outlined: String,
     customClass: String,
+    customContentClass: String,
     //if this is empty it uses the company minute increment setting, if that is null then it shows all minutes
     allowedMinutes: Function,
     showAppendIcon: Boolean,
@@ -122,6 +123,9 @@ export default {
     }
   },
   computed: {
+    contentClass() {
+      return 'qa-date-menu ' + this.$props.customContentClass
+    },
     localTime: {
       get: function() {
         return this.$props.value

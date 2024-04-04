@@ -7,20 +7,20 @@
 *@description
 *
 */
-import {getCurrentInstance, ref, watch} from "vue";
-import {AppMutations} from "@/stores/AppStore.js";
-import {getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
-import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
-import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/eventStatusTypeService.js";
-import {ScheduleMutations} from "@/stores/ScheduleStore.js";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue'
+import { AppMutations } from '@/stores/AppStore.js'
+import { getRequest, getSnackbar, handleHidingGlobalLoader, postRequest } from '@/helpers/helpers.js'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import { ScheduleMutations } from '@/stores/ScheduleStore.js'
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+import { getEventDefaultFieldReadOnly } from '@/services/customFieldService.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
 const vuetify = vueInstance.$vuetify
-
+const route = vueInstance.$route
 const emit = defineEmits(['toggleProjectMapPin'])
 
 const props = defineProps({
@@ -30,11 +30,17 @@ const props = defineProps({
 })
 const show = ref(vuetify.breakpoint.mdAndUp)
 const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
+const userCanManage = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'MANAGE'))
+const userIsAdmin = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN'))
 const fieldsSaving = ref(false)
 const conflictingEvents = ref()
 const saveInvalid = ref(true)
 const cancelledCompanyEventStatuses = ref()
 const timezoneFriendly = ref(store.state.schedule.timezone.friendlyValue)
+const event = ref(null)
+const ppsId = ref(route.query.projectProcessStepId)
+const ppsEventId = ref(route.query.projectProcessStepEventId)
+const saveError = ref(null)
 
 watch(() => props.resourceFromCalendar, () => {
   if(props.resourceFromCalendar.id) {
@@ -48,6 +54,57 @@ watch(() => props.resourceFromCalendar, () => {
 
 watch(() => store.state.schedule.timezone.friendlyValue, (fv) => {
   timezoneFriendly.value = fv
+})
+
+const isUserWhitelisted = computed(() => {
+	if(event.value?.readonlyWhiteListedPositions) {
+		for (let wlp of event.value?.readonlyWhiteListedPositions) {
+			let match = store.state.user.details.userPositions.find(up => up.positionId === wlp.positionId)
+			if (match) {
+				return true //if the user has a position that matches any of the whiteList positions, the user should see the event
+			}
+		}
+		return false //if we go through all the whiteList positions and haven't found a match, the user should not see the event
+	}
+})
+
+const isEventEditableByThisUserIgnoringReadOnly = computed(() => {
+	//can the user edit the field if the readonly setting is false
+	// if events admin/manager then they can edit any event fields regardless of event/process step status
+	return userIsAdmin.value || userCanManage.value || (userCanEdit.value && event.value?.eventStatusTypeId === 1 && event.value?.processStepStatusTypeId === 1)
+})
+
+const isEventReadyOnly = computed(() => {
+	return !store.getters.isFullAdmin && ((event.value?.readonly && !isUserWhitelisted.value) || !isEventEditableByThisUserIgnoringReadOnly.value)
+})
+
+//this logic comes from ProjectProcessStepEvent.vue. We want the readonly logic here to match that
+const isResourceReadOnly = computed(() => {
+	return (!store.getters.isFullAdmin &&
+			getEventDefaultFieldReadOnly(store, event.value?.resourceWhiteListedPositions, event.value?.resourceReadOnly, event.value?.resourceReadOnlyAllow)) ||
+		isEventReadyOnly.value
+})
+
+const isStartReadOnly = computed(() => {
+	return (!store.getters.isFullAdmin &&
+		getEventDefaultFieldReadOnly(store, event.value?.startTimeWhiteListedPositions, event.value?.startTimeReadOnly, event.value?.startTimeReadOnlyAllow)) ||
+		isEventReadyOnly.value
+})
+
+const isEndReadOnly = computed(() => {
+	return (!store.getters.isFullAdmin &&
+			getEventDefaultFieldReadOnly(store, event.value?.endTimeWhiteListedPositions, event.value?.endTimeReadOnly, event.value?.endTimeReadOnlyAllow)) ||
+		isEventReadyOnly.value
+})
+
+onMounted(async () => {
+	try {
+		const {data} = await getRequest(`/projectProcessStep/${ppsId.value}/event/${ppsEventId.value}`)
+		event.value = data
+	} catch (e) {
+		let snackbar = getSnackbar('ERROR', 'Failed to fetch event details')
+		store.commit(AppMutations.SHOW_SNACK, snackbar)
+	}
 })
 
 const setSelectedResourceInStore = (resourceId) => {
@@ -107,6 +164,9 @@ const scheduleCalendarResourceToProject = (resource) => {
 
 
 const validateSaveEvent = () => {
+  //reset this error when validating
+  saveError.value = null
+
   saveInvalid.value = !!(!props.project || !props.project.start || !props.project.end
       || !props.project.resource || !props.project.resource.id || (props.project.start >= props.project.end) ||
       //if all 3 fields are read only, dont let them save
@@ -114,7 +174,14 @@ const validateSaveEvent = () => {
   console.log('save invalid?', saveInvalid.value)
 }
 const checkForSchedulingConflicts = async() => {
-  await scheduleProject(false);
+  //this is dumb but sometimes the timestamp formatting is different and not equal when it is actually equal.
+  //so this checks for that and puts the message on the field cuz ashi doesn't want to disable the btn in this scenario
+  if((new Date(props.project.start)).valueOf() >= (new Date(props.project.end)).valueOf()) {
+    saveError.value = 'End Date must be After Start Date'
+    fieldsSaving.value = false
+  }else {
+    await scheduleProject(false);
+  }
 }
 const cancelDialog = async() => {
   conflictingEvents.value = null
@@ -196,10 +263,11 @@ const cancelProjectProcessStepEvent = async() => {
   <div v-show="show">
     <!--  When the event hasn't been scheduled  -->
     <div v-if="userCanEdit && project.editableInSchedule">
-      <v-card-text class="py-0">
+      <v-card-text class="py-0" id="randa-test">
         <v-autocomplete v-model="project.resource"
                         :items="project.resources"
                         :label="project.resourceFieldName  || 'Resource'"
+						:disabled="isResourceReadOnly"
                         placeholder=" "
                         return-object
                         clearable
@@ -220,10 +288,11 @@ const cancelProjectProcessStepEvent = async() => {
         <DatetimePickerInput
             v-model="project.start"
             :timezone="timezone?.value"
-            :readonly="project.startFieldReadOnly || !userCanEdit"
+            :readonly="isStartReadOnly"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="Start Time"
+            custom-content-class="map-project-modal-date-picker-position"
             hide-details
             @input="validateSaveEvent()"
         />
@@ -231,13 +300,17 @@ const cancelProjectProcessStepEvent = async() => {
         <DatetimePickerInput
             v-model="project.end"
             :timezone="timezone?.value"
-            :readonly="project.endFieldReadOnly || !userCanEdit "
+            :readonly="isEndReadOnly"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="End Time"
+            custom-content-class="map-project-modal-date-picker-position"
             hide-details
             @input="validateSaveEvent()"
         />
+        <div class="body-small red--text text--darken-2 py-2" v-if="null != saveError">
+          {{saveError}}
+        </div>
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in {{timezoneFriendly}}</div>
       </v-card-text>
       <v-card-actions class="pb-4 px-4">
@@ -251,9 +324,9 @@ const cancelProjectProcessStepEvent = async() => {
     <div v-else-if="project.start || project.end">
       <v-card-text class="py-0 body-large">
         Scheduled for
-        <span v-if="eventIsSameDay()">{{project.start | formatDate('timestamp','MMMM DD YYYY, h:mm a')}} - {{project.end | formatDate('timestamp','h:mm a')}}</span>
-        <span v-else> {{project.startDate | formatDate('timestamp','MMMM DD YYYY, h:mm a')}} - {{project.end | formatDate('timestamp','MMMM DD YYYY, h:mm a')}}</span>
-        with {{project.resourceName}}
+        <span v-if="eventIsSameDay()">{{ project.start ? $filters.formatDate(project.start, 'timestamp', 'MMMM DD YYYY, h:mm a') : '[null]'}} - {{ project.end ? $filters.formatDate(project.end, 'timestamp','h:mm a') : '[null]'}}</span>
+        <span v-else> {{ project.start ? $filters.formatDate(project.start, 'timestamp', 'MMMM DD YYYY, h:mm a') : '[null]'}} - {{ project.end ? $filters.formatDate(project.end, 'timestamp', 'MMMM DD YYYY, h:mm a') : '[null]'}}</span>
+        with {{project.resourceName? project.resourceName : '[null]'}}
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in US/Mountain Time</div>
       </v-card-text>
       <v-card-actions v-if="userCanEdit" class="pt-1 pb-4 px-4">
@@ -301,5 +374,15 @@ const cancelProjectProcessStepEvent = async() => {
   //okay yes, this is more than half but I don't feel like changing the name
   //it's so the name wraps instead of the buttons
   max-width: 70%;
+}
+</style>
+
+<style lang="scss">
+@media (min-width: 769px) {
+  .map-project-modal-date-picker-position {
+    position: absolute;
+    top: unset !important;
+    bottom: 300px;
+  }
 }
 </style>
