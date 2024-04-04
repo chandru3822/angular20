@@ -249,7 +249,7 @@
             <a v-if="resource.id.charAt(0)==='1'" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`" target="_blank" class="body-large overflow-hidden resource-title">{{resource.title}}</a>
             <span v-else class="body-large overflow-hidden resource-title">{{ resource.title }}</span>
             <div>
-              <v-tooltip bottom>
+              <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
               <AlbatrossButton icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
                 <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
@@ -259,7 +259,7 @@
                 <span v-if="isResourceOnMap(resource)">Remove pin from map</span>
                 <span v-else>Pin on map</span>
               </v-tooltip>
-              <v-tooltip bottom>
+              <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
               <AlbatrossButton v-if="showScheduleBtnForResource(resource)" icon size="small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">
                 <v-icon>mdi-calendar-plus</v-icon>
@@ -272,9 +272,9 @@
           </div>
         </template>
         <template v-slot:eventContent="{event}">
-          <v-tooltip bottom>
+          <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
             <template v-slot:activator="{ on, attrs }">
-              <span v-if="event.title !== 'null'" v-bind="attrs" v-on="on" class="event-title body-medium text-no-wrap">{{event.title}}</span>
+              <span v-if="event.title !== 'null'" v-bind="attrs" v-on="on" :class="{'text-no-wrap':event.display !== 'background'}" class="event-title body-medium">{{event.title}}</span>
             </template>
             <span>{{event.title}}</span>
           </v-tooltip>
@@ -330,7 +330,7 @@ const calendarOptions = ref({
   firstDay: 1,
   initialView: 'resourceTimelineDay',
   resources: [],
-  resourceAreaWidth: 300,
+  resourceAreaWidth: vuetify.breakpoint.smAndDown? 200: 300,
   resourceGroupLaneClassNames:['resourceLaneClass'],
   schedulerLicenseKey: constants.FULL_CALENDAR_LICENSE_KEY,
   eventSources:[
@@ -959,6 +959,7 @@ const countSelected = computed(() => {
 
 
             if(!d.isSlotTime && d.display === 'inverse-background') {
+              d.backgroundColor= 'rgba(255,255,255,0)'
               //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
               //do start time
               if(d.daylightSavings && !moment(d.start).isDST()) {
@@ -977,7 +978,7 @@ const countSelected = computed(() => {
             }
 
             if(d.display === 'background'){
-              d.title = d.title + ': ' + moment(d.start).format('h:mm') + '-' + moment(d.end).format('h:mm')
+              d.title = d.title + ': ' + getFormattedDate(d.start, 'hh:mm') + '-' + getFormattedDate(d.end)
             }
           })
 
@@ -994,7 +995,7 @@ const countSelected = computed(() => {
               //these values have already been pre-appended with the 1 or 2
               groupId: r.id,
               resourceId: r.id,
-              backgroundColor: 'rgba(0,0,0,.1)'
+              backgroundColor: 'rgba(255,255,255,0)'
             })
           })
           return data;
@@ -1120,7 +1121,7 @@ const createSnackbar = (text) => {
     y: 'bottom',
     x: null,
     mode: '',
-    timeout: 5000,
+    timeout: -1,
     text: text,
     color: 'grey darken-3',
     fontClass: 'secondary--text',
@@ -1241,7 +1242,13 @@ padding-bottom: 8px;
     background: transparent !important;  /* Optional: just make scrollbar invisible */
   }
 }
-
+//thickening and darkening the day dividers on week view of calendar
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th:nth-child(3) > div > div > div > table > tbody > tr:nth-child(1) > th.fc-timeline-slot.fc-timeline-slot-label.fc-day,
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th:nth-child(3) > div > div > div > table > tbody > tr.fc-timeline-header-row.fc-timeline-header-row-chrono > th:nth-child(19n+1),
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div.fc-resourceTimelineWeek-view.fc-view.fc-resource-timeline.fc-resource-timeline-flat.fc-timeline.fc-timeline-overlap-enabled > table > tbody > tr > td:nth-child(3) > div > div > div > div.fc-timeline-slots > table > tbody > tr > td:nth-child(19n+1) {
+  border-left-width: 3px;
+  border-left-color: var(--v-grey-base);
+}
 </style>
 
 <style lang="scss" scoped>
@@ -1327,5 +1334,6 @@ opacity: 1;
   visibility: hidden;
   height: 0 !important;
 }
+
 </style>
 
