@@ -66,10 +66,6 @@ const CancelToken = axios.CancelToken;
 const source = ref(CancelToken.source());
 
 watch(search, async(val) => {
-    if(!val) {
-      searchProject.value = {}
-      return
-    }
     if(val && (!searchProject.value || searchProject.value.projectName !== val)) {
       await getProjectsSearchedFor(val);
     }
@@ -211,7 +207,7 @@ const getProjectsSearchedFor = async(search) => {
 },
  getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) => {
   listLoading.value = true
-  try {
+   try {
     let params = {
       projectId,
       eventId,
@@ -325,7 +321,7 @@ onMounted(() => {
       <v-card-title class="label-large pa-0">Search Projects</v-card-title>
       <AlbatrossButton icon size="small" @click="emit('close-dialog')"><v-icon>close</v-icon></AlbatrossButton>
     </div>
-    <div v-if="!showSearchResults" class="project-search-field-container pt-1">
+    <div v-show="!showSearchResults" class="project-search-field-container pt-1">
       <div class="one-hunned pb-3">
         <v-autocomplete attach v-model="state" class="pb-2 body-large"
         :items="states"
@@ -427,7 +423,7 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <div v-else class="body-small">
+    <div v-show="showSearchResults" class="body-small">
       <v-chip small color="primary lighten-9" v-if="state?.state" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{state.state}} </v-chip>
       <v-chip small color="primary lighten-9" v-if="searchProject?.projectName" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{searchProject.projectName}} </v-chip>
       <v-chip small color="primary lighten-9" v-if="searchEventType?.eventName" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{searchEventType.eventName}} </v-chip>
