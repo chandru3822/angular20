@@ -330,7 +330,7 @@ const calendarOptions = ref({
   firstDay: 1,
   initialView: 'resourceTimelineDay',
   resources: [],
-  resourceAreaWidth: 300,
+  resourceAreaWidth: vuetify.breakpoint.smAndDown? 200: 300,
   resourceGroupLaneClassNames:['resourceLaneClass'],
   schedulerLicenseKey: constants.FULL_CALENDAR_LICENSE_KEY,
   eventSources:[
