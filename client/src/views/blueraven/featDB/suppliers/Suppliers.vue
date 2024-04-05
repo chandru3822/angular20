@@ -413,12 +413,6 @@ const saveSupplier = async() => {
   .table-filter {
     font-weight: normal;
     margin-bottom: 10px;
-
-    .a-text-field,
-    .v-select {
-      font-size: 0.875rem;
-      margin-left: 15px;
-    }
   }
 }
 

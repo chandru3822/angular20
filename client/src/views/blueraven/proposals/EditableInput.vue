@@ -71,7 +71,7 @@ const handleSave = (evt) => {
 }
 </script>
 <style lang="scss">
-.editable-input .a-text-field__details {
+.editable-input .v-text-field__details {
   display: none;
 }
 </style>
