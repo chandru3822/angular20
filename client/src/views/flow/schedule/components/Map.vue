@@ -34,7 +34,9 @@
                             @click="[drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
                             hide-details
                             v-model="address1"
-                            @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"></v-text-field>
+                            @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"
+                            @blur="selectAddress({label:address1}, true)"
+              ></v-text-field>
               <v-list ref="dropdownMenu1" v-if="showAddress1List">
                 <v-list-item v-for="(suggestion, idx) in suggestions" class="px-0">
                   <v-card class="pa-2 addressSuggestion" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, true)">
@@ -55,7 +57,9 @@
                             @click="[drivingDistance = 0, drivingDuration = 0, selectAddress2 = true, selectAddress1 = false]"
                             hide-details
                             v-model="address2"
-                            @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"></v-text-field>
+                            @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"
+                            @blur="selectAddress({label: address2}, false)"
+              />
               <v-list ref="dropdownMenu2" v-if="showAddress2List">
                 <v-list-item v-for="(suggestion, idx) in suggestions" class="px-0">
                   <v-card class="pa-2 addressSuggestion" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, false)">
