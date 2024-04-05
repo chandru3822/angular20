@@ -1041,7 +1041,6 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
           d.classNames=['event-tile', matchingResource?.eventColorClass]
         }
         if(isResourceOnMap(matchingResource)) {
-
           let eventObj = {
             id: matchingResource.id,
             projectName: d.projectName,
@@ -1055,8 +1054,8 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
             street1: d.street1,
             color: matchingResource.color,
             coordinates: [d.longitude, d.latitude],
-            start: d.startStr,
-            end: d.endStr
+            start: d.startStr || d.start,
+            end: d.endStr ||d.end
           }
           mapResourceEvents.value.push(eventObj)
         }
