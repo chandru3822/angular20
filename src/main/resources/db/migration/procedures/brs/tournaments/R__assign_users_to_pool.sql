@@ -11,18 +11,13 @@ BEGIN
 --this is a little odd. they only want current closers, but...if a current closer was also a closer in the past
 --they want to use the oldest start date for any of the active closer's old closer positions (active or not)...if that makes sense
     for r in
-        with data as (select distinct u.id as user_id, min(upos2.start_date) as position_start_date, (select count(pd.final_design_complete_date) from brs.project_details pd where pd.closer_user_id = u.id) as lifetime_fdc_count
+        with data as (select u.id as user_id,
+                             (select min(up2.start_date) from flow.user_position up2 where up2.user_id = u.id and up2.position_id = 1 and up2.archived is not true) as position_start_date,
+                             (select count(pd.final_design_complete_date) from brs.project_details pd where pd.closer_user_id = u.id) as lifetime_fdc_count
                       from flow.user u
-                               join flow.user_position upos2 on upos2.user_id = u.id
-                          and upos2.position_id = 1 and upos2.archived is not true
-                               join flow.company_user_status cus on u.id = cus.user_id
-                               join flow.user_status_type ust on ust.id = cus.user_status_type_id
-                          and ust.company_id = 3 and ust.has_access is true
-                          and u.id in (
-                              select upos.user_id
-                              from flow.user_position upos
-                              where upos.position_id = 1 and primary_flag is true and upos.archived is not true
-                          )
+                               inner join flow.user_position up on up.user_id = u.id and up.position_id = 1 and up.archived is not true and up.primary_flag is true
+                               inner join flow.company_user_status cus on u.id = cus.user_id
+                               inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3 and ust.has_access is true
                       group by 1)
         select user_id
         from data
