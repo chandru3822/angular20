@@ -165,7 +165,7 @@ public class ActivityService {
              "/communication/templates/note-mention-email.ftl.html")) {
 
       // Match for firstName lastName (Email)
-      Pattern mentionedNameRegex = Pattern.compile("\\B@([a-zA-Z-\\s*()]+)\\s(\\S+) \\(([^)]+)\\)");
+      Pattern mentionedNameRegex = Pattern.compile("\\B@([^@]+)\\s+\\(([^()]+)\\)");
       Matcher m = mentionedNameRegex.matcher(activity.getNote());
 
       if (inputStream == null) {
@@ -175,9 +175,8 @@ public class ActivityService {
 
       // If mention(s) are found in the Note
       while (m.find()) {
-        String firstName = m.group(1);
-        String lastName = m.group(2);
-        String emailAddress = m.group(3);
+        String fullName = m.group(1);
+        String emailAddress = m.group(2);
 
         String locationOfNote = "";
         String link = "";
@@ -201,8 +200,7 @@ public class ActivityService {
         if (mentionedUser != null) {
           if (NotificationType.EMAIL.id.equals(mentionedUser.getNotificationTypeId())) {
             Map<String, Object> context = new HashMap<>();
-            context.put("firstName", firstName);
-            context.put("lastName", lastName);
+            context.put("fullName", fullName);
             context.put("locationOfNote", locationOfNote);
             context.put("link", link);
             context.put("noteContents", activity.getNote());
