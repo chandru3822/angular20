@@ -1081,6 +1081,14 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
   }
   successCallback([])
 }
+      const updateEvents = () => {
+        calendarApi.value.refetchEvents()
+      }
+
+      defineExpose({
+        updateEvents
+      })
+
       const handleEventClick = (info) => {
         if(info.event.title && info.event.display === 'auto') {
           let props = info.event.extendedProps

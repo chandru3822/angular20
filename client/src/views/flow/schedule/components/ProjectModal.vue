@@ -21,7 +21,7 @@ const store = vueInstance.$store
 const router = vueInstance.$router
 const vuetify = vueInstance.$vuetify
 const route = vueInstance.$route
-const emit = defineEmits(['toggleProjectMapPin'])
+const emit = defineEmits(['toggleProjectMapPin', 'updateEvents'])
 
 const props = defineProps({
   project:Object,
@@ -202,6 +202,7 @@ const scheduleProject = async(forceSave) => {
     // this.$refs.calendar.getEvents(false, true) todo: figure out what this should change to
     handleHidingGlobalLoader(vueInstance, status)
     fieldsSaving.value = false
+    emit('updateEvents')
     let snackbar = getSnackbar('SUCCESS', 'Job Scheduled')
     store.commit(AppMutations.SHOW_SNACK, snackbar)
   } catch (e) {

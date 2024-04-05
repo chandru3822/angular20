@@ -12,7 +12,7 @@
     <template v-slot:main-column>
       <AlbatrossButton id="map-btn" v-if="!showMap" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></AlbatrossButton>
     <Calendar :map-resources="mapResources"
-              ref="calendar"
+              ref="calendarRef"
               :map-open="showMap"
               :preselected-event="selectedProject"
               :states="states"
@@ -26,7 +26,8 @@
           :project="selectedProject"
           :timezone="timezone"
           :resource-from-calendar="calendarResourceToSchedule"
-          @toggleProjectMapPin="toggleSelectedProjectMapPin()"/>
+          @toggleProjectMapPin="toggleSelectedProjectMapPin()"
+          @updateEvents="updateEvents()"/>
     </template>
     <template v-slot:right-column>
       <v-row class="map-row">
@@ -80,6 +81,7 @@
   const router = vueInstance.$router
   const route = vueInstance.$route
   const vuetify = vueInstance.$vuetify
+  const calendarRef = ref(null);
 
   const snackbar = ref({})
   const saveInvalid = ref(true)
@@ -146,6 +148,9 @@
     searchMenuOpen.value = !searchMenuOpen.value
     mapChild.value.closeMenu()
 
+  }
+  const updateEvents = () => {
+    calendarRef.value.updateEvents()
   }
   const loadTimezone = () => {
         if(store.state.schedule.timezone?.value === null) {
