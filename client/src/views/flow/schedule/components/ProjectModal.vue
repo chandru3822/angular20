@@ -28,7 +28,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
-const emit = defineEmits(['toggleProjectMapPin'])
+const emit = defineEmits(['toggleProjectMapPin', 'updateEvents'])
 
 const props = defineProps({
   project:Object,
@@ -66,6 +66,7 @@ watch(() => props.resourceFromCalendar, () => {
     setSelectedResourceInStore(null)
     validateSaveEvent()
   }
+  show.value=true
 })
 
 
@@ -226,7 +227,9 @@ const scheduleProject = async(forceSave) => {
     // this.$refs.calendar.getEvents(false, true) todo: figure out what this should change to
     handleHidingGlobalLoader(vueInstance, status)
     fieldsSaving.value = false
-    snackbar('SUCCESS', 'Job Scheduled')
+    emit('updateEvents')
+    let snackbar = getSnackbar('SUCCESS', 'Job Scheduled')
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
   } catch (e) {
     if(e.status === 409){
       conflictingEvents.value = e.data;

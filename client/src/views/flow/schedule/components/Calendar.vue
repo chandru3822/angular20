@@ -5,7 +5,7 @@
 <v-col cols="11" class="pa-0">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0 d-flex align-baseline">
-        <v-col id="states-filter-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="states-filter-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete attach v-model="selectedStates"
                     :items="sortedStates"
                     label="States"
@@ -46,7 +46,7 @@
             </template>
           </v-autocomplete>
         </v-col>
-        <v-col id="org-resource-types-filter-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="org-resource-types-filter-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete v-model="selectedOrgTypes"
                           allow-overflow
                     :items="sortedOrgTypes"
@@ -95,7 +95,7 @@
           </v-autocomplete>
         </v-col>
 <!--        <v-col id="placeholder-col-1" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
-        <v-col id="org-resources-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="org-resources-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete v-model="selectedOrgs"
                           ref="orgSelector"
                           :items="sortedOrgs"
@@ -128,7 +128,7 @@
           </v-autocomplete>
         </v-col>
         <v-col id="placeholder-desktop-col" v-if="$vuetify.breakpoint.md && !mapOpen" cols="0" md="3" class="py-0"/>
-        <v-col id="position-resource-types-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="position-resource-types-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete v-model="selectedPositions"
                           :items="sortedPositions"
                           label="Position Resource Types"
@@ -179,7 +179,7 @@
 
         </v-col>
 <!--        <v-col id="placeholder-col-2" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
-        <v-col id="user-resources-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="user-resources-col"  cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete v-model="selectedUsers"
                           :items="sortedUsers"
                           label="User Resources"
@@ -960,7 +960,7 @@ const countSelected = computed(() => {
 
 
             if(!d.isSlotTime && d.display === 'inverse-background') {
-              d.backgroundColor= 'rgba(255,255,255,0)'
+              // d.backgroundColor= 'rgba(255,255,255,0)'
               //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
               //do start time
               if(d.daylightSavings && !moment(d.start).isDST()) {
@@ -1080,6 +1080,14 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
   }
   successCallback([])
 }
+      const updateEvents = () => {
+        calendarApi.value.refetchEvents()
+      }
+
+      defineExpose({
+        updateEvents
+      })
+
       const handleEventClick = (info) => {
         if(info.event.title && info.event.display === 'auto') {
           let props = info.event.extendedProps

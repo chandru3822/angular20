@@ -12,7 +12,7 @@
     <template v-slot:main-column>
       <a-btn id="map-btn" v-if="!showMap" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
     <Calendar :map-resources="mapResources"
-              ref="calendar"
+              ref="calendarRef"
               :map-open="showMap"
               :preselected-event="selectedProject"
               :states="states"
@@ -26,7 +26,8 @@
           :project="selectedProject"
           :timezone="timezone"
           :resource-from-calendar="calendarResourceToSchedule"
-          @toggleProjectMapPin="toggleSelectedProjectMapPin()"/>
+          @toggleProjectMapPin="toggleSelectedProjectMapPin()"
+          @updateEvents="updateEvents()"/>
     </template>
     <template v-slot:right-column>
       <v-row class="map-row">
@@ -86,6 +87,7 @@
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
   const vuetify = vueInstance.$vuetify
+  const calendarRef = ref(null);
 
   const snackbar = ref({})
   const saveInvalid = ref(true)
@@ -158,13 +160,16 @@
     mapChild.value.closeMenu()
 
   }
+  const updateEvents = () => {
+    calendarRef.value.updateEvents()
+  }
   const loadTimezone = () => {
         if(store.state.schedule.timezone?.value === null) {
           timezone.value = store.state.user.details.timezone
           updateTimezone()
         }
         else {
-          timezone.value = store.state.user.details.timezone
+          timezone.value = store.state.schedule.timezone
         }
       }
   const updateTimezone = () => {

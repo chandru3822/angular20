@@ -24,8 +24,9 @@
           <div class="address-container">
             <div class="one-hunned py-3">
               <a-text-field  variant="outlined" label="Starting Point" placeholder="Select pin or enter address" autocomplete="new-password"
-                             @click="[drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
+                             @focus="[drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
                             hide-details
+                            autofocus
                             v-model="address1"
                             @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"
                             @blur="selectAddress({label:address1}, true)"
@@ -200,13 +201,13 @@ const selectAddress = ((suggestion, isFirst) => {
   if (isFirst) {
     address1.value = suggestion.label
     showAddress1List.value = false
-    if(!!address2.value){
+    if(!!address2.value && !!address1.value){
       loadDriveTime()
     }
   } else {
     address2.value = suggestion.label
     showAddress2List.value = false
-    if(!!address1.value){
+    if(!!address1.value && !!address2.value){
       loadDriveTime()
     }
   }
