@@ -33,7 +33,7 @@
               ripple
               @click="toggleSelectAllStates()">
                 <v-icon class="mr-4">{{ iconStates }}</v-icon>
-              <v-list-item-title class="wrap-dropdown-item">Select All</v-list-item-title>
+              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
             </v-list-item>
             <v-divider
               slot="prepend-item"
@@ -42,7 +42,7 @@
 
             <template v-slot:item="{item}">
               <v-icon class="mr-4">{{selectedStates.findIndex(s => s.stateId === item.stateId) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
-              <span class="wrap-dropdown-item">{{ item.state }}</span>
+              <span class="wrap-dropdown-item py-2">{{ item.state }}</span>
             </template>
           </v-autocomplete>
         </v-col>
@@ -81,7 +81,7 @@
               <v-list-item-action class="mr-4">
                 <v-icon>{{ iconOrgTypes }}</v-icon>
               </v-list-item-action>
-              <v-list-item-title class="wrap-dropdown-item">Select All</v-list-item-title>
+              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
             </v-list-item>
             <v-divider
                 slot="prepend-item"
@@ -90,7 +90,7 @@
             <template v-slot:item="{item}">
               <!--The only purpose of this template is to allow the items to wrap-->
               <v-icon class="mr-4">{{selectedOrgTypes.findIndex(ot => ot.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
-              <span class="wrap-dropdown-item">{{ item.orgType }}</span>
+              <span class="wrap-dropdown-item py-2">{{ item.orgType }}</span>
             </template>
           </v-autocomplete>
         </v-col>
@@ -123,7 +123,7 @@
             <template v-slot:item="{item}">
               <!--The only purpose of this template is to allow the items to wrap-->
               <v-icon class="mr-4">{{selectedOrgs.findIndex(o => o.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
-              <span class="wrap-dropdown-item">{{ item.orgName }}</span>
+              <span class="wrap-dropdown-item py-2">{{ item.orgName }}</span>
             </template>
           </v-autocomplete>
         </v-col>
@@ -164,7 +164,7 @@
               <v-list-item-action class="mr-4">
                 <v-icon>{{ iconPositions }}</v-icon>
               </v-list-item-action>
-              <v-list-item-title class="wrap-dropdown-item">Select All</v-list-item-title>
+              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
             </v-list-item>
             <v-divider
                 slot="prepend-item"
@@ -173,7 +173,7 @@
             <template v-slot:item="{item}">
               <!--The only purpose of this template is to allow the items to wrap-->
               <v-icon class="mr-4">{{selectedPositions.findIndex(p => p.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
-              <span class="wrap-dropdown-item">{{ item.position }}</span>
+              <span class="wrap-dropdown-item py-2">{{ item.position }}</span>
             </template>
           </v-autocomplete>
 
@@ -207,7 +207,7 @@
             <template v-slot:item="{item}">
               <!--The only purpose of this template is to allow the items to wrap-->
               <v-icon class="mr-4">{{selectedUsers.findIndex(u => u.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
-              <span class="wrap-dropdown-item">{{ item.fullName }}</span>
+              <span class="wrap-dropdown-item py-2">{{ item.fullName }}</span>
             </template>
           </v-autocomplete>
         </v-col>
