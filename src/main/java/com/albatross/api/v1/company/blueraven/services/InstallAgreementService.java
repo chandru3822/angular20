@@ -410,6 +410,7 @@ public class InstallAgreementService {
       sqlCache.getBySql(PandaDocQuery.getProjectDetails, params, PandaDocProjectDetails.class);
 
     if (deets.isPresent()) {
+      String goodleapUrl = null;
       PandaDocProjectDetails pd = deets.get();
       final String loanType = pd.getLoanType();
 
@@ -458,14 +459,14 @@ public class InstallAgreementService {
         }
 
         try {
-          goodleapNewLoanUrl = goodleapService.generateApplication(pd);
+          goodleapUrl = goodleapService.generateApplication(pd);
         } catch (Exception e) {
           log.error("IARQ: Error generating GoodLeap loan application for project ID " + pd.getProjectId() + " error={}", e.getMessage());
           return goodleapNewLoanUrl;
         }
       }
       sunlightService.setCreditLastCheckedBy(projectId, "GoodLeap");
-      return goodleapNewLoanUrl;
+      return goodleapUrl == null ? goodleapNewLoanUrl : goodleapUrl;
     } else {
       throw new ApiException("Proposal Log not found");
     }
