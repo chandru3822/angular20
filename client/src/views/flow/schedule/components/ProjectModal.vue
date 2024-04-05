@@ -50,6 +50,7 @@ watch(() => props.resourceFromCalendar, () => {
     setSelectedResourceInStore(null)
     validateSaveEvent()
   }
+  show.value=true
 })
 
 watch(() => store.state.schedule.timezone.friendlyValue, (fv) => {
