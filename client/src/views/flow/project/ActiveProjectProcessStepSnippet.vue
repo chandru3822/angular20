@@ -1,19 +1,26 @@
 <template>
   <v-row>
     <v-col cols="12" class="pa-0">
-      <v-card flat v-for="ps in steps"
-              :class="{'active-ps': ppsId === ps.projectProcessStepId}"
-              class="active-ps-button albatross-body-1"
-              @click="goToPath(`/project/${projectId}/processStep/${ps.projectProcessStepId}`)">
-        {{ ps.processStepName }}
-        <span :class="getStatusClass(ps.processStepStatusTypeId)">{{ps.processStepStatusType}}</span>
-        <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>
-        <div class="albatross-body-3 grey--text text--darken-2"
-             v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN') ||
-                 userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')">
-          {{ ps.projectProcessStepId }}
-        </div>
-      </v-card>
+      <div class="pa-0 ma-0" v-for="ps in steps">
+        <router-link :to="`/project/${projectId}/processStep/${ps.projectProcessStepId}`" class="no-text-decoration default-text-color">
+          <v-card flat
+                  :class="{'active-ps': ppsId === ps.projectProcessStepId}"
+                  class="active-ps-button albatross-body-1">
+              {{ ps.processStepName }}
+            <span :class="getStatusClass(ps.processStepStatusTypeId)">
+                {{ps.processStepStatusType}}
+            </span>
+            <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">
+                {{ ps.owner.fullName }}
+            </div>
+            <div class="albatross-body-3 grey--text text--darken-2"
+                 v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN') ||
+                     userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')">
+              {{ ps.projectProcessStepId }}
+            </div>
+          </v-card>
+        </router-link>
+      </div>
     </v-col>
   </v-row>
 </template>
@@ -45,6 +52,9 @@ const ppsId = computed(() => {
   return parseInt(route.params.processStepId)
 })
 
+onMounted(() => {
+  console.log(steps)
+})
 const goToPath = (path) => {
   router.push(path)
 }

@@ -26,7 +26,8 @@
                 :maxlength="maxlength"
                 :persistent-hint="persistentHint"
                 :class="[customClasses]"
-                :label="label">
+                :label="label"
+                class="a-text-field">
   </v-text-field>
 </template>
 

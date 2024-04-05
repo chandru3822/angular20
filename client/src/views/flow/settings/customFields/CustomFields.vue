@@ -60,9 +60,10 @@
 
             <template #item="{ item, index }">
               <tr>
-                <td class="text-left clickable field-name-col"
-                    @click="goToCustomField(item.id)">
-                  {{ item.fieldName }}
+                <td class="text-left clickable field-name-col">
+                  <router-link class="router-link-td" :to="`${getCustomFieldPath()}/${item.id}`">
+                    {{ item.fieldName }}
+                  </router-link>
                 </td>
                 <td class="text-right icon-col">
                   <div class="item-icons">
@@ -183,6 +184,9 @@ const userCanEdit = computed(() => {
         path += `/${customFieldId}`
       }
       router.push(path)
+    }
+    const getCustomFieldPath = () => {
+      return null == props.apiPath ? `/settings/customField` : `/settings/companyCustomField`
     }
     const getCustomFields = async ()  => {
       try {

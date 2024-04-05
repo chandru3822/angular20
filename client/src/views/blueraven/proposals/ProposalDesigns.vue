@@ -120,16 +120,23 @@
               v-for="(proposal, index) in d.proposals.slice((d.offset * numberToDisplay),(numberToDisplay + (d.offset * numberToDisplay)))"
               :key="index"
               two-line
-              class="proposal-container"
-              @click="router.push({name: 'proposal', params: {proposalId: proposal.id}})">
+              class="proposal-container">
             <v-list-item-content>
               <v-list-item-title class="proposal-title d-flex justify-space-between align-center">
                 <span class="d-inline-flex">
-                  <span>{{ proposal.displayName }}</span>
-                  <v-icon v-if="proposal.locked" class="pl-1" small>mdi-lock</v-icon>
+                  <span>
+                    <router-link :to="`/proposal/${proposal.id}`" class="router-link-td elevation-0 square-card">
+                      {{ proposal.displayName }}
+                    </router-link>
+                  </span>
+                  <router-link :to="`/proposal/${proposal.id}`" class="router-link-td elevation-0 square-card">
+                    <v-icon v-if="proposal.locked" class="pl-1" small>mdi-lock</v-icon>
+                  </router-link>
                 </span>
                 <span class="design-small-gray">
-                  {{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}
+                  <router-link :to="`/proposal/${proposal.id}`" class="router-link-td elevation-0 square-card">
+                    {{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}
+                  </router-link>
                 </span>
               </v-list-item-title>
             </v-list-item-content>
@@ -405,7 +412,7 @@ const dateSortFn = (prop = 'dateCreated') => {
 }
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const designs = ref([])
-const cardHeight = ref(575)
+const cardHeight = ref(590)
 const minDate = ref(moment().format('YYYY-MM-DDTHH:mm:ssZ'))
 const offset = ref(0)
 const numberToDisplay = ref(3)

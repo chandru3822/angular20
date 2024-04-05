@@ -58,11 +58,15 @@
 
           <template #item="{ item, index }">
             <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
-              <td class="text-left clickable" @click="router.push({ path: `supplier/${item.id}/details` })">
-                {{ item.name || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/supplier/${item.id}/details`">
+                  {{ item.name || '' }}
+                </router-link>
               </td>
-              <td class="text-left clickable" @click="router.push({ path: `supplier/${item.id}/details` })">
-                {{ item.state || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/supplier/${item.id}/details`">
+                  {{ item.state || '' }}
+                </router-link>
               </td>
               <td class="text-right">
                 <a-btn

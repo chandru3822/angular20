@@ -101,13 +101,19 @@
                   ></a-btn>
                 </td>
                 <td class="text-left" @click="goToDetails(item)">
-                  {{ item.workQueueType }}
+                  <router-link :to="`/settings/workQueue/type/${item.id}`" class="router-link-td">
+                    {{ item.workQueueType }}
+                  </router-link>
                 </td>
                 <td class="text-left" @click="goToDetails(item)">
-                  {{ item.workQueueCategory }}
+                  <router-link :to="`/settings/workQueue/type/${item.id}`" class="router-link-td">
+                    {{ item.workQueueCategory }}
+                  </router-link>
                 </td>
                 <td class="text-left" @click="goToDetails(item)">
-                  <input type="checkbox" disabled v-model="item.useEventData">
+                  <router-link :to="`/settings/workQueue/type/${item.id}`" class="router-link-td">
+                    <input type="checkbox" disabled v-model="item.useEventData">
+                  </router-link>
                 </td>
                 <td class="text-right">
                   <div class="item-icons">

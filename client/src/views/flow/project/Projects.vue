@@ -37,7 +37,6 @@
             :server-items-length="totalProjects"
             :loading="isProjectsLoading"
             :class="{'fix-column-width-bug': !isMobile}"
-            @click:row="goToRoute"
         >
           <template #no-data>
             <span class="default-text-color">No available projects</span>
@@ -48,19 +47,31 @@
           </template>
 
           <template #item.id="{item: project, index}" class="text-left py-0 pl-4 clickable">
+            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
               {{project.id}}
+            </router-link>
           </template>
           <template #item.projectName="{item: project, index}" class="text-left text--black clickable">
+            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
               {{project.projectName}}
+            </router-link>
           </template>
           <template #item.stateAbbreviation="{item: project, index}" class="text-left clickable">
+            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
               {{project.stateAbbreviation}}
+            </router-link>
           </template>
           <template #item.projectStatusType="{item: project, index}" class="text-left clickable">
+            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
               {{project.projectStatusType}}
+            </router-link>
           </template>
           <template #item.dateCreated="{item: project, index}" class="text-left clickable">
-            <span class="clickable">{{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</span>
+            <span class="clickable">
+              <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
+                {{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}
+              </router-link>
+            </span>
           </template>
         </v-data-table>
       </v-col>
@@ -143,10 +154,9 @@ watch(
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
 })
-
-const goToRoute = (project) => {
+const getRoute = (project) => {
   const defaultProjectPage = getProjectPath().pathSuffix
-  router.push({path:`/project/${project.id}/${defaultProjectPage}`})
+  return `/project/${project.id}/${defaultProjectPage}`
 }
 const getProjects = async() => {
   const {page, itemsPerPage} = options.value

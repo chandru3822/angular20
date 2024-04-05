@@ -78,7 +78,7 @@
               ></a-text-field>
             </v-card-title>
             <v-data-table
-                id="events-settings-table"
+              id="events-settings-table"
               :headers="headers"
               :items="filterEvents"
               :fixed-header="true"
@@ -86,26 +86,30 @@
               :search="search"
               :footer-props="footerProps"
               hide-default-header
-              class="elevation-1 square-card table-striped"
+              class="elevation-1 square-card table-striped no-text-decoration"
             >
-              <template #item.eventName="{ item }" class="clickable" @click="goToEvent(item.id)">{{item.eventName}}</template>
+              <template #item.eventName="{ item }">
+                <router-link :to="`/settings/event/${item.id}/components`">
+                  {{item.eventName}}
+                </router-link>
+              </template>
               <template #item.icons="{item}" class="text-end">
-                    <a-btn
-                      size="small"
-                      variant="text"
-                      color="primary"
-                      @click="goToEvent(item.id)"
-                      prepend-icon="edit"
-                    />
-                    <a-btn
-                      size="small"
-                      variant="text"
-                      color="primary"
-                      v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                      @click="eventToDelete=item"
-                      prepend-icon="delete"
-                    />
-                  </template>
+                <a-btn
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  @click="goToEvent(item.id)"
+                  prepend-icon="edit"
+                />
+                <a-btn
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                  @click="eventToDelete=item"
+                  prepend-icon="delete"
+                />
+              </template>
 
             </v-data-table>
           </v-card>
@@ -196,6 +200,7 @@ const getEvents = async () => {
   appStore.loading = true
   try {
     const {data} = await getRequest(`/event`)
+    console.log(data)
     events.value = data
     appStore.loading = false
   } catch (e) {
@@ -289,6 +294,4 @@ const goToEvent = (eventId) => {
     }
   }
 }
-
-
 </style>

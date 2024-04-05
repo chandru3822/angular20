@@ -34,7 +34,9 @@
                   :key="index">
             <v-list-item :class="{'shaded-row': index % 2}">
               <v-list-item-content class="text-left clickable" @click="goToProcess(p.id)">
-                {{p.processName}}
+                <router-link :to="`/settings/processes/${p.id}`" class="router-link-td">
+                  {{p.processName}}
+                </router-link>
               </v-list-item-content>
               <v-list-item-action class="clickable">
                 <a-btn

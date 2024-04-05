@@ -44,8 +44,16 @@
           <template #item="{item}">
             <tr class="clickable"
                 @click="router.push({name: 'proposalDesigns', params: {projectId: item.id}})">
-              <td class="text-left">{{item.id}}</td>
-              <td class="text-left">{{item.projectName}}</td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/proposalDesigns/${item.id}`">
+                  {{item.id}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/proposalDesigns/${item.id}`">
+                  {{item.projectName}}
+                </router-link>
+              </td>
             </tr>
           </template>
         </v-data-table>

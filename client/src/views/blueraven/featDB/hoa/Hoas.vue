@@ -58,14 +58,20 @@
 
           <template #item="{ item, index }">
             <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
-              <td class="text-left clickable" @click="router.push({ path: `hoa/${item.id}/details` })">
-                {{ item.name || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/hoa/${item.id}/details`">
+                  {{ item.name || '' }}
+                </router-link>
               </td>
-              <td class="text-left clickable" @click="router.push({ path: `hoa/${item.id}/details` })">
-                {{ item.state || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/hoa/${item.id}/details`">
+                  {{ item.state || '' }}
+                </router-link>
               </td>
-              <td class="text-left clickable" @click="router.push({ path: `hoa/${item.id}/details` })">
-                {{ item.managementCompany || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/hoa/${item.id}/details`">
+                  {{ item.managementCompany || '' }}
+                </router-link>
               </td>
               <td class="text-right">
                 <a-btn
@@ -470,7 +476,7 @@ const addNewManagementCompany = async() => {
     font-weight: normal;
     margin-bottom: 10px;
 
-    .v-text-field,
+    .a-text-field,
     .v-select {
       font-size: 0.875rem;
       margin-left: 15px;

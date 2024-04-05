@@ -7,11 +7,11 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn
-                variant="text"
-                color="primary"
-                @click="[addNew = !addNew, newRoundRobin = {}, getCompanyTimezones()]"
-                v-if="userCanAdd"
-                :text="addNew ? 'Cancel' : 'Add New' "
+              variant="text"
+              color="primary"
+              @click="[addNew = !addNew, newRoundRobin = {}, getCompanyTimezones()]"
+              v-if="userCanAdd"
+              :text="addNew ? 'Cancel' : 'Add New' "
             ></a-btn>
 
           </v-toolbar-items>
@@ -19,14 +19,14 @@
         <v-container>
           <v-card color="transparent" flat v-if="addNew">
             <a-text-field
-                label="Round Robin Name"
-                tabindex=1
-                v-model="newRoundRobin.roundRobinName"
+              label="Round Robin Name"
+              tabindex=1
+              v-model="newRoundRobin.roundRobinName"
             ></a-text-field>
             <a-text-field
-                label="Distribution Time Frame (Days)"
-                tabindex=1
-                v-model="newRoundRobin.distributionTimeFrameDays"
+              label="Distribution Time Frame (Days)"
+              tabindex=1
+              v-model="newRoundRobin.distributionTimeFrameDays"
             ></a-text-field>
             <v-autocomplete v-model="newRoundRobin.companyTimezoneId"
                             :items="companyTimezones"
@@ -37,37 +37,37 @@
                             attach
             ></v-autocomplete>
             <a-btn
-                color="primary"
-                :disabled="!newRoundRobin.roundRobinName || !newRoundRobin.distributionTimeFrameDays || !newRoundRobin.distributionTimeFrameDays"
-                @click="addRoundRobin"
-                class="mb-3"
-                text="Save"
+              color="primary"
+              :disabled="!newRoundRobin.roundRobinName || !newRoundRobin.distributionTimeFrameDays || !newRoundRobin.distributionTimeFrameDays"
+              @click="addRoundRobin"
+              class="mb-3"
+              text="Save"
             ></a-btn>
 
           </v-card>
           <v-divider v-if="addNew"></v-divider>
-          <v-card class="square-card">
+          <v-card class="square-card clickable">
             <v-card-title class="pt-0">
               <a-text-field
-                  v-model="search"
-                  prepend-inner-icon="search"
-                  label="Search users and round robins"
-                  single-line
-                  hide-details
-                  @input="debounceSearch"
+                v-model="search"
+                prepend-inner-icon="search"
+                label="Search users and round robins"
+                single-line
+                hide-details
+                @input="debounceSearch"
               ></a-text-field>
             </v-card-title>
             <v-data-table
-                :headers="headers"
-                :items="filteredRoundRobins"
-                :fixed-header="true"
-                :items-per-page="-1"
-                disable-sort
-                :loading="dataLoading"
-                @click:row="goToRoundRobin"
-                hide-default-footer
-                :mobile-breakpoint="770"
-                class="elevation-1 round-robin-table table-striped"
+              :headers="headers"
+              :items="filteredRoundRobins"
+              :fixed-header="true"
+              :items-per-page="-1"
+              disable-sort
+              :loading="dataLoading"
+
+              hide-default-footer
+              :mobile-breakpoint="770"
+              class="elevation-1 table-striped"
             >
 
               <template #header.roundRobinName="{ header }">
@@ -83,43 +83,55 @@
               </template>
 
               <template #item.roundRobinName="{ item, index }">
-                    {{ item.roundRobinName }}
+                <router-link :to="`/settings/roundRobin/${item.id}/scheduleTo`" class="elevation-0 router-link-td table-striped">
+                  {{ item.roundRobinName }}
+                </router-link>
               </template>
-                  <template #item.distributionTimeFrameDays="{item, index}" class="text-left">{{ item.distributionTimeFrameDays }}</template>
-                  <template #item.schedulableFutureDays="{item, index}" class="text-left">{{ item.schedulableFutureDays }}</template>
-                  <template #item.usesTotalLeadAlllocation="{item, index}" class="text-left">
-                    <input type="checkbox" readonly disabled v-model="item.usesTotalLeadAllocation"/>
-                  </template>
+              <template #item.distributionTimeFrameDays="{item, index}" class="text-left">
+                <router-link :to="`/settings/roundRobin/${item.id}/scheduleTo`" class="elevation-0 router-link-td table-striped">
+                  {{ item.distributionTimeFrameDays }}
+                </router-link>
+              </template>
+              <template #item.schedulableFutureDays="{item, index}" class="text-left">
+                <router-link :to="`/settings/roundRobin/${item.id}/scheduleTo`" class="elevation-0 router-link-td table-striped">
+                  {{ item.schedulableFutureDays }}
+                </router-link>
+              </template>
+              <template #item.usesTotalLeadAllocation="{item, index}" class="text-left">
+                <router-link :to="`/settings/roundRobin/${item.id}/scheduleTo`" class="elevation-0 router-link-td table-striped">
+                  <input type="checkbox" readonly disabled v-model="item.usesTotalLeadAllocation" class="pr-0"/>
+                </router-link>
+              </template>
 
-                  <template #item.icons="{item, index}" class="text-right">
-                    <a-btn
-                        icon
-                        color="primary"
-                        prevent-default
-                        prepend-icon="edit"
-                        :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
-                    ></a-btn>
+              <template #item.icons="{item, index}" class="text-right">
+                <a-btn
+                  icon
+                  color="primary"
+                  prevent-default
+                  prepend-icon="edit"
+                  :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
+                ></a-btn>
 
-                    <a-btn
-                        v-if="userCanDelete"
-                        icon
-                        color="primary"
-                        @click.native.stop="[itemToDelete=item, showDeleteDialog=true]"
-                        prevent-default
-                        prepend-icon="delete"
-                        :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
-                    ></a-btn>
+                <a-btn
+                  v-if="userCanDelete"
+                  icon
+                  color="primary"
+                  @click.native.stop="[itemToDelete=item, showDeleteDialog=true]"
+                  prevent-default
+                  prepend-icon="delete"
+                  :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                ></a-btn>
 
-                  </template>
+              </template>
             </v-data-table>
           </v-card>
         </v-container>
       </v-col>
     </v-row>
     <ConfirmationDialog
-        :open-dialog="showDeleteDialog"
-        @confirm="deleteRoundRobin"
-        @close-dialog="closeDeleteDialog">
+      :open-dialog="showDeleteDialog"
+      @confirm="deleteRoundRobin"
+      @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this round robin: <strong>{{ itemToDeleteName }}</strong>
 
     </ConfirmationDialog>
@@ -216,7 +228,7 @@ const getCompanyTimezones = async () => {
 
 const debounceSearch = debounce(() => {
   getRoundRobins()
-  }, 500)
+}, 500)
 
 const goToRoundRobin = (rr) => {
   router.push({path: `/settings/roundRobin/${rr.id}/scheduleTo`})

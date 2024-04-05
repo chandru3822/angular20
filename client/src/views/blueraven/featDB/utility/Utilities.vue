@@ -35,10 +35,11 @@
                                 v-model="utilityFilters[header.value].value"
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
                                 clearable
-                                filled
+                                variant="filled"
                                 type="search"
-                                dense
+                                density="compact"
                                 hide-details
+                                style="font-size: 14px;"
                   ></a-text-field>
                   <v-autocomplete v-else-if="utilityFilters[header.value].type === 'select'"
                                   :items="states"
@@ -60,9 +61,21 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': !(index % 2),
                          'strike-thru': item.archived }" class="clickable text-sm-left row-hover">
-              <td class="text-left" @click="goToRoute(item.id)" :class="{}">{{ item.name ? item.name : '' }}</td>
-              <td class="text-left" @click="goToRoute(item.id)" >{{ item.metroArea ? item.metroArea : '' }}</td>
-              <td class="text-left" @click="goToRoute(item.id)" >{{ item.state ? item.state : '' }}</td>
+              <td class="text-left" :class="{}">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/utility/${item.id}/details`">
+                  {{ item.name ? item.name : '' }}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/utility/${item.id}/details`">
+                  {{ item.metroArea ? item.metroArea : '' }}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/utility/${item.id}/details`">
+                  {{ item.state ? item.state : '' }}
+                </router-link>
+              </td>
               <td class="text-right">
                 <a-btn
                     :to="`/database/utility/${item.id}/details`"

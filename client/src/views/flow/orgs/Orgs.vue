@@ -75,12 +75,32 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}" @click="clickRow(item.id)">
-              <td class="text-left">{{item.orgName}}</td>
-              <td class="text-left">{{item.orgType}}</td>
-              <td class="text-left">{{item.parentOrgName}}</td>
-              <td class="text-left">{{item.stateAbbreviation}}</td>
-              <td class="text-left">{{item.activeFlag ? 'Yes' : 'No'}}</td>
+            <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/org/${item.id}`">
+                  {{item.orgName}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/org/${item.id}`">
+                  {{item.orgType}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/org/${item.id}`">
+                  {{item.parentOrgName}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/org/${item.id}`">
+                  {{item.stateAbbreviation}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/org/${item.id}`">
+                  {{item.activeFlag ? 'Yes' : 'No'}}
+                </router-link>
+              </td>
             </tr>
           </template>
         </v-data-table>
@@ -169,9 +189,6 @@ onMounted(() => {
 
 const setLocalStorage =  () => {
   localStorage.setItem('orgSearch', JSON.stringify(search.value))
-}
-const clickRow = (id)=> {
-  router.push({name: 'org', params: {id}})
 }
 const getOrgs = async() => {
   appStore.loading = true

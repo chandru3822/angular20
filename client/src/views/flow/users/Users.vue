@@ -218,18 +218,19 @@
 
           <template #item="{ item, index }">
             <tr
-              :class="{'shaded-row': index % 2}" v-if="!showImages"
-            >
+              :class="{'shaded-row': index % 2}" v-if="!showImages">
               <td><v-checkbox v-model="item.selected" :disabled="allUsersLoading" @change="toggleSingleSelect(item)"></v-checkbox></td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.firstName}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.lastName}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.email}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.phoneNumber}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.phoneExtension}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.userStatusType}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.position || 'N/A'}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable" v-for="(f, index) in orgFilters" :key="index">
-                {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.firstName}}</router-link></td>
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.lastName}}</router-link></td>
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.email}}</router-link></td>
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.phoneNumber}}</router-link></td>
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.phoneExtension}}</router-link></td>
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.userStatusType}}</router-link></td>
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.position || 'N/A'}}</router-link></td>
+              <td class="text-left user-column clickable" v-for="(f, index) in orgFilters" :key="index">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">
+                  {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
+                </router-link>
               </td>
             </tr>
           </template>
@@ -349,7 +350,7 @@
           </div>
 
             <v-text-field v-model="emailSubject" label="Subject"></v-text-field>
-            <b>Message </b><span class="count-span pl-2">Characters: {{this.emailCharacterCount}}  Words: {{this.emailWordCount}}</span>
+            <b>Message </b><span class="count-span pl-2">Characters: {{emailCharacterCount}}  Words: {{emailWordCount}}</span>
             <quill-editor
                 class="py-3 rich-text-editor"
                 v-model="emailMessage"
@@ -375,7 +376,7 @@
               </v-btn>
               <v-btn
                 color="primary" class="white--text"
-                :disabled="this.disableSendEmail"
+                :disabled="disableSendEmail"
                 @click="sendMessage(true, false)">
                 Send Email
               </v-btn>
@@ -1251,7 +1252,7 @@ const handleImageFilterChange = async (reset, selectedLevelHere) => {
     getOrgFilters();
   }
 
-  this.selectAllUsers = false
+  selectAllUsers.value = false
   //reload the users
 }
 const itemChecked = (level, item) => {
@@ -1272,18 +1273,17 @@ const fetchTeamsForUser = async () => {
       templateTeams.value.push(team.id);
     }
     handleHidingGlobalLoader(this, status)
-    await this.getSmsTeamTemplates();
+    await getSmsTeamTemplates();
   } catch (e) {
     console.error('*** ERROR ***', e)
-    this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
-    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    this.conversationIsLoading = false
+    snackbar('ERROR', 'Error fetching SMS Teams')
+    conversationIsLoading.value = false
   }
 }
 const getSmsTeamTemplates = async() => {
   try {
-    this.selectedTemplate = null
-    if (this.teamsAssociatedToUser.length < 1) {
+    selectedTemplate.value = null
+    if (teamsAssociatedToUser.value.length < 1) {
       return
     }
 

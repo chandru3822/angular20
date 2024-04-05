@@ -10,7 +10,9 @@
                   :key="index"  class="pa-0">
             <v-list-item :class="{'shaded-row': index % 2}">
               <v-list-item-content>
-                {{f.companyFunctionName}}
+                <router-link :to="`/settings/function/${f.id}`" class="router-link-td">
+                  {{f.companyFunctionName}}
+                </router-link>
               </v-list-item-content>
               <v-list-item-action class="clickable">
                 <a-btn :to="`/settings/function/${f.id}`" variant="text" prepend-icon="edit">

@@ -58,9 +58,21 @@
 
           <template #item="{ item, index }">
             <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
-              <td class="text-left clickable" @click="router.push({ path: `ahj/${item.id}/permit` })">{{ item.name ? item.name : '' }}</td>
-              <td class="text-left clickable" @click="router.push({ path: `ahj/${item.id}/permit` })">{{ item.metroArea ? item.metroArea : '' }}</td>
-              <td class="text-left clickable" @click="router.push({ path: `ahj/${item.id}/permit` })">{{ item.state ? item.state : '' }}</td>
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/ahj/${item.id}/permit`">
+                  {{ item.name ? item.name : '' }}
+                </router-link>
+              </td>
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/ahj/${item.id}/permit`">
+                  {{ item.metroArea ? item.metroArea : '' }}
+                </router-link>
+              </td>
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/ahj/${item.id}/permit`">
+                  {{ item.state ? item.state : '' }}
+                </router-link>
+              </td>
               <td class="text-right">
                 <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
                 <span v-else>
@@ -384,7 +396,7 @@ const fetchStates = async ()  => {
     font-weight: normal;
     margin-bottom: 10px;
 
-    .v-text-field,
+    .a-text-field,
     .v-select {
       font-size: 0.875rem;
       margin-left: 15px;

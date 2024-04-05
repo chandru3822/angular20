@@ -47,10 +47,14 @@
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left" @click="clickRow(item.id)">
-                {{item.position}}
+                <router-link :to="`/settings/position/${item.id}`" class="router-link-td">
+                  {{item.position}}
+                </router-link>
               </td>
               <td class="text-left" @click="clickRow(item.id)">
-                {{item.orgType}}
+                <router-link :to="`/settings/position/${item.id}`" class="router-link-td">
+                  {{item.orgType}}
+                </router-link>
               </td>
               <td class="px-0">
                 <a-btn

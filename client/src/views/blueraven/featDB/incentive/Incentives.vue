@@ -36,7 +36,7 @@
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
                                 clearable
                                 variant="filled"
-                                dense
+                                density="compact"
                                 hide-details
                   ></a-text-field>
                   <v-autocomplete v-else-if="incentiveFilters[header.value].type === 'select' && header.value === 'state'"
@@ -84,17 +84,25 @@
 
           <template #item="{ item, index }">
             <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
-              <td class="text-left clickable" @click="router.push({ path: `incentive/${item.id}/details` })">
-                {{ item.name || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/incentive/${item.id}/details`">
+                  {{ item.name || '' }}
+                </router-link>
               </td>
-              <td class="text-left clickable" @click="router.push({ path: `incentive/${item.id}/details` })">
-                {{ item.state || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/incentive/${item.id}/details`">
+                  {{ item.state || '' }}
+                </router-link>
               </td>
-              <td class="text-left clickable" @click="router.push({ path: `incentive/${item.id}/details` })">
-                {{ item.type || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/incentive/${item.id}/details`">
+                  {{ item.type || '' }}
+                </router-link>
               </td>
-              <td class="text-left clickable" @click="router.push({ path: `incentive/${item.id}/details` })">
-                {{ item.status || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/incentive/${item.id}/details`">
+                  {{ item.status || '' }}
+                </router-link>
               </td>
               <td class="text-right">
                 <a-btn

@@ -22,18 +22,20 @@
             <span class="default-text-color">No available object types</span>
           </template>
 
-          <template #item.objectTye="{ item }">
-              <span class="text-left">{{ item.objectType }}</span>
+          <template #item.objectType="{ item }">
+              <span class="text-left">
+                <router-link :to="`/settings/companyObjectTypes/${item.id}`" class="router-link-td elevation-0 square-card">{{ item.objectType }}</router-link>
+              </span>
           </template>
-              <template #item.icons="{item}">
-                <div style="display: flex; justify-content: flex-end">
-                  <a-btn size="small" variant="text"
-                                   :large="vuetify.breakpoint.smAndDown"
-                                   icon color="primary" @click="goToDetails(item)"
-                                   prepend-icon="edit"
-                  />
-                </div>
-              </template>
+          <template #item.icons="{item}">
+            <div style="display: flex; justify-content: flex-end">
+              <a-btn size="small" variant="text"
+                               :large="vuetify.breakpoint.smAndDown"
+                               icon color="primary" @click="goToDetails(item)"
+                               prepend-icon="edit"
+              />
+            </div>
+          </template>
         </v-data-table>
       </v-col>
 

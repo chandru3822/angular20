@@ -36,9 +36,21 @@
         >
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
-              <td>{{item.title}}</td>
-              <td>{{item.startTime  | formatDate('timestamp', 'MM/DD/YYYY h:mm a')}}</td>
-              <td>{{item.endTime  | formatDate('timestamp', 'MM/DD/YYYY h:mm a')}}</td>
+              <td>
+                <router-link :to="`/settings/announcement/${item.id}`" class="router-link-td">
+                  {{item.title}}
+                </router-link>
+              </td>
+              <td>
+                <router-link :to="`/settings/announcement/${item.id}`" class="router-link-td">
+                  {{item.startTime  | formatDate('timestamp', 'MM/DD/YYYY h:mm a')}}
+                </router-link>
+              </td>
+              <td>
+                <router-link :to="`/settings/announcement/${item.id}`" class="router-link-td">
+                  {{item.endTime  | formatDate('timestamp', 'MM/DD/YYYY h:mm a')}}
+                </router-link>
+              </td>
               <td>
                 <span v-if="item.showOnWeb && item.showOnMobile">Web, Mobile</span>
                 <span v-else-if="item.showOnWeb">Web</span>
