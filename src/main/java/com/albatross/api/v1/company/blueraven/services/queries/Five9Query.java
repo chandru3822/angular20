@@ -28,7 +28,7 @@ public class Five9Query {
       AND (pd.closer_appointment_outcome_name not in
               ('Pitched - Proposal Shown', 'Pitched - Proposal Not Shown') or
               pd.closer_appointment_outcome_name IS NULL)
-        AND pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral')
+        AND pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral', 'Setter Gen')
       AND ((select ccfv.int_value
             from flow.contact_custom_field_value ccfv
             where ccfv.custom_field_group_assignment_id = 399

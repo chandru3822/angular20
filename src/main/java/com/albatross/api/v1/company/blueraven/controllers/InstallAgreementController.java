@@ -62,7 +62,8 @@ public class InstallAgreementController {
       @RequestParam(required = false) String sendVia)
       throws Exception {
     try {
-      return ResponseEntity.ok(installAgreementRepository.generateLoanApplication(projectId, proposalNbr, sendVia));
+      String url = installAgreementRepository.generateLoanApplication(projectId, proposalNbr, sendVia);
+      return ResponseEntity.ok(url);
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), new Exception());
     }

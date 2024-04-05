@@ -67,7 +67,14 @@ public class EnFinService {
       }
     }
 
-    if (propLogDetail.getEmail().length() > 40) {
+    // Check if the email (before the @ sign) exceeds EnFin's limit
+    String email = propLogDetail.getEmail();
+    int atIndex = email.indexOf('@');
+    if (atIndex != -1) {
+      email = email.substring(0, atIndex);
+    }
+
+    if (email.length() > 40) {
       throw new Exception("Error generating Loan Application for EnFin: Email address exceeds the 40 character limit");
     }
 
