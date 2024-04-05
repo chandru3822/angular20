@@ -97,7 +97,6 @@ const fetchEventStatusTypes = async() => {
   try {
     const {data} = await getEventStatusTypes()
     eventStatusTypes.value = data
-    console.log(data)
     store.commit(AppMutations.SET_LOADING, false)
   } catch (e) {
     console.error('*** ERROR ***', e)
