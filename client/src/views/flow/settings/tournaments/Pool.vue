@@ -187,7 +187,7 @@
                 :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                 icon
                 color="primary"
-                v-if="!pool.liveTournament"
+                v-if="!pool.liveTournament && filteredUsers?.length > 0"
                 prepend-icon="delete"
                 @click="deleteUsers = true">
             </a-btn>
