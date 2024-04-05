@@ -66,6 +66,11 @@ public class EnFinService {
         quoteDetails.put("loanAmount", Math.floor(Double.parseDouble(propLogDetail.getLoanAmount())));
       }
     }
+
+    if (propLogDetail.getEmail().length() > 40) {
+      throw new Exception("Error generating Loan Application for EnFin: Email address exceeds the 40 character limit");
+    }
+
     quoteDetails.put("loanTerm", Integer.parseInt(propLogDetail.getLoanTerm()));
     quoteDetails.put("projectType", getSystemType(propLogDetail));
 
