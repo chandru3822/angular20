@@ -198,10 +198,95 @@
                 :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                 icon
                 color="primary"
+                prepend-icon="mdi-playlist-plus"
+                @click="addCustomUsers = !addCustomUsers">
+            </a-btn>
+            <a-btn
+                :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                icon
+                color="primary"
                 prepend-icon="add"
                 @click="[addUser = !addUser, getUsers()]">
             </a-btn>
           </v-toolbar>
+          <v-card class="pa-4" color="secondary" v-if="addCustomUsers && filteredUsers.length > 0">
+            This feature is only available when no users have been added to the pool.
+          </v-card>
+          <v-card class="pa-4" color="secondary" v-else-if="addCustomUsers">
+            <h3>Add Custom User Set</h3>
+            <ul>
+              <li>This is used to add all users that meet a pre-defined set of criteria. </li>
+              <li>At least one field in each section is required. </li>
+              <li>All fields are inclusive, meaning that any results matching the value you provide will be included. </li>
+            </ul>
+
+            <div class="px-3 pt-3">
+              <DatetimePickerInput
+                  v-model="customStartDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :format="'MM/DD/YYYY'"
+                  label="Position Start Min Date"
+              />
+              <DatetimePickerInput
+                  v-model="customEndDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :format="'MM/DD/YYYY'"
+                  label="Position Start Max Date"
+              />
+
+              <a-btn :variant="customInclusive ? 'outlined' : 'text'"
+                  color="primary"
+                  @click="customInclusive = true">
+                AND
+              </a-btn>
+              <a-btn :variant="customInclusive ? 'text' : 'outlined'"
+                     class="ml-3"
+                  color="primary"
+                  @click="customInclusive = false">
+                OR
+              </a-btn>
+
+              <a-text-field
+                  class="mt-3"
+                  type="number"
+                  label="Lifetime FDC Count Min"
+                  v-model.number="customFdcMin"/>
+              <a-text-field
+                  type="number"
+                  label="Lifetime FDC Count Max"
+                  v-model.number="customFdcMax"/>
+
+            <v-card outlined class="pa-3 mt-4" v-if="customStartDate > customEndDate">
+              <v-card-text class="error--text">
+                Min Date must be before Max Date
+              </v-card-text>
+            </v-card>
+            <v-card outlined class="pa-3 mt-4" v-else-if="(customStartDate || customEndDate) &&
+              (customFdcMin || customFdcMin === 0 || customFdcMax)">
+              Saving with the current settings will add: <br><br>
+              All closers with
+              {{ startDatePortion }} <br>
+              <strong>{{customInclusive ? 'AND' : 'OR'}}</strong> <br>
+              {{ fdcPortion }}
+
+            <div class="mt-6">
+              <a-btn variant="outlined"
+                  class="mr-2"
+                  @click="resetCustom()"
+                  text="Cancel"
+              />
+              <a-btn
+                  color="primary white--text"
+                  @click="saveCustomUsers()"
+                  text="Confirm"
+              />
+            </div>
+            </v-card>
+
+            </div>
+          </v-card>
           <v-card flat v-if="addUser">
             <v-autocomplete
                 v-model="userId"
@@ -309,6 +394,7 @@ const snackbar = vueInstance.$snackbar
 const fileStore = useFileStore()
 const route = useRoute()
 const userStore = useUserStore()
+const filters = vueInstance.$filters
 
 const positionToDelete = ref(null)
 const edit = ref(false)
@@ -325,10 +411,16 @@ const positionId = ref(null)
 const positions = ref([])
 const positionsLoading = ref(true)
 const addUser = ref(false)
+const addCustomUsers = ref(false)
 const deleteUsers = ref(false)
 const userId = ref(null)
 const users = ref([])
 const usersLoading = ref(true)
+const customStartDate = ref(null)
+const customEndDate = ref(null)
+const customFdcMin = ref(null)
+const customFdcMax = ref(null)
+const customInclusive = ref(true)
 const deleteWinnerBackgroundDialog = ref(false)
 const userToDelete = ref(null)
 const positionHeaders = ref([
@@ -346,6 +438,30 @@ onMounted(() => {
 
 const tournamentId = computed(() => {
   return route.params.id
+})
+
+const startDatePortion = computed(() => {
+  let msg = ''
+  if (customStartDate.value != null && customEndDate.value != null) {
+    msg = `a start date between  ${filters.formatDate(customStartDate.value, 'date', 'MM/DD/YYYY')} and ${filters.formatDate(customEndDate.value, 'date', 'MM/DD/YYYY')}`
+  } else if (customStartDate.value != null) {
+    msg = `a start date on or after ${filters.formatDate(customStartDate.value, 'date', 'MM/DD/YYYY')}`
+  } else if (customEndDate.value != null) {
+    msg = `a start date on or before ${filters.formatDate(customEndDate.value, 'date', 'MM/DD/YYYY')}`
+  }
+  return msg
+})
+
+const fdcPortion = computed(() => {
+  let msg = ''
+  if ((customFdcMin.value || customFdcMin.value === 0) && customFdcMax.value) {
+    msg = `A lifetime FDC count between ${customFdcMin.value} and ${customFdcMax.value}`
+  } else if (customFdcMin.value || customFdcMin.value === 0) {
+    msg = `A lifetime FDC count greater than or equal to ${customFdcMin.value}`
+  } else if (customFdcMax.value) {
+    msg = `A lifetime FDC count less than or equal to ${customFdcMax.value}`
+  }
+  return msg
 })
 
 const poolTypeId = computed(() => {
@@ -486,6 +602,41 @@ const deletePositionFromPool = async () => {
     snackbar('ERROR', 'Error Deleting Position')
     appStore.loading = false
     positionToDelete.value = null
+  }
+}
+
+const resetCustom = () => {
+  customInclusive.value = true
+  customStartDate.value = null
+  customEndDate.value = null
+  customFdcMin.value = null
+  customFdcMax.value = null
+  addCustomUsers.value = false
+}
+
+const saveCustomUsers = async () => {
+  appStore.loading = true
+  try {
+    let params = {
+      minFdc: customFdcMin.value,
+      maxFdc: customFdcMax.value,
+      minDate: customStartDate.value,
+      maxDate: customEndDate.value,
+      inclusive: customInclusive.value
+    }
+    const {
+      data,
+      status
+    } = await postRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/addCustomUsers`, params, 'blueraven')
+    pool.value.users = data
+    resetCustom()
+    snackbar('SUCCESS', 'Successfully added matching users.')
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let msg = e?.data?.detail || 'Error Adding Users'
+    snackbar('ERROR', msg)
+    appStore.loading = false
   }
 }
 

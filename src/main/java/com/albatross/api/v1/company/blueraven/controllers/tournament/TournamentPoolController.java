@@ -1,6 +1,7 @@
 package com.albatross.api.v1.company.blueraven.controllers.tournament;
 
 import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPool;
+import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPoolCustomUserRequest;
 import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPoolPosition;
 import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPoolUser;
 import com.albatross.api.v1.company.blueraven.services.tournament.TournamentPoolService;
@@ -53,6 +54,11 @@ public class TournamentPoolController {
     tournamentPoolService.deletePositionFromPool(tournamentPoolPositionId);
   }
 
+  @PostMapping(value = "/{poolId}/addCustomUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<TournamentPoolUser> addCustomUsers(@PathVariable Long poolId,
+                                                 @RequestBody TournamentPoolCustomUserRequest request) {
+    return tournamentPoolService.addCustomUsers(poolId, request);
+  }
 
   @PostMapping(value = "/{poolId}/addUser/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<TournamentPoolUser> addUserToPool(@PathVariable Long poolId,

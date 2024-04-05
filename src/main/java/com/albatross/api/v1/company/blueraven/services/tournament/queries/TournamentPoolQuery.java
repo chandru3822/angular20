@@ -97,9 +97,24 @@ public class TournamentPoolQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getAllUsersInPool = """
+    select tpu.*,
+           concat(u.first_name, ' ', u.last_name) as full_name
+    from brs.tournament_pool_user tpu
+    inner join flow.user u on u.id = tpu.user_id
+    where tpu.tournament_pool_id = :poolId::int
+    and tpu.archived is false
+    """;
+
+  //language=PostgreSQL
   public final static String addUser = """
     insert into brs.tournament_pool_user(user_id, tournament_pool_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:userId, :poolId, :createdById, now(), :createdById, now())
+    """;
+
+  //language=PostgreSQL
+  public final static String addCustomUsers = """
+    select from  brs.assign_users_to_pool(:poolId::int, :minDate::date, :maxDate::date, :minFdc::int, :maxFdc::int, :inclusive::boolean, :createdById::bigint);
     """;
 
   //language=PostgreSQL
