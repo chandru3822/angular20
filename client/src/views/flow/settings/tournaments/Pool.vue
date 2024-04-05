@@ -115,7 +115,7 @@
                 icon
                 color="primary"
                 prepend-icon="add"
-                @click="addPosition = !addPosition">
+                @click="[addPosition = !addPosition, getPositions()]">
             </a-btn>
 
           </v-toolbar>
@@ -123,6 +123,7 @@
             <v-autocomplete
                 v-model="positionId"
                 :items="positions"
+                :loading="positionsLoading"
                 label="Positions"
                 item-text="position"
                 item-value="id"
@@ -186,8 +187,19 @@
                 :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                 icon
                 color="primary"
+                v-if="!pool.liveTournament"
+                prepend-icon="delete"
+                @click="deleteUsers = true">
+            </a-btn>
+            <ConfirmationDialog :open-dialog="deleteUsers" @confirm="deleteUsersFromPool" @close-dialog="deleteUsers=false">
+              Are you sure you want to delete all the users from this Tournament Pool?
+            </ConfirmationDialog>
+            <a-btn
+                :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                icon
+                color="primary"
                 prepend-icon="add"
-                @click="addUser = !addUser">
+                @click="[addUser = !addUser, getUsers()]">
             </a-btn>
           </v-toolbar>
           <v-card flat v-if="addUser">
@@ -195,6 +207,7 @@
                 v-model="userId"
                 :items="users"
                 label="Users"
+                :loading="usersLoading"
                 item-text="fullName"
                 item-value="id"
                 attach
@@ -310,9 +323,12 @@ const poolLoading = ref(true)
 const addPosition = ref(false)
 const positionId = ref(null)
 const positions = ref([])
+const positionsLoading = ref(true)
 const addUser = ref(false)
+const deleteUsers = ref(false)
 const userId = ref(null)
 const users = ref([])
+const usersLoading = ref(true)
 const deleteWinnerBackgroundDialog = ref(false)
 const userToDelete = ref(null)
 const positionHeaders = ref([
@@ -326,8 +342,6 @@ const userHeaders = ref([
 
 onMounted(() => {
   getTournamentPool()
-  getPositions()
-  getUsers()
 })
 
 const tournamentId = computed(() => {
@@ -382,25 +396,47 @@ const savePoolDates = async () => {
   }
 }
 const getPositions = async () => {
+  if(positions.value?.length === 0 && addPosition.value) {
+    try {
+      positionsLoading.value = true
+      const {data, status} = await getRequest(`/position`)
+      positions.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Positions')
+      appStore.loading = false
+    } finally {
+      positionsLoading.value = false
+    }
+  }
+}
+const deleteUsersFromPool = async () => {
   try {
-    const {data, status} = await getRequest(`/position`)
-    positions.value = data
-    handleHidingGlobalLoader(status)
+    appStore.loading = true
+    await deleteRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/deleteUsers`, 'blueraven')
+    pool.value.users = []
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Positions')
+    snackbar('ERROR', 'Error Deleting Users')
+  } finally {
     appStore.loading = false
   }
 }
 const getUsers = async () => {
-  try {
-    const {data, status} = await getRequest(`/user/active`)
-    users.value = data
-    handleHidingGlobalLoader(status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Users')
-    appStore.loading = false
+  if(users.value?.length === 0 && addUser.value) {
+    try {
+      usersLoading.value = true
+      const {data, status} = await getRequest(`/user/active`)
+      users.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Users')
+      appStore.loading = false
+    } finally {
+      usersLoading.value = false
+    }
   }
 }
 const getTournamentPool = async () => {
@@ -466,7 +502,8 @@ const addUserToPool = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding User')
+    let msg = e?.data?.detail || 'Error Adding User'
+    snackbar('ERROR', msg)
     appStore.loading = false
   }
 }

@@ -14,8 +14,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -104,13 +107,26 @@ public class TournamentPoolService {
   }
 
   public Optional<TournamentPoolUser> addUserToPool(Long poolId, Long userId) {
+    try {
+      User user = securityService.getCurrentUser();
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("poolId", poolId);
+      params.put("userId", userId);
+      params.put("createdById", user.trueUserId());
+      Long id = sqlCache.updateBySqlReturningId(TournamentPoolQuery.addUser, params, "id").longValue();
+      return getPoolUser(id);
+    } catch (DuplicateKeyException e) {
+      String msg = "The selected user has already been added to this pool.";
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, msg);
+    }
+  }
+
+  public void deleteAllUsersFromPool(Long poolId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("poolId", poolId);
-    params.put("userId", userId);
-    params.put("createdById", user.trueUserId());
-    Long id = sqlCache.updateBySqlReturningId(TournamentPoolQuery.addUser, params, "id").longValue();
-    return getPoolUser(id);
+    params.put("userId", user.trueUserId());
+    sqlCache.updateBySql(TournamentPoolQuery.deleteAllUsers, params);
   }
 
   public void deleteUserFromPool(Long tournamentPoolUserId) {

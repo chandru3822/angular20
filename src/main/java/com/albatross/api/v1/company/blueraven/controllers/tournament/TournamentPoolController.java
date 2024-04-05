@@ -60,6 +60,11 @@ public class TournamentPoolController {
     return tournamentPoolService.addUserToPool(poolId, userId);
   }
 
+  @DeleteMapping(value = "/{poolId}/deleteUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deletAlleUsersFromPool(@PathVariable Long poolId) {
+    tournamentPoolService.deleteAllUsersFromPool(poolId);
+  }
+
   @DeleteMapping(value = "/{poolId}/deleteUser/{tournamentPoolUserId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteUserFromPool(@PathVariable Long tournamentPoolUserId) {
     tournamentPoolService.deleteUserFromPool(tournamentPoolUserId);
