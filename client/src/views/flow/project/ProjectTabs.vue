@@ -98,9 +98,9 @@ export default {
         const projectPath = getProjectPath(this)
         if (projectPath && this.tabs?.length > 0) {
             const someFilters = data.filter((d) => d.uniqueIdentifier === projectPath.tabName)
-            this.selectedTab = someFilters.length > 0 ? someFilters[0] : {}
+            this.selectedTab = someFilters.length > 0 ? someFilters[0] : data[0]
         } else {
-          this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
+          this.selectedTab = data[0]
         }
         this.tabChangeCallback(this.selectedTab)
 
