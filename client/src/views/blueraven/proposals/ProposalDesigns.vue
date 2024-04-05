@@ -95,7 +95,7 @@
           <v-icon size="50">mdi-home</v-icon>
         </div>
         <div class="mt-3 design-small-gray">
-          Created: {{ d.dateCreated | formatDate('date', 'MMM D, YYYY') }} <br>
+          Created: {{ d.dateCreated | formatDate('timestamp', 'MMM D, YYYY') }} <br>
           Designed by:
           <span v-if="d.designedByAuroraAi">Aurora AI</span>
           <span v-else>Proposals Team</span>
