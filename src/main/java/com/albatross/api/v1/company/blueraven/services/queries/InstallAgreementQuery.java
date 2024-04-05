@@ -96,6 +96,8 @@ public class InstallAgreementQuery {
            plh.panel,
            plh.panel_wattage,
            plh.storage_brand,
+           plh.number_of_batteries,
+           plh.all_ancillary_costs,
            p.street1 as projectStreet1,
            p.street2 as projectStreet2,
            p.city as projectCity,
@@ -168,6 +170,20 @@ public class InstallAgreementQuery {
   public final static String setSunpowerUrl = """
     UPDATE brs.proposal_log_history
     SET sunpower_url = :url, date_modified = now()
+    WHERE project_id = :projectId and proposal_nbr = :proposalNbr
+    """;
+
+  //language=PostgreSQL
+  public final static String getEnfinApplicationId = """
+    select plh.enfin_application_id from brs.proposal_log_history plh
+    WHERE plh.project_id = :projectId and plh.proposal_nbr = :proposalNbr
+    limit 1;
+    """;
+
+  //language=PostgreSQL
+  public final static String setEnfinApplicationId = """
+    UPDATE brs.proposal_log_history
+    SET enfin_application_id = :applicationId, date_modified = now()
     WHERE project_id = :projectId and proposal_nbr = :proposalNbr
     """;
 

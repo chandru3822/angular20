@@ -7,13 +7,14 @@
 *@description
 *
 */
-import {getCurrentInstance, computed, ref, watch} from "vue";
+import {getCurrentInstance, computed, onMounted, ref, watch} from "vue";
 import {AppMutations} from "@/stores/AppStore.js";
-import {getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
+import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/eventStatusTypeService.js";
 import {ScheduleMutations} from "@/stores/ScheduleStore.js";
+import { getEventDefaultFieldReadOnly } from '@/services/customFieldService.js'
 
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
@@ -27,7 +28,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
-
+const route = vueInstance.$route
 const emit = defineEmits(['toggleProjectMapPin'])
 
 const props = defineProps({
@@ -40,9 +41,19 @@ const fieldsSaving = ref(false)
 const conflictingEvents = ref()
 const saveInvalid = ref(true)
 const cancelledCompanyEventStatuses = ref()
+const event = ref(null)
+const ppsId = ref(route.query.projectProcessStepId)
+const ppsEventId = ref(route.query.projectProcessStepEventId)
+const saveError = ref(null)
 
 const userCanEdit = computed(() => {
   return  userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
+})
+const userCanManage = computed(() => {
+  return  userStore.userHasFeatureAccessLevel('EVENTS', 'MANAGE')
+})
+const userIsAdmin = computed(() => {
+  return  userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')
 })
 const timezoneFriendly = computed(() => {
   return  store.state.schedule.timezone.friendlyValue
@@ -59,29 +70,63 @@ watch(() => props.resourceFromCalendar, () => {
 })
 
 
+const isUserWhitelisted = computed(() => {
+	if(event.value?.readonlyWhiteListedPositions) {
+		for (let wlp of event.value?.readonlyWhiteListedPositions) {
+			let match = store.state.user.details.userPositions.find(up => up.positionId === wlp.positionId)
+			if (match) {
+				return true //if the user has a position that matches any of the whiteList positions, the user should see the event
+			}
+		}
+		return false //if we go through all the whiteList positions and haven't found a match, the user should not see the event
+	}
+})
+
+const isEventEditableByThisUserIgnoringReadOnly = computed(() => {
+	//can the user edit the field if the readonly setting is false
+	// if events admin/manager then they can edit any event fields regardless of event/process step status
+	return userIsAdmin.value || userCanManage.value || (userCanEdit.value && event.value?.eventStatusTypeId === 1 && event.value?.processStepStatusTypeId === 1)
+})
+
+const isEventReadyOnly = computed(() => {
+	return !store.getters.isFullAdmin && ((event.value?.readonly && !isUserWhitelisted.value) || !isEventEditableByThisUserIgnoringReadOnly.value)
+})
+
+//this logic comes from ProjectProcessStepEvent.vue. We want the readonly logic here to match that
+const isResourceReadOnly = computed(() => {
+	return (!store.getters.isFullAdmin &&
+			getEventDefaultFieldReadOnly(store, event.value?.resourceWhiteListedPositions, event.value?.resourceReadOnly, event.value?.resourceReadOnlyAllow)) ||
+		isEventReadyOnly.value
+})
+
+const isStartReadOnly = computed(() => {
+	return (!store.getters.isFullAdmin &&
+		getEventDefaultFieldReadOnly(store, event.value?.startTimeWhiteListedPositions, event.value?.startTimeReadOnly, event.value?.startTimeReadOnlyAllow)) ||
+		isEventReadyOnly.value
+})
+
+const isEndReadOnly = computed(() => {
+	return (!store.getters.isFullAdmin &&
+			getEventDefaultFieldReadOnly(store, event.value?.endTimeWhiteListedPositions, event.value?.endTimeReadOnly, event.value?.endTimeReadOnlyAllow)) ||
+		isEventReadyOnly.value
+})
+
+onMounted(async () => {
+	try {
+		const {data} = await getRequest(`/projectProcessStep/${ppsId.value}/event/${ppsEventId.value}`)
+		event.value = data
+	} catch (e) {
+		let snackbar = getSnackbar('ERROR', 'Failed to fetch event details')
+		store.commit(AppMutations.SHOW_SNACK, snackbar)
+	}
+})
+
 const setSelectedResourceInStore = (resourceId) => {
   if(resourceId){
     store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, resourceId)
-    let snackbar = createSnackbar('Resource assigned')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
   }
   else {
     store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, null)
-    snackbar(createSnackbar('Resource unassigned'))
-  }
-}
-
-//this snackbar is different from others so we built it here
-const createSnackbar = (text) => {
-  return {
-    y: 'bottom',
-    x: null,
-    mode: '',
-    timeout: 5000,
-    text: text,
-    color: 'grey darken-3',
-    fontClass: 'secondary--text',
-    enabled: true
   }
 }
 
@@ -145,6 +190,9 @@ const getCancelledCompanyEventStatuses = async () => {
 
 
 const validateSaveEvent = () => {
+  //reset this error when validating
+  saveError.value = null
+
   saveInvalid.value = !!(!props.project || !props.project.start || !props.project.end
       || !props.project.resource || !props.project.resource.id || (props.project.start >= props.project.end) ||
       //if all 3 fields are read only, dont let them save
@@ -152,7 +200,14 @@ const validateSaveEvent = () => {
   console.log('save invalid?', saveInvalid.value)
 }
 const checkForSchedulingConflicts = async() => {
-  await scheduleProject(false);
+  //this is dumb but sometimes the timestamp formatting is different and not equal when it is actually equal.
+  //so this checks for that and puts the message on the field cuz ashi doesn't want to disable the btn in this scenario
+  if((new Date(props.project.start)).valueOf() >= (new Date(props.project.end)).valueOf()) {
+    saveError.value = 'End Date must be After Start Date'
+    fieldsSaving.value = false
+  }else {
+    await scheduleProject(false);
+  }
 }
 const cancelDialog = async() => {
   conflictingEvents.value = null
@@ -208,22 +263,21 @@ const cancelProjectProcessStepEvent = async() => {
 <template>
 <v-card id="map-project-modal" :class="{'pb-4': !userCanEdit}" elevation="10">
 <!--  title and subtitle always show, even when collapsed-->
-  <v-card-title class="d-flex align-start">
+  <v-card-title class="d-flex align-start clickable"  @click="show = !show">
     <span class="label-large pr-1 break-word max-width-half">{{project.projectName}}</span>
     <v-spacer/>
-    <a-btn class="mx-2" icon size="small" color="primary" @click="emit('toggleProjectMapPin')">
+    <a-btn class="mx-2" icon size="small" color="primary" @click.native.stop="emit('toggleProjectMapPin')">
       <v-icon v-if="project.pinned">mdi-map-marker</v-icon>
       <v-icon v-else>mdi-map-marker-off</v-icon>
     </a-btn>
     <a-btn
         icon size="small" color="primary"
-        @click="show = !show"
     >
       <v-icon>{{ show ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
     </a-btn>
   </v-card-title>
-  <v-card-subtitle @click="openInNewTab(`/project/${project.projectId}/processStep/${project.projectProcessStepId}/event/${project.projectProcessStepEventId}`)" class="clickable anchor--text pt-2 pb-3">
-    {{project.eventName}} <v-icon small class="anchor">mdi-open-in-new</v-icon>
+  <v-card-subtitle class="clickable anchor pt-2 pb-5">
+    <span @click="openInNewTab(`/project/${project.projectId}/processStep/${project.projectProcessStepId}/event/${project.projectProcessStepEventId}`)">{{project.eventName}} <v-icon small class="anchor">mdi-open-in-new</v-icon></span>
   </v-card-subtitle>
   <!-- ------------------- -->
 
@@ -231,10 +285,11 @@ const cancelProjectProcessStepEvent = async() => {
   <div v-show="show">
     <!--  When the event hasn't been scheduled  -->
     <div v-if="userCanEdit && project.editableInSchedule">
-      <v-card-text class="py-0">
+      <v-card-text class="py-0" id="randa-test">
         <v-autocomplete v-model="project.resource"
                         :items="project.resources"
                         :label="project.resourceFieldName  || 'Resource'"
+						:disabled="isResourceReadOnly"
                         placeholder=" "
                         return-object
                         clearable
@@ -246,28 +301,38 @@ const cancelProjectProcessStepEvent = async() => {
                         @click:clear="setSelectedResourceInStore(null)"
                         class="pb-2"
                         :active="!!resourceFromCalendar"
-        />              <!--setting the 'active' prop this way forces the value to appear when when click the schedule button on the calendar-->
+        >              <!--setting the 'active' prop this way forces the value to appear when when click the schedule button on the calendar-->
+
+          <template v-slot:item="data">
+            <div class="body-large">{{data.item.name}}</div>
+          </template>
+        </v-autocomplete>
         <DatetimePickerInput
             v-model="project.start"
-            :timezone="timezone.value"
-            :readonly="project.startFieldReadOnly || !userCanEdit"
+            :timezone="timezone?.value"
+            :readonly="isStartReadOnly"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="Start Time"
+            custom-content-class="map-project-modal-date-picker-position"
             hide-details
             @input="validateSaveEvent()"
         />
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in {{timezoneFriendly}}</div>
         <DatetimePickerInput
             v-model="project.end"
-            :timezone="timezone.value"
-            :readonly="project.endFieldReadOnly || !userCanEdit "
+            :timezone="timezone?.value"
+            :readonly="isEndReadOnly"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="End Time"
+            custom-content-class="map-project-modal-date-picker-position"
             hide-details
             @input="validateSaveEvent()"
         />
+        <div class="body-small red--text text--darken-2 py-2" v-if="null != saveError">
+          {{saveError}}
+        </div>
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in {{timezoneFriendly}}</div>
       </v-card-text>
       <v-card-actions class="pb-4 px-4">
@@ -281,9 +346,9 @@ const cancelProjectProcessStepEvent = async() => {
     <div v-else-if="project.start || project.end">
       <v-card-text class="py-0 body-large">
         Scheduled for
-        <span v-if="eventIsSameDay()">{{project.start | formatDate('timestamp','MMMM DD YYYY, h:mm a')}} - {{project.end | formatDate('timestamp','h:mm a')}}</span>
-        <span v-else> {{project.startDate | formatDate('timestamp','MMMM DD YYYY, h:mm a')}} - {{project.end | formatDate('timestamp','MMMM DD YYYY, h:mm a')}}</span>
-        with {{project.resourceName}}
+        <span v-if="eventIsSameDay()">{{ project.start ? $filters.formatDate(project.start, 'timestamp', 'MMMM DD YYYY, h:mm a') : '[null]'}} - {{ project.end ? $filters.formatDate(project.end, 'timestamp','h:mm a') : '[null]'}}</span>
+        <span v-else> {{ project.start ? $filters.formatDate(project.start, 'timestamp', 'MMMM DD YYYY, h:mm a') : '[null]'}} - {{ project.end ? $filters.formatDate(project.end, 'timestamp', 'MMMM DD YYYY, h:mm a') : '[null]'}}</span>
+        with {{project.resourceName? project.resourceName : '[null]'}}
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in US/Mountain Time</div>
       </v-card-text>
       <v-card-actions v-if="userCanEdit" class="pt-1 pb-4 px-4">
@@ -292,8 +357,7 @@ const cancelProjectProcessStepEvent = async() => {
     </div>
     <div v-else>
       <v-card-text class="py-0 pb-4 body-large">
-      Not Scheduled, please use the project event page to schedule.
-      </v-card-text>
+        This event hasn't been scheduled. Please use the project page to schedule.      </v-card-text>
     </div>
 <!-- ------------------- -->
   </div>
@@ -327,5 +391,20 @@ const cancelProjectProcessStepEvent = async() => {
   right: 24px;
   width: 280px;
   z-index: 10;
+}
+.max-width-half{
+  //okay yes, this is more than half but I don't feel like changing the name
+  //it's so the name wraps instead of the buttons
+  max-width: 70%;
+}
+</style>
+
+<style lang="scss">
+@media (min-width: 769px) {
+  .map-project-modal-date-picker-position {
+    position: absolute;
+    top: unset !important;
+    bottom: 300px;
+  }
 }
 </style>

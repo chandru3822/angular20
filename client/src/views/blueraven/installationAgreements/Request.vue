@@ -304,10 +304,11 @@ const openLoanApp = async() => {
     console.error('*** ERROR ***', e)
     if (e.data.message != null) {
       snackbar('ERROR', e.data.message)
+    } else if (e.data.detail != null) {
+      snackbar('ERROR', e.data.detail)
     } else {
       snackbar('ERROR', 'Error generating Finance Application')
     }
-
   }
 }
 const updateEmail = async() => {

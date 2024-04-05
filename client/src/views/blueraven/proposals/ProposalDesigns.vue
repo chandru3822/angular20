@@ -199,7 +199,7 @@
         </div>
       </v-card>
       <v-card
-          v-if="!hasActiveDesign && (closerApptRequirementsMet || designs.length > 0)"
+          v-if="!hasActiveDesign && (closerApptRequirementsMet || designs.length > 0 || hasActiveAiDesign)"
           color="transparent"
           width="355"
           :height="cardHeight"
@@ -412,7 +412,7 @@ const dateSortFn = (prop = 'dateCreated') => {
 }
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const designs = ref([])
-const cardHeight = ref(590)
+const cardHeight = ref(600)
 const minDate = ref(moment().format('YYYY-MM-DDTHH:mm:ssZ'))
 const offset = ref(0)
 const numberToDisplay = ref(3)
@@ -482,45 +482,16 @@ const validateAIRequest = async () => {
 const createAiFromExisting = async() => {
   try {
     savingNewAiDesign.value = true
-    // get the aurora project id for the first design we return from our side
-    const {data, status} = await getRequest(`/aurora/design/${firstDesignId.value}`, 'blueraven')
+    // handle the duplication on the backend so mobile can do it too
+    const {data, status} = await postRequest(`/proposal/projects/${projectId.value}/ai/design/${firstDesignId.value}/duplicate`, aiRequestFields.value, 'blueraven')
 
-    if(data?.projectId) {
-      let projectId = data.projectId
-      //get all aurora designs using that aurora projectId
-      const {data: designData, status} = await getRequest(`/aurora/project/${projectId}/designs`, 'blueraven')
+    if(null != data?.design?.id) {
+      //open the new design in sales mode
+      let url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
+      window.open(url, '_blank')
 
-
-      if(designData?.designs && designData?.designs.length > 0) {
-        //duplicate the first created design in aurora (the first created is the LAST design in the returned array)
-        let firstAuroraDesignId = designData?.designs.pop()?.id
-
-        let params = {
-          designName: aiRequestFields.value.find(f => f.customFieldGroupAssignmentId === 26300)?.textValue
-        }
-        //find the pps that is using that first aurora design and see if it was designedByAurora. use that value when creating the new pps
-        let designedByAurora = designs.value?.find(d => d.designId === firstAuroraDesignId)?.designedByAuroraAi || false;
-        const {data: designCopy, status} = await postRequestWithRequestParams(`/aurora/design/${firstAuroraDesignId}/duplicate`, {},
-            params, 'blueraven')
-
-        if(designCopy?.design?.id) {
-
-          //create the new pps for this
-          let designByAuroraParams = {
-            designByAuroraValue: designedByAurora
-          }
-          await postRequestWithRequestParams(`/proposal/projects/${projectId.value}/ai/design/${designData?.designs[0].id}`, aiRequestFields.value,
-              designByAuroraParams, 'blueraven')
-
-          //open the new design in sales mode
-          let url = `https://v2.aurorasolar.com/projects/${projectId}/designs/${designCopy.design.id}/e-proposal`
-          window.open(url, '_blank')
-
-          //reload the active design
-          await getActiveDesign()
-        }
-      }
-
+      //reload the active design
+      await this.getActiveDesign()
     } else {
       snackbar('ERROR', 'Failed to find Aurora Project')
     }
@@ -533,24 +504,50 @@ const createAiFromExisting = async() => {
     savingNewAiDesign.value = false
   }
 }
-const requestAIDesign = async() => {
-  try {
-    savingNewAiDesign.value = true
-    const { data } = await postRequest(`/proposal/projects/${projectId.value}/ai`, aiRequestFields.value, 'blueraven')
-    if(data?.design?.id && data?.design?.project_id) {
-      let url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
-      window.open(url, '_blank')
-    }
-    await getActiveDesign()
-  } catch (e) {
-    logError(e)
-    appStore.loading = false
-    snackbar('ERROR', e?.data?.message || 'There was an error requesting a new design')
-  } finally {
-    showAIDesignRequestForm.value = false
-    savingNewAiDesign.value = false
-  }
+
+const handleAIRequest = async(useExisting) => {
+  //utility company (23802), estimated annual consumption (22573), design name (26300)
+  useExistingDesign.value = useExisting
+  let encodedIds = encodeURI([23802, 22573, 26300])
+  let params = { cfgaIds: encodedIds}
+  const { data } = await getRequestWithParams(`/customFieldGroup/getCustomFieldsByCfgaIds`, {
+    params
+  })
+  aiRequestFields.value = data
+  showAIDesignRequestForm.value = true
 }
+
+const handleNewRequest = async() => {
+  lockNewRequests.value = true
+  const {data} = await getRequest(`/proposal/projects/${projectId.value}/postalCode`, 'blueraven')
+
+  if (data?.approved) {
+    showNewDesignRequestForm.value = true
+  } else {
+    showNewPostalCodeRequestForm.value = true
+  }
+
+  lockNewRequests.value = false
+}
+    async requestAIDesign() {
+      try {
+        this.savingNewAiDesign = true
+        const { data } = await postRequest(`/proposal/projects/${this.projectId}/ai`, this.aiRequestFields, 'blueraven')
+        if(data?.design?.id && data?.design?.project_id) {
+          let url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
+          window.open(url, '_blank')
+        }
+        await this.getActiveDesign()
+      } catch (e) {
+        logError(e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.$snackbar('ERROR', e?.data?.message || 'There was an error requesting a new design')
+      } finally {
+        this.showAIDesignRequestForm = false
+        this.savingNewAiDesign = false
+      }
+    }
+
 const syncAuroraDesignDetails = async() => {
   try {
     appStore.loading = true
@@ -598,6 +595,7 @@ const handleNewRequest = async() => {
 
   lockNewRequests.value = false
 }
+
 const requestNewDesign = async() => {
   try {
     appStore.loading = true
@@ -629,6 +627,7 @@ const requestNewDesign = async() => {
     snackbar('ERROR', e?.data?.message || 'There was an error requesting a new design')
   }
 }
+
 const requestPostalCodeApproval = async(comments) => {
   try {
     appStore.loading = true

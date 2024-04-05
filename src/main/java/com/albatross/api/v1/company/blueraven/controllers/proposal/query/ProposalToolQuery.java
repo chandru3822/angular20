@@ -322,11 +322,25 @@ public class ProposalToolQuery {
                           inner join version_values vv on a.proposal_group_uuid = vv.proposal_group_uuid);
         """;
 
+  //language=PostgreSQL
   public static final String findProposalVersionValues = """
-select (jsonb_path_query(get_proposal_version_value,
-                         '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFieldId)'
-            , jsonb_build_object('targetFieldId', :fieldId)) -> 'intValue')::int
-from brs.get_proposal_version_value(:versionId, :filters, :objectCode);
+with a as (select (jsonb_path_query(get_proposal_version_value,
+                                    '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFieldId)',
+                                    jsonb_build_object('targetFieldId', :fieldId)) -> 'intValue')::int as int_value,
+                  get_proposal_version_value                                                           as row
+           from brs.get_proposal_version_value(:versionId, null::proposalfieldfilter[], :objectCode)),
+     t as (select (jsonb_path_query(row,
+                                    '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFieldId)',
+                                    jsonb_build_object('targetFieldId', :fieldId)) -> 'intValue')::int as       int_value,
+                  jsonb_path_exists(row,
+                                    '$.fields[*] ? (@.fieldId == $customFieldId && @.intValue == $intValue)',
+                                    jsonb_build_object('customFieldId', :customFieldId, 'intValue', :intValue)) is_match
+           from a
+           where jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $customFieldId)',
+                                   jsonb_build_object('customFieldId', :customFieldId)))
+select a.int_value
+from a
+where a.int_value not in (select t.int_value from t where t.is_match is false)
   """;
 
   //language=PostgreSQL

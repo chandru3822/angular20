@@ -113,9 +113,9 @@ const getProjectTabs = async () => {
     const projectPath = getProjectPath()
     if (projectPath && tabs.value?.length > 0) {
       const someFilters = data.filter((d) => d.uniqueIdentifier === projectPath.tabName)
-      selectedTab.value = someFilters.length > 0 ? someFilters[0] : {}
+      selectedTab.value = someFilters.length > 0 ? someFilters[0] : data[0]
     } else {
-      selectedTab.value = tabs.value?.length > 0 ? data[0] : {}
+      selectedTab.value = data[0]
     }
     props.tabChangeCallback(selectedTab.value)
   } catch (e) {

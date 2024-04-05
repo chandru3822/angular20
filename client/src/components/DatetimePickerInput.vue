@@ -4,7 +4,7 @@
       :close-on-content-click="false"
       transition="scale-transition"
       offset-y
-      content-class="qa-date-menu"
+      :content-class="contentClass"
       max-width="290px"
       min-width="290px"
   >
@@ -117,6 +117,7 @@ const props = defineProps({
   variant: String, //eventually this should only be using variant but i am only working on v-text-fields for now
   outlined: String,
   customClass: String,
+  customContentClass: String,
   //if this is empty it uses the company minute increment setting, if that is null then it shows all minutes
   allowedMinutes: Function,
   showAppendIcon: Boolean,
@@ -132,7 +133,7 @@ const props = defineProps({
   },
 })
 const { value: propsValue, timezone, type, label, placeholder, format, inputFormat, minDate, maxDate,
-  hidePrependIcon, hideDetails, dense, outlined, customClass, showAppendIcon, allowNow, required, readonly } = toRefs(props)
+  hidePrependIcon, hideDetails, dense, outlined, customClass, customContentClass, showAppendIcon, allowNow, required, readonly } = toRefs(props)
 
 const dateToUse = ref(null)
 const dateRef = ref(null)
@@ -159,6 +160,11 @@ watch(propsValue, async() => {
 const minuteIncrement = computed(() => {
   return userStore.details.minuteIncrement || 1
 })
+
+const contentClass = computed(() => {
+  return 'qa-date-menu ' + customContentClass.value
+})
+
 const localTime = computed({
   get() {
     return propsValue.value

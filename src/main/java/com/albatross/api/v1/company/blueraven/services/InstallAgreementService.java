@@ -45,6 +45,8 @@ public class InstallAgreementService {
 
   private final SecurityService securityService;
 
+  private final EnFinService enFinService;
+
   private final SunlightService sunlightService;
 
   private final SunpowerService sunpowerService;
@@ -98,12 +100,13 @@ public class InstallAgreementService {
   }
 
   public String saveRequest(InstallAgreementRequest request) throws Exception {
+	  //@TODO: Holding off on SREC functionality until we get a production API key
     // first create disclosure doc through SREC
-    var srecSuccessful = sendDisclosureDoc(request.getProjectId(), request.getProposalNbr());
-
-    if (!srecSuccessful) {
-      throw new RuntimeException("Unable to create disclosure document");
-    }
+//    var srecSuccessful = sendDisclosureDoc(request.getProjectId(), request.getProposalNbr());
+//
+//    if (!srecSuccessful) {
+//      throw new RuntimeException("Unable to create disclosure document");
+//    }
 
     final String result = createRequest(request);
     if (result == null || result.trim().isEmpty()) {
@@ -414,7 +417,10 @@ public class InstallAgreementService {
         throw new ApiException("Loan Type required and not found");
       }
 
-      if (loanType.toLowerCase().contains("sunlight")) {
+      if (loanType.toLowerCase().contains("enfin")) {
+        Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
+        return enFinService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
+      } else if (loanType.toLowerCase().contains("sunlight")) {
         Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
 
         try {
@@ -592,7 +598,9 @@ public class InstallAgreementService {
       inverterCustomGetting,
       panel,
       panelWattage,
-      storageBrand;
+      storageBrand,
+      numberOfBatteries,
+      allAncillaryCosts;
   }
 
   @Data

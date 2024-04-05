@@ -138,7 +138,7 @@
                           return-object
                           item-text="position"
                           item-value="id"
-                          @input="poitionValuesChanged = true"
+                          @input="positionValuesChanged = true"
                           @blur="filterOrgsAndUsers"
                           attach
           >
@@ -213,7 +213,7 @@
         </v-col>
         <v-col id="time-zone-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-select
-              v-model="timezone"
+              v-model="scheduleTimezone"
               :items="timezones"
               label="Current Time Zone"
               item-text="friendlyValue"
@@ -246,19 +246,20 @@
       <FullCalendar ref="eventCalendar" id="event-calendar" :options="calendarOptions">
         <template v-slot:resourceLabelContent="{resource, index}">
           <div class="d-flex justify-space-between align-baseline">
-            <span class="body-large overflow-hidden resource-title">{{ resource.title }}</span>
+            <a v-if="resource.id.charAt(0)==='1'" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`" target="_blank" class="body-large overflow-hidden resource-title">{{resource.title}}</a>
+            <span v-else class="body-large overflow-hidden resource-title">{{ resource.title }}</span>
             <div>
-              <v-tooltip bottom>
+              <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
-              <AlbatrossButton icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
-                <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
-                <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
-              </a-btn>
+                  <a-btn icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
+                    <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
+                    <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
+                  </a-btn>
                 </template>
                 <span v-if="isResourceOnMap(resource)">Remove pin from map</span>
                 <span v-else>Pin on map</span>
               </v-tooltip>
-              <v-tooltip bottom>
+              <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
               <a-btn v-if="showScheduleBtnForResource(resource)" icon size="small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">
                 <v-icon>mdi-calendar-plus</v-icon>
@@ -271,7 +272,12 @@
           </div>
         </template>
         <template v-slot:eventContent="{event}">
-          <span v-if="event.title !== 'null'" class="event-title body-medium text-no-wrap">{{event.title}}</span>
+          <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
+            <template v-slot:activator="{ on, attrs }">
+              <span v-if="event.title !== 'null'" v-bind="attrs" v-on="on" :class="{'text-no-wrap':event.display !== 'background'}" class="event-title body-medium">{{event.title}}</span>
+            </template>
+            <span>{{event.title}}</span>
+          </v-tooltip>
 <!--yes, 'null' is intentionally a string because that's how it comes back from the calendar-->
         </template>
       </FullCalendar>
@@ -321,8 +327,12 @@ const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
       preselectedEvent: {type:Object, required: false}
     })
 
-const timezone = computed(() => {
-  return store.state.schedule.timezone?.value || userStore.timezone
+const scheduleTimezone = computed(() => {
+  return store.state.schedule.timezone?.value
+})
+
+const userTimezone = computed(() => {
+  return store.state.user.details.timezone?.value
 })
 
 const calendarOptions = ref({
@@ -332,7 +342,7 @@ const calendarOptions = ref({
   firstDay: 1,
   initialView: 'resourceTimelineDay',
   resources: [],
-  resourceAreaWidth: 300,
+  resourceAreaWidth: vuetify.breakpoint.smAndDown? 200: 300,
   resourceGroupLaneClassNames:['resourceLaneClass'],
   schedulerLicenseKey: constants.FULL_CALENDAR_LICENSE_KEY,
   eventSources:[
@@ -354,10 +364,13 @@ const calendarOptions = ref({
     }
   },
   headerToolbar:{
-    left: vuetify.breakpoint.mdAndUp ? 'prev,next': 'prev,next',
+    left: vuetify.breakpoint.mdAndUp ? 'prev,customToday,next': 'prev,next',
     center: 'title',
     right: vuetify.breakpoint.mdAndUp ? 'resourceTimelineDay,resourceTimelineWeek': ''
   },
+  slotMinWidth:40,
+  slotMinTime:"04:00:00",
+  slotMaxTime:"23:00:00",
   views:{
     resourceTimelineDay:{
       titleFormat:{ month: 'long',
@@ -371,10 +384,11 @@ const calendarOptions = ref({
         year: 'numeric',
         day: 'numeric'
       },
+      slotMinWidth:76,
     }
   },
   height: '100%',
-  timeZone: timezone.value || {},
+  timeZone: scheduleTimezone.value || {},
 
   customButtons: {
     customToday: {
@@ -534,24 +548,39 @@ const countSelected = computed(() => {
         filterOrgsAndUsers()
       }
     })
-    watch(() => timezone, (value) => {
+    watch(() => scheduleTimezone, (value) => {
         //when the schedule timezone value changes, update the calendar plugin's timezone
         let calendarApi = refs.eventCalendar.getApi()
-        calendarApi.setOption('timeZone', timezone.value)
+        calendarApi.setOption('timeZone', scheduleTimezone.value)
+        //and show a snackbar if the timezones don't match
+        if(userTimezone.value !== scheduleTimezone.value) {
+          let snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+        }
       })
-      watch(timezone, () => {
+      watch(userTimezone, () => {
         //when the value of the timezone changes (either via the time zone dropdown selector or a change in the user store timezone value),
         // update the timezone for the schedule page
-        changeTimezone(timezone.value)
+        changeTimezone(userTimezone.value)
       })
 
       // whenever selectedUsers or selectedOrgs changes, concat them both into resources
-    watch(selectedUsers, () => {
+    watch(selectedUsers, (newValue, oldValue) => {
         calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
-        handleResourceColors()
+      if(oldValue.length > newValue.length) {
+        //if we're removing users
+        const removedUsers = oldValue.filter(oldUser => newValue.indexOf(oldUser) < 0)
+        handlePinsOnSelectedResourceChange(removedUsers)
+      }
+      handleResourceColors()
       })
-      watch(selectedOrgs, () => {
+      watch(selectedOrgs, (newValue, oldValue) => {
         calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
+        if(oldValue.length > newValue.length) {
+          //if we're removing users
+          const removedOrgs = oldValue.filter(oldOrg => newValue.indexOf(oldOrg) < 0)
+          handlePinsOnSelectedResourceChange(removedOrgs)
+        }
         handleResourceColors()
         refs.orgSelector.setSearch('')//prevents weird scroll bug
       })
@@ -669,7 +698,7 @@ const countSelected = computed(() => {
         return false
       }
       const getSchedulingOrgs = async() => {
-        appStore.loading = true
+        orgsLoading.value = true
         try {
           const {data, status} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
             params: {
@@ -696,7 +725,7 @@ const countSelected = computed(() => {
         }
       }
       const fetchSchedulingOrgTypes = async() => {
-        appStore.loading = true
+        orgTypesLoading.value = true
         try {
           const {data, status} = await getSchedulingOrgTypes()
           orgTypes.value = data
@@ -717,7 +746,7 @@ const countSelected = computed(() => {
         }
       }
       const getPositions = async() => {
-        appStore.loading = true
+        positionsLoading.value = true
         try {
           const {data, status} = await getRequest(`/position/schedulable`, null, [])
           positions.value = data
@@ -846,6 +875,14 @@ const countSelected = computed(() => {
         handlePopulatingMapPins(!isResourceOnMap(resource), resource, true)
       }
 
+      const handlePinsOnSelectedResourceChange = (removedResource) => {
+        for(let resource of removedResource) {
+          if (isResourceOnMap(resource)) {
+            toggleMapPinForResource(resource)
+          }
+        }
+      }
+
       const handlePinsOnDayChange = () => {
         mapResourceEvents.value = []
         checkedResources.value.forEach((r, idx) => {
@@ -901,7 +938,7 @@ const countSelected = computed(() => {
             userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
             startTime: info.start,
             endTime: info.end,
-            timezone: timezone.value.value
+            timezone: scheduleTimezone.value
           }
           const {data} = await postRequest(`/schedule/availability`, params)
 
@@ -917,11 +954,13 @@ const countSelected = computed(() => {
 
             d.groupId = Number(`${d.systemListTypeId}${d.resourceId}`)
             d.resourceId = Number(`${d.systemListTypeId}${d.resourceId}`)
-            d.backgroundColor = 'var(--v-grey-darken1)'
+            d.backgroundColor = 'rgba(0,0,0,.25)'
+            d.classNames = 'pl-2'
 
 
 
             if(!d.isSlotTime && d.display === 'inverse-background') {
+              d.backgroundColor= 'rgba(255,255,255,0)'
               //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
               //do start time
               if(d.daylightSavings && !moment(d.start).isDST()) {
@@ -940,7 +979,7 @@ const countSelected = computed(() => {
             }
 
             if(d.display === 'background'){
-              d.title = d.title + ': ' + moment(d.start).format('h:mm') + '-' + moment(d.end).format('h:mm')
+              d.title = d.title + ': ' + getFormattedDate(d.start, 'hh:mm') + '-' + getFormattedDate(d.end)
             }
           })
 
@@ -957,7 +996,7 @@ const countSelected = computed(() => {
               //these values have already been pre-appended with the 1 or 2
               groupId: r.id,
               resourceId: r.id,
-              backgroundColor: 'var(--v-grey-darken1)'
+              backgroundColor: 'rgba(255,255,255,0)'
             })
           })
           return data;
@@ -1052,7 +1091,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
 
       const changeTimezone = async (tz) => {
         //update the timezone in the schedule store
-        await store.dispatch(ScheduleActions.CHANGE_TIMEZONE, tz)
+        await store.dispatch(ScheduleActions.CHANGE_TIMEZONE_SCHEDULE, tz)
       }
 
       const getFormattedDate = (date) => {
@@ -1075,6 +1114,20 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
         props.dateCallback(calendarStartTime.value, calendarEndTime.value)
       }
 
+//this snackbar is different from others so we built it here
+const createSnackbar = (text) => {
+  return {
+    y: 'bottom',
+    x: null,
+    mode: '',
+    timeout: -1,
+    text: text,
+    color: 'grey darken-3',
+    fontClass: 'secondary--text',
+    enabled: true
+  }
+}
+
 </script>
 
 <style lang="scss">
@@ -1083,6 +1136,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
   border-left-width: 20px;
   height: 28px;
 }
+
 .fc h2.fc-toolbar-title{
   //headline-large
   font-family: lato;
@@ -1090,10 +1144,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
   font-size: 1.375rem;
   line-height: 1.4;
 }
-.resource-lane-class {
-  height: 54px !important;
-  color: mediumpurple !important;
-}
+
 #calendar-container .fc-toolbar-title {
   @media(max-width: 960px) {
     font-size: 1.25rem;
@@ -1110,11 +1161,13 @@ padding-bottom: 8px;
   cursor: default;
   margin-left: 1px;
   margin-right: 1px;
-  opacity: 1;
+  opacity: 1 !important;
   color: black;
   overflow: hidden;
   border: solid 1px black;
 }
+
+
   #calendar-container .fc-timeline-event {
     /*height: inherit;*/
     border-radius: 5px;
@@ -1131,21 +1184,21 @@ padding-bottom: 8px;
   }
 
 
-  #calendar-container .fc-event.event-tile:hover {
-    color: inherit !important;
-    max-width: unset;
-    width: fit-content;
-    -webkit-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-    -moz-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-    box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-    z-index: 5;
-
-    span {
-      max-width: unset;
-      width: fit-content;
-      padding-right: 4px;
-    }
-  }
+  //#calendar-container .fc-event.event-tile:hover {
+  //  color: inherit !important;
+  //  max-width: unset;
+  //  width: fit-content;
+  //  -webkit-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
+  //  -moz-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
+  //  box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
+  //  z-index: 5;
+  //
+  //  span {
+  //    max-width: unset;
+  //    width: fit-content;
+  //    padding-right: 4px;
+  //  }
+  //}
 
   #calendar-container .fc-rows tr,
   #calendar-container .fc-rows tr .fc-widget-content div{
@@ -1188,6 +1241,13 @@ padding-bottom: 8px;
     background: transparent !important;  /* Optional: just make scrollbar invisible */
   }
 }
+//thickening and darkening the day dividers on week view of calendar
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th:nth-child(3) > div > div > div > table > tbody > tr:nth-child(1) > th.fc-timeline-slot.fc-timeline-slot-label.fc-day,
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th:nth-child(3) > div > div > div > table > tbody > tr.fc-timeline-header-row.fc-timeline-header-row-chrono > th:nth-child(19n+1),
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div.fc-resourceTimelineWeek-view.fc-view.fc-resource-timeline.fc-resource-timeline-flat.fc-timeline.fc-timeline-overlap-enabled > table > tbody > tr > td:nth-child(3) > div > div > div > div.fc-timeline-slots > table > tbody > tr > td:nth-child(19n+1) {
+  border-left-width: 3px;
+  border-left-color: var(--v-grey-base);
+}
 </style>
 
 <style lang="scss" scoped>
@@ -1198,6 +1258,15 @@ padding-bottom: 8px;
     max-width: 30%;
   }
   }
+.v-tooltip__content {
+  background-color: white;
+  color: var(--v-grey-darken4);
+  outline-color: black;
+}
+.v-tooltip__content.menuable__content__active {
+opacity: 1;
+  filter:  drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
+}
 
 .wrap-dropdown-item {
   white-space: normal;
@@ -1216,7 +1285,7 @@ padding-bottom: 8px;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
   z-index: 1;
   background-color: var(--v-grey-lighten4);
-  @media(max-width: 960px) {
+  @media(max-width: 600px) {
     max-height:50%;
     overflow-y: scroll;
   }
@@ -1264,5 +1333,6 @@ padding-bottom: 8px;
   visibility: hidden;
   height: 0 !important;
 }
+
 </style>
 

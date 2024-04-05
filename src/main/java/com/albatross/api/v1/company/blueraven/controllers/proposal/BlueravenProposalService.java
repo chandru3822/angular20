@@ -1,9 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
-import com.albatross.api.aurora.AuroraAssetDTO;
-import com.albatross.api.aurora.AuroraDesignDTO;
-import com.albatross.api.aurora.AuroraProjectDTO;
-import com.albatross.api.aurora.AuroraProxy;
+import com.albatross.api.aurora.*;
 import com.albatross.api.config.AppProperties;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
@@ -59,9 +56,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
 import java.net.http.HttpClient;
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -159,7 +153,71 @@ public class BlueravenProposalService {
       .body(Resource.class);
   }
 
-  public AuroraDesignDTO doProposalAiRequest(Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+  public AuroraDesignWrappedDTO duplicateExistingProposalAi(Long projectId, String designId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+    //this function needs to:
+    //try/catch finding a design by id
+    //if successful, try/catch finding all designs on that same project and getting the first one ever created
+    //if successful, duplicate that design
+    //if successful, create a Create Proposal Design process step from that design
+    //populate Utility Company, Estimated Annual Consumption, Design Name, and Design ID fields on that process step
+    //set that process step status
+    //either returns the aurora design url or just the design ID and frontend can handle url
+    try {
+      //get the design object for a design id we know of
+      AuroraProxy.DesignSummary designSummary = auroraProxy.getDesignSummary(designId);
+      if(designSummary.getProjectId().isPresent()) {
+
+        //using the project id of ^^ that design, get all designs for that project in aurora
+        AuroraDesignListDTO designsForProject = auroraProxy.getDesignsForProject(designSummary.getProjectId().get());
+        if(null != designsForProject && null != designsForProject.getDesigns() && !designsForProject.getDesigns().isEmpty()) {
+
+          //get the oldest one which is the last one in this array.
+          AuroraDesignNotWrappedDTO firstDesign = designsForProject.getDesigns().stream().reduce((first, second) -> second).get();
+
+          //get the design name to use when duplicating
+          com.albatross.api.v1.flow.model.CustomFieldValue designNameField = values.stream().filter(v -> v.getCustomFieldGroupAssignmentId().equals(26300L)).findFirst().orElse(null);
+          String designName = null != designNameField ? designNameField.getTextValue() : null;
+          //duplicate that first design with the design name passed in
+          AuroraDesignWrappedDTO auroraDesignWrappedDTO = auroraProxy.duplicateDesign(firstDesign.getId(), designName);
+
+          if(null != auroraDesignWrappedDTO.getId()) {
+            //find the design on our side that is using the firstDesignId...check the designedByAuroraField
+            Boolean designedByAurora = getDesignedByAuroraValue(projectId, firstDesign.getId());
+
+            //then create the new pps
+            handleNewPpsForAuroraDesign(projectId, auroraDesignWrappedDTO.getId(), values, designedByAurora);
+
+            return auroraDesignWrappedDTO;
+          } else {
+            throw new RuntimeException("Error: Unable to duplicate DESIGN for project: " + designSummary.getProjectId().get());
+          }
+        } else {
+          throw new RuntimeException("Error: Unable to find any DESIGNS for project: " + designSummary.getProjectId().get());
+        }
+      } else {
+        throw new RuntimeException("Error: Unable to find original DESIGN for design: " + designId);
+      }
+    } catch (Exception e) {
+      log.error("AURORA: Error Duplicating: {}", e.getMessage());
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST,
+        e.getMessage(),
+        new Exception());
+    }
+  }
+
+  public Boolean getDesignedByAuroraValue (Long projectId, String firstDesignId) {
+    //using the first created aurora design id, find our pps using that design and find the designed by aurora value
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("firstDesignId", firstDesignId);
+
+    Optional<Boolean> result = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getDesignedByAuroraValue, params, Boolean.class);
+
+    return result.orElse(false);
+  }
+
+  public AuroraDesignWrappedDTO doProposalAiRequest(Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
     //this function needs to:
     //try/catch creating an aurora project
     //if successful, try/catch creating an aurora design with that project
@@ -174,7 +232,7 @@ public class BlueravenProposalService {
         Project project = projectService.getProject(projectId).orElseThrow(NotFoundException::new);
         AuroraProjectDTO auroraProject = auroraProxy.createProject(project);
         if (null != auroraProject.getId()) {
-          AuroraDesignDTO auroraDesign = auroraProxy.createDesign(auroraProject.getId(), nameFieldValue.get().getTextValue());
+          AuroraDesignWrappedDTO auroraDesign = auroraProxy.createDesign(auroraProject.getId(), nameFieldValue.get().getTextValue());
           if (null != auroraDesign.getId()) {
             handleNewPpsForAuroraDesign(projectId, auroraDesign.getId(), values, true);
             return auroraDesign;
@@ -385,7 +443,7 @@ public class BlueravenProposalService {
               .findFirst()
               .ifPresent(proposalStepCustomFieldValue ->
                 filterCustomFieldValues(cfv,
-                  getProposalVersionValues(proposalVersionId, cfv.getCustomFieldId(), new ProposalFieldFilter(brsPanelBrandFieldId, null, Long.valueOf(proposalStepCustomFieldValue.getValue().toString()), null), "PROPOSAL_FINANCE_PRODUCTS"), true));
+                  getProposalVersionValues(proposalVersionId, cfv.getCustomFieldId(), brsPanelBrandFieldId, Long.valueOf(proposalStepCustomFieldValue.getValue().toString()), "PROPOSAL_FINANCE_PRODUCTS"), true));
           }
 
           //BRS needs to filter out dealers by associated org
@@ -459,24 +517,15 @@ public class BlueravenProposalService {
     return sqlCache.queryBySql(ProposalQuery.filterRebatesByStateAndUtility, params, new SingleColumnRowMapper<>(Long.class));
   }
 
-  private List<Long> getProposalVersionValues(Long proposalVersionId, Long customFieldId, ProposalFieldFilter filter, String objectCode) {
-    try (Connection connection = sqlCache.getSqlJdbc().getJdbcTemplate().getDataSource().getConnection()) {
+  private List<Long> getProposalVersionValues(Long proposalVersionId, Long targetCustomFieldId, Long customFieldId, Long intValue, String objectCode) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("versionId", proposalVersionId);
+    params.put("fieldId", targetCustomFieldId);
+    params.put("objectCode", objectCode);
+    params.put("customFieldId", customFieldId);
+    params.put("intValue", intValue);
 
-      Map<String, Object> params = new HashMap<>();
-      params.put("versionId", proposalVersionId);
-      params.put("fieldId", customFieldId);
-      params.put("objectCode", objectCode);
-
-      if (filter != null) {
-        Array customFieldFilters = connection.createArrayOf("ProposalFieldFilter", new Object[]{filter});
-        params.put("filters", customFieldFilters);
-      } else {
-        params.put("filters", null);
-      }
-      return sqlCache.queryBySql(ProposalToolQuery.findProposalVersionValues, params, new SingleColumnRowMapper<>(Long.class));
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    return sqlCache.queryBySql(ProposalToolQuery.findProposalVersionValues, params, new SingleColumnRowMapper<>(Long.class));
   }
 
   //exclusions

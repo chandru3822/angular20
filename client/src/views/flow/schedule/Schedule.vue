@@ -10,7 +10,7 @@
              :showRightCollapseBtn="false"
   >
     <template v-slot:main-column>
-      <a-btn id="map-btn" v-if="!showMap" class="absolute-right" color="primary" size="small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
+      <a-btn id="map-btn" v-if="!showMap" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
     <Calendar :map-resources="mapResources"
               ref="calendar"
               :map-open="showMap"
@@ -19,7 +19,7 @@
               :callback="resourceMapCallback"
               :date-callback="dateCallback"
               @scheduleResource="scheduleResourceToCurrentProject"
-              @unscheduleResource="calendarResourceToSchedule = {}"
+              @unscheduleResource="unscheduleResourceFromCurrentProject"
     />
       <ProjectModal
           v-if="selectedProject.projectId"
@@ -32,6 +32,7 @@
       <v-row class="map-row">
         <v-col cols="12" class="pa-0 ml-3">
           <Map v-if="showMap"
+               ref="mapChild"
                :latitude="latitude"
                :current-project-marker="selectedProject"
                :markers="projectMapMarkers"
@@ -41,9 +42,10 @@
                :start-time="startTime"
                :end-time="endTime"
                @close-map="showHideMap(false)"
+               @close-search-menu="searchMenuOpen = false"
           >
             <template v-slot:searchMenu>
-              <a-btn id="search-menu-btn" v-if="vuetify.breakpoint.mdAndUp" class="rounded-tile-btn" variant="outlined" icon @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" color="primary"><v-icon>mdi-magnify</v-icon></a-btn>
+              <a-btn id="search-menu-btn" v-if="vuetify.breakpoint.mdAndUp" class="rounded-tile-btn pa-5" variant="outlined" icon @click="openSearchModal()" color="primary"><v-icon>mdi-magnify</v-icon></a-btn>
               <ProjectSearchDialog v-show="searchMenuOpen" :pin-to-map-callback="projectMapMarkersCallback"  :pinned-projects="projectMapMarkers"
                                    :states="states" :start-time="startTime" :end-time="endTime"
                                    @close-dialog="searchMenuOpen = false" @zoom-map="zoomToMap"/>
@@ -116,6 +118,7 @@
     'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
   })
   const calendarResourceToSchedule =ref({})
+  const mapChild =ref()
 
   const activeComp = computed(() => {
     return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
@@ -147,7 +150,14 @@
 
       }
     })
+  watch(() => store.state.schedule.timezone.value, (value, oldValue) => {
+    timezone.value = store.state.schedule.timezone
+  })
+  const openSearchModal = () => {
+    searchMenuOpen.value = !searchMenuOpen.value
+    mapChild.value.closeMenu()
 
+  }
   const loadTimezone = () => {
         if(store.state.schedule.timezone?.value === null) {
           timezone.value = store.state.user.details.timezone
@@ -187,7 +197,8 @@
       const projectMapMarkersCallback = (newValue)=> {
         projectMapMarkers.value = newValue
         showHideMap(true)
-        if(newValue.length > 0){
+        // for now only doing this if 1 project is pinned until further definition from ashi
+        if(newValue.length === 1){
           zoomToMap(newValue[0], 8)
         }
       }
@@ -209,7 +220,28 @@
 
       const scheduleResourceToCurrentProject = (resource)=> {
         calendarResourceToSchedule.value = resource
+        let snackbar = createSnackbar('Resource assigned')
+        store.commit(AppMutations.SHOW_SNACK, snackbar)
       }
+      const unscheduleResourceFromCurrentProject = ()=> {
+        calendarResourceToSchedule.value = {}
+        let snackbar = createSnackbar('Resource unassigned')
+        store.commit(AppMutations.SHOW_SNACK, snackbar)
+      }
+
+  //this snackbar is different from others so we built it here
+  const createSnackbar = (text) => {
+    return {
+      y: 'bottom',
+      x: null,
+      mode: '',
+      timeout: 5000,
+      text: text,
+      color: 'grey darken-3',
+      fontClass: 'secondary--text',
+      enabled: true
+    }
+  }
 
       const getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId, onLoad) => {
         try {
@@ -345,9 +377,10 @@
   #map-btn.absolute-right {
     position: absolute;
     z-index: 5;
-    right: 16px;
+    right: 24px;
     border-radius: 4px;
-    height: 56px;
+    height: 46px;
+    width: 46px;
   }
 
   #schedule-project-toolbar .v-toolbar__content {

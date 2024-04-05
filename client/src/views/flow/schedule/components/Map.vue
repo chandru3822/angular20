@@ -4,7 +4,7 @@
           @load="onMapLoad">
 
     <div id="map-btns" class="d-flex justify-start">
-      <a-btn id="hide-map-btn" color="primary" size="small" class="rounded-tile-btn ml-4 mr-3" :elevation="5" custom-classes="px-4" @click="$emit('close-map')"><v-icon>mdi-chevron-right</v-icon></a-btn>
+      <a-btn id="hide-map-btn" color="primary" size="x-small" class="rounded-tile-btn ml-4 mr-3" :elevation="5" custom-classes="px-4" @click="$emit('close-map')"><v-icon>mdi-chevron-right</v-icon></a-btn>
       <v-menu data-app bottom
               offset-y
               content-class="drive-time-menu"
@@ -14,9 +14,9 @@
               :close-on-click="false"
               :close-on-content-click="false">
         <template v-slot:activator="{ on }">
-          <a-btn id="drive-time-btn" variant="outlined" :activation-handler="on" icon color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></a-btn>
+          <a-btn id="drive-time-btn" variant="outlined" :activation-handler="on" icon color="primary" class="rounded-tile-btn white-background mr-3 pa-5"><v-icon>mdi-car</v-icon></a-btn>
         </template>
-        <v-card id="drive-time-card" color="white" class="square-card pa-4">
+        <v-card id="drive-time-card" color="white" class="pa-4">
           <div class="d-flex justify-space-between">
             <v-card-title class="label-large pa-0">Find Drive Time</v-card-title>
             <a-btn icon size="small" @click="menuOpen = false"><v-icon>close</v-icon></a-btn>
@@ -24,13 +24,13 @@
           <div class="address-container">
             <div class="one-hunned py-3">
               <a-text-field  variant="outlined" label="Starting Point" placeholder="Select pin or enter address" autocomplete="new-password"
-                            @click="[address1 = '', drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
+                             @click="[drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
                             hide-details
                             v-model="address1"
                             @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"></a-text-field>
               <v-list ref="dropdownMenu1" v-if="showAddress1List">
-                <v-list-item v-for="(suggestion, idx) in suggestions">
-                  <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, true)">
+                <v-list-item v-for="(suggestion, idx) in suggestions" class="px-0">
+                  <v-card class="pa-2 addressSuggestion" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, true)">
                     <span class="dropdown-item text-decoration-none" >
                       {{ formatLabel(suggestion.label, 'start') }}<span>{{
                         formatLabel(suggestion.label, 'middle')
@@ -45,13 +45,13 @@
           <div class="address-container">
             <div class="one-hunned">
               <a-text-field  variant="outlined" label="Destination" placeholder="Select pin or enter address" autocomplete="new-password"
-                            @click="[address2 = '', drivingDistance = 0, drivingDuration = 0, selectAddress2 = true, selectAddress1 = false]"
+                             @click="[drivingDistance = 0, drivingDuration = 0, selectAddress2 = true, selectAddress1 = false]"
                             hide-details
                             v-model="address2"
                             @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"></a-text-field>
               <v-list ref="dropdownMenu2" v-if="showAddress2List">
-                <v-list-item v-for="(suggestion, idx) in suggestions">
-                  <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, false)">
+                <v-list-item v-for="(suggestion, idx) in suggestions" class="px-0">
+                  <v-card class="pa-2 addressSuggestion" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, false)">
                     <span class="dropdown-item text-decoration-none">
                       {{ formatLabel(suggestion.label, 'start') }}<span>{{
                         formatLabel(suggestion.label, 'middle')
@@ -62,8 +62,8 @@
               </v-list>
             </div>
             <div class="mt-2 body-large">
-              <div>Drive Time:</div> <span v-if="drivingDuration">{{ drivingDuration }}</span>
-              <div>Drive Distance:</div><span v-if="drivingDistance">{{ drivingDistance }} miles</span>
+              <div>Drive Time:</div> <span class="label-large" v-if="drivingDuration">{{ drivingDuration }}</span>
+              <div class="mt-2">Drive Distance:</div><span class="label-large" v-if="drivingDistance">{{ drivingDistance }} miles</span>
             </div>
           </div>
         </v-card>
@@ -77,7 +77,7 @@
 
                @click="selectAddressForDriveTime(currentProjectMarker)"
                color="var(--v-primary-base)">
-      <MglPopup :close-button="false" :offset="36">
+      <MglPopup :close-button="false" :offset="popupOffset">
         <MapPopUp :marker="currentProjectMarker"/>
       </MglPopup>
     </MglMarker>
@@ -87,7 +87,7 @@
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
-      <MglPopup :close-button="false" :offset="36">
+      <MglPopup :close-button="false" :offset="popupOffset">
         <MapPopUp :marker="m"/>
       </MglPopup>
     </MglMarker>
@@ -97,7 +97,7 @@
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
-      <MglPopup :close-button="false" :offset="36">
+      <MglPopup :close-button="false" :offset="popupOffset">
         <MapPopUp :marker="m"/>
       </MglPopup>
     </MglMarker>
@@ -160,6 +160,7 @@ const distanceDivisionMetric = ref(1609.34)
 const durationDivisionMetric = ref(60)
 const defaultZoom = ref(2.0)
 const suggestions = ref([])
+const popupOffset = ref(0)
 // they do these coordinates backwards to comply with geoJSON whatever that is.
 //center of the USA
 const defaultCenter = ref([-98.5795, 39.8283])
@@ -175,8 +176,23 @@ const options = ref({
 })
 const asyncActions = ref()
 
+
+const emit = defineEmits(['close-search-menu'])
+watch( menuOpen, () => {
+  if(menuOpen.value) {
+    emit('close-search-menu')
+  }
+})
+
+const closeMenu = () => {
+  menuOpen.value = false
+}
+
+defineExpose({
+  closeMenu
+})
+
 const selectAddress = ((suggestion, isFirst) => {
-  debugger
   if (isFirst) {
     address1.value = suggestion.label
     showAddress1List.value = false
@@ -259,7 +275,7 @@ const geoCode = async(address) => {
     } catch (e) {
       console.error('*** ERROR ***', e)
       snackbar('ERROR', 'Error Getting Address Suggestions')
-      
+
     }
   }
 }
@@ -355,7 +371,7 @@ const getLatLong = async(address) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Getting Address Lat & Long')
-    
+
   }
 }
 const loadDriveTime = async() => {
@@ -389,7 +405,7 @@ const getDirections = async(firstPair, secondPair) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error Getting Drive Time')
-    
+
   }
 }
 const changeMapLocation = async() => {
@@ -404,7 +420,7 @@ const changeMapLocation = async() => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error jumping to address')
-    
+
   }
 }
 const onMapLoad = async(event) => {
@@ -430,11 +446,19 @@ const onMapLoad = async(event) => {
 #drive-time-card > div > div > div.v-list.v-sheet {
   max-height: calc(100vh - 400px);
   overflow-y: auto;
-
   .v-list-item {
     //padding: 0;
     //looked at removing the padding on the child as shown in figma, but it looks odd with the scrollbar
   }
+}
+
+#map .mapboxgl-popup-content {
+  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12) !important;
+}
+
+.mapboxgl-ctrl-top-right .mapboxgl-ctrl {
+  margin-top:16px;
+  margin-right:16px;
 }
 
 </style>
@@ -442,7 +466,8 @@ const onMapLoad = async(event) => {
 <style scoped lang="scss">
 
 #hide-map-btn {
-  height: 56px;
+  height: 46px;
+  width: 46px;
   padding:0;
 }
 
@@ -461,6 +486,10 @@ const onMapLoad = async(event) => {
   position: relative;
   top:40px;
   right:38px;
+}
+
+.addressSuggestion {
+  border-color: var(--v-grey-lighten1);
 }
 
 

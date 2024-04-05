@@ -72,10 +72,6 @@ const CancelToken = axios.CancelToken;
 const source = ref(CancelToken.source());
 
 watch(search, async(val) => {
-    if(!val) {
-      searchProject.value = {}
-      return
-    }
     if(val && (!searchProject.value || searchProject.value.projectName !== val)) {
       await getProjectsSearchedFor(val);
     }
@@ -211,7 +207,7 @@ const getProjectsSearchedFor = async(search) => {
 },
  getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) => {
   listLoading.value = true
-  try {
+   try {
     let params = {
       projectId,
       eventId,
@@ -319,24 +315,24 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-card id="project-search-card" color="white" style="max-width: 280px; min-width: 280px" class="square-card pa-4 project-search-card" elevation="8"> <!--did this manually instead of using v-menu b/c the dropdowns were getting cut off-->
+  <v-card id="project-search-card" color="white" style="max-width: 280px; min-width: 280px" class="pa-4 project-search-card" elevation="8"> <!--did this manually instead of using v-menu b/c the dropdowns were getting cut off-->
     <div class="d-flex justify-space-between">
       <v-card-title class="label-large pa-0">Search Projects</v-card-title>
       <a-btn icon size="small" @click="emit('close-dialog')"><v-icon>close</v-icon></a-btn>
     </div>
-    <div v-if="!showSearchResults" class="project-search-field-container pt-1">
+    <div v-show="!showSearchResults" class="project-search-field-container pt-1">
       <div class="one-hunned pb-3">
-        <v-autocomplete attach v-model="state" class="pb-2"
-                        :items="states"
-                        label="State"
-                        clearable
-                        return-object
-                        hide-details
-                        dense
-                        item-text="state"
-                        item-value="id"
-                        @click:clear="clear"
-                        :disabled="!!searchProject?.projectId"
+        <v-autocomplete attach v-model="state" class="pb-2 body-large"
+        :items="states"
+        label="State"
+        clearable
+        return-object
+        hide-details
+        dense
+        item-text="state"
+        item-value="id"
+        @click:clear="clear"
+        :disabled="!!searchProject?.projectId"
         ></v-autocomplete>
         <v-autocomplete v-model="searchProject"
                         :items="searchProjects"
@@ -351,6 +347,7 @@ onMounted(() => {
                         :disabled="!!state?.id"
                         hide-details
                         return-object
+                        class="body-large"
                         attach
         >
 
@@ -425,13 +422,13 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <div v-else class="body-small">
-      <v-chip x-small color="primary lighten-9" v-if="state.state" class="mr-1 px-2 grey--text text--darken-3">{{state.state}} </v-chip>
-      <v-chip x-small color="primary lighten-9" v-if="searchProject?.projectName" class="mr-1 px-2 grey--text text--darken-3">{{searchProject.projectName}} </v-chip>
-      <v-chip x-small color="primary lighten-9" v-if="searchEventType?.eventName" class="mr-1 px-2 grey--text text--darken-3">{{searchEventType.eventName}} </v-chip>
-      <v-chip x-small v-for="e in selectedEventTypes" color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">{{e.eventName}} </v-chip>
-      <v-chip x-small color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">Event: {{searchEventStatusType.eventStatusType}}</v-chip>
-      <v-chip x-small color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">Process Step: {{selectedProcessStepStatusType.processStepStatusType}}</v-chip>
+    <div v-show="showSearchResults" class="body-small">
+      <v-chip small color="primary lighten-9" v-if="state?.state" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{state.state}} </v-chip>
+      <v-chip small color="primary lighten-9" v-if="searchProject?.projectName" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{searchProject.projectName}} </v-chip>
+      <v-chip small color="primary lighten-9" v-if="searchEventType?.eventName" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{searchEventType.eventName}} </v-chip>
+      <v-chip small v-for="e in selectedEventTypes" color="primary lighten-9" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{e.eventName}} </v-chip>
+      <v-chip small color="primary lighten-9" class="mb-1 mr-1 px-2 grey--text text--darken-3">Event: {{searchEventStatusType.eventStatusType}}</v-chip>
+      <v-chip small color="primary lighten-9" class="mb-1 mr-1 px-2 grey--text text--darken-3">Process Step: {{selectedProcessStepStatusType.processStepStatusType}}</v-chip>
     </div>
     <v-card-actions class="px-0 pb-0">
       <a-btn @click="clear" variant="text" small class="text-capitalize flex-grow-0 body-medium">Reset</a-btn>
@@ -446,7 +443,7 @@ onMounted(() => {
       <a-btn v-else
           variant="outlined"
           size="small"
-          @click="showSearchResults = false"
+          @click="[showSearchResults = false, toggleAllPinsOnMap(true)]"
           color="primary"
           class="text-capitalize flex-grow-1 body-medium"
       >Edit search</a-btn>
@@ -466,14 +463,14 @@ onMounted(() => {
           :id="p.projectProcessStepEventId"
           :event="p.eventName"
           :process-step="p.processStepName"
-          :status="p.eventStatusType"
+          :status="p.companyEventStatusType"
           :start-date="p.start"
           :end-date="p.end"
           :event-resource="p.resourceName"
           :pinned="isOnePinned(p)"
           @pinToMap="toggleOneMapPin"
           @click="openProjectEvent(p)"
-          class="clickable"
+          class="clickable mb-3"
       />
     </div>
       <AlbatrossButton v-if="showLoadMoreBtn" variant="text" size="small" class="my-2" @click="[page++, getProjects(false)]">Load More</AlbatrossButton>
