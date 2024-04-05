@@ -28,7 +28,6 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
-const route = vueInstance.$route
 const emit = defineEmits(['toggleProjectMapPin'])
 
 const props = defineProps({
