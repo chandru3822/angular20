@@ -153,7 +153,7 @@
           updateTimezone()
         }
         else {
-          timezone.value = store.state.user.details.timezone
+          timezone.value = store.state.schedule.timezone
         }
       }
   const updateTimezone = () => {
