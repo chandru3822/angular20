@@ -805,7 +805,8 @@ BEGIN
                                                   new.resource_id,
                                                   new.id,
                                                   v_project_id,
-                                                  'UPDATE_APPOINTMENT_DATA',
+                                                  'UPDATE_APPOINTMENT_DATA'::text,
+                                                  new.modified_by_id,
                                                   new.start_time);
       end if;
       if new.resource_id is not null then
@@ -813,7 +814,8 @@ BEGIN
                                                   new.resource_id,
                                                   new.id,
                                                   v_project_id,
-                                                  'UPDATE_OWNER_ON_PROJECT');
+                                                  'UPDATE_OWNER_ON_PROJECT'::text,
+                                                  new.modified_by_id);
       end if;
     end if;
   end if;

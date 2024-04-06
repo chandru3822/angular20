@@ -349,6 +349,7 @@ const calendarOptions = ref({
     (info, successCallback, failureCallback) => goGetEventsNow(info, successCallback, failureCallback)
   ],
   eventClick: (eventClickInfo) => handleEventClick(eventClickInfo),
+  datesSet: (dateInfo) => updatePins(dateInfo),
   navLinks: true,
   navLinkDayClick: "resourceTimeline",
   slotLabelDidMount:function ({el, date, view, level}) {
@@ -1007,6 +1008,14 @@ const countSelected = computed(() => {
           appStore.loading = false
         }
       }
+const updatePins = async(info) => {
+  let filteredResources = mapResourceEvents.value?.filter( e => isValidEventDate(Date.parse(e.start), Date.parse(e.end), Date.parse(info.start), Date.parse(info.end)))
+  props.callback(filteredResources, true)
+}
+
+const isValidEventDate = (eventStart, eventEnd, currentStart, currentEnd) => {
+  return !(eventEnd < currentStart || eventStart > currentEnd)
+}
 const goGetEventsNow = async (info, successCallback, failureCallback) => {
   mapResourceEvents.value = []
   if (selectedOrgs.value.length > 0 || selectedUsers.value.length > 0) {
@@ -1041,7 +1050,6 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
           d.classNames=['event-tile', matchingResource?.eventColorClass]
         }
         if(isResourceOnMap(matchingResource)) {
-
           let eventObj = {
             id: matchingResource.id,
             projectName: d.projectName,
@@ -1055,8 +1063,8 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
             street1: d.street1,
             color: matchingResource.color,
             coordinates: [d.longitude, d.latitude],
-            start: d.startStr,
-            end: d.endStr
+            start: d.startStr || d.start,
+            end: d.endStr ||d.end
           }
           mapResourceEvents.value.push(eventObj)
         }

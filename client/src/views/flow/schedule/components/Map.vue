@@ -26,7 +26,6 @@
               <a-text-field  variant="outlined" label="Starting Point" placeholder="Select pin or enter address" autocomplete="new-password"
                              @focus="[drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
                             hide-details
-                            autofocus
                             v-model="address1"
                             @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"
                             @blur="selectAddress({label:address1}, true)"
