@@ -571,31 +571,6 @@ const syncAuroraDesignDetails = async() => {
     snackbar('ERROR', `Aurora design incomplete. Please navigate back to Aurora and finish your design changes before syncing.`)
   }
 }
-const handleAIRequest = async(useExisting) => {
-  //utility company (23802), estimated annual consumption (22573), design name (26300)
-  useExistingDesign.value = useExisting
-  let encodedIds = encodeURI([23802, 22573, 26300])
-  let params = { cfgaIds: encodedIds}
-  const { data } = await getRequestWithParams(`/customFieldGroup/getCustomFieldsByCfgaIds`, {
-    params
-  })
-  aiRequestFields.value = data
-  showAIDesignRequestForm.value = true
-}
-
-
-const handleNewRequest = async() => {
-  lockNewRequests.value = true
-  const {data} = await getRequest(`/proposal/projects/${projectId.value}/postalCode`, 'blueraven')
-
-  if (data?.approved) {
-    showNewDesignRequestForm.value = true
-  } else {
-    showNewPostalCodeRequestForm.value = true
-  }
-
-  lockNewRequests.value = false
-}
 
 const requestNewDesign = async() => {
   try {
