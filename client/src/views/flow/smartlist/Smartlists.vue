@@ -8,10 +8,11 @@
         <v-toolbar-items>
           <a-btn
               variant="text"
-              to="/smartlistv1/editor"
+              to="/smartlist/editor"
               color="primary"
               v-if="userCanAdd"
               text="Add Smartlist"
+              prepend-icon="add"
           ></a-btn>
         </v-toolbar-items>
       </v-toolbar>

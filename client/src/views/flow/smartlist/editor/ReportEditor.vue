@@ -22,7 +22,7 @@
                 v-model="report.name"
                 variant="outlined"
                 placeholder="Type Name"
-                hide-details="true"
+                :hide-details="true"
                 ref="reportNameField"
                 class="report-name"
                 @blur="toggleEditingReportName"

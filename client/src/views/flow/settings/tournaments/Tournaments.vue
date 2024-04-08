@@ -96,11 +96,25 @@
                 :loading="dataLoading"
                 class="elevation-1 round-robin-table table-striped"
             >
-              <template #item.tournamentName="{item}" class="text-left clickable" @click="goToTournament(item.id)">{{item.tournamentName}}</template>
-              <template #item.startDate="{item}" class="text-left clickable" @click="goToTournament(item.id)">{{item.startDate | formatDate('date', 'M/D/YYYY')}}</template>
-              <template #item.endDate="{item}" class="text-left clickable" @click="goToTournament(item.id)">{{item.endDate | formatDate('date', 'M/D/YYYY')}}</template>
-              <template #item.active="{item}" class="text-left clickable" @click="goToTournament(item.id)">
-                <input type="checkbox" v-model="item.active" readonly disabled>
+              <template #item.tournamentName="{item}" class="text-left clickable">
+                <router-link :to="`${goToTournament(item.id)}`" class="router-link-td elevation-0">
+                  {{item.tournamentName}}
+                </router-link>
+              </template>
+              <template #item.startDate="{item}" class="text-left clickable">
+                <router-link :to="`${goToTournament(item.id)}`" class="router-link-td elevation-0">
+                  {{item.startDate | formatDate('date', 'M/D/YYYY')}}
+                </router-link>
+              </template>
+              <template #item.endDate="{item}" class="text-left clickable">
+                <router-link :to="`${goToTournament(item.id)}`" class="router-link-td elevation-0">
+                  {{item.endDate | formatDate('date', 'M/D/YYYY')}}
+                </router-link>
+              </template>
+              <template #item.active="{item}" class="text-left clickable">
+                <router-link :to="`${goToTournament(item.id)}`" class="router-link-td elevation-0">
+                  <input type="checkbox" v-model="item.active" readonly disabled>
+                </router-link>
               </template>
               <template #item.icons="{item}" class="text-right">
                 <a-btn
@@ -108,7 +122,7 @@
                     icon
                     color="primary"
                     prepend-icon="edit"
-                    @click="goToTournament(item.id)">
+                    @click="router.push(goToTournament(item.id))  ">
                 </a-btn>
 
                 <a-btn
@@ -219,7 +233,7 @@
         }), [ 'active', 'startDate', 'tournamentName'], ['desc','desc', 'asc'])
       },
       goToTournament = (id) => {
-        router.push({path: `/settings/tournaments/${id}/details`})
+        return `/settings/tournaments/${id}/details`
       },
       getTournamentFormulas = async() => {
     let snackbar

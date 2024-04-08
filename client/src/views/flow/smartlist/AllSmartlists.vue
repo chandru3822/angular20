@@ -31,19 +31,32 @@
       </template>
 
       <template #item="{item: smartlist}">
-        <tr class="clickable" @click="editSmartlist(smartlist)">
-          <td class="text-left td-name">{{ smartlist.name }}</td>
-          <td class="text-left">{{ smartlist.owner }}</td>
-          <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>
+        <tr class="clickable">
+          <td class="text-left td-name">
+            <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+              {{ smartlist.name }}
+            </router-link>
+          </td>
+          <td class="text-left">
+            <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+              {{ smartlist.owner }}
+            </router-link>
+          </td>
+          <td>
+            <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+              {{ smartlist.dateModified | formatDate('timestamp') }}
+            </router-link>
+          </td>
           <td class="d-flex align-center">
-            {{ smartlist.dateLastExported | formatDate('date') }}
-
+            <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+              {{ smartlist.dateLastExported | formatDate('date') }}
+            </router-link>
             <a-btn
                 v-if="smartlist.dateLastExported"
                 variant="text"
                 icon
                 class="btn-metrics pa-5"
-                @click.stop="[showMetricsDialog = true, getMetrics(smartlist.id)]"
+                @click="[showMetricsDialog = true, getMetrics(smartlist.id)]"
                 color="unset"
                 prepend-icon="mdi-information"
             ></a-btn>

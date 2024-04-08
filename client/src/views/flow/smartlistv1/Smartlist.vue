@@ -15,7 +15,7 @@
                     small
                     class="mr-3"
                     color="primary"
-                    @click="router.push('/smartlist')"
+                    @click="router.push('/smartlistv1')"
                     prepend-icon="mdi-arrow-left"
                 ></a-btn>
                 <v-toolbar-title class="app-title">Smartlist Editor</v-toolbar-title>

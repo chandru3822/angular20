@@ -49,10 +49,26 @@
 
           <template #item="{item: smartlist}">
             <tr class="clickable" @click="router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})">
-              <td class="text-left">{{smartlist.name}}</td>
-              <td class="text-left">{{smartlist.viewObjectType}}</td>
-              <td class="text-left">{{smartlist.owner}}</td>
-              <td class="text-left">{{smartlist.shared ? 'Yes' : 'No'}}</td>
+              <td class="text-left">
+                <router-link class="router-link-td" :to="{name: 'smartlistEditor', params: {smartlistId: smartlist.id}}">
+                  {{smartlist.name}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td" :to="{name: 'smartlistEditor', params: {smartlistId: smartlist.id}}">
+                  {{smartlist.viewObjectType}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td" :to="{name: 'smartlistEditor', params: {smartlistId: smartlist.id}}">
+                  {{smartlist.owner}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td" :to="{name: 'smartlistEditor', params: {smartlistId: smartlist.id}}">
+                  {{smartlist.shared ? 'Yes' : 'No'}}
+                </router-link>
+              </td>
             </tr>
           </template>
         </v-data-table>

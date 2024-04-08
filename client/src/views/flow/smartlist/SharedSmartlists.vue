@@ -35,10 +35,26 @@
             class="clickable"
             @click="router.push({name: 'reportEditor', params: {reportId: smartlist.id}})"
           >
-            <td class="text-left td-name">{{ smartlist.name }}</td>
-            <td class="text-left">{{ smartlist.owner }}</td>
-            <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>
-            <td class="text-left">{{ `${smartlist.accessLevel.substring(0,1).toUpperCase()}${smartlist.accessLevel.substring(1)} Access` }}</td>
+            <td class="text-left td-name">
+              <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+                {{ smartlist.name }}
+              </router-link>
+            </td>
+            <td class="text-left">
+              <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+                {{ smartlist.owner }}
+              </router-link>
+            </td>
+            <td>
+              <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+                {{ smartlist.dateModified | formatDate('timestamp') }}
+              </router-link>
+            </td>
+            <td class="text-left">
+              <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+                {{ `${smartlist.accessLevel.substring(0,1).toUpperCase()}${smartlist.accessLevel.substring(1)} Access` }}
+              </router-link>
+            </td>
             <td class="td-action">
               <smartlist-copy :smartlist="smartlist"  v-if="canAdd"/>
             </td>

@@ -31,11 +31,23 @@
         </template>
 
         <template #item="{item: smartlist}">
-          <tr class="clickable" @click="router.push({name: 'reportEditor', params: {reportId: smartlist.id}})">
-            <td class="td-name">{{ smartlist.name }}</td>
-            <td>{{ smartlist.owner }}</td>
-            <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>
-            <td class="td-action">
+          <tr class="clickable">
+            <td class="td-name">
+              <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+                {{ smartlist.name }}
+              </router-link>
+            </td>
+            <td>
+              <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+                {{ smartlist.owner }}
+              </router-link>
+            </td>
+            <td>
+              <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+                {{ smartlist.dateModified | formatDate('timestamp') }}
+              </router-link>
+            </td>
+              <td class="td-action">
               <smartlist-copy
                 v-if="canAdd"
                 :smartlist="smartlist"

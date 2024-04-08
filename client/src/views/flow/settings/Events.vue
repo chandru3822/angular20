@@ -86,10 +86,10 @@
               :search="search"
               :footer-props="footerProps"
               hide-default-header
-              class="elevation-1 square-card table-striped no-text-decoration"
+              class="elevation-1 square-card table-striped"
             >
               <template #item.eventName="{ item }">
-                <router-link :to="`/settings/event/${item.id}/components`">
+                <router-link :to="`/settings/event/${item.id}/components`" class="router-link-td elevation-0">
                   {{item.eventName}}
                 </router-link>
               </template>
