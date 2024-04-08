@@ -314,7 +314,6 @@ const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const refs = vueInstance.$refs
 const filters = vueInstance.$filters
-const router = vueInstance.$router
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
 
