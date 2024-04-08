@@ -323,6 +323,27 @@ public class ProposalToolQuery {
         """;
 
   //language=PostgreSQL
+  public static final String findProposalVersionValues = """
+with a as (select (jsonb_path_query(get_proposal_version_value,
+                                    '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFieldId)',
+                                    jsonb_build_object('targetFieldId', :fieldId)) -> 'intValue')::int as int_value,
+                  get_proposal_version_value                                                           as row
+           from brs.get_proposal_version_value(:versionId, null::proposalfieldfilter[], :objectCode)),
+     t as (select (jsonb_path_query(row,
+                                    '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFieldId)',
+                                    jsonb_build_object('targetFieldId', :fieldId)) -> 'intValue')::int as       int_value,
+                  jsonb_path_exists(row,
+                                    '$.fields[*] ? (@.fieldId == $customFieldId && @.intValue == $intValue)',
+                                    jsonb_build_object('customFieldId', :customFieldId, 'intValue', :intValue)) is_match
+           from a
+           where jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $customFieldId)',
+                                   jsonb_build_object('customFieldId', :customFieldId)))
+select a.int_value
+from a
+where a.int_value not in (select t.int_value from t where t.is_match is false)
+  """;
+
+  //language=PostgreSQL
   public final static String findFilterableValues = """
       with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
                                                                                                          proposal_group_uuid,
@@ -366,6 +387,7 @@ public class ProposalToolQuery {
                                                                                                          field_id
                             from brs.proposal_version_custom_field_value_vw
                             where proposal_version_id <= :versionId
+                              and case when :objectCode is not null then object_code = :objectCode else 1 = 1 end
                               and proposal_group_uuid not in (select distinct proposal_group_uuid
                                                               from brs.proposal_version_custom_field_group
                                                               where archived is not null

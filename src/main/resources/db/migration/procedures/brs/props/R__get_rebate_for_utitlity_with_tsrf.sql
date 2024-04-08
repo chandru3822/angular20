@@ -7,10 +7,16 @@ drop function if exists brs.get_rebate_for_utility_with_tsrf(p_aurora_design_sum
                                                              p_rebate_cap_dollar_amount numeric,
                                                              p_rebate_rate numeric,
                                                              p_minimum_tsrf bigint);
+drop function if exists brs.get_rebate_for_utility_with_tsrf(p_aurora_design_summary jsonb,
+                                                             p_rebate_cap_dollar_amount numeric,
+                                                             p_rebate_rate numeric,
+                                                             p_minimum_tsrf bigint,
+                                                             p_unit_type_id bigint);
 CREATE OR REPLACE FUNCTION brs.get_rebate_for_utility_with_tsrf(p_aurora_design_summary jsonb,
                                                                 p_rebate_cap_dollar_amount numeric,
                                                                 p_rebate_rate numeric,
-                                                                p_minimum_tsrf bigint)
+                                                                p_minimum_tsrf bigint,
+                                                                p_unit_type_id bigint)
   returns numeric AS
 $BODY$
 declare
@@ -21,6 +27,7 @@ declare
   v_panel_count                   bigint;
   v_face                          bigint;
   v_multiple_plane_rebate_amount  numeric;
+  v_dollar_rebate_amount  numeric;
   v_single_plane_rebate_amount    numeric;
 BEGIN
   create temp table calculations
@@ -41,32 +48,45 @@ BEGIN
       values (v_panel_count, round(v_total_solar_resource_fraction,1), v_face, v_size);
     end loop;
 
-  with multiple_faces as (select face
+  if p_unit_type_id = 459 then
+    select p_rebate_rate
+    into v_dollar_rebate_amount
+    from (
+    select fraction / count as total_solar_resource_fraction
+          from (select sum(panel_count * total_solar_resource_fraction) fraction,
+                       sum(panel_count)                                 count
+                from calculations mc) as foo) as foo1
+    where foo1.total_solar_resource_fraction > p_minimum_tsrf;
+    v_value = coalesce(v_dollar_rebate_amount,0);
+  else
+
+    with multiple_faces as (select face
+                            from calculations
+                            group by face
+                            having count(1) > 1)
+    select sum(size) * p_rebate_rate
+    into v_multiple_plane_rebate_amount
+    from (select fraction / count as total_solar_resource_fraction, count as panel_count, size as size
+          from (select sum(panel_count * total_solar_resource_fraction) fraction,
+                       sum(panel_count)                                 count,
+                       sum(size) as                                     size
+                from calculations mc
+                       inner join multiple_faces mf on mf.face = mc.face group by mc.face) as foo) as foo1
+    where foo1.total_solar_resource_fraction > p_minimum_tsrf;
+
+    with single_faces as (select face
                           from calculations
                           group by face
-                          having count(1) > 1)
-  select sum(size) * p_rebate_rate
-  into v_multiple_plane_rebate_amount
-  from (select fraction / count as total_solar_resource_fraction, count as panel_count, size as size
-        from (select sum(panel_count * total_solar_resource_fraction) fraction,
-                     sum(panel_count)                                 count,
-                     sum(size) as                                     size
-              from calculations mc
-                     inner join multiple_faces mf on mf.face = mc.face group by mc.face) as foo) as foo1
-  where foo1.total_solar_resource_fraction > p_minimum_tsrf;
-
-  with single_faces as (select face
-                        from calculations
-                        group by face
-                        having count(1) = 1)
-  select sum(size) * p_rebate_rate
-  into v_single_plane_rebate_amount
-  from (select sum(panel_count) as panel_count, sum(size) as size
-        from calculations mc
-               inner join single_faces mf on mf.face = mc.face
-        where total_solar_resource_fraction > p_minimum_tsrf
-        group by mc.face) as foo;
-  v_value = coalesce(v_multiple_plane_rebate_amount, 0) + coalesce(v_single_plane_rebate_amount, 0);
+                          having count(1) = 1)
+    select sum(size) * p_rebate_rate
+    into v_single_plane_rebate_amount
+    from (select sum(panel_count) as panel_count, sum(size) as size
+          from calculations mc
+                 inner join single_faces mf on mf.face = mc.face
+          where total_solar_resource_fraction > p_minimum_tsrf
+          group by mc.face) as foo;
+    v_value = coalesce(v_multiple_plane_rebate_amount, 0) + coalesce(v_single_plane_rebate_amount, 0);
+  end if;
 
   --   if v_total_solar_resource_fraction > p_minimum_tsrf then
 --     v_value = v_value + (v_size * p_rebate_rate);

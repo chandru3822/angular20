@@ -1,5 +1,6 @@
 drop function if exists brs.get_total_commissions_amount(p_project_id bigint);
-CREATE OR REPLACE FUNCTION brs.get_total_commissions_amount(p_project_id bigint)
+drop function if exists brs.get_total_commissions_amount(p_project_id bigint,p_from_booking boolean);
+CREATE OR REPLACE FUNCTION brs.get_total_commissions_amount(p_project_id bigint,p_from_booking boolean default false)
   RETURNS NUMERIC AS
 $BODY$
 DECLARE
@@ -20,7 +21,7 @@ BEGIN
          source_id,
          desired_commission_amount,
          commission_strategy_id
-  from brs.get_commission_data(p_project_id)
+  from brs.get_commission_data(p_project_id,p_from_booking)
   into
     v_interest_rate,
     v_loan_term,

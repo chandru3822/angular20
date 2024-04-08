@@ -10,10 +10,11 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class ProposalDesign {
-  private Long projectId, projectProcessStepId, processStepId, processStepStatusTypeId;
+  private Long projectId, projectProcessStepId, processStepId, companyProcessStepStatusTypeId, processStepStatusTypeId;
   private Long offset, imageIndex = 0L;
   private OffsetDateTime dateCreated, dateModified;
-  private String dueDate, processStepName, companyProcessStepStatusType, comments, designName;
+  private String dueDate, processStepName, companyProcessStepStatusType, comments, designName, designId;
+  private Boolean designedByAuroraAi;
   private List<Proposal> proposals;
   private List<Attachment> attachments;
 }

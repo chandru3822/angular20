@@ -18,60 +18,55 @@
   </v-container>
 </template>
 
-<script>
-  export default {
-    name: 'Closer',
-    components: {
-    },
-    data () {
-      return {
-        snackbar: {},
-        tabs: [
-          {
-            id: 1,
-            label: 'Funnel',
-            path: `/closer/funnel`,
-          },
-          {
-            id: 2,
-            label: 'Ranking',
-            path: `/closer/dashboard`,
-          },
-          {
-            id: 3,
-            label: 'Incentive',
-            path: `/closer/incentive`,
-          },
-          {
-            id: 4,
-            label: 'Leaderboard',
-            path: `/closer/leaderboard`,
-          },
-          {
-            id: 5,
-            label: 'Residuals',
-            path: `/closer/residuals`,
-          }
-        ]
-      }
-    },
-    computed: {
-      activeTab: {
-        get: function() {
-          return this.$route?.path?.includes('/event') ? `/settings/processStep/${this.$route.params.id}/events` : null
-        },
-        set: function(val) {
-          return val
-        }
-      }
-    },
-    watch: {},
-    methods: {
-      goToRoute(name) {
-        this.$router.push({name})
-      },
-    },
+<script setup>
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useRoute, useRouter} from "vue-router/composables";
+
+const route = useRoute()
+const router = useRouter()
+
+const snackbar = ref({})
+const tabs = ref([
+  {
+    id: 1,
+    label: 'Funnel',
+    path: `/closer/funnel`,
+  },
+  {
+    id: 2,
+    label: 'Ranking',
+    path: `/closer/dashboard`,
+  },
+  {
+    id: 3,
+    label: 'Incentive',
+    path: `/closer/incentive`,
+  },
+  {
+    id: 4,
+    label: 'Leaderboard',
+    path: `/closer/leaderboard`,
+  },
+  {
+    id: 5,
+    label: 'Residuals',
+    path: `/closer/residuals`,
   }
+])
+
+const goToRoute = (name) => {
+  router.push({name})
+}
+
+const activeTab = computed({
+  get: function() {
+    return this.$route?.path?.includes('/event') ? `/settings/processStep/${this.$route.params.id}/events` : null
+  },
+  set: function(val) {
+    return val
+  }
+})
 </script>
 
 <style lang="scss" scoped>
@@ -119,27 +114,6 @@
             align-items: center;
             padding-right: 0;
           }
-        }
-
-        .v-btn-toggle .v-btn {
-          border: 1px solid var(--v-primary-base) !important;
-          font-size: 11px;
-          letter-spacing: 0.02em !important;
-          height: 25px;
-
-          &:not(:last-child) {
-            border-right: none !important;
-          }
-
-          &:hover {
-            background-color: var(--v-primary-base);
-            color: #fff !important;
-          }
-        }
-
-        .v-btn--active {
-          background-color: var(--v-primary-base);
-          color: #fff !important;
         }
       }
     }

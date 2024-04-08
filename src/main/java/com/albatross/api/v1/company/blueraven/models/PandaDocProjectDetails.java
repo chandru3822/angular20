@@ -11,7 +11,7 @@ public class PandaDocProjectDetails {
     private String state, utilityCompany, financier;
     private Integer companyId;
     private Long projectId, proposalNbr, proposalLogHistoryId;
-    private String closerFirstName, closerLastName, closerEmail;
+    private String closerFirstName, closerLastName, closerEmail, closerPhone;
     private String customerFirstName, customerLastName, customerEmail;
     private String mailingState, city, phone, postalCode, mailingStreet1, mailingStreet2, country,
         projectName, optionalDownPayment, systemSize, firstCashPaymentAmount, totalSystemPrice,

@@ -1177,6 +1177,9 @@ BEGIN
     from brs.get_proposal_rebates(v_version_id)
     where state_id = 13 and
         rebate_type_id = 1911 and
+        case when v_version_id >= 111 then
+        utility_company_id = v_utility_company_id
+        else true end and
         rebate_id = 1905;
 
     --raise notice 'v_il_srec_less_10 = %',v_il_srec_less_10;
@@ -1326,7 +1329,7 @@ BEGIN
   from brs.get_above_the_line_utility_rebates(v_version_id, v_utility_company_id,
                                               v_aurora_design_summary,v_system_size,
                                               v_total_system_cost_before_rebates,
-                                              v_state_id,
+                                              v_state_id,v_qualifies_for_incentive,
                                                 v_storage_capacity);
 
   --raise notice 'v_above_the_line_utility_rebate_amount = %',v_above_the_line_utility_rebate_amount;
@@ -1609,7 +1612,7 @@ BEGIN
     v_federal_tax_incentive_amount = v_federal_tax_incentive_rate * v_system_size * 1000;
   elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 458 then
     v_federal_tax_incentive_amount =
-        (v_total_loan_amount + v_down_payment_amount + v_required_down_payment + coalesce(v_deposit_amount, 0)) * v_federal_tax_incentive_rate;
+        (v_total_loan_amount + v_down_payment_amount + v_required_down_payment + coalesce(v_deposit_amount, 0) + case when v_version_id > 110 then coalesce(v_above_line_rebate,0) else 0::numeric end) * v_federal_tax_incentive_rate;
   elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 459 then
     v_federal_tax_incentive_amount = v_federal_tax_incentive_rate;
   end if;
@@ -1846,7 +1849,7 @@ BEGIN
 
   --raise notice 'Carlins new value11111111 %',(coalesce(v_total_system_cost,0) - coalesce(v_storage_cost_with_fees,0) - ((coalesce(v_total_ancillary_costs,0) - coalesce(v_ancillary_percent_cap_down_payment,0))/(1-v_dealer_fee)))/(v_system_size*1000);
 
-  if v_non_solar_cap is not null and ((coalesce(v_total_ancillary_costs,0) - coalesce(v_ancillary_percent_cap_down_payment,0))/(1-v_dealer_fee))/v_total_system_cost > coalesce(v_non_solar_cap,0) then
+  if v_non_solar_cap is not null and round(((coalesce(v_total_ancillary_costs,0) - coalesce(v_ancillary_percent_cap_down_payment,0))/(1-v_dealer_fee))/v_total_system_cost,2) > coalesce(v_non_solar_cap,0) then
     raise exception 'Ancillary Costs exceed the maximum allowable value.';
   end if;
 

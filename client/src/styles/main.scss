@@ -138,16 +138,39 @@ $default-text: rgba(0,0,0,0.87);
   color: #9E9E9E !important;
 }
 /* theme the calendar */
-.fc-button-primary {
-  color: white;
+.fc-button-primary.fc-prev-button, .fc-button-primary.fc-customToday-button, .fc-button-primary.fc-next-button, .fc-button-primary.fc-button-active {
+  color: white !important;
   background-color: var(--v-primary-base) !important;
   border-color: var(--v-primary-base) !important;
 }
 
+.fc-button-primary{
+  color: var(--v-primary-base) !important;
+  background-color: white !important;
+}
+
 .fc-button-primary:hover {
-  color: white;
+  color: white !important;
   background-color: var(--v-primary-base) !important;
   border-color: var(--v-primary-base) !important;
+}
+
+.fc .fc-bg-event {
+  opacity: 100% !important;
+}
+.fc h2.fc-toolbar-title{
+  //headline-large
+  font-family: lato;
+  font-weight: 600;
+  font-size: 1.375rem;
+  line-height: 1.4;
+}
+
+//fix the alignment on the prev and next buttons
+div.fc-header-toolbar.fc-toolbar.fc-toolbar-ltr > div > div > {
+  button.fc-next-button.fc-button.fc-button-primary, button.fc-prev-button.fc-button.fc-button-primary{
+    padding-top:0;
+  }
 }
 
 /* theme the date time picker */
@@ -752,8 +775,7 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   border-left-color: #39b942 !important;
 }
 .event-tile-teal {
-  border-left-color: #076270 !important; //I like this color better b/c the other looks black
-  //border-left-color: #181e1e !important;
+  border-left-color: #076270 !important;
 }
 .event-tile-yellow {
   border-left-color: #eceb50 !important;

@@ -1,11 +1,11 @@
 <template>
   <div id="calendar-container">
 
-    <div id="calendar-filter-container" class="pa-6 pt-4">
-<v-col cols="11">
+    <div id="calendar-filter-container" class="pa-6 pt-1">
+<v-col cols="11" class="pa-0">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0 d-flex align-baseline">
-        <v-col id="states-filter-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="states-filter-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete attach v-model="selectedStates"
                     :items="sortedStates"
                     label="States"
@@ -16,10 +16,7 @@
                     item-value="id"
                     @blur="filterOrgsAndUsers"
           >
-            <template
-              slot="selection"
-              slot-scope="{ item, index }"
-            >
+            <template v-slot:selection="{ item, index }">
               <div v-if="index === 0 && selectedStates.length < 3">
                 <v-chip small close @click:close="selectedStates.splice(idx, 1)"
                         v-for="(ss, idx) in selectedStates">
@@ -35,19 +32,23 @@
               slot="prepend-item"
               ripple
               @click="toggleSelectAllStates()">
-              <v-list-item-action>
-                <v-icon>{{ iconStates }}</v-icon>
-              </v-list-item-action>
-              <v-list-item-title>Select All</v-list-item-title>
+                <v-icon class="mr-4">{{ iconStates }}</v-icon>
+              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
             </v-list-item>
             <v-divider
               slot="prepend-item"
               class="mt-2"
             ></v-divider>
+
+            <template v-slot:item="{item}">
+              <v-icon class="mr-4">{{selectedStates.findIndex(s => s.stateId === item.stateId) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
+              <span class="wrap-dropdown-item py-2">{{ item.state }}</span>
+            </template>
           </v-autocomplete>
         </v-col>
-        <v-col id="org-resource-types-filter-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="org-resource-types-filter-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete v-model="selectedOrgTypes"
+                          allow-overflow
                     :items="sortedOrgTypes"
                     label="Organization Resource Types"
                     multiple
@@ -77,19 +78,24 @@
                 slot="prepend-item"
                 ripple
                 @click="toggleSelectAllOrgTypes()">
-              <v-list-item-action>
+              <v-list-item-action class="mr-4">
                 <v-icon>{{ iconOrgTypes }}</v-icon>
               </v-list-item-action>
-              <v-list-item-title>Select All</v-list-item-title>
+              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
             </v-list-item>
             <v-divider
                 slot="prepend-item"
                 class="mt-2"
             ></v-divider>
+            <template v-slot:item="{item}">
+              <!--The only purpose of this template is to allow the items to wrap-->
+              <v-icon class="mr-4">{{selectedOrgTypes.findIndex(ot => ot.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
+              <span class="wrap-dropdown-item py-2">{{ item.orgType }}</span>
+            </template>
           </v-autocomplete>
         </v-col>
 <!--        <v-col id="placeholder-col-1" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
-        <v-col id="org-resources-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="org-resources-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete v-model="selectedOrgs"
                           ref="orgSelector"
                           :items="sortedOrgs"
@@ -114,10 +120,15 @@
                 {{ selectedOrgs.length }} selected
               </span>
             </template>
+            <template v-slot:item="{item}">
+              <!--The only purpose of this template is to allow the items to wrap-->
+              <v-icon class="mr-4">{{selectedOrgs.findIndex(o => o.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
+              <span class="wrap-dropdown-item py-2">{{ item.orgName }}</span>
+            </template>
           </v-autocomplete>
         </v-col>
         <v-col id="placeholder-desktop-col" v-if="$vuetify.breakpoint.md && !mapOpen" cols="0" md="3" class="py-0"/>
-        <v-col id="position-resource-types-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="position-resource-types-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete v-model="selectedPositions"
                           :items="sortedPositions"
                           label="Position Resource Types"
@@ -127,7 +138,7 @@
                           return-object
                           item-text="position"
                           item-value="id"
-                          @input="poitionValuesChanged = true"
+                          @input="positionValuesChanged = true"
                           @blur="filterOrgsAndUsers"
                           attach
           >
@@ -150,20 +161,25 @@
                 slot="prepend-item"
                 ripple
                 @click="toggleSelectAllPositions()">
-              <v-list-item-action>
+              <v-list-item-action class="mr-4">
                 <v-icon>{{ iconPositions }}</v-icon>
               </v-list-item-action>
-              <v-list-item-title>Select All</v-list-item-title>
+              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
             </v-list-item>
             <v-divider
                 slot="prepend-item"
                 class="mt-2"
             ></v-divider>
+            <template v-slot:item="{item}">
+              <!--The only purpose of this template is to allow the items to wrap-->
+              <v-icon class="mr-4">{{selectedPositions.findIndex(p => p.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
+              <span class="wrap-dropdown-item py-2">{{ item.position }}</span>
+            </template>
           </v-autocomplete>
 
         </v-col>
 <!--        <v-col id="placeholder-col-2" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
-        <v-col id="user-resources-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="user-resources-col"  cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete v-model="selectedUsers"
                           :items="sortedUsers"
                           label="User Resources"
@@ -188,6 +204,11 @@
                 {{ selectedUsers.length }} selected
               </span>
             </template>
+            <template v-slot:item="{item}">
+              <!--The only purpose of this template is to allow the items to wrap-->
+              <v-icon class="mr-4">{{selectedUsers.findIndex(u => u.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
+              <span class="wrap-dropdown-item py-2">{{ item.fullName }}</span>
+            </template>
           </v-autocomplete>
         </v-col>
         <v-col id="time-zone-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
@@ -211,7 +232,6 @@
               @change="reloadCalendar"
             />
         </v-col>
-<!--        <v-col><v-btn @click="testEvents">test</v-btn></v-col>-->
       </v-row>
 </v-col>
     </div>
@@ -226,21 +246,38 @@
       <FullCalendar ref="eventCalendar" id="event-calendar" :options="calendarOptions">
         <template v-slot:resourceLabelContent="{resource, index}">
           <div class="d-flex justify-space-between align-baseline">
-            <a class="body-medium overflow-hidden resource-title">{{ resource.title }}</a>
+            <a v-if="resource.id.charAt(0)==='1'" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`" target="_blank" class="body-large overflow-hidden resource-title">{{resource.title}}</a>
+            <span v-else class="body-large overflow-hidden resource-title">{{ resource.title }}</span>
             <div>
-              <v-btn icon x-small @click="toggleMapPinForResource(resource)" class="mx-1">
+              <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
+                <template v-slot:activator="{on}">
+              <AlbatrossButton icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
                 <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
-                <v-icon v-else>mdi-map-marker-off</v-icon>
-              </v-btn>
-              <v-btn v-if="showScheduleBtnForResource(resource)" icon x-small :color="isAssignedResource(resource) ? 'primary lighten-5' : ''" class="mx-1" @click="toggleScheduleResource(resource)">
+                <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
+              </AlbatrossButton>
+                </template>
+                <span v-if="isResourceOnMap(resource)">Remove pin from map</span>
+                <span v-else>Pin on map</span>
+              </v-tooltip>
+              <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
+                <template v-slot:activator="{on}">
+              <AlbatrossButton v-if="showScheduleBtnForResource(resource)" icon size="small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">
                 <v-icon>mdi-calendar-plus</v-icon>
-              </v-btn>
-              <v-btn icon x-small color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></v-btn>
+              </AlbatrossButton>
+                </template>
+                Assign to Event
+              </v-tooltip>
+              <AlbatrossButton icon size="small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></AlbatrossButton>
             </div>
           </div>
         </template>
         <template v-slot:eventContent="{event}">
-          <span v-if="event.title !== 'null'" class="event-title text-no-wrap">{{event.title}}</span>
+          <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
+            <template v-slot:activator="{ on, attrs }">
+              <span v-if="event.title !== 'null'" v-bind="attrs" v-on="on" :class="{'text-no-wrap':event.display !== 'background'}" class="event-title body-medium">{{event.title}}</span>
+            </template>
+            <span>{{event.title}}</span>
+          </v-tooltip>
 <!--yes, 'null' is intentionally a string because that's how it comes back from the calendar-->
         </template>
       </FullCalendar>
@@ -264,12 +301,14 @@ import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
 import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
 import {computed, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const vuetify = vueInstance.$vuetify
 const refs = vueInstance.$refs
 const filters = vueInstance.$filters
+const router = vueInstance.$router
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
 
@@ -282,17 +321,23 @@ const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
       preselectedEvent: {type:Object, required: false}
     })
 
+
+const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
 const calendarOptions = ref({
   plugins: [
     resourceTimelinePlugin, interaction, momentTimezonePlugin
   ],
+  firstDay: 1,
   initialView: 'resourceTimelineDay',
   resources: [],
-  resourceAreaWidth: 300,
+  resourceAreaWidth: vuetify.breakpoint.smAndDown? 200: 300,
+  resourceGroupLaneClassNames:['resourceLaneClass'],
+  schedulerLicenseKey: constants.FULL_CALENDAR_LICENSE_KEY,
   eventSources:[
     (info, successCallback, failureCallback) => goGetEventsNow(info, successCallback, failureCallback)
   ],
   eventClick: (eventClickInfo) => handleEventClick(eventClickInfo),
+  datesSet: (dateInfo) => updatePins(dateInfo),
   navLinks: true,
   navLinkDayClick: "resourceTimeline",
   slotLabelDidMount:function ({el, date, view, level}) {
@@ -308,14 +353,28 @@ const calendarOptions = ref({
     }
   },
   headerToolbar:{
-    left: 'prev,customToday,next',
+    left: vuetify.breakpoint.mdAndUp ? 'prev,customToday,next': 'prev,next',
     center: 'title',
-    right: 'resourceTimelineDay,resourceTimelineWeek'
+    right: vuetify.breakpoint.mdAndUp ? 'resourceTimelineDay,resourceTimelineWeek': ''
   },
-  titleFormat:{ month: 'long',
-    year: 'numeric',
-    day: 'numeric',
-    weekday: 'long'
+  slotMinWidth:40,
+  slotMinTime:"04:00:00",
+  slotMaxTime:"23:00:00",
+  views:{
+    resourceTimelineDay:{
+      titleFormat:{ month: 'long',
+        year: 'numeric',
+        day: 'numeric',
+        weekday: 'long'
+      }
+    },
+    resourceTimelineWeek:{
+      titleFormat:{ month: 'short',
+        year: 'numeric',
+        day: 'numeric'
+      },
+      slotMinWidth:76,
+    }
   },
   height: '100%',
   timeZone: store.state.schedule.timezone.value || {},
@@ -328,51 +387,49 @@ const calendarOptions = ref({
         calendarApi.gotoDate(new Date)
         handlePinsOnDayChange()
       }
-    },
+    }
   }
 })
 const snackbar = ref({})
 const calendarLoading = ref(false)
-    const includeCancelled = ref(false)
-    const calendarInitialRender = ref(true)
-    const calendarApi = ref(null)
-    const calendarStart = ref(null)
-    const calendarView = ref(null)
-    const calendarStartTime = ref(null)
-    const calendarEndTime = ref(null)
-    const countSelected = ref(0)
-    const maxSelectionAllowed = ref(10)
-    const countErrorMessage = ref('Maximum Selection Reached')
-    //filters
-    const selectedStates = ref([])
-    const masterOrgs = ref([])
-    const orgValuesChanged = ref(false)
-    const orgs = ref([])
-    const selectedOrgs = ref([])
-    const orgsLoading = ref(true)
-    const usersLoading = ref(true)
-    const userValuesChanged = ref(false)
-    const masterUsers = ref([])
-    const users = ref([])
-    const selectedUsers = ref([])
-    const orgTypes = ref([])
-    const orgTypeValuesChanged = ref(false)
-    const selectedOrgTypes = ref([])
-    const orgTypesLoading = ref(true)
-    const positions = ref([])
-    const positionValuesChanged = ref(false)
-    const selectedPositions =  ref([])
-    const previousStateCount =  ref(0)
-    const previousTypeCount =  ref(0)
-    const previousPositionCount =  ref(0)
-    const positionsLoading =  ref(true)
-
-    const mapResourceEvents =  ref([])
-    const checkedResources =  ref([])
-    const licenseKey =  ref('GPL-My-Project-Is-Open-Source')
-    const daySelector =  ref(false)
-    const dayOptions =  ref([])
-const timezone =  ref(store.state.schedule.timezone.value)
+const includeCancelled = ref(false)
+const calendarInitialRender = ref(true)
+const calendarApi = ref(null)
+const calendarStart = ref(null)
+const calendarView = ref(null)
+const calendarStartTime = ref(null)
+const calendarEndTime = ref(null)
+const maxSelectionAllowed = ref(10)
+const countErrorMessage = ref('Maximum Selection Reached')
+//filters
+const selectedStates = ref([])
+const masterOrgs = ref([])
+const orgValuesChanged = ref(false)
+const orgs = ref([])
+const selectedOrgs = ref([])
+const orgsLoading = ref(true)
+const usersLoading = ref(true)
+const userValuesChanged = ref(false)
+const masterUsers = ref([])
+const users = ref([])
+const selectedUsers = ref([])
+const orgTypes = ref([])
+const orgTypeValuesChanged = ref(false)
+const selectedOrgTypes = ref([])
+const orgTypesLoading = ref(true)
+const positions = ref([])
+const positionValuesChanged = ref(false)
+const selectedPositions =  ref([])
+const previousStateCount =  ref(0)
+const previousTypeCount =  ref(0)
+const previousPositionCount =  ref(0)
+const positionsLoading =  ref(true)
+const mapPinnedResources = ref([])
+const mapResourceEvents =  ref([])
+const checkedResources =  ref([])
+const daySelector =  ref(false)
+const dayOptions =  ref([])
+const timezone =  ref(store.state.schedule.timezone.value || store.state.user.details.timezone.value)
 const timezones = ref([
   { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
   { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
@@ -394,13 +451,13 @@ const selectAllStates = computed( () => {
   return props.states.length === selectedStates.value.length
 })
 const selectSomeStates = computed(() => {
-  return selectedStates.value.length > 0 && !selectAllStates
+  return selectedStates.value.length > 0 && !selectAllStates.value
 })
 const iconStates = computed(() => {
   if (props.states.length === selectedStates.value.length) {
     return 'check_box'
   }
-  if (selectSomeStates) {
+  if (selectSomeStates.value) {
     return 'indeterminate_check_box'
   }
   return 'check_box_outline_blank'
@@ -467,11 +524,14 @@ const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
 })
 
+const countSelected = computed(() => {
+  return selectedOrgs.value?.length + selectedUsers.value?.length
+})
+
     onMounted (async () => {
       calendarApi.value = refs.eventCalendar.getApi()
       calendarStart.value = calendarApi.value.getDate()
       setCalendarStartAndEndTimes()
-      countSelected.value = selectedOrgs.value?.length + selectedUsers.value?.length
       await getSchedulingOrgs()
       await getSchedulingUsers()
       await fetchSchedulingOrgTypes()
@@ -480,10 +540,15 @@ const isMobile = computed(() => {
         filterOrgsAndUsers()
       }
     })
-    watch(() => store.state.schedule.timezone.value, (value) => {
+    watch(() => store.state.schedule.timezone.value, (value, oldValue) => {
         //when the schedule timezone value changes, update the calendar plugin's timezone
         let calendarApi = refs.eventCalendar.getApi()
         calendarApi.setOption('timeZone', store.state.schedule.timezone.value)
+      //and show a snackbar if the timezones don't match
+      if(store.state.user.details.timezone.value !== timezone.value.value) {
+        let snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
+        store.commit(AppMutations.SHOW_SNACK, snackbar)
+      }
       })
       watch(() => store.state.user.details.timezone, () => {
         //when the app timezone changes, update the schedule timezone to match
@@ -496,12 +561,22 @@ const isMobile = computed(() => {
       })
 
       // whenever selectedUsers or selectedOrgs changes, concat them both into resources
-    watch(selectedUsers, () => {
+    watch(selectedUsers, (newValue, oldValue) => {
         calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
-        handleResourceColors()
+      if(oldValue.length > newValue.length) {
+        //if we're removing users
+        const removedUsers = oldValue.filter(oldUser => newValue.indexOf(oldUser) < 0)
+        handlePinsOnSelectedResourceChange(removedUsers)
+      }
+      handleResourceColors()
       })
-      watch(selectedOrgs, () => {
+      watch(selectedOrgs, (newValue, oldValue) => {
         calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
+        if(oldValue.length > newValue.length) {
+          //if we're removing users
+          const removedOrgs = oldValue.filter(oldOrg => newValue.indexOf(oldOrg) < 0)
+          handlePinsOnSelectedResourceChange(removedOrgs)
+        }
         handleResourceColors()
         refs.orgSelector.setSearch('')//prevents weird scroll bug
       })
@@ -521,7 +596,7 @@ const isMobile = computed(() => {
         calendarApi.refetchEvents()
       }
       const isResourceOnMap = (resource) => {
-        return props.mapResources.findIndex(mr => resource.id === mr.id) >=0
+        return mapPinnedResources.value?.findIndex(rId => resource.id === rId) >=0
       }
       const isAssignedResource = (resource) => {
         let result = false
@@ -581,10 +656,10 @@ const isMobile = computed(() => {
       //filter functions
       const toggleSelectAllStates =  async() => {
         await nextTick(() => {
-          if (selectAllStates) {
+          if (selectAllStates.value) {
             selectedStates.value = []
           } else {
-            selectedStates.value = cloneDeep(states.value)
+            selectedStates.value = cloneDeep(props.states)
           }
         })
       }
@@ -599,7 +674,7 @@ const isMobile = computed(() => {
       }
       const toggleSelectAllPositions =  () => {
         nextTick(() => {
-          if (selectAllPositions) {
+          if (selectAllPositions.value) {
             selectedPositions.value = []
           } else {
             selectedPositions.value = cloneDeep(positions.value)
@@ -607,7 +682,8 @@ const isMobile = computed(() => {
         })
       }
       const showScheduleBtnForResource = (resource) => {
-        if(props.preselectedEvent) {
+        // v-if="userCanEdit && project.editableInSchedule"
+        if(props.preselectedEvent && userCanEdit && props.preselectedEvent.editableInSchedule) {
           if (props.preselectedEvent.systemListId === 2) {
             const allowedPositions = resource.extendedProps?.userPositions?.filter(p => props.preselectedEvent.systemListOptionIds.includes(p.positionId))
             return allowedPositions?.length > 0
@@ -618,7 +694,7 @@ const isMobile = computed(() => {
         return false
       }
       const getSchedulingOrgs = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        orgsLoading.value = true
         try {
           const {data, status} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
             params: {
@@ -646,7 +722,7 @@ const isMobile = computed(() => {
         }
       }
       const fetchSchedulingOrgTypes = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        orgTypesLoading.value = true
         try {
           const {data, status} = await getSchedulingOrgTypes()
           orgTypes.value = data
@@ -654,7 +730,7 @@ const isMobile = computed(() => {
           //if we came from an event, preselect the correct Resource TYPES
           if(props.preselectedEvent){
             if(props.preselectedEvent.systemListId === 3){
-              selectedOrgTypes.value = orgTypes.value.filter(ot => props.preselectedEvent.systemListOptionIds.includes(ot.id))
+              selectedOrgTypes.value = orgTypes?.value.filter(ot => props.preselectedEvent.systemListOptionIds.includes(ot.id))
             }
           }
 
@@ -668,7 +744,7 @@ const isMobile = computed(() => {
         }
       }
       const getPositions = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        positionsLoading.value = true
         try {
           const {data, status} = await getRequest(`/position/schedulable`, null, [])
           positions.value = data
@@ -716,7 +792,6 @@ const isMobile = computed(() => {
         }
       }
       const limiter = () => {
-        countSelected.value = selectedOrgs.value?.length + selectedUsers.value?.length
         orgs.value.forEach(o => {
           let match = selectedOrgs.value.find(so => so.id === o.id)
           o.disabled = !match && countSelected.value >= maxSelectionAllowed.value
@@ -800,14 +875,22 @@ const isMobile = computed(() => {
         handlePopulatingMapPins(!isResourceOnMap(resource), resource, true)
       }
 
+      const handlePinsOnSelectedResourceChange = (removedResource) => {
+        for(let resource of removedResource) {
+          if (isResourceOnMap(resource)) {
+            toggleMapPinForResource(resource)
+          }
+        }
+      }
+
       const handlePinsOnDayChange = () => {
         mapResourceEvents.value = []
         checkedResources.value.forEach((r, idx) => {
           handlePopulatingMapPins(true, r, false, idx === checkedResources.value.length - 1)
         })
       }
-      const handlePopulatingMapPins = (isChecked, resource, doCallback) => {
-        if(isChecked) {
+      const handlePopulatingMapPins = (addPin, resource, doCallback) => {
+        if(addPin) {
           let calendarApi = refs.eventCalendar.getApi()
 
           let resourceEvents = calendarApi.getEvents().filter(e => {
@@ -820,22 +903,28 @@ const isMobile = computed(() => {
               projectName: re.extendedProps.projectName,
               processStepName: re.extendedProps.processStepName,
               city: re.extendedProps.city,
+              projectId: re.extendedProps.projectId,
+              projectProcessStepId: re.extendedProps.projectProcessStepId,
               projectProcessStepEventId: re.extendedProps.projectProcessStepEventId,
               stateAbbreviation: re.extendedProps.stateAbbreviation,
               postalCode: re.extendedProps.postalCode,
               street1: re.extendedProps.street1,
               color: resource.extendedProps.color,
-              coordinates: [ re.extendedProps.longitude, re.extendedProps.latitude]
+              coordinates: [ re.extendedProps.longitude, re.extendedProps.latitude],
+              start: re.startStr,
+              end: re.endStr
             }
             mapResourceEvents.value.push(eventObj)
           })
+          mapPinnedResources.value.push(resource.id)
         } else {
           mapResourceEvents.value = mapResourceEvents.value.filter(r => {
             return r.id !== resource?.id
           })
+          mapPinnedResources.value = mapPinnedResources.value.filter(rId => resource?.id !== rId)
         }
         if(doCallback) {
-          props.callback(mapResourceEvents.value, isChecked)
+          props.callback(mapResourceEvents.value, addPin)
         }
         let calendarApi = refs.eventCalendar.getApi()
       }
@@ -865,11 +954,13 @@ const isMobile = computed(() => {
 
             d.groupId = Number(`${d.systemListTypeId}${d.resourceId}`)
             d.resourceId = Number(`${d.systemListTypeId}${d.resourceId}`)
-            d.backgroundColor = 'var(--v-grey-darken1)'
+            d.backgroundColor = 'rgba(0,0,0,.25)'
+            d.classNames = 'pl-2'
 
 
 
             if(!d.isSlotTime && d.display === 'inverse-background') {
+              // d.backgroundColor= 'rgba(255,255,255,0)'
               //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
               //do start time
               if(d.daylightSavings && !moment(d.start).isDST()) {
@@ -888,7 +979,7 @@ const isMobile = computed(() => {
             }
 
             if(d.display === 'background'){
-              d.title = d.title + ': ' + moment(d.start).format('h:mm') + '-' + moment(d.end).format('h:mm')
+              d.title = d.title + ': ' + getFormattedDate(d.start, 'hh:mm') + '-' + getFormattedDate(d.end)
             }
           })
 
@@ -905,7 +996,7 @@ const isMobile = computed(() => {
               //these values have already been pre-appended with the 1 or 2
               groupId: r.id,
               resourceId: r.id,
-              backgroundColor: 'var(--v-grey-darken1)'
+              backgroundColor: 'rgba(255,255,255,0)'
             })
           })
           return data;
@@ -917,57 +1008,95 @@ const isMobile = computed(() => {
           store.commit(AppMutations.SET_LOADING, false)
         }
       }
-      const goGetEventsNow = async (info, successCallback, failureCallback) => {
-        if (selectedOrgs.value.length > 0 || selectedUsers.value.length > 0) {
-          //i do this here instead of on its own because all of the code above here has to happen for get availability as well
-          calendarLoading.value = true
-         const availabilityData = await getAvailability(info);
-          try {
-            let params = {
-              orgIds: selectedOrgs.value?.length > 0 ? selectedOrgs.value.map(o => o.masterId) : [],
-              // this was the old way. leaving here in case
-              // userPositionIds: this.getUserPositionIds(),
-              userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
-              startTime: info.start,
-              endTime: info.end,
-              includeCancelled: includeCancelled.value
-            }
-            const {data} = await postRequest(`/schedule`, params)
-            data.forEach(d => {
-              d.id = d.eventId
-              // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-              // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
-              d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
-              d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName}`
-              d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
-              let matchingResource = calendarOptions.value.resources.find(r => r.id === d.resourceId)
-              if(d.eventStatusTypeId === 3) {
-                d.colorForBorder = '#919191'
-                d.textColor = '#919191'
-              } else {
-                d.colorForBorder = matchingResource?.color
-                d.textColor = 'var(--v-primary-base)'
-                d.classNames=['event-tile', matchingResource?.eventColorClass]
-              }
-            })
-            // console.log('the events: ',data)
-            let events = cloneDeep(data)
-            events = events.concat(availabilityData)
-            successCallback(events)
-            calendarLoading.value = false
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            snackbar.value = getSnackbar('ERROR', 'Error Retrieving Events')
-            store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-            failureCallback(e)
-            calendarLoading.value = false
-          } finally {
-            orgValuesChanged.value = false
-            userValuesChanged.value = false
-          }
-        }
-        successCallback([])
+const updatePins = async(info) => {
+  let filteredResources = mapResourceEvents.value?.filter( e => isValidEventDate(Date.parse(e.start), Date.parse(e.end), Date.parse(info.start), Date.parse(info.end)))
+  props.callback(filteredResources, true)
+}
+
+const isValidEventDate = (eventStart, eventEnd, currentStart, currentEnd) => {
+  return !(eventEnd < currentStart || eventStart > currentEnd)
+}
+const goGetEventsNow = async (info, successCallback, failureCallback) => {
+  mapResourceEvents.value = []
+  if (selectedOrgs.value.length > 0 || selectedUsers.value.length > 0) {
+    //i do this here instead of on its own because all of the code above here has to happen for get availability as well
+    calendarLoading.value = true
+    const availabilityData = await getAvailability(info);
+    try {
+      let params = {
+        orgIds: selectedOrgs.value?.length > 0 ? selectedOrgs.value.map(o => o.masterId) : [],
+        // this was the old way. leaving here in case
+        // userPositionIds: this.getUserPositionIds(),
+        userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
+        startTime: info.start,
+        endTime: info.end,
+        includeCancelled: includeCancelled.value
       }
+      const {data} = await postRequest(`/schedule`, params)
+      data.forEach(d => {
+        d.id = d.eventId
+        // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
+        // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
+        d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
+        d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
+        d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
+        let matchingResource = calendarOptions.value.resources.find(r => r.id === d.resourceId)
+        if(d.eventStatusTypeId === 3) {
+          d.colorForBorder = '#919191'
+          d.textColor = '#919191'
+        } else {
+          d.colorForBorder = matchingResource?.color
+          d.textColor = 'var(--v-primary-base)'
+          d.classNames=['event-tile', matchingResource?.eventColorClass]
+        }
+        if(isResourceOnMap(matchingResource)) {
+          let eventObj = {
+            id: matchingResource.id,
+            projectName: d.projectName,
+            processStepName: d.processStepName,
+            city: d.city,
+            projectId: d.projectId,
+            projectProcessStepId: d.projectProcessStepId,
+            projectProcessStepEventId: d.projectProcessStepEventId,
+            stateAbbreviation: d.stateAbbreviation,
+            postalCode: d.postalCode,
+            street1: d.street1,
+            color: matchingResource.color,
+            coordinates: [d.longitude, d.latitude],
+            start: d.startStr || d.start,
+            end: d.endStr ||d.end
+          }
+          mapResourceEvents.value.push(eventObj)
+        }
+
+      })
+      props.callback(mapResourceEvents.value, true)
+      // console.log('the events: ',data)
+      let events = cloneDeep(data)
+      events = events.concat(availabilityData)
+      successCallback(events)
+      calendarLoading.value = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar.value = getSnackbar('ERROR', 'Error Retrieving Events')
+      store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+      failureCallback(e)
+      calendarLoading.value = false
+    } finally {
+      orgValuesChanged.value = false
+      userValuesChanged.value = false
+    }
+  }
+  successCallback([])
+}
+      const updateEvents = () => {
+        calendarApi.value.refetchEvents()
+      }
+
+      defineExpose({
+        updateEvents
+      })
+
       const handleEventClick = (info) => {
         if(info.event.title && info.event.display === 'auto') {
           let props = info.event.extendedProps
@@ -979,7 +1108,7 @@ const isMobile = computed(() => {
 
       const changeTimezone = async (tz) => {
         //update the timezone in the schedule store
-        await store.dispatch(ScheduleActions.CHANGE_TIMEZONE, tz)
+        await store.dispatch(ScheduleActions.CHANGE_TIMEZONE_SCHEDULE, tz)
       }
 
       const getFormattedDate = (date) => {
@@ -1002,13 +1131,46 @@ const isMobile = computed(() => {
         props.dateCallback(calendarStartTime.value, calendarEndTime.value)
       }
 
+//this snackbar is different from others so we built it here
+const createSnackbar = (text) => {
+  return {
+    y: 'bottom',
+    x: null,
+    mode: '',
+    timeout: -1,
+    text: text,
+    color: 'grey darken-3',
+    fontClass: 'secondary--text',
+    enabled: true
+  }
+}
+
 </script>
 
 <style lang="scss">
 
 .event-tile{
   border-left-width: 20px;
-  height: 20px;
+  height: 28px;
+}
+
+.fc h2.fc-toolbar-title{
+  //headline-large
+  font-family: lato;
+  font-weight: 600;
+  font-size: 1.375rem;
+  line-height: 1.4;
+}
+
+#calendar-container .fc-toolbar-title {
+  @media(max-width: 960px) {
+    font-size: 1.25rem;
+  }
+}
+//add space for scrollbar so it doesn't block times
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th:nth-child(1) > div > div > table > thead > tr > th,
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th > div > div > div > table > tbody > tr.fc-timeline-header-row.fc-timeline-header-row-chrono > th {
+padding-bottom: 8px;
 }
 
 .background-event {
@@ -1017,11 +1179,13 @@ const isMobile = computed(() => {
   cursor: default;
   margin-left: 1px;
   margin-right: 1px;
-  opacity: 1;
+  opacity: 1 !important;
   color: black;
   overflow: hidden;
   border: solid 1px black;
 }
+
+
   #calendar-container .fc-timeline-event {
     /*height: inherit;*/
     border-radius: 5px;
@@ -1038,28 +1202,21 @@ const isMobile = computed(() => {
   }
 
 
-//#calendar-container .fc-timeline-bg-harness .fc-event:hover {
-//    max-width: unset;
-//    width: fit-content;
-//    z-index: 20;
-//
-//}
-
-  #calendar-container .fc-event.event-tile:hover {
-    color: inherit !important;
-    max-width: unset;
-    width: fit-content;
-    -webkit-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-    -moz-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-    box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-    z-index: 5;
-
-    span {
-      max-width: unset;
-      width: fit-content;
-      padding-right: 4px;
-    }
-  }
+  //#calendar-container .fc-event.event-tile:hover {
+  //  color: inherit !important;
+  //  max-width: unset;
+  //  width: fit-content;
+  //  -webkit-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
+  //  -moz-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
+  //  box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
+  //  z-index: 5;
+  //
+  //  span {
+  //    max-width: unset;
+  //    width: fit-content;
+  //    padding-right: 4px;
+  //  }
+  //}
 
   #calendar-container .fc-rows tr,
   #calendar-container .fc-rows tr .fc-widget-content div{
@@ -1091,12 +1248,45 @@ const isMobile = computed(() => {
   z-index: 0;
 //  this keeps the calendar from being in front of the filter dropdowns.
 }
+
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th > div > div > div > table > tbody > tr > th.fc-slot > div > a.fc-timeline-slot-cushion{
+  cursor: default !important;
+  color: var(--v-grey-darken1)
+}
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th > div > div{
+  ::-webkit-scrollbar {
+    height: 0 !important;  /* Remove scrollbar space */
+    background: transparent !important;  /* Optional: just make scrollbar invisible */
+  }
+}
+//thickening and darkening the day dividers on week view of calendar
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th:nth-child(3) > div > div > div > table > tbody > tr:nth-child(1) > th.fc-timeline-slot.fc-timeline-slot-label.fc-day,
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th:nth-child(3) > div > div > div > table > tbody > tr.fc-timeline-header-row.fc-timeline-header-row-chrono > th:nth-child(19n+1),
+#event-calendar > div.fc-view-harness.fc-view-harness-active > div.fc-resourceTimelineWeek-view.fc-view.fc-resource-timeline.fc-resource-timeline-flat.fc-timeline.fc-timeline-overlap-enabled > table > tbody > tr > td:nth-child(3) > div > div > div > div.fc-timeline-slots > table > tbody > tr > td:nth-child(19n+1) {
+  border-left-width: 3px;
+}
 </style>
 
 <style lang="scss" scoped>
 .resource-title {
-  text-overflow: ellipsis;
   max-width: 60%;
+  white-space: break-spaces;
+  @media(max-width: 960px) {
+    max-width: 30%;
+  }
+  }
+.v-tooltip__content {
+  background-color: white;
+  color: var(--v-grey-darken4);
+  outline-color: black;
+}
+.v-tooltip__content.menuable__content__active {
+opacity: 1;
+  filter:  drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
+}
+
+.wrap-dropdown-item {
+  white-space: normal;
 }
 
 #calendar-container {
@@ -1111,8 +1301,12 @@ const isMobile = computed(() => {
   border-bottom: 1px black solid;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
   z-index: 1;
-  background-color: var(--v-grey-lighten4)
-}
+  background-color: var(--v-grey-lighten4);
+  @media(max-width: 600px) {
+    max-height:50%;
+    overflow-y: scroll;
+  }
+  }
 .calendar-resize-container {
   /* without this when you resize the screen the calendar goes whackadoodle */
   //flex: 1 1 auto;
@@ -1126,8 +1320,6 @@ const isMobile = computed(() => {
   text-overflow: ellipsis;
   overflow: hidden;
 }
-
-
 
 .border-bottom {
   border-bottom: 1px solid #C7C7CC;
@@ -1158,5 +1350,6 @@ const isMobile = computed(() => {
   visibility: hidden;
   height: 0 !important;
 }
+
 </style>
 

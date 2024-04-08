@@ -8,6 +8,7 @@
 *
 */
 import moment from 'moment'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 const props = defineProps({
   projectId: Number,
@@ -46,16 +47,16 @@ const togglePinToMap = () => {
 
 <template>
 <v-card outlined max-height="100%" @click="emit('click')">
-  <v-card-title class="d-flex pa-2 align-start">
+  <v-card-title class="d-flex px-2 pt-2 pb-0 mb-n1 align-start">
     <span class="label-medium pr-1 break-word max-width-half">{{projectName}}</span>
     <v-chip v-if="status" small color="success lighten-4" class="grey--text text--darken-4 body-small">{{status}}</v-chip>
     <v-spacer/>
-    <v-btn icon small color="primary" @click.stop="togglePinToMap">
+    <AlbatrossButton icon size="small" color="primary" @click.native.stop="togglePinToMap">
     <v-icon v-if="pinned">mdi-map-marker</v-icon>
     <v-icon v-else>mdi-map-marker-off</v-icon>
-    </v-btn>
+    </AlbatrossButton>
   </v-card-title>
-  <v-card-text class="grey--text text--darken-4">
+  <v-card-text class="grey--text text--darken-4 pa-2">
     <div class="body-medium">{{event}} ({{processStep}})</div>
     <div v-if="eventIsSameDay()" class="body-medium">{{startDate | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{endDate | formatDate('timestamp','h:mm a')}}</div>
     <div v-else-if="startDate" class="body-medium">{{startDate | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{endDate | formatDate('timestamp','MMM DD YYYY, h:mm a')}}</div>
@@ -71,4 +72,5 @@ const togglePinToMap = () => {
 .max-width-half{
   max-width: 50%;
 }
+
 </style>

@@ -112,6 +112,7 @@
   import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import {UserMutations} from "@/stores/UserStore";
+  import { ScheduleMutations } from '@/stores/ScheduleStore.js'
 
   export default {
     name: 'User',
@@ -198,6 +199,7 @@
             //update the user
             const {data: currentUser} = await getRequest(`/user/current`)
             await this.$store.commit(UserMutations.SET_DETAILS, currentUser);
+			this.$store.commit(ScheduleMutations.SET_TIMEZONE_SCHEDULE, currentUser.timezone)
             //then reload the screen
             window.location.reload()
           }

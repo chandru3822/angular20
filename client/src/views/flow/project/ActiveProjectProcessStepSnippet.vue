@@ -55,7 +55,7 @@ export default {
 }
 
 .active-ps {
-  background-color: var(--v-active-base) ;
+  background-color: var(--v-primary-lighten9) ;
 }
 
 .active-ps-button {

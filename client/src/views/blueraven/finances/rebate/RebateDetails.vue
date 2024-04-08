@@ -6,7 +6,7 @@
 
       <dt class="left-align">Project ID:</dt>
       <dd>
-        <router-link :to="`/project/${rebateDetails.project_id}/status`">{{rebateDetails.project_id}}</router-link>
+        <router-link :to="`/project/${rebateDetails.project_id}/${defaultProjectPagePath}`">{{rebateDetails.project_id}}</router-link>
         <br/>
       </dd>
       <dt class="left-align">Customer Address:</dt>
@@ -275,7 +275,7 @@
 </template>
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getProjectPath} from '@/helpers/helpers'
   import moment from "moment";
   import {getCompanyStates} from '@/services/stateService'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -330,7 +330,8 @@
         sumOfNonCanceledPayments: 0,
         maxPaymentNumber: 0,
         maxPayment: 0,
-        remainingBalance: 0
+        remainingBalance: 0,
+        defaultProjectPagePath: getProjectPath(this).pathSuffix,
       }
     },
     created () {

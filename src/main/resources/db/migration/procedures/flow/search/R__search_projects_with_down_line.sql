@@ -92,7 +92,9 @@ BEGIN
              limited_projects.company_project_status_type_id::bigint,
              limited_projects.project_status_type,
              limited_projects.contact,
-             case when limited_projects.company_project_status_type_id = any(v_commission_project_status_ids) and p_query_commissions is true then
+             case when limited_projects.company_project_status_type_id = any(v_commission_project_status_ids)
+                           and p_query_commissions is true
+                            and p_company_id = 3 then
               (select t.commissions_outstanding
                from brs.get_commissions_by_project_status(limited_projects.company_project_status_type_id::bigint,limited_projects.id::bigint) as t)
                   else null::numeric
@@ -119,7 +121,8 @@ BEGIN
                                        c.phone,
                                        c.mobile) contact1)::jsonb as contact,
                          pst.project_status_type  as root_project_status_type,
-                         pd.closer_name
+                         case when c.company_id = 3 then
+                                  (select pd.closer_name from brs.project_details pd where pd.project_id = p.id) end as closer_name
                   from flow.project p
                          inner join flow.company_project_status_type cpst
                                     on cpst.id = p.company_project_status_type_id
@@ -127,10 +130,12 @@ BEGIN
                          inner join flow.contact c on c.id = p.contact_id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
-                         inner join brs.project_details pd on pd.project_id = p.id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
-                    and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
+                    and case when p_query_commissions is false then
+                      (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
+                        else
+                          p.user_position_id = any(v_position_ids) end
                     and
                               ((p.id::text like '%' || v_clean_name_search_term || '%') or
                               (p.project_name_search like '%' || v_clean_name_search_term || '%') or
@@ -159,7 +164,8 @@ BEGIN
                                        c.phone,
                                        c.mobile) contact1)::jsonb as contact,
                          pst.project_status_type  as root_project_status_type,
-                         pd.closer_name
+                         case when c.company_id = 3 then
+                                  (select pd.closer_name from brs.project_details pd where pd.project_id = p.id) end as closer_name
                   from flow.project p
                          inner join flow.company_project_status_type cpst
                                     on cpst.id = p.company_project_status_type_id
@@ -167,10 +173,11 @@ BEGIN
                          inner join flow.contact c on c.id = p.contact_id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
-                         inner join brs.project_details pd on pd.project_id = p.id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
-                    and (c.owner_org_ids && v_org_ids)
+                    and case when p_query_commissions is false then
+                      (c.owner_org_ids && v_org_ids)
+                        else p.user_position_id = any(v_position_ids) end
                     and
                               ((c.contact_email_search like '%' || v_clean_email_search_term || '%') or
                               (c.contact_mobile_search like '%' || v_clean_phone_search_term || '%') or
@@ -210,7 +217,9 @@ BEGIN
                 limited_projects.company_project_status_type_id::bigint,
                 limited_projects.project_status_type,
                 limited_projects.contact,
-             case when limited_projects.company_project_status_type_id = any(v_commission_project_status_ids) and p_query_commissions is true then
+             case when limited_projects.company_project_status_type_id = any(v_commission_project_status_ids)
+                           and p_query_commissions is true
+                           and p_company_id = 3 then
                     (select t.commissions_outstanding
                      from brs.get_commissions_by_project_status(limited_projects.company_project_status_type_id::bigint,limited_projects.id::bigint) as t)
                   else null::numeric
@@ -236,7 +245,8 @@ BEGIN
                                     c.phone,
                                     c.mobile) contact1)::jsonb as contact,
                       pst.project_status_type  as root_project_status_type,
-                      pd.closer_name
+                      case when c.company_id = 3 then
+                               (select pd.closer_name from brs.project_details pd where pd.project_id = p.id) end as closer_name
                from flow.project p
                       inner join flow.company_project_status_type cpst
                                  on cpst.id = p.company_project_status_type_id
@@ -244,10 +254,12 @@ BEGIN
                       inner join flow.contact c on c.id = p.contact_id
                       left join flow.company_state cs on cs.id = p.company_state_id
                       left join flow.state s on s.id = cs.state_id
-                      inner join brs.project_details pd on pd.project_id = p.id
                where c.company_id = any (v_company_ids)
                  and p.archived is not true
-                 and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
+                 and case when p_query_commissions is false then
+                            (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
+                          else
+                            p.user_position_id = any(v_position_ids) end
                  and case
                        when p_company_project_status_type_id is not null then
                          cpst.id = p_company_project_status_type_id

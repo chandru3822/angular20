@@ -168,6 +168,7 @@ public class UserService {
     params.put("username", user.getUsername());
     params.put("companyId", currentUser.getCompanyId());
     params.put("homePageCompanyFeatureId", user.getHomePageCompanyFeatureId());
+    params.put("defaultProjectPage", user.getDefaultProjectPage());
 
     Long id;
 

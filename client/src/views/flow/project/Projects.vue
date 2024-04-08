@@ -38,7 +38,7 @@
           :server-items-length="totalProjects"
           :loading="isProjectsLoading"
           :class="{'fix-column-width-bug': !isMobile}"
-          @click:row.stop="goToRoute"
+          @click:row="goToRoute"
         >
           <template #no-data>
             <span class="default-text-color">No available projects</span>
@@ -49,27 +49,29 @@
           </template>
 
               <template #item.id="{item: project, index}" class="text-left py-0 pl-4 clickable">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/${projectPath}`">
                   {{project.id}}
                 </router-link>
               </template>
               <template #item.projectName="{item: project, index}" class="text-left text--black clickable">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/${projectPath}`">
                   {{project.projectName}}
                 </router-link>
               </template>
               <template #item.stateAbbreviation="{item: project, index}" class="text-left clickable">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/${projectPath}`">
                   {{project.stateAbbreviation}}
                 </router-link>
               </template>
               <template #item.projectStatusType="{item: project, index}" class="text-left clickable">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/${projectPath}`">
                   {{project.projectStatusType}}
                 </router-link>
               </template>
               <template #item.dateCreated="{item: project, index}" class="text-left clickable">
-                 <span class="clickable">{{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</span>
+                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/${projectPath}`">
+                   {{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}
+                 </router-link>
               </template>
         </v-data-table>
       </v-col>
@@ -79,7 +81,7 @@
 
 <script>
 
-  import {logError, getRequestWithParams} from '@/helpers/helpers'
+  import {logError, getRequestWithParams, getProjectPath} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import debounce from 'lodash.debounce'
   import axios from 'axios'
@@ -115,6 +117,7 @@
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
         projects: [],
+        projectPath: '',
         from: null,
         searchQuery: '',
         totalProjects: 0,
@@ -146,9 +149,12 @@
         return this.$vuetify.breakpoint.smAndDown
       }
     },
+    created() {
+      this.projectPath = getProjectPath(this).pathSuffix
+    },
     methods: {
       goToRoute(project) {
-        this.$router.push({name: 'projectStatus', params: {projectId: project.id}})
+        this.$router.push({path: `/project/${project.id}/${this.projectPath}`})
       },
       async getProjects() {
         const {page, itemsPerPage} = this.options
@@ -185,7 +191,7 @@
         localStorage.setItem('projectSearch', this.searchQuery)
         this.getProjects()
       }, 500),
-      closeKeyboard(){
+      closeKeyboard() {
         document.activeElement.blur()
       }
     }

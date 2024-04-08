@@ -1,4 +1,5 @@
-const { VITE_BASE_API, VITE_ENV, VITE_MAPBOX_ACCESS_TOKEN, VITE_MAPBOX_STYLE} = import.meta.env
+const { VITE_BASE_API, VITE_ENV, VITE_MAPBOX_ACCESS_TOKEN,
+    VITE_MAPBOX_STYLE, VITE_FULL_CALENDAR_LICENSE_KEY } = import.meta.env
 
 let constants = {}
 
@@ -128,6 +129,7 @@ constants.NAME_REQUIRED_RULES = [
   v => /^[-.&//a-zA-Z0-9\s]+$/.test(v) || "Cannot contain special characters"
 ]
 
+constants.FULL_CALENDAR_LICENSE_KEY=VITE_FULL_CALENDAR_LICENSE_KEY
 
 
 constants.BASIC_REQUIRED_RULE = [
@@ -142,7 +144,7 @@ constants.USERNAME_RULES = [
   v => !!v && v.length >= 3 || 'Must be at least 3 characters'
 ]
 constants.COLOR_LIST = [
-  '#e7211b', '#39b942', '#181e1e', '#eceb50',
+  '#e7211b', '#39b942', '#076270', '#eceb50',
   '#3ca5d6', '#9e4ed6', '#919393', '#e68f35',
   '#770909', '#1013c1', '#074f0a', '#42063e',
   '#402e11', '#98ffd5', '#ff7f9e', '#00fffc',

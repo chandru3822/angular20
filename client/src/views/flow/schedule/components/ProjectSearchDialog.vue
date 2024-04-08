@@ -10,7 +10,7 @@
 
 import constants from "@/helpers/constants.js";
 import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
-import {getSnackbar, postRequest} from "@/helpers/helpers.js";
+import {getSnackbar, postRequest, postRequestWithRequestParams} from "@/helpers/helpers.js";
 import {AppMutations} from "@/stores/AppStore.js";
 import axios from "axios";
 
@@ -19,6 +19,7 @@ import {getEventStatusTypes} from "@/services/eventStatusTypeService.js";
 import {getStatusTypes} from "@/services/processStepStatusTypeService.js";
 import ProjectSearchResultCard from "@/views/flow/schedule/components/ProjectSearchResultCard.vue";
 import SpinnerInline from "@/components/SpinnerInline.vue";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 const props = defineProps({
   states: {
@@ -52,13 +53,8 @@ const state =ref({}),
     eventTypesChanged= ref(false),
     searchProjectsLoading= ref(false),
     search= ref(null),
-    options= ref({
-      itemsPerPage: 100
-    }),
-    footerProps= ref({
-      'items-per-page-options': [25, 50, 100],
-      'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-    }),
+      itemsPerPage = 20,
+    page = ref(0),
     snackbar=ref({}),
     listLoading = ref(false),
     // initialLoad = ref(true)
@@ -70,14 +66,14 @@ const CancelToken = axios.CancelToken;
 const source = ref(CancelToken.source());
 
 watch(search, async(val) => {
-    if(!val) {
-      searchProject.value = {}
-      return
-    }
     if(val && (!searchProject.value || searchProject.value.projectName !== val)) {
       await getProjectsSearchedFor(val);
     }
 })
+
+const getProjectSearchDisplay = (item) => {
+  return`${item.projectName} ${item.projectId}`
+}
 
 const fetchEventTypes = async() => {
   try {
@@ -128,12 +124,15 @@ const fetchStatusTypes = async() => {
   }
 }
 const searchForProjects = async(search) => {
+  searchProjectsLoading.value = true
   try {
     let params = {
       search
     }
     const {data} = await postRequest(`/schedule/projects/search`, params)
     searchProjects.value = data
+    searchProjects.value.forEach(sp => sp.displayName = getProjectSearchDisplay(sp))
+    searchProjectsLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar.value = getSnackbar('ERROR', 'Error Searching Projects')
@@ -156,8 +155,6 @@ const getProjects = async(resetQuery) => {
     // todo: should we remove this.$route.query params if the button is clicked?
     // this.$route.query = {}
   }
-
-  const {page, itemsPerPage} = options.value
   localStorage.setItem('scheduleState', JSON.stringify(state.value))
   localStorage.setItem('scheduleEventTypes', JSON.stringify(selectedEventTypes.value))
   localStorage.setItem('scheduleProcessStepStatusType', JSON.stringify(selectedProcessStepStatusType.value))
@@ -169,7 +166,7 @@ const getProjects = async(resetQuery) => {
         source.value.cancel();
       }
       source.value = CancelToken.source();
-      const {data} = await postRequest(`/schedule/projects`, {
+      const {data} = await postRequestWithRequestParams(`/schedule/projects`, {
         source: source.value,
         cancelToken: source.value.token,
         eventIds: selectedEventTypes.value?.length > 0 ? selectedEventTypes.value.map(o => o.id) : [],
@@ -181,11 +178,9 @@ const getProjects = async(resetQuery) => {
         companyStateId: state.value.id,
         startTime: store.state.schedule.startTime,
         endTime: store.state.schedule.endTime,
-        page: 0,
-        search:"",
-        size: itemsPerPage
-      })
-      projects.value = data.content || []
+        search:""
+      }, { size: itemsPerPage, page: page.value})
+      projects.value = projects.value.concat(data.content || [])
       projects.value.forEach(d => {
         d.coordinates = [ d.longitude, d.latitude ]
       })
@@ -203,21 +198,15 @@ const getProjects = async(resetQuery) => {
   }
 }
 const getProjectsSearchedFor = async(search) => {
-  // cancel pending call
-  clearTimeout(_timerId.value);
-
-  searchProjectsLoading.value = true
-
-  // delay new call 500ms
-  _timerId.value = setTimeout(async () => {
-    //todo:_this
-    await searchForProjects(search)
-    searchProjectsLoading.value = false
+  clearTimeout(_timerId.value);  // cancel pending call
+      // delay new call 500ms
+  _timerId.value = setTimeout( () => {
+    searchForProjects(search)
   }, 500)
 },
  getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) => {
   listLoading.value = true
-  try {
+   try {
     let params = {
       projectId,
       eventId,
@@ -258,10 +247,11 @@ const clear = () => {
   selectedProcessStepStatusType.value = {}
   projects.value = []
   showSearchResults.value = false
+  toggleAllPinsOnMap(true)
 }
 
-const toggleAllPinsOnMap = () => {
-  if(allPinsPinned.value){
+const toggleAllPinsOnMap = (forceClear) => {
+  if(allPinsPinned.value || forceClear){
     props.pinToMapCallback([])
   } else {
     props.pinToMapCallback(projects.value)
@@ -282,6 +272,10 @@ const toggleOneMapPin = ({addPin, id, project}) => {
   }
   props.pinToMapCallback(pinnedList)
 }
+const showLoadMoreBtn = computed(() => {
+  const visibleSearchResults = itemsPerPage *(page.value + 1)
+  return (totalProjects.value - visibleSearchResults) > 0 && !listLoading.value && projects.value.length > 0
+})
 
 const allPinsPinned = computed(() => {
   let allPinned = true
@@ -321,45 +315,45 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-card id="project-search-card" color="white" style="max-width: 280px; min-width: 280px" class="square-card pa-4 project-search-card" elevation="8"> <!--did this manually instead of using v-menu b/c the dropdowns were getting cut off-->
+  <v-card id="project-search-card" color="white" style="max-width: 280px; min-width: 280px" class="pa-4 project-search-card" elevation="8"> <!--did this manually instead of using v-menu b/c the dropdowns were getting cut off-->
     <div class="d-flex justify-space-between">
       <v-card-title class="label-large pa-0">Search Projects</v-card-title>
-      <v-btn icon small @click="emit('close-dialog')"><v-icon>close</v-icon></v-btn>
+      <AlbatrossButton icon size="small" @click="emit('close-dialog')"><v-icon>close</v-icon></AlbatrossButton>
     </div>
-    <div v-if="!showSearchResults" class="project-search-field-container pt-1">
+    <div v-show="!showSearchResults" class="project-search-field-container pt-1">
       <div class="one-hunned pb-3">
-        <v-autocomplete attach v-model="state" class="pb-2"
-                        :items="states"
-                        label="State"
-                        clearable
-                        return-object
-                        hide-details
-                        dense
-                        item-text="state"
-                        item-value="id"
-                        @click:clear="clear"
-                        :disabled="!!searchProject?.projectId"
+        <v-autocomplete attach v-model="state" class="pb-2 body-large"
+        :items="states"
+        label="State"
+        clearable
+        return-object
+        hide-details
+        dense
+        item-text="state"
+        item-value="id"
+        @click:clear="clear"
+        :disabled="!!searchProject?.projectId"
         ></v-autocomplete>
         <v-autocomplete v-model="searchProject"
                         :items="searchProjects"
-                        :search-input.sync="search"
-                        item-text="projectName"
-                        clearable
-                        :key="0"
-                        :disabled="!!state?.id"
-                        text
-                        hide-details
-                        class="pb-2"
-                        label="Project"
-                        autocomplete="off"
                         :loading="searchProjectsLoading"
+                        cache-items
+                        :search-input.sync="search"
+                        clearable
+                        label="Project"
+                        item-text="displayName"
                         item-value="projectId"
+                        autocomplete="off"
+                        :disabled="!!state?.id"
+                        hide-details
                         return-object
+                        class="body-large"
                         attach
         >
-          <template slot="item" slot-scope="data">
+
+          <template v-slot:item="data">
             <!-- HTML that describe how select should render items when the select is open -->
-            {{ data.item.projectName }} - {{ data.item.projectId }}
+            {{ data.item.displayName }}
           </template>
         </v-autocomplete>
         <!--only show the other fields once state or project has been selected-->
@@ -428,39 +422,38 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <div v-else class="body-small">
-      <v-chip x-small color="primary lighten-9" v-if="state.state" class="mr-1 px-2 grey--text text--darken-3">{{state.state}} </v-chip>
-      <v-chip x-small color="primary lighten-9" v-if="searchProject?.projectName" class="mr-1 px-2 grey--text text--darken-3">{{searchProject.projectName}} </v-chip>
-      <v-chip x-small color="primary lighten-9" v-if="searchEventType?.eventName" class="mr-1 px-2 grey--text text--darken-3">{{searchEventType.eventName}} </v-chip>
-      <v-chip x-small v-for="e in selectedEventTypes" color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">{{e.eventName}} </v-chip>
-      <v-chip x-small color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">Event: {{searchEventStatusType.eventStatusType}}</v-chip>
-      <v-chip x-small color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">Process Step: {{selectedProcessStepStatusType.processStepStatusType}}</v-chip>
+    <div v-show="showSearchResults" class="body-small">
+      <v-chip small color="primary lighten-9" v-if="state?.state" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{state.state}} </v-chip>
+      <v-chip small color="primary lighten-9" v-if="searchProject?.projectName" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{searchProject.projectName}} </v-chip>
+      <v-chip small color="primary lighten-9" v-if="searchEventType?.eventName" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{searchEventType.eventName}} </v-chip>
+      <v-chip small v-for="e in selectedEventTypes" color="primary lighten-9" class="mb-1 mr-1 px-2 grey--text text--darken-3">{{e.eventName}} </v-chip>
+      <v-chip small color="primary lighten-9" class="mb-1 mr-1 px-2 grey--text text--darken-3">Event: {{searchEventStatusType.eventStatusType}}</v-chip>
+      <v-chip small color="primary lighten-9" class="mb-1 mr-1 px-2 grey--text text--darken-3">Process Step: {{selectedProcessStepStatusType.processStepStatusType}}</v-chip>
     </div>
     <v-card-actions class="px-0 pb-0">
-      <v-btn @click="clear" text small class="text-capitalize flex-grow-0 body-medium">Reset</v-btn>
-      <v-btn v-if="!showSearchResults"
-          outlined
+      <AlbatrossButton @click="clear" variant="text" small class="text-capitalize flex-grow-0 body-medium">Reset</AlbatrossButton>
+      <AlbatrossButton v-if="!showSearchResults"
+          variant="outlined"
           small
           @click="goGoGadgetMapSearch"
           color="primary"
           class="text-capitalize flex-grow-1 body-medium"
           :disabled="!((state?.id || searchProject?.projectId) && (selectedEventTypes?.length > 0 ||searchEventType?.id) && searchEventStatusType?.id && selectedProcessStepStatusType?.id)"
-      >Go</v-btn>
-      <v-btn v-else
-          outlined
-          small
-          @click="showSearchResults = false"
+      >Go</AlbatrossButton>
+      <AlbatrossButton v-else
+          variant="outlined"
+          size="small"
+          @click="[showSearchResults = false, toggleAllPinsOnMap(true)]"
           color="primary"
           class="text-capitalize flex-grow-1 body-medium"
-      >Edit search</v-btn>
+      >Edit search</AlbatrossButton>
     </v-card-actions>
     <div v-if="showSearchResults">
     <div class="d-flex justify-space-between align-baseline py-3">
       <span class="label-medium">Search Results</span>
-      <v-btn text small color="primary" class="text-capitalize" :disabled="!projects || projects.length === 0" @click="toggleAllPinsOnMap">
-        {{allPinsPinned ? 'Hide all pins' : 'Show all pins' }}</v-btn>
+      <AlbatrossButton variant="text" size="small" color="primary" class="text-capitalize" :disabled="!projects || projects.length === 0" @click="toggleAllPinsOnMap">
+        {{allPinsPinned ? 'Hide all pins' : 'Show all pins' }}</AlbatrossButton>
     </div>
-    <SpinnerInline :size="20" spinner-color="primary" :centered="true" v-if="listLoading"/>
     <div class="search-results">
       <span v-if="(!projects || projects.length === 0) && !listLoading" class="body-medium">No projects found</span>
     <div v-for="p in projects">
@@ -470,17 +463,19 @@ onMounted(() => {
           :id="p.projectProcessStepEventId"
           :event="p.eventName"
           :process-step="p.processStepName"
-          :status="p.eventStatusType"
+          :status="p.companyEventStatusType"
           :start-date="p.start"
           :end-date="p.end"
           :event-resource="p.resourceName"
           :pinned="isOnePinned(p)"
           @pinToMap="toggleOneMapPin"
           @click="openProjectEvent(p)"
-          class="clickable"
+          class="clickable mb-3"
       />
     </div>
+      <AlbatrossButton v-if="showLoadMoreBtn" variant="text" size="small" class="my-2" @click="[page++, getProjects(false)]">Load More</AlbatrossButton>
     </div>
+      <SpinnerInline :size="20" spinner-color="primary" :centered="true" v-if="listLoading"/>
     </div>
   </v-card>
 

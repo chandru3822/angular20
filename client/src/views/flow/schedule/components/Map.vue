@@ -3,8 +3,8 @@
           :mapStyle="map.style"
           @load="onMapLoad">
 
-    <div id="find-drive-time" class="d-flex justify-start">
-      <v-btn color="primary" class="rounded-tile-btn ml-4 mr-3" fab tile @click="$emit('close-map')"><v-icon>mdi-chevron-right</v-icon></v-btn>
+    <div id="map-btns" class="d-flex justify-start">
+      <AlbatrossButton id="hide-map-btn" color="primary" size="x-small" class="rounded-tile-btn ml-4 mr-3" :elevation="5" custom-classes="px-4" @click="$emit('close-map')"><v-icon>mdi-chevron-right</v-icon></AlbatrossButton>
       <v-menu data-app bottom
               offset-y
               content-class="drive-time-menu"
@@ -14,23 +14,31 @@
               :close-on-click="false"
               :close-on-content-click="false">
         <template v-slot:activator="{ on }">
-          <v-btn fab tile outlined v-on="on" small color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></v-btn>
+          <AlbatrossButton
+            id="drive-time-btn"
+            variant="outlined"
+            :activation-handler="on"
+            icon
+            color="primary"
+            class="rounded-tile-btn white-background mr-3 pa-5">
+            <v-icon>mdi-car</v-icon></AlbatrossButton>
         </template>
-        < id="drive-time-card" color="white" class="square-card pa-4">
+        <v-card id="drive-time-card" color="white" class="pa-4">
           <div class="d-flex justify-space-between">
             <v-card-title class="label-large pa-0">Find Drive Time</v-card-title>
-            <v-btn icon small @click="menuOpen = false"><v-icon>close</v-icon></v-btn>
+            <AlbatrossButton icon size="small" @click="menuOpen = false"><v-icon>close</v-icon></AlbatrossButton>
           </div>
           <div class="address-container">
             <div class="one-hunned py-3">
               <v-text-field text outlined label="Starting Point" placeholder="Select pin or enter address" autocomplete="new-password"
-                            @click="[address1 = '', drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
+                            @focus="[drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
                             hide-details
                             v-model="address1"
-                            @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"></v-text-field>
+                            @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"
+              ></v-text-field>
               <v-list ref="dropdownMenu1" v-if="showAddress1List">
-                <v-list-item v-for="(suggestion, idx) in suggestions">
-                  <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, true)">
+                <v-list-item v-for="(suggestion, idx) in suggestions" class="px-0">
+                  <v-card class="pa-2 addressSuggestion" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, true)">
                     <span class="dropdown-item text-decoration-none" >
                       {{ formatLabel(suggestion.label, 'start') }}<span>{{
                         formatLabel(suggestion.label, 'middle')
@@ -45,13 +53,14 @@
           <div class="address-container">
             <div class="one-hunned">
               <v-text-field text outlined label="Destination" placeholder="Select pin or enter address" autocomplete="new-password"
-                            @click="[address2 = '', drivingDistance = 0, drivingDuration = 0, selectAddress2 = true, selectAddress1 = false]"
+                            @click="[drivingDistance = 0, drivingDuration = 0, selectAddress2 = true, selectAddress1 = false]"
                             hide-details
                             v-model="address2"
-                            @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"></v-text-field>
+                            @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"
+              />
               <v-list ref="dropdownMenu2" v-if="showAddress2List">
-                <v-list-item v-for="(suggestion, idx) in suggestions">
-                  <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, false)">
+                <v-list-item v-for="(suggestion, idx) in suggestions" class="px-0">
+                  <v-card class="pa-2 addressSuggestion" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, false)">
                     <span class="dropdown-item text-decoration-none">
                       {{ formatLabel(suggestion.label, 'start') }}<span>{{
                         formatLabel(suggestion.label, 'middle')
@@ -62,10 +71,11 @@
               </v-list>
             </div>
             <div class="mt-2 body-large">
-              <div>Drive Time:</div> <span v-if="drivingDuration">{{ drivingDuration }}</span>
-              <div>Drive Distance:</div><span v-if="drivingDistance">{{ drivingDistance }} miles</span>
+              <div>Drive Time:</div> <span class="label-large" v-if="drivingDuration">{{ drivingDuration }}</span>
+              <div class="mt-2">Drive Distance:</div><span class="label-large" v-if="drivingDistance">{{ drivingDistance }} miles</span>
             </div>
           </div>
+        </v-card>
       </v-menu>
       <slot name="searchMenu"/>
     </div>
@@ -76,7 +86,7 @@
 
                @click="selectAddressForDriveTime(currentProjectMarker)"
                color="var(--v-primary-base)">
-      <MglPopup :close-button="false" :offset="36">
+      <MglPopup :close-button="false" :offset="popupOffset">
         <MapPopUp :marker="currentProjectMarker"/>
       </MglPopup>
     </MglMarker>
@@ -86,7 +96,7 @@
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
-      <MglPopup :close-button="false" :offset="36">
+      <MglPopup :close-button="false" :offset="popupOffset">
         <MapPopUp :marker="m"/>
       </MglPopup>
     </MglMarker>
@@ -96,7 +106,9 @@
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
-      <MapPopUp :marker="m"/>
+      <MglPopup :close-button="false" :offset="popupOffset">
+        <MapPopUp :marker="m"/>
+      </MglPopup>
     </MglMarker>
     <MglNavigationControl :showCompass="false" position="top-right"/>
   </MglMap>
@@ -113,6 +125,7 @@ import moment from 'moment'
 import debounce from "lodash.debounce";
 import {getCurrentInstance, ref, watch} from "vue";
 import MapPopUp from "@/views/flow/schedule/components/MapPopUp.vue";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -151,6 +164,7 @@ const distanceDivisionMetric = ref(1609.34)
 const durationDivisionMetric = ref(60)
 const defaultZoom = ref(2.0)
 const suggestions = ref([])
+const popupOffset = ref(0)
 // they do these coordinates backwards to comply with geoJSON whatever that is.
 //center of the USA
 const defaultCenter = ref([-98.5795, 39.8283])
@@ -159,7 +173,6 @@ const map = ref({
   accessToken: constants.MAPBOX_ACCESS_TOKEN,
   style: constants.MAPBOX_STYLE
 })
-// mapboxOptions: {},
 const drivingDuration = ref(0)
 const drivingDistance = ref(0)
 const options = ref({
@@ -167,17 +180,33 @@ const options = ref({
 })
 const asyncActions = ref()
 
+
+const emit = defineEmits(['close-search-menu'])
+watch( menuOpen, () => {
+  if(menuOpen.value) {
+    emit('close-search-menu')
+  }
+})
+
+const closeMenu = () => {
+  menuOpen.value = false
+}
+
+defineExpose({
+  closeMenu
+})
+
 const selectAddress = ((suggestion, isFirst) => {
   if (isFirst) {
     address1.value = suggestion.label
     showAddress1List.value = false
-    if(!!address2.value){
+    if(!!address2.value && !!address1.value){
       loadDriveTime()
     }
   } else {
     address2.value = suggestion.label
     showAddress2List.value = false
-    if(!!address1.value){
+    if(!!address1.value && !!address2.value){
       loadDriveTime()
     }
   }
@@ -208,6 +237,7 @@ const debounceSearchAddress = debounce(function (address, isFirst) {
   clearMarkerSelectionForOne(isFirst)
   searchAddress(address, isFirst)
 }, 500)
+
 const searchAddress = async(address, isFirst) => {
   if (isFirst) {
     if (address1.value.length >= 2) {
@@ -289,37 +319,17 @@ const resetDriveTime = () => {
   markerCount.value++
   suggestions.value = []
 }
-// const clearColors = () => {
-//   props.markers.forEach(m => {
-//     if (m.oldColor !== undefined) {
-//       m.color = m.oldColor
-//       m.selectedFirst = false
-//       m.selectedSecond = false
-//     }
-//   })
-//   props.mapResources.forEach(m => {
-//     if (m.oldColor !== undefined) {
-//       m.color = m.oldColor
-//       m.selectedFirst = false
-//       m.selectedSecond = false
-//     }
-//   })
-//   resetDriveTime();
-//   showAddress1List.value = false
-//   showAddress2List.value = false
-//   selectAddress1.value = false
-//   selectAddress2.value = false
-// }
+
 const selectAddressForDriveTime = (marker) => {
-  if (selectAddress1) {
+  if (selectAddress1.value) {
     address1.value = marker.street1 + ', ' + marker.city + ', ' + marker.stateAbbreviation + ' ' + marker.postalCode
     selectAddress1.value = false
     //dont move out of if statement, because we dont want the colors to change unless they are selecting an address for drive time
     marker.oldColor = marker.color || defaultEmptyColor.value
     marker.color = drivingMarkerColor.value
     //get a list of all addresses selectedFirst and unset them, then set this one to selectedFirst
-    let firstMarkers = markers.value.filter(m => m.selectedFirst)
-    let firstResourceMarkers = mapResources.value.filter(m => m.selectedFirst)
+    let firstMarkers = props.markers.filter(m => m.selectedFirst)
+    let firstResourceMarkers = props.mapResources.filter(m => m.selectedFirst)
     firstMarkers?.forEach(m => {
       m.selectedFirst = false
       m.color = m.oldColor
@@ -339,8 +349,8 @@ const selectAddressForDriveTime = (marker) => {
     marker.oldColor = marker.color || defaultEmptyColor.value
     marker.color = drivingMarkerColor.value
     //get a list of all addresses selectedSecond and unset them, then set this one to selectedSecond
-    let secondMarkers = markers.value.filter(m => m.selectedSecond)
-    let secondResourceMarkers = mapResources.value.filter(m => m.selectedSecond)
+    let secondMarkers = props.markers.filter(m => m.selectedSecond)
+    let secondResourceMarkers = props.mapResources.filter(m => m.selectedSecond)
     secondMarkers?.forEach(m => {
       m.selectedSecond = false
       m.color = m.oldColor
@@ -380,7 +390,6 @@ const loadDriveTime = async() => {
 const getDirections = async(firstPair, secondPair) => {
   drivingDistance.value = 0
   drivingDuration.value = 0
-
   try {
     let params = {
       latLongPairs: firstPair + ';' + secondPair
@@ -407,7 +416,7 @@ const changeMapLocation = async() => {
   try {
     center.value = props.latitude && props.longitude ? [props.longitude, props.latitude] : defaultCenter.value
     let currentZoom = props.zoom ?? defaultZoom.value
-    await asyncActions.value.flyTo({
+    await asyncActions.value?.flyTo({
       center: center.value,
       zoom: currentZoom,
       speed: 2
@@ -430,32 +439,46 @@ const onMapLoad = async(event) => {
   border-radius: 0 !important;
 }
 
+.white-background{
+  background-color: white;
+}
+
+#drive-time-btn.rounded-tile-btn {
+  border-radius: 4px;
+}
+
 #drive-time-card > div > div > div.v-list.v-sheet {
   max-height: calc(100vh - 400px);
   overflow-y: auto;
-
   .v-list-item {
     //padding: 0;
     //looked at removing the padding on the child as shown in figma, but it looks odd with the scrollbar
   }
 }
 
+#map .mapboxgl-popup-content {
+  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12) !important;
+}
+
+.mapboxgl-ctrl-top-right .mapboxgl-ctrl {
+  margin-top:16px;
+  margin-right:16px;
+}
+
 </style>
 
 <style scoped lang="scss">
 
-#find-drive-time > button.rounded-tile-btn.v-btn.v-btn--fab.v-btn--round.v-btn--tile  {
-  border-radius: 4px;
-
-  &.white-background {
-    background-color: white;
-  }
+#hide-map-btn {
+  height: 46px;
+  width: 46px;
+  padding:0;
 }
 
-#find-drive-time {
+#map-btns {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 16px;
+  left: 0px;
 }
 
 .drive-time-buttons {
@@ -467,6 +490,10 @@ const onMapLoad = async(event) => {
   position: relative;
   top:40px;
   right:38px;
+}
+
+.addressSuggestion {
+  border-color: var(--v-grey-lighten1);
 }
 
 

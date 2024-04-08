@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row id="closer-availability-container">
-      <v-col cols="12" md="12" class="map-row" style="overflow: auto;">
+      <v-col cols="12" md="12" class="map-row pa-0" style="overflow: auto;">
         <!-- map-resources allows the calendar to send events back to the map -->
         <Calendar :map-resources="mapResources"
                   ref="calendar"
@@ -52,7 +52,7 @@ export default {
 
 <style lang="scss" scoped>
 #closer-availability-container {
-  height: calc(100vh - 100px);
+  height: calc(100vh - 60px);
 }
 </style>
 

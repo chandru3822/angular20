@@ -1,140 +1,141 @@
 <template>
-  <v-container id="work-queue-drilldown-container">
-    <v-row v-if="!dataLoading && !errorLoading">
-      <v-col cols="12">
-        <v-toolbar flat class="app-toolbar">
-          <v-btn text small :to="`/workQueue`" class="mr-3" color="primary">
-            <v-icon>mdi-arrow-left</v-icon>
+<v-container id="work-queue-drilldown-container">
+  <v-row v-if="!dataLoading && !errorLoading">
+    <v-col cols="12">
+      <v-toolbar flat class="app-toolbar">
+        <v-btn text small :to="`/workQueue`" class="mr-3" color="primary">
+          <v-icon>mdi-arrow-left</v-icon>
+        </v-btn>
+        <v-toolbar-title class="app-title" v-if="workQueue && workQueue.workQueueType">{{ workQueue.workQueueType }}
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-switch
+            v-if="masterResults.length > 0"
+            v-model="hideFutureFollowUps"
+            class="mx-2 mt-5 wq-follow-up-switch fix-switch-color"
+            label="Hide work with a next follow-up date in the future"
+            @change="filterFutureFollowUps()"
+          />
+          <v-switch
+            v-if="masterResults.length > 0 && workQueue.useEventData"
+            v-model="hideFutureEvents"
+            class="mx-2 mt-5 wq-follow-up-switch fix-switch-color"
+            label="Hide events with a start time in the future"
+            @change="filterFutureFollowUps()"
+          />
+          <v-btn text color="primary" @click="exportCsv" v-if="results.length > 0">
+            <v-icon class="mr-2">mdi-cloud-download</v-icon>
+            Export
           </v-btn>
-          <v-toolbar-title class="app-title" v-if="workQueue && workQueue.workQueueType">{{ workQueue.workQueueType }}
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-switch
-              v-if="masterResults.length > 0"
-              v-model="hideFutureFollowUps"
-              class="mx-2 mt-5 wq-follow-up-switch fix-switch-color"
-              label="Hide work with a next follow-up date in the future"
-              @change="filterFutureFollowUps()"
-            />
-            <v-switch
-              v-if="masterResults.length > 0 && workQueue.useEventData"
-              v-model="hideFutureEvents"
-              class="mx-2 mt-5 wq-follow-up-switch fix-switch-color"
-              label="Hide events with a start time in the future"
-              @change="filterFutureFollowUps()"
-            />
-            <v-btn text color="primary" @click="exportCsv" v-if="results.length > 0">
-              <v-icon class="mr-2">mdi-cloud-download</v-icon>
-              Export
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <div v-if="noResults && !dataLoading" class="one-hunned text-center mt-5">
-          No results found
-        </div>
-        <v-data-table
-          v-else
-          :headers="filterHeaders()"
-          :items="results"
-          :fixed-header="true"
-          ref="pageable-table"
-          :page.sync="page"
-          :loading="dataLoading"
-          :options.sync="options"
-          item-key="projectProcessStepEventId"
-          :footer-props="footerProps"
-          class="elevation-1 mt-1"
-          id="wq-drilldown-table"
-        >
-          <template #no-data>
-            <span class="default-text-color">No available results</span>
-          </template>
+        </v-toolbar-items>
+      </v-toolbar>
+      <div v-if="noResults && !dataLoading" class="one-hunned text-center mt-5">
+        No results found
+      </div>
+      <v-data-table
+        v-else
+        :headers="filterHeaders()"
+        :items="results"
+        :fixed-header="true"
+        ref="pageable-table"
+        :page.sync="page"
+        :loading="dataLoading"
+        :options.sync="options"
+        item-key="projectProcessStepEventId"
+        :footer-props="footerProps"
+        class="elevation-1 mt-1"
+        id="wq-drilldown-table"
+      >
+        <template #no-data>
+          <span class="default-text-color">No available results</span>
+        </template>
 
-          <template #no-results>
-            <span class="default-text-color">No available results</span>
-          </template>
+        <template #no-results>
+          <span class="default-text-color">No available results</span>
+        </template>
 
-          <template #header="{ props: { headers } }">
-            <tr class="v-data-table-header">
-              <th v-for="header in headers" :key="header.text" class="pa-2"
-                  :style="{width: header.width ? header.width : 'auto',
+        <template #header="{ props: { headers } }">
+          <tr class="v-data-table-header">
+            <th v-for="header in headers" :key="header.text" class="pa-2"
+                :style="{width: header.width ? header.width : 'auto',
                   'border-bottom': 'solid 1px #D8D9DA'}">
-                <v-text-field outlined
-                              hide-details
-                              class="filter-input"
-                              v-model="filters[header.value]"
-                              @input="filterResults()">
-                </v-text-field>
-              </th>
-            </tr>
-          </template>
+              <v-text-field outlined
+                            hide-details
+                            class="filter-input"
+                            v-model="filters[header.value]"
+                            @input="filterResults()">
+              </v-text-field>
+            </th>
+          </tr>
+        </template>
 
-          <template #item="{ item, index }">
-            <tr class="clickable v-data-table-row" :class="{'shaded-row': index % 2}">
-              <td class="text-left pl-1" v-if="useProcessStepHeaders && item['Project Name']" :class="{'pt-2': item.tags && item.tags.length > 0}">
-<!--                <router-link class="router-link-td elevation-0 square-card"-->
-<!--                             :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">-->
-<!--                  {{ item['Project Name'] }}-->
-<!--                </router-link>-->
-                <a >
-                  <v-btn text small
-                         :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
-                    {{ item['Project Name'] }}
-                  </v-btn>
-                </a>
-                <div class="chip-container">
-                  <v-chip v-for="(tag, idx) in item.tags"
-                          small
-                          class="mt-1 tag-chip"
-                          :color="tag.bgColor"
-                          :text-color="tag.fontColor"
-                          :close="tag.removable"
-                          :class="{'mb-4': idx === item.tags.length - 1,
-                                   'mb-2': idx !== item.tags.length - 1}">
-                    {{tag.tagName}}
-                  </v-chip>
-                </div>
-              </td>
-              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Process Step Name']">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
-                  {{ item['Process Step Name'] }}
-                </router-link>
-              </td>
-              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Process Step Status Type']">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
-                  {{ item['Process Step Status Type'] }}
-                </router-link>
-              </td>
-              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Days In Queue']">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
-                  {{ item['Days In Queue'] }}
-                </router-link>
-              </td>
-              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['State Abbreviation']">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
-                  {{ item['State Abbreviation'] }}
-                </router-link>
-              </td>
-              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Owner']">
-                <router-link  v-if="item['Owner']" class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
-                  {{ item['Owner'] }}
-                </router-link>
-                <v-btn outlined text v-else-if="userCanOwnProcessStep(item)" class="text-capitalize primary--text">
-                  <a @click="assignToUser(item)">Assign to me</a>
+        <template #item="{ item, index }">
+          <tr class="clickable v-data-table-row" :class="{'shaded-row': index % 2}">
+            <td class="text-left pl-1" v-if="useProcessStepHeaders && !hiddenHeaders.includes('Project Name')" :class="{'pt-2': item.tags && item.tags.length > 0}">
+              <!--                <router-link class="router-link-td elevation-0 square-card"-->
+              <!--                             :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">-->
+              <!--                  {{ item['Project Name'] }}-->
+              <!--                </router-link>-->
+              <a >
+                <v-btn text small
+                       :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ item['Project Name'] }}
                 </v-btn>
-              </td>
-              <td class="text-left" v-if="useProcessStepHeaders && headerLinks['Active Process Steps']">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
-                  {{ item['Active Process Steps'] }}
-                </router-link>
-              </td>
-              <td v-for="c in customColumns">
+              </a>
+              <div class="chip-container">
+                <v-chip v-for="(tag, idx) in item.tags"
+                        small
+                        class="mt-1 tag-chip"
+                        :color="tag.bgColor"
+                        :text-color="tag.fontColor"
+                        :close="tag.removable"
+                        :class="{'mb-4': idx === item.tags.length - 1,
+                                   'mb-2': idx !== item.tags.length - 1}">
+                  {{tag.tagName}}
+                </v-chip>
+              </div>
+            </td>
+            <td class="text-left" v-if="useProcessStepHeaders && !hiddenHeaders.includes('Process Step Name')">
+              <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                {{ item['Process Step Name'] }}
+              </router-link>
+            </td>
+            <td class="text-left" v-if="useProcessStepHeaders && !hiddenHeaders.includes('Process Step Status Type')">
+              <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                {{ item['Process Step Status Type'] }}
+              </router-link>
+            </td>
+            <td class="text-left" v-if="useProcessStepHeaders && !hiddenHeaders.includes('Days In Queue')">
+              <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                {{ item['Days In Queue'] }}
+              </router-link>
+            </td>
+            <td class="text-left" v-if="useProcessStepHeaders && !hiddenHeaders.includes('State Abbreviation')">
+              <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                {{ item['State Abbreviation'] }}
+              </router-link>
+            </td>
+            <td class="text-left" v-if="useProcessStepHeaders && !hiddenHeaders.includes('Owner')">
+              <router-link  v-if="item['Owner']" class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                {{ item['Owner'] }}
+              </router-link>
+              <v-btn outlined text v-else-if="userCanOwnProcessStep(item)" class="text-capitalize primary--text">
+                <a @click="assignToUser(item)">Assign to me</a>
+              </v-btn>
+            </td>
+            <td class="text-left" v-if="useProcessStepHeaders  && !hiddenHeaders.includes('Active Process Steps')">
+              <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                {{ item['Active Process Steps'] }}
+              </router-link>
+            </td>
+            <template v-for="c in customColumns">
+              <td v-if="!hiddenHeaders.includes(c.name)">
                 <div v-if="!useProcessStepHeaders && c.name === 'Project Name'"
                      class="remove-left-margin"
                      :class="{'pt-2': item.tags && item.tags.length > 0}">
                   <a >
-                    <v-btn v-if="item['Project Name']" text small
+                    <v-btn text small
                            :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}/event/${item.projectProcessStepEventId}`">
                       {{ item['Project Name'] }}
                     </v-btn>
@@ -151,61 +152,62 @@
                     </v-chip>
                   </div>
                 </div>
-                  <router-link v-else class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
-                    {{ getColumnValue(item, c) }}
-                  </router-link>
-              </td>
-              <td class="note-created-at" v-if="queueHasNotes">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
-                  {{ item.firstNoteCreatedAt | formatDate('timestamp') }}
+                <router-link v-else class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                  {{ getColumnValue(item, c) }}
                 </router-link>
               </td>
-              <td class="notes-follow-up" v-if="queueHasNotes">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+            </template>
+            <td class="note-created-at" v-if="queueHasNotes">
+              <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+                {{ item.firstNoteCreatedAt | formatDate('timestamp') }}
+              </router-link>
+            </td>
+            <td class="notes-follow-up" v-if="queueHasNotes">
+              <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                 {{ item.followUpDate | formatDate('date') }}
-                </router-link>
-              </td>
-              <td class="notes-column" v-if="queueHasNotes">
-                <div class="flex-display align-center">
-                  <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
+              </router-link>
+            </td>
+            <td class="notes-column" v-if="queueHasNotes">
+              <div class="flex-display align-center">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${item.projectId}/processStep/${item.projectProcessStepId}`">
                   <pre class="app-pre-wrapper">
                       {{ item.firstNoteContent }}
                   </pre>
                   <v-spacer></v-spacer>
                   {{ item.id }}
-                  </router-link>
-                  <v-btn small fab text color="primary" @click="[showNotesModal = true, notesPpsIndex = index, itemToUpdate = item]">
-                    <v-icon>mdi-comment-text-multiple</v-icon>
-                  </v-btn>
-                </div>
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
+                </router-link>
+                <v-btn small fab text color="primary" @click="[showNotesModal = true, notesPpsIndex = index, itemToUpdate = item]">
+                  <v-icon>mdi-comment-text-multiple</v-icon>
+                </v-btn>
+              </div>
+            </td>
+          </tr>
+        </template>
+      </v-data-table>
 
-      </v-col>
-    </v-row>
-    <ConfirmationDialog :open-dialog="showNotesModal" hide-confirm @confirm="updateRowNotes" @close-dialog="showNotesModal = false" :width="1800" :primary-header="true">
-      <template v-slot:title >{{ itemToUpdate ? itemToUpdate['Project Name'] : ''}} - {{ itemToUpdate ? itemToUpdate['Process Step Name'] : '' }}</template>
-      <v-toolbar color="transparent" class="elevation-0">
-        <v-toolbar-title>Notes</v-toolbar-title>
-      </v-toolbar>
-      <NotesAndActivityContent
-          :showNotes="true"
-          :showActivity="false"
-          :bordered="true"
-          :notes="itemToUpdate ? itemToUpdate.notes : []"
-          :is-ps-wqt-note="!workQueue.useEventData"
-          :is-event-wqt-note="!!workQueue.useEventData"
-          :primary-id="itemToUpdate ? (workQueue.useEventData ? itemToUpdate.projectProcessStepEventId : itemToUpdate.projectProcessStepId) : null"
-          :secondary-id="itemToUpdate ? (workQueue.useEventData ? itemToUpdate.processStepEventWorkQueueTypeId : itemToUpdate.processStepWorkQueueTypeId): null"
-          type="ProjectProcessStep"
-          :callback="(item) => updateRowNotes(item)"
-      />
-      <template v-slot:no>Close</template>
-    </ConfirmationDialog>
+    </v-col>
+  </v-row>
+  <ConfirmationDialog :open-dialog="showNotesModal" hide-confirm @confirm="updateRowNotes" @close-dialog="showNotesModal = false" :width="1800" :primary-header="true">
+    <template v-slot:title >{{ itemToUpdate ? itemToUpdate['Project Name'] : ''}} - {{ itemToUpdate ? itemToUpdate['Process Step Name'] : '' }}</template>
+    <v-toolbar color="transparent" class="elevation-0">
+      <v-toolbar-title>Notes</v-toolbar-title>
+    </v-toolbar>
+    <NotesAndActivityContent
+      :showNotes="true"
+      :showActivity="false"
+      :bordered="true"
+      :notes="itemToUpdate ? itemToUpdate.notes : []"
+      :is-ps-wqt-note="!workQueue.useEventData"
+      :is-event-wqt-note="!!workQueue.useEventData"
+      :primary-id="itemToUpdate ? (workQueue.useEventData ? itemToUpdate.projectProcessStepEventId : itemToUpdate.projectProcessStepId) : null"
+      :secondary-id="itemToUpdate ? (workQueue.useEventData ? itemToUpdate.processStepEventWorkQueueTypeId : itemToUpdate.processStepWorkQueueTypeId): null"
+      type="ProjectProcessStep"
+      :callback="(item) => updateRowNotes(item)"
+    />
+    <template v-slot:no>Close</template>
+  </ConfirmationDialog>
 
-  </v-container>
+</v-container>
 </template>
 
 
@@ -278,7 +280,6 @@ export default {
       },
       userPositions: this.$store.state.user.details.userPositions,
       headers: [],
-      headerLinks: {},
     }
   },
   watch: {
@@ -297,7 +298,11 @@ export default {
       this.$vuetify.goTo(table, {container: wrapper}); // to header
     }
   },
-  computed: {},
+  computed: {
+    hiddenHeaders() {
+      return this.headers.filter(h => h.show !== true).map(h => h.value)
+    }
+  },
   async created() {
     this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
     this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
@@ -311,14 +316,6 @@ export default {
       try {
         const {data, status} = await getRequest(`/workQueueType/${this.workQueueTypeId}`)
         this.workQueue = data
-        this.workQueue.defaultColumnDisplay.forEach((h) => {
-          this.headers.push({
-            text: h.text,
-            value: h.value,
-            show: h.show,
-          })
-          this.headerLinks[h.value] = h.show
-        })
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -413,24 +410,9 @@ export default {
         // this.totalItems = data.totalElements
         this.results = data?.data || []
 
-        console.log(this.workQueue.defaultColumnDisplay)
-        console.log(this.results)
-
-        this.workQueue.defaultColumnDisplay.forEach((dc) => {
-          if (dc.show === false) {
-            data?.data.forEach((r) => {
-              delete r[dc.value]
-              if (dc.value === 'Project Name') {
-                delete r['tags']
-              }
-            })
-          }
-        })
-
-
-
         this.noResults = this.results?.length === 0
         this.useProcessStepHeaders = this.results?.length > 0 && 'Owning Positions' in this.results[0]
+
 
         //due to the way smartlist loads and exports arrays we have to parse these for use on the frontend
         //for PS both Notes and Owning positions should exist,
@@ -441,9 +423,9 @@ export default {
             r.showNotesModal = false
             r.notes = JSON.parse(r['Notes'])
             r.followUpDate = null != r.notes[0]?.followUpDate && undefined !== r.notes[0]?.followUpDate ? moment.utc(r.notes[0]?.followUpDate, 'YYYY-MM-DD').format('M/D/YYYY') : null,
-            r.firstNoteCreatedAt = r.notes[0]?.dateCreated,
-            r.firstNoteCreatedAtFormatted = null != r.notes[0]?.dateCreated && undefined !== r.notes[0]?.dateCreated ? moment.utc(r.notes[0]?.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('M/D/YYYY h:mm a') : null,
-            r.firstNoteContent = r.notes[0]?.note
+              r.firstNoteCreatedAt = r.notes[0]?.dateCreated,
+              r.firstNoteCreatedAtFormatted = null != r.notes[0]?.dateCreated && undefined !== r.notes[0]?.dateCreated ? moment.utc(r.notes[0]?.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(this.timezone).format('M/D/YYYY h:mm a') : null,
+              r.firstNoteContent = r.notes[0]?.note
             // r.activeProcessSteps = JSON.parse(r['Active Process Steps'])
             if('Owning Positions' in this.results[0]) {
               this.queueHasOwningPositions = true
@@ -458,6 +440,17 @@ export default {
 
         this.masterResults = cloneDeep(this.results)
         this.filteredResults = cloneDeep(this.results)
+        if (this.useProcessStepHeaders) {
+          this.headers = [
+            {text: 'Project', value: 'Project Name', show: true},
+            {text: 'Process Step', value: 'Process Step Name', show: true},
+            {text: 'Status', value: 'Process Step Status Type', show: true},
+            {text: 'Days In Queue', value: 'Days In Queue', show: true},
+            {text: 'State', value: 'State Abbreviation', show: true},
+            {text: 'Owner', value: 'Owner', show: true},
+            {text: 'Active Process Steps', value: 'Active Process Steps', show: true},
+          ]
+        }
 
         //all custom fields from smartlists already had a dataTypeId, I changed the event default fields to pass back dataTypeId on the necessary columns
         //process step default fields dont need it as they are treated differently
@@ -473,11 +466,11 @@ export default {
               if ([4,6].includes(c.dataTypeId) ) {
                 return (a === null) - (b === null) || a - b
               }
-              //if it is a date, format the string as a date and sort by that value
-              //without the .toString() this fails for numeric values
+                //if it is a date, format the string as a date and sort by that value
+                //without the .toString() this fails for numeric values
               //this does a lot of extra checking we probably dont need now that we know the data type id of the column, but i am keeping it cuz i am not sure what it all does
               else if ( [1,2].includes(c.dataTypeId) && ((null != a && a.toString().match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.toString().match(/^\d{4}-\d{2}-\d{2}/))
-                  || ((null != a && !isNaN(Date.parse(a)) || (null != b && !isNaN(Date.parse(b))))))) {
+                || ((null != a && !isNaN(Date.parse(a)) || (null != b && !isNaN(Date.parse(b))))))) {
                 //todo: keep an eye on if Date.parse returns false for regular numbers and such
                 //note: firefox doesn't support date formats with hyphens. only with /
 
@@ -523,23 +516,18 @@ export default {
           this.headers.push({text: 'Note Content', value: 'firstNoteContent', sortable: true, show: true, width: 250})
         }
 
+        //hide default columns based on backend
+        this.workQueue.defaultColumnDisplay.forEach(c => {
+          if (!c.show) {
+            const index = this.headers.findIndex((h) => h.value === c.value)
+            this.headers[index].show = false
+          }
+        })
+
         //check for a cached search and filter results accordingly
         if (this.cachedFilters[this.workQueueTypeId]) {
           Object.keys(this.cachedFilters[this.workQueueTypeId]).forEach(key => {
-            if (this.cachedFilters[this.workQueueTypeId][key] === "") {
-              delete this.cachedFilters[this.workQueueTypeId][key]
-            }
-          })
-        }
-
-        this.cachedFilters = JSON.parse(localStorage.getItem('wqDrilldownFilters')) || {}
-        if (this.cachedFilters[this.workQueueTypeId]) {
-          Object.keys(this.cachedFilters[this.workQueueTypeId]).forEach(key => {
-            this.workQueue.defaultColumnDisplay.forEach((dc) => {
-              if(dc.value === key && dc.show === true) {
-                this.filters[key] = this.cachedFilters[this.workQueueTypeId][key]
-              }
-            })
+            this.filters[key] = this.cachedFilters[this.workQueueTypeId][key]
           })
           this.filterResults()
         }
@@ -601,7 +589,7 @@ export default {
         let numFiltersUsed = 0
         Object.keys(this.filters).forEach(key => {
           //trim the value to see if they just searched for a bunch of space characters
-          let value = this.filters[key]?.trim().length === 0 ? '' : this.filters[key]
+          let value = this.filters[key].trim().length === 0 ? '' : this.filters[key]
 
           //populate the cached filters with the user's search
           //if there is no cached search for this wqt then add a blank object for it
@@ -609,12 +597,8 @@ export default {
             this.cachedFilters[this.workQueueTypeId] = {}
           }
 
-          // add the value if not blank
-          if (value !== '') {
-            this.cachedFilters[this.workQueueTypeId][key] = value
-          } else {
-            delete this.cachedFilters[this.workQueueTypeId][key]
-          }
+          //then add the value
+          this.cachedFilters[this.workQueueTypeId][key] = value
 
           if (null != value && value !== '') {
             numFiltersUsed++
@@ -624,7 +608,6 @@ export default {
           }
         })
         localStorage.setItem('wqDrilldownFilters', JSON.stringify(this.cachedFilters))
-
         return matchCount === numFiltersUsed
       })
       //we populate this so that if they hide/unhide future after doing some filtering we can get back to the filtered state

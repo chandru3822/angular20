@@ -45,6 +45,8 @@ public class InstallAgreementService {
 
   private final SecurityService securityService;
 
+  private final EnFinService enFinService;
+
   private final SunlightService sunlightService;
 
   private final SunpowerService sunpowerService;
@@ -98,12 +100,13 @@ public class InstallAgreementService {
   }
 
   public String saveRequest(InstallAgreementRequest request) throws Exception {
+	  //@TODO: Holding off on SREC functionality until we get a production API key
     // first create disclosure doc through SREC
-    var srecSuccessful = sendDisclosureDoc(request.getProjectId(), request.getProposalNbr());
-
-    if (!srecSuccessful) {
-      throw new RuntimeException("Unable to create disclosure document");
-    }
+//    var srecSuccessful = sendDisclosureDoc(request.getProjectId(), request.getProposalNbr());
+//
+//    if (!srecSuccessful) {
+//      throw new RuntimeException("Unable to create disclosure document");
+//    }
 
     final String result = createRequest(request);
     if (result == null || result.trim().isEmpty()) {
@@ -162,10 +165,17 @@ public class InstallAgreementService {
 
     body.setDepositOwed(srec.getTotalCost());
     body.setReferenceNumber(srec.getProjectId().toString());
-    body.setProjectSizeKwDc(srec.getSystemSize());
-    body.setProjectSizeKwAc(srec.getSystemSizeAc());
+
+	var systemSizeKw = new BigDecimal(srec.getSystemSize()).divide(new BigDecimal(1000));
+    var systemSizeAcKw = new BigDecimal(srec.getSystemSizeAc()).divide(new BigDecimal(1000));
+
+    body.setProjectSizeKwDc(systemSizeKw.toString());
+    body.setProjectSizeKwAc(systemSizeAcKw.toString());
     body.setGrossElectricProduction(srec.getYearOneKwhOutput());
-    body.setExpectedRecValue(srec.getSrecValue().toString());
+
+	var srecValue = new BigDecimal(srec.getSrecValue().toString()).divide(new BigDecimal("0.9"), 2, RoundingMode.HALF_UP);
+
+    body.setExpectedRecValue(srecValue.toString());
     body.setRecCustomerPayment(srec.getSrecValue().toString());
 
     if (isFinanced) {
@@ -400,6 +410,7 @@ public class InstallAgreementService {
       sqlCache.getBySql(PandaDocQuery.getProjectDetails, params, PandaDocProjectDetails.class);
 
     if (deets.isPresent()) {
+      String goodleapUrl = null;
       PandaDocProjectDetails pd = deets.get();
       final String loanType = pd.getLoanType();
 
@@ -407,7 +418,10 @@ public class InstallAgreementService {
         throw new ApiException("Loan Type required and not found");
       }
 
-      if (loanType.toLowerCase().contains("sunlight")) {
+      if (loanType.toLowerCase().contains("enfin")) {
+        Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
+        return enFinService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
+      } else if (loanType.toLowerCase().contains("sunlight")) {
         Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
 
         try {
@@ -443,46 +457,16 @@ public class InstallAgreementService {
               "Unable to generate GoodLeap application due to existing Sunlight application.");
           }
         }
-        String bothStreets = "";
-        if (pd.getMailingStreet1() != null) {
-          bothStreets += pd.getMailingStreet1();
-        }
-        if (pd.getMailingStreet2() != null) {
-          bothStreets += " " + pd.getMailingStreet2();
-        }
-
-        bothStreets = bothStreets.trim();
-        String phoneNumber = "";
-        if (pd.getPhone() != null) {
-          phoneNumber = pd.getPhone().replaceAll("[^\\d]+", "");
-          if (phoneNumber.length() > 10 && phoneNumber.charAt(0) == '1') {
-            phoneNumber = phoneNumber.substring(1);
-          }
-        }
 
         try {
-          String financeOption = null != pd.getFinancialOption() ? pd.getFinancialOption() : getFinanceOption(pd.getLoanType(), pd.getLoanTerm(), pd.getInterestRate(), pd.getProposalLogHistoryId());
-          URIBuilder b = new URIBuilder(goodleapNewLoanUrl + financeOption + ".html");
-          b.addParameter("fname", s(pd.getCustomerFirstName()));
-          b.addParameter("lname", s(pd.getCustomerLastName()));
-          b.addParameter("street", bothStreets);
-          b.addParameter("city", s(pd.getCity()));
-          b.addParameter("state", s(pd.getMailingState()));
-          b.addParameter("zip", s(pd.getPostalCode()));
-          b.addParameter("email", s(pd.getCustomerEmail()));
-          b.addParameter("phone", phoneNumber);
-          b.addParameter("srfn", s(pd.getCloserFirstName()));
-          b.addParameter("srln", s(pd.getCloserLastName()));
-          b.addParameter("sre", s(pd.getCloserEmail()));
-          b.addParameter("cost", s(pd.getLoanAmount()));
-          b.addParameter("refnum", s(pd.getProjectId()));
-          return b.build().toString().replaceAll("\\+", "%20");
-        } catch (URISyntaxException e) {
-          log.error("IARQ: uri error={}", e.getMessage());
+          goodleapUrl = goodleapService.generateApplication(pd);
+        } catch (Exception e) {
+          log.error("IARQ: Error generating GoodLeap loan application for project ID " + pd.getProjectId() + " error={}", e.getMessage());
+          return goodleapNewLoanUrl;
         }
       }
       sunlightService.setCreditLastCheckedBy(projectId, "GoodLeap");
-      return goodleapNewLoanUrl;
+      return goodleapUrl == null ? goodleapNewLoanUrl : goodleapUrl;
     } else {
       throw new ApiException("Proposal Log not found");
     }
@@ -615,7 +599,9 @@ public class InstallAgreementService {
       inverterCustomGetting,
       panel,
       panelWattage,
-      storageBrand;
+      storageBrand,
+      numberOfBatteries,
+      allAncillaryCosts;
   }
 
   @Data

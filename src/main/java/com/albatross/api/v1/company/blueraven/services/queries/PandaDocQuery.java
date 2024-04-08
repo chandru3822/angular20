@@ -23,6 +23,7 @@ public class PandaDocQuery {
       (select first_name from flow.user where id = pd.closer_user_id)            AS closer_first_name,
       (select last_name from flow.user where id = pd.closer_user_id)             AS closer_last_name,
       (select email from flow.user where id = pd.closer_user_id) AS closer_email,
+      (select search_phone from flow.user where id = pd.closer_user_id) AS closer_phone,
       c.first_name            AS customer_first_name,
       c.last_name             AS customer_last_name,
       c.email                 AS customer_email,

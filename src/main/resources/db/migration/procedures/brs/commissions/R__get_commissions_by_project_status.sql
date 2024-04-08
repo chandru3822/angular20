@@ -9,7 +9,7 @@ declare
 begin
   return query
   select pd.company_project_status_type,
-         coalesce(fd.total_commissions,0) - coalesce(fd.total_commissions_paid_to_date,0) as commissions_outstanding
+         round(coalesce(fd.total_commissions,0) - coalesce(fd.total_commissions_paid_to_date,0) - coalesce(pd.commission_forfeited_by_closer,0)) as commissions_outstanding
   from flow.project p
          inner join brs.financial_details fd on fd.project_id=p.id
          inner join brs.project_details pd on pd.project_id = fd.project_id

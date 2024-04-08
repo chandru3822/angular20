@@ -2,11 +2,12 @@
   <ThreeColumnLayout
     id="main-inbox-container"
     :header-hidden="true"
-    :right-hidden="!route.params.projectId && !route.params.userId"
+    :right-hidden="!$route.params.projectId && !$route.params.userId"
     :left-hidden="true"
+    :half-n-half="true"
     :auto-overflow-left="true"
     :show-right-collapse-btn="false"
-    @closeRight="router.push({path: `/inbox`})"
+    @closeRight="$router.push({path: `/inbox`})"
   >
     <template v-slot:main-column>
       <ConfirmAssignmentDialog :show-join-conversation-dialog.sync="showAssignToMeDialog"
@@ -34,11 +35,11 @@
               ></v-badge>
             </v-tab>
             <v-spacer></v-spacer>
-            <AlbatrossButton v-if="teamsAssociatedToUser.length > 0" color="primary"
-                    class="justify-end new-message-button mt-3" @click="showNewMessageDialog = true"
-                  prepend-icon="message-add-icon"
-                  text="NEW MESSAGE"
-            />
+            <v-btn  v-if="teamsAssociatedToUser.length > 0" color="primary"
+                    class="justify-end new-message-button mt-3" @click="showNewMessageDialog = true">
+              <v-icon class="message-add-icon">add</v-icon>
+              New Message
+            </v-btn>
           </v-tabs>
           <v-row class="px-2 pt-2 toolbar-row-2 mt-4">
             <v-text-field
@@ -78,7 +79,7 @@
               @change="reloadConversations"
               label="Show unread only"
               class="read-filter albatross-body-2 align-self-end flex-shrink-0 default-text-color pr-6 pl-1"
-              :class="{'small-width': viewWidth===1264 && route.path.includes('inboxConversation')}"
+              :class="{'small-width': viewWidth===1264 && this.$route.path.includes('inboxConversation')}"
             >
             </v-checkbox>
             <v-autocomplete v-model="selectedTeamFilters"
@@ -187,7 +188,7 @@
 
         <template #item="{ item, index }">
           <v-col class="inbox-row pa-6 clickable"
-                 :class="{'selected': (item.projectId && route.params.projectId == item.projectId) || (item.userId && route.params.userId == item.userId)}"
+                 :class="{'selected': (item.projectId && $route.params.projectId == item.projectId) || (item.userId && $route.params.userId == item.userId)}"
                  @click="openConversation(item)">
             <v-row class="justify-space-between flex-nowrap mx-0 pa-0">
               <v-col cols="11" class="pa-0">
@@ -236,10 +237,10 @@
       <NewMessageDialog :show-new-message-dialog.sync="showNewMessageDialog" :is-inbox="true" class="pa-0"/>
     </template>
     <template v-slot:collapse-button>
-      <AlbatrossButton class="d-inline-block align-self-center" size="small" variant="text" color="primary"
-                       @click="router.push({path: `/inbox`})"
-                       prepend-icon="close"
-      />
+      <v-btn class="d-inline-block align-self-center" small text color="primary"
+             @click="$router.push({path: `/inbox`})">
+        <v-icon>close</v-icon>
+      </v-btn>
     </template>
     <template v-slot:right-column>
       <ProjectActivity v-if="!thingsLoading" collapseBtnIcon="close" :allowSidebarCollapse="false" @collapseCallback="closeConversation"></ProjectActivity>
@@ -247,7 +248,7 @@
   </ThreeColumnLayout>
 </template>
 
-<script setup>
+<script>
 import { AppMutations } from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
@@ -261,602 +262,618 @@ import { NotificationActions } from '@/plugins/notifications/NotificationStore'
 import debounce from 'lodash.debounce'
 import ProjectActivity from "@/views/flow/project/ProjectActivity.vue";
 
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
-
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const route = vueInstance.$route
-const router = vueInstance.$router
-const vuetify = vueInstance.$vuetify
-
-const userCanViewAll = ref(store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW_ALL'))
-const conversations = ref([])
-const options = ref({
-  itemsPerPage: 25
-})
-const footerProps = ref({
-  'items-per-page-options': [25, 50, 100],
-  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-})
-const searchQuery = ref('')
-const userId = ref(store.state.user.details.id)
-const sortOldToNew = ref(false)
-const ownerFilterOptions = ref([])
-const selectedOwnerFilters = ref([])
-const teamFilterOptions = ref([])
-const selectedTeamFilters = ref([])
-const showUnreadOnly = ref(false)
-const showInbox = ref(true)
-const showAssignToMeDialog = ref(false)
-const showNewMessageDialog = ref(false)
-const assignToMe = ref([])
-const teamsAssociatedToUser = ref([])
-const teamNamesAssociatedToUser = ref([])
-const evtSource = ref('')
-const thingsLoading = ref(0)
-const viewWidth = ref(window.innerWidth)
-const selectableTeams = ref([])
-const reloadInProgress = ref(false)
-const totalConversations = ref(0)
-const page = ref(1)
-const initialLoad = ref(true)
-const projectIdsForCurrentFilter = ref([])
-const projectIdsInbox = ref([])
-const projectIdsSent = ref([])
-const userIdsForCurrentFilter = ref([])
-const userIdsInbox = ref([])
-const userIdsSent = ref([])
-const messageTypeFilter = ref('All')
-const messageTypes = ref(['All', 'Internal', 'Customer'])
-const isSmsOwnershipEventsRunning = ref(false)
-
-const inboxNotificationCount = computed(() => {
-  let count = 0;
-
-  // Get Project notifications
-  let notifProjectIds = smsNotification.value?.map(n => n.metadata?.projectId)
-  notifProjectIds.forEach(npi => {
-    if (projectIdsInbox.value && projectIdsInbox.value.includes(npi)) {
-      count++;
+export default {
+  name: 'Inbox',
+  components: {
+    ProjectActivity,
+    TeamAssignmentChips,
+    ThreeColumnLayout,
+    ConfirmAssignmentDialog,
+    NewMessageDialog
+  },
+  mixins: [Vue2Filters.mixin],
+  constants,
+  data() {
+    return {
+      userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW_ALL'),
+      snackbar: {},
+      conversations: [],
+      options: {
+        itemsPerPage: 25
+      },
+      footerProps: {
+        'items-per-page-options': [25, 50, 100],
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+      },
+      searchQuery: '',
+      constants,
+      userId: this.$store.state.user.details.id,
+      sortOldToNew: false,
+      ownerFilterOptions: [],
+      selectedOwnerFilters: [],
+      teamFilterOptions: [],
+      selectedTeamFilters: [],
+      showUnreadOnly: false,
+      showInbox: true,
+      showAssignToMeDialog: false,
+      showNewMessageDialog: false,
+      assignToMe: [],
+      teamsAssociatedToUser: [],
+      teamNamesAssociatedToUser: [],
+      evtSource: '',
+      thingsLoading: 0,
+      viewWidth: window.innerWidth,
+      selectableTeams: [],
+      reloadInProgress: false,
+      totalConversations: 0,
+      page: 1,
+      initialLoad: true,
+      projectIdsForCurrentFilter: [],
+      projectIdsInbox: [],
+      projectIdsSent: [],
+      userIdsForCurrentFilter: [],
+      userIdsInbox: [],
+      userIdsSent: [],
+      messageTypeFilter: 'All',
+      messageTypes: ['All', 'Internal', 'Customer'],
+      isSmsOwnershipEventsRunning: false
     }
-  })
+  },
+  computed: {
+    inboxNotificationCount() {
+      let count = 0;
 
-  // Get User notifications
-  let notifUserIds = smsNotification.value?.map(n => n.metadata?.userId)
-  notifUserIds.forEach(nui => {
-    if (userIdsInbox.value && userIdsInbox.value.includes(nui)) {
-      count++;
-    }
-  })
-
-  return count;
-})
-const sentNotificationCount = computed(() => {
-  let count = 0;
-  // Get Project notifications
-  let notifProjectIds = smsNotification.value?.map(n => n.metadata?.projectId)
-  notifProjectIds.forEach(npi => {
-    if (projectIdsSent.value && projectIdsSent.value.includes(npi)) {
-      count++;
-    }
-  })
-
-  // Get User notifications
-  let notifUserIds = smsNotification.value?.map(n => n.metadata?.userId)
-  notifUserIds.forEach(nui => {
-    if (userIdsSent.value && userIdsSent.value.includes(nui)) {
-      count++;
-    }
-  })
-
-  return count;
-})
-const smsOwnershipEvents = computed(() => {
-  return store.getters.getEventsByTopic('sms_ownership').length
-})
-const smsNotification = computed(() => {
-  return store.getters.getNotificationsByTopic('sms_reply')
-})
-const conversationsFiltered = computed(() => {
-  let conversationList = conversations.value
-  if (conversations.value) {
-    return conversationList.sort((a, b) => {
-      return sortOldToNew.value ?
-        (a.messageHistory.length > 0 ? new Date(a.messageHistory[0].lastMessageSent) : 0) - (b.messageHistory.length > 0 ? new Date(b.messageHistory[0].lastMessageSent) : 0) :
-        (b.messageHistory.length > 0 ? new Date(b.messageHistory[0].lastMessageSent) : 0) - (a.messageHistory.length > 0 ? new Date(a.messageHistory[0].lastMessageSent) : 0)
-    })
-  }
-  else {
-    return [];
-  }
-
-})
-const allTeamsSelected = computed(() => {
-  return selectedTeamFilters.value.length === teamFilterOptions.value.length
-})
-const allOwnersSelected = computed(() => {
-  return selectedOwnerFilters.value.length === ownerFilterOptions.value.length
-})
-const teamsIcon = computed(() => {
-  if (selectedTeamFilters.value.length === teamFilterOptions.value.length) {
-    return 'check_box'
-  }
-  if (selectedTeamFilters.value.length > 0) {
-    return 'indeterminate_check_box'
-  }
-  return 'check_box_outline_blank'
-})
-const ownersIcon = computed(() => {
-  if (selectedOwnerFilters.value.length === ownerFilterOptions.value.length) {
-    return 'check_box'
-  }
-  if (selectedOwnerFilters.value.length > 0) {
-    return 'indeterminate_check_box'
-  }
-  return 'check_box_outline_blank'
-})
-const teamFilterChipLimit = computed(() => {
-  if (viewWidth.value < 1264) {
-    //smaller screen
-    if (route.path.includes('inboxConversation')) {
-      //right panel open
-      return 0
-    }
-    //right panel closed
-    return 2
-  }
-  //larger screen
-  if (route.path.includes('inboxConversation')) {
-    //right panel open
-    return 1
-  }
-  //right panel closed
-  return 3
-})
-const ownerFilterChipLimit = computed(() => {
-  if (viewWidth.value < 1264) {
-    //smaller screen
-    if (route.path.includes('inboxConversation')) {
-      //right panel open
-      return 0
-    }
-    //right panel closed
-    return 3
-  }
-  //larger screen
-  if (route.path.includes('inboxConversation')) {
-    //right panel open
-    return 2
-  }
-  //right panel closed
-  if (teamFilterOptions.value.length > 1) {
-    //teams filter is showing
-    return 4
-  }
-  //teams filter not showing
-  return 6
-})
-const hasUnassignedNotifications = computed(() => {
-  let hasNotifications = false
-  teamsAssociatedToUser.value?.forEach(t => {
-    if (t.receiveUnassignedNotifications) {
-      hasNotifications = true;
-    }
-  })
-
-  return hasNotifications;
-})
-const showLoading = (isLoading) => {
-  if (isLoading) {
-    if (thingsLoading.value == 0) {
-      store.commit(AppMutations.SET_LOADING, true)
-    }
-    thingsLoading.value++
-  } else {
-    thingsLoading.value--
-    if (thingsLoading.value == 0) {
-      store.commit(AppMutations.SET_LOADING, false)
-    }
-  }
-}
-const fetchConversations = async () => {
-  try {
-    showLoading(true)
-    const { page, itemsPerPage } = options.value
-    let filterData = {
-      ownerUserIds: selectedOwnerFilters.value,
-      smsTeamIds: selectedTeamFilters.value,
-      notifProjectIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.projectId) : [-1]) : [],
-      notifUserIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.userId) : [-1]) : [],
-      showProjects: (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All') ? true : false,
-      showUsers: (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All') ? true : false,
-      showInbox: showInbox.value
-    }
-    const { data } = await postRequest(`/messaging/conversations?size=${itemsPerPage}&page=${page - 1}&query=${searchQuery.value}`,
-      filterData
-    )
-
-    if (data) {
-      conversations.value = data.content
-      if (conversations.value && conversations.value.length > 0) {
-        projectIdsInbox.value = conversations.value[0].projectIdsInbox
-        projectIdsSent.value = conversations.value[0].projectIdsSent
-        projectIdsForCurrentFilter.value = conversations.value[0].projectIdsForFilter
-        userIdsInbox.value = conversations.value[0].userIdsInbox
-        userIdsSent.value = conversations.value[0].userIdsSent
-        userIdsForCurrentFilter.value = conversations.value[0].userIdsForFilter
-      }
-
-      // If Projects are being displayed
-      if (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All') {
-        totalConversations.value = projectIdsForCurrentFilter.value?.length || 0
-      }
-      // If Users are being displayed
-      if (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All') {
-        totalConversations.value += userIdsForCurrentFilter.value?.length || 0
-      }
-
-      conversations.value?.forEach(p => {
-        p.showAssignToMeButton = teamsAssociatedToUser.value.length > 0
-        p.smsTeamOwners.forEach(team => {
-          team.users.forEach(owner => {
-            if (owner.userId === userId.value) {
-              p.showAssignToMeButton = false
-            }
-          })
-        })
+      // Get Project notifications
+      let notifProjectIds = this.smsNotification?.map(n => n.metadata?.projectId)
+      notifProjectIds.forEach(npi => {
+        if (this.projectIdsInbox && this.projectIdsInbox.includes(npi)) {
+          count++;
+        }
       })
-    }
-    handleHidingGlobalLoader(vueInstance, status)
-    showLoading(false)
-    initialLoad.value = false
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching conversations')
-    showLoading(false)
-  }
-}
-const reloadConversations = async () => {
-  try {
-    showLoading(true)
-    const {page, itemsPerPage} = options.value
 
-    let filterData = {
-      ownerUserIds: selectedOwnerFilters.value,
-      smsTeamIds: selectedTeamFilters.value,
-      notifProjectIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.projectId) : [-1]) : [],
-      notifUserIds: showUnreadOnly.value ? (smsNotification.value?.length > 0 ? smsNotification.value?.map(n => n.metadata?.userId) : [-1]) : [],
-      showProjects: (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All'),
-      showUsers: (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All'),
-      showInbox: showInbox.value
-    }
-
-    const { data } = await postRequest(`/messaging/conversations?size=${itemsPerPage}&page=${page - 1}&query=${searchQuery.value}`,
-      filterData
-    )
-
-    if (data) {
-      conversations.value = data.content
-      if (conversations.value && conversations.value.length > 0) {
-        projectIdsForCurrentFilter.value = conversations.value[0].projectIdsForFilter
-        userIdsForCurrentFilter.value = conversations.value[0].userIdsForFilter
-        // If New/Sent notification badges weren't loaded yet (No conversations under New), get values now
-        if ((!projectIdsInbox.value || projectIdsInbox.value.length === 0) && (!projectIdsSent.value || projectIdsSent.value.length === 0)) {
-          projectIdsInbox.value = conversations.value[0].projectIdsInbox
-          projectIdsSent.value = conversations.value[0].projectIdsSent
+      // Get User notifications
+      let notifUserIds = this.smsNotification?.map(n => n.metadata?.userId)
+      notifUserIds.forEach(nui => {
+        if (this.userIdsInbox && this.userIdsInbox.includes(nui)) {
+          count++;
         }
+      })
 
-        if ((!userIdsInbox.value || userIdsInbox.value.length === 0) && (!userIdsSent.value || userIdsSent.value.length === 0)) {
-          userIdsInbox.value = conversations.value[0].userIdsInbox
-          userIdsSent.value = conversations.value[0].userIdsSent
+      return count;
+    },
+    sentNotificationCount() {
+      let count = 0;
+      // Get Project notifications
+      let notifProjectIds = this.smsNotification?.map(n => n.metadata?.projectId)
+      notifProjectIds.forEach(npi => {
+        if (this.projectIdsSent && this.projectIdsSent.includes(npi)) {
+          count++;
         }
+      })
+
+      // Get User notifications
+      let notifUserIds = this.smsNotification?.map(n => n.metadata?.userId)
+      notifUserIds.forEach(nui => {
+        if (this.userIdsSent && this.userIdsSent.includes(nui)) {
+          count++;
+        }
+      })
+
+      return count;
+    },
+    smsOwnershipEvents() {
+      return this.$store.getters.getEventsByTopic('sms_ownership').length
+    },
+    smsNotification() {
+      return this.$store.getters.getNotificationsByTopic('sms_reply')
+    },
+    conversationsFiltered() {
+      let conversationList = this.conversations
+      if (this.conversations) {
+        return conversationList.sort((a, b) => {
+          return this.sortOldToNew ?
+            (a.messageHistory.length > 0 ? new Date(a.messageHistory[0].lastMessageSent) : 0) - (b.messageHistory.length > 0 ? new Date(b.messageHistory[0].lastMessageSent) : 0) :
+            (b.messageHistory.length > 0 ? new Date(b.messageHistory[0].lastMessageSent) : 0) - (a.messageHistory.length > 0 ? new Date(a.messageHistory[0].lastMessageSent) : 0)
+        })
       }
       else {
-        projectIdsForCurrentFilter.value = []
-        userIdsForCurrentFilter.value = []
+        return [];
       }
 
-      // If Projects are being displayed
-      if (messageTypeFilter.value === 'Customer' || messageTypeFilter.value === 'All') {
-        totalConversations.value = projectIdsForCurrentFilter.value?.length || 0
+    },
+    allTeamsSelected() {
+      return this.selectedTeamFilters.length === this.teamFilterOptions.length
+    },
+    allOwnersSelected() {
+      return this.selectedOwnerFilters.length === this.ownerFilterOptions.length
+    },
+    teamsIcon() {
+      if (this.selectedTeamFilters.length === this.teamFilterOptions.length) {
+        return 'check_box'
       }
-      // If Users are being displayed
-      if (messageTypeFilter.value === 'Internal' || messageTypeFilter.value === 'All') {
-        totalConversations.value += userIdsForCurrentFilter.value?.length || 0
+      if (this.selectedTeamFilters.length > 0) {
+        return 'indeterminate_check_box'
       }
-
-      conversations.value?.forEach(p => {
-        p.showAssignToMeButton = teamsAssociatedToUser.value.length > 0
-        p.smsTeamOwners.forEach(team => {
-          team.users.forEach(owner => {
-            if (owner.userId === userId.value) {
-              p.showAssignToMeButton = false
-            }
-          })
-        })
+      return 'check_box_outline_blank'
+    },
+    ownersIcon() {
+      if (this.selectedOwnerFilters.length === this.ownerFilterOptions.length) {
+        return 'check_box'
+      }
+      if (this.selectedOwnerFilters.length > 0) {
+        return 'indeterminate_check_box'
+      }
+      return 'check_box_outline_blank'
+    },
+    teamFilterChipLimit() {
+      if (this.viewWidth < 1264) {
+        //smaller screen
+        if (this.$route.path.includes('inboxConversation')) {
+          //right panel open
+          return 0
+        }
+        //right panel closed
+        return 2
+      }
+      //larger screen
+      if (this.$route.path.includes('inboxConversation')) {
+        //right panel open
+        return 1
+      }
+      //right panel closed
+      return 3
+    },
+    ownerFilterChipLimit() {
+      if (this.viewWidth < 1264) {
+        //smaller screen
+        if (this.$route.path.includes('inboxConversation')) {
+          //right panel open
+          return 0
+        }
+        //right panel closed
+        return 3
+      }
+      //larger screen
+      if (this.$route.path.includes('inboxConversation')) {
+        //right panel open
+        return 2
+      }
+      //right panel closed
+      if (this.teamFilterOptions.length > 1) {
+        //teams filter is showing
+        return 4
+      }
+      //teams filter not showing
+      return 6
+    },
+    hasUnassignedNotifications() {
+      let hasNotifications = false
+      this.teamsAssociatedToUser?.forEach(t => {
+        if (t.receiveUnassignedNotifications) {
+          hasNotifications = true;
+        }
       })
+
+      return hasNotifications;
     }
+  },
+  methods: {
+    showLoading(isLoading) {
+      if (isLoading) {
+        if (this.thingsLoading == 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+        }
+        this.thingsLoading++
+      } else {
+        this.thingsLoading--
+        if (this.thingsLoading == 0) {
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    },
+    async fetchConversations() {
+      try {
+        this.showLoading(true)
+        const { page, itemsPerPage } = this.options
+        let filterData = {
+          ownerUserIds: this.selectedOwnerFilters,
+          smsTeamIds: this.selectedTeamFilters,
+          notifProjectIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.projectId) : [-1]) : [],
+          notifUserIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.userId) : [-1]) : [],
+          showProjects: (this.messageTypeFilter === 'Customer' || this.messageTypeFilter === 'All') ? true : false,
+          showUsers: (this.messageTypeFilter === 'Internal' || this.messageTypeFilter === 'All') ? true : false,
+          showInbox: this.showInbox
+        }
+        const { data } = await postRequest(`/messaging/conversations?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
+          filterData
+        )
 
-    handleHidingGlobalLoader(vueInstance, status)
-    showLoading(false)
-    reloadInProgress.value = false
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching conversations')
-
-    showLoading(false)
-    reloadInProgress.value = false
-  }
-}
-const getTime = (lastMessageSent) => {
-  const now = moment()
-  const lastMessage = moment(lastMessageSent)
-
-  // get the difference between the moments
-  const diff = now.diff(lastMessage)
-  const diffDuration = moment.duration(diff)
-
-  if (diffDuration.years() > 0) {
-    return moment(lastMessageSent).format('M/D/YYYY h:mm a')
-  } else if (diffDuration.days() > 0 || diffDuration.hours() > 12) {
-    return moment(lastMessageSent).format('M/D h:mm a')
-  } else {
-    return moment(lastMessageSent).fromNow()
-  }
-}
-const joinConversation = async (selectedTeam) => {
-  try {
-    if (teamsAssociatedToUser.value && teamsAssociatedToUser.value.length === 1) {
-      selectedTeam = teamsAssociatedToUser.value[0]
-    }
-    // If the User has multiple teams available, have them select a team to join with first
-    else if (teamsAssociatedToUser.value.length > 1 && !selectedTeam) {
-      showAssignToMeDialog.value = true
-      return
-    }
-    showLoading(true)
-
-    let addTeamUrl = assignToMe.value.projectId ? `/messaging/addTeam/project/${assignToMe.value.projectId}` : `/messaging/addTeam/user/${assignToMe.value.userId}`
-    await postRequest(addTeamUrl, selectedTeam)
-    snackbar('SUCCESS', 'Successfully joined conversation')
-
-    if (!route.path.includes('inboxConversation')) {
-      let inboxUrl = assignToMe.value.projectId ? `/inbox/inboxConversation/project/${assignToMe.value.projectId}` : `/inbox/inboxConversation/user/${assignToMe.value.userId}`
-      //avoids redundant navigation console error
-      router.push({ path: inboxUrl })
-    }
-    showLoading(false)
-    showAssignToMeDialog.value = false
-    await fetchConversations()
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error joining conversation')
-    showLoading(false)
-  }
-}
-const fetchTeamsForUser = async () => {
-  showLoading(true)
-  try {
-    const { data } = await getRequest(`/smsTeam/getTeamsForUser`)
-    showLoading(false)
-    if (data && Array.isArray(data)) {
-      teamsAssociatedToUser.value = data
-      teamNamesAssociatedToUser.value = data?.map(team => team.teamName)
-    }
-    await getAvailableTeams()
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching SMS Teams')
-
-    showLoading(false)
-  }
-}
-const projectNotificationCount = (projectId) => {
-  return smsNotification.value?.filter(n => n.metadata?.projectId === projectId)?.length
-}
-const userNotificationCount = (userId) => {
-  return smsNotification.value?.filter(n => n.metadata?.userId === userId)?.length
-}
-const getNotificationCount = (item) => {
-  if (item.projectId) {
-    return projectNotificationCount(item.projectId)
-  }
-  else if (item.userId) {
-    return userNotificationCount(item.userId)
-  }
-}
-const clearProjectNotification = (projectId) => {
-  const notificationIds = smsNotification.value
-    ?.filter(n => n.metadata.projectId === projectId)
-    ?.map(notif => notif.id)
-
-  store.dispatch(NotificationActions.MARK_AS_READ, notificationIds)
-}
-const clearUserNotification = (userId) => {
-  const notificationIds = smsNotification.value
-    ?.filter(n => n.metadata.userId === userId)
-    ?.map(notif => notif.id)
-
-  store.dispatch(NotificationActions.MARK_AS_READ, notificationIds)
-}
-const toggleSelectAllTeams = () => {
-  if (allTeamsSelected.value) {
-    selectedTeamFilters.value = []
-  } else {
-    selectedTeamFilters.value = teamFilterOptions.value?.map(t => t.id)
-  }
-  teamSelectionChanged()
-}
-const toggleSelectAllOwners = () => {
-  if (allOwnersSelected.value) {
-    selectedOwnerFilters.value = []
-  } else {
-    selectedOwnerFilters.value = ownerFilterOptions.value?.map(o => o.userId)
-  }
-  reloadConversations()
-}
-const onResize = () => {
-  viewWidth.value = window.innerWidth
-}
-const getAvailableTeams = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
-  try {
-    const { data, status } = await getRequest(`/smsTeam/users`)
-    selectableTeams.value = data
-    if (selectableTeams.value && selectableTeams.value.length > 0) {
-      selectableTeams.value.forEach(team => {
-        if (teamNamesAssociatedToUser.value.includes(team.teamName)) {
-          if (!teamAlreadyAddedToFilter(team)) {
-            teamFilterOptions.value.push(team)
+        if (data) {
+          this.conversations = data.content
+          if (this.conversations && this.conversations.length > 0) {
+            this.projectIdsInbox = this.conversations[0].projectIdsInbox
+            this.projectIdsSent = this.conversations[0].projectIdsSent
+            this.projectIdsForCurrentFilter = this.conversations[0].projectIdsForFilter
+            this.userIdsInbox = this.conversations[0].userIdsInbox
+            this.userIdsSent = this.conversations[0].userIdsSent
+            this.userIdsForCurrentFilter = this.conversations[0].userIdsForFilter
           }
 
-          if (selectedTeamFilters.value && !selectedTeamFilters.value.includes(team.id)) {
-            selectedTeamFilters.value.push(team.id)
+          // If Projects are being displayed
+          if (this.messageTypeFilter === 'Customer' || this.messageTypeFilter === 'All') {
+            this.totalConversations = this.projectIdsForCurrentFilter?.length || 0
+          }
+          // If Users are being displayed
+          if (this.messageTypeFilter === 'Internal' || this.messageTypeFilter === 'All') {
+            this.totalConversations += this.userIdsForCurrentFilter?.length || 0
           }
 
-          team.users.forEach(owner => {
-            if (!ownerAlreadyAddedToFilter(owner)) {
-              ownerFilterOptions.value.push(owner)
+          this.conversations?.forEach(p => {
+            p.showAssignToMeButton = this.teamsAssociatedToUser.length > 0
+            p.smsTeamOwners.forEach(team => {
+              team.users.forEach(owner => {
+                if (owner.userId === this.userId) {
+                  p.showAssignToMeButton = false
+                }
+              })
+            })
+          })
+        }
+        handleHidingGlobalLoader(this, status)
+        this.showLoading(false)
+        this.initialLoad = false
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching conversations')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.showLoading(false)
+      }
+    },
+    async reloadConversations() {
+      try {
+        this.showLoading(true)
+        const {page, itemsPerPage} = this.options
 
-              if (owner.userId === userId.value) {
-                selectedOwnerFilters.value.push(owner.userId)
+        let filterData = {
+          ownerUserIds: this.selectedOwnerFilters,
+          smsTeamIds: this.selectedTeamFilters,
+          notifProjectIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.projectId) : [-1]) : [],
+          notifUserIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.userId) : [-1]) : [],
+          showProjects: (this.messageTypeFilter === 'Customer' || this.messageTypeFilter === 'All'),
+          showUsers: (this.messageTypeFilter === 'Internal' || this.messageTypeFilter === 'All'),
+          showInbox: this.showInbox
+        }
+
+        const { data } = await postRequest(`/messaging/conversations?size=${itemsPerPage}&page=${page - 1}&query=${this.searchQuery}`,
+          filterData
+        )
+
+        if (data) {
+          this.conversations = data.content
+          if (this.conversations && this.conversations.length > 0) {
+            this.projectIdsForCurrentFilter = this.conversations[0].projectIdsForFilter
+            this.userIdsForCurrentFilter = this.conversations[0].userIdsForFilter
+            // If New/Sent notification badges weren't loaded yet (No conversations under New), get values now
+            if ((!this.projectIdsInbox || this.projectIdsInbox.length === 0) && (!this.projectIdsSent || this.projectIdsSent.length === 0)) {
+              this.projectIdsInbox = this.conversations[0].projectIdsInbox
+              this.projectIdsSent = this.conversations[0].projectIdsSent
+            }
+
+            if ((!this.userIdsInbox || this.userIdsInbox.length === 0) && (!this.userIdsSent || this.userIdsSent.length === 0)) {
+              this.userIdsInbox = this.conversations[0].userIdsInbox
+              this.userIdsSent = this.conversations[0].userIdsSent
+            }
+          }
+          else {
+            this.projectIdsForCurrentFilter = []
+            this.userIdsForCurrentFilter = []
+          }
+
+          // If Projects are being displayed
+          if (this.messageTypeFilter === 'Customer' || this.messageTypeFilter === 'All') {
+            this.totalConversations = this.projectIdsForCurrentFilter?.length || 0
+          }
+          // If Users are being displayed
+          if (this.messageTypeFilter === 'Internal' || this.messageTypeFilter === 'All') {
+            this.totalConversations += this.userIdsForCurrentFilter?.length || 0
+          }
+
+          this.conversations?.forEach(p => {
+            p.showAssignToMeButton = this.teamsAssociatedToUser.length > 0
+            p.smsTeamOwners.forEach(team => {
+              team.users.forEach(owner => {
+                if (owner.userId === this.userId) {
+                  p.showAssignToMeButton = false
+                }
+              })
+            })
+          })
+        }
+
+        handleHidingGlobalLoader(this, status)
+        this.showLoading(false)
+        this.reloadInProgress = false
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching conversations')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.showLoading(false)
+        this.reloadInProgress = false
+      }
+    },
+    getTime(lastMessageSent) {
+      const now = moment()
+      const lastMessage = moment(lastMessageSent)
+
+      // get the difference between the moments
+      const diff = now.diff(lastMessage)
+      const diffDuration = moment.duration(diff)
+
+      if (diffDuration.years() > 0) {
+        return moment(lastMessageSent).format('M/D/YYYY h:mm a')
+      } else if (diffDuration.days() > 0 || diffDuration.hours() > 12) {
+        return moment(lastMessageSent).format('M/D h:mm a')
+      } else {
+        return moment(lastMessageSent).fromNow()
+      }
+    },
+    async joinConversation(selectedTeam) {
+      try {
+        if (this.teamsAssociatedToUser && this.teamsAssociatedToUser.length === 1) {
+          selectedTeam = this.teamsAssociatedToUser[0]
+        }
+        // If the User has multiple teams available, have them select a team to join with first
+        else if (this.teamsAssociatedToUser.length > 1 && !selectedTeam) {
+          this.showAssignToMeDialog = true
+          return
+        }
+        this.showLoading(true)
+
+        let addTeamUrl = this.assignToMe.projectId ? `/messaging/addTeam/project/${this.assignToMe.projectId}` : `/messaging/addTeam/user/${this.assignToMe.userId}`
+        await postRequest(addTeamUrl, selectedTeam)
+        this.snackbar = getSnackbar('SUCCESS', 'Successfully joined conversation')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        if (!this.$route.path.includes('inboxConversation')) {
+          let inboxUrl = this.assignToMe.projectId ? `/inbox/inboxConversation/project/${this.assignToMe.projectId}` : `/inbox/inboxConversation/user/${this.assignToMe.userId}`
+          //avoids redundant navigation console error
+          this.$router.push({ path: inboxUrl })
+        }
+        this.showLoading(false)
+        this.showAssignToMeDialog = false
+        await this.fetchConversations()
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error joining conversation')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.showLoading(false)
+      }
+    },
+    async fetchTeamsForUser() {
+      this.showLoading(true)
+      try {
+        const { data } = await getRequest(`/smsTeam/getTeamsForUser`)
+        this.showLoading(false)
+        if (data && Array.isArray(data)) {
+          this.teamsAssociatedToUser = data
+          this.teamNamesAssociatedToUser = data?.map(team => team.teamName)
+        }
+        await this.getAvailableTeams()
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.showLoading(false)
+      }
+    },
+    projectNotificationCount(projectId) {
+      return this.smsNotification?.filter(n => n.metadata?.projectId === projectId)?.length
+    },
+    userNotificationCount(userId) {
+      return this.smsNotification?.filter(n => n.metadata?.userId === userId)?.length
+    },
+    getNotificationCount(item) {
+      if (item.projectId) {
+        return this.projectNotificationCount(item.projectId)
+      }
+      else if (item.userId) {
+        return this.userNotificationCount(item.userId)
+      }
+    },
+    clearProjectNotification(projectId) {
+      const notificationIds = this.smsNotification
+        ?.filter(n => n.metadata.projectId === projectId)
+        ?.map(notif => notif.id)
+
+      this.$store.dispatch(NotificationActions.MARK_AS_READ, notificationIds)
+    },
+    clearUserNotification(userId) {
+      const notificationIds = this.smsNotification
+        ?.filter(n => n.metadata.userId === userId)
+        ?.map(notif => notif.id)
+
+      this.$store.dispatch(NotificationActions.MARK_AS_READ, notificationIds)
+    },
+    toggleSelectAllTeams() {
+      if (this.allTeamsSelected) {
+        this.selectedTeamFilters = []
+      } else {
+        this.selectedTeamFilters = this.teamFilterOptions?.map(t => t.id)
+      }
+      this.teamSelectionChanged()
+    },
+    toggleSelectAllOwners() {
+      if (this.allOwnersSelected) {
+        this.selectedOwnerFilters = []
+      } else {
+        this.selectedOwnerFilters = this.ownerFilterOptions?.map(o => o.userId)
+      }
+      this.reloadConversations()
+    },
+    onResize() {
+      this.viewWidth = window.innerWidth
+    },
+    async getAvailableTeams() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const { data, status } = await getRequest(`/smsTeam/users`)
+        this.selectableTeams = data
+        if (this.selectableTeams && this.selectableTeams.length > 0) {
+          this.selectableTeams.forEach(team => {
+            if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
+              if (!this.teamAlreadyAddedToFilter(team)) {
+                this.teamFilterOptions.push(team)
+              }
+
+              if (this.selectedTeamFilters && !this.selectedTeamFilters.includes(team.id)) {
+                this.selectedTeamFilters.push(team.id)
+              }
+
+              team.users.forEach(owner => {
+                if (!this.ownerAlreadyAddedToFilter(owner)) {
+                  this.ownerFilterOptions.push(owner)
+
+                  if (owner.userId === this.userId) {
+                    this.selectedOwnerFilters.push(owner.userId)
+                  }
+                }
+              })
+            } else if (this.userCanViewAll) {
+              if (!this.teamAlreadyAddedToFilter(team)) {
+                this.teamFilterOptions.push(team)
               }
             }
           })
-        } else if (userCanViewAll.value) {
-          if (!teamAlreadyAddedToFilter(team)) {
-            teamFilterOptions.value.push(team)
+        }
+
+        this.ownerFilterOptions.push({ name: 'Unassigned', userName: 'Unassigned', id: -1, userId: -1 })
+        this.teamFilterOptions.sort((a,b)=>{
+          if(a.teamName < b.teamName) {
+            return -1
           }
+          if(a.teamName > b.teamName) {
+            return 1
+          }
+          return 0
+        })
+
+        this.ownerFilterOptions.sort((a,b)=>{
+          if(a.name < b.name) {
+            return -1
+          }
+          if(a.name > b.name) {
+            return 1
+          }
+          return 0
+        })
+
+        if (this.selectedOwnerFilters && !this.selectedOwnerFilters.includes(-1) && this.hasUnassignedNotifications) {
+          this.selectedOwnerFilters.push(-1)
+        }
+        handleHidingGlobalLoader(this, status)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        await this.fetchConversations()
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.snackbar = getSnackbar('ERROR', 'Error retrieving teams')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    ownerAlreadyAddedToFilter(ownerToAdd) {
+      let alreadyAdded = false
+      this.ownerFilterOptions.forEach(o => {
+        if (o.userId === ownerToAdd.userId) {
+          alreadyAdded = true
         }
       })
-    }
-
-    ownerFilterOptions.value.push({ name: 'Unassigned', userName: 'Unassigned', id: -1, userId: -1 })
-    teamFilterOptions.value.sort((a,b)=>{
-      if(a.teamName < b.teamName) {
-        return -1
-      }
-      if(a.teamName > b.teamName) {
-        return 1
-      }
-      return 0
-    })
-
-    ownerFilterOptions.value.sort((a,b)=>{
-      if(a.name < b.name) {
-        return -1
-      }
-      if(a.name > b.name) {
-        return 1
-      }
-      return 0
-    })
-
-    if (selectedOwnerFilters.value && !selectedOwnerFilters.value.includes(-1) && hasUnassignedNotifications.value) {
-      selectedOwnerFilters.value.push(-1)
-    }
-    handleHidingGlobalLoader(vueInstance, status)
-    store.commit(AppMutations.SET_LOADING, false)
-    await fetchConversations()
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    store.commit(AppMutations.SET_LOADING, false)
-    snackbar('ERROR', 'Error retrieving teams')
-  }
-}
-const ownerAlreadyAddedToFilter = (ownerToAdd) => {
-  let alreadyAdded = false
-  ownerFilterOptions.value.forEach(o => {
-    if (o.userId === ownerToAdd.userId) {
-      alreadyAdded = true
-    }
-  })
-  return alreadyAdded
-}
-const teamAlreadyAddedToFilter = (teamToAdd) => {
-  let alreadyAdded = false
-  teamFilterOptions.value.forEach(t => {
-    if (t.id === teamToAdd.id) {
-      alreadyAdded = true
-    }
-  })
-  return alreadyAdded
-}
-const teamSelectionChanged = () => {
-  ownerFilterOptions.value = []
-  selectableTeams.value.forEach(team => {
-    if (selectedTeamFilters.value.includes(team.id)) {
-      team.users.forEach(owner => {
-        if (!ownerAlreadyAddedToFilter(owner)) {
-          ownerFilterOptions.value.push(owner)
+      return alreadyAdded
+    },
+    teamAlreadyAddedToFilter(teamToAdd) {
+      let alreadyAdded = false
+      this.teamFilterOptions.forEach(t => {
+        if (t.id === teamToAdd.id) {
+          alreadyAdded = true
         }
       })
+      return alreadyAdded
+    },
+    teamSelectionChanged() {
+      this.ownerFilterOptions = []
+      this.selectableTeams.forEach(team => {
+        if (this.selectedTeamFilters.includes(team.id)) {
+          team.users.forEach(owner => {
+            if (!this.ownerAlreadyAddedToFilter(owner)) {
+              this.ownerFilterOptions.push(owner)
+            }
+          })
+        }
+      })
+      this.ownerFilterOptions.push({ name: 'Unassigned', userName: 'Unassigned', id: -1, userId: -1 })
+
+      this.options.page = 1
+      this.reloadConversations()
+    },
+    openConversation(item) {
+      if (item.projectId) {
+        this.clearProjectNotification(item.projectId)
+        this.$router.push({path: `/inbox/inboxConversation/project/${item.projectId}`});
+      }
+
+      if (item.userId) {
+        this.clearUserNotification(item.userId)
+        this.$router.push({path: `/inbox/inboxConversation/user/${item.userId}`});
+      }
+    },
+    closeConversation(){
+      this.$router.push({path: `/inbox`})
+    },
+    searchConversations: debounce(function() {
+      //don't allow searchQuery to be null - causes issues
+      this.searchQuery = this.searchQuery || ''
+      this.reloadConversations()
+    }, 500)
+  },
+  watch: {
+    smsOwnershipEvents: debounce(async function() {
+      if (this.isSmsOwnershipEventsRunning) {
+        // A previous execution is ongoing, ignore the current one
+        return;
+      }
+
+      this.isSmsOwnershipEventsRunning = true;
+
+      try {
+        await this.fetchTeamsForUser();
+        await this.reloadConversations();
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.snackbar = getSnackbar('ERROR', 'Error reloading conversations')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.isSmsOwnershipEventsRunning = false;
+      }
+    }, 1000),
+    options: {
+      handler() {
+        if (!this.initialLoad) {
+          this.reloadConversations()
+        }
+      }
+    },
+    page() {
+      let table = this.$refs['pageable-table'];
+      let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+
+      this.$vuetify.goTo(table); // to table
+      this.$vuetify.goTo(table, {container: wrapper}); // to header
     }
-  })
-  ownerFilterOptions.value.push({ name: 'Unassigned', userName: 'Unassigned', id: -1, userId: -1 })
-
-  options.value.page = 1
-  reloadConversations()
-}
-const openConversation = (item) => {
-  if (item.projectId) {
-    clearProjectNotification(item.projectId)
-    router.push({path: `/inbox/inboxConversation/project/${item.projectId}`});
-  }
-
-  if (item.userId) {
-    clearUserNotification(item.userId)
-    router.push({path: `/inbox/inboxConversation/user/${item.userId}`});
+  },
+  created() {
+    this.fetchTeamsForUser()
+    window.addEventListener('resize', this.onResize)
   }
 }
-const closeConversation = () => {
-  router.push({path: `/inbox`})
-}
-const searchConversations = debounce(() => {
-  //don't allow searchQuery to be null - causes issues
-  searchQuery.value = searchQuery.value || ''
-  reloadConversations()
-}, 500)
-
-watch(smsOwnershipEvents, debounce(async function() {
-  if (isSmsOwnershipEventsRunning.value) {
-    // A previous execution is ongoing, ignore the current one
-    return;
-  }
-
-  isSmsOwnershipEventsRunning.value = true;
-
-  try {
-    await fetchTeamsForUser();
-    await reloadConversations();
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    store.commit(AppMutations.SET_LOADING, false)
-    snackbar('ERROR', 'Error reloading conversations')
-
-  } finally {
-    isSmsOwnershipEventsRunning.value = false;
-  }
-}, 1000))
-watch(options, () => {
-  if (!initialLoad.value) {
-    reloadConversations()
-  }
-})
-watch(page, () => {
-  let table = vueInstance.$refs['pageable-table'];
-  let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
-
-  vuetify.goTo(table); // to table
-  vuetify.goTo(table, {container: wrapper}); // to header
-})
-onMounted(() => {
-  fetchTeamsForUser()
-  window.addEventListener('resize', onResize.value)
-})
-
 </script>
 
 <style lang="scss">

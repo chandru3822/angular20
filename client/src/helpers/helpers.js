@@ -320,3 +320,18 @@ export function getEventColorClass (index) {
     ]
     return colorClassList[index%20]
 }
+
+export function getProjectPath(instance) {
+  const projectPathSuffix = instance.$store.state.user.details.defaultProjectPage
+  if (projectPathSuffix === null || projectPathSuffix === 'tab_status') {
+    return {pathSuffix: 'status', tabName: 'status'}
+  } else if (projectPathSuffix === 'tab_processSteps') {
+    return {pathSuffix: 'processSteps', tabName: 'processSteps'}
+  } else if (projectPathSuffix === 'tab_events') {
+    return {pathSuffix: 'events', tabName: 'events'}
+  } else if (projectPathSuffix === 'tab_work_queues') {
+    return {pathSuffix: 'workQueues', tabName: 'workQueues'}
+  } else{
+    return {pathSuffix: 'details', tabName: projectPathSuffix}
+  }
+}

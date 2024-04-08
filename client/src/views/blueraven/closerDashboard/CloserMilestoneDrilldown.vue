@@ -46,31 +46,39 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn class="white--text text-capitalize mr-4 mb-2" color="primary"
-               @click="closeMilestoneDialog">
-          Close
-        </v-btn>
+        <AlbatrossButton
+            class="text-capitalize mr-4 mb-2"
+            color="primary"
+            @click="closeMilestoneDialog"
+            text="Close"
+        ></AlbatrossButton>
       </v-card-actions>
     </v-card>
   </v-dialog>
 
 </template>
 
-<script>
+<script setup>
 import moment from "moment";
 import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
+import {getCurrentInstance, toRefs, ref, computed, onMounted} from "vue";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
 
-export default {
-  name: "CloserMilestoneDrilldown",
-  props: {
-    selectedQuarter: Number,
-    drilldownData: [],
-    isOpen: Boolean
-  },
-  data () {
-    return {
-      currentQuarter: moment().quarter(),
-      headers: [
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const emit = defineEmits(['close-drilldown'])
+
+const props = defineProps({
+  selectedQuarter: Number,
+  drilldownData: Array,
+  isOpen: Boolean
+
+})
+const { selectedQuarter, drilldownData, isOpen } = toRefs(props)
+
+
+      const currentQuarter = ref(moment().quarter())
+      const headers = ref([
         { text: '', value: '', show: true, sortable: false },
         { text: 'Name', value: 'customer_name', show: true },
         { text: 'Project ID', value: 'id', show: true },
@@ -78,24 +86,15 @@ export default {
         { text: 'System Size', value: 'system_size', show: true },
         { text: 'Final Design Complete Date', value: 'final_design_complete_date', show: true },
         { text: 'Self Gen', value: 'self_gen', show: true }
-      ],
+      ])
+
+    const milestoneDrilldownTitle = computed(() => {
+      return store.state.user.details.firstName + ' ' + store.state.user.details.lastName + DashboardTypeEnum.CLOSER.drilldown.label + selectedQuarter.value
+    })
+
+    const closeMilestoneDialog = () => {
+      emit('close-drilldown')
     }
-  },
-  watch: {
-    isOpen () {
-    }
-  },
-  computed: {
-    milestoneDrilldownTitle () {
-      return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + DashboardTypeEnum.CLOSER.drilldown.label + this.selectedQuarter
-    },
-  },
-  methods: {
-    closeMilestoneDialog() {
-      this.$emit('close-drilldown')
-    }
-  }
-}
 </script>
 
 <style lang="scss" scoped>

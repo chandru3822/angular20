@@ -117,6 +117,7 @@
           @update:sort-by="sortValues"
           @update:sort-desc="sortValues"
           class="elevation-1"
+          fixed-header
         >
           <template #top>
             <v-container fluid>

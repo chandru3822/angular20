@@ -203,7 +203,7 @@ public class WorkQueueTypeService {
         null != type.getInverseExpectation() ? type.getInverseExpectation() : false);
     params.put("expectedTarget", type.getExpectedTarget());
     params.put("schedule", null != type.getSchedule() ? type.getSchedule().toString() : null);
-      params.put("defaultColumnDisplay", null != type.getDefaultColumnDisplay() ? type.getDefaultColumnDisplay().toString() : null);
+    params.put("defaultColumnDisplay", null != type.getDefaultColumnDisplay() ? type.getDefaultColumnDisplay().toString() : null);
     sqlCache.updateBySql(WorkQueueTypeQuery.updateType, params);
 
     return getType(type.getId());
@@ -581,7 +581,6 @@ public class WorkQueueTypeService {
         List.class,
         "defaultColumnDisplay",
         new JsonCollectionDeserializer(wrkQueueTypeDefaultColumnRef, objectMapper));
-
 
       TypeReference<List<WhiteListedPosition>> whiteListedPositionsRef = new TypeReference<>() {};
       bw.registerCustomEditor(
