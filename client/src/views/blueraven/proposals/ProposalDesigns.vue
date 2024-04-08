@@ -491,7 +491,7 @@ const createAiFromExisting = async() => {
       window.open(url, '_blank')
 
       //reload the active design
-      await this.getActiveDesign()
+      await getActiveDesign()
     } else {
       snackbar('ERROR', 'Failed to find Aurora Project')
     }
@@ -529,24 +529,25 @@ const handleNewRequest = async() => {
 
   lockNewRequests.value = false
 }
-    async requestAIDesign() {
-      try {
-        this.savingNewAiDesign = true
-        const { data } = await postRequest(`/proposal/projects/${this.projectId}/ai`, this.aiRequestFields, 'blueraven')
-        if(data?.design?.id && data?.design?.project_id) {
-          let url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
-          window.open(url, '_blank')
-        }
-        await this.getActiveDesign()
-      } catch (e) {
-        logError(e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        this.$snackbar('ERROR', e?.data?.message || 'There was an error requesting a new design')
-      } finally {
-        this.showAIDesignRequestForm = false
-        this.savingNewAiDesign = false
-      }
+
+const requestAIDesign = async() =>{
+  try {
+    savingNewAiDesign.value = true
+    const { data } = await postRequest(`/proposal/projects/${projectId.value}/ai`, aiRequestFields.value, 'blueraven')
+    if(data?.design?.id && data?.design?.project_id) {
+      let url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
+      window.open(url, '_blank')
     }
+    await getActiveDesign()
+  } catch (e) {
+    logError(e)
+    appStore.loading = false
+    snackbar('ERROR', e?.data?.message || 'There was an error requesting a new design')
+  } finally {
+    showAIDesignRequestForm.value = false
+    savingNewAiDesign.value = false
+  }
+}
 
 const syncAuroraDesignDetails = async() => {
   try {
