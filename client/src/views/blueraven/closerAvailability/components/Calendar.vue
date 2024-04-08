@@ -252,7 +252,6 @@ const getEventSources = async(info, successCallback, failureCallback) => {
         const {data} = await postRequest(`/schedule`, params, null, [])
         let additionalRecords = []
         data?.forEach(d => {
-          debugger
           d.id = d.eventId
           // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
           // if resource is a user show on calendar using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
