@@ -15,53 +15,53 @@
       <v-form ref="contactEditForm">
         <v-card-text class="pt-4 px-0">
           <div>
-            <v-text-field
-              v-model="tempContact.firstName"
-              :rules="requiredRules"
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              label="Contact First Name"
-              class="body-large"
-            ></v-text-field>
-            <v-text-field
-              class="body-large"
-              v-model="tempContact.lastName"
-              :rules="requiredRules"
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              label="Contact Last Name"
-            ></v-text-field>
-            <v-text-field
-              class="body-large"
-              v-model="tempContact.street1"
-              label="Street"
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              maxlength="100"
-              counter
-              @change="tempContact.reloadCoordinates = true"
-            ></v-text-field>
-            <v-text-field
-              class="body-large"
-              v-model="tempContact.city"
-              label="City"
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              @change="tempContact.reloadCoordinates = true"
-            ></v-text-field>
-            <v-text-field
-              class="body-large"
-              type="text"
-              v-model="tempContact.postalCode"
-              counter
-              :readonly="!userCanEdit"
-              :disabled="!userCanEdit"
-              maxlength="10"
-              @keypress="isNumberOrHyphen"
-              :rules="postalCodeRules"
-              @change="tempContact.reloadCoordinates = true"
-              label="Postal Code"
-            ></v-text-field>
+            <a-text-field
+                v-model="tempContact.firstName"
+                :rules="requiredRules"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                label="Contact First Name"
+                class="body-large"
+            ></a-text-field>
+            <a-text-field
+                class="body-large"
+                v-model="tempContact.lastName"
+                :rules="requiredRules"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                label="Contact Last Name"
+            ></a-text-field>
+            <a-text-field
+                class="body-large"
+                v-model="tempContact.street1"
+                label="Street"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                :maxlength="100"
+                counter
+                @change="tempContact.reloadCoordinates = true"
+            ></a-text-field>
+            <a-text-field
+                class="body-large"
+                v-model="tempContact.city"
+                label="City"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                @change="tempContact.reloadCoordinates = true"
+            ></a-text-field>
+            <a-text-field
+                class="body-large"
+                type="text"
+                v-model="tempContact.postalCode"
+                counter
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
+                :maxlength="10"
+                @keydown="isNumberOrHyphen"
+                :rules="postalCodeRules"
+                @change="tempContact.reloadCoordinates = true"
+                label="Postal Code"
+            ></a-text-field>
             <v-autocomplete v-model="tempContact.companyStateId"
                             class="body-large"
                             :items="states"
@@ -73,7 +73,7 @@
                             item-value="id"
                             @input="tempContact.reloadCoordinates = true"
             ></v-autocomplete>
-            <v-select v-model="tempContact.companyCountryId"
+            <a-select v-model="tempContact.companyCountryId"
                       class="body-large"
                       :items="countries"
                       label="Country"
@@ -81,26 +81,26 @@
                       :disabled="!userCanEdit"
                       :loading="countriesLoading"
                       @input="tempContact.reloadCoordinates = true"
-                      item-text="country"
+                      item-title="country"
                       item-value="id"
-            ></v-select>
-            <v-text-field text
+            ></a-select>
+            <a-text-field
                           class="body-large"
                           label="Phone"
                           placeholder=" "
                           :rules="contactPhoneRule"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
-                          v-model="tempContact.phone"></v-text-field>
-            <v-text-field text
+                          v-model="tempContact.phone"></a-text-field>
+            <a-text-field
                           class="body-large"
                           label="Mobile"
                           placeholder=" "
                           :rules="contactPhoneRule"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
-                          v-model="tempContact.mobile"></v-text-field>
-            <v-text-field text
+                          v-model="tempContact.mobile"></a-text-field>
+            <a-text-field
                           class="body-large"
                           label="E-Mail"
                           id="qa-email-field"
@@ -108,7 +108,7 @@
                           :rules="emailRules"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
-                          v-model="tempContact.email"></v-text-field>
+                          v-model="tempContact.email"></a-text-field>
           </div>
           <v-autocomplete v-model="tempContact.owner"
                           class="body-large"
@@ -151,16 +151,19 @@
       </template>
       <template v-slot:header-btn>
         <div class="mt-3">
-          <v-btn text color="primary" v-if="userCanDelete"
-                 :disabled="contact.projects && contact.projects.length > 0"
-                 class = "hide-xs"
-                 @click="deleteContactConfirm = true">
-            <v-icon>delete</v-icon>
-          </v-btn>
+          <a-btn
+              variant="text"
+              color="primary"
+              v-if="userCanDelete"
+              :disabled="contact.projects && contact.projects.length > 0"
+              class="hide-xs"
+              @click="deleteContactConfirm = true"
+              prepend-icon="delete"
+          ></a-btn>
         </div>
       </template>
       <template v-slot:left-column>
-        <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
+        <div v-if="!projectStore.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned overflow-y-auto hide-xs">
           <PageOverview page-name="Contact"
                         :show-edit-btn="contact && contact.id && userCanEdit"
@@ -171,55 +174,62 @@
           <SidePanelExpansionPanel header="Associated Projects" :sectionExpanded="sectionExpanded">
             <template v-slot:tool-btn>
               <v-menu
-                v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
-                bottom
-                offset-y
-                :close-on-content-click="false"
-            >
+                  v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
+                  bottom
+                  offset-y
+                  :close-on-content-click="false"
+              >
                 <template v-slot:activator="{ on: menu }">
-                <v-tooltip top
-                           :disabled="(null != contact.firstName || null != contact.lastName) && (null != contact.owner && null != contact.owner.userId)">
-                  <template v-slot:activator="{ on: tooltip }">
-                    <div v-on="{ ...tooltip }" class="d-inline-block">
-                      <v-btn v-on="{ ...menu }"
-                             text
-                             small
-                             :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
-                             color="primary"
-                             id="qa-create-project-button"
-                             class="px-0"
-                             @click="getAvailableProcesses">
-                        <v-icon>add</v-icon>
-                      </v-btn>
-                    </div>
-                  </template>
+                  <v-tooltip top
+                             :disabled="(null != contact.firstName || null != contact.lastName) && (null != contact.owner && null != contact.owner.userId)">
+                    <template v-slot:activator="{ on: tooltip }">
+                      <div v-on="{ ...tooltip }" class="d-inline-block">
+                        <a-btn
+                            :activation-handler="{ ...menu }"
+                            variant="text"
+                            small
+                            :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
+                            color="primary"
+                            id="qa-create-project-button"
+                            class="px-0"
+                            @click="getAvailableProcesses"
+                            prepend-icon="add"
+                        ></a-btn>
+                      </div>
+                    </template>
                     <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
                     <span v-else-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
-                </v-tooltip>
-              </template>
-              <v-card class="pa-5 body-large">
-                Select a process to be used
-                <v-select v-model="selectedProcess"
-                          :items="availableProcesses"
-                          label="Process"
-                          id="qa-process-selector"
-                          :loading="processesLoading"
-                          placeholder="Select one..."
-                          item-text="processName"
-                          return-object
-                          class="mt-2 qa-process-selector"
-                ></v-select>
-                <v-btn text color="primary" class="body-medium" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
-                  Add Project
-                </v-btn>
-              </v-card>
-            </v-menu>
+                  </v-tooltip>
+                </template>
+                <v-card class="pa-5 body-large">
+                  Select a process to be used
+                  <a-select v-model="selectedProcess"
+                            :items="availableProcesses"
+                            label="Process"
+                            id="qa-process-selector"
+                            :loading="processesLoading"
+                            placeholder="Select one..."
+                            item-title="processName"
+                            return-object
+                            class="mt-2 qa-process-selector"
+                  ></a-select>
+                  <a-btn
+                      variant="text"
+                      color="primary"
+                      class="body-medium"
+                      :disabled="!selectedProcess || !selectedProcess.id"
+                      @click="convertToCustomer"
+                      id="qa-add-project-button"
+                      text="Add Project"
+                  ></a-btn>
+                </v-card>
+              </v-menu>
             </template>
             <template v-slot:expanded-content>
               <div>
                 <v-card flat v-for="p in contact.projects"
                         class="project-button albatross-body-1"
-                        :to="`/project/${p.id}/${projectPath}`">
+                        :to="`/project/${p.id}/${defaultProjectPage}`">
                   <div class="body-large" >{{ p.projectName }} </div>
                   <div class="body-small" :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
                 </v-card>
@@ -229,7 +239,7 @@
           </SidePanelExpansionPanel>
           <v-divider></v-divider>
         </div>
-        <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
+        <div v-if="!projectStore.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned scrollable show-xs mobile-padding-menu">
           <div class=menu-option :class="{'body-large': !showMobileSummary, 'label-large': showMobileSummary}" @click="openTab('summary')">Summary</div>
           <div class=menu-option :class="{'body-large': !showMobileOverview, 'label-large': showMobileOverview}" @click="openTab('overview')">Overview</div>
@@ -264,10 +274,10 @@
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-menu
-                v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
-                bottom
-                offset-y
-                :close-on-content-click="false"
+                  v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
+                  bottom
+                  offset-y
+                  :close-on-content-click="false"
               >
                 <template v-slot:activator="{ on: menu }">
                   <!--                  <v-tooltip top :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId">-->
@@ -275,15 +285,16 @@
                              :disabled="(null != contact.firstName || null != contact.lastName) && (null != contact.owner && null != contact.owner.userId)">
                     <template v-slot:activator="{ on: tooltip }">
                       <div v-on="{ ...tooltip }" class="d-inline-block mt-4">
-                        <v-btn v-on="{ ...menu }"
-                               text
-                               x-small
-                               :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
-                               color="primary"
-                               id="qa-create-project-button"
-                               @click="getAvailableProcesses">
-                          <v-icon>add</v-icon>
-                        </v-btn>
+                        <a-btn
+                            :activation-handler="{ ...menu }"
+                            variant="text"
+                            x-small
+                            :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
+                            color="primary"
+                            id="qa-create-project-button"
+                            @click="getAvailableProcesses"
+                            prepend-icon="add"
+                        ></a-btn>
                       </div>
                     </template>
                     <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
@@ -292,19 +303,25 @@
                 </template>
                 <v-card class="pa-5 body-large">
                   Select a process to be used
-                  <v-select v-model="selectedProcess"
+                  <a-select v-model="selectedProcess"
                             :items="availableProcesses"
                             label="Process"
                             id="qa-process-selector"
                             :loading="processesLoading"
                             placeholder="Select one..."
-                            item-text="processName"
+                            item-title="processName"
                             return-object
                             class="mt-2 qa-process-selector"
-                  ></v-select>
-                  <v-btn text color="primary" class="body-medium" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
-                    Add Project
-                  </v-btn>
+                  ></a-select>
+                  <a-btn
+                      variant="text"
+                      color="primary"
+                      class="body-medium"
+                      :disabled="!selectedProcess || !selectedProcess.id"
+                      @click="convertToCustomer"
+                      id="qa-add-project-button"
+                      text="Add Project"
+                  ></a-btn>
                 </v-card>
               </v-menu>
             </v-toolbar-items>
@@ -312,7 +329,7 @@
           <div class="mx-2 mobile-content-padding">
             <v-card flat v-for="p in contact.projects"
                     class="project-button albatross-body-1"
-                    :to="`/project/${p.id}/status`">
+                    :to="`/project/${p.id}/${defaultProjectPage}`">
               <div class="body-large" >{{ p.projectName }} </div>
               <div :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
               <!--            <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>-->
@@ -328,27 +345,32 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0 hide-xs">
-                <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
-                <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
-              </v-btn>
+              <a-btn
+                  variant="text"
+                  color="primary"
+                  @click="setSplitColumnValue()"
+                  class="px-0 hide-xs"
+                  :prepend-icon="!projectStore.manualColumnSplit ? 'mdi-format-columns' : 'mdi-format-align-justify'"
+              ></a-btn>
               <div>
-                <v-btn color="primary"
-                       class="body-medium white--text mt-3 hide-xs"
-                       v-if="userCanEdit"
-                       :loading="fieldsLoading"
-                       :disabled="fieldsSaving"
-                       @click="validateFields(true)">
-                  Save Fields
-                </v-btn>
-                <v-btn color="primary"
-                       class="body-medium white--text mt-3 show-xs"
-                       v-if="userCanEdit"
-                       :loading="fieldsLoading"
-                       :disabled="fieldsSaving"
-                       @click="validateFields(true)">
-                  Save
-                </v-btn>
+                <a-btn
+                    color="primary"
+                    class="body-medium mt-3 hide-xs"
+                    v-if="userCanEdit"
+                    :loading="fieldsLoading"
+                    :disabled="fieldsSaving"
+                    @click="validateFields(true)"
+                    text="Save Fields"
+                ></a-btn>
+                <a-btn
+                    color="primary"
+                    class="body-medium mt-3 show-xs"
+                    v-if="userCanEdit"
+                    :loading="fieldsLoading"
+                    :disabled="fieldsSaving"
+                    @click="validateFields(true)"
+                    text="Save"
+                ></a-btn>
               </div>
             </v-toolbar-items>
           </v-toolbar>
@@ -358,9 +380,9 @@
                 <!--    process field groups-->
                 <v-form ref="contactForm">
                   <v-col
-                    class="pt-0"
-                    v-for="(cfg, index) in customFieldGroups"
-                    :key="index"
+                      class="pt-0"
+                      v-for="(cfg, index) in customFieldGroups"
+                      :key="index"
                   >
                     <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar body-large" dense>
                       <v-toolbar-title class="body-medium">
@@ -373,7 +395,7 @@
 
                     <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
                       <v-row>
-                        <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                        <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                           <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                                             :key="idx"
                                             :required="cf.required"
@@ -383,7 +405,7 @@
                                             class = "body-large"
                                             :show-field-name="false"></CustomValueInput>
                         </v-col>
-                        <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                        <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
                           <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                                             :key="idx"
                                             :required="cf.required"
@@ -415,27 +437,32 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0 hide-xs">
-                <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
-                <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
-              </v-btn>
+              <a-btn
+                  variant="text"
+                  color="primary"
+                  @click="setSplitColumnValue()"
+                  class="px-0 hide-xs"
+                  :prepend-icon="!projectStore.manualColumnSplit ? 'mdi-format-columns' : 'mdi-format-align-justify'"
+              ></a-btn>
               <div>
-                <v-btn color="primary"
-                       class="body-medium white--text mt-3 hide-xs"
-                       v-if="userCanEdit"
-                       :loading="fieldsLoading"
-                       :disabled="fieldsSaving"
-                       @click="validateFields(true)">
-                  Save Fields
-                </v-btn>
-                <v-btn color="primary"
-                       class="body-medium white--text mt-3 show-xs"
-                       v-if="userCanEdit"
-                       :loading="fieldsLoading"
-                       :disabled="fieldsSaving"
-                       @click="validateFields(true)">
-                  Save
-                </v-btn>
+                <a-btn
+                    color="primary"
+                    class="body-medium mt-3 hide-xs"
+                    v-if="userCanEdit"
+                    :loading="fieldsLoading"
+                    :disabled="fieldsSaving"
+                    @click="validateFields(true)"
+                    text="Save Fields"
+                ></a-btn>
+                <a-btn
+                    color="primary"
+                    class="body-medium mt-3 show-xs"
+                    v-if="userCanEdit"
+                    :loading="fieldsLoading"
+                    :disabled="fieldsSaving"
+                    @click="validateFields(true)"
+                    text="Save"
+                ></a-btn>
               </div>
             </v-toolbar-items>
           </v-toolbar>
@@ -445,9 +472,9 @@
                 <!--    process field groups-->
                 <v-form ref="contactForm">
                   <v-col
-                    class="pt-0"
-                    v-for="(cfg, index) in customFieldGroups"
-                    :key="index"
+                      class="pt-0"
+                      v-for="(cfg, index) in customFieldGroups"
+                      :key="index"
                   >
                     <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar body-large" dense>
                       <v-toolbar-title class="body-medium">
@@ -462,7 +489,7 @@
 
                     <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
                       <v-row>
-                        <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                        <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                           <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                                             :key="idx"
                                             :required="cf.required"
@@ -472,7 +499,7 @@
                                             class = "body-large"
                                             :show-field-name="false"></CustomValueInput>
                         </v-col>
-                        <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                        <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
                           <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                                             :key="idx"
                                             :required="cf.required"
@@ -508,12 +535,11 @@
 
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
-import {ProjectMutations} from "@/stores/ProjectStore";
 import {
   handleHidingGlobalLoader,
   getRequest,
@@ -537,430 +563,418 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 import {saveContact} from "@/services/contactService";
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
-export default {
-  name: 'Contact',
-  components: {
-    SidePanelExpansionPanel,
-    PageOverview,
-    ConfirmationDialog,
-    CustomValueInput,
-    DatetimePickerInput,
-    ThreeColumnLayout,
-    ProjectActivity,
-    SpinnerInline
-  },
-  watch: {},
-  data() {
-    return {
-      snackbar: {},
-      states: [],
-      countries: [],
-      showEditModal: false,
-      contact: {},
-      sectionExpanded: true,
-      getStatusClass,
-      formatPhoneNumber,
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-      postalCodeRules: constants.POSTAL_CODE_RULES,
-      cityRules: constants.CITY_RULES,
-      emailRules: constants.EMAIL_RULES,
-      addressRules: constants.ADDRESS_RULES,
-      nameRules: constants.NAME_RULES,
-      nameRequiredRules: constants.NAME_REQUIRED_RULES,
-      contactPhoneRule: [
-        () => ((this.tempContact.phone != null && this.tempContact.phone !== '') || (this.tempContact.mobile != null && this.tempContact.mobile !== '')) || "Phone or Mobile is required",
-        v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
-        v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number",
-        v => ((!v || (this.tempContact.phone !== this.tempContact.mobile))) || 'Phone and Mobile Cannot be the same',
-      ],
-      deleteContactConfirm: false,
-      isNumberOrHyphen,
-      contactLoading: true,
-      customFieldGroups: [],
-      unsavedFieldsModal: false,
-      toPath: null,
-      navigationOverride: false,
-      notes: [],
-      cloneDeep,
-      fieldsSaving: false,
-      fieldsLoading: true,
-      hasDirtyNotes: false,
-      dirtyCfvs: [],
-      dirtySystemFields: false,
-      // owners: [],
-      availableOwners: [],
-      ownersLoading: false,
-      statesLoading: false,
-      countriesLoading: false,
-      tempContact: {},
-      contactId: parseInt(this.$route.params.contactId),
-      is7oaksAdmin: this.$store.getters.isFullAdmin,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
-      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'DELETE'),
-      companyId: this.$store.state.user.details.companyId,
-      userPositionIds: [],
-      timezone: this.$store.state.user.details.timezone?.value,
-      selectedProcess: null,
-      processesLoading: true,
-      availableProcesses: [],
-      showMobileOverview: false,
-      showMobileSummary: true,
-      showMobileAssociatedProjects: false,
-      showMobileNotes: false,
-      showMobileDocuments: false,
-      projectPath: ''
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { onBeforeRouteLeave } from 'vue-router/composables'
 
+const projectStore = useProjectStore()
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
+const states = ref([])
+const countries = ref([])
+const showEditModal = ref(false)
+const contact = ref({})
+const sectionExpanded = ref(true)
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const postalCodeRules = ref(constants.POSTAL_CODE_RULES)
+const cityRules = ref(constants.CITY_RULES)
+const emailRules = ref(constants.EMAIL_RULES)
+const addressRules = ref(constants.ADDRESS_RULES)
+const nameRules = ref(constants.NAME_RULES)
+const nameRequiredRules = ref(constants.NAME_REQUIRED_RULES)
+const contactPhoneRule = ref([() => ((tempContact.value.phone != null && tempContact.value.phone !== '') || (tempContact.value.mobile != null && tempContact.value.mobile !== '')) || "Phone or Mobile is required",v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number",v => ((!v || (tempContact.value.phone !== tempContact.value.mobile))) || 'Phone and Mobile Cannot be the same',])
+const deleteContactConfirm = ref(false)
+const contactLoading = ref(true)
+const customFieldGroups = ref([])
+const unsavedFieldsModal = ref(false)
+const toPath = ref(null)
+const navigationOverride = ref(false)
+const notes = ref([])
+const fieldsSaving = ref(false)
+const fieldsLoading = ref(true)
+const hasDirtyNotes = ref(false)
+const dirtyCfvs = ref([])
+const dirtySystemFields = ref(false)
+const availableOwners = ref([])
+const ownersLoading = ref(false)
+const statesLoading = ref(false)
+const countriesLoading = ref(false)
+const tempContact = ref({})
+const contactId = ref(parseInt(route.params.contactId))
+const userPositionIds = ref([])
+const selectedProcess = ref(null)
+const processesLoading = ref(true)
+const availableProcesses = ref([])
+const showMobileOverview = ref(false)
+const showMobileSummary = ref(true)
+const showMobileAssociatedProjects = ref(false)
+const showMobileNotes = ref(false)
+const showMobileDocuments = ref(false)
+const addressChanged = ref(false)
+const notesComponent = ref(null)
+const contactEditForm = ref(null)
+const contactForm = ref(null)
+
+
+const is7oaksAdmin  = computed(() => {
+  return userStore.isSystemAdmin
+})
+const userCanEdit  = computed(() => {
+  return userStore.userHasFeatureAccessLevel('CONTACTS', 'EDIT')
+})
+const userCanDelete  = computed(() => {
+  return userStore.userHasFeatureAccessLevel('CONTACTS', 'DELETE')
+})
+const companyId  = computed(() => {
+  return userStore.details.companyId
+})
+const timezone  = computed(() => {
+  return userStore.timezone.value
+})
+
+const addressFieldRequired = computed(() => {
+  //this logic seems backwards but it is just the way rules work
+  //if one address field is filled in then all of them are required
+  return {
+    street: [!(!contact.value.street1 && (Boolean(contact.value.city) || Boolean(contact.value.companyStateId) || Boolean(contact.value.companyCountryId) || Boolean(contact.value.postalCode))) || "Required when other address fields are populated"],
+    city: [!(!contact.value.city && (Boolean(contact.value.street1) || Boolean(contact.value.companyStateId) || Boolean(contact.value.companyCountryId) || Boolean(contact.value.postalCode))) || "Required when other address fields are populated"],
+    state: [!(!contact.value.companyStateId && (Boolean(contact.value.street1) || Boolean(contact.value.city) || Boolean(contact.value.companyCountryId) || Boolean(contact.value.postalCode))) || "Required when other address fields are populated"],
+    country: [!(!contact.value.companyCountryId && (Boolean(contact.value.street1) || Boolean(contact.value.city) || Boolean(contact.value.companyStateId) || Boolean(contact.value.postalCode))) || "Required when other address fields are populated"],
+    zip: [!(!contact.value.postalCode && (Boolean(contact.value.street1) || Boolean(contact.value.city) || Boolean(contact.value.companyStateId) || Boolean(contact.value.companyCountryId))) || "Required when other address fields are populated"]
+  }
+})
+const overviewDetails = computed(() => {
+  return [
+    {
+      label: 'Date Created',
+      type: constants.OVERVIEW_FIELD_TYPES.DATE,
+      value: contact.value.dateCreated
+    },
+    {
+      label: 'Address',
+      type: constants.OVERVIEW_FIELD_TYPES.ADDRESS,
+      value: {
+        street: contact.value.street1,
+        city: contact.value.city,
+        state: contact.value.state,
+        zip: contact.value.postalCode
+      }
+    },
+    {
+      label: 'Phone number',
+      type: constants.OVERVIEW_FIELD_TYPES.PHONE,
+      value: contact.value.phone
+    },
+    {
+      label: 'Mobile number',
+      type: constants.OVERVIEW_FIELD_TYPES.MOBILE_PHONE,
+      value: formatPhoneNumber(contact.value.mobile)
+    },
+    {
+      label: 'Email address',
+      type: constants.OVERVIEW_FIELD_TYPES.EMAIL,
+      value: contact.value.email
+    },
+    {
+      label: 'Owner',
+      type: constants.OVERVIEW_FIELD_TYPES.OWNER,
+      value: contact.value.owner
     }
-  },
-  computed: {
-    addressFieldRequired() {
-      //this logic seems backwards but it is just the way rules work
-      //if one address field is filled in then all of them are required
-      return {
-        street: [!(!this.contact.street1 && (Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated"],
-        city: [!(!this.contact.city && (Boolean(this.contact.street1) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated"],
-        state: [!(!this.contact.companyStateId && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyCountryId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated"],
-        country: [!(!this.contact.companyCountryId && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.postalCode))) || "Required when other address fields are populated"],
-        zip: [!(!this.contact.postalCode && (Boolean(this.contact.street1) || Boolean(this.contact.city) || Boolean(this.contact.companyStateId) || Boolean(this.contact.companyCountryId))) || "Required when other address fields are populated"]
-      }
-    },
-    overviewDetails() {
-      return [
-        {
-          label: 'Date Created',
-          type: constants.OVERVIEW_FIELD_TYPES.DATE,
-          value: this.contact.dateCreated
-        },
-        {
-          label: 'Address',
-          type: constants.OVERVIEW_FIELD_TYPES.ADDRESS,
-          value: {
-            street: this.contact.street1,
-            city: this.contact.city,
-            state: this.contact.state,
-            zip: this.contact.postalCode
-          }
-        },
-        {
-          label: 'Phone number',
-          type: constants.OVERVIEW_FIELD_TYPES.PHONE,
-          value: this.contact.phone
-        },
-        {
-          label: 'Mobile number',
-          type: constants.OVERVIEW_FIELD_TYPES.MOBILE_PHONE,
-          value: formatPhoneNumber(this.contact.mobile)
-        },
-        {
-          label: 'Email address',
-          type: constants.OVERVIEW_FIELD_TYPES.EMAIL,
-          value: this.contact.email
-        },
-        {
-          label: 'Owner',
-          type: constants.OVERVIEW_FIELD_TYPES.OWNER,
-          value: this.contact.owner
-        }
-      ]
-    }
-  },
-  async created() {
-    let requests = [this.getContact(), this.getCustomFieldGroups()]
-    await Promise.all(requests).then(async () => {
-      this.fieldsLoading = false
-    })
-    this.getUserPositionIds();
-    this.projectPath = getProjectPath(this).pathSuffix
-  },
-  beforeRouteLeave(to, from, next) {
-    // called when the route that renders this component is about to
-    // be navigated away from.
-    // has access to `this` component instance.
-    this.hasDirtyNotes = this.$refs.notes?.hasUnsavedNotes()
-    if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.dirtySystemFields && !this.hasDirtyNotes)) {
-      //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
-      next()
-    } else {
-      this.toPath = to.path
-      this.unsavedFieldsModal = true
-    }
-  },
-  methods: {
-    openTab(tab){
-      this.showMobileOverview = (tab == 'overview');
-      this.showMobileSummary = (tab == 'summary');
-      this.showMobileAssociatedProjects = (tab == 'associatedProjects');
-      this.showMobileNotes = (tab == 'notes');
-      this.showMobileDocuments = (tab == 'documents');
-      this.$store.state.project.leftSideSplit = true;
-    },
-    openMenu(){
-      this.$store.state.project.leftSideSplit = false;
-    },
-    setSplitColumnValue() {
-      //flip the flag
-      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
-    },
-    getCustomFieldValuesToDisplay(values, columnNum) {
-      if (this.$store.state.project.manualColumnSplit) {
-        return values.filter(function (element, index, values) {
-          return (index % 2 === (columnNum === 1 ? 0 : 1));
-        });
-      } else {
-        return values
-      }
-    },
-    collapseSide(side) {
-      if (side === 'left') {
-        this.$store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
-      } else {
-        this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
-      }
-    },
-    getStatesAndCountries: function () {
-      // only load countries and states if they try to edit the project address and they haven't already been loaded
-      if (this.states.length === 0 || this.countries.length === 0) {
-        this.getCompanyStates()
-        this.getCountries()
-      }
-    },
-    getUserPositionIds: function () {
-      this.userPositionIds = this.$store.state.user.details.userPositions.map(p => p.positionId)
-    },
-    selectSelf() {
-      let match = this.availableOwners.find(o => o.userId === this.$store.state.user.details.id) || {}
-      this.$set(this.tempContact, 'owner', match)
-    },
-    async validateForm() {
-      if (this.$refs.contactEditForm.validate()) {
-        //these could be combined - just dont have time atm
-        this.saveContactAddressFields()
+  ]
+})
+onMounted(async () => {
+  let requests = [getContact(), getCustomFieldGroups()]
+  await Promise.all(requests).then(async () => {
+    fieldsLoading.value = false
+  })
+  getUserPositionIds();
+})
 
-        // this.updateOwner()
+onBeforeRouteLeave(async (to, from, next) => {
+  //do stuff
+  // called when the route that renders this component is about to
+  // be navigated away from.
+  // has access to `this` component instance.
+  hasDirtyNotes.value = notesComponent.value?.hasUnsavedNotes()
+  if (navigationOverride.value || (dirtyCfvs.value.length === 0 && !dirtySystemFields.value && !hasDirtyNotes.value)) {
+    //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+    to.params.useSavedFilters = "true"
+    next()
+  } else {
+    toPath.value = to.path
+    unsavedFieldsModal.value = true
+  }
+})
 
-        //set project values if they hit save
-        this.contact = cloneDeep(this.tempContact)
-        this.showEditModal = false
+const openTab = (tab)=> {
+  showMobileOverview.value = (tab === 'overview');
+  showMobileSummary.value = (tab === 'summary');
+  showMobileAssociatedProjects.value = (tab === 'associatedProjects');
+  showMobileNotes.value = (tab === 'notes');
+  showMobileDocuments.value = (tab === 'documents');
+  projectStore.leftSideSplit = true;
+}
+
+const openMenu = ()=> {
+  projectStore.leftSideSplit = false;
+}
+const setSplitColumnValue = () => {
+  projectStore.manualColumnSplit = !projectStore.manualColumnSplit
+}
+const getCustomFieldValuesToDisplay = (values, columnNum) => {
+  if (projectStore.manualColumnSplit) {
+    return values.filter(function (element, index, values) {
+      return (index % 2 === (columnNum === 1 ? 0 : 1));
+    });
+  } else {
+    return values
+  }
+}
+const collapseSide = (side) => {
+  if (side === 'left') {
+    projectStore.leftSideSplit = !projectStore.leftSideSplit
+  } else {
+    projectStore.rightSideSplit = !projectStore.rightSideSplit
+  }
+}
+const getStatesAndCountries = () => {
+  // only load countries and states if they try to edit the project address and they haven't already been loaded
+  if (states.value.length === 0 || countries.value.length === 0) {
+    getAllCompanyStates()
+    getAllCountries()
+  }
+}
+const getUserPositionIds = () => {
+  userPositionIds.value = userStore.details.userPositions.map(p => p.positionId)
+}
+const selectSelf = () => {
+  let match = availableOwners.value.find(o => o.userId === userStore.details.id) || {}
+  vueInstance.$set(tempContact.value, 'owner', match)
+}
+const validateForm = async() => {
+  if (contactEditForm.value.validate()) {
+    //these could be combined - just dont have time atm
+    saveContactAddressFields()
+
+    // updateOwner()
+
+    //set project values if they hit save
+    contact.value = cloneDeep(tempContact.value)
+    showEditModal.value = false
+  }
+}
+const saveContactAddressFields = async () => {
+  appStore.loading = true
+  try {
+    //temp contact holds all the changes in case they cancel. use those values
+    tempContact.value.ownerUserPositionId = tempContact.value.owner?.userPositionId || null
+    const {status} = await postRequest(`/contact`, tempContact.value)
+    snackbar('SUCCESS', 'Contact Updated')
+
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error Saving Fields')
+
+    appStore.loading = false
+  }
+}
+const contactOwnerFieldIsReadOnly = () => {
+  if (is7oaksAdmin.value) {
+    return false
+  } else if (contact.value.ownerReadOnlyWhiteListedPositions?.length > 0) {
+    return !userStore.userHasAnyPosition(contact.value.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
+  } else {
+    return contact.value.ownerReadOnly
+  }
+}
+const goToPath = (path) => {
+  router.push(path)
+}
+const validateFields = async(saveContact) => {
+  let valid = contactForm.value?.validate()
+  if (valid && saveContact) {
+    fieldsSaving.value = true
+    await saveCustomFieldValues()
+    fieldsSaving.value = false
+  } else {
+    snackbar('ERROR', 'Missing Required Fields')
+
+  }
+}
+const contactOwnerIsReadOnly = () => {
+  if (contact.value.ownerReadOnlyWhiteListedPositions?.length > 0) {
+    return !userStore.userHasAnyPosition(contact.value.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
+  } else {
+    return contact.value.ownerReadOnly
+  }
+}
+const saveCustomFieldValues = async() => {
+  if (dirtyCfvs.value.length > 0) {
+    fieldsSaving.value = true
+    appStore.loading = true
+    try {
+      // save dirty custom field values
+      let body = {
+        contact: null, //dont add the contact here. this new endpoint will save it if you do and this isn't where changes are made anymore
+        cfvs: dirtyCfvs.value
       }
-    },
-    saveContactAddressFields: async function () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        //temp contact holds all the changes in case they cancel. use those values
-        this.tempContact.ownerUserPositionId = this.tempContact.owner?.userPositionId || null
-        const {status} = await postRequest(`/contact`, this.tempContact)
-        this.snackbar = getSnackbar('SUCCESS', 'Contact Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    contactOwnerFieldIsReadOnly() {
-      if (this.is7oaksAdmin) {
-        return false
-      } else if (this.contact.ownerReadOnlyWhiteListedPositions?.length > 0) {
-        return !this.$store.getters.userHasAnyPosition(this.contact.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
-      } else {
-        return this.contact.ownerReadOnly
-      }
-    },
-    goToPath(path) {
-      this.$router.push(path)
-    },
-    async validateFields(saveContact) {
-      let valid = this.$refs.contactForm?.validate()
-      if (valid && saveContact) {
-        this.fieldsSaving = true
-        await this.saveCustomFieldValues()
-        this.fieldsSaving = false
-      } else {
-        this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    contactOwnerIsReadOnly() {
-      if (this.contact.ownerReadOnlyWhiteListedPositions?.length > 0) {
-        return !this.$store.getters.userHasAnyPosition(this.contact.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
-      } else {
-        return this.contact.ownerReadOnly
-      }
-    },
-    async saveCustomFieldValues() {
-      if (this.dirtyCfvs.length > 0) {
-        this.fieldsSaving = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          // save dirty custom field values
-          let body = {
-            contact: null, //dont add the contact here. this new endpoint will save it if you do and this isn't where changes are made anymore
-            cfvs: this.dirtyCfvs
-          }
-          const {data, status} = await saveContact(this.contactId, body)
-          this.dirtyCfvs = []
-          this.addressChanged = false
-          this.customFieldGroups = data?.cfgs
-          this.fieldsSaving = false
-          this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.fieldsSaving = false
-        }
-      }
-    },
-    populateDirtyCfvs(field) {
-      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-      if (!match) {
-        this.dirtyCfvs.push(field)
-      }
-    },
-    async getCustomFieldGroups() {
-      try {
-        const {data, status} = await getRequestWithParams(`/customFieldValues/contact/${this.contactId}`)
-        this.customFieldGroups = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getContact() {
-      try {
-        const {data, status} = await getRequest(`/contact/${this.contactId}`)
-        this.contact = data
-        this.contactLoading = false
-        window.document.title = `Contact - ${this.contact.fullName}`
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.contactLoading = false
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contact')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getOwners() {
-      try {
-        let params = {
-          contactId: parseInt(this.contactId)
-        }
-        const {data, status} = await getRequestWithParams(`/contact/owners`, {params})
-        this.availableOwners = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Owners')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    //this method is extra cuz the saving of the contact also updates the owner
-    // async updateOwner() {
-    //   this.$store.commit(AppMutations.SET_LOADING, true)
-    //   try {
-    //     //we use tempContact to save values in case they cancel then it repopulates at the end
-    //     const {status} = await putRequest(`/contact/${this.contactId}/updateOwner`, this.tempContact.owner || {userPositionId: null})
-    //     handleHidingGlobalLoader(this, status)
-    //   } catch (e) {
-    //     this.contact.owner = {}
-    //     console.error('*** ERROR ***', e)
-    //     this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
-    //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    //     this.$store.commit(AppMutations.SET_LOADING, false)
-    //   }
-    // },
-    async getAvailableProcesses() {
-      try {
-        this.processesLoading = true
-        let params = {
-          contactId: parseInt(this.contactId)
-        }
-        const {data, status} = await getRequestWithParams(`/processes`, {params})
-        this.availableProcesses = data
-            if(!this.$store.getters.isFullAdmin) { //7 Oaks admin should be able to see all processes
-            this.availableProcesses = this.availableProcesses.filter(p => {
-                for (let id of this.userPositionIds) {
-                  if (!p.denyListPositions.find(dlp => dlp.positionId === id)) {
-                    return p;
-                  }
-                }
-              })
-            }
-        this.selectedProcess = data?.length === 1 ? data[0] : {}
-        this.processesLoading = false
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Processes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async convertToCustomer() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await putRequest(`/contact/${this.contact.id}/convert`, this.selectedProcess)
-        this.snackbar = getSnackbar('SUCCESS', 'Successfully Converted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        // this.$router.push({name: 'projectDetails', params: {projectId: data.id}, query: { checkAddress: true }})
-        // ^^ i cant figure out why but doing the routing by name, param, query doesn't load the proper modal on the project screen when needed but it work by hard-coded path
-        let path = data.companyStateId ? `/project/${data.id}/status` : `/project/${data.id}/status?checkAddress=true`
-        this.$router.push(path)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Converting Contact')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCompanyStates() {
-      try {
-        const {data, status} = await getCompanyStates()
-        this.states = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getCountries() {
-      try {
-        const {data, status} = await getCountries(parseInt(this.companyId))
-        this.countries = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    getReadOnly: function (field) {
-      let fieldReadOnly = false
-      if (null != field) {
-        fieldReadOnly = getCustomFieldReadOnly(this.$store, field)
-      }
-      return !this.userCanEdit || fieldReadOnly
-    },
-    async deleteContact() {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await deleteRequest(`/contact/${this.contact.id}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Contact Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$router.push('/contacts')
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error deleting contact')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
+      const {data, status} = await saveContact(contactId.value, body)
+      dirtyCfvs.value = []
+      addressChanged.value = false
+      customFieldGroups.value = data?.cfgs
+      fieldsSaving.value = false
+      snackbar('SUCCESS', 'Fields Saved')
+
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Contact')
+
+    } finally {
+      appStore.loading = false
+      fieldsSaving.value = false
     }
   }
 }
+const populateDirtyCfvs = (field) => {
+  let match = dirtyCfvs.value.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+  if (!match) {
+    dirtyCfvs.value.push(field)
+  }
+}
+const getCustomFieldGroups = async() => {
+  try {
+    const {data, status} = await getRequestWithParams(`/customFieldValues/contact/${contactId.value}`)
+    customFieldGroups.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Custom Fields')
+
+  }
+}
+const getContact = async() => {
+  try {
+    const {data, status} = await getRequest(`/contact/${contactId.value}`)
+    contact.value = data
+    contactLoading.value = false
+    window.document.title = `Contact - ${contact.value.fullName}`
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    contactLoading.value = false
+    snackbar('ERROR', 'Error Retrieving Contact')
+
+  }
+}
+const getOwners = async() => {
+  try {
+    let params = {
+      contactId: parseInt(contactId.value)
+    }
+    const {data, status} = await getRequestWithParams(`/contact/owners`, {params})
+    availableOwners.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Owners')
+
+  }
+}
+const getAvailableProcesses = async() => {
+  try {
+    processesLoading.value = true
+    let params = {
+      contactId: parseInt(contactId.value)
+    }
+    const {data, status} = await getRequestWithParams(`/processes`, {params})
+    availableProcesses.value = data
+    if(!userStore.isSystemAdmin) { //7 Oaks admin should be able to see all processes
+      availableProcesses.value = availableProcesses.value.filter(p => {
+        for (let id of userPositionIds.value) {
+          if (!p.denyListPositions.find(dlp => dlp.positionId === id)) {
+            return p;
+          }
+        }
+      })
+    }
+    selectedProcess.value = data?.length === 1 ? data[0] : {}
+    processesLoading.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Available Processes')
+
+  }
+}
+const convertToCustomer = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await putRequest(`/contact/${contact.value.id}/convert`, selectedProcess.value)
+    snackbar('SUCCESS', 'Successfully Converted')
+
+    // router.push({name: 'projectDetails', params: {projectId: data.id}, query: { checkAddress: true }})
+    // ^^ i cant figure out why but doing the routing by name, param, query doesn't load the proper modal on the project screen when needed but it work by hard-coded path
+    let path = data.companyStateId ? `/project/${data.id}/${defaultProjectPage.value}` : `/project/${data.id}/${defaultProjectPage.value}?checkAddress=true`
+    router.push(path)
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Converting Contact')
+
+    appStore.loading = false
+  }
+}
+const getAllCompanyStates = async() => {
+  try {
+    const {data, status} = await getCompanyStates()
+    states.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving States')
+
+  }
+}
+const getAllCountries = async() => {
+  try {
+    const {data, status} = await getCountries(parseInt(companyId.value))
+    countries.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Countries')
+
+  }
+}
+const getReadOnly =  (field) => {
+  let fieldReadOnly = false
+  if (null != field) {
+    fieldReadOnly = getCustomFieldReadOnly(field)
+  }
+  return !userCanEdit.value || fieldReadOnly
+}
+const deleteContact = async() => {
+  try {
+    appStore.loading = true
+    await deleteRequest(`/contact/${contact.value.id}`)
+    snackbar('SUCCESS', 'Contact Deleted')
+
+    router.push('/contacts')
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error deleting contact')
+
+    appStore.loading = false
+  }
+}
+
 </script>
 
 <style lang="scss">
@@ -1042,7 +1056,7 @@ export default {
     overflow-x: hidden;
     height: calc(100vh - 200px);
     padding-bottom: 0;
-}
+  }
 
   .contact-split-container {
     height: calc(100% - 50px);

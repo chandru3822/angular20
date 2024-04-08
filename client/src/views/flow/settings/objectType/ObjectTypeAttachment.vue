@@ -13,32 +13,35 @@
             <v-toolbar-title class="title-large text-wrap">Ancillary Custom Field Groups</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text color="primary" v-if="!createNew && userCanAdd" @click="createNew = !createNew">
-                <v-icon>add</v-icon>
-                <span v-if="!isMobile">Create Group</span>
-              </v-btn>
+              <a-btn variant="text"
+                               color="primary"
+                               v-if="!createNew && userCanAdd"
+                               @click="createNew = !createNew"
+                               prepend-icon="add"
+                               :text="!isMobile ? 'Create Group' : ''"
+              />
             </v-toolbar-items>
           </v-toolbar>
           <v-card v-if="createNew" text class="text-left one-hunned pa-3 square-card add-new" flat
                   color="rowShadeCustom">
             <div>
-              <v-text-field
+              <a-text-field
                 label="Group Name"
                 tabindex=1
                 v-model="newGroup.groupName"
-              ></v-text-field>
+              ></a-text-field>
             </div>
-            <v-btn
+            <a-btn
               color="primary"
               class="mr-2"
               :disabled="!newGroup.groupName"
-              @click="saveFieldGroup()">
-              Save
-            </v-btn>
-            <v-btn text color="primary"
-              @click="[newGroup = {}, createNew = false]">
-              Cancel
-            </v-btn>
+              @click="saveFieldGroup()"
+              text="SAVE"
+            />
+            <a-btn variant="text" color="primary"
+              @click="[newGroup = {}, createNew = false]"
+              text="CANCEL"
+            />
           </v-card>
           <v-row>
             <v-col cols="12">
@@ -46,7 +49,7 @@
                   id="attachment-cfg-table"
                 :key="componentKey"
                 :headers="headers"
-                :items="filterCustomFieldGroups()"
+                :items="filterCustomFieldGroups"
                 :items-per-page="-1"
                 single-expand
                 :expanded.sync="expanded"
@@ -67,22 +70,25 @@
 
                     <template #item.draggable="{ item, index }">
                       <td class="draggable-handle-col" :class="{'shaded-row': index % 2 && !isMobile}">
-                      <v-btn text icon small color="primary" class="handle" v-if="userCanEdit">
-                        <v-icon>drag_handle</v-icon>
-                      </v-btn>
+                      <a-btn variant="text"
+                                       icon size="small"
+                                       color="primary" class="handle"
+                                       v-if="userCanEdit"
+                                       prepend-icon="drag_handle"
+                      />
                       </td>
                     </template>
-                    <template #item.groupName="{ item, index }" class="text-left" :class="{'mb-4': $vuetify.breakpoint.xsOnly && item.edit}">
+                    <template #item.groupName="{ item, index }" class="text-left" :class="{'mb-4': vuetify.breakpoint.xsOnly && item.edit}">
                       <td :class="{'shaded-row': index % 2 && !isMobile}">
                       <div v-if="userCanEdit" :class="{'shaded-row': index % 2}">
-                        <v-text-field text
+                        <a-text-field
                                       v-if="item.edit"
                                       v-model="item.groupName">
                           <template slot="append-outer">
                             <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
                             <v-icon @click="item.edit = false">clear</v-icon>
                           </template>
-                        </v-text-field>
+                        </a-text-field>
                         <a style="text-decoration: underline;" v-else @click="item.edit = true">
                           {{ item.groupName }}
                         </a>
@@ -92,24 +98,34 @@
                     </template>
                     <template #item.icons="{item, index}">
                       <td :class="{'shaded-row': index % 2 && !isMobile}">
-                      <div class="item-icons text-right">
-                        <v-btn v-if="userCanAdd" small text color="primary"
-                               @click="[addField = !addField, selectedIndex = index, expanded = [item], loadFieldsByParent()]">
-                          <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
-                          <v-icon v-else>add</v-icon>
-                        </v-btn>
-                        <v-btn small text color="primary"
-                               @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
-                          <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
-                          <v-icon v-else>expand_more</v-icon>
-                        </v-btn>
-                        <v-btn small color="primary" text @click="cfGroupToDelete = item"><v-icon>delete</v-icon></v-btn>
-                      </div>
+                        <div class="item-icons text-right">
+                          <a-btn
+                            v-if="userCanAdd"
+                            size="small"
+                            variant="text"
+                            color="primary"
+                            @click="[addField = !addField, selectedIndex = index, expanded = [item], loadFieldsByParent()]"
+                            :prepend-icon="addField && expanded.includes(item) ? 'remove' : 'add'"
+                          />
+                          <a-btn
+                            size="small"
+                            variant="text"
+                            color="primary"
+                            @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]"
+                            :prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
+                          />
+                          <a-btn size="small"
+                                           color="primary"
+                                           variant="text"
+                                           @click="cfGroupToDelete = item"
+                                           prepend-icon="delete"
+                          />
+                        </div>
                       </td>
                     </template>
 
                 <template #expanded-item="{ headers, item, index }">
-                  <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2,'mobile-tr': $vuetify.breakpoint.xsOnly}">
+                  <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2,'mobile-tr': vuetify.breakpoint.xsOnly}">
                     <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                       <h3 class="text-left">Add Ancillary Field</h3>
                       <v-autocomplete v-model="selectedAncillaryField"
@@ -124,7 +140,12 @@
                           {{ item.fieldName }}
                         </template>
                       </v-autocomplete>
-                      <v-btn text color="primary" @click="addField = false">Cancel</v-btn>
+                      <a-btn
+                        variant="text"
+                        color="primary"
+                        @click="addField = false"
+                        text="CANCEL"
+                      />
                     </v-col>
                     <v-col cols="12" class="px-3 justify"
                            v-if="!addField && (!item.customFields || item.customFields.length === 0)">
@@ -136,7 +157,7 @@
                                  :disabled="!userCanEdit"
                                  group="customFields" @start="drag=true" @end="drag=false"
                                  @change="saveFieldChanges(item.customFields)">
-                        <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
+                        <v-list v-for="(cf, index) in item.customFields.filter(a => !a.archived)"
                                 :key="index" class="pa-0" color="transparent">
                           <v-list-item :class="{grab: !item.attachmentTypeId}">
                             <v-list-item-action>
@@ -180,349 +201,319 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from "@/stores/AppStore";
 import draggable from 'vuedraggable'
 import {
   handleHidingGlobalLoader,
   getRequest,
-  getSnackbar,
+  defineSortableTable,
   postRequest,
   putRequest,
   getRequestWithParams
 } from "@/helpers/helpers";
-import Vue2Filters from "vue2-filters";
 import constants from "@/helpers/constants";
 import orderBy from 'lodash.orderby'
-import Sortable from "sortablejs"
-import cloneDeep from 'lodash.clonedeep'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
-export default {
-  name: 'ObjectTypeAttachment',
-  mixins: [Vue2Filters.mixin],
-  components: {
-    ConfirmationDialog,
-    draggable,
-  },
-  props: {
-    objectTypeValue: String,
-    showReadOnly: Boolean,
-    primaryKey: Number //used for getting attachments for events
-  },
-  data () {
-    return {
-      snackbar: {},
-      addField: false,
-      createNew: false,
-      constants,
-      newField: {},
-      ancillaryCustomFields: [],
-      selectedAncillaryField: {},
-      selectedAttachment: {},
-      attachmentLoading: true,
-      selectedIndex: null,
-      companyObjectTypeId: parseInt(this.$route.query.companyObjectTypeId) || parseInt(this.$route.params.id),
-      attachmentTypeId: parseInt(this.$route.params.attachmentTypeId),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      componentKey: 0,
-      newGroup: {},
-      expanded: [],
-      headers: [
-        {text: null, value: 'draggable', width: 50, show: true, sortable: false},
-        {text: 'Name', value: 'groupName', show: true},
-        {text: null, value: 'icons', show: true}
-      ],
-      cfGroupToDelete: null,
-      customFieldToDelete: null,
-    }
-  },
-  watch: {},
-  computed: {
-    localCustomFieldGroups: {
-      get: function () {
-        return this.selectedAttachment?.customFieldGroups
-      },
-      set: function (val) {
-        val.forEach(v => {
-          v.groupOrder = v.newGroupOrder ?? v.groupOrder
-        })
-        return orderBy(val, v => v.groupOrder)
-      }
-    },
-    groupToDeleteName() {
-      return this.cfGroupToDelete ? this.cfGroupToDelete.groupName : ''
-    },
-    fieldToDeleteName() {
-      return this.customFieldToDelete ? this.customFieldToDelete.fieldName : ''
-    },
-    fieldToDeleteGroupName() {
-      return this.customFieldToDelete ? this.customFieldToDelete.groupName : ''
-    },
-    objectType () {
-      if(null != this.objectTypeValue) {
-        return this.objectTypeValue
-      } else {
-        switch(this.companyObjectTypeId) {
-          case 3: return 'user'
-          case 2: return 'contact'
-          case 5: return 'organization'
-        }
-      }
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-  },
-  async created () {
-    await this.getTypeDetails()
-  },
-  updated() {
-    // this had to be in updated vs mounted so that after the re-render the dragging still works
-    let table = document.querySelector('.attachment-cfg-table tbody')
-    const _self = this
-    Sortable.create(table, {
-      handle: '.handle',
-      onEnd({newIndex, oldIndex}) {
-        if (_self.localCustomFieldGroups?.length > 0) {
-          const rowSelected = _self.localCustomFieldGroups.splice(oldIndex, 1)[0]
-          _self.localCustomFieldGroups.splice(newIndex, 0, rowSelected)
-          let rowsClone = cloneDeep(_self.localCustomFieldGroups)
+import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
+import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
-          let rowsToSave = []
-          rowsClone.forEach((r, idx) => {
-            //check if the row needs to be saved before updating display order
-            //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-            let save = r.newGroupOrder === undefined ? r.groupOrder !== idx : r.newGroupOrder !== idx
-            //update display order
-            r.groupOrder = idx
-            //save only rows that changed
-            if (save) {
-              _self.localCustomFieldGroups[idx].newGroupOrder = idx
-              rowsToSave.push(r)
-            }
-          })
-          _self.saveRowChanges(rowsToSave)
-        }
-      }
-    })
-  },
-  methods: {
-    async getTypeDetails() {
-      try {
-        this.attachmentLoading = true
-        const {data} = await getRequest(`/attachmentType/${this.attachmentTypeId}/${this.objectType}`)
-        this.selectedAttachment = data
-        this.attachmentLoading = false
-      } catch (e) {
-        this.attachmentLoading = true
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Attachment Type Details')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.companyStatusesLoading = false
-      }
-    },
-    async saveFieldGroup() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        switch(this.objectType) {
-          case 'project':
-            this.newGroup.projectAttachmentTypeId = this.attachmentTypeId
-            break
-          case 'contact':
-            this.newGroup.contactAttachmentTypeId = this.attachmentTypeId
-            break
-          case 'user':
-            this.newGroup.userAttachmentTypeId = this.attachmentTypeId
-            break
-          case 'organization':
-            this.newGroup.orgAttachmentTypeId = this.attachmentTypeId
-            break
-          case 'event':
-            this.newGroup.eventAttachmentTypeId = this.attachmentTypeId
-            break
-        }
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const route = useRoute()
+const router = useRouter()
+const vuetify = vueInstance.$vuetify
+const userStore = useUserStore()
 
-        const {data} = await postRequest(`/customFieldGroup/addAttachmentCustomFieldGroup`, this.newGroup)
-        this.localCustomFieldGroups.push(data)
-        this.newGroup = {}
-        this.createNew = false
-        this.snackbar = getSnackbar('SUCCESS', 'Group Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Group')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveFieldChanges(fields) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
-        // pull those needing to be saved out of list
-        let fieldsToSave = []
-        fields.forEach((f, idx) => {
-          let order = idx + 1
-          if (f.fieldOrder !== order) {
-            f.fieldOrder = order
-            fieldsToSave.push(f)
-          }
-        })
-        // save them here
-        if (fieldsToSave.length > 0) {
-          await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
-        }
-        this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
+const props = defineProps({
+  objectTypeValue: String,
+  showReadOnly: Boolean,
+  primaryKey: Number //used for getting attachments for events
+})
 
+  const addField = ref(false)
+  const createNew = ref(false)
+  const newField = ref({})
+  const ancillaryCustomFields = ref([])
+  const selectedAncillaryField = ref({})
+  const selectedAttachment = ref({})
+  const attachmentLoading = ref(true)
+  const selectedIndex = ref(null)
+  const companyObjectTypeId = ref(parseInt(route.query.companyObjectTypeId) || parseInt(route.params.id))
+  const attachmentTypeId = ref(parseInt(route.params.attachmentTypeId))
+  const componentKey = ref(0)
+  const newGroup = ref({})
+  const expanded = ref([])
+  const headers = ref([
+    {text: null, value: 'draggable', width: 50, show: true, sortable: false},
+    {text: 'Name', value: 'groupName', show: true},
+    {text: null, value: 'icons', show: true}
+  ])
+  const cfGroupToDelete = ref(null)
+  const customFieldToDelete = ref(null)
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+  })
+  const localCustomFieldGroups = computed({
+    get() {
+      return selectedAttachment.value?.customFieldGroups
     },
-    async saveGroupName(group) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
-        this.snackbar = getSnackbar('SUCCESS', 'Group Name Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Change')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async fetchAvailableCustomFields() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.availableCustomFields = []
-        const {data} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, {params: {id: this.processStepId}})
-        this.selectedAncillaryField = {}
-        this.parentObjects = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteWithChecks() {
-      let item = this.cfGroupToDelete ? this.cfGroupToDelete : this.customFieldToDelete ? this.customFieldToDelete : null
-      let customFieldGroupId = this.cfGroupToDelete ? this.cfGroupToDelete.id : null
-      let customFieldGroupAssignmentId = this.customFieldToDelete ? this.customFieldToDelete.id : null
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let params = {
-          customFieldGroupId, customFieldGroupAssignmentId
-        }
-        const {data} = await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params)
-        if (data?.length > 0) {
-          this.deleteError = true
-          item.deleteConfirm = false
-          this.fieldsInUse = data
-          let errorMsg = 'Group Cannot Be Deleted'
-          this.deleteHeader = 'Error Deleting Custom Field Group'
-          this.deleteText = 'You cannot delete a group that has a field in use by other groups or requirements.'
-          if (null !== customFieldGroupAssignmentId) {
-            errorMsg = 'Field Cannot Be Deleted'
-            this.deleteHeader = 'Error Deleting Custom Field from Group'
-            this.deleteText = 'You cannot delete a field from a group that is in use by other groups or requirements.'
-          }
-          this.snackbar = getSnackbar('ERROR', errorMsg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } else {
-          this.fieldsInUse = []
-          item.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.expanded = []
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async loadFieldsByParent() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let url = `/customField/getByParentType/${this.companyObjectTypeId}`
-        if(this.objectTypeValue === 'event') {
-          url = `/customField/getByEvent/${this.primaryKey}`
-        }
-        const {data, status} = await getRequest(url)
-        this.ancillaryCustomFields = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async assignAncillaryCustomField (item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const params = {
-          customFieldGroupId: item.id,
-          id: null,
-          defaultFieldId: this.selectedAncillaryField.defaultFieldId,
-          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId
-        }
-        const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
-        item.customFields.push(data)
-        this.newField = {}
-        this.selectedAncillaryField = {}
-        this.parent = {}
-        this.addField = false
-        this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Field to Group')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveRowChanges(rows) {
-      if (rows?.length > 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
-          this.localCustomFieldGroups = orderBy(this.localCustomFieldGroups, 'groupOrder')
-          this.snackbar = getSnackbar('SUCCESS', 'Group Order Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          // this componentKey forces the data-table component to re-render
-          this.componentKey += 1
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Group Order')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    filterCustomFieldGroups() {
-      return this.localCustomFieldGroups?.filter(cfg => {
-        return !cfg.archived
+    set(val) {
+      val.forEach(v => {
+        v.groupOrder = v.newGroupOrder ?? v.groupOrder
       })
-    },
+      return orderBy(val, v => v.groupOrder)
+    }
+  })
+  const groupToDeleteName = computed(() => {
+    return cfGroupToDelete.value ? cfGroupToDelete.value.groupName : ''
+  })
+  const fieldToDeleteName = computed(() => {
+    return customFieldToDelete.value ? customFieldToDelete.value.fieldName : ''
+  })
+  const fieldToDeleteGroupName = computed(() => {
+    return customFieldToDelete.value ? customFieldToDelete.value.groupName : ''
+  })
+  const objectType = computed(() => {
+    if(null != props.objectTypeValue) {
+      return props.objectTypeValue
+    } else {
+      switch(companyObjectTypeId.value) {
+        case 3: return 'user'
+        case 2: return 'contact'
+        case 5: return 'organization'
+      }
+    }
+  })
+  const isMobile = computed(()=> {
+    return vuetify.breakpoint.smAndDown
+  })
+
+  onMounted(async () => {
+    await getTypeDetails()
+  })
+
+  onUpdated(() => {
+    defineSortableTable('.attachment-cfg-table tbody', localCustomFieldGroups, 'groupOrder', saveRowChanges)
+  })
+
+  const getTypeDetails = async () => {
+    try {
+      attachmentLoading.value = true
+      const {data} = await getRequest(`/attachmentType/${attachmentTypeId.value}/${objectType.value}`)
+      selectedAttachment.value = data
+      attachmentLoading.value = false
+    } catch (e) {
+      attachmentLoading.value = true
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Attachment Type Details')
+
+      companyStatusesLoading.value = false
+    }
   }
-}
+  const saveFieldGroup = async () => {
+    appStore.loading = true
+    try {
+      switch(objectType.value) {
+        case 'project':
+          newGroup.value.projectAttachmentTypeId = attachmentTypeId.value
+          break
+        case 'contact':
+          newGroup.value.contactAttachmentTypeId = attachmentTypeId.value
+          break
+        case 'user':
+          newGroup.value.userAttachmentTypeId = attachmentTypeId.value
+          break
+        case 'organization':
+          newGroup.value.orgAttachmentTypeId = attachmentTypeId.value
+          break
+        case 'event':
+          newGroup.value.eventAttachmentTypeId = attachmentTypeId.value
+          break
+      }
+
+      const {data} = await postRequest(`/customFieldGroup/addAttachmentCustomFieldGroup`, newGroup.value)
+      localCustomFieldGroups.value.push(data)
+      newGroup.value = {}
+      createNew.value = false
+      snackbar('SUCCESS', 'Group Saved')
+
+      appStore.loading = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Group')
+
+      appStore.loading = false
+    }
+  }
+  const saveFieldChanges = async (fields) => {
+    appStore.loading = true
+    try {
+      // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+      // pull those needing to be saved out of list
+      let fieldsToSave = []
+      fields.forEach((f, idx) => {
+        let order = idx + 1
+        if (f.fieldOrder !== order) {
+          f.fieldOrder = order
+          fieldsToSave.push(f)
+        }
+      })
+      // save them here
+      if (fieldsToSave.length > 0) {
+        await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
+      }
+      snackbar('SUCCESS', 'Fields Updated')
+
+      appStore.loading = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Updating Fields')
+
+      appStore.loading = false
+    }
+
+  }
+  const saveGroupName = async (group) => {
+    appStore.loading = true
+    try {
+      await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
+      snackbar('SUCCESS', 'Group Name Updated')
+
+      appStore.loading = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Change')
+
+      appStore.loading = false
+    }
+  }
+  const fetchAvailableCustomFields = async () => {
+    appStore.loading = true
+    try {
+      availableCustomFields.value = []
+      const {data} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, {params: {id: processStepId.value}})
+      selectedAncillaryField.value = {}
+      parentObjects.value = data
+      appStore.loading = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+
+      appStore.loading = false
+    }
+  }
+  const deleteWithChecks = async () => {
+    let item = cfGroupToDelete.value ? cfGroupToDelete.value : customFieldToDelete.value ? customFieldToDelete.value : null
+    let customFieldGroupId = cfGroupToDelete.value ? cfGroupToDelete.value.id : null
+    let customFieldGroupAssignmentId = customFieldToDelete.value ? customFieldToDelete.value.id : null
+    appStore.loading = true
+    try {
+      let params = {
+        customFieldGroupId, customFieldGroupAssignmentId
+      }
+      const {data} = await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params)
+      if (data?.length > 0) {
+        deleteError.value = true
+        item.deleteConfirm = false
+        fieldsInUse.value = data
+        let errorMsg = 'Group Cannot Be Deleted'
+        deleteHeader.value = 'Error Deleting Custom Field Group'
+        deleteText.value = 'You cannot delete a group that has a field in use by other groups or requirements.'
+        if (null !== customFieldGroupAssignmentId) {
+          errorMsg = 'Field Cannot Be Deleted'
+          deleteHeader.value = 'Error Deleting Custom Field from Group'
+          deleteText.value = 'You cannot delete a field from a group that is in use by other groups or requirements.'
+        }
+        snackbar('ERROR', errorMsg)
+
+      } else {
+        fieldsInUse.value = []
+        item.archived = true
+        snackbar('SUCCESS', 'Item Deleted')
+
+        appStore.loading = false
+      }
+      expanded.value = []
+      appStore.loading = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting')
+
+      appStore.loading = false
+    }
+  }
+  const loadFieldsByParent = async () => {
+    appStore.loading = true
+    try {
+      let url = `/customField/getByParentType/${companyObjectTypeId.value}`
+      if(props.objectTypeValue === 'event') {
+        url = `/customField/getByEvent/${props.primaryKey}`
+      }
+      const {data, status} = await getRequest(url)
+      ancillaryCustomFields.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+
+      appStore.loading = false
+    }
+  }
+  const assignAncillaryCustomField = async  (item) => {
+    appStore.loading = true
+    try {
+      const params = {
+        customFieldGroupId: item.id,
+        id: null,
+        defaultFieldId: selectedAncillaryField.value.defaultFieldId,
+        ancillaryCustomFieldGroupAssignmentId: selectedAncillaryField.value.customFieldGroupAssignmentId
+      }
+      const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
+      item.customFields.push(data)
+      newField.value = {}
+      selectedAncillaryField.value = {}
+      parent = {}
+      addField.value = false
+      snackbar('SUCCESS', 'Field Added to Group')
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Adding Field to Group')
+
+      appStore.loading = false
+    }
+  }
+  const saveRowChanges = async (rows) => {
+    if (rows?.length > 0) {
+      appStore.loading = true
+      try {
+        await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
+        localCustomFieldGroups.value = orderBy(localCustomFieldGroups.value, 'groupOrder')
+        snackbar('SUCCESS', 'Group Order Saved')
+        // this componentKey forces the data-table component to re-render
+        componentKey.value += 1
+        appStore.loading = false
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'Error Saving Group Order')
+        appStore.loading = false
+      }
+    }
+  }
+  const filterCustomFieldGroups = computed(() => {
+    return localCustomFieldGroups.value?.filter(cfg => {
+      return !cfg.archived
+    })
+  })
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

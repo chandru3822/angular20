@@ -19,31 +19,32 @@
   </v-container>
 </template>
 
-<script>
-  import Snackbar from '@/components/Snackbar.vue'
+<script setup>
+  import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useRoute, useRouter} from "vue-router/composables";
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  export default {
-    name: 'electronicDocuments',
-    components: {
-      Snackbar
-    },
-    computed: {
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        model: '',
-        tabs: [ {
-          label: 'Electronic Documents Request',
-          path: '/installation-agreements/request',
-          display: this.$store.getters.userHasFeature('ELECTRONIC_DOCUMENTS')
-        }]
-      }
-    },
-    methods: {
-    }
-  }
+  const appStore = useAppStore()
+  const route = useRoute()
+  const router = useRouter()
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
+
+  const model = ref('')
+
+  const tabs = computed(() => {
+    return [ {
+      label: 'Electronic Documents Request',
+      path: '/installation-agreements/request',
+      display: userStore.userHasFeature('ELECTRONIC_DOCUMENTS')
+    }]
+  })
+  const displayedTabs = computed(() => {
+    return tabs.value.filter(tab => tab.display)
+  })
+
+
 </script>

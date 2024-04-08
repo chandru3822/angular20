@@ -212,11 +212,11 @@
           </v-autocomplete>
         </v-col>
         <v-col id="time-zone-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
-          <v-select
-              v-model="timezone"
+          <a-select
+              v-model="scheduleTimezone"
               :items="timezones"
               label="Current Time Zone"
-              item-text="friendlyValue"
+              item-title="friendlyValue"
               :hide-details="true"
               return-object
               prepend-icon="mdi-web"
@@ -251,23 +251,23 @@
             <div>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
-              <AlbatrossButton icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
-                <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
-                <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
-              </AlbatrossButton>
+                  <a-btn icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
+                    <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
+                    <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
+                  </a-btn>
                 </template>
                 <span v-if="isResourceOnMap(resource)">Remove pin from map</span>
                 <span v-else>Pin on map</span>
               </v-tooltip>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
-              <AlbatrossButton v-if="showScheduleBtnForResource(resource)" icon size="small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">
+              <a-btn v-if="showScheduleBtnForResource(resource)" icon size="small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">
                 <v-icon>mdi-calendar-plus</v-icon>
-              </AlbatrossButton>
+              </a-btn>
                 </template>
                 Assign to Event
               </v-tooltip>
-              <AlbatrossButton icon size="small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></AlbatrossButton>
+              <a-btn icon size="small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></a-btn>
             </div>
           </div>
         </template>
@@ -293,22 +293,27 @@ import {AppMutations} from '@/stores/AppStore'
 
 import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar, getEventColorClass} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "../../../../components/ConfirmationDialog.vue";
-import {UserActions} from "@/stores/UserStore";
 import FullCalendar from "@fullcalendar/vue";
 import momentTimezonePlugin from "@fullcalendar/moment-timezone";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
 import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
 import {computed, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const refs = vueInstance.$refs
 const filters = vueInstance.$filters
-const router = vueInstance.$router
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
 
@@ -321,8 +326,14 @@ const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
       preselectedEvent: {type:Object, required: false}
     })
 
+const scheduleTimezone = computed(() => {
+  return store.state.schedule.timezone?.value
+})
 
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
+const userTimezone = computed(() => {
+  return store.state.user.details.timezone?.value
+})
+
 const calendarOptions = ref({
   plugins: [
     resourceTimelinePlugin, interaction, momentTimezonePlugin
@@ -377,7 +388,7 @@ const calendarOptions = ref({
     }
   },
   height: '100%',
-  timeZone: store.state.schedule.timezone.value || {},
+  timeZone: scheduleTimezone.value || {},
 
   customButtons: {
     customToday: {
@@ -390,7 +401,6 @@ const calendarOptions = ref({
     }
   }
 })
-const snackbar = ref({})
 const calendarLoading = ref(false)
 const includeCancelled = ref(false)
 const calendarInitialRender = ref(true)
@@ -429,7 +439,6 @@ const mapResourceEvents =  ref([])
 const checkedResources =  ref([])
 const daySelector =  ref(false)
 const dayOptions =  ref([])
-const timezone =  ref(store.state.schedule.timezone.value || store.state.user.details.timezone.value)
 const timezones = ref([
   { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
   { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
@@ -439,7 +448,6 @@ const timezones = ref([
   { friendlyValue: 'US/Eastern', value: 'America/New_York'},
   { friendlyValue: 'US/Mountain', value: 'America/Denver'}
 ])
-
 
 //states
 const sortedStates = computed(() => {
@@ -540,24 +548,20 @@ const countSelected = computed(() => {
         filterOrgsAndUsers()
       }
     })
-    watch(() => store.state.schedule.timezone.value, (value, oldValue) => {
+    watch(() => scheduleTimezone, (value) => {
         //when the schedule timezone value changes, update the calendar plugin's timezone
         let calendarApi = refs.eventCalendar.getApi()
-        calendarApi.setOption('timeZone', store.state.schedule.timezone.value)
-      //and show a snackbar if the timezones don't match
-      if(store.state.user.details.timezone.value !== timezone.value.value) {
-        let snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
-        store.commit(AppMutations.SHOW_SNACK, snackbar)
-      }
+        calendarApi.setOption('timeZone', scheduleTimezone.value)
+        //and show a snackbar if the timezones don't match
+        if(userTimezone.value !== scheduleTimezone.value) {
+          let snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+        }
       })
-      watch(() => store.state.user.details.timezone, () => {
-        //when the app timezone changes, update the schedule timezone to match
-        timezone.value = store.state.user.details.timezone
-      })
-      watch(timezone, () => {
+      watch(userTimezone, () => {
         //when the value of the timezone changes (either via the time zone dropdown selector or a change in the user store timezone value),
         // update the timezone for the schedule page
-        changeTimezone(timezone.value)
+        changeTimezone(userTimezone.value)
       })
 
       // whenever selectedUsers or selectedOrgs changes, concat them both into resources
@@ -716,9 +720,8 @@ const countSelected = computed(() => {
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Orgs')
-          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Orgs')
+          appStore.loading = false
         }
       }
       const fetchSchedulingOrgTypes = async() => {
@@ -738,9 +741,8 @@ const countSelected = computed(() => {
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Org Types')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Org Types')
+          appStore.loading = false
         }
       }
       const getPositions = async() => {
@@ -758,13 +760,12 @@ const countSelected = computed(() => {
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Positions')
-          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Positions')
+          appStore.loading = false
         }
       }
       const getSchedulingUsers = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequestWithParams(`/user/getSchedulingUsers`, {
             params: {
@@ -786,9 +787,8 @@ const countSelected = computed(() => {
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Users')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Users')
+          appStore.loading = false
         }
       }
       const limiter = () => {
@@ -938,7 +938,7 @@ const countSelected = computed(() => {
             userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
             startTime: info.start,
             endTime: info.end,
-            timezone: timezone.value.value
+            timezone: scheduleTimezone.value
           }
           const {data} = await postRequest(`/schedule/availability`, params)
 
@@ -1003,9 +1003,8 @@ const countSelected = computed(() => {
 
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Availability')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Availability')
+          appStore.loading = false
         }
       }
 const updatePins = async(info) => {
@@ -1078,8 +1077,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
       calendarLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar.value = getSnackbar('ERROR', 'Error Retrieving Events')
-      store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+      snackbar('ERROR', 'Error Retrieving Events')
       failureCallback(e)
       calendarLoading.value = false
     } finally {

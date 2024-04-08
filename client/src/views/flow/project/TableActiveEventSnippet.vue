@@ -3,15 +3,15 @@
     <v-col cols="12" class="pt-0">
       <v-card class="square-card">
         <v-data-table
-          :headers="headers"
-          :items="events"
-          :fixed-header="true"
-          :items-per-page="-1"
-          @click:row="goToEvent"
-          id="qa-process-step-table"
-          hide-default-footer
-          disable-sort
-          class="elevation-0"
+            :headers="headers"
+            :items="events"
+            :fixed-header="true"
+            :items-per-page="-1"
+            @click:row="goToEvent"
+            id="qa-process-step-table"
+            hide-default-footer
+            disable-sort
+            class="elevation-0"
         >
           <template #no-data>
             <span class="default-text-color">No upcoming or past due events</span>
@@ -35,32 +35,40 @@
   </v-row>
 </template>
 
-<script>
-export default {
-  name: 'TableActiveEventSnippet',
-  props: {
-    projectId: Number,
-    events: Array
-  },
-  data () {
-    return {
-      headers: [
-        {text: 'ID', value: 'id', show: true},
-        {text: 'Name', value: 'eventName', show: true},
-        {text: 'Start', value: 'startTime', show: true},
-        {text: 'Resource', value: 'resource', show: true},
-        {text: 'Status', value: 'companyEventStatusType', show: true},
-      ]
-    }
-  },
-  methods: {
-    goToPath(path) {
-      this.$router.push(path)
-    },
-    goToEvent(item) {
-      this.goToPath(`/project/${this.projectId}/processStep/${item.projectProcessStepId}/event/${item.id}`)
-    }
-  }
+<script setup>
+
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  projectId: Number,
+  events: Array
+})
+const { projectId, events } = toRefs(props)
+
+const headers = ref([
+  {text: 'ID', value: 'id', show: true},
+  {text: 'Name', value: 'eventName', show: true},
+  {text: 'Start', value: 'startTime', show: true},
+  {text: 'Resource', value: 'resource', show: true},
+  {text: 'Status', value: 'companyEventStatusType', show: true},
+])
+
+const goToPath = (path) => {
+  router.push(path)
+}
+const goToEvent = (item) => {
+  goToPath(`/project/${projectId.value}/processStep/${item.projectProcessStepId}/event/${item.id}`)
 }
 </script>
 

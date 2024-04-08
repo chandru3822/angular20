@@ -9,9 +9,14 @@
       style="z-index: 10"
   >
     <template #activator="{on}">
-      <v-btn text color="primary" x-small v-on="on" class="commission-detail-button">
-        <v-icon>mdi-information</v-icon>
-      </v-btn>
+      <a-btn
+          variant="text"
+          color="primary"
+          size="x-small"
+          :activation-handler="on"
+          class="commission-detail-button"
+          prepend-icon="mdi-information"
+      ></a-btn>
     </template>
     <div>
       <v-card v-if="detailsLoading" class="square-card">
@@ -63,112 +68,97 @@
   </v-menu>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {getRequestWithParams, getSnackbar} from '@/helpers/helpers'
-  import SpinnerInline from '@/components/SpinnerInline'
+<script setup>
 
-  export default {
-    name: 'CommissionDetailsModal',
-    components: {
-      SpinnerInline
-    },
-    props: {
-      proposalId: Number,
-      customFieldGroups: Array,
-      currentCommissionValue: Number,
-      selectCallback: Function
-    },
-    watch: {
-      displayDropdown: function () {
-        if(this.displayDropdown) {
-          this.getCommissionDetails()
-        }
-      }
-    },
-    computed: {
-    },
-    created() {
-    },
-    data() {
-      return {
-        snackbar: {},
-        displayDropdown: false,
-        detailsLoading: true,
-        fieldError: false,
-        fieldErrorMsg: '',
-        commissionDetails: [],
-        headers: [
-            //todo: tell scott he can take these out of the function
-          // {text: 'Redline', value: 'redline_amount', show: true},
-          // {text: 'Source Discount', value: 'source_discount', show: true},
-          // {text: 'Adders in $/Watt', value: 'adders_dollar_watts', show: true},
-          // {text: 'Base Price', value: 'base_price', show: true},
-          // {text: 'Commission in $/Watt', value: 'commissions_dollar_watts', show: true},
-          // {text: 'Total PPW', value: 'total_ppw', show: true},
-          // {text: 'System Size', value: 'system_size', show: true},
-          // {text: 'Cash Price', value: 'cash_price', show: true},
-          // {text: 'Above Line Rebate', value: 'above_line_rebate', show: true},
-          {text: 'Loan Amount', value: 'loanAmount', show: true},
-          {text: 'Monthly Payment', value: 'monthlyPayment', show: true},
-          {text: 'Commission in $/kW', value: 'commissionKw', show: true},
-          {text: 'Total Commission', value: 'totalCommissions', show: true},
-          // {text: null, value: 'icons', show: true},
-        ],
-        //i think BR is about to add a lot of fields to this list so i did it this funky but hopefully reusable way
-        fieldsToSend: [
-          { name: 'Financial Product', cfgId: 27, cfgaId: 155, dataField: 'intValue', backendProp: 'financialProductId', value: null, required: true},
-          { name: 'BRS Product', cfgId: 27, cfgaId: 147, dataField: 'intValue', backendProp: 'brsProductId', value: null, required: true},
-        ]
-      }
-    },
-    methods: {
-      getFieldValue(cfgId, cfgaId, dataValue) {
-        let cfg = this.customFieldGroups.find(cfg => cfg.id === cfgId)
-        let cf = cfg?.customFieldValues?.find(cf => cf.customFieldGroupAssignmentId === cfgaId)
-        return cf ? cf[dataValue] : null
-      },
-      async getCommissionDetails () {
-        try {
-          this.detailsLoading = true
-          this.fieldsToSend.forEach(f => {
-            f.value = this.getFieldValue(f.cfgId, f.cfgaId, f.dataField)
-          })
-          let emptyRequiredFields = this.fieldsToSend.filter(f => f.required && !f.value)
-          if(emptyRequiredFields.length === 0) {
-            this.fieldError = false
-            this.fieldErrorMsg = ''
-            let params = {}
-            this.fieldsToSend.forEach(f => {
-              params[f.backendProp] = f.value
-            })
-            console.log('params',params)
-            const {data} = await getRequestWithParams(`/proposal/${this.proposalId}/commissionDetails`, {params}, 'blueraven', [])
-            this.commissionDetails = data
-          } else {
-            this.fieldError = true
-            let conjunction = emptyRequiredFields.length === 1 ? ' is' : ' and'
-            let fieldString = ''
-            emptyRequiredFields.forEach((f, idx) => {
-              if(idx !== 0) {
-                fieldString = fieldString + ' and '
-              }
-              fieldString = fieldString + f.name
-            })
-            this.fieldErrorMsg = fieldString + conjunction + ' required to load commission details.'
-          }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.fieldError = true
-          this.fieldErrorMsg = 'Error retrieving commission details'
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving commission details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
-          this.detailsLoading = false
-        }
-      },
-    }
+import {getRequestWithParams, } from '@/helpers/helpers'
+import SpinnerInline from '@/components/SpinnerInline'
+
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  proposalId: Number,
+  customFieldGroups: Array,
+  currentCommissionValue: Number,
+  selectCallback: Function
+})
+const { proposalId, customFieldGroups, currentCommissionValue } = toRefs(props)
+
+const displayDropdown = ref(false)
+const detailsLoading = ref(true)
+const fieldError = ref(false)
+const fieldErrorMsg = ref('')
+const commissionDetails = ref([])
+const headers = ref([
+  {text: 'Loan Amount', value: 'loanAmount', show: true},
+  {text: 'Monthly Payment', value: 'monthlyPayment', show: true},
+  {text: 'Commission in $/kW', value: 'commissionKw', show: true},
+  {text: 'Total Commission', value: 'totalCommissions', show: true},
+])
+const fieldsToSend = ref([
+  { name: 'Financial Product', cfgId: 27, cfgaId: 155, dataField: 'intValue', backendProp: 'financialProductId', value: null, required: true},
+  { name: 'BRS Product', cfgId: 27, cfgaId: 147, dataField: 'intValue', backendProp: 'brsProductId', value: null, required: true},
+])
+watch(displayDropdown, async() => {
+  if(displayDropdown.value) {
+    getCommissionDetails()
   }
+})
+
+const getFieldValue = (cfgId, cfgaId, dataValue) => {
+  let cfg = customFieldGroups.value.find(cfg => cfg.id === cfgId)
+  let cf = cfg?.customFieldValues?.find(cf => cf.customFieldGroupAssignmentId === cfgaId)
+  return cf ? cf[dataValue] : null
+}
+const getCommissionDetails = async () => {
+  try {
+    detailsLoading.value = true
+    fieldsToSend.value.forEach(f => {
+      f.value = getFieldValue(f.cfgId, f.cfgaId, f.dataField)
+    })
+    let emptyRequiredFields = fieldsToSend.value.filter(f => f.required && !f.value)
+    if(emptyRequiredFields.length === 0) {
+      fieldError.value = false
+      fieldErrorMsg.value = ''
+      let params = {}
+      fieldsToSend.value.forEach(f => {
+        params[f.backendProp] = f.value
+      })
+      console.log('params',params)
+      const {data} = await getRequestWithParams(`/proposal/${proposalId.value}/commissionDetails`, {params}, 'blueraven', [])
+      commissionDetails.value = data
+    } else {
+      fieldError.value = true
+      let conjunction = emptyRequiredFields.length === 1 ? ' is' : ' and'
+      let fieldString = ''
+      emptyRequiredFields.forEach((f, idx) => {
+        if(idx !== 0) {
+          fieldString = fieldString + ' and '
+        }
+        fieldString = fieldString + f.name
+      })
+      fieldErrorMsg.value = fieldString + conjunction + ' required to load commission details.'
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    fieldError.value = true
+    fieldErrorMsg.value = 'Error retrieving commission details'
+    snackbar('ERROR', 'Error retrieving commission details')
+
+  } finally {
+    detailsLoading.value = false
+  }
+}
 </script>
 
 <style lang="scss">

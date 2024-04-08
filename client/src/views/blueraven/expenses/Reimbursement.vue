@@ -13,17 +13,17 @@
       <v-col cols="12" sm="6">
         <v-card flat class="pa-4">
           <h3>New Reimbursement Request</h3>
-          <v-text-field text
+          <a-text-field
                         type="number"
                         label="Dollar Amount"
                         v-model.number="newReimbursement.amount">
-          </v-text-field>
+          </a-text-field>
           <DatetimePickerInput
-            v-model="newReimbursement.expenseDate"
-            :timezone="timezone"
-            :type="'date'"
-            :format="'MM/DD/YYYY'"
-            label="Expense Date"
+              v-model="newReimbursement.expenseDate"
+              :timezone="timezone"
+              :type="'date'"
+              :format="'MM/DD/YYYY'"
+              label="Expense Date"
           />
           <v-autocomplete v-model="selectedBudgetId"
                           :items="availableBudgets"
@@ -50,27 +50,31 @@
           <div v-if="!receiptLogo || !receiptLogo.id" class="mb-5">
             <form enctype="multipart/form-data" novalidate>
               <input
-                type="file"
-                :accept="acceptedFileTypes"
-                class="file-input clickable"
-                :disabled="savingReceiptImage"
-                @change="uploadFile($event.target.files, attachmentTypeId)"
-                name="avatar"
+                  type="file"
+                  :accept="acceptedFileTypes"
+                  class="file-input clickable"
+                  :disabled="savingReceiptImage"
+                  @change="uploadFile($event.target.files, attachmentTypeId)"
+                  name="avatar"
               >
             </form>
           </div>
           <div class="receipt-image-background mb-5" v-else>
             <img class="receipt-image" :src="receiptLogo.presignedUrl">
           </div>
-          <v-btn color="primary" class="white--text"
-                 :disabled="!newReimbursement.expenseDate || !selectedBudgetId || !newReimbursement.amount || !newReimbursement.budgetTypeId
-                            || !receiptLogo || !receiptLogo.id || !newReimbursement.details"
-                 @click="submitReimbursementRequest()">
-            Submit
-          </v-btn>
-          <v-btn text color="primary" class="ml-3" @click="newReimbursement = {}">
-            Clear
-          </v-btn>
+          <a-btn
+              color="primary"
+              :disabled="!newReimbursement.expenseDate || !selectedBudgetId || !newReimbursement.amount || !newReimbursement.budgetTypeId || !receiptLogo || !receiptLogo.id || !newReimbursement.details"
+              @click="submitReimbursementRequest()"
+              text="Submit"
+          ></a-btn>
+          <a-btn
+              variant="text"
+              color="primary"
+              class="ml-3"
+              @click="newReimbursement = {}"
+              text="Clear"
+          ></a-btn>
         </v-card>
       </v-col>
       <v-col cols="12" sm="6">
@@ -81,28 +85,30 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div class="flex-display pt-3">
-              <v-select v-model="selectedMonth"
+              <a-select v-model="selectedMonth"
                         :items="months"
                         hide-details
                         class="mr-3 reimbursement-range-selector"
                         single-line
                         label="Month"
-                        item-text="name"
+                        item-title="name"
                         item-value="id"
-              ></v-select>
-              <v-select v-model="selectedYear"
+              ></a-select>
+              <a-select v-model="selectedYear"
                         :items="years"
                         hide-details
                         class="reimbursement-range-selector"
                         single-line
                         label="Year"
-                        item-text="name"
+                        item-title="name"
                         item-value="id"
-              ></v-select>
-              <v-btn color="primary" class="white--text ml-3"
-                     @click="setDataForMonth">
-                Load
-              </v-btn>
+              ></a-select>
+              <a-btn
+                  color="primary"
+                  class="ml-3"
+                  @click="setDataForMonth"
+                  text="Load"
+              ></a-btn>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -140,207 +146,216 @@
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
 import {
   handleHidingGlobalLoader,
   postRequest,
-  getSnackbar,
+
   getRequestWithParams,
   getMonthDateRange, getYears
 } from '@/helpers/helpers'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import constants from "@/helpers/constants"
-import {Actions} from "@/store"
 import moment from 'moment'
 import {getBudgetsForUser, getBudgetTypes, getReimbursementRequestImage} from './expenseService'
 import SpinnerInline from "@/components/SpinnerInline.vue";
 import BudgetReportTable from "@/views/blueraven/expenses/BudgetReportTable.vue";
 
-export default {
-  name: 'Reimbursement',
-  components: {
-    SpinnerInline,
-    DatetimePickerInput,
-    BudgetReportTable
-  },
-  computed: {
-    selectedBudgetId () {
-      return this.newReimbursement.expenseDate != null ? this.availableBudgets.find(b => {
-        return moment(this.newReimbursement.expenseDate).isBetween(b.startDate, b.endDate, null, '[]')
-      })?.id : null
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const fileStore = useFileStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const createNew = ref(true)
+const dataLoading = ref(true)
+const savingReceiptImage = ref(false)
+const attachmentTypeId = ref(4)
+const receiptLogo = ref({})
+const newReimbursement = ref({})
+const renderApprovalRequestImage = ref(false)
+const needsApprovalRequest = ref({})
+const availableBudgets = ref([])
+const budgetTypes = ref([])
+const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY)
+const rejectedRequests = ref([])
+const budgetReport = ref([])
+const months = ref(constants.MONTHS)
+const years = ref(getYears(2017, true))
+const selectedMonth = ref(parseInt(moment().format('M')))
+const selectedYear = ref(parseInt(moment().format('YYYY')))
+const budgetsLoading = ref(false)
+const startDate = ref(null)
+const endDate = ref(null)
+
+const timezone = computed(() => {
+  return userStore.timezone.value
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const selectedBudgetId = computed(() => {
+  return newReimbursement.value.expenseDate != null ? availableBudgets.value.find(b => {
+    return moment(newReimbursement.value.expenseDate).isBetween(b.startDate, b.endDate, null, '[]')
+  })?.id : null
+})
+
+onMounted(() => {
+  //init
+  setDataForMonth()
+  getTheBudgetTypes()
+  getTheBudgetsForUser()
+
+})
+
+const submitReimbursementRequest = async() => {
+  appStore.loading = true
+  try {
+    newReimbursement.value.attachmentId = receiptLogo.value.id
+    newReimbursement.value.expenseBudgetId = selectedBudgetId.value
+
+    const {status} = await postRequest(`/reimbursement/request`, newReimbursement.value, 'blueraven')
+    newReimbursement.value = {}
+    receiptLogo.value = {}
+    snackbar('SUCCESS', 'Reimbursement Request Submitted.')
+
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let msg = 'Error Submitting Reimbursement Request.'
+    if (e && e.status && e.status === 406) {
+      msg = 'Error, Request exceeds budget. Please contact Administrator for assistance.'
     }
-  },
-  data() {
-    return {
-      snackbar: {},
-      createNew: true,
-      dataLoading: true,
-      savingReceiptImage: false,
-      attachmentTypeId: 4,
-      timezone: this.$store.state.user.details.timezone.value,
-      userId: this.$store.state.user.details.id,
-      receiptLogo: {},
-      companyId: this.$store.state.user.details.companyId,
-      newReimbursement: {},
-      renderApprovalRequestImage: false,
-      needsApprovalRequest: {},
-      availableBudgets: [],
-      budgetTypes: [],
-      acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
-      rejectedRequests: [],
-      budgetReport: [],
-      months: constants.MONTHS,
-      years: getYears(2017, true),
-      selectedMonth: parseInt(moment().format('M')),
-      selectedYear: parseInt(moment().format('YYYY'))
-    }
-  },
-  created() {
-    //init
-    this.setDataForMonth()
-    this.getBudgetTypes()
-    this.getBudgetsForUser()
+    snackbar('ERROR', msg)
 
-  },
-  methods: {
-    async submitReimbursementRequest() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.newReimbursement.attachmentId = this.receiptLogo.id
-        this.newReimbursement.expenseBudgetId = this.selectedBudgetId
-
-        const {status} = await postRequest(`/reimbursement/request`, this.newReimbursement, 'blueraven')
-        this.newReimbursement = {}
-        this.receiptLogo = {}
-        this.snackbar = getSnackbar('SUCCESS', 'Reimbursement Request Submitted.')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        let msg = 'Error Submitting Reimbursement Request.'
-        if (e && e.status && e.status === 406) {
-          msg = 'Error, Request exceeds budget. Please contact Administrator for assistance.'
-        }
-        this.snackbar = getSnackbar('ERROR', msg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getBudgetTypes() {
-      //reset the budget id every time a user or expense date changes
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getBudgetTypes()
-        this.budgetTypes = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getRequestAttachmentPresignedUrl() {
-      this.renderApprovalRequestImage = false
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getReimbursementRequestImage(this.needsApprovalRequest.id)
-        this.needsApprovalRequest.presignedUrl = data
-        //this forces the dom to re-render the presignedUrl and i hate myself
-        this.renderApprovalRequestImage = true
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Attached Image')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async uploadFile(files, attachmentTypeId) {
-      try {
-        this.savingReceiptImage = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        let file = files[0]
-        await this.$store.dispatch(Actions.FILE_UPLOAD, {
-          file: file,
-          attachmentTypeId,
-          sourceId: null,
-          displayName: file.name.substr(0, file.name.lastIndexOf('.')),
-          callback: async (img, error) => {
-            this.savingReceiptImage = false
-            if (error?.error) {
-              this.snackbar = getSnackbar('ERROR', error.errorMsg)
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
-            } else {
-              this.receiptLogo = img
-              this.snackbar = getSnackbar('SUCCESS', 'Receipt Uploaded')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
-            }
-          }
-        })
-      } catch (e) {
-        this.savingReceiptImage = false
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getBudgetsForUser() {
-      this.budgetsLoading = true
-      try {
-        const {data, status} = await getBudgetsForUser(this.userId)
-        this.availableBudgets = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
-        this.budgetsLoading = false
-      }
-    },
-    async getMonthlyBudgetReport() {
-      const {data} = await getRequestWithParams(`/expenseBudgets/getMonthlyBudgetReport`, {
-          params: {
-            startDate: this.startDate,
-            endDate: this.endDate,
-            userId: this.userId
-          }
-        }, 'blueraven'
-      , [])
-      this.budgetReport = data
-    },
-    async getRejectedRequests(statusId) {
-      const {data} = await getRequestWithParams(`/reimbursement/requests/byStatus`, {
-          params: {
-            statusId,
-            startDate: this.startDate,
-            endDate: this.endDate
-          }
-        }, 'blueraven'
-      )
-      this.rejectedRequests = data
-    },
-    async setDataForMonth() {
-      this.dataLoading = true
-      let dateRange = getMonthDateRange(this.selectedMonth, this.selectedYear)
-      this.startDate = dateRange.startDate
-      this.endDate = dateRange.endDate
-
-      let requests = [
-        //get rejected requests for user
-        this.getRejectedRequests(2),
-        this.getMonthlyBudgetReport()
-
-      ]
-      await Promise.all(requests).then(() => {
-        this.dataLoading = false
-      })
-    },
+    appStore.loading = false
   }
+}
+const getTheBudgetTypes = async() => {
+  //reset the budget id every time a user or expense date changes
+  appStore.loading = true
+  try {
+    const {data, status} = await getBudgetTypes()
+    budgetTypes.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+    appStore.loading = false
+  }
+}
+const getRequestAttachmentPresignedUrl = async() => {
+  renderApprovalRequestImage.value = false
+  appStore.loading = true
+  try {
+    const {data, status} = await getReimbursementRequestImage(needsApprovalRequest.value.id)
+    needsApprovalRequest.value.presignedUrl = data
+    //this forces the dom to re-render the presignedUrl and i hate myself
+    renderApprovalRequestImage.value = true
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Attached Image')
+
+    appStore.loading = false
+  }
+}
+const uploadFile = async(files, attachmentTypeId) => {
+  try {
+    savingReceiptImage.value = true
+    appStore.loading = true
+    let file = files[0]
+    await fileStore.uploadFile({
+      file: file,
+      attachmentTypeId,
+      sourceId: null,
+      displayName: file.name.substr(0, file.name.lastIndexOf('.')),
+      callback: async(img, error) => {
+        savingReceiptImage.value = false
+        if (error?.error) {
+          snackbar('ERROR', error.errorMsg)
+
+          appStore.loading = false
+        } else {
+          receiptLogo.value = img
+          snackbar('SUCCESS', 'Receipt Uploaded')
+
+          appStore.loading = false
+        }
+      }
+    })
+  } catch (e) {
+    savingReceiptImage.value = false
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Uploading File')
+
+    appStore.loading = false
+  }
+}
+const getTheBudgetsForUser = async() => {
+  budgetsLoading.value = true
+  try {
+    const {data, status} = await getBudgetsForUser(userId.value)
+    availableBudgets.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+  } finally {
+    budgetsLoading.value = false
+  }
+}
+const getMonthlyBudgetReport = async() => {
+  const {data} = await getRequestWithParams(`/expenseBudgets/getMonthlyBudgetReport`, {
+        params: {
+          startDate: startDate.value,
+          endDate: endDate.value,
+          userId: userId.value
+        }
+      }, 'blueraven'
+      , [])
+  budgetReport.value = data
+}
+const getRejectedRequests = async(statusId) => {
+  const {data} = await getRequestWithParams(`/reimbursement/requests/byStatus`, {
+        params: {
+          statusId,
+          startDate: startDate.value,
+          endDate: endDate.value
+        }
+      }, 'blueraven'
+  )
+  rejectedRequests.value = data
+}
+const setDataForMonth = async() => {
+  dataLoading.value = true
+  let dateRange = getMonthDateRange(selectedMonth.value, selectedYear.value)
+  startDate.value = dateRange.startDate
+  endDate.value = dateRange.endDate
+
+  let requests = [
+    //get rejected requests for user
+    getRejectedRequests(2),
+    getMonthlyBudgetReport()
+
+  ]
+  await Promise.all(requests).then(() => {
+    dataLoading.value = false
+  })
 }
 </script>
 

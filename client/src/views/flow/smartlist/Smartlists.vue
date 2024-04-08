@@ -6,9 +6,14 @@
         <v-toolbar-title class="app-title">Smartlists</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text to="/smartlist/editor" color="primary" v-if="userCanAdd">
-            <span>Add Smartlist</span>
-          </v-btn>
+          <a-btn
+              variant="text"
+              to="/smartlist/editor"
+              color="primary"
+              v-if="userCanAdd"
+              text="Add Smartlist"
+              prepend-icon="add"
+          ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-tabs class="elevation-1">
@@ -37,12 +42,15 @@
 
 <script setup>
 import { getCurrentInstance } from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
-const userCanViewAll = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL')
-const userIsSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+const userStore = useUserStore()
+const userCanAdd = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+const userCanViewAll = userStore.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL')
+const userIsSmartlistAdmin = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
 </script>
 
 <style scoped lang="scss">

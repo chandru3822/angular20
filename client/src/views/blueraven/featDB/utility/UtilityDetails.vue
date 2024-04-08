@@ -19,24 +19,30 @@
           <v-card class="mx-2 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
               <v-col class="utility-form-btns" cols="12">
-                <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
-                  {{ expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All' }}
-                </v-btn>
-                <v-btn v-if="dataWasChanged"
-                       @click="resetForm"
-                       text
-                       color="primary"
-                       class="cancel-link"
-                       style="margin-right: 10px"
-                >Cancel
-                </v-btn>
-                <v-btn id="save-btn"
-                       v-if="userCanEdit"
-                       color="primary"
-                       class="white--text mr-0"
-                       @click="validateForm()"
-                >Save
-                </v-btn>
+                <a-btn
+                    variant="text"
+                    color="primary"
+                    class="text-capitalize"
+                    @click="toggleMinimizeAll"
+                    :text="expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'"
+                ></a-btn>
+                <a-btn
+                    v-if="dataWasChanged"
+                    @click="resetForm"
+                    variant="text"
+                    color="primary"
+                    class="cancel-link"
+                    html-style="margin-right: 10px"
+                    text="Cancel"
+                ></a-btn>
+                <a-btn
+                    id="save-btn"
+                    v-if="userCanEdit"
+                    color="primary"
+                    class="mr-0"
+                    @click="validateForm()"
+                    text="Save"
+                ></a-btn>
               </v-col>
             </v-row>
             <v-form ref="utilityForm">
@@ -57,35 +63,35 @@
                   <v-col cols="12" md="6" class="group px-2 py-2">
                     <!-- CONTACTS -->
                     <FeatDbContact title="Contacts"
-                                :user-can-edit="userCanEdit"
-                                :contactTypeId="8"
-                                :itemId="utility.id"
-                                :itemType="itemType"
-                                :contacts="utility.contacts"
-                                show-expanded
-                                :expanded-all="expandedAll"
-                                @toggle-collapse-expand="toggleCollapseExpand($event)"
+                                   :user-can-edit="userCanEdit"
+                                   :contactTypeId="8"
+                                   :itemId="utility.id"
+                                   :itemType="itemType"
+                                   :contacts="utility.contacts"
+                                   show-expanded
+                                   :expanded-all="expandedAll"
+                                   @toggle-collapse-expand="toggleCollapseExpand($event)"
                     ></FeatDbContact>
                     <FeatDbCard title="All Documents" show-expanded :expanded-all="expandedAll"
-                             @toggle-collapse-expand="toggleCollapseExpand($event)">
+                                @toggle-collapse-expand="toggleCollapseExpand($event)">
                       <FeatDbAttachments v-if="!isDocumentsLoading" :user-can-edit="userCanEdit"
-                                      :attachment-types="UtilityDocumentTypes" :attachments="documents"
-                                      :source-id="utility.id">
+                                         :attachment-types="UtilityDocumentTypes" :attachments="documents"
+                                         :source-id="utility.id">
                         >
                       </FeatDbAttachments>
                     </FeatDbCard>
                   </v-col>
                   <v-col class="group px-2 py-2">
                     <FeatDbLinks title="All Links"
-                              :user-can-edit="userCanEdit"
-                              :linkTypeId="10"
-                              :itemId="utility.id"
-                              :itemType="itemType"
-                              :links="utility.links"
-                              :isNested="false"
-                              show-expanded
-                              :expanded-all="expandedAll"
-                              @toggle-collapse-expand="toggleCollapseExpand($event)"></FeatDbLinks>
+                                 :user-can-edit="userCanEdit"
+                                 :linkTypeId="10"
+                                 :itemId="utility.id"
+                                 :itemType="itemType"
+                                 :links="utility.links"
+                                 :isNested="false"
+                                 show-expanded
+                                 :expanded-all="expandedAll"
+                                 @toggle-collapse-expand="toggleCollapseExpand($event)"></FeatDbLinks>
                   </v-col>
                 </v-row>
               </div>
@@ -97,237 +103,223 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import cloneDeep from "lodash.clonedeep"
 import orderBy from "lodash.orderby"
 import FeatDbContact from "@/views/blueraven/featDB/components/FeatDbContacts.vue"
 import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue"
-import {AppMutations} from "@/stores/AppStore"
-import {getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
+
+import {getRequest, getRequestWithParams,  handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue"
 import FeatDbCustomFields from "@/views/blueraven/featDB/components/FeatDbCustomFieldGroup.vue";
 import {CollapseExpandEnum, UtilityDocumentTypes} from "@/views/blueraven/featDB/FeatDbConstants";
 import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
 import FeatDbAttachments from "@/views/blueraven/featDB/components/FeatDbAttachments.vue";
 import TwoColumnMasonry from "@/views/blueraven/featDB/components/TwoColumnMasonry.vue";
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: "UtilityDetails",
-  components: {
-    TwoColumnMasonry,
-    FeatDbAttachments,
-    FeatDbCustomFields,
-    FeatDbContact,
-    FeatDbLinks,
-    CustomValueInput,
-    FeatDbCard
-  },
-  computed: {
-    userCanEdit() {
-      return this.$store.getters.userHasFeatureAccessLevel("UTILITY", "EDIT")
-    },
-    expandedAll() {
-      if (this.expandedGroups === this.totalGroups) {
-        return CollapseExpandEnum.EXPANDED
-      } else if (this.expandedGroups === 0) {
-        return CollapseExpandEnum.COLLAPSED
-      } else {
-        return CollapseExpandEnum.MIXED
-      }
-    }
-  },
-  data: () => ({
-    CollapseExpandEnum,
-    UtilityDocumentTypes: UtilityDocumentTypes,
-    utilityId: null,
-    itemType: "utility",
-    snackbar: {},
-    dataWasChanged: false,
-    dataReady: false,
-    customFieldGroups: [],
-    selectedFinancier: {submissionMethod: null},
-    utility: {
-      customerSignatureLinks: [],
-      ptoLinks: [],
-      ptoFollowupLinks: [],
-      submissionLinks: [],
-      submissionChecklist: [],
-      approvalChecklist: [],
-      ptoChecklist: [],
-      utilityInspectionChecklist: [],
-      contacts: [],
-      utilityRequirements: []
-    },
-    documents: [],
-    utilityRateDocs: [],
-    submissionDocs: [],
-    approvalDocs: [],
-    financiers: [],
-    totalGroups: 2,
-    expandedGroups: 2,
-    isDocumentsLoading: true
-  }),
-  methods: {
-    updateDirtyValue(item) {
-      item.valueWasChanged = true
-      this.dataWasChanged = true
-    },
-    toggleCollapseExpand(wasExpanded) {
-      if (wasExpanded === false) {
-        this.expandedGroups--
-      } else {
-        this.expandedGroups++
-      }
-    },
-    async getUtility() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/featDb/utility/${this.utilityId}`, "blueraven")
-        this.utility = cloneDeep(data)
-        window.document.title = `Utility - ${this.utility.name}`
-        this.utility.links = orderBy(this.utility.links, link => link.name?.toLowerCase())
-        this.utility.contacts = orderBy(this.utility.contacts, contact => contact.name?.toLowerCase())
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error("*** ERROR ***", e)
-        this.snackbar = getSnackbar("ERROR", "Error retrieving Utility")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getAllDocuments() {
-      this.isDocumentsLoading = true
-      let docRequests = []
-      for (const docType of this.UtilityDocumentTypes) {
-        docRequests.push(this.getDocuments(docType.attachmentTypeId))
-        // await this.getDocuments(docType.attachmentTypeId)
-      }
-      await Promise.all(docRequests).then(() => {
-        this.isDocumentsLoading = false
-      })
-    },
-    async getDocuments(docTypeId) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const params = {sourceId: this.utility.id, attachmentTypeId: docTypeId}
-        const {data, status} = await getRequestWithParams('/attachment', {params})
-        this.documents = cloneDeep(data).concat(this.documents)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving documents')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    validateForm() {
-      //checks for required fields prior to opening the save dialog
-      if (this.$refs.utilityForm.validate()) {
-        this.saveUtility()
-      } else {
-        this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getFinancierList() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest("/financier/active", "blueraven")
-        this.financiers = cloneDeep(data)
-        this.selectedFinancier = this.utility.financierId ? this.financiers.filter(financier => financier.id === this.utility.financierId)[0] : {submissionMethod: null}
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error("*** ERROR ***", e)
-        this.snackbar = getSnackbar("ERROR", "Error retrieving list of financiers")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCustomFieldGroupAssignmentsForScreen() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const params = {sourceId: this.utilityId, objectTypeId: 2}
-        const {
-          data,
-          status
-        } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, "blueraven")
-        this.customFieldGroups = cloneDeep(data)
-        this.totalGroups = this.totalGroups + this.customFieldGroups.length;
-        this.expandedGroups = this.totalGroups;
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error("*** ERROR ***", e)
-        this.snackbar = getSnackbar("ERROR", "Error retrieving custom fields")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getCustomFieldsForGroup(groupId) {
-      let match = this.customFieldGroups.find(cfga => cfga.id === groupId)
-      return match ? match.customFieldValues : []
-    },
-    showOtherField(int, list) {
-      let match = list.find(l => l.id === int)
-      return match ? match.showOther : false
-    },
-    resetCustomFieldValueWasChangedFlags() {
-      this.customFieldGroups.forEach(group => {
-        group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
-      })
-    },
-    async resetForm() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.utility.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
-      this.dataWasChanged = false
-      this.dataReady = false
-      await this.pageLoad(false)
-    },
-    async pageLoad(loadAttachments) {
-      let requests = [
-        this.getUtility(),
-        this.getFinancierList(),
-        this.getCustomFieldGroupAssignmentsForScreen()
-      ]
-      if(loadAttachments) {
-        requests.push(this.getAllDocuments())
-      }
-      await Promise.all(requests).then(() => {
-        this.dataReady = true
-      })
-    },
-    async saveUtility() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.utility.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-      try {
-        this.utility.customFieldGroups = this.customFieldGroups
-        const {data, status} = await putRequest("/featDb/utility", this.utility, "blueraven")
-        this.utility = cloneDeep(data)
-        this.dataWasChanged = false
-        this.snackbar = getSnackbar("SUCCESS", "Utility saved")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error("*** ERROR ***", e)
-        this.snackbar = getSnackbar("ERROR", "Error saving Utility")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    toggleMinimizeAll() {
-      if (this.expandedAll !== CollapseExpandEnum.COLLAPSED) {
-        this.expandedGroups = 0
-      } else {
-        this.expandedGroups = this.totalGroups
-      }
-    }
-  },
-  async created() {
-    this.$store.commit(AppMutations.SET_LOADING, true)
-    this.utilityId = parseInt(this.$route.params.utilityId)
 
-    await this.pageLoad(true)
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel("UTILITY", "EDIT")
+})
+const expandedAll = computed(() => {
+  if (expandedGroups.value === totalGroups.value) {
+    return CollapseExpandEnum.EXPANDED
+  } else if (expandedGroups.value === 0) {
+    return CollapseExpandEnum.COLLAPSED
+  } else {
+    return CollapseExpandEnum.MIXED
+  }
+})
+
+const itemType = ref("utility")
+const dataWasChanged = ref(false)
+const dataReady = ref(false)
+const customFieldGroups = ref([])
+const selectedFinancier = ref({submissionMethod: null})
+const utility = ref({customerSignatureLinks: [],ptoLinks: [],ptoFollowupLinks: [],submissionLinks: [],submissionChecklist: [],approvalChecklist: [],ptoChecklist: [],utilityInspectionChecklist: [],contacts: [],utilityRequirements: []})
+const documents = ref([])
+const utilityRateDocs = ref([])
+const submissionDocs = ref([])
+const approvalDocs = ref([])
+const financiers = ref([])
+const totalGroups = ref(2)
+const expandedGroups = ref(2)
+const isDocumentsLoading = ref(true)
+const utilityForm = ref(null)
+
+const utilityId = computed(() => {
+  return route.params.utilityId
+})
+
+onMounted(async() => {
+  await pageLoad(true)
+})
+
+const updateDirtyValue = (item) => {
+  item.valueWasChanged = true
+  dataWasChanged.value = true
+}
+const toggleCollapseExpand = (wasExpanded) => {
+  if (wasExpanded === false) {
+    expandedGroups.value--
+  } else {
+    expandedGroups.value++
   }
 }
+const getUtility = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/featDb/utility/${utilityId.value}`, "blueraven")
+    utility.value = cloneDeep(data)
+    window.document.title = `Utility - ${utility.value.name}`
+    utility.value.links = orderBy(utility.value.links, link => link.name?.toLowerCase())
+    utility.value.contacts = orderBy(utility.value.contacts, contact => contact.name?.toLowerCase())
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error("*** ERROR ***", e)
+    snackbar("ERROR", "Error retrieving Utility")
+
+    appStore.loading = false
+  }
+}
+const getAllDocuments = async() => {
+  isDocumentsLoading.value = true
+  let docRequests = []
+  for (const docType of UtilityDocumentTypes) {
+    docRequests.push(getDocuments(docType.attachmentTypeId))
+    // await getDocuments(docType.attachmentTypeId)
+  }
+  await Promise.all(docRequests).then(() => {
+    isDocumentsLoading.value = false
+  })
+}
+const getDocuments = async(docTypeId) => {
+  appStore.loading = true
+  try {
+    const params = {sourceId: utility.value.id, attachmentTypeId: docTypeId}
+    const {data, status} = await getRequestWithParams('/attachment', {params})
+    documents.value = cloneDeep(data).concat(documents.value)
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving documents')
+    appStore.loading = false
+  }
+}
+const validateForm = () => {
+  //checks for required fields prior to opening the save dialog
+  if (utilityForm.value.validate()) {
+    saveUtility()
+  } else {
+    snackbar('ERROR', 'Missing Required Fields')
+
+  }
+}
+const getFinancierList = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest("/financier/active", "blueraven")
+    financiers.value = cloneDeep(data)
+    selectedFinancier.value = utility.value.financierId ? financiers.value.filter(financier => financier.id === utility.value.financierId)[0] : {submissionMethod: null}
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error("*** ERROR ***", e)
+    snackbar("ERROR", "Error retrieving list of financiers")
+
+    appStore.loading = false
+  }
+}
+const getCustomFieldGroupAssignmentsForScreen = async() => {
+  appStore.loading = true
+  try {
+    const params = {sourceId: utilityId.value, objectTypeId: 2}
+    const {
+      data,
+      status
+    } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, "blueraven")
+    customFieldGroups.value = cloneDeep(data)
+    totalGroups.value = totalGroups.value + customFieldGroups.value.length;
+    expandedGroups.value = totalGroups.value;
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error("*** ERROR ***", e)
+    snackbar("ERROR", "Error retrieving custom fields")
+
+    appStore.loading = false
+  }
+}
+const getCustomFieldsForGroup = (groupId) => {
+  let match = customFieldGroups.value.find(cfga => cfga.id === groupId)
+  return match ? match.customFieldValues : []
+}
+const showOtherField = (int, list) => {
+  let match = list.find(l => l.id === int)
+  return match ? match.showOther : false
+}
+const resetCustomFieldValueWasChangedFlags = () => {
+  customFieldGroups.value.forEach(group => {
+    group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
+  })
+}
+const resetForm = async() => {
+  appStore.loading = true
+  utility.value.financierId = (selectedFinancier.value && selectedFinancier.value.id) ? selectedFinancier.value.id : null
+  dataWasChanged.value = false
+  dataReady.value = false
+  await pageLoad(false)
+}
+const pageLoad = async(loadAttachments) => {
+  let requests = [
+    getUtility(),
+    getFinancierList(),
+    getCustomFieldGroupAssignmentsForScreen()
+  ]
+  if(loadAttachments) {
+    requests.push(getAllDocuments())
+  }
+  await Promise.all(requests).then(() => {
+    dataReady.value = true
+  })
+}
+const saveUtility = async() => {
+  appStore.loading = true
+  utility.value.financierId = (selectedFinancier.value && selectedFinancier.value.id) ? selectedFinancier.value.id : null
+
+  try {
+    utility.value.customFieldGroups = customFieldGroups.value
+    const {data, status} = await putRequest("/featDb/utility", utility.value, "blueraven")
+    utility.value = cloneDeep(data)
+    dataWasChanged.value = false
+    snackbar("SUCCESS", "Utility saved")
+
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error("*** ERROR ***", e)
+    snackbar("ERROR", "Error saving Utility")
+
+    appStore.loading = false
+  }
+}
+const toggleMinimizeAll = () => {
+  if (expandedAll.value !== CollapseExpandEnum.COLLAPSED) {
+    expandedGroups.value = 0
+  } else {
+    expandedGroups.value = totalGroups.value
+  }
+}
+
 </script>
 
 <style scoped lang="scss">

@@ -1,17 +1,48 @@
 <template>
-  <v-btn
-    :class="stateClass"
-    :disabled="currentState === 'DISABLED'"
-    :dark="!disabled"
-    v-bind="$attrs"
-    v-on="$listeners"
+  <a-btn
+      :class="stateClass"
+      :disabled="currentState === 'DISABLED'"
+      v-bind="$attrs"
+      :activation-handler="$listeners"
   >
-    <v-progress-circular indeterminate :size="20" v-if="loading" />
-    <v-icon v-if="currentState === 'SUCCESS'">mdi-check-circle-outline</v-icon>
-    <slot v-bind:currentState="currentState"></slot>
-  </v-btn>
+    <template #default>
+      <v-progress-circular indeterminate :size="20" v-if="loading" />
+      <v-icon v-if="currentState === 'SUCCESS'">mdi-check-circle-outline</v-icon>
+      <slot v-bind:currentState="currentState"></slot>
+    </template>
+  </a-btn>
 </template>
-<script>
+<script setup>
+
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  disabled: {
+    type: Boolean
+  },
+  error: {
+    type: Boolean
+  },
+  successful: {
+    type: Boolean
+  }
+})
+const { loading, disabled, error, successful } = toRefs(props)
 
 const STATE_CLASS = {
   DISABLED: 'state-default',
@@ -20,54 +51,35 @@ const STATE_CLASS = {
   DEFAULT: 'state-default',
 }
 
-export default {
-  props: {
-    loading: {
-      type: Boolean,
-      default: false
-    },
-    disabled: {
-      type: Boolean
-    },
-    error: {
-      type: Boolean
-    },
-    successful: {
-      type: Boolean
-    }
-  },
-  computed: {
-    currentState() {
-      if (this.disabled !== undefined && this.disabled === true) {
-        return 'DISABLED'
-      }
-      if (this.error !== undefined && this.error === true) {
-        return 'ERROR'
-      }
-      if (this.successful !== undefined && this.successful === true) {
-        return 'SUCCESS'
-      }
-      return 'DEFAULT'
-    },
-    stateClass(){
-      return STATE_CLASS[this.currentState]
-    }
+const currentState = computed(() => {
+  if (disabled.value !== undefined && disabled.value === true) {
+    return 'DISABLED'
   }
-}
+  if (error.value !== undefined && error.value === true) {
+    return 'ERROR'
+  }
+  if (successful.value !== undefined && successful.value === true) {
+    return 'SUCCESS'
+  }
+  return 'DEFAULT'
+})
+const stateClass = computed(() => {
+  return STATE_CLASS[currentState.value]
+})
 </script>
 <style scoped lang="scss">
-  .state-default {
-    background-color: var(--v-primary-base) !important;
-    border-color: var(--v-primary-base) !important;
-  }
+.state-default {
+  background-color: var(--v-primary-base) !important;
+  border-color: var(--v-primary-base) !important;
+}
 
-  .state-success {
-    background-color: var(--v-success-lighten1) !important;
-    border-color: var(--v-success-lighten1) !important;
-  }
+.state-success {
+  background-color: var(--v-success-lighten1) !important;
+  border-color: var(--v-success-lighten1) !important;
+}
 
-  .state-error {
-    background-color: var(--v-error-base) !important;
-    border-color: var(--v-error-base) !important;
-  }
+.state-error {
+  background-color: var(--v-error-base) !important;
+  border-color: var(--v-error-base) !important;
+}
 </style>

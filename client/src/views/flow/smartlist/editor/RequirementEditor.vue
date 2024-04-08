@@ -26,12 +26,12 @@
         @focus="onFieldFocus"
       >
         <template #append>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
       </v-autocomplete>
 
@@ -58,12 +58,12 @@
         @blur="afterPsEventSelected"
       >
         <template #append>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
       </v-autocomplete>
 
@@ -83,12 +83,12 @@
         @change="afterOperatorSelected"
       >
         <template #append v-if="isEditorInUse">
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
       </v-autocomplete>
 
@@ -118,12 +118,12 @@
         @change="afterValueSelected(false)"
       >
         <template #append>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
       </v-combobox>
 
@@ -140,12 +140,12 @@
         v-if="isEditing && requirement?.displayValue && operator?.displayValue && value?.displayValue && !showSecondaryValueInput"
         class="px-2"
       >
-        <v-btn
-          icon
-          @click.stop="[reset(), emit('cancelled')]"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
+        <a-btn
+            icon
+            @click.native.stop="[reset(), emit('cancelled')]"
+            color="unset"
+            prepend-icon="mdi-close"
+        ></a-btn>
       </span>
 
       <v-autocomplete
@@ -171,48 +171,46 @@
         </template>
 
         <template #append>
-          <v-btn
+          <a-btn
             v-if="value !== null && value.length > 0"
             icon
             @click="afterValueSelected(true)"
-          >
-            <v-icon>mdi-check</v-icon>
-          </v-btn>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+            prepend-icon="mdi-check"
+          ></a-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
       </v-autocomplete>
 
-      <v-text-field
+      <a-text-field
         v-show="showSecondaryValueInput"
         ref="secondaryValueField"
         v-model="secondaryValue"
         placeholder="Type Value"
-        solo
-        flat
-        hide-details="true"
+        variant="solo"
+        hide-details
         @change="add"
       >
         <template #append>
-          <v-btn
+          <a-btn
             v-if="secondaryValue !== null && secondaryValue.trim().length > 0"
             icon
             @click="afterValueSelected(true)"
+            prepend-icon="mdi-check"
           >
-            <v-icon>mdi-check</v-icon>
-          </v-btn>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          </a-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
-      </v-text-field>
+      </a-text-field>
     </v-col>
   </v-row>
 </v-sheet>
@@ -222,6 +220,7 @@
 import { getRequest, logError, UUID } from '@/helpers/helpers'
 import { computed, getCurrentInstance, nextTick, onMounted, ref } from 'vue'
 import cloneDeep from 'lodash.clonedeep'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const emit = defineEmits(['adding', 'added', 'updated', 'cancelled', 'in-progress'])
 
@@ -243,7 +242,8 @@ const props = defineProps({
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
-const companyId = vueInstance.$store.state.user.details.companyId
+const userStore = useUserStore()
+const companyId = userStore.details.companyId
 
 const availableDataTypeRequirements = ref([])
 const availableOperators = ref([])

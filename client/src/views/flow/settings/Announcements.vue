@@ -6,16 +6,20 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Announcements</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="goToPath()" v-if="userCanAdd">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                @click="goToPath()"
+                v-if="userCanAdd"
+                prepend-icon="add"
+                :text="addNew ? 'Cancel' : 'Add New'"
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-tabs class="tabs-bar" id="default-settings-tabs">
           <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path"
                  class="text-capitalize ma-0 label-medium"
-                 :style="{'margin-left': (index === 0 && $vuetify.breakpoint.smAndDown) ? '12px !important' : '0'}">
+                 :style="{'margin-left': (index === 0 && vueInstance.$vuetify.breakpoint.smAndDown) ? '12px !important' : '0'}">
             {{ tab.label }}
           </v-tab>
         </v-tabs>
@@ -32,22 +36,42 @@
         >
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
-              <td>{{item.title}}</td>
-              <td>{{item.startTime  | formatDate('timestamp', 'MM/DD/YYYY h:mm a')}}</td>
-              <td>{{item.endTime  | formatDate('timestamp', 'MM/DD/YYYY h:mm a')}}</td>
+              <td>
+                <router-link :to="`/settings/announcement/${item.id}`" class="router-link-td">
+                  {{item.title}}
+                </router-link>
+              </td>
+              <td>
+                <router-link :to="`/settings/announcement/${item.id}`" class="router-link-td">
+                  {{item.startTime  | formatDate('timestamp', 'MM/DD/YYYY h:mm a')}}
+                </router-link>
+              </td>
+              <td>
+                <router-link :to="`/settings/announcement/${item.id}`" class="router-link-td">
+                  {{item.endTime  | formatDate('timestamp', 'MM/DD/YYYY h:mm a')}}
+                </router-link>
+              </td>
               <td>
                 <span v-if="item.showOnWeb && item.showOnMobile">Web, Mobile</span>
                 <span v-else-if="item.showOnWeb">Web</span>
                 <span v-else-if="item.showOnMobile">Mobile</span>
               </td>
               <td>
-                <v-btn small text color="primary"
-                       @click="goToPath(item.id)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="current && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
-                  <v-icon >delete</v-icon>
-                </v-btn>
+                <a-btn
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="goToPath(item.id)"
+                    prepend-icon="edit"
+                ></a-btn>
+                <a-btn
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    v-if="current && userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                    @click.native.stop="[itemToDelete=item, showDeleteDialog=true]"
+                    prepend-icon="delete"
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -65,134 +89,139 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import constants from '@/helpers/constants'
-import {deleteRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader} from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
+
+import {deleteRequest, getRequestWithParams, handleHidingGlobalLoader} from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import {getCurrentInstance, ref, computed, onMounted, watch} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
 
-  export default {
-    name: 'Announcements',
-    components: {ConfirmationDialog},
 
-    computed: {
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      },
-      filteredAnnouncements () {
-        return this.announcements?.filter(a => { return !a.archived}) || []
-      },
-      current() {
-        return this.$route.path.includes('current')
-      }
-    },
-    data() {
-      return {
-        constants,
-        addNew: false,
-        options: {
-          itemsPerPage: 100
-        },
-        showDeleteDialog: false,
-        itemToDelete: null,
-        announcementsLoading: true,
-        footerProps: {
-          'items-per-page-options': [25, 50, 100, 1000],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        announcements: [],
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        headers: [
-          { text: 'Title', value: 'title', show: true },
-          { text: 'Start Time', value: 'startTime', show: true },
-          { text: 'End Time', value: 'endTime', show: true },
-          { text: 'Platform', value: 'platform', show: true },
-          { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        tabs: [
-          {
-            label: 'Current',
-            path: '/settings/announcements/current',
-            display: this.$store.getters.userHasFeature('SETTINGS')
-          },
-          {
-            label: 'Past',
-            path: '/settings/announcements/past',
-            display: this.$store.getters.userHasFeature('SETTINGS')
-          },
-        ]
-      }
-    },
-    created() {
-      this.getAnnouncements()
-    },
-    watch: {
-      current() {
-        this.announcements = []
-        this.getAnnouncements()
-      }
-    },
-    methods: {
-      goToPath(id) {
-        let path = id ? `/settings/announcement/${id}` : `/settings/announcement`
-        this.$router.push(path)
-      },
-      async getAnnouncements() {
-        this.announcementsLoading = true
-        try {
-          const { page, itemsPerPage } = this.options
-          let url = this.current ? `/announcements/current` : `/announcements/past`
-          const {data, status} = await getRequestWithParams(url, { params: {
-              page: page - 1 || 0,
-              size: itemsPerPage
-            }})
-          this.announcements = data.content
-          handleHidingGlobalLoader(this, status)
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const appStore = useAppStore()
+const snackbar = vueInstance.$snackbar
+const router = useRouter()
+const route = useRoute()
 
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Announcements')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
-          this.announcementsLoading = false
-        }
-      },
-      closeDeleteDialog() {
-        this.showDeleteDialog = false
-        this.itemToDelete = null
-      },
-      async deleteAnnouncement () {
-        const item = this.itemToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/announcements/${item.id}`)
-          item.archived = true
-          this.announcements = this.announcements.filter(a => a.id !== item.id)
-          this.snackbar = getSnackbar('SUCCESS', 'Announcement Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          if (e.status === 400) {
-            this.deleteError = true;
-            this.fieldsInUse = e.data;
-            this.snackbar = getSnackbar("ERROR", "Error Deleting Announcement");
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-          else {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-        this.closeDeleteDialog()
-      },
+
+const current = computed(() => {
+  return route.path.includes('current')
+})
+
+const options = ref({
+  itemsPerPage: 100
+})
+
+const addNew = ref(false)
+const showDeleteDialog = ref(false)
+const itemToDelete = ref(null)
+const announcementsLoading =ref(true)
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 1000],
+    'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const announcements = ref([])
+const fieldsInUse = ref([])
+const headers = ref([
+  { text: 'Title', value: 'title', show: true },
+  { text: 'Start Time', value: 'startTime', show: true },
+  { text: 'End Time', value: 'endTime', show: true },
+  { text: 'Platform', value: 'platform', show: true },
+  { text: null, value: 'icons', show: true, sortable: false }
+])
+const tabs = ref([
+  {
+    label: 'Current',
+    path: '/settings/announcements/current',
+    display: userStore.userHasFeature('SETTINGS')
+  },
+  {
+    label: 'Past',
+    path: '/settings/announcements/past',
+    display: userStore.userHasFeature('SETTINGS')
+  },
+])
+
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+
+const displayedTabs = computed(() => {
+  return tabs.value.filter(tab => tab.display)
+})
+const filteredAnnouncements = computed(() => {
+  return announcements.value?.filter(a => { return !a.archived}) || []
+})
+
+onMounted(() => {
+  getAnnouncements()
+})
+
+watch(current, () => {
+  announcements.value = []
+  getAnnouncements()
+})
+const goToPath = (id) => {
+  let path = id ? `/settings/announcement/${id}` : `/settings/announcement`
+  router.push(path)
+}
+const getAnnouncements = async () => {
+  announcementsLoading.value = true
+  try {
+    const { page, itemsPerPage } = options.value
+    let url = current.value ? `/announcements/current` : `/announcements/past`
+    const {data, status} = await getRequestWithParams(url, { params: {
+        page: page - 1 || 0,
+        size: itemsPerPage
+      }})
+    announcements.value = data.content
+    handleHidingGlobalLoader(status)
+
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.loading = false
+    snackbar('ERROR', 'Error Loading Announcements')
+  } finally {
+    announcementsLoading.value = false
+  }
+}
+const closeDeleteDialog = () => {
+  showDeleteDialog.value = false
+  itemToDelete.value = null
+}
+const deleteAnnouncement = async () => {
+  const item = itemToDelete.value
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/announcements/${item.id}`)
+    item.archived = true
+    announcements.value = announcements.value.filter(a => a.id !== item.id)
+    snackbar('SUCCESS', 'Announcement Deleted')
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    if (e.status === 400) {
+      deleteError.value = true;
+      fieldsInUse.value = e.data;
+      snackbar("ERROR", "Error Deleting Announcement");
+      appStore.loading = false
+    } else {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting Status')
+      appStore.loading = false
     }
   }
+  closeDeleteDialog()
+}
 </script>
+
 <style lang="scss">
 @media (max-width: 959px) {
   #default-settings-tabs > div > div.v-slide-group__wrapper > div {

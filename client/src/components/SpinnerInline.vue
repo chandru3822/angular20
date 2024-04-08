@@ -9,17 +9,18 @@
   </v-col>
 </template>
 
-<script>
-export default {
-  name: 'Spinner',
-  props: {
-    spinnerColor: String,
-    size: Number,
-    text: String,
-    transparent: Boolean,
-    centered: Boolean
-  }
-}
+<script setup>
+import { toRefs, computed } from 'vue'
+
+const props = defineProps({
+  spinnerColor: String,
+  size: Number,
+  text: String,
+  transparent: Boolean,
+  centered: Boolean
+})
+const { spinnerColor, size, text, transparent, centered } = toRefs(props)
+
 </script>
 
 <style scoped lang="scss">

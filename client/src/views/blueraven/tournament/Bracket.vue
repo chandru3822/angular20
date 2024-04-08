@@ -12,86 +12,84 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import BracketComponent from "./component/BracketComponent";
-  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
+<script setup>
 
-  export default {
-    name: 'Bracket',
-    components: {
-      BracketComponent
-    },
-    data() {
-      return {
-        constants,
-        snackbar: {},
-        bracketCount: 0,
-        brackets: [],
-        rowCount: 1,
-        tournamentId: this.$route.params.id
-      }
-    },
-    computed: {
-      minWidth () {
-        if(this.brackets?.length > 0) {
-          let roundCount = this.brackets[0].rounds?.length
-          if(this.bracketCount === 0) {
-            return roundCount * 175 + 'px'
-          } else {
-            return (roundCount * 175 * 2) + 'px'
-          }
-        }
-      }
-    },
-    async created() {
-      // this.getTournament()
-      this.getBrackets()
-    },
-    methods: {
-      getBracketsInRows(rowNum) {
-        // bracketCount 1, 0
-        // bracketCount 2, 0,1  row 1
-        // bracketCount 4, 2,3  row 2
-        // bracketCount 6, 4,5  row 3
-        let results = []
-        let validIdx = []
-        if (this.bracketCount === 1) {
-          results = this.brackets
-        } else {
-          if (rowNum === 1) {
-            validIdx = [0, 1]
-          } else if (rowNum === 2) {
-            validIdx = [2, 3]
-          } else if (rowNum === 3) {
-            validIdx = [4, 5]
-          } else if (rowNum === 4) {
-            validIdx = [6, 7]
-          }
-          results = this.brackets?.filter((b, idx) => {
-            return validIdx.includes(idx)
-          })
-        }
-        return results
-      },
-      async getBrackets() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/tournament/${this.tournamentId}/brackets`, 'blueraven')
-          this.brackets = data
-          this.bracketCount = this.brackets.length
-          this.rowCount = Math.ceil(this.bracketCount / 2)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Brackets')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+import BracketComponent from "./component/BracketComponent";
+import {handleHidingGlobalLoader, getRequest, } from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useRoute} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const bracketCount = ref(0)
+const brackets = ref([])
+const rowCount = ref(1)
+
+const tournamentId = computed(() => {
+  return route.params.id
+})
+
+const minWidth = computed(() => {
+  if(brackets.value?.length > 0) {
+    let roundCount = brackets.value[0].rounds?.length
+    if(bracketCount.value === 0) {
+      return roundCount * 175 + 'px'
+    } else {
+      return (roundCount * 175 * 2) + 'px'
     }
   }
+})
+
+onMounted(() => {
+  getBrackets()
+})
+
+const getBracketsInRows = (rowNum) => {
+  // bracketCount 1, 0
+  // bracketCount 2, 0,1  row 1
+  // bracketCount 4, 2,3  row 2
+  // bracketCount 6, 4,5  row 3
+  let results = []
+  let validIdx = []
+  if (bracketCount.value === 1) {
+    results = brackets.value
+  } else {
+    if (rowNum === 1) {
+      validIdx = [0, 1]
+    } else if (rowNum === 2) {
+      validIdx = [2, 3]
+    } else if (rowNum === 3) {
+      validIdx = [4, 5]
+    } else if (rowNum === 4) {
+      validIdx = [6, 7]
+    }
+    results = brackets.value?.filter((b, idx) => {
+      return validIdx.includes(idx)
+    })
+  }
+  return results
+}
+const getBrackets = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/tournament/${tournamentId.value}/brackets`, 'blueraven')
+    brackets.value = data
+    bracketCount.value = brackets.value.length
+    rowCount.value = Math.ceil(bracketCount.value / 2)
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Brackets')
+
+    appStore.loading = false
+  }
+}
 </script>
 
 <style lang="scss" scoped>

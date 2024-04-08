@@ -2,13 +2,17 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-btn text class="pl-1 pr-2 anchor" :to="'/settings/projectStatuses'">
-          <v-icon>arrow_left</v-icon>
-          <span>Back</span>
-        </v-btn>
+        <a-btn
+            variant="text"
+            class="pl-1 pr-2 anchor"
+            :to="'/settings/projectStatuses'"
+            prepend-icon="arrow_left"
+            text="BACK"
+        ></a-btn>
+
 
         <v-toolbar flat class="app-toolbar">
-          <span class="headline-small">{{ status.projectStatusType }}</span>
+          <span class="headline-small">{{ projectStatus.projectStatusType }}</span>
           <v-spacer></v-spacer>
           <v-toolbar-items>
           </v-toolbar-items>
@@ -23,80 +27,65 @@
         </v-tabs>
       </v-col>
 
-      <router-view />
+      <router-view/>
     </v-row>
   </v-container>
 </template>
 
 
-<script>
-import {Actions} from '@/store'
-import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
-import draggable from 'vuedraggable'
-import cloneDeep from 'lodash.clonedeep'
-import Sortable from 'sortablejs'
+<script setup>
 
-import orderBy from 'lodash.orderby'
-import {getCompanyProjectStatusType, getProjectStatusTypes} from '@/services/projectStatusTypeService'
-import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+
+import {getCompanyProjectStatusType} from '@/services/projectStatusTypeService'
+import {handleHidingGlobalLoader, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import {getCurrentInstance, computed, ref, onMounted} from 'vue'
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
-export default {
-  name: 'ProjectStatus',
-  mixins: [Vue2Filters.mixin],
-  components: {
-    ConfirmationDialog,
-    draggable,
+const route = useRoute()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const statusId = computed(() => {
+  return route.params.id
+})
+
+const activeTab = ref('')
+const projectStatus = ref({})
+const rootStatusTypes = ref([])
+const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY)
+const savingTypeLogo = ref(false)
+const attachmentTypeId = ref(463)
+const tabs = ref([
+  {
+    id: 1,
+    label: 'Components',
+    path: `/settings/projectStatus/${statusId.value}/components`,
   },
-  data() {
-    return {
-      snackbar: {},
-      constants,
-      activeTab: '',
-      status: {},
-      rootStatusTypes: [],
-      acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
-      savingTypeLogo: false,
-      //463 = project status type attachment
-      attachmentTypeId: 463,
-      statusId: this.$route.params.id,
-      userId: this.$store.state.user.details.id,
-      companyId: this.$store.state.user.details.companyId,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      tabs: [
-        {
-          id: 1,
-          label: 'Components',
-          path: `/settings/projectStatus/${this.$route.params.id}/components`,
-        },
-        {
-          id: 2,
-          label: 'Fields',
-          path: `/settings/projectStatus/${this.$route.params.id}/fields`,
-        }
-      ]
-    }
-  },
-  computed: {},
-  methods: {
-    async getStatusInfo() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getCompanyProjectStatusType(this.statusId)
-        this.status = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-  },
-  async created() {
-    this.getStatusInfo()
+  {
+    id: 2,
+    label: 'Fields',
+    path: `/settings/projectStatus/${statusId.value}/fields`,
+  }
+])
+
+onMounted(() => {
+  getStatusInfo()
+})
+
+const getStatusInfo = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getCompanyProjectStatusType(statusId.value)
+    projectStatus.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
   }
 }
 </script>

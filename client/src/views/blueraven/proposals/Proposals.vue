@@ -8,13 +8,12 @@
         <v-toolbar class="white elevation-1 mt-3">
           <v-row class="justify-space-between align-center">
             <v-col cols="12" lg="6">
-              <v-text-field
-                class="mt-5"
-                prepend-inner-icon="search"
-                text
-                label="Search projects..."
-                v-model="searchQuery"
-                @input="searchProjects"
+              <a-text-field
+                  class="mt-5"
+                  prepend-inner-icon="search"
+                  label="Search projects..."
+                  v-model="searchQuery"
+                  @input="searchProjects"
               />
             </v-col>
           </v-row>
@@ -23,15 +22,15 @@
         <v-divider/>
 
         <v-data-table
-          class="elevation-1 fix-column-width-bug"
-          :headers="headers"
-          :items="projects"
-          fixed-header
-          :options.sync="options"
-          disable-sort
-          :footer-props="footerProps"
-          :server-items-length="totalProjects"
-          :loading="isProjectsLoading"
+            class="elevation-1 fix-column-width-bug"
+            :headers="headers"
+            :items="projects"
+            fixed-header
+            :options.sync="options"
+            disable-sort
+            :footer-props="footerProps"
+            :server-items-length="totalProjects"
+            :loading="isProjectsLoading"
         >
 
           <template #no-data>
@@ -44,9 +43,17 @@
 
           <template #item="{item}">
             <tr class="clickable"
-                @click="$router.push({name: 'proposalDesigns', params: {projectId: item.id}})">
-              <td class="text-left">{{item.id}}</td>
-              <td class="text-left">{{item.projectName}}</td>
+                @click="router.push({name: 'proposalDesigns', params: {projectId: item.id}})">
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/proposalDesigns/${item.id}`">
+                  {{item.id}}
+                </router-link>
+              </td>
+              <td class="text-left">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/proposalDesigns/${item.id}`">
+                  {{item.projectName}}
+                </router-link>
+              </td>
             </tr>
           </template>
         </v-data-table>
@@ -55,78 +62,78 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 
-  import {logError, getRequestWithParams} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import debounce from 'lodash.debounce'
+import {logError, getRequestWithParams} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import debounce from 'lodash.debounce'
 
-  export default {
-    name: "Proposals",
-    data () {
-      return {
-        options: {
-          itemsPerPage: 100
-        },
-        headers: [
-          {text: 'ID', value: 'id', show: true},
-          {text: 'Name', value: 'projectName', show: true},
-        ],
-        footerProps: {
-          'items-per-page-options': [25, 50, 100],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        projects:[],
-        searchQuery: '',
-        totalProjects: 0,
-        isProjectsLoading: false,
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const options = ref({itemsPerPage: 100})
+const headers = ref([
+  {text: 'ID', value: 'id', show: true},
+  {text: 'Name', value: 'projectName', show: true},
+])
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const projects = ref([])
+const searchQuery = ref('')
+const totalProjects = ref(0)
+const isProjectsLoading = ref(false)
+
+onMounted(() => {
+  getProposalProjects()
+})
+
+const getProposalProjects = async () => {
+  const {page, itemsPerPage} = options.value
+  try {
+    isProjectsLoading.value = true
+    const {data} = await getRequestWithParams(`/project/search`, {
+      params: {
+        query: searchQuery.value,
+        page: page - 1,
+        size: itemsPerPage
       }
-    },
-    watch: {
-      options: {
-        handler () {
-          this.getProposalProjects()
-        }
-      }
-    },
-    methods: {
-      async getProposalProjects () {
-        const {page, itemsPerPage} = this.options
-        try {
-          this.isProjectsLoading = true
-          const {data} = await getRequestWithParams(`/project/search`, {
-            params: {
-              query: this.searchQuery,
-              page: page - 1,
-              size: itemsPerPage
-            }
-          })
-          this.projects = data.content
-          this.totalProjects = data.totalElements
-        } catch (e) {
-          logError(e)
-        } finally {
-          this.isProjectsLoading = false
-        }
-      },
-      searchProjects: debounce(function () {
-        this.getProposalProjects()
-      }, 500)
-    }
+    })
+    projects.value = data.content
+    totalProjects.value = data.totalElements
+  } catch (e) {
+    logError(e)
+  } finally {
+    isProjectsLoading.value = false
   }
+}
+const searchProjects = debounce((query) => {
+  getProposalProjects()
+}, 500)
 </script>
 
 <style scoped lang="scss">
-  @import "@/styles/main.scss";
+@import "@/styles/main.scss";
 
-  ::v-deep {
-    .v-data-table__wrapper {
-      height: calc(100vh - 290px);
-      min-height: 300px;
-    }
+::v-deep {
+  .v-data-table__wrapper {
+    height: calc(100vh - 290px);
+    min-height: 300px;
   }
+}
 
-  tr:nth-of-type(even) {
-    @extend .shaded-row;
-  }
+tr:nth-of-type(even) {
+  @extend .shaded-row;
+}
 </style>

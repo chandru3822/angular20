@@ -4,107 +4,109 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import moment from 'moment'
 import constants from '@/helpers/constants'
-import { getRequestWithParams, getSnackbar } from '@/helpers/helpers'
-import { AppMutations } from '@/stores/AppStore'
+import { getRequestWithParams } from '@/helpers/helpers'
+
 import {MilestoneEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import {incentive_constants, DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
 import Incentive from "@/views/blueraven/closerDashboard/Incentive";
 
-export default {
-  name: 'setterIncentive2',
-  components: {
-    Incentive
-  },
-  data: () => ({
-    snackbar: {},
-    constants,
-    incentive_constants,
-    currentUserId: null,
-    incentiveDataLoaded: false,
-    currentQuarter: moment().quarter(),
-    pitchCounts: {q1: 0, q2: 0, q3: 0, q4: 0},
-    isSetterMgr: false,
-  }),
-  computed: {
-    windowInnerWidth () { return window.innerWidth},
-    dashboardType() {
-      return this.isSetterMgr ? DashboardTypeEnum.SETTERMGR : DashboardTypeEnum.SETTER
-    },
-    yearlyPointTotal () {
-      // Calculate points for each quarter
-      const q1_points= this.calcPointsForQuarter(this.pitchCounts.q1),
-          q2_points= this.calcPointsForQuarter(this.pitchCounts.q2),
-          q3_points= this.calcPointsForQuarter(this.pitchCounts.q3),
-          q4_points= this.calcPointsForQuarter(this.pitchCounts.q4)
-      //return total
-      return q1_points + q2_points + q3_points + q4_points
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const incentiveDataLoaded = ref(false)
+const currentQuarter = ref(moment().quarter())
+const pitchCounts = ref({q1: 0, q2: 0, q3: 0, q4: 0})
+const isSetterMgr = ref(false)
+const setterDashContainer = ref(null)
+
+const currentUserId = computed(() => {
+  return userStore.details.id
+})
+
+const windowInnerWidth = computed(() => {
+  return window.innerWidth
+})
+const dashboardType = computed(() => {
+  return isSetterMgr.value ? DashboardTypeEnum.SETTERMGR : DashboardTypeEnum.SETTER
+})
+const yearlyPointTotal = computed(() => {
+  // Calculate points for each quarter
+  const q1_points= calcPointsForQuarter(pitchCounts.value.q1),
+      q2_points= calcPointsForQuarter(pitchCounts.value.q2),
+      q3_points= calcPointsForQuarter(pitchCounts.value.q3),
+      q4_points= calcPointsForQuarter(pitchCounts.value.q4)
+  //return total
+  return q1_points + q2_points + q3_points + q4_points
+})
+
+onMounted(async() => {
+  let userPositions = userStore.details.userPositions
+  if (userPositions?.length > 0) {
+    userOfficeId.value = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
+    userOffice.value = userPositions.filter(position => position.orgId === userOfficeId.value)[0].hierarchy.filter(orgLevel => orgLevel.orgId === userOfficeId.value)[0].orgName
+    isSetter.value = userPositions.filter(position => (position.positionId === 4) && !position.endDate && !position.archived && position.primaryFlag).length > 0
+    isSetterMgr.value = userPositions.filter(position => (position.positionId === 5) && !position.endDate && !position.archived && position.primaryFlag).length > 0
+    isSetterRegional.value = userPositions.filter(position => (position.positionId === 6) && !position.endDate && !position.archived && position.primaryFlag).length > 0
+  }
+
+  await loadIncentive()
+
+})
+
+const resetScrollBarPosition = () => {
+  // reset scroll bar positioning to top
+  setterDashContainer.value.scrollTop = 0
+}
+const loadIncentive = async() => {
+  incentiveDataLoaded.value = false
+
+  appStore.loading = true
+  try {
+    const params = {
+      isSetterMgr: isSetterMgr.value,
+      setterMgrOfficeId: isSetterMgr.value && userOfficeId.value ? userOfficeId.value : null
     }
-  },
-  /* INCENTIVE-RELATED CODE END */
-  async created() {
-    this.currentUserId = this.$store.state.user.details.id
-    let userPositions = this.$store.state.user.details.userPositions
-    if (userPositions?.length > 0) {
-      this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
-      this.userOffice = userPositions.filter(position => position.orgId === this.userOfficeId)[0].hierarchy.filter(orgLevel => orgLevel.orgId === this.userOfficeId)[0].orgName
-      this.isSetter = userPositions.filter(position => (position.positionId === 4) && !position.endDate && !position.archived && position.primaryFlag).length > 0
-      this.isSetterMgr = userPositions.filter(position => (position.positionId === 5) && !position.endDate && !position.archived && position.primaryFlag).length > 0
-      this.isSetterRegional = userPositions.filter(position => (position.positionId === 6) && !position.endDate && !position.archived && position.primaryFlag).length > 0
-    }
 
-    await this.loadIncentive()
+    getRequestWithParams('/setterDashboard/getIncentivePitchCounts', {params}, 'blueraven').then(res => {
+      pitchCounts.value = res.data
 
-  },
-  watch: {},
-  methods: {
-    resetScrollBarPosition() {
-      // reset scroll bar positioning to top
-      this.$refs.setterDashContainer.scrollTop = 0
-    },
+      incentiveDataLoaded.value = true
+      appStore.loading = false
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving incentive data')
 
-    /* INCENTIVE-RELATED CODE START */
-    async loadIncentive() {
-      this.incentiveDataLoaded = false
-
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const params = {
-          isSetterMgr: this.isSetterMgr,
-          setterMgrOfficeId: this.isSetterMgr && this.userOfficeId ? this.userOfficeId : null
-        }
-
-        getRequestWithParams('/setterDashboard/getIncentivePitchCounts', {params}, 'blueraven').then(res => {
-          this.pitchCounts = res.data
-
-          this.incentiveDataLoaded = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        })
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving incentive data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.incentiveDataLoaded = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-
-    calcPointsForQuarter(pitchCount) {
-      if(pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL1] && pitchCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2]){
-        return 1
-      } else if (pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2] && pitchCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3]){
-        return 2
-      } else if (pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3] && pitchCount < this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]){
-        return 3
-      } else if (pitchCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]){
-        return 4
-      }
-      else return 0
-    }
+    incentiveDataLoaded.value = true
+    appStore.loading = false
   }
 }
+const calcPointsForQuarter = (pitchCount) => {
+  if(pitchCount >= dashboardType.value.milestoneGoalMap[MilestoneEnum.LEVEL1] && pitchCount < dashboardType.value.milestoneGoalMap[MilestoneEnum.LEVEL2]){
+    return 1
+  } else if (pitchCount >= dashboardType.value.milestoneGoalMap[MilestoneEnum.LEVEL2] && pitchCount < dashboardType.value.milestoneGoalMap[MilestoneEnum.LEVEL3]){
+    return 2
+  } else if (pitchCount >= dashboardType.value.milestoneGoalMap[MilestoneEnum.LEVEL3] && pitchCount < dashboardType.value.milestoneGoalMap[MilestoneEnum.LEVEL4]){
+    return 3
+  } else if (pitchCount >= dashboardType.value.milestoneGoalMap[MilestoneEnum.LEVEL4]){
+    return 4
+  }
+  else return 0
+}
+
 </script>
 
 <style lang="scss" scoped>

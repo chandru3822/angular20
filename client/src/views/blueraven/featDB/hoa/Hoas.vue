@@ -3,22 +3,25 @@
     <v-row>
       <v-col cols="12"  class="pt-0 px-0">
         <v-data-table
-          :headers="headers"
-          :items="filteredHoas"
-          :loading="dataLoading"
-          :items-per-page="100"
-          :mobile-breakpoint="0"
-          fixed-header
-          :footer-props="footerProps"
-          class="elevation-1 hoa-table"
+            :headers="headers"
+            :items="filteredHoas"
+            :loading="dataLoading"
+            :items-per-page="100"
+            :mobile-breakpoint="0"
+            fixed-header
+            :footer-props="footerProps"
+            class="elevation-1 hoa-table"
         >
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <v-btn text @click="addItem" color="primary"
-                     v-if="$store.getters.userHasFeatureAccessLevel('HOA', 'ADD')">
-                <v-icon>add</v-icon>
-                <span v-if="!constants.IS_MOBILE">Add New</span>
-              </v-btn>
+              <a-btn
+                  variant="text"
+                  @click="addItem"
+                  color="primary"
+                  v-if="userStore.userHasFeatureAccessLevel('HOA', 'ADD')"
+                  prepend-icon="add"
+                  text="Add New"
+              ></a-btn>
             </div>
           </template>
 
@@ -28,14 +31,14 @@
                   :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
               >
                 <div v-if="hoaFilters[header.value]" class="pt-2 table-filter">
-                  <v-text-field v-if="hoaFilters[header.value].type === 'text'"
+                  <a-text-field v-if="hoaFilters[header.value].type === 'text'"
                                 v-model="hoaFilters[header.value].value"
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
                                 clearable
-                                filled
-                                dense
+                                variant="filled"
+                                density="compact"
                                 hide-details
-                  ></v-text-field>
+                  ></a-text-field>
                   <v-autocomplete v-else-if="hoaFilters[header.value].type === 'select'"
                                   :items="states"
                                   v-model="hoaFilters[header.value].value"
@@ -55,27 +58,48 @@
 
           <template #item="{ item, index }">
             <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
-              <td class="text-left clickable" @click="$router.push({ path: `hoa/${item.id}/details` })">
-                {{ item.name || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/hoa/${item.id}/details`">
+                  {{ item.name || '' }}
+                </router-link>
               </td>
-              <td class="text-left clickable" @click="$router.push({ path: `hoa/${item.id}/details` })">
-                {{ item.state || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/hoa/${item.id}/details`">
+                  {{ item.state || '' }}
+                </router-link>
               </td>
-              <td class="text-left clickable" @click="$router.push({ path: `hoa/${item.id}/details` })">
-                {{ item.managementCompany || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/hoa/${item.id}/details`">
+                  {{ item.managementCompany || '' }}
+                </router-link>
               </td>
               <td class="text-right">
-                <v-btn :to="`/database/hoa/${item.id}/details`" text x-small fab>
-                  <v-icon>mdi-arrow-right</v-icon>
-                </v-btn>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('HOA', 'EDIT')" small color="primary"
-                        class="mr-3 feat-db-link-icon" @click="editHoa(item)">
-                  edit
-                </v-icon>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('HOA', 'DELETE')" small color="primary"
-                        class="mr-3 feat-db-link-icon" @click="deleteHoa(item)">
-                  delete
-                </v-icon>
+                <a-btn
+                    :to="`/database/hoa/${item.id}/details`"
+                    variant="text"
+                    size="x-small"
+                    fab
+                    color="unset"
+                    prepend-icon="mdi-arrow-right"
+                ></a-btn>
+                <a-btn
+                    icon
+                    v-if="userStore.userHasFeatureAccessLevel('HOA', 'EDIT')"
+                    size="small"
+                    color="primary"
+                    class="mr-3 feat-db-link-icon"
+                    @click="editHoa(item)"
+                    prepend-icon="edit"
+                ></a-btn>
+                <a-btn
+                    icon
+                    v-if="userStore.userHasFeatureAccessLevel('HOA', 'DELETE')"
+                    size="small"
+                    color="primary"
+                    class="mr-3 feat-db-link-icon"
+                    @click="deleteHoa(item)"
+                    prepend-icon="delete"
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -90,7 +114,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-<!--todo: update to ConfirmationDialog-->
+    <!--todo: update to ConfirmationDialog-->
     <v-dialog v-model="hoaDialog" max-width="500px">
       <v-card>
         <v-card-title>
@@ -98,11 +122,11 @@
         </v-card-title>
 
         <v-card-text>
-          <v-text-field label="Name"
+          <a-text-field label="Name"
                         v-model="editedItem.name"
                         required
-                        filled
-          ></v-text-field>
+                        variant="filled"
+          ></a-text-field>
           <v-autocomplete label="State"
                           :items="states"
                           v-model="editedItem.companyStateId"
@@ -123,21 +147,29 @@
                           autocomplete="off"
                           filled
           ></v-autocomplete>
-          <v-text-field label="New Management Company"
+          <a-text-field label="New Management Company"
                         v-if="addingManagementCompany"
                         v-model="newManagementCompany"
-                        filled
-          ></v-text-field>
+                        variant="filled"
+          ></a-text-field>
           <a @click="addNewManagementCompany"> {{ addNewManagementCompanyButton }} </a>
         </v-card-text>
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="close">Cancel</v-btn>
-          <v-btn color="primary" raised @click="newHoaDuplicateCheck" class="white--text"
-                 :disabled="!editedItem.name?.trim() || !editedItem.companyStateId">
-            {{ btnTxt }}
-          </v-btn>
+          <a-btn
+              color="primary"
+              variant="text"
+              @click="close"
+              text="Cancel"
+          ></a-btn>
+          <a-btn
+              color="primary"
+              raised
+              @click="newHoaDuplicateCheck"
+              :disabled="!editedItem.name?.trim() || !editedItem.companyStateId"
+              :text="btnTxt"
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -166,265 +198,248 @@
       <template v-slot:yes>Create</template>
     </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="!!hoaToDelete" @confirm="confirmDeleteHoa" @close-dialog="hoaToDelete=null">
-    Are you sure you want to delete {{ hoaToDeleteName }}?
+      Are you sure you want to delete {{ hoaToDeleteName }}?
     </ConfirmationDialog>
   </v-container>
 </template>
 
-<script>
+<script setup>
 import constants from "@/helpers/constants";
 import cloneDeep from "lodash.clonedeep";
 import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
-import {AppMutations} from "@/stores/AppStore";
-import {deleteRequest, getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
+
+import {deleteRequest, getRequest,  handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: "hoas",
-  components: {ConfirmationDialog},
-  data: () => ({
-    constants,
-    dataLoading: true,
-    hoaFilters: {
-      name: {value: '', type: 'text', model: 'name'},
-      state: {value: [], type: 'select', model: 'state'},
-      managementCompany: {value: '', type: 'text', model: 'managementCompany'}
-    },
-    states: [],
-    tabs: FEAT_DB_TABS,
-    headers: [
-      {text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 300, show: true},
-      {text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 150, show: true},
-      {text: 'Management Company', value: 'managementCompany', width: constants.IS_MOBILE ? 200 : 250, show: true},
-      {text: null, value: 'icons', sortable: false, show: true, width: 50}
-    ],
-    footerProps: {
-      showFirstLastPage: !constants.IS_MOBILE,
-      firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
-      lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
-      'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
-      'items-per-page-options': [25, 50, 100, 1000]
-    },
-    hoaDialog: false,
-    editedItem: {
-      name: '',
-      managementCompanyId: '',
-    },
-    hoas: [],
-    addMode: false,
-    managementCompanies: [],
-    addingManagementCompany: false,
-    newManagementCompany: "",
-    hoaToDelete: null,
-    duplicateDialog: false,
-    duplicateHoaMatch: null
-  }),
-  computed: {
-    filteredHoas() {
-      return this.hoas && this.hoas.filter(hoa => {
-        return Object.keys(this.hoaFilters).every(filterName => {
-          const filter = this.hoaFilters[filterName]
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-          if (filter.value?.length < 1) {
-            return true
-          }
+const dataLoading = ref(true)
+const hoaFilters = ref({name: {value: '', type: 'text', model: 'name'},state: {value: [], type: 'select', model: 'state'},managementCompany: {value: '', type: 'text', model: 'managementCompany'}})
+const states = ref([])
+const tabs = ref(FEAT_DB_TABS)
+const headers = ref([
+  {text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 300, show: true},
+  {text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 150, show: true},
+  {text: 'Management Company', value: 'managementCompany', width: constants.IS_MOBILE ? 200 : 250, show: true},
+  {text: null, value: 'icons', sortable: false, show: true, width: 50}
+])
+const footerProps = ref({showFirstLastPage: !constants.IS_MOBILE,firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+  'items-per-page-options': [25, 50, 100, 1000]})
+const hoaDialog = ref(false)
+const editedItem = ref({name: '',managementCompanyId: '',})
+const hoas = ref([])
+const addMode = ref(false)
+const managementCompanies = ref([])
+const addingManagementCompany = ref(false)
+const newManagementCompany = ref("")
+const hoaToDelete = ref(null)
+const duplicateDialog = ref(false)
+const duplicateHoaMatch = ref(null)
 
-          if (!hoa[filterName]) {
-            return false
-          }
+const filteredHoas = computed(() => {
+  return hoas.value && hoas.value.filter(hoa => {
+    return Object.keys(hoaFilters.value).every(filterName => {
+      const filter = hoaFilters.value[filterName]
 
-          if (filter.value !== null && filter.value !== undefined) {
-            return hoa[filterName].toLowerCase().includes(filter.value.toLowerCase())
-          } else if (filter.value === undefined) {
-            filter.value = []
-          } else {
-            filter.value = ''
-          }
-        })
-      })
-    },
-    formTitle() {
-      return this.addMode ? 'Create HOA' : 'Update HOA'
-    },
-    btnTxt() {
-      return this.addMode ? 'Add' : 'Update'
-    },
-    addNewManagementCompanyButton() {
-      return this.addingManagementCompany ? 'Select An Existing Management Company': 'Add New Management Company'
-    },
-    hoaToDeleteName(){
-      return this.hoaToDelete ? this.hoaToDelete.name : ''
-    },
-    newHoaDataManagementCompany(){
-     return
-    }
-  },
-  async created() {
-    this.$store.commit(AppMutations.SET_LOADING, true)
-    this.currentUser = this.$store.state.user.details.id
-    this.fetchStates()
-    await this.fetchHoas()
-  },
-  methods: {
-    async getActiveManagementCompanies() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest('/featDb/hoa/list/companies', 'blueraven')
-        this.managementCompanies = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      if (filter.value?.length < 1) {
+        return true
       }
-    },
-    async fetchHoas() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest('/featDb/hoa/list/all', 'blueraven')
-        this.hoas = cloneDeep(data).filter(hoa => hoa.archived === false)
-        this.dataLoading = false
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.dataLoading = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
 
-    async fetchStates() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getActiveStates()
-        this.states = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      if (!hoa[filterName]) {
+        return false
       }
-    },
-    addItem() {
-      this.getActiveManagementCompanies()
-      this.addMode = true
-      this.hoaDialog = true
-    },
-    editHoa (item) {
-      this.editedItem = Object.assign({}, item)
-      this.getActiveManagementCompanies()
-      this.addMode = false
-      this.hoaDialog = true
-    },
-    close() {
-      this.hoaDialog = false
-      this.editedItem = {}
-    },
-    deleteHoa(item) {
-      this.hoaToDelete = {
-        id: item.id,
-        name: item.name
-      }
-    },
-    async confirmDeleteHoa() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await deleteRequest(`/featDb/hoa/${this.hoaToDelete.id}`, 'blueraven')
-        this.snackbar = getSnackbar('SUCCESS', 'HOA deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        await this.fetchHoas().then(() => this.fetchStates())
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error deleting HOA')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.hoaToDelete = null
-    },
 
-    newHoaDuplicateCheck() {
-      this.editedItem.managementCompany = !!this.editedItem.managementCompanyId ? this.managementCompanies.find(co => co.id === this.editedItem.managementCompanyId)?.managementCompany : this.newManagementCompany
-      this.duplicateHoaMatch = this.hoas.find(hoa => {
-
-        return this.doNamesMatch(this.editedItem.name, hoa.name) &&
-            this.editedItem.companyStateId === hoa.companyStateId &&
-            (this.doNamesMatch(this.editedItem.managementCompany, hoa.managementCompany)
-                || !hoa.managementCompany || !this.editedItem.managementCompany)
-      })
-      if(this.duplicateHoaMatch){
-        this.hoaDialog = false
-        //add managementCompany name and state name for display purposes
-        this.editedItem.state = this.states.find(state => state.id === this.editedItem.companyStateId)?.state
-        this.duplicateDialog = true
+      if (filter.value !== null && filter.value !== undefined) {
+        return hoa[filterName].toLowerCase().includes(filter.value.toLowerCase())
+      } else if (filter.value === undefined) {
+        filter.value = []
       } else {
-        this.saveHoa()
+        filter.value = ''
       }
-    },
+    })
+  })
+})
+const formTitle = computed(() => {
+  return addMode.value ? 'Create HOA' : 'Update HOA'
+})
+const btnTxt = computed(() => {
+  return addMode.value ? 'Add' : 'Update'
+})
+const addNewManagementCompanyButton = computed(() => {
+  return addingManagementCompany.value ? 'Select An Existing Management Company': 'Add New Management Company'
+})
+const hoaToDeleteName = computed(()=> {
+  return hoaToDelete.value ? hoaToDelete.value.name : ''
+})
 
-    doNamesMatch(name1, name2){
-      //step 1: remove all punctuation and whitespaces (we don't care if those match)
-      const name1Clean = this.cleanName(name1)
-      const name2Clean = this.cleanName(name2)
-      //step 2: check if name1 contains name2 or vice versa, if so they match
-      return name2Clean && name1Clean &&
-          ((name2Clean.length > 0 && name1Clean.indexOf(name2Clean) >= 0)
-          || (name1Clean && name1Clean.length > 0 && name2Clean.indexOf(name1Clean) >= 0))
-    },
+onMounted(() => {
+  fetchStates()
+  fetchHoas()
+})
 
-    cleanName(name){
-      return name && name.length > 0 ? name.replace(/[^\w]/g, '').toLowerCase() : name
-    },
 
-    async saveHoa() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      if (this.addMode) {
-        try {
-          if(this.addingManagementCompany){
-            const managementCompanyId = await postRequest(`/customField/managementCompany`, {companyName: this.newManagementCompany}, 'blueraven');
-            if(managementCompanyId == null || managementCompanyId.data == null){
-              throw 'Error adding new management company';
-            }
-            else{
-              this.editedItem.managementCompanyId = managementCompanyId.data;
-            }
-          }
-          const {status} = await postRequest('/featDb/hoa', this.editedItem, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'HOA created')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error creating HOA')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      } else {
-        try {
-          const {status} = await putRequest(`/featDb/hoa/simpleUpdate`, this.editedItem, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'HOA updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error updating HOA')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
+const getActiveManagementCompanies = async()  => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest('/featDb/hoa/list/companies', 'blueraven')
+    managementCompanies.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
 
-      this.close()
-      await this.fetchHoas()
-      this.editedItem = {}
-    },
-    async addNewManagementCompany(){
-      this.addingManagementCompany = !this.addingManagementCompany
-    },
+    appStore.loading = false
   }
+}
+const fetchHoas = async()  => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest('/featDb/hoa/list/all', 'blueraven')
+    hoas.value = cloneDeep(data).filter(hoa => hoa.archived === false)
+    dataLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+    dataLoading.value = false
+    appStore.loading = false
+  }
+}
+const fetchStates = async()  => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getActiveStates()
+    states.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving States')
+
+    appStore.loading = false
+  }
+}
+const addItem = () => {
+  getActiveManagementCompanies()
+  addMode.value = true
+  hoaDialog.value = true
+}
+const editHoa =  (item) => {
+  editedItem.value = Object.assign({}, item)
+  getActiveManagementCompanies()
+  addMode.value = false
+  hoaDialog.value = true
+}
+const close = () => {
+  hoaDialog.value = false
+  editedItem.value = {}
+}
+const deleteHoa = (item) => {
+  hoaToDelete.value = {
+    id: item.id,
+    name: item.name
+  }
+}
+const confirmDeleteHoa = async()  => {
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/featDb/hoa/${hoaToDelete.value.id}`, 'blueraven')
+    snackbar('SUCCESS', 'HOA deleted')
+
+    await fetchHoas().then(() => fetchStates())
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error deleting HOA')
+
+    appStore.loading = false
+  }
+  hoaToDelete.value = null
+}
+const newHoaDuplicateCheck = () => {
+  editedItem.value.managementCompany = !!editedItem.value.managementCompanyId ? managementCompanies.value.find(co => co.id === editedItem.value.managementCompanyId)?.managementCompany : newManagementCompany.value
+  duplicateHoaMatch.value = hoas.value.find(hoa => {
+
+    return doNamesMatch(editedItem.value.name, hoa.name) &&
+        editedItem.value.companyStateId === hoa.companyStateId &&
+        (doNamesMatch(editedItem.value.managementCompany, hoa.managementCompany)
+            || !hoa.managementCompany || !editedItem.value.managementCompany)
+  })
+  if(duplicateHoaMatch.value){
+    hoaDialog.value = false
+    //add managementCompany name and state name for display purposes
+    editedItem.value.state = states.value.find(state => state.id === editedItem.value.companyStateId)?.state
+    duplicateDialog.value = true
+  } else {
+    saveHoa()
+  }
+}
+const doNamesMatch = (name1, name2)=> {
+  //step 1: remove all punctuation and whitespaces (we don't care if those match)
+  const name1Clean = cleanName(name1)
+  const name2Clean = cleanName(name2)
+  //step 2: check if name1 contains name2 or vice versa, if so they match
+  return name2Clean && name1Clean &&
+      ((name2Clean.length > 0 && name1Clean.indexOf(name2Clean) >= 0)
+          || (name1Clean && name1Clean.length > 0 && name2Clean.indexOf(name1Clean) >= 0))
+}
+const cleanName = (name)=> {
+  return name && name.length > 0 ? name.replace(/[^\w]/g, '').toLowerCase() : name
+}
+const saveHoa = async()  => {
+  appStore.loading = true
+  if (addMode.value) {
+    try {
+      if(addingManagementCompany.value){
+        const managementCompanyId = await postRequest(`/customField/managementCompany`, {companyName: newManagementCompany.value}, 'blueraven');
+        if(managementCompanyId == null || managementCompanyId.data == null){
+          throw 'Error adding new management company';
+        }
+        else{
+          editedItem.value.managementCompanyId = managementCompanyId.data;
+        }
+      }
+      const {status} = await postRequest('/featDb/hoa', editedItem.value, 'blueraven')
+      snackbar('SUCCESS', 'HOA created')
+
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error creating HOA')
+
+      appStore.loading = false
+    }
+  } else {
+    try {
+      const {status} = await putRequest(`/featDb/hoa/simpleUpdate`, editedItem.value, 'blueraven')
+      snackbar('SUCCESS', 'HOA updated')
+
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error updating HOA')
+
+      appStore.loading = false
+    }
+  }
+  close()
+  await fetchHoas()
+  editedItem.value = {}
+}
+const addNewManagementCompany = async() => {
+  addingManagementCompany.value = !addingManagementCompany.value
 }
 </script>
 
@@ -461,11 +476,6 @@ export default {
     font-weight: normal;
     margin-bottom: 10px;
 
-    .v-text-field,
-    .v-select {
-      font-size: 0.875rem;
-      margin-left: 15px;
-    }
   }
 }
 

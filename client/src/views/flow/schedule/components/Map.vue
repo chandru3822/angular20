@@ -4,7 +4,7 @@
           @load="onMapLoad">
 
     <div id="map-btns" class="d-flex justify-start">
-      <AlbatrossButton id="hide-map-btn" color="primary" size="x-small" class="rounded-tile-btn ml-4 mr-3" :elevation="5" custom-classes="px-4" @click="$emit('close-map')"><v-icon>mdi-chevron-right</v-icon></AlbatrossButton>
+      <a-btn id="hide-map-btn" color="primary" size="x-small" class="rounded-tile-btn ml-4 mr-3" :elevation="5" custom-classes="px-4" @click="$emit('close-map')"><v-icon>mdi-chevron-right</v-icon></a-btn>
       <v-menu data-app bottom
               offset-y
               content-class="drive-time-menu"
@@ -14,28 +14,22 @@
               :close-on-click="false"
               :close-on-content-click="false">
         <template v-slot:activator="{ on }">
-          <AlbatrossButton
-            id="drive-time-btn"
-            variant="outlined"
-            :activation-handler="on"
-            icon
-            color="primary"
-            class="rounded-tile-btn white-background mr-3 pa-5">
-            <v-icon>mdi-car</v-icon></AlbatrossButton>
+          <a-btn id="drive-time-btn" variant="outlined" :activation-handler="on" icon color="primary" class="rounded-tile-btn white-background mr-3 pa-5"><v-icon>mdi-car</v-icon></a-btn>
         </template>
         <v-card id="drive-time-card" color="white" class="pa-4">
           <div class="d-flex justify-space-between">
             <v-card-title class="label-large pa-0">Find Drive Time</v-card-title>
-            <AlbatrossButton icon size="small" @click="menuOpen = false"><v-icon>close</v-icon></AlbatrossButton>
+            <a-btn icon size="small" @click="menuOpen = false"><v-icon>close</v-icon></a-btn>
           </div>
           <div class="address-container">
             <div class="one-hunned py-3">
-              <v-text-field text outlined label="Starting Point" placeholder="Select pin or enter address" autocomplete="new-password"
-                            @focus="[drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
+              <a-text-field  variant="outlined" label="Starting Point" placeholder="Select pin or enter address" autocomplete="new-password"
+                             @focus="[drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
                             hide-details
                             v-model="address1"
                             @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"
-              ></v-text-field>
+                            @blur="selectAddress({label:address1}, true)"
+              ></a-text-field>
               <v-list ref="dropdownMenu1" v-if="showAddress1List">
                 <v-list-item v-for="(suggestion, idx) in suggestions" class="px-0">
                   <v-card class="pa-2 addressSuggestion" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, true)">
@@ -52,12 +46,13 @@
 
           <div class="address-container">
             <div class="one-hunned">
-              <v-text-field text outlined label="Destination" placeholder="Select pin or enter address" autocomplete="new-password"
-                            @click="[drivingDistance = 0, drivingDuration = 0, selectAddress2 = true, selectAddress1 = false]"
+              <a-text-field  variant="outlined" label="Destination" placeholder="Select pin or enter address" autocomplete="new-password"
+                             @click="[drivingDistance = 0, drivingDuration = 0, selectAddress2 = true, selectAddress1 = false]"
                             hide-details
                             v-model="address2"
                             @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"
-              />
+                            @blur="selectAddress({label: address2}, false)"
+              ></a-text-field>
               <v-list ref="dropdownMenu2" v-if="showAddress2List">
                 <v-list-item v-for="(suggestion, idx) in suggestions" class="px-0">
                   <v-card class="pa-2 addressSuggestion" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, false)">
@@ -119,17 +114,23 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import '@7oaksgroup/v-mapbox/dist/v-mapbox.css'
 import {MglMap, MglMarker, MglNavigationControl, MglPopup} from '@7oaksgroup/v-mapbox'
 import constants from '@/helpers/constants'
-import {getRequestWithParams, getSnackbar, postRequest} from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
+import {getRequestWithParams, postRequest} from "@/helpers/helpers";
 import moment from 'moment'
 import debounce from "lodash.debounce";
 import {getCurrentInstance, ref, watch} from "vue";
-import MapPopUp from "@/views/flow/schedule/components/MapPopUp.vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import MapPopUp from "@/views/flow/schedule/components/MapPopUp.vue"
+
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const router = vueInstance.$router
 
 const props = defineProps({
   latitude: {type: Number},
@@ -147,7 +148,6 @@ watch( () => props.latitude, () => {
   changeMapLocation()
 })
 
-const snackbar = ref({})
 const menuOpen = ref(false)
 const loadingDriveTime = ref(false)
 const markerCount = ref(0) //this is used to reset the key when the color of a marker changes so it gets redraw
@@ -278,8 +278,8 @@ const geoCode = async(address) => {
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
-      let snackbar = getSnackbar('ERROR', 'Error Getting Address Suggestions')
-      store.commit(AppMutations.SHOW_SNACK, snackbar)
+      snackbar('ERROR', 'Error Getting Address Suggestions')
+
     }
   }
 }
@@ -374,8 +374,8 @@ const getLatLong = async(address) => {
     return await getRequestWithParams(`/mapbox/getLatLong`, {params})
   } catch (e) {
     console.error('*** ERROR ***', e)
-    let snackbar = getSnackbar('ERROR', 'Error Getting Address Lat & Long')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    snackbar('ERROR', 'Error Getting Address Lat & Long')
+
   }
 }
 const loadDriveTime = async() => {
@@ -408,8 +408,8 @@ const getDirections = async(firstPair, secondPair) => {
     loadingDriveTime.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    let snackbar = getSnackbar('ERROR', 'Error Getting Drive Time')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    snackbar('ERROR', 'Error Getting Drive Time')
+
   }
 }
 const changeMapLocation = async() => {
@@ -423,8 +423,8 @@ const changeMapLocation = async() => {
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    let snackbar = getSnackbar('ERROR', 'Error jumping to address')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    snackbar('ERROR', 'Error jumping to address')
+
   }
 }
 const onMapLoad = async(event) => {

@@ -1,12 +1,16 @@
 import router from '@/router.js'
-import store from '@/store.js'
-import { UserMutations } from '@/stores/UserStore.js'
+import store, { pinia } from '@/store.js'
 import constants from '@/helpers/constants.js'
-import { AppMutations } from '@/stores/AppStore.js'
 import axios from 'axios'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
 const { VITE_ENV, VITE_BASE_API } = import.meta.env
 const JWT_EXPIRED = 'invalid token'
+const userStore = useUserStore(pinia)
+const appStore = useAppStore(pinia)
+const fileStore = useFileStore(pinia)
 
 export function responseInterceptor({ response }) {
   if (response) {
@@ -32,7 +36,7 @@ export function responseInterceptor({ response }) {
         router.push({ name: 'siteUnderMaintenance' })
       } else {
         localStorage.removeItem('store')
-        store.commit(UserMutations.LOGIN_ERROR, msg)
+        userStore.loginError = msg
 
         //this code handles redirecting them back to the page they were trying to get to after they login
         let rt = {
@@ -40,10 +44,10 @@ export function responseInterceptor({ response }) {
         }
         if (
           !['/', '/home'].includes(router.currentRoute?.path) ||
-          store.state.app.redirectUrl != null
+          appStore.redirectUrl != null
         ) {
           rt.query = {
-            redirect: router.currentRoute?.path || store.state.app.redirectUrl,
+            redirect: router.currentRoute?.path || appStore.redirectUrl,
           }
         }
 
@@ -56,7 +60,7 @@ export function responseInterceptor({ response }) {
       router.push({ path: `/dataNotFound` })
     } else if (status >= 500 && status <= 599) {
       //remove the loading spinner that was likely turned on before this error happened
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
       //dont do this reroute on local, it is super annoying
       if (VITE_ENV !== 'local') {
         router.push({ path: `/serverError?code=${response.status}` })
@@ -77,11 +81,11 @@ export function requestInterceptor(config) {
   if (
     store &&
     store.state &&
-    store.state.user &&
+    userStore?.jwt &&
     (config.baseURL?.indexOf(VITE_BASE_API) > -1 ||
       config.url.indexOf(VITE_BASE_API) > -1)
   ) {
-    config.headers['Authorization'] = `Bearer ${store.state.user.jwt}`
+    config.headers['Authorization'] = `Bearer ${userStore.jwt}`
   }
 
   // if config.source passed in then use that
@@ -98,7 +102,7 @@ export function requestInterceptor(config) {
   // Add to vuex to make cancellation available from anywhere
   // todo: investigate using parent/child route detection instead of a param that gets passed in and always skipsCancel even if leaving the route tree
   if (!skipCancel) {
-    store.commit('ADD_CANCEL_TOKEN', source)
+    fileStore.cancelTokens.push(source)
   }
   return config
 }

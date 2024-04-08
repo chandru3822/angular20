@@ -16,37 +16,32 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import constants from '@/helpers/constants'
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 
-  export default {
-    name: 'ZipContainer',
+const tabs = computed(() => {
+  return [
+    {
+      label: 'Postal Codes',
+      path: `/settings/zip/postalCodes`,
+      display: userStore.userHasFeature('POSTAL_CODE')
+    },
+    {
+      label: 'Postal Code Zones',
+      path: `/settings/zip/zones`,
+      display: userStore.userHasFeature('POSTAL_CODE')
+    },
+  ]
+})
+const displayedTabs = computed(() => {
+  return tabs.value.filter(tab => tab.display)
+})
 
-    computed: {
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      },
-    },
-    data() {
-      return {
-        constants,
-        tabs: [
-          {
-            label: 'Postal Codes',
-            path: `/settings/zip/postalCodes`,
-            display: this.$store.getters.userHasFeature('POSTAL_CODE')
-          },
-          {
-            label: 'Postal Code Zones',
-            path: `/settings/zip/zones`,
-            display: this.$store.getters.userHasFeature('POSTAL_CODE')
-          },
-        ]
-      }
-    },
-    created() {},
-    methods: {}
-  }
 </script>
 <style lang="scss">
 @media (max-width: 959px) {

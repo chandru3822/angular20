@@ -19,18 +19,24 @@
             >
               {{ title }}
               <v-spacer></v-spacer>
-              <v-btn text>
-                <v-icon>expand_more</v-icon>
-              </v-btn>
+              <a-btn
+                variant="text"
+                prepend-icon="expand-more"
+              />
             </v-toolbar>
           </template>
           <SettingsMenu class="pa-3" :title="title" :menu-list="items" :companyObjectItems="companyObjectTypes" @closeMenu="menuOpen=false" @updateTitle="setTitle($event)"></SettingsMenu>
         </v-menu>
         <v-card v-else class=" left-menu square-card d-flex">
           <SettingsMenu class="px-5 py-2 settings-container" :menu-list="items" :companyObjectItems="companyObjectTypes" :class="{'hidden': leftCollapsed}"></SettingsMenu>
-          <v-btn small text color="primary" @click="collapseMenu" class="py-6">
-            <v-icon>mdi-menu</v-icon>
-          </v-btn>
+          <a-btn
+            size="small"
+            variant="text"
+            color="primary"
+            @click="collapseMenu"
+            class="py-6"
+            prepend-icon="mdi-menu"
+          />
         </v-card>
       </v-col>
       <v-col class="px-4 pt-0 main-section" :class="{'main-section-left-collapsed': leftCollapsed, 'col-12 col-md-9': !leftCollapsed}">
@@ -40,241 +46,239 @@
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
 
-import Vue2Filters from 'vue2-filters'
-import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
-import constants from '@/helpers/constants'
-import SettingsMenu from "./SettingsMenu";
-import {UserMutations} from "../../../stores/UserStore";
 
-export default {
-  name: 'Settings',
-  components: {SettingsMenu},
-  mixins: [Vue2Filters.mixin],
+import { handleHidingGlobalLoader, getRequest } from '@/helpers/helpers'
+import SettingsMenu from './SettingsMenu'
+import {getCurrentInstance, onMounted, ref, computed} from 'vue'
 
-  data () {
-    return {
-      snackbar: {},
-      menuOpen: false,
-      constants,
-      title: null,
-      hasSettingsAccess: this.$store.getters.userHasFeature('SETTINGS'),
-      companyObjectTypes: [],
-      companyId: this.$store.state.user.details.companyId,
-      parentId: this.$store.state.user.details.parentCompanyId,
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+const store = vueInstance.$store
+const userStore = useUserStore()
 
+const route = useRoute()
+
+const menuOpen = ref(false)
+const title = ref(null)
+const hasSettingsAccess = ref(userStore.userHasFeature('SETTINGS'))
+const companyObjectTypes = ref([])
+const companyId = ref(userStore.details.companyId)
+const parentId = ref(userStore.details.parentCompanyId)
+
+
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+const leftCollapsed = computed(() => {
+  return userStore.settingsMenuCollapsed
+})
+const items = computed(() => {
+  return [
+    {
+      header: 'Preferences',
+      show: true
+    }, {
+      path: '/settings/userProfile',
+      title: 'User Profile',
+      show: true
+    }, {
+      header: 'Company',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/company/settings',
+      title: 'Defaults',
+      pathMatch: '/settings/company',
+      show: hasSettingsAccess.value,
+    }, {
+      path: '/settings/proposals',
+      title: 'Proposals',
+      show: userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
+    }, {
+      path: '/settings/states',
+      title: 'States',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/zip/postalCodes',
+      title: 'Postal Codes',
+      pathMatch: '/settings/zip',
+      show: userStore.userHasFeature('POSTAL_CODE')
+    }, {
+      path: '/settings/roundRobins',
+      title: 'Round Robins',
+      pathMatch: '/settings/roundRobin',
+      show: userStore.userHasFeature('ROUND_ROBIN')
+    }, {
+      path: '/settings/callGroups',
+      title: 'Call Groups',
+      pathMatch: '/settings/callGroup',
+      show: userStore.userHasFeature('CALL_GROUPS')
+    }, {
+      path: '/settings/tournaments',
+      title: 'Tournaments',
+      pathMatch: '/settings/tournaments',
+      show: userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')
+    }, {
+      path: '/settings/companyCustomFields',
+      title: 'Company Custom Fields',
+      pathMatch: '/settings/companyCustomField',
+      show: hasSettingsAccess.value && null != userStore.details.apiPath,
+    }, {
+      path: '/settings/companyObjectTypes',
+      title: 'Company Object Types',
+      show: hasSettingsAccess.value && null != userStore.details.apiPath,
+    },
+    {
+      header: 'User Management',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/availability/main/schedule',
+      title: 'Availability',
+      show: hasSettingsAccess.value || userStore.userHasFeature('AVAILABILITY')
+    }, {
+      path: '/settings/positions',
+      title: 'Positions',
+      show: hasSettingsAccess.value
+    }, {
+      // path: '/settings/roles',
+      // title: 'Roles',
+      // }, {
+      header: 'Custom Components',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/customFields',
+      pathMatch: '/settings/customField',
+      title: 'Custom Fields',
+
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/links',
+      title: 'Links',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/tags',
+      title: 'Tags',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/functions',
+      pathMatch: '/settings/function',
+      title: 'Functions',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/messageTemplates',
+      title: 'Message Templates',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/announcements/current',
+      title: 'Announcements',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/hashtags',
+      title: 'Topic Hashtags',
+      show: hasSettingsAccess.value
+    }, {
+      header: 'Configurations',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/dataViews',
+      title: 'Data Views',
+      pathMatch: '/settings/dataView',
+      show: userStore.userHasFeatureAccessLevel('DATA_VIEW', 'ADMIN')
+    }, {
+      path: '/settings/orgTypes',
+      title: 'Organization Types',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/eventStatuses',
+      title: 'Event Statuses',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/processStepStatuses',
+      title: 'Process Step Statuses',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/projectStatuses',
+      title: 'Project Statuses',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/smsTeams',
+      title: 'SMS Teams',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/workQueue/types',
+      title: 'Work Queue',
+      show: hasSettingsAccess.value || userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')
+    }, {
+      header: 'Processes',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/processes',
+      pathMatch: '/settings/processes',
+      title: 'Processes',
+      show: hasSettingsAccess.value
+    }, {
+      path: '/settings/processSteps',
+      pathMatch: '/settings/processStep',
+      pathMatchExclude: '/settings/processStepStatuses',
+      title: 'Process Steps',
+      show: hasSettingsAccess.value
+    }, {
+      header: 'Objects',
+      show: hasSettingsAccess.value
     }
-  },
-  computed: {
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-    leftCollapsed(){
-      return this.$store.state.user.settingsMenuCollapsed
-    },
-    items() { return [
-      {
-        header: 'Preferences',
-        show: true
-      }, {
-        path: '/settings/userProfile',
-        title: 'Account',
-        show: true
-      }, {
-        header: 'Company',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/company/settings',
-        title: 'Defaults',
-        pathMatch: '/settings/company',
-        show: this.hasSettingsAccess,
-      }, {
-        path: '/settings/proposals',
-        title: 'Proposals',
-        show: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
-      }, {
-        path: '/settings/states',
-        title: 'States',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/zip/postalCodes',
-        title: 'Postal Codes',
-        pathMatch: '/settings/zip',
-        show: this.$store.getters.userHasFeature('POSTAL_CODE')
-      }, {
-        path: '/settings/roundRobins',
-        title: 'Round Robins',
-        pathMatch: '/settings/roundRobin',
-        show: this.$store.getters.userHasFeature('ROUND_ROBIN')
-      }, {
-        path: '/settings/callGroups',
-        title: 'Call Groups',
-        pathMatch: '/settings/callGroup',
-        show: this.$store.getters.userHasFeature('CALL_GROUPS')
-      }, {
-        path: '/settings/tournaments',
-        title: 'Tournaments',
-        pathMatch: '/settings/tournaments',
-        show: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')
-      }, {
-        path: '/settings/companyCustomFields',
-        title: 'Company Custom Fields',
-        pathMatch: '/settings/companyCustomField',
-        show: this.hasSettingsAccess && null != this.$store.state.user.details.apiPath,
-      }, {
-        path: '/settings/companyObjectTypes',
-        title: 'Company Object Types',
-        show: this.hasSettingsAccess && null != this.$store.state.user.details.apiPath,
-      },
-      {
-        header: 'User Management',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/availability/main/schedule',
-        title: 'Availability',
-        show: this.hasSettingsAccess || this.$store.getters.userHasFeature('AVAILABILITY')
-      }, {
-        path: '/settings/positions',
-        title: 'Positions',
-        show: this.hasSettingsAccess
-      }, {
-        // path: '/settings/roles',
-        // title: 'Roles',
-        // }, {
-        header: 'Custom Components',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/customFields',
-        pathMatch: '/settings/customField',
-        title: 'Custom Fields',
+    // , {
+    //   path: '/settings/project/customFieldGroups?=${c.id}',
+    //   title: 'Project',
+    //   show: hasSettingsAccess.value
+    // }
+  ]
+})
 
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/links',
-        title: 'Links',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/tags',
-        title: 'Tags',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/functions',
-        pathMatch: '/settings/function',
-        title: 'Functions',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/messageTemplates',
-        title: 'Message Templates',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/announcements/current',
-        title: 'Announcements',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/hashtags',
-        title: 'Topic Hashtags',
-        show: this.hasSettingsAccess
-      }, {
-        header: 'Configurations',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/dataViews',
-        title: 'Data Views',
-        pathMatch: '/settings/dataView',
-        show: this.$store.getters.userHasFeatureAccessLevel('DATA_VIEW', 'ADMIN')
-      }, {
-        path: '/settings/orgTypes',
-        title: 'Organization Types',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/eventStatuses',
-        title: 'Event Statuses',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/processStepStatuses',
-        title: 'Process Step Statuses',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/projectStatuses',
-        title: 'Project Statuses',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/smsTeams',
-        title: 'SMS Teams',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/workQueue/types',
-        title: 'Work Queue',
-        show: this.hasSettingsAccess || this.$store.getters.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')
-      }, {
-        header: 'Processes',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/processes',
-        pathMatch: '/settings/processes',
-        title: 'Processes',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/processSteps',
-        pathMatch: '/settings/processStep',
-        pathMatchExclude: '/settings/processStepStatuses',
-        title: 'Process Steps',
-        show: this.hasSettingsAccess
-      }, {
-        header: 'Objects',
-        show: this.hasSettingsAccess
-      }
-      // , {
-      //   path: '/settings/project/customFieldGroups?=${c.id}',
-      //   title: 'Project',
-      //   show: this.hasSettingsAccess
-      // }
-    ]
+const getCompanyObjectTypes = async () => {
+  if(hasSettingsAccess.value) {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`, null,[])
+      companyObjectTypes.value = data
+      setTitle()
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.loading = false
     }
-  },
-  methods: {
-    async getCompanyObjectTypes () {
-      if(this.hasSettingsAccess) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`, null,[])
-          this.companyObjectTypes = data
-          this.setTitle()
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    setTitle (title) {
-      //title passed in on item click
-      if(title){
-        this.title = title
-      }
-      // this determines the title if the page is refreshed
-      else if( this.$route.path.includes('/settings/customFieldGroup') || this.$route.path.includes('/customFieldGroups')) {
-        if(this.companyObjectTypes.length > 0) {
-          const match = this.companyObjectTypes.find(ot => ot.id.toString() === this.$route.params.id)
-          this.title = match?.objectType
-        }
-      } else {
-        this.title = this.items.find(i => i.pathMatch ?? i.path === this.$route.path).title
-      }
-    },
-    collapseMenu (){
-      this.$store.commit(UserMutations.SETTINGS_MENU_COLLAPSE)
-    }
-  },
-  created () {
-    this.getCompanyObjectTypes()
-    this.setTitle()
   }
 }
+const setTitle =  (_title)  => {
+  //title passed in on item click
+  if(_title){
+    title.value = _title
+  }
+  // this determines the title if the page is refreshed
+  else if(route.path.includes('/settings/customFieldGroup') || route.path.includes('/customFieldGroups')) {
+    if(companyObjectTypes.value.length > 0) {
+      const match = companyObjectTypes.value.find(ot => ot.id.toString() === route.params.id)
+      title.value = match?.objectType
+    }
+  } else {
+    title.value = items.value.find(i => i.pathMatch ?? i.path === route.path).title
+  }
+}
+const collapseMenu =  () => {
+  userStore.settingsMenuCollapsed = !userStore.settingsMenuCollapsed
+}
+
+onMounted(() =>{
+  getCompanyObjectTypes()
+  setTitle()
+})
+
 </script>
 
 <style scoped lang="scss">

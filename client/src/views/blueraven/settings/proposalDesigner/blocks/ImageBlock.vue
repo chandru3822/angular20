@@ -6,34 +6,32 @@
 </template>
 
 
-<script>
+<script setup>
 import { mapState } from 'vuex'
 import ImgProxy from '@/components/ImgProxy'
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 
-export default {
-  name: 'ImageBlock',
-  components: { ImgProxy },
-  props: {
-    themeKey: {
-      type: String
-    },
-    blockStyle: {
-      type: Object
-    },
-    blockValue: {
-      type: Object,
-      required: true
-    }
+const props = defineProps({
+  themeKey: {
+    type: String
   },
-  computed: {
-    styles() {
-      return { ...this.theme[this.themeKey] ?? {}, ...this.blockStyle }
-    },
-    ...mapState({
-      theme: (state) => state.proposal.theme
-    })
+  blockStyle: {
+    type: Object
+  },
+  blockValue: {
+    type: Object,
+    required: true
   }
-}
+})
+
+//@kaleb not sure if these map state things are right
+const { theme } = mapState({
+  theme: (state) => state.proposal.theme,
+})
+
+const styles = computed(() => {
+  return { ...(theme.value[props.themeKey] ?? {}), ...props.blockStyle }
+})
 </script>
 <style lang="scss" scoped>
 .proposal-img img {

@@ -36,46 +36,41 @@
   </v-data-table>
 </template>
 
-<script>
-export default {
-  name: 'PpsHistory',
-  props: {
-    selectedPpsHistory: Array
-  },
-  data () {
-    return {
-      historyHeaders: [
-        {text: 'Owner', value: 'owner'},
-        {text: 'Status', value: 'processStepStatusType'},
-        {text: 'Is Primary?', value: 'main'},
-        {text: 'Date Created', value: 'dateCreated'},
-        {text: 'Created By', value: 'createdBy'},
-        {text: 'Date Modified', value: 'dateModified'},
-        {text: 'Modified By', value: 'modifiedBy'},
-      ],
-      footerProps: {
-        'items-per-page-text': this.isMobile ? '' : 'Rows per page: '
-      },
-    }
-  },
-  created () {
+<script setup>
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 
-  },
-  methods: {
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
 
-  },
-  computed: {
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    }
-  }
-}
+
+const props = defineProps({
+  selectedPpsHistory: Array
+})
+const { selectedPpsHistory } = toRefs(props)
+
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+
+const historyHeaders = ref([
+  {text: 'Owner', value: 'owner'},
+  {text: 'Status', value: 'processStepStatusType'},
+  {text: 'Is Primary?', value: 'main'},
+  {text: 'Date Created', value: 'dateCreated'},
+  {text: 'Created By', value: 'createdBy'},
+  {text: 'Date Modified', value: 'dateModified'},
+  {text: 'Modified By', value: 'modifiedBy'},
+])
+const footerProps = ref({
+  'items-per-page-text': isMobile.value ? '' : 'Rows per page: '
+})
+
+
 </script>
 
 <style lang="scss">
-.add-process-step-btn > .v-btn__content {
-  color: white !important;
-}
 #pps-history-table > div.v-data-table__wrapper {
   max-height: 55vh;
 }

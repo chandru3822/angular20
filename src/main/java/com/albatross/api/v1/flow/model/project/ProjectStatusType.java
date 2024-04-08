@@ -12,7 +12,6 @@ public class ProjectStatusType {
     private Long id, projectStatusTypeId, displayOrder;
 
     private String projectStatusType, rootProjectStatusType, description, iconTag;
-    private Attachment icon;
 
     private Boolean archived, isDefault, isMilestone;
 

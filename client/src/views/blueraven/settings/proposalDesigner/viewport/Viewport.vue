@@ -14,9 +14,13 @@
     </div>
   </div>
 </template>
-<script>
+<script setup>
 import ZoomControl from './Zoom.vue'
 import { ProposalMutations } from '../store'
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 
 const findParent = (node, className) => {
   let nodeClassNames = node?.className?.split(' ') ?? []
@@ -29,31 +33,24 @@ const findParent = (node, className) => {
   return null
 }
 
-export default {
-  name: 'Viewport',
-  components: { ZoomControl },
-  mounted() {
-    document
-      .getElementsByClassName('viewport')[0]
-      .addEventListener('mousedown', this.handleClick, false)
-  },
-  data() {
-    return {
-      isZoomable: false,
-      zoom: 75
-    }
-  },
-  methods: {
-    handleClick({ target }) {
-      const closest = findParent(target, 'block-ui')
-      const type = closest?.getAttribute('data-type')
-      if (type) {
-        const id = parseInt(closest.getAttribute('data-id'), 10)
-        this.$store.commit(ProposalMutations.SET_SELECTED, id)
-      } else {
-        this.$store.commit(ProposalMutations.SET_SELECTED, null)
-      }
-    }
+const isZoomable = ref(false)
+const zoom = ref(75)
+
+onMounted(() => {
+  document
+    .getElementsByClassName('viewport')[0]
+    .addEventListener('mousedown', this.handleClick, false)
+})
+
+
+const handleClick = ({ target }) => {
+  const closest = findParent(target, 'block-ui')
+  const type = closest?.getAttribute('data-type')
+  if (type) {
+    const id = parseInt(closest.getAttribute('data-id'), 10)
+    store.commit(ProposalMutations.SET_SELECTED, id)
+  } else {
+    store.commit(ProposalMutations.SET_SELECTED, null)
   }
 }
 </script>

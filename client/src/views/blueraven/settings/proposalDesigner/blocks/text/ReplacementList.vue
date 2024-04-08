@@ -2,11 +2,11 @@
   <div class="items">
     <template v-if="items.length">
       <button
-        class="item"
-        :class="{ 'is-selected': index === selectedIndex }"
-        :key="index"
-        v-for="(item, index) in items"
-        @click.stop.prevent="selectItem(index)"
+          class="item"
+          :class="{ 'is-selected': index === selectedIndex }"
+          :key="index"
+          v-for="(item, index) in items"
+          @click.stop.prevent="selectItem(index)"
       >
         {{ item }}
       </button>
@@ -17,71 +17,60 @@
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    items: {
-      type: Array,
-      required: true,
-    },
+<script setup>
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 
-    command: {
-      type: Function,
-      required: true,
-    },
+const props = defineProps({
+  items: {
+    type: Array,
+    required: true,
   },
 
-  data() {
-    return {
-      selectedIndex: 0,
-    }
+  command: {
+    type: Function,
+    required: true,
   },
+})
+const { items } = toRefs(props)
 
-  watch: {
-    items() {
-      this.selectedIndex = 0
-    },
-  },
+const selectedIndex = ref(0)
+watch(items, async() => {
+  selectedIndex.value = 0
+})
 
-  methods: {
-    onKeyDown({ event }) {
-      if (event.key === 'ArrowUp') {
-        this.upHandler()
-        return true
-      }
 
-      if (event.key === 'ArrowDown') {
-        this.downHandler()
-        return true
-      }
+const onKeyDown = ({ event }) => {
+  if (event.key === 'ArrowUp') {
+    upHandler()
+    return true
+  }
 
-      if (event.key === 'Enter') {
-        this.enterHandler()
-        return true
-      }
+  if (event.key === 'ArrowDown') {
+    downHandler()
+    return true
+  }
 
-      return false
-    },
+  if (event.key === 'Enter') {
+    enterHandler()
+    return true
+  }
 
-    upHandler() {
-      this.selectedIndex = ((this.selectedIndex + this.items.length) - 1) % this.items.length
-    },
-
-    downHandler() {
-      this.selectedIndex = (this.selectedIndex + 1) % this.items.length
-    },
-
-    enterHandler() {
-      this.selectItem(this.selectedIndex)
-    },
-
-    selectItem(index) {
-      const item = this.items[index]
-      if (item) {
-        this.command({ id: item })
-      }
-    },
-  },
+  return false
+}
+const upHandler = () => {
+  selectedIndex.value = ((selectedIndex.value + items.value?.length) - 1) % items.value?.length
+}
+const downHandler = () => {
+  selectedIndex.value = (selectedIndex.value + 1) % items.value?.length
+}
+const enterHandler = () => {
+  selectItem(selectedIndex.value)
+}
+const selectItem = (index) => {
+  const item = items.value[index]
+  if (item) {
+    props.command({ id: item })
+  }
 }
 </script>
 
@@ -95,8 +84,8 @@ export default {
   overflow: hidden;
   font-size: 0.9rem;
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.05),
-    0 10px 20px rgba(0, 0, 0, 0.1);
+      0 0 0 1px rgba(0, 0, 0, 0.05),
+      0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .item {

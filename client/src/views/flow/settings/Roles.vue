@@ -6,15 +6,18 @@
           <v-toolbar-title class="app-title">Roles</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/settings/role" color="primary">
-              <v-icon>add</v-icon>
-              Add Role
-            </v-btn>
+            <a-btn
+              variant="text"
+              to="/settings/role"
+              color="primary"
+              prepend-icon="add"
+              text="ADD ROLE"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-data-table
             :headers="headers"
-            :items="filterRoles()"
+            :items="filteredRoles"
             :fixed-header="true"
             disable-sort
             :items-per-page="-1"
@@ -35,16 +38,21 @@
               <td class="text-left">{{item.roleName}}</td>
               <!-- icon column -->
               <td class="text-right">
-                <v-btn text color="primary" @click="clickRow(item.id)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
+                <a-btn
+                  variant="text"
+                  color="primary"
+                  @click="clickRow(item.id)"
+                  prepend-icon="edit"
+                />
                 <v-dialog
                     v-model="item.deleteConfirm"
                     width="500">
                   <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
+                    <a-btn
+                      variant="text"
+                      activation-handler="on"
+                      prepend-icon="delete"
+                    />
                   </template>
                   <v-card>
                     <v-card-title
@@ -62,16 +70,16 @@
 
                     <v-card-actions>
                       <v-spacer></v-spacer>
-                      <v-btn
-                          @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
+                      <a-btn
+                          @click="item.deleteConfirm = false"
+                          text="NO"
+                      />
+                      <a-btn
                           color="primary"
-                          text
-                          @click="[item.archived = true, deleteRole(item.id)]">
-                        Yes
-                      </v-btn>
+                          variant="text"
+                          @click="[item.archived = true, deleteRole(item.id)]"
+                          text="YES"
+                      />
                     </v-card-actions>
                   </v-card>
                 </v-dialog>
@@ -85,64 +93,63 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
   import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
 
-  export default {
-    name: 'Roles',
+  import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
-    data() {
-      return {
-        delay: 500,
-        dialog: false,
-        snackbar: {},
-        roles: [],
-        descending: true,
-        dataLoading: true,
-        headers: [
-          {text: 'Role Name', value: 'roleName', show: true},
-          { text: null, value: 'icons', show: true }
-        ],
-      }
-    },
-    created () {
-      this.getRoles()
-    },
-    methods: {
-      clickRow(id) {
-        this.$router.push({name: 'role', params: {id: id}})
-      },
-      async getRoles() {
-        try {
-          const {data, status} = await getRequest(`/role`)
-          this.roles = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Roles')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteRole(id) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/role/${id}`)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Role')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterRoles () {
-        return this.roles.filter(r => { return !r.archived})
-      },
+  import {useRouter} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+  const router = useRouter()
+
+  const delay = ref(500)
+  const dialog = ref(false)
+  const roles = ref([])
+  const descending = ref(true)
+  const dataLoading = ref(true)
+  const headers = ref([
+    { text: 'Role Name', value: 'roleName', show: true},
+    { text: null, value: 'icons', show: true }
+  ])
+  const filteredRoles = computed(() => {
+    return roles.value.filter(r => { return !r.archived})
+  })
+
+  onMounted(() => {
+    getRoles()
+  })
+  const clickRow = (id) => {
+    router.push({name: 'role', params: {id: id}})
+  }
+  const getRoles = async () => {
+    try {
+      const {data, status} = await getRequest(`/role`)
+      roles.value = data
+      dataLoading.value = false
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Roles')
+      appStore.loading = false
     }
   }
+  const deleteRole = async (id) => {
+    appStore.loading = true
+    try {
+      const {status} = await deleteRequest(`/role/${id}`)
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting Role')
+      appStore.loading = false
+    }
+  }
+
 </script>
 
 <style lang="scss">

@@ -10,7 +10,7 @@
              :showRightCollapseBtn="false"
   >
     <template v-slot:main-column>
-      <AlbatrossButton id="map-btn" v-if="!showMap" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></AlbatrossButton>
+      <a-btn id="map-btn" v-if="!showMap" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
     <Calendar :map-resources="mapResources"
               ref="calendarRef"
               :map-open="showMap"
@@ -46,7 +46,7 @@
                @close-search-menu="searchMenuOpen = false"
           >
             <template v-slot:searchMenu>
-              <AlbatrossButton v-if="vuetify.breakpoint.mdAndUp" id="search-menu-btn" class="rounded-tile-btn pa-5" variant="outlined" icon @click="openSearchModal()" color="primary"><v-icon>mdi-magnify</v-icon></AlbatrossButton>
+              <a-btn id="search-menu-btn" v-if="vuetify.breakpoint.mdAndUp" class="rounded-tile-btn pa-5" variant="outlined" icon @click="openSearchModal()" color="primary"><v-icon>mdi-magnify</v-icon></a-btn>
               <ProjectSearchDialog v-show="searchMenuOpen" :pin-to-map-callback="projectMapMarkersCallback"  :pinned-projects="projectMapMarkers"
                                    :states="states" :start-time="startTime" :end-time="endTime"
                                    @close-dialog="searchMenuOpen = false" @zoom-map="zoomToMap"/>
@@ -74,23 +74,27 @@
   import ProjectModal from "@/views/flow/schedule/components/ProjectModal.vue";
   import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
   import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
+  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+
+  const appStore = useAppStore()
+  const route = useRoute()
+  const router = useRouter()
+  const userStore = useUserStore()
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const router = vueInstance.$router
-  const route = vueInstance.$route
   const vuetify = vueInstance.$vuetify
   const calendarRef = ref(null);
 
   const snackbar = ref({})
   const saveInvalid = ref(true)
-  const timezone = ref(null)
   const startTime = ref(null)
   const endTime = ref(null)
   const mapResources = ref([])
   const projectMapMarkers = ref([])
-  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
   const state = ref({})
   const mapZoom = ref(null)
   const latitude = ref(null)
@@ -123,6 +127,13 @@
   })
   const showMap = computed(() => {
     return store.state.schedule.showMap
+  })
+
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
+  })
+  const timezone = computed(() => {
+    return store.state.schedule.timezone?.value === null ? userstore.details.timezone : store.state.user.details.timezone
   })
 
   watch(selectedProject, () => {

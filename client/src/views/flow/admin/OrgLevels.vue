@@ -6,26 +6,26 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Org Levels</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newOrgLevel = {}]">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <a-btn :hide-text-on-mobile="true" :prepend-icon="addNew ? 'close' : 'add'"
+                             variant="text"
+                             :text="addNew ? 'Cancel' : 'Add New'"
+                             @click="[addNew = !addNew, newOrgLevel = {}]">
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add Org Level</h3>
           <div class="mb-3">
-            <v-text-field text v-model="newOrgLevel.levelName"
+            <a-text-field  v-model="newOrgLevel.levelName"
                           label="Level Name" />
-            <v-text-field text v-model="newOrgLevel.level" type="number"
+            <a-text-field  v-model="newOrgLevel.level" type="number"
                           label="Level" />
           </div>
-          <v-btn text color="primary" @click="[addNew = !addNew, newOrgLevel = {}]">Cancel</v-btn>
-          <v-btn :disabled="!newOrgLevel.levelName || !newOrgLevel.level"
-                 color="primary" class="mr-2"
+          <a-btn variant="text" text="Cancel" @click="[addNew = !addNew, newOrgLevel = {}]"></a-btn>
+          <a-btn :disabled="!newOrgLevel.levelName || !newOrgLevel.level"
+                 text="Save" class="mr-2"
                  @click="saveOrgLevel(newOrgLevel, true)">
-            Save
-          </v-btn>
+          </a-btn>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -50,16 +50,15 @@
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': orgLevels.indexOf(item) % 2}">
               <h3>Edit Org Level</h3>
               <div class="mb-3">
-                <v-text-field text v-model="item.levelName"
+                <a-text-field  v-model="item.levelName"
                               label="Rank" />
-                <v-text-field text v-model="item.level" type="number"
+                <a-text-field  v-model="item.level" type="number"
                               label="Rank" />
               </div>
-              <v-btn :disabled="!item.levelName || !item.level"
-                     color="primary" class="white--text mr-2"
+              <a-btn :disabled="!item.levelName || !item.level"
+                     text="Save" class="mr-2"
                      @click="saveOrgLevel(item, false)">
-                Save
-              </v-btn>
+              </a-btn>
             </td>
           </template>
 
@@ -67,12 +66,11 @@
             <tr  class="text-left" :class="{'shaded-row': orgLevels.indexOf(item) % 2}">
               <td class="text-left">{{ item.levelName }}</td>
               <td class="text-left">{{ item.level }}</td>
-              <td>
-                <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-btn small text color="primary" @click="levelToDelete=item"><v-icon>delete</v-icon></v-btn>
+              <td class="text-right">
+                <a-btn variant="text" size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                </a-btn>
+                <a-btn size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></a-btn>
+                <a-btn variant="text" size="small" prepend-icon="delete" @click="levelToDelete=item" />
               </td>
             </tr>
           </template>
@@ -89,99 +87,90 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {getOrgLevels} from '@/services/orgService'
-  import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
+<script setup>
+import {getOrgLevels} from '@/services/orgService'
+import {handleHidingGlobalLoader, deleteRequest, putRequest} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import ConfirmationDialog from '@/components/ConfirmationDialog'
+import {getCurrentInstance, onMounted, computed, ref} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRouter} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
-  export default {
-    name: 'OrgLevels',
-    components: {ConfirmationDialog},
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        addNew: false,
-        levels: [],
-        orgLevels: [],
-        newOrgLevel: {},
-        selectedOrgLevelId: null,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        headers: [
-          { text: 'Org Level', value: 'levelName', show: true },
-          { text: 'Level', value: 'level', width: 80, show: true },
-          { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        expanded: [],
-        levelToDelete: null
-      }
-    },
-    computed:{
-      levelToDeleteName(){
-        return this.levelToDelete ? this.levelToDelete.levelName : ''
-      }
-    },
-    async created () {
-      this.getOrgLevels()
-    },
-    methods: {
-      async saveOrgLevel(ol, isNew) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const router = useRouter()
+const snackbar = vueInstance.$snackbar
+
+const addNew = ref(false)
+const levels = ref([])
+const orgLevels = ref([])
+const newOrgLevel = ref({})
+const selectedOrgLevelId = ref(null)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
+const expanded = ref([])
+const levelToDelete = ref(null)
+const headers = ref([
+{ text: 'Org Level', value: 'levelName', show: true },
+{ text: 'Level', value: 'level', width: 80, show: true },
+{ text: null, value: 'icons', show: true, sortable: false }
+])
+  const levelToDeleteName = computed(() => {
+    return levelToDelete.value ? levelToDelete.value.levelName : ''
+  })
+  onMounted(() => {
+    getOrganizationLevels()
+  })
+
+      const saveOrgLevel = async(ol, isNew) => {
+        appStore.loading = true
         try {
           const {data, status} = await putRequest(`/orgType/level`, ol)
           if(isNew){
-            this.orgLevels.push(data)
-            this.addNew = false
-            this.newOrgLevel = {}
-            this.snackbar = getSnackbar('SUCCESS', 'Org Level Added')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            orgLevels.value.push(data)
+            addNew.value = false
+            newOrgLevel.value = {}
+            snackbar('SUCCESS', 'Org Level Added')
           } else {
-            this.expanded = []
-            this.snackbar = getSnackbar('SUCCESS', 'Org Level Updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            expanded.value = []
+            snackbar('SUCCESS', 'Org Level Updated')
           }
-          handleHidingGlobalLoader(this, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Org Level' : 'Error Updating Org Level')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', isNew ? 'Error Adding Org Level' : 'Error Updating Org Level')
+          appStore.loading = false
         }
-      },
-      async getOrgLevels() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const getOrganizationLevels = async() => {
+        appStore.loading = true
         try {
           const {data, status} = await getOrgLevels()
-          this.orgLevels = data
-          handleHidingGlobalLoader(this, status)
+          orgLevels.value = data
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Org Levels')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Loading Org Levels')
+          appStore.loading = false
         }
-      },
-      async deleteOrgLevel() {
-        const level = this.levelToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const deleteOrgLevel = async() => {
+        const level = levelToDelete.value
+        appStore.loading = true
         try {
           const {status} = await deleteRequest(`/orgType/level/${level.id}`)
-          this.orgLevels = this.orgLevels.filter(ol => {
+          orgLevels.value = orgLevels.value.filter(ol => {
             return ol.id !== level.id
           })
-          this.snackbar = getSnackbar('SUCCESS', 'Org Level Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          snackbar('SUCCESS', 'Org Level Deleted')
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Org Level')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Deleting Org Level')
+          appStore.loading = false
         }
-      },
-    }
-  }
+      }
 </script>

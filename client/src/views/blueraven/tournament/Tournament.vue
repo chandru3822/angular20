@@ -31,75 +31,79 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import moment from 'moment'
+<script setup>
 
-  export default {
-    name: 'Tournament',
-    data() {
-      return {
-        constants,
-        snackbar: {},
-        tournament: {},
-        tournamentLoaded: false,
-        tournamentId: this.$route.params.id
-      }
-    },
-    watch: {
-      // whenever tournament_id changes, this function will run
-      '$route.params.id': async function () {
-        // reset the selected group when the object type changes
-        this.tournamentId = this.$route.params.id
-        this.tournament = {}
-        await this.getTournament()
-        this.goToRoute()
-      }
-    },
-    async created () {
-      await this.getTournament()
-      this.goToRoute()
-    },
-    methods: {
-      goToRoute() {
-        //
-        if(this.$route.name === 'tournament') {
-          //go to the tab that is currently in progress
-          let qualifyingPool = this.tournament?.pools?.find(p => p.tournamentPoolTypeId === 1)
-          let winnersPool = this.tournament?.pools?.find(p => p.tournamentPoolTypeId === 3)
-          if( moment().isBetween(moment(qualifyingPool?.startDate), moment(qualifyingPool?.endDate))) {
-            this.$router.push(`/tournament/${this.tournamentId}/qualifying`)
-          } else if( moment().isAfter(moment(winnersPool?.startDate))) {
-            this.$router.push(`/tournament/${this.tournamentId}/winners`)
-            // this.$router.push({name: 'tournamentWinners', params: { id: this.tournament.id }})
-          } else {
-            this.$router.push(`/tournament/${this.tournamentId}/bracket`)
-            // this.$router.push({name: 'tournamentBracket', params: { id: this.tournament.id }})
-          }
-        }
-      },
-      getPoolName(typeId) {
-        return this.tournament?.pools?.find(p => p.tournamentPoolTypeId === typeId)?.customName
-      },
-      async getTournament() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/tournament/${this.tournamentId}`, 'blueraven')
-          this.tournament = data
-          document.title = this.tournament.tournamentName || 'Albatross'
-          this.tournamentLoaded = true
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Tournament')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+import {handleHidingGlobalLoader, getRequest, } from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import moment from 'moment'
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const tournament = ref({})
+const tournamentLoaded = ref(false)
+
+const tournamentId = computed(() => {
+  return route.params.id
+})
+
+watch(tournamentId, async() => {
+  // reset the selected group when the object type changes
+  tournament.value = {}
+  await getTournament()
+  goToRoute()
+})
+
+onMounted(async() => {
+  await getTournament()
+  goToRoute()
+})
+
+
+const goToRoute = () => {
+  //
+  if(route.name === 'tournament') {
+    //go to the tab that is currently in progress
+    let qualifyingPool = tournament.value?.pools?.find(p => p.tournamentPoolTypeId === 1)
+    let winnersPool = tournament.value?.pools?.find(p => p.tournamentPoolTypeId === 3)
+    if( moment().isBetween(moment(qualifyingPool?.startDate), moment(qualifyingPool?.endDate))) {
+      router.push(`/tournament/${tournamentId.value}/qualifying`)
+    } else if( moment().isAfter(moment(winnersPool?.startDate))) {
+      router.push(`/tournament/${tournamentId.value}/winners`)
+      // router.push({name: 'tournamentWinners', params: { id: tournament.value.id }})
+    } else {
+      router.push(`/tournament/${tournamentId.value}/bracket`)
+      // router.push({name: 'tournamentBracket', params: { id: tournament.value.id }})
     }
   }
+}
+const getPoolName = (typeId) => {
+  return tournament.value?.pools?.find(p => p.tournamentPoolTypeId === typeId)?.customName
+}
+const getTournament = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/tournament/${tournamentId.value}`, 'blueraven')
+    tournament.value = data
+    document.title = tournament.value.tournamentName || 'Albatross'
+    tournamentLoaded.value = true
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Tournament')
+
+    appStore.loading = false
+  }
+}
 </script>
 
 <style lang="scss" scoped>

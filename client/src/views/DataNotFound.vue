@@ -11,7 +11,11 @@
               The data you are looking for could not be found.
             </v-card-text>
             <v-card-actions class="justify-center">
-              <v-btn color="primary" to="/">Click Here to Return</v-btn>
+              <a-btn
+                  color="primary"
+                  to="/"
+                  text="Click Here to Return"
+              ></a-btn>
             </v-card-actions>
           </v-card>
         </v-col>
@@ -20,8 +24,7 @@
   </v-main>
 </template>
 
-<script>
-export default {
-  name: 'DataNotFound'
-}
+<script setup>
+
+
 </script>

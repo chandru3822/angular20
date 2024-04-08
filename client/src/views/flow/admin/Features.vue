@@ -6,43 +6,44 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Features</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, selectedFeature = {}]">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <a-btn :hide-text-on-mobile="true" prepend-icon="add"
+                             variant="text"
+                             text="Blah"
+                             @click="[addNew = !addNew, selectedFeature = {}]">
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
-          <h3>{{isCompanyRoot ? 'Add New Feature' : 'Add Feature to Company'}}</h3>
+        <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
+          <h3>{{ isCompanyRoot ? 'Add New Feature' : 'Add Feature to Company' }}</h3>
           <div class="mb-3">
             <div v-if="isCompanyRoot">
-              <v-text-field text label="Enter the name of a new feature"
-                            v-model="selectedFeature.featureName"></v-text-field>
-              <v-text-field text label="Enter Feature Code"
-                            v-model="selectedFeature.featureCode"></v-text-field>
+              <a-text-field label="Enter the name of a new feature"
+                            v-model="selectedFeature.featureName"></a-text-field>
+              <a-text-field label="Enter Feature Code"
+                            v-model="selectedFeature.featureCode"></a-text-field>
               <label>Is System:</label>
               <input class="ml-3" type="checkbox" v-model="selectedFeature.isSystem">
             </div>
-            <v-select
+            <a-select
                 v-else
                 v-model="selectedFeature"
                 :items="features"
                 label="Select a feature to use"
-                item-text="featureName"
+                item-title="featureName"
                 item-value="id"
                 return-object
-            ></v-select>
+            ></a-select>
           </div>
-          <v-btn text color="primary" @click="[addNew = !addNew, selectedFeature = {}]">Cancel</v-btn>
-          <v-btn :disabled="!selectedFeature || !selectedFeature.featureName || !selectedFeature.featureCode"
-                 color="primary" class="mr-2"
+          <a-btn variant="text" text="Cancel" @click="[addNew = !addNew, selectedFeature = {}]"></a-btn>
+          <a-btn :disabled="!selectedFeature || !selectedFeature.featureName || !selectedFeature.featureCode"
+                 class="mr-2"
                  @click="saveFeature(true)">
             Save
-          </v-btn>
+          </a-btn>
         </v-card>
         <v-data-table
             :headers="headers"
-            :items="filterFeatures()"
+            :items="filteredFeatures"
             :fixed-header="true"
             :items-per-page="-1"
             single-expand
@@ -63,33 +64,32 @@
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': companyFeatures.indexOf(item) % 2}">
               <h3>Edit Feature</h3>
               <div class="mb-3">
-                <v-text-field text v-model="item.featureName"
-                              label="Feature Name" />
+                <a-text-field v-model="item.featureName"
+                              label="Feature Name"/>
                 <div v-if="isCompanyRoot">
-                  <v-text-field text v-model="item.featureCode"
-                                label="Feature Name" />
+                  <a-text-field v-model="item.featureCode"
+                                label="Feature Name"/>
                   <label>Is System:</label>
                   <input class="ml-3" type="checkbox" v-model="item.isSystem">
                 </div>
               </div>
-              <v-btn :disabled="!item.featureName"
-                     color="primary" class="white--text mr-2"
+              <a-btn :disabled="!item.featureName"
+                     class="mr-2"
                      @click="saveFeature(false, item)">
                 Save
-              </v-btn>
+              </a-btn>
             </td>
           </template>
 
           <template #item="{ item }">
-            <tr  class="text-left" :class="{'shaded-row': companyFeatures.indexOf(item) % 2}">
+            <tr class="text-left" :class="{'shaded-row': companyFeatures.indexOf(item) % 2}">
               <td class="text-left">{{ item.featureName }}</td>
               <td class="text-left">{{ item.featureCode }}</td>
-              <td>
-                <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-btn small text color="primary" @click="featureToDelete=item"><v-icon>delete</v-icon></v-btn>
+              <td class="text-right">
+                <a-btn variant="text" size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                </a-btn>
+                <a-btn size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></a-btn>
+                <a-btn variant="text" size="small" prepend-icon="delete" @click="featureToDelete=item" />
               </td>
             </tr>
           </template>
@@ -97,135 +97,128 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-dialog="!!featureToDelete" @confirm="deleteFeature" @close-dialog="featureToDelete = null">
+    <ConfirmationDialog :open-dialog="!!featureToDelete" @confirm="deleteFeature"
+                        @close-dialog="featureToDelete = null">
       <div v-if="isCompanyRoot">
         <span class="error--text">WARNING:</span> This will delete this feature system-wide!
-          </div>
+      </div>
       <div v-else>
-        <span class="error--text">WARNING:</span> Feature access control will be completely reset for this feature even if you add the same one back in.
+        <span class="error--text">WARNING:</span> Feature access control will be completely reset for this feature even
+        if you add the same one back in.
       </div>
       Are you sure you want to delete this feature: <b>{{ featureToDeleteName }}</b>?
     </ConfirmationDialog>
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import orderBy from "lodash.orderby";
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
+<script setup>
+import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import orderBy from 'lodash.orderby'
+import ConfirmationDialog from '@/components/ConfirmationDialog'
+import {getCurrentInstance, onMounted, computed, ref} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  export default {
-    name: 'Features',
-    components: {ConfirmationDialog},
-    data() {
-      return {
-        constants,
-        snackbar: {},
-        isCompanyRoot: this.$store.getters.isCompanyRoot(this.$store.state.user.details.companyId),
-        addNew: false,
-        levels: [],
-        companyFeatures: [],
-        selectedFeature: {},
-        features: [],
-        apiUrl: this.$store.getters.isCompanyRoot(this.$store.state.user.details.companyId) ? `/feature` : `/feature/company`,
-        selectedFeatureId: null,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        headers: [
-          { text: 'Feature', value: 'feature', show: true },
-          { text: 'Feature Code', value: 'featureCode', show: true },
-          { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        expanded: [],
-        featureToDelete: null
-      }
-    },
-    computed: {
-      featureToDeleteName(){
-        return this.featureToDelete ? this.featureToDelete.featureName : ''
-      }
-    },
-    async created () {
-      this.getCompanyFeatures()
-      this.getFeatures()
-    },
-    methods: {
-      async saveFeature(isNew, feature) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          feature = isNew && this.isCompanyRoot ? this.selectedFeature :
-            isNew && !this.isCompanyRoot ?
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const appStore = useAppStore()
+const snackbar = vueInstance.$snackbar
+
+const isCompanyRoot = ref(userStore.isCompanyRoot)
+const addNew = ref(false)
+const levels = ref([])
+const companyFeatures = ref([])
+const selectedFeature = ref({})
+const features = ref([])
+const apiUrl = ref(userStore.isCompanyRoot ? `/feature` : `/feature/company`)
+const selectedFeatureId = ref(null)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
+const expanded = ref([])
+const featureToDelete = ref(null)
+const headers = ref([
+  {text: 'Feature', value: 'feature', show: true},
+  {text: 'Feature Code', value: 'featureCode', show: true},
+  {text: null, value: 'icons', show: true, sortable: false}
+])
+const featureToDeleteName = computed(() => {
+  return featureToDelete.value ? featureToDelete.value.featureName : ''
+})
+
+const filteredFeatures = computed(() => {
+  return orderBy(companyFeatures.value.filter(cf => {
+    return !cf.archived
+  }), [cf => cf.featureName.toLowerCase()])
+})
+
+onMounted(() => {
+  getCompanyFeatures()
+  getFeatures()
+})
+const saveFeature = async (isNew, feature) => {
+  appStore.loading = true
+  try {
+    feature = isNew && isCompanyRoot.value ? selectedFeature.value :
+        isNew && !isCompanyRoot.value ?
             {
-              featureId: this.selectedFeature.id,
-              featureName: this.selectedFeature.featureName,
+              featureId: selectedFeature.value.id,
+              featureName: selectedFeature.value.featureName,
             } : feature
-          const {data, status} = await putRequest(`${this.apiUrl}`, feature)
-          if(isNew){
-            this.companyFeatures.push(data)
-            this.addNew = false
-            this.selectedFeature = {}
-            this.snackbar = getSnackbar('SUCCESS', 'Feature Added')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            this.expanded = []
-            this.snackbar = getSnackbar('SUCCESS', 'Feature Updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Feature' : 'Error Updating Feature')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getCompanyFeatures() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`${this.apiUrl}`)
-          this.companyFeatures = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Features')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getFeatures() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/feature`)
-          this.features = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Features')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteFeature() {
-        const feature = this.featureToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`${this.apiUrl}/${feature.id}`)
-          feature.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Feature Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Feature')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterFeatures () {
-        return orderBy(this.companyFeatures.filter(cf => { return !cf.archived}), [cf => cf.featureName.toLowerCase()])
-      },
+    const {data, status} = await putRequest(`${apiUrl.value}`, feature)
+    if (isNew) {
+      companyFeatures.value.push(data)
+      addNew.value = false
+      selectedFeature.value = {}
+      snackbar('SUCCESS', 'Feature Added')
+    } else {
+      expanded.value = []
+      snackbar('SUCCESS', 'Feature Updated')
     }
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', isNew ? 'Error Adding Feature' : 'Error Updating Feature')
+    appStore.loading = false
   }
+}
+const getCompanyFeatures = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`${apiUrl.value}`)
+    companyFeatures.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Features')
+    appStore.loading = false
+  }
+}
+const getFeatures = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/feature`)
+    features.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Features')
+    appStore.loading = false
+  }
+}
+const deleteFeature = async () => {
+  const feature = featureToDelete.value
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`${apiUrl.value}/${feature.id}`)
+    feature.archived = true
+    snackbar('SUCCESS', 'Feature Deleted')
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Feature')
+    appStore.loading = false
+  }
+}
 </script>

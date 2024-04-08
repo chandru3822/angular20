@@ -6,22 +6,22 @@
           <v-col cols="12" sm="6">
             <DatetimePickerInput
                 v-model="payrollSearch.startDate"
-                :timezone="this.timezone"
+                :timezone="timezone"
                 :type="'date'"
                 :format="'MMMM DD, YYYY'"
                 label="Start Date"
             />
-            <v-text-field text
+            <a-text-field
                           label="Customer"
-                          v-model="payrollSearch.customerName"></v-text-field>
-            <v-text-field text
+                          v-model="payrollSearch.customerName"></a-text-field>
+            <a-text-field
                           label="Project ID"
-                          v-model="payrollSearch.projectId"></v-text-field>
+                          v-model="payrollSearch.projectId"></a-text-field>
           </v-col>
           <v-col cols="12" sm="6">
             <DatetimePickerInput
                 v-model="payrollSearch.endDate"
-                :timezone="this.timezone"
+                :timezone="timezone"
                 :type="'date'"
                 :format="'MMMM DD, YYYY'"
                 label="End Date"
@@ -39,12 +39,22 @@
                             @click:clear="reps = []"
                             attach
             ></v-autocomplete>
-<!--            <v-text-field text-->
-<!--                          label="Sales Rep"-->
-<!--                          v-model="payrollSearch.salesRep"></v-text-field>-->
+            <!--            <a-text-field -->
+            <!--                          label="Sales Rep"-->
+            <!--                          v-model="payrollSearch.salesRep"></a-text-field>-->
             <div class="text-left">
-              <v-btn color="primary" dark @click="getPayrollData">Search</v-btn>
-              <v-btn text color="primary" class="ml-3" @click="payrollSearch = {}">Reset</v-btn>
+              <a-btn
+                  color="primary"
+                  @click="getPayrollData"
+                  text="Search"
+              ></a-btn>
+              <a-btn
+                  variant="text"
+                  color="primary"
+                  class="ml-3"
+                  @click="payrollSearch = {}"
+                  text="Reset"
+              ></a-btn>
             </div>
           </v-col>
         </v-row>
@@ -77,9 +87,14 @@
               <td class="text-left">{{item.description}}</td>
               <td class="text-left">{{item.currentPay || 0 | currency('$', 2)}}</td>
               <td class="text-left">
-                <v-btn class="clickable" small text color="primary" @click="viewDetails(item)">
-                  <v-icon >mdi-dots-horizontal-circle</v-icon>
-                </v-btn>
+                <a-btn
+                    class="clickable"
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="viewDetails(item)"
+                    prepend-icon="mdi-dots-horizontal-circle"
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -90,109 +105,118 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import constants from "@/helpers/constants";
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {
-    handleHidingGlobalLoader,
-    postRequest,
-    getSnackbar,
-    getRequestWithParams
-  } from '@/helpers/helpers'
+<script setup>
 
-  export default {
-    name: 'Payroll',
-    components: {
+import constants from "@/helpers/constants";
 
-      DatetimePickerInput
-    },
-    created() {
-      this.getPayrollData()
-    },
-    watch: {
-      '$store.state.brs.commissionPositionId': function () {
-        this.positionId = this.$store.state.brs.commissionPositionId
-        this.getPayrollData()
-      },
-      repSearch (val) {
-        if(!val) {
-          this.reps = []
-          return
-        }
-        this.reps = []
-        this.getRepsDebounced(val)
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        payrollSearch: {},
-        footerProps: {
-          'items-per-page-options': [25, 50, 100, 500],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        reps: [],
-        positionId: this.$store.state.brs.commissionPositionId,
-        repSearch: null,
-        repsLoading: false,
-        dataLoading: false,
-        timezone: this.$store.state.user.details.timezone.value,
-        headers: [
-          {text: 'ID', value: 'id', show: true},
-          {text: 'Period End', value: 'periodEnd', show: true},
-          {text: 'Description', value: 'description', show: true},
-          {text: 'Current Pay', value: 'currentPay', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        payrollData: []
-      }
-    },
-    methods: {
-      async getPayrollData () {
-        this.dataLoading = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = this.payrollSearch
-          this.payrollSearch.positionId = this.positionId
-          const {data, status} = await postRequest(`/payroll/search`, params, 'blueraven')
-          this.payrollData = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Payroll Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async viewDetails (item) {
-        this.$router.push({name: 'payrollReview', params: { id: item.id }})
-      },
-      getRepsDebounced(val) {
-        clearTimeout(this._repTimerId)
-        this._repTimerId = setTimeout(() => {
-          this.getReps(val)
-        }, 500) /* 500ms throttle */
-      },
-      async getReps(query) {
-        this.repsLoading = true
-        try {
-          let params = {
-            query,
-            size: 10
-          }
-          const {data} = await getRequestWithParams(`/commissionManagement/overrides/_search`, {params}, 'blueraven')
-          this.reps = data
-          this.repsLoading = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Sales Reps')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-    }
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import {
+  handleHidingGlobalLoader,
+  postRequest,
+  getSnackbar,
+  getRequestWithParams
+} from '@/helpers/helpers'
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useBrsStore } from '@/stores/BrsStorePinia.js'
+import debounce from 'lodash.debounce'
+import { storeToRefs } from 'pinia'
+
+const brsStore = useBrsStore()
+const { commissionPositionId } = storeToRefs(brsStore)
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const payrollSearch = ref({})
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 500],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const reps = ref([])
+const repSearch = ref(null)
+const repsLoading = ref(false)
+const dataLoading = ref(false)
+const headers = ref([
+  {text: 'ID', value: 'id', show: true},
+  {text: 'Period End', value: 'periodEnd', show: true},
+  {text: 'Description', value: 'description', show: true},
+  {text: 'Current Pay', value: 'currentPay', show: true},
+  {text: '', value: 'icons', show: true},
+])
+
+onMounted(() => {
+  getPayrollData()
+})
+
+watch(commissionPositionId, () => {
+  getPayrollData()
+})
+
+watch(repSearch, (val) => {
+  if(!val) {
+    reps.value = []
+    return
   }
+  reps.value = []
+  getRepsDebounced(val)
+})
+
+const timezone = computed(() => {
+  return userStore.timezone.value
+})
+
+const positionId = computed(() => {
+  return brsStore.commissionPositionId
+})
+
+const payrollData = ref([])
+
+const getPayrollData = async () => {
+  dataLoading.value = true
+  appStore.loading = true
+  try {
+    let params = payrollSearch.value
+    payrollSearch.value.positionId = commissionPositionId.value
+    const {data, status} = await postRequest(`/payroll/search`, params, 'blueraven')
+    payrollData.value = data
+    dataLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Payroll Data')
+
+    appStore.loading = false
+  }
+}
+const viewDetails = async (item) => {
+  await router.push({name: 'payrollReview', params: { id: item.id }})
+}
+const getRepsDebounced = debounce((val) => {
+  getReps(val)
+}, 500)
+const getReps = async(query) => {
+  repsLoading.value = true
+  try {
+    let params = {
+      query,
+      size: 10
+    }
+    const {data} = await getRequestWithParams(`/commissionManagement/overrides/_search`, {params}, 'blueraven')
+    reps.value = data
+    repsLoading.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Sales Reps')
+
+  }
+}
 </script>
 
 <style lang="scss" scoped>

@@ -13,64 +13,72 @@
 
       <v-card-actions>
         <slot name="actions" v-bind:cancel="cancel" v-bind:ok="ok">
-          <v-btn
-            text
-            @click="cancel(false)"
-            class="text-capitalize"
-          >
-            {{ cancelButtonText }}
-          </v-btn>
+          <a-btn
+              variant="text"
+              @click="cancel(false)"
+              class="text-capitalize"
+              color="unset"
+              :text="cancelButtonText"
+          ></a-btn>
           <v-spacer />
-          <v-btn
-            color="primary"
-            @click="ok(true)"
-            class="text-capitalize"
-            dark
-          >
-            {{ okButtonText }}
-          </v-btn>
+          <a-btn
+              color="primary"
+              @click="ok(true)"
+              class="text-capitalize"
+              :text="okButtonText"
+          ></a-btn>
         </slot>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
-<script>
-export default {
-  props: {
-    cancelButtonText: {
-      type: String,
-      default: 'No'
-    },
-    okButtonText: {
-      type: String,
-      default: 'Yes'
-    }
+<script setup>
+
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  cancelButtonText: {
+    type: String,
+    default: 'No'
   },
-  data() {
-    return {
-      dialog: false,
-      resolve: null,
-      reject: null
-    }
-  },
-  methods: {
-    open() {
-      this.dialog = true
-      return new Promise((resolve, reject) => {
-        this.resolve = resolve
-        this.reject = reject
-      })
-    },
-    ok(value = true) {
-      this.resolve({ ok: true, value })
-      this.dialog = false
-    },
-    cancel(value = false) {
-      this.resolve({ ok: false, value })
-      this.dialog = false
-    }
+  okButtonText: {
+    type: String,
+    default: 'Yes'
   }
+})
+const { cancelButtonText, okButtonText } = toRefs(props)
+
+const dialog = ref(false)
+const resolve = ref(null)
+const reject = ref(null)
+
+const open = () => {
+  dialog.value = true
+  return new Promise((resolve, reject) => {
+    resolve.value = resolve
+    reject.value = reject
+  })
 }
+const ok = (value = true) => {
+  resolve.value({ ok: true, value })
+  dialog.value = false
+}
+const cancel = (value = false) => {
+  resolve.value({ ok: false, value })
+  dialog.value = false
+}
+
 </script>
 <style lang="scss" scoped>
 .card-title {

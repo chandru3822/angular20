@@ -18,32 +18,29 @@
   </v-row>
 </template>
 
-<script>
-
+<script setup>
 import SpinnerInline from '@/components/SpinnerInline'
+import { toRefs } from 'vue'
 
-export default {
-  name: 'SidePanelExpansionPanel',
-  components: {
-    SpinnerInline
+
+const props = defineProps({
+  header: String,
+  sectionExpanded: {
+    type: Boolean,
+    default: false
   },
-  props: {
-    header: String,
-    sectionExpanded: {
-      type: Boolean,
-      default: false
-    },
-    isDisabled: {
-      type: Boolean,
-      default: false
-    },
-    isLoading: Boolean,
-    removeHeaderPadding: {
-      type: Boolean,
-      default: false
-    }
+  isDisabled: {
+    type: Boolean,
+    default: false
+  },
+  isLoading: Boolean,
+  removeHeaderPadding: {
+    type: Boolean,
+    default: false
   }
-}
+})
+const { header, sectionExpanded, isDisabled, isLoading, removeHeaderPadding } = toRefs(props)
+
 </script>
 
 <style lang="scss" scoped>

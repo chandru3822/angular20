@@ -12,7 +12,7 @@
               If the problem persists after a few minutes please contact an Administrator.
             </v-card-text>
             <v-card-actions class="justify-center">
-              <v-btn color="primary" to="/">Click Here to Try Again</v-btn>
+              <a-btn to="/" text="Click Here to Try Again" />
             </v-card-actions>
           </v-card>
         </v-col>
@@ -21,8 +21,6 @@
   </v-main>
 </template>
 
-<script>
-export default {
-  name: 'ServerError'
-}
+<script setup>
+
 </script>

@@ -10,106 +10,112 @@
              elevation="1"
              :max-width="320"
              :min-width="320"
-        class="announcement-alert pr-0 py-3"
-        color="white"
+             class="announcement-alert pr-0 py-3"
+             color="white"
     >
       <div class="d-inline-block">
         {{ a.alertText }}
       </div>
 
       <div class="d-inline-block text-right pr-4"
-        :style="{'min-width': a.expandable ? '150px' : '50px'}">
-        <v-btn text color="primary" class="learn-more-btn text-transform-unset"
-               v-if="a.expandable" @click="[ markAnnouncement(a, true, true, true), openModal(a)]">Learn More</v-btn>
-        <v-btn text x-small class="px-1 close-x"
-               @click="[ markAnnouncement(a, false, true, false) ]">
-          <v-icon color="primary">clear</v-icon>
-        </v-btn>
+           :style="{'min-width': a.expandable ? '150px' : '50px'}">
+        <a-btn
+            variant="text"
+            color="primary"
+            class="learn-more-btn text-transform-unset"
+            v-if="a.expandable"
+            @click="[ markAnnouncement(a, true, true, true), openModal(a)]"
+            text="Learn More"
+        ></a-btn>
+        <a-btn
+            variant="text"
+            size="x-small"
+            class="px-1 close-x"
+            @click="markAnnouncement(a, false, true, false)"
+            prepend-icon="clear"
+        ></a-btn>
       </div>
     </v-alert>
   </div>
 </template>
 
-<script>
+<script setup>
 import moment from 'moment'
-import {getSnackbar, postRequest, postRequestWithRequestParams} from "@/helpers/helpers.js";
-import {AppMutations} from "@/stores/AppStore.js";
+import { postRequestWithRequestParams} from "@/helpers/helpers.js";
 import AnnouncementModal from "@/components/AnnouncementModal.vue";
-import {Actions} from "@/store.js";
 
-  export default {
-    name: 'AnnouncementAlert',
-    components: {AnnouncementModal},
-    props: {
-    },
-    data() {
-      return {
-        announcementAlert: {},
-        showModal: false,
-        selectedAnnouncement: {},
-        loadComplete: false,
-      }
-    },
-    computed: {
-      unseenAnnouncements() {
-        return this.$store?.state?.app?.announcements?.filter(a => !a.seen &&
-            (moment().isBetween(moment(a.startTime), moment(a.endTime))
-            || (moment().isAfter((moment(a.startTime))) && a.endTime == null))
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-        )
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const announcementAlert = ref({})
+const showModal = ref(false)
+const selectedAnnouncement = ref({})
+const loadComplete = ref(false)
+
+const unseenAnnouncements = computed(() => {
+  return appStore.announcements?.filter(a => !a.seen &&
+      (moment().isBetween(moment(a.startTime), moment(a.endTime))
+          || (moment().isAfter((moment(a.startTime))) && a.endTime == null))
+
+  )
+})
+
+const closeModal = () => {
+  showModal.value = false
+  selectedAnnouncement.value = {}
+}
+const openModal = async(item) => {
+  menuOpen.value = false
+  showModal.value = true
+  loadComplete.value = false
+  await getAttachment(item)
+  selectedAnnouncement.value = item
+}
+const getAttachment = async(item) => {
+  try {
+    await fileStore.getOne({
+      attachmentTypeId: 990,
+      sourceId: item.id,
+      callback: async (img) => {
+        item.presignedUrl = img.presignedUrl
+        item.attachmentId = img.id
+        loadComplete.value = true
       }
-    },
-    created() {
-    },
-    methods: {
-      closeModal() {
-        this.showModal = false
-        this.selectedAnnouncement = {}
-      },
-      async openModal(item) {
-        this.menuOpen = false
-        this.showModal = true
-        this.loadComplete = false
-        await this.getAttachment(item)
-        this.selectedAnnouncement = item
-      },
-      async getAttachment(item) {
-        try {
-          await this.$store.dispatch(Actions.FILE_GET_ONE, {
-            attachmentTypeId: 990,
-            sourceId: item.id,
-            callback: async (img) => {
-              item.presignedUrl = img.presignedUrl
-              item.attachmentId = img.id
-              this.loadComplete = true
-            }
-          })
-        } catch(e) {
-          console.error('*** ERROR ***', e)
-          this.loadComplete = true
-        }
-      },
-      async markAnnouncement(item, read, seen, alerted) {
-        if(!item.seen) {
-          try {
-            let params = {
-              seen,
-              read,
-              alerted
-            }
-            item.seen = seen
-            item.read = read
-            item.alerted = alerted
-            await postRequestWithRequestParams(`/announcements/${item.id}/mark`, {}, params)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Marking Announcement As Seen')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-        }
-      },
+    })
+  } catch(e) {
+    console.error('*** ERROR ***', e)
+    loadComplete.value = true
+  }
+}
+const markAnnouncement = async(item, read, seen, alerted) => {
+  if(!item.seen) {
+    try {
+      let params = {
+        seen,
+        read,
+        alerted
+      }
+      item.seen = seen
+      item.read = read
+      item.alerted = alerted
+      await postRequestWithRequestParams(`/announcements/${item.id}/mark`, {}, params)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Marking Announcement As Seen')
+
     }
   }
+}
 </script>
 
 <style lang="scss">

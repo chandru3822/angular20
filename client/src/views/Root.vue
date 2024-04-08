@@ -1,86 +1,67 @@
 <template>
-  <router-view />
+  <router-view/>
 </template>
-<script>
-import store from '@/store'
+<script setup>
 import constants from '@/helpers/constants'
-import { NotificationActions } from '@/plugins/notifications/NotificationStore'
-import { UserActions } from '@/stores/UserStore'
-import { useFirebase } from '@/firebase/firebase.js'
-import { watch } from 'vue'
+import {getCurrentInstance, onBeforeUnmount, onMounted, ref} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
 
-export default {
-  data() {
-    return {
-      evtSource: undefined
-    }
-  },
-  mounted() {
-    this.setupNotificationStream()
-  },
-  beforeDestroy() {
-    this.cleanupNotificationStream()
-  },
-  setup() {
-    const { init, message } = useFirebase()
-    init()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const notificationStore = useNotificationStore()
 
-    watch(message, function (value, oldValue) {
-      if (value) {
-        //todo: figure out what to do here
-        console.log('firebase message', {value})
-        // store.dispatch(NotificationActions.HANDLE_STREAM_EVENT, { topic: 'sms_reply', value })
+const evtSource = ref(undefined)
+
+onMounted(() => {
+  setupNotificationStream()
+})
+
+onBeforeUnmount(() => {
+  cleanupNotificationStream()
+})
+
+
+const setupNotificationStream = () => {
+  const setup = () => {
+    const url = `${constants.VUE_APP_BASE_API}/api/v1/flow/notifications/stream?access_token=${userStore.jwt}`
+    const topics = ['sms_ownership', 'sms_reply', 'project_tag', 'revoke_access', 'theme_update', 'announcement']
+    evtSource.value = new EventSource(url, {withCredentials: true})
+    topics.forEach(topic => {
+      evtSource.value.addEventListener(topic, function (e) {
+        const data = JSON.parse(e?.data)
+        notificationStore.handleStreamEvent(data)
+      })
+    })
+
+    //catchall
+    window?.addEventListener('beforeunload', (e) => {
+      evtSource.value?.close()
+    })
+
+    const logoutUnsubscriber = userStore.$onAction(({name}) => {
+      if (name === 'logout') {
+        evtSource.value?.close()
+        logoutUnsubscriber()
       }
     })
-  },
-  methods: {
-    setupNotificationStream() {
-      const setup = () => {
-        const url = `${constants.VUE_APP_BASE_API}/api/v1/flow/notifications/stream?access_token=${store.state.user.jwt}`
-        const topics = [
-          'sms_ownership',
-          'sms_reply',
-          'project_tag',
-          'revoke_access',
-          'theme_update',
-          'announcement'
-        ]
-        this.evtSource = new EventSource(url, { withCredentials: true })
-        topics.forEach((topic) => {
-          this.evtSource.addEventListener(topic, function (e) {
-            const data = JSON.parse(e?.data)
-            store.dispatch(NotificationActions.HANDLE_STREAM_EVENT, data)
-          })
-        })
-
-        //catchall
-        window?.addEventListener('beforeunload', (e) => {
-          this.evtSource?.close()
-        })
-
-        const logoutUnsubscriber = store.subscribeAction((action, state) => {
-          if (action.type === UserActions.LOGOUT) {
-            this.evtSource?.close()
-            logoutUnsubscriber()
-          }
-        })
-      }
-
-      if (store.state.user.jwt) {
-        setup()
-      } else {
-        const loginUnsubcriber = store.subscribeAction((action, state) => {
-          //logging in for the first time wait until we have a user
-          if (action.type === UserActions.LOGIN_SUCCESS) {
-            setup()
-            loginUnsubcriber()
-          }
-        })
-      }
-    },
-    cleanupNotificationStream() {
-      this.evtSource?.close()
-    }
   }
+
+  if (userStore.jwt) {
+    setup()
+  } else {
+    const loginUnsubscriber = userStore.$onAction(({name}) => {
+      console.log(name)
+      if (name === 'login') {
+        setup()
+        loginUnsubscriber()
+      }
+    })
+  }
+}
+
+const cleanupNotificationStream = () => {
+  evtSource.value?.close()
 }
 </script>

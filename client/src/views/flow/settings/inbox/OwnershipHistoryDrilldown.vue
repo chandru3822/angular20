@@ -4,10 +4,15 @@
       History
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
-      <v-btn icon color="primary" class="text-capitalize" @click="$emit('historyDialogClosed')">
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
-    </v-card-title>
+        <a-btn
+          variant="text"
+          icon
+          color="primary"
+          class="text-capitalize"
+          @click="emit('historyDialogClosed')"
+          prepend-icon="mdi-close"
+        />
+      </v-card-title>
     <v-data-table
       :headers="headers"
       :items="conversationHistory"
@@ -37,37 +42,22 @@
   </v-card>
 </template>
 
-<script>
-import constants from '@/helpers/constants'
-export default {
-  name: 'OwnershipHistoryDrilldown',
-  components: {
-  },
-  props: {
+<script setup>
+
+  import { ref } from "vue"
+
+  const props = defineProps({
     conversationHistory: Array
-  },
-  watch: {
-  },
-  data() {
-    return {
-      constants,
-      snackbar: {},
-      results: [],
-      headers: [
-        {text: 'Team', value: 'team_name', name: 'team'},
-        {text: 'Team Member', value: 'userName'},
-        {text: 'Joined Conversation', value: 'date_created'},
-        {text: 'Left Conversation', value: 'date_removed'},
-      ]
-    }
-  },
-  computed: {
-  },
-  async created() {
-  },
-  methods: {
-  }
-}
+  })
+  const results = ref([])
+  const headers = ref([
+    {text: 'Team', value: 'team_name', name: 'team'},
+    {text: 'Team Member', value: 'userName'},
+    {text: 'Joined Conversation', value: 'date_created'},
+    {text: 'Left Conversation', value: 'date_removed'},
+  ])
+  const emit = defineEmits(['historyDialogClosed'])
+
 </script>
 
 <style lang="scss">
@@ -125,3 +115,4 @@ export default {
   color: var(--v-grey-darken1);
 }
 </style>
+

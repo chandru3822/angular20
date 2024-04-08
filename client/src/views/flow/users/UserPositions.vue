@@ -6,18 +6,18 @@
           <v-form ref="newPositionForm">
             <h3>Add User Position</h3>
             <DatetimePickerInput
-              v-model="newPosition.startDate"
-              :timezone="timezone"
-              :type="'date'"
-              :format="'MM/DD/YYYY'"
-              label="Start Date"
+                v-model="newPosition.startDate"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MM/DD/YYYY'"
+                label="Start Date"
             />
             <DatetimePickerInput
-              v-model="newPosition.endDate"
-              :timezone="timezone"
-              :type="'date'"
-              :format="'MM/DD/YYYY'"
-              label="End Date"
+                v-model="newPosition.endDate"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MM/DD/YYYY'"
+                label="End Date"
             />
             <label>Make Primary:</label>
             <input type="checkbox" class="ml-3 mb-4" v-model="newPosition.primaryFlag">
@@ -30,12 +30,12 @@
             <div v-if="newPositionHierarchyPopulated">
               <div v-for="(f, index) in filters" :key="index">
                 <v-autocomplete v-if="newPosition.keyedHierarchy && newPosition.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, newPosition)"
-                  v-model="newPosition.keyedHierarchy[f.orgLevelId]['orgId']"
-                  :items="getOrgsMatchingPositionOrgType(f.orgs, newPosition)"
-                  :rules="requiredRules"
-                  :label="f.levelName"
-                  item-value="id"
-                  item-text="orgName"
+                                v-model="newPosition.keyedHierarchy[f.orgLevelId]['orgId']"
+                                :items="getOrgsMatchingPositionOrgType(f.orgs, newPosition)"
+                                :rules="requiredRules"
+                                :label="f.levelName"
+                                item-value="id"
+                                item-text="orgName"
                 >
                   <template slot="selection" slot-scope="{ item }">
                     {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
@@ -49,21 +49,28 @@
             <div v-if="newPosition.startDate >= newPosition.endDate" class="error-text mb-2">
               End date must be null or after the start date
             </div>
-            <v-btn text color="primary" class="mr-2"
-                   @click="[newPosition = [], addNew = !addNew]">Cancel</v-btn>
-            <v-btn color="primary" class="white--text mr-2"
-                   :disabled="!newPosition.positionId ||
-                              (newPosition.positionId && newPosition.endDate && !newPosition.startDate ) ||
-                              (newPosition.positionId && newPosition.endDate <= newPosition.startDate )"
-                   @click="validate(newPosition)">Add</v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                class="mr-2"
+                @click="[newPosition = [], addNew = !addNew]"
+                text="Cancel"
+            ></a-btn>
+            <a-btn
+                color="primary"
+                class="mr-2"
+                :disabled="!newPosition.positionId || (newPosition.positionId && newPosition.endDate && !newPosition.startDate ) || (newPosition.positionId && newPosition.endDate <= newPosition.startDate )"
+                @click="validate(newPosition)"
+                text="Add"
+            ></a-btn>
           </v-form>
         </v-card>
 
-<!--        existing positions -->
+        <!--        existing positions -->
         <v-data-table
             v-if="!addNew"
             :headers="headers"
-            :items="filterUserPositions()"
+            :items="filteredUserPositions"
             :fixed-header="true"
             :items-per-page="-1"
             hide-default-footer
@@ -82,9 +89,14 @@
 
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <v-btn text color="primary" x-small @click="addNew = !addNew" v-if="userCanAdd">
-                <v-icon>add</v-icon>
-              </v-btn>
+              <a-btn
+                  variant="text"
+                  color="primary"
+                  size="x-small"
+                  @click="addNew = !addNew"
+                  v-if="userCanAdd"
+                  prepend-icon="add"
+              ></a-btn>
             </div>
           </template>
 
@@ -92,22 +104,22 @@
             <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': userPositions.indexOf(item) % 2}">
               <h3 class="mb-3">Edit Position</h3>
               <DatetimePickerInput
-                v-model="item.startDate"
-                :timezone="timezone"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                :type="'date'"
-                :format="'MM/DD/YYYY'"
-                label="Start Date"
+                  v-model="item.startDate"
+                  :timezone="timezone"
+                  :readonly="!userCanEdit"
+                  :disabled="!userCanEdit"
+                  :type="'date'"
+                  :format="'MM/DD/YYYY'"
+                  label="Start Date"
               />
               <DatetimePickerInput
-                v-model="item.endDate"
-                :timezone="timezone"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                :type="'date'"
-                :format="'MM/DD/YYYY'"
-                label="End Date"
+                  v-model="item.endDate"
+                  :timezone="timezone"
+                  :readonly="!userCanEdit"
+                  :disabled="!userCanEdit"
+                  :type="'date'"
+                  :format="'MM/DD/YYYY'"
+                  label="End Date"
               />
               <v-autocomplete v-model="item.positionId"
                               :items="positions"
@@ -122,15 +134,15 @@
                      :readonly="item.primary || !userCanEdit" :disabled="item.primary || !userCanEdit">
               <div v-for="(f, index) in filters" :key="index">
                 <v-autocomplete
-                          v-if="item.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, item)"
-                          v-model="item.keyedHierarchy[f.orgLevelId]['orgId']"
-                          :items="getOrgsMatchingPositionOrgType(f.orgs, item)"
-                          :readonly="true"
-                          :disabled="true"
-                          :rules="requiredRules"
-                          :label="f.levelName"
-                          item-text="orgName"
-                          item-value="id"
+                    v-if="item.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, item)"
+                    v-model="item.keyedHierarchy[f.orgLevelId]['orgId']"
+                    :items="getOrgsMatchingPositionOrgType(f.orgs, item)"
+                    :readonly="true"
+                    :disabled="true"
+                    :rules="requiredRules"
+                    :label="f.levelName"
+                    item-text="orgName"
+                    item-value="id"
                 >
                   <template slot="selection" slot-scope="{ item }">
                     <div style="color: #9E9E9E;">
@@ -147,10 +159,14 @@
               <div v-if="item.startDate >= item.endDate" class="error-text mb-2">
                 End date must be null or after the start date
               </div>
-              <v-btn color="primary" class="white--text mr-2"
-                     :disabled="item.startDate >= item.endDate || validatePositionFields(item)"
-                     v-if="userCanEdit"
-                     @click="savePosition(item)">Save</v-btn>
+              <a-btn
+                  color="primary"
+                  class="mr-2"
+                  :disabled="item.startDate >= item.endDate || validatePositionFields(item)"
+                  v-if="userCanEdit"
+                  @click="savePosition(item)"
+                  text="Save"
+              ></a-btn>
             </td>
           </template>
 
@@ -167,13 +183,30 @@
                 <span v-else>{{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}</span>
               </td>
               <td width="150" class="d-flex">
-                <v-btn class="align-self-center" text color="primary"
-                       v-if="!expanded.includes(item) && userCanEdit"
-                       @click="[handleExpand(item, true), item.primary = item.primaryFlag]">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn class="align-self-center" text color="primary" v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
-                <v-btn v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'DELETE')" class="align-self-center" text color="primary" @click="positionToDelete = item"><v-icon>delete</v-icon></v-btn>
+                <a-btn
+                    class="align-self-center"
+                    variant="text"
+                    color="primary"
+                    v-if="!expanded.includes(item) && userCanEdit"
+                    @click="[handleExpand(item, true), item.primary = item.primaryFlag]"
+                    prepend-icon="edit"
+                ></a-btn>
+                <a-btn
+                    class="align-self-center"
+                    variant="text"
+                    color="primary"
+                    v-if="expanded.includes(item)"
+                    @click="handleExpand(item, false)"
+                    text="cancel"
+                ></a-btn>
+                <a-btn
+                    v-if="userStore.userHasFeatureAccessLevel('USERS', 'DELETE')"
+                    class="align-self-center"
+                    variant="text"
+                    color="primary"
+                    @click="positionToDelete = item"
+                    prepend-icon="delete"
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -187,239 +220,244 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
 
-  import keyBy from 'lodash.keyby'
-  import {getOrgFilters} from '@/services/orgService'
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from "@/helpers/constants";
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
+import keyBy from 'lodash.keyby'
+import {getOrgFilters} from '@/services/orgService'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, } from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import ConfirmationDialog from '@/components/ConfirmationDialog'
 
-  export default {
-    name: 'UserPositions',
-    components: {
-      ConfirmationDialog,
-      DatetimePickerInput
-    },
-    data() {
-      return {
-        snackbar: {},
-        newPosition: {},
-        userPositions: [],
-        requiredRules: constants.BASIC_REQUIRED_RULE,
-        positions: [],
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('USERS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
-        addNew: false,
-        newPositionHierarchyPopulated: false,
-        filters: [],
-        timezone: this.$store.state.user.details.timezone.value,
-        expanded: [],
-        userId: this.$route.params.id,
-        headers: [
-          { text: 'Start Date', value: 'startDate', show: true },
-          { text: 'End Date', value: 'endDate', show: true },
-          { text: 'Position', value: 'position', show: true },
-          { text: 'Primary', value: 'primaryFlag', show: true },
-        ],
-        positionToDelete: null
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const newPositionForm = ref(null)
+const newPosition = ref({})
+const userPositions = ref([])
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const positions = ref([])
+const addNew = ref(false)
+const newPositionHierarchyPopulated = ref(false)
+const filters = ref([])
+const expanded = ref([])
+const userId = ref(route.params.id)
+const headers = ref([
+  { text: 'Start Date', value: 'startDate', show: true },
+  { text: 'End Date', value: 'endDate', show: true },
+  { text: 'Position', value: 'position', show: true },
+  { text: 'Primary', value: 'primaryFlag', show: true },
+])
+const positionToDelete = ref(null)
+
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('USERS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('USERS', 'EDIT')
+})
+const timezone = computed(() => {
+  return userStore.timezone.value
+})
+const positionToDeleteName = computed(() => {
+  return positionToDelete.value ? positionToDelete.value.position : ''
+})
+const filteredUserPositions = computed(() => {
+  return userPositions.value.filter(wqc => { return !wqc.archived})
+})
+
+onMounted(() => {
+  getUserPositions()
+  getFilters()
+  getPositions()
+})
+
+const validate =  (item) => {
+  if (newPositionForm.value.validate()) {
+    savePosition(item)
+  }
+}
+const getOrgsMatchingPositionOrgType = (orgs, newPosition) => {
+  // get orgs that match the org type selected in the position (admin screen)
+  let selectedPosition = positions.value.find(p => p.id === newPosition.positionId)
+  return orgs.filter(o => o.orgTypeId === selectedPosition.orgTypeId)
+}
+const getPositions = async() => {
+  try {
+    const {data, status} = await getRequest(`/position`)
+    positions.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Positions')
+
+    appStore.loading = false
+  }
+}
+const populateHeaders =  () => {
+  filters.value.forEach(f => {
+    headers.value.push({
+      text: f.levelName,
+      value: f.levelName,
+      show: true,
+    })
+  })
+  headers.value.push({
+    text: null,
+    name: 'icons',
+    value: 'icons',
+    show: true,
+    sortable: false
+  })
+}
+const getFilters = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getOrgFilters()
+    filters.value = data || []
+    populateHeaders()
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Org Levels')
+
+    appStore.loading = false
+  }
+}
+const populateHierarchy = (item, isNew) => {
+  newPositionHierarchyPopulated.value = false
+  let selectedPosition = positions.value.find(p => p.id === item.positionId)
+  // level = selectedPosition.level
+  item.hierarchy = []
+  //push a hierarchy item in for the selected level
+  filters.value.forEach(f => {
+    if(f.level === selectedPosition.level) {
+      let obj = {
+        level: f.level,
+        orgLevelId: f.orgLevelId,
+        positionLevel: null,
+        orgName: null,
+        orgId: null,
+        parentOrgId: null
       }
-    },
-    computed: {
-      positionToDeleteName(){
-        return this.positionToDelete ? this.positionToDelete.position : ''
+      item.hierarchy.push(obj)
+    }
+  })
+  item.keyedHierarchy = keyBy(item.hierarchy, 'orgLevelId')
+  if(isNew) {
+    newPositionHierarchyPopulated.value = true
+  }
+}
+const getUserPositions = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/userPosition/${userId.value}`, null, [])
+    userPositions.value = data
+    userPositions.value.forEach((p) => {
+      p.keyedHierarchy = keyBy(p.hierarchy, 'orgLevelId')
+    })
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+    appStore.loading = false
+  }
+}
+const getOrgNameForFilter = (hierarchy, filterOrgLevelId) => {
+  const result = hierarchy?.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
+  return result?.orgName ?? 'N/A'
+}
+const getOrgIdForFilter = (hierarchy, filterOrgLevelId) => {
+  const result = hierarchy?.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
+  return result?.orgId ?? null
+}
+const handleExpand =  (item, expand) => {
+  if(expand) {
+    expanded.value = [item]
+  } else {
+    expanded.value = []
+  }
+}
+const savePosition = async (item) => {
+  appStore.loading = true
+  try {
+    addNew.value = false
+    let itemIndex = userPositions.value.indexOf(item)
+
+    let lowestHierarchy = item?.hierarchy?.reduce((prev, current) => {
+      return (prev.level > current.level) ? prev : current
+    })
+    let itemId = item.id
+    item.orgId = lowestHierarchy.orgId
+    let params = {
+      ...item,
+      primaryFlag: !itemId && userPositions.value.filter(up => !up.archived).length === 0 ? true : item.primaryFlag,
+      userId: userId.value
+    }
+
+    const {data, status} = await postRequest(`/userPosition`, params)
+    item = data
+    vueInstance.$set(item, 'hierarchy', data.hierarchy)
+    if (item && item.hierarchy) {
+      vueInstance.$set(item, 'keyedHierarchy', keyBy(item.hierarchy, 'orgLevelId'))
+      if (!itemId) {
+        userPositions.value.push(item)
+      } else {
+        vueInstance.$set(userPositions.value, itemIndex, item)
       }
-    },
-    created() {
-      this.getUserPositions()
-      this.getFilters()
-      this.getPositions()
-    },
-    methods: {
-      validate (item) {
-        if (this.$refs.newPositionForm.validate()) {
-          this.savePosition(item)
+    }
+    if (item.primaryFlag) {
+      //clear out any other primary flags in the ui - the db should have already done it
+      userPositions.value.forEach(up => {
+        if (up.primaryFlag && up.id !== item.id) {
+          up.primaryFlag = false
         }
-      },
-      getOrgsMatchingPositionOrgType(orgs, newPosition) {
-        // get orgs that match the org type selected in the position (admin screen)
-        let selectedPosition = this.positions.find(p => p.id === newPosition.positionId)
-        return orgs.filter(o => o.orgTypeId === selectedPosition.orgTypeId)
-      },
-      async getPositions() {
-        try {
-          const {data, status} = await getRequest(`/position`)
-          this.positions = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      populateHeaders () {
-        this.filters.forEach(f => {
-          this.headers.push({
-            text: f.levelName,
-            value: f.levelName,
-            show: true,
-          })
-        })
-        this.headers.push({
-          text: null,
-          name: 'icons',
-          value: 'icons',
-          show: true,
-          sortable: false
-        })
-      },
-      async getFilters () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getOrgFilters()
-          this.filters = data || []
-          this.populateHeaders()
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Levels')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      populateHierarchy(item, isNew) {
-        this.newPositionHierarchyPopulated = false
-        let selectedPosition = this.positions.find(p => p.id === item.positionId)
-        // level = selectedPosition.level
-        item.hierarchy = []
-        //push a hierarchy item in for the selected level
-        this.filters.forEach(f => {
-          if(f.level === selectedPosition.level) {
-            let obj = {
-              level: f.level,
-              orgLevelId: f.orgLevelId,
-              positionLevel: null,
-              orgName: null,
-              orgId: null,
-              parentOrgId: null
-            }
-            item.hierarchy.push(obj)
-          }
-        })
-        item.keyedHierarchy = keyBy(item.hierarchy, 'orgLevelId')
-        if(isNew) {
-          this.newPositionHierarchyPopulated = true
-        }
-      },
-      async getUserPositions () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/userPosition/${this.userId}`, null, [])
-          this.userPositions = data
-          this.userPositions.forEach((p) => {
-            p.keyedHierarchy = keyBy(p.hierarchy, 'orgLevelId')
-          })
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      getOrgNameForFilter(hierarchy, filterOrgLevelId) {
-        const result = hierarchy?.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
-        return result?.orgName ?? 'N/A'
-      },
-      getOrgIdForFilter(hierarchy, filterOrgLevelId) {
-        const result = hierarchy?.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
-        return result?.orgId ?? null
-      },
-      handleExpand (item, expand) {
-        if(expand) {
-          this.expanded = [item]
-        } else {
-          this.expanded = []
-        }
-      },
-      async savePosition (item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addNew = false
-          let itemIndex = this.userPositions.indexOf(item)
+      })
+    }
+    newPosition.value = {}
+    addNew.value = false
+    expanded.value = []
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Position')
 
-          let lowestHierarchy = item?.hierarchy?.reduce((prev, current) => {
-            return (prev.level > current.level) ? prev : current
-          })
-          let itemId = item.id
-          item.orgId = lowestHierarchy.orgId
-          let params = {
-            ...item,
-            primaryFlag: !itemId && this.userPositions.filter(up => !up.archived).length === 0 ? true : item.primaryFlag,
-            userId: this.userId
-          }
+    appStore.loading = false
+  }
+}
+const isSameLevelAsPosition = (f, item) => {
+  // get hierarchy level to show on screen
+  let selectedPosition = positions.value.find(p => p.id === item.positionId)
+  return selectedPosition && f.level === selectedPosition.level
 
-          const {data, status} = await postRequest(`/userPosition`, params)
-          item = data
-          this.$set(item, 'hierarchy', data.hierarchy)
-          if (item && item.hierarchy) {
-            this.$set(item, 'keyedHierarchy', keyBy(item.hierarchy, 'orgLevelId'))
-            if (!itemId) {
-              this.userPositions.push(item)
-            } else {
-              this.$set(this.userPositions, itemIndex, item)
-            }
-          }
-          if (item.primaryFlag) {
-            //clear out any other primary flags in the ui - the db should have already done it
-            this.userPositions.forEach(up => {
-              if (up.primaryFlag && up.id !== item.id) {
-                up.primaryFlag = false
-              }
-            })
-          }
-          this.newPosition = {}
-          this.addNew = false
-          this.expanded = []
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Position')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      isSameLevelAsPosition(f, item) {
-        // get hierarchy level to show on screen
-        let selectedPosition = this.positions.find(p => p.id === item.positionId)
-        return selectedPosition && f.level === selectedPosition.level
-
-      },
-      validatePositionFields(item) {
-        let lowestHierarchy = item.hierarchy.reduce((prev, current) => {
-          return (prev.level > current.level) ? prev : current
-        })
-        return lowestHierarchy.orgId == null
-      },
-      filterUserPositions () {
-        return this.userPositions.filter(wqc => { return !wqc.archived})
-      },
-      async deleteUserPosition() {
-        const item = this.positionToDelete
-        try {
-          await deleteRequest(`/userPosition/${item.id}`)
-          item.archived = true
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error deleting user position')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-        this.positionToDelete = null
-      }
-    },
+}
+const validatePositionFields = (item) => {
+  let lowestHierarchy = item.hierarchy.reduce((prev, current) => {
+    return (prev.level > current.level) ? prev : current
+  })
+  return lowestHierarchy.orgId == null
+}
+const deleteUserPosition = async() => {
+  const item = positionToDelete.value
+  try {
+    await deleteRequest(`/userPosition/${item.id}`)
+    item.archived = true
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error deleting user position')
 
   }
+  positionToDelete.value = null
+}
 </script>

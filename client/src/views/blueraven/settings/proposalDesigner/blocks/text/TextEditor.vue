@@ -2,19 +2,18 @@
   <editor-content :editor="editor"/>
 </template>
 
-<script>
+<script setup>
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {EditorContent} from '@tiptap/vue-2'
 
-export default {
-  name: 'TextEditor',
-  props: {
-    editor: {
-      type: Object,
-      required: true
-    }
-  },
-  components: {EditorContent}
-}
+const props = defineProps({
+  editor: {
+    type: Object,
+    required: true
+  }
+})
+const { editor } = toRefs(props)
+
 </script>
 
 <style lang="scss">

@@ -4,90 +4,115 @@
       <v-card-title class="title-large-medium">
         Add Contact
         <v-spacer></v-spacer>
-        <v-btn v-if="!constants.IS_MOBILE" text color="primary" class="mr-3 body-medium" to="/contacts">Cancel</v-btn>
-        <v-btn v-if="!constants.IS_MOBILE" color="primary white--text" :disabled="loadingInsertFields" @click="validate(true)" class="body-medium">Save</v-btn>
+        <a-btn
+            v-if="!constants.IS_MOBILE"
+            variant="text"
+            color="primary"
+            class="mr-3 body-medium"
+            to="/contacts"
+            text="Cancel"
+        ></a-btn>
+        <a-btn
+            v-if="!constants.IS_MOBILE"
+            color="primary "
+            :disabled="loadingInsertFields"
+            @click="validate(true)"
+            class="body-medium"
+            text="Save"
+        ></a-btn>
       </v-card-title>
       <v-card-text  v-if="constants.IS_MOBILE">
-        <v-btn text class="mr-3 body-medium" color="primary" to="/contacts">Cancel</v-btn>
-        <v-btn color="primary white--text" :disabled="loadingInsertFields"
-               @click="validate(true)" id="qa-add-contact-save" class="body-medium">Save</v-btn>
+        <a-btn
+            variant="text"
+            class="mr-3 body-medium"
+            color="primary"
+            to="/contacts"
+            text="Cancel"
+        ></a-btn>
+        <a-btn
+            color="primary "
+            :disabled="loadingInsertFields"
+            @click="validate(true)"
+            id="qa-add-contact-save"
+            class="body-medium"
+            text="Save"
+        ></a-btn>
       </v-card-text>
       <v-form ref="contactForm">
         <v-container>
           <v-row>
             <v-col cols="12" sm="6">
-              <v-text-field text
+              <a-text-field
                             class="body-large"
                             label="First Name"
                             id="qa-first-name-field"
                             :rules="nameRequiredRules"
-                            v-model="contact.firstName"></v-text-field>
-              <v-text-field text
+                            v-model="contact.firstName"></a-text-field>
+              <a-text-field
                             class="body-large"
                             label="Last Name"
                             id="qa-last-name-field"
                             :rules="nameRequiredRules"
-                            v-model="contact.lastName"></v-text-field>
-              <v-text-field text
+                            v-model="contact.lastName"></a-text-field>
+              <a-text-field
                             class="body-large"
                             label="Address"
                             id="qa-address-field"
-                            maxlength="35"
+                            :maxlength="35"
                             counter
                             :rules="addressRules"
-                            v-model="contact.street1"></v-text-field>
-              <v-text-field text
+                            v-model="contact.street1"></a-text-field>
+              <a-text-field
                             class="body-large"
                             label="City"
                             id="qa-city-field"
                             :rules="cityRules"
-                            v-model="contact.city"></v-text-field>
-              <v-select attach v-model="contact.companyStateId"
+                            v-model="contact.city"></a-text-field>
+              <a-select attach v-model="contact.companyStateId"
                         class="body-large"
                         :items="states"
                         label="State"
                         id="qa-state-field"
-                        item-text="state"
+                        item-title="state"
                         item-value="id"
-              ></v-select>
+              ></a-select>
             </v-col>
             <v-col cols="12" sm="6">
-              <v-text-field text
+              <a-text-field
                             class="body-large"
                             label="Phone"
                             :rules="contactPhoneRule"
                             id="qa-phone-field"
-                            v-model="contact.phone"></v-text-field>
-              <v-text-field text
+                            v-model="contact.phone"></a-text-field>
+              <a-text-field
                             class="body-large"
                             label="Mobile"
                             :rules="contactPhoneRule"
                             id="qa-mobile-field"
-                            v-model="contact.mobile"></v-text-field>
-              <v-text-field text
+                            v-model="contact.mobile"></a-text-field>
+              <a-text-field
                             class="body-large"
                             label="E-Mail"
                             id="qa-email-field"
                             :rules="emailRules"
-                            v-model="contact.email"></v-text-field>
-              <v-text-field text
+                            v-model="contact.email"></a-text-field>
+              <a-text-field
                             class="body-large"
                             label="Zip Code"
                             id="qa-zip-field"
                             counter
-                            maxlength="10"
-                            @keypress="isNumberOrHyphen"
+                            :maxlength="10"
+                            @keydown="isNumberOrHyphen"
                             :rules="postalCodeRules"
-                            v-model="contact.postalCode"></v-text-field>
-              <v-select attach v-model="contact.companyCountryId"
+                            v-model="contact.postalCode"></a-text-field>
+              <a-select attach v-model="contact.companyCountryId"
                         class="body-large"
                         :items="countries"
                         label="Country"
-                        style="color: red"
                         id="qa-country-field"
-                        item-text="country"
+                        item-title="country"
                         item-value="id"
-              ></v-select>
+              ></a-select>
             </v-col>
           </v-row>
         </v-container>
@@ -108,10 +133,10 @@
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
 import SpinnerInline from '@/components/SpinnerInline'
-import { handleHidingGlobalLoader, getRequestWithParams, isNumberOrHyphen, postRequest, getSnackbar} from '@/helpers/helpers'
+import { handleHidingGlobalLoader, getRequestWithParams, isNumberOrHyphen, postRequest, } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
 import {saveContact} from '@/services/contactService'
@@ -119,164 +144,157 @@ import {getCompanyStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
-const { VITE_ENV } =  import.meta.env
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: 'NewContact',
-  components: {
-    SpinnerInline,
-    CustomValueInput
-  },
-  data () {
-    return {
-      snackbar: {},
-      constants,
-      contact: {},
-      isNumberOrHyphen,
-      states: [],
-      postalCodeRules: constants.POSTAL_CODE_REQUIRED_RULES,
-      cityRules: constants.CITY_RULES,
-      addressRules: constants.ADDRESS_RULES,
-      // phoneRules: constants.PHONE_REQUIRED_RULES,
-      nameRules: constants.NAME_RULES,
-      nameRequiredRules: constants.NAME_REQUIRED_RULES,
-      contactPhoneRule: [
-        () => ((this.contact.phone != null && this.contact.phone !== '') || (this.contact.mobile != null && this.contact.mobile !== '')) || "Phone or Mobile is required",
-        v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',
-        v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number",
-        v => ((!v || (this.contact.phone !== this.contact.mobile))) || 'Phone and Mobile Cannot be the same',
-      ],
-      loadingInsertFields: true,
-      countries: [],
-      dirtyCfvs: [],
-      customFieldGroups: [],
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-      emailRules: constants.EMAIL_RULES,
-      companyId: this.$route.query.cid || this.$store.state.user.details.companyId,
-    }
-  },
-  watch: {
-    contact: {
-      // This will let Vue know to look inside the array
-      deep: true,
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-      // We have to move our method to a handler field
-      handler() {
-        this.validate(false)
-      }
-    }
-  },
-  created () {
-    //todo: use only for testing
-    if(VITE_ENV === 'local') {
-      // this.setFakeContact()
-    }
-    this.getCompanyStates()
-    this.getCountries()
-    this.getCustomFieldGroups()
-  },
-  methods: {
-    validate (saveContact) {
+const contact = ref({})
+const states = ref([])
+const postalCodeRules = ref(constants.POSTAL_CODE_REQUIRED_RULES)
+const cityRules = ref(constants.CITY_RULES)
+const addressRules = ref(constants.ADDRESS_RULES)
+const nameRules = ref(constants.NAME_RULES)
+const nameRequiredRules = ref(constants.NAME_REQUIRED_RULES)
+const contactPhoneRule = ref([() => ((contact.value.phone != null && contact.value.phone !== '') || (contact.value.mobile != null && contact.value.mobile !== '')) || "Phone or Mobile is required",v => (!v || (v && (v.length <= 20))) || 'Must be 20 characters or less',v => (!v || (/^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/.test(v))) || "Please reformat the Phone field with a valid phone number",v => ((!v || (contact.value.phone !== contact.value.mobile))) || 'Phone and Mobile Cannot be the same',])
+const loadingInsertFields = ref(true)
+const countries = ref([])
+const dirtyCfvs = ref([])
+const customFieldGroups = ref([])
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const emailRules = ref(constants.EMAIL_RULES)
+const contactForm = ref(null)
 
-      let valid = this.$refs.contactForm.validate()
-      if (valid && saveContact) {
-        this.saveContact()
-      }
-    },
-    async getCustomFieldGroups () {
-      this.loadingInsertFields = true
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequestWithParams(`/customFieldGroup/getContactInsertFields`, {
-          params: {
-            companyId: this.companyId
-          }
-        })
-        this.customFieldGroups = data
-        this.loadingInsertFields = false
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.loadingInsertFields = false
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCompanyStates () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getCompanyStates(parseInt(this.companyId))
-        this.states = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCountries () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getCountries(parseInt(this.companyId))
-        this.countries = data
-        if(this.countries?.length === 1) {
-          this.contact.companyCountryId = this.countries[0].id
-        }
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveContact () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.contact.customFieldGroups = this.customFieldGroups
-      try {
-        this.contact.companyId = this.companyId
-        let body = {
-          contact: this.contact,
-          cfvs: this.dirtyCfvs?.length > 0 ? this.dirtyCfvs : []
-        }
-        const {data, status} = await saveContact(this.contact.id, body)
-        // postRequest(`/contact/custom`, body)
+const { VITE_ENV } = import.meta.env
 
-        this.$router.push({path: `/contact/${data?.contact?.id}`})
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Contact')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
+watch(
+    () => contact,
+    (newValue, oldValue) => {
+      validate(false);
     },
-    populateDirtyCfvs(field) {
-      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-      if(!match) {
-        this.dirtyCfvs.push(field)
-      }
-    },
-    getReadOnly: function (field) {
-      return getCustomFieldReadOnly(this.$store, field)
-    },
-    setFakeContact () {
-      this.contact = {
-        firstName: 'Randa',
-        lastName: 'Test',
-        phone: '1111111111',
-        mobile: '1111111111',
-        street1: '1234 Oak St.',
-        city: 'Salt Lake City',
-        companyStateId: 2,
-        companyCountryId: 1,
-        postalCode: '84115',
-        email: 'randa@randa.com'
-      }
-    }
+    { deep: true }
+)
+onMounted(() => {
+  //todo: use only for testing
+  if(VITE_ENV === 'local') {
+    // setFakeContact()
   }
+  getAllCompanyStates()
+  getAllCountries()
+  getCustomFieldGroups()
+})
 
+const companyId  = computed(() => {
+  return route.query.cid || userStore.details.companyId
+})
+
+const validate =  (saveContact) => {
+
+  let valid = contactForm.value.validate()
+  if (valid && saveContact) {
+    saveNewContact()
+  }
 }
+const getCustomFieldGroups = async () => {
+  loadingInsertFields.value = true
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequestWithParams(`/customFieldGroup/getContactInsertFields`, {
+      params: {
+        companyId: companyId.value
+      }
+    })
+    customFieldGroups.value = data
+    loadingInsertFields.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    loadingInsertFields.value = false
+    snackbar('ERROR', 'Error Retrieving Custom Fields')
+
+    appStore.loading = false
+  }
+}
+const getAllCompanyStates = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getCompanyStates(parseInt(companyId.value))
+    states.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving States')
+
+    appStore.loading = false
+  }
+}
+const getAllCountries = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getCountries(parseInt(companyId.value))
+    countries.value = data
+    if(countries.value?.length === 1) {
+      contact.value.companyCountryId = countries.value[0].id
+    }
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Countries')
+
+    appStore.loading = false
+  }
+}
+const saveNewContact = async () => {
+  appStore.loading = true
+  contact.value.customFieldGroups = customFieldGroups.value
+  try {
+    contact.value.companyId = companyId.value
+    let body = {
+      contact: contact.value,
+      cfvs: dirtyCfvs.value?.length > 0 ? dirtyCfvs.value : []
+    }
+    const {data, status} = await saveContact(contact.value.id, body)
+    // postRequest(`/contact/custom`, body)
+
+    router.push({path: `/contact/${data?.contact?.id}`})
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Contact')
+
+    appStore.loading = false
+  }
+}
+const populateDirtyCfvs = (field) => {
+  let match = dirtyCfvs.value.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+  if(!match) {
+    dirtyCfvs.value.push(field)
+  }
+}
+const getReadOnly = (field) => {
+  return getCustomFieldReadOnly(field)
+}
+const setFakeContact =  () => {
+  contact.value = {
+    firstName: 'Randa',
+    lastName: 'Test',
+    phone: '1111111111',
+    mobile: '1111111111',
+    street1: '1234 Oak St.',
+    city: 'Salt Lake City',
+    companyStateId: 2,
+    companyCountryId: 1,
+    postalCode: '84115',
+    email: 'randa@randa.com'
+  }
+}
+
 </script>

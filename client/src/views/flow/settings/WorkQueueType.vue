@@ -2,10 +2,14 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-btn text color="primary" class="pl-1 pr-2" :to="'/settings/workQueue/types'">
-          <v-icon>arrow_left</v-icon>
-          <span>Back</span>
-        </v-btn>
+        <a-btn
+          variant="text"
+          color="primary"
+          class="pl-1 pr-2"
+          :to="'/settings/workQueue/types'"
+          prepend-icon="arrow-left"
+          text="BACK"/>
+
 
         <v-toolbar flat class="wqt-header-bar">
           <v-toolbar-title class="app-title">
@@ -17,15 +21,9 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
-              <v-btn text color="primary" v-if="!editType" class="" @click="[editType = !editType]">
-                <v-icon>edit</v-icon>
-              </v-btn>
-              <v-btn text color="primary" class="" v-else @click="saveType()">
-                <v-icon>save</v-icon>
-              </v-btn>
-              <v-btn text color="primary" v-if="editType" class="" @click="[editType = !editType]">
-                cancel
-              </v-btn>
+              <a-btn variant="text" color="primary" v-if="!editType" class="" @click="[editType = !editType]" prepend-icon="edit"/>
+              <a-btn variant="text" color="primary" class="" v-else @click="saveType()" prepend-icon="save"/>
+              <a-btn variant="text" color="primary" v-if="editType" class="" @click="[editType = !editType]" text="CANCEL"/>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -33,9 +31,9 @@
           <v-form ref="wqtForm" class="one-hunned">
             <div class="one-hunned">
               <div v-if="editType">
-                <v-text-field class="one-hunned"
+                <a-text-field class="one-hunned"
                               label="Work Queue Type"
-                              v-model="workQueueType.workQueueType"></v-text-field>
+                              v-model="workQueueType.workQueueType"></a-text-field>
                 <v-autocomplete
                   v-model="workQueueType.workQueueCategoryId"
                   :items="workQueueCategories"
@@ -52,10 +50,10 @@
               <table class="one-hunned" v-if="workQueueType && workQueueType.id">
                 <tr>
                   <td class="wqt-row pr-2">
-                    <v-text-field text
+                    <a-text-field
                                   label="Short Window"
                                   :disabled="!editType"
-                                  v-model.number="workQueueType.shortWindow"></v-text-field>
+                                  v-model.number="workQueueType.shortWindow"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <v-autocomplete
@@ -71,10 +69,10 @@
                 </tr>
                 <tr>
                   <td class="wqt-row pr-2">
-                    <v-text-field text
+                    <a-text-field
                                   label="Long Window"
                                   :disabled="!editType"
-                                  v-model.number="workQueueType.longWindow"></v-text-field>
+                                  v-model.number="workQueueType.longWindow"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <v-autocomplete
@@ -90,10 +88,10 @@
                 </tr>
                 <tr>
                   <td class="wqt-row pr-2">
-                    <v-text-field text
+                    <a-text-field
                                   label="Expected Cycle"
                                   :disabled="!editType"
-                                  v-model.number="workQueueType.expectedCycle"></v-text-field>
+                                  v-model.number="workQueueType.expectedCycle"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <v-autocomplete
@@ -110,11 +108,11 @@
                 </tr>
                 <tr>
                   <td class="wqt-row pr-2">
-                    <v-text-field text
+                    <a-text-field
                                   label="Expected Target % (between 0 and 1)"
                                   :disabled="!editType"
                                   :rules="expectedTargetRule"
-                                  v-model.number="workQueueType.expectedTarget"></v-text-field>
+                                  v-model.number="workQueueType.expectedTarget"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
                     <label>Inverse Expectation: </label>
@@ -168,12 +166,8 @@
           @allow-changed="workQueueTypeHiddenAllowEventListener"
           @checkbox-changed="workQueueTypeHiddenCheckboxEventListener"></multi-select-group>
             <br/>
-            <v-btn v-if="this.userCanEdit" color="primary" dark class="d-inline-block white--text"
-                   @click="saveHiddenAndWhiteList()">
-              <v-icon class="mr-2">save</v-icon>
-              Save
-            </v-btn>
-
+            <a-btn v-if="userCanEdit" color="primary" dark class="d-inline-block white--text"
+                   @click="saveHiddenAndWhiteList()" prepend-icon="save" text="SAVE"/>
       </v-col>
     </v-row>
     <v-row v-if="workQueueType && workQueueType.id && !workQueueType.useEventData">
@@ -183,15 +177,12 @@
           <v-spacer/>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
-              <v-btn text color="primary" v-if="!editSchedule" class="" @click="[editSchedule = !editSchedule, savePrevSchedule()]">
-                <v-icon>edit</v-icon>
-              </v-btn>
-              <v-btn text color="primary" class="" v-else @click="saveType()">
-                <v-icon>save</v-icon>
-              </v-btn>
-              <v-btn text color="primary" v-if="editSchedule" class="" @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]">
-                cancel
-              </v-btn>
+              <a-btn variant="text" color="primary" v-if="!editSchedule" class=""
+                               @click="[editSchedule = !editSchedule, savePrevSchedule()]" prepend-icon="edit"/>
+              <a-btn variant="text" color="primary" class="" v-else
+                               @click="saveType()" prepend-icon="save"/>
+              <a-btn variant="text" color="primary" v-if="editSchedule" class=""
+                               @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]" text="CANCEL"/>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -208,7 +199,7 @@
 
                   <ZonelessTimePickerInput
                     v-model="item.startTime"
-                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId == 1 || !item.selected"
+                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId === 1 || !item.selected"
                     :allowed-minutes="allowedMinutesStep"
                     :hide-details="true"
                     @click="item.invalid = false"
@@ -216,7 +207,7 @@
                   />
                   <ZonelessTimePickerInput
                     v-model="item.endTime"
-                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId == 1 || !item.selected"
+                    :readonly="!editSchedule || workQueueType.expectedCycleDurationTypeId === 1 || !item.selected"
                     :allowed-minutes="allowedMinutesStep"
                     :hide-details="true"
                     @click="item.invalid = false"
@@ -238,15 +229,27 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
-              <v-btn v-if="!editDefaultFields" text color="primary" @click="editDefaultFields = !editDefaultFields">
-                <v-icon>edit</v-icon>
-              </v-btn>
-              <v-btn v-else text color="primary" class="" @click="saveType()">
-                <v-icon>save</v-icon>
-              </v-btn>
-              <v-btn text color="primary" v-if="editDefaultFields" @click="editDefaultFields = false">
-                cancel
-              </v-btn>
+              <a-btn
+                  v-if="!editDefaultFields"
+                  variant="text"
+                  color="primary"
+                  @click="editDefaultFields = !editDefaultFields"
+                  prepend-icon="edit"
+              ></a-btn>
+              <a-btn
+                  v-else
+                  variant="text"
+                  color="primary"
+                  @click="saveType()"
+                  prepend-icon="save"
+              ></a-btn>
+              <a-btn
+                  variant="text"
+                  color="primary"
+                  v-if="editDefaultFields"
+                  @click="editDefaultFields = false"
+                  text="cancel"
+              ></a-btn>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -274,17 +277,14 @@
 
     <v-row>
       <SmartlistColumn
-        v-if="this.workQueueType.smartlistId"
-        :can-edit="this.userIsAdmin"
-        :smartlist-id="this.workQueueType.smartlistId"
+        v-if="workQueueType.smartlistId"
+        :can-edit="userIsAdmin"
+        :smartlist-id="workQueueType.smartlistId"
         :company-object-types="filteredCompanyObjectTypes"
       />
 
-      <v-btn color="primary" class="white--text build-sql" @click="buildSql"
-             v-if="is7oaksAdmin || userId === 2350555">
-        <div>BUILD SQL</div>
-        <div>(only 7oaks and Judson)</div>
-      </v-btn>
+      <a-btn color="primary" class="white--text build-sql" @click="buildSql"
+             v-if="is7oaksAdmin || userId === 2350555" text="BUILD SQL (only 7oaks)"/>
       <div>
         {{ sql }}
       </div>
@@ -294,10 +294,9 @@
 </template>
 
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
 import orderBy from 'lodash.orderby'
-import Vue2Filters from 'vue2-filters'
 import {getWorkQueueCategories} from '@/services/workQueueService'
 import {
   handleHidingGlobalLoader,
@@ -314,329 +313,338 @@ import ZonelessTimePickerInput from './availability/ZonelessTimePickerInput'
 import SmartlistColumn from '@/views/flow/smartlistv1/SmartlistColumn'
 import cloneDeep from 'lodash.clonedeep'
 
-export default {
-  name: 'WorkQueueType',
-  mixins: [Vue2Filters.mixin],
-  components: {
-    draggable,
-    ZonelessTimePickerInput,
-    SmartlistColumn
-  },
-  data() {
-    return {
-      snackbar: {},
-      editType: false,
-      editSchedule: false,
-      constants,
-      workQueueCategories: [],
-      companyObjectTypes: [],
-      durationTypes: [],
-      expectedTargetRule: getMinMaxRule(0, 1),
-      workQueueTypeId: this.$route.params.id,
-      workQueueType: {},
-      workQueueLoading: false,
-      positions: [],
-      itemsUsingType: [],
-      positionsLoading: false,
-      hiddenPositionsChanged: false,
-      sql: '',
-      is7oaksAdmin: this.$store.getters.isFullAdmin,
-      userId: this.$store.state.user.details.id,
-      companyId: this.$store.state.user.details.companyId,
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN'),
-      allowedMinutesStep: m => m % 60 === 0,
-      noScheduleDefault: [
-        {day: 'Sunday', startTime: null, endTime: null, selected: false},
-        {day: 'Monday', startTime: null, endTime: null, selected: false},
-        {day: 'Tuesday', startTime: null, endTime: null, selected: false},
-        {day: 'Wednesday', startTime: null, endTime: null, selected: false},
-        {day: 'Thursday', startTime: null, endTime: null, selected: false},
-        {day: 'Friday', startTime: null, endTime: null, selected: false},
-        {day: 'Saturday', startTime: null, endTime: null, selected: false}
-      ],
-      daysDefaultSchedule: [
-        {day: 'Sunday', startTime: null, endTime: null, selected: false},
-        {day: 'Monday', startTime: null, endTime: null, selected: true},
-        {day: 'Tuesday', startTime: null, endTime: null, selected: true},
-        {day: 'Wednesday', startTime: null, endTime: null, selected: true},
-        {day: 'Thursday', startTime: null, endTime: null, selected: true},
-        {day: 'Friday', startTime: null, endTime: null, selected: true},
-        {day: 'Saturday', startTime: null, endTime: null, selected: true}
-      ],
-      hoursDefaultSchedule: [
-        {day: 'Sunday', startTime: null, endTime: null, selected: false},
-        {day: 'Monday', startTime: '07:00', endTime: '22:00', selected: true},
-        {day: 'Tuesday', startTime: '07:00', endTime: '22:00', selected: true},
-        {day: 'Wednesday', startTime: '07:00', endTime: '22:00', selected: true},
-        {day: 'Thursday', startTime: '07:00', endTime: '22:00', selected: true},
-        {day: 'Friday', startTime: '07:00', endTime: '22:00', selected: true},
-        {day: 'Saturday', startTime: '07:00', endTime: '22:00', selected: true}
-      ],
-      prevSchedule: [],
-      cardColorToggle: true,
-      defaultFields: [],
-      defaultCheckboxHeaders: [{text: "Field Name", value: "value", show: true}, {text: "Show", value: "show", show: true}],
-      editDefaultFields: false,
+import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const store = vueInstance.$store
+const userStore = useUserStore()
+const route = useRoute()
+
+const editType = ref(false)
+const editSchedule = ref(false)
+const workQueueCategories = ref([])
+const companyObjectTypes = ref([])
+const durationTypes = ref([])
+const expectedTargetRule = ref(getMinMaxRule(0, 1))
+const workQueueType = ref({})
+const workQueueLoading = ref(false)
+const positions = ref([])
+const itemsUsingType = ref([])
+const positionsLoading = ref(false)
+const hiddenPositionsChanged = ref(false)
+const sql = ref('')
+const defaultFields = ref([])
+const defaultCheckboxHeaders = ref([{text: "Field Name", value: "value", show: true}, {text: "Show", value: "show", show: true}])
+const editDefaultFields = ref(false)
+const allowedMinutesStep = ref(m => m % 60 === 0)
+const noScheduleDefault = ref([
+  {day: 'Sunday', startTime: null, endTime: null, selected: false},
+  {day: 'Monday', startTime: null, endTime: null, selected: false},
+  {day: 'Tuesday', startTime: null, endTime: null, selected: false},
+  {day: 'Wednesday', startTime: null, endTime: null, selected: false},
+  {day: 'Thursday', startTime: null, endTime: null, selected: false},
+  {day: 'Friday', startTime: null, endTime: null, selected: false},
+  {day: 'Saturday', startTime: null, endTime: null, selected: false}
+])
+const daysDefaultSchedule = ref([
+  {day: 'Sunday', startTime: null, endTime: null, selected: false},
+  {day: 'Monday', startTime: null, endTime: null, selected: true},
+  {day: 'Tuesday', startTime: null, endTime: null, selected: true},
+  {day: 'Wednesday', startTime: null, endTime: null, selected: true},
+  {day: 'Thursday', startTime: null, endTime: null, selected: true},
+  {day: 'Friday', startTime: null, endTime: null, selected: true},
+  {day: 'Saturday', startTime: null, endTime: null, selected: true}
+])
+const hoursDefaultSchedule = ref([
+  {day: 'Sunday', startTime: null, endTime: null, selected: false},
+  {day: 'Monday', startTime: '07:00', endTime: '22:00', selected: true},
+  {day: 'Tuesday', startTime: '07:00', endTime: '22:00', selected: true},
+  {day: 'Wednesday', startTime: '07:00', endTime: '22:00', selected: true},
+  {day: 'Thursday', startTime: '07:00', endTime: '22:00', selected: true},
+  {day: 'Friday', startTime: '07:00', endTime: '22:00', selected: true},
+  {day: 'Saturday', startTime: '07:00', endTime: '22:00', selected: true}
+])
+const prevSchedule = ref([])
+const cardColorToggle = ref(true)
+const filteredCompanyObjectTypes = computed(() =>{
+  let objectTypeIds = []
+  if (workQueueType.value.useEventData) {
+    objectTypeIds = [1, 2, 4, 6]
+  } else {
+    objectTypeIds = [1, 2, 4]
+  }
+  return companyObjectTypes.value.filter(t => objectTypeIds.includes(t.objectTypeId))
+})
+
+const workQueueTypeId = computed(() => {
+  return route.params.id
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'EDIT')
+})
+const userCanDelete = computed(() => {
+  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'DELETE')
+})
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'Admin')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
+const is7oaksAdmin = computed(() => {
+  return userStore.isSystemAdmin
+})
+
+onMounted( async () => {
+  appStore.loading = true
+  let requests = [
+    getAllWorkQueueCategories(),
+    getCompanyObjectTypes(),
+    getDurationTypes(),
+    getPositions(),
+    getPsAndEventsUsingWqt(),
+    getWorkQueueType()
+  ]
+  await Promise.all(requests).then(async () => {
+    appStore.loading = false;
+  })
+})
+
+const selectAllHidden = () => {
+  return workQueueType.value.hiddenWhiteListedPositions?.length === positions.value?.length
+}
+const selectSomeHidden = (f) => {
+  return workQueueType.value.hiddenWhiteListedPositions?.length > 0 && !selectAllHidden(f)
+}
+const iconOwner = () => {
+  if (selectAllHidden()) {
+    return 'check_box'
+  }
+  if (selectSomeHidden()) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+}
+const toggleSelectAllPositions = () => {
+  vueInstance.$nextTick(() => {
+    if (selectAllHidden()) {
+      workQueueType.value.hiddenWhiteListedPositions = []
+      hiddenPositionsChanged.value = true
+    } else {
+      workQueueType.value.hiddenWhiteListedPositions = cloneDeep(positions.value)
+      hiddenPositionsChanged.value = true
     }
-  },
-  computed: {
-    filteredCompanyObjectTypes() {
-      let objectTypeIds = []
-      if (this.workQueueType.useEventData) {
-        objectTypeIds = [1,2,4,6]
-      } else {
-        objectTypeIds = [1,2,4]
-      }
-      return this.companyObjectTypes.filter(t => objectTypeIds.includes(t.objectTypeId))
+  })
+}
+const getPositions = async () => {
+  if(positions.value?.length === 0) {
+    try {
+      positionsLoading.value = true
+      const {data, status} = await getRequest(`/position/withParent`)
+      positions.value = data
+      positionsLoading.value = false
+    } catch (e) {
+      positionsLoading.value = false
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Positions')
+
+      appStore.loading = false
     }
-  },
-  async created() {
-    this.$store.commit(AppMutations.SET_LOADING, true)
-    let requests = [
-      this.getWorkQueueCategories(),
-      this.getCompanyObjectTypes(),
-      this.getDurationTypes(),
-      this.getPositions(),
-      this.getPsAndEventsUsingWqt(),
-      this.getWorkQueueType(),
-    ]
-    await Promise.all(requests).then(async () => {
-      this.$store.commit(AppMutations.SET_LOADING, false);
-    })
-  },
-  methods: {
-    selectAllHidden () {
-      return this.workQueueType.hiddenWhiteListedPositions?.length === this.positions?.length
-    },
-    selectSomeHidden (f) {
-      return this.workQueueType.hiddenWhiteListedPositions?.length > 0 && !this.selectAllHidden(f)
-    },
-    iconOwner () {
-      if (this.selectAllHidden()) {
-        return 'check_box'
-      }
-      if (this.selectSomeHidden()) {
-        return 'indeterminate_check_box'
-      }
-      return 'check_box_outline_blank'
-    },
-    toggleSelectAllPositions () {
-      this.$nextTick(() => {
-        if (this.selectAllHidden()) {
-          this.workQueueType.hiddenWhiteListedPositions = []
-          this.hiddenPositionsChanged = true
-        } else {
-          this.workQueueType.hiddenWhiteListedPositions = cloneDeep(this.positions)
-          this.hiddenPositionsChanged = true
-        }
-      })
-    },
-    async getPositions() {
-      if(this.positions?.length === 0) {
-        try {
-          this.positionsLoading = true
-          const {data, status} = await getRequest(`/position/withParent`)
-          this.positions = data
-          this.positionsLoading = false
-        } catch (e) {
-          this.positionsLoading = false
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    async saveHiddenAndWhiteList () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await putRequest(`/workQueueType/saveHiddenAndWhiteList?savePositions=${this.workQueueType.hiddenWhiteListedPositionsChanged ?? false}`, this.workQueueType)
-        this.hiddenPositionsChanged = false
-        if(!this.workQueueType.hidden) {
-          this.workQueueType.hiddenWhiteListedPositions = []
-        }
-        this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async buildSql() {
-      try {
-        const {data} = await getRequestWithParams(`/workQueue/smartlist/${this.workQueueType.smartlistId}/buildSql`, {params: {
-          useEventData: this.workQueueType.useEventData
-          }})
-        this.sql = data
-        navigator.clipboard.writeText(this.sql);
-        this.snackbar = getSnackbar('SUCCESS', 'Copied query to clipboard')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching sql')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getCompanyObjectTypes() {
-      try {
-        const {data} = await getRequest(`/smartlistv1/companyObjectTypes`)
-        this.companyObjectTypes = data.sort((a, b) => a.objectType.localeCompare(b.objectType))
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching object types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getDurationTypes() {
-      try {
-        const {data} = await getRequest(`/workQueueType/durationTypes`)
-        this.durationTypes = data
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching duration types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getPsAndEventsUsingWqt() {
-      try {
-        const {data, status} = await getRequest(`/workQueueType/${this.workQueueTypeId}/inUseBy`)
-        this.itemsUsingType = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getWorkQueueType() {
-      try {
-        this.workQueueLoading = true;
-        const {data, status} = await getRequest(`/workQueueType/${this.workQueueTypeId}`)
-        this.workQueueType = data
-        this.defaultFields = this.workQueueType?.defaultColumnDisplay
-        if (this.workQueueType.schedule.length < 1) {
-          this.workQueueType.schedule = this.noScheduleDefault;
-        }
-        this.workQueueLoading = false;
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getWorkQueueCategories() {
-      try {
-        const {data, status} = await getWorkQueueCategories()
-        this.workQueueCategories = orderBy(data, [wt => wt.workQueueCategory.toLowerCase()])
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveType() {
-      if (this.$refs.wqtForm.validate() && this.validateSchedule()) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await putRequest(`/workQueueType/type`, this.workQueueType)
-          this.workQueueType = data
-          this.editType = false
-          this.editSchedule = false
-          this.editDefaultFields = false
-          this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Work Queue Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    validateSchedule() {
-      let invalidDate = false;
-      // Only validate if Hours is selected
-      if (this.workQueueType.expectedCycleDurationTypeId != 2) {
-        return true;
-      }
+  }
+}
+const saveHiddenAndWhiteList = async () => {
+  appStore.loading = true
+  try {
+    const {status} = await putRequest(`/workQueueType/saveHiddenAndWhiteList?savePositions=${workQueueType.value.hiddenWhiteListedPositionsChanged ?? false}`, workQueueType.value)
+    hiddenPositionsChanged.value = false
+    if(!workQueueType.value.hidden) {
+      workQueueType.value.hiddenWhiteListedPositions = []
+    }
+    snackbar('SUCCESS', 'Saved Successfully')
 
-      for (const dayOfWeek of this.workQueueType.schedule) {
-        if (dayOfWeek.selected) {
-          if (dayOfWeek.startTime == null || dayOfWeek.endTime == null) {
-            invalidDate = true;
-            dayOfWeek.invalid = true
-            this.$forceUpdate();
-          }
-          else {
-            dayOfWeek.invalid = false
-          }
-        }
-      }
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.loading = false
+  }
+}
+const buildSql = async () => {
+  try {
+    const {data} = await getRequestWithParams(`/workQueue/smartlist/${workQueueType.value.smartlistId}/buildSql`, {params: {
+      useEventData: workQueueType.value.useEventData
+      }})
+    sql.value = data
+    navigator.clipboard.writeText(sql.value);
+    snackbar('SUCCESS', 'Copied query to clipboard')
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching sql')
+  }
+}
+const getCompanyObjectTypes = async () => {
+  try {
+    const {data} = await getRequest(`/smartlistv1/companyObjectTypes`)
+    companyObjectTypes.value = data.sort((a, b) => a.objectType.localeCompare(b.objectType))
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching object types')
 
-      if (invalidDate) {
-        this.snackbar = getSnackbar('ERROR', 'Invalid schedule: All selected days must have a start and end time')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        return false;
-      }
+  }
+}
+const getDurationTypes = async () => {
+  try {
+    const {data} = await getRequest(`/workQueueType/durationTypes`)
+    durationTypes.value = data
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching duration types')
 
-      return true;
-    },
-    toggleSelection(item) {
-      // If Weeks is selected, do not allow days to be selected/unselected
-      if (this.editSchedule && this.workQueueType.expectedCycleDurationTypeId != 3) {
-        // If day is being unselected, remove the hours configured
-        if (item.selected) {
-          item.startTime = null;
-          item.endTime = null;
-        }
+  }
+}
+const getPsAndEventsUsingWqt = async () => {
+  try {
+    const {data, status} = await getRequest(`/workQueueType/${workQueueTypeId.value}/inUseBy`)
+    itemsUsingType.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Work Queue Types')
 
-        item.selected = !item.selected;
-        item.invalid = false;
-        this.$forceUpdate();
-      }
-    },
-    expectedCycleDurationChange() {
-      if (this.workQueueType.expectedCycleDurationTypeId == 1) {
-        this.workQueueType.schedule = this.daysDefaultSchedule;
-      }
-      else if (this.workQueueType.expectedCycleDurationTypeId == 2) {
-        this.workQueueType.schedule = this.hoursDefaultSchedule;
+    appStore.loading = false
+  }
+}
+const getWorkQueueType = async () => {
+  try {
+    workQueueLoading.value = true;
+    const {data, status} = await getRequest(`/workQueueType/${workQueueTypeId.value}`)
+    workQueueType.value = data
+    defaultFields.value = workQueueType.value?.defaultColumnDisplay
+    if (workQueueType.value.schedule.length < 1) {
+      workQueueType.value.schedule = noScheduleDefault.value;
+    }
+    workQueueLoading.value = false;
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Work Queue Types')
+
+    appStore.loading = false
+  }
+}
+const getAllWorkQueueCategories = async () => {
+  try {
+    const {data, status} = await getWorkQueueCategories()
+    workQueueCategories.value = orderBy(data, [wt => wt.workQueueCategory.toLowerCase()])
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Work Queue Types')
+
+    appStore.loading = false
+  }
+}
+const saveType = async () => {
+  if (vueInstance.$refs.wqtForm.validate() && validateSchedule()) {
+    appStore.loading = true
+    try {
+      const {data, status} = await putRequest(`/workQueueType/type`, workQueueType.value)
+      workQueueType.value = data
+      editType.value = false
+      editSchedule.value = false
+      snackbar('SUCCESS', 'Work Queue Type Saved')
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Work Queue Type')
+      appStore.loading = false
+    }
+  }
+}
+const validateSchedule = () => {
+  let invalidDate = false;
+  // Only validate if Hours is selected
+  if (workQueueType.value.expectedCycleDurationTypeId != 2) {
+    return true;
+  }
+
+  for (const dayOfWeek of workQueueType.value.schedule) {
+    if (dayOfWeek.selected) {
+      if (dayOfWeek.startTime == null || dayOfWeek.endTime == null) {
+        invalidDate = true;
+        dayOfWeek.invalid = true
+        vueInstance.$forceUpdate();
       }
       else {
-        this.workQueueType.schedule = this.noScheduleDefault;
+        dayOfWeek.invalid = false
       }
-    },
-    savePrevSchedule() {
-      this.prevSchedule = JSON.parse(JSON.stringify(this.workQueueType.schedule));
-    },
-    workQueueTypeHiddenSelectedEventListener(e){
-      this.workQueueType.hiddenWhiteListedPositions = e;
-      this.workQueueType.hiddenWhiteListedPositionsChanged = true;
-    },
-    workQueueTypeHiddenAllowEventListener(e){
-      this.workQueueType.hiddenAllow = (e === 0);
-    },
-    workQueueTypeHiddenCheckboxEventListener(e){
-      this.workQueueType.hidden = e;
-    },
-    updateDefaultFields(fieldName) {
-      let fName = fieldName.text
-      let fShow = fieldName.show
-      this.workQueueType?.defaultColumnDisplay.forEach((c) => {
-        if (fName === c.text) {
-          c.show = !fShow
-        }
-      })
-      this.defaultFields = this.workQueueType?.defaultColumnDisplay
-    },
-  },
+    }
+  }
+
+  if (invalidDate) {
+    snackbar('ERROR', 'Invalid schedule: All selected days must have a start and end time')
+    return false;
+  }
+
+  return true;
+}
+const toggleSelection = (item) => {
+  // If Weeks is selected, do not allow days to be selected/unselected
+  if (editSchedule.value && workQueueType.value.expectedCycleDurationTypeId != 3) {
+    // If day is being unselected, remove the hours configured
+    if (item.selected) {
+      item.startTime = null;
+      item.endTime = null;
+    }
+
+    item.selected = !item.selected;
+    item.invalid = false;
+    vueInstance.$forceUpdate();
+  }
+}
+const expectedCycleDurationChange = () => {
+  if (workQueueType.value.expectedCycleDurationTypeId == 1) {
+    workQueueType.value.schedule = daysDefaultSchedule.value;
+  }
+  else if (workQueueType.value.expectedCycleDurationTypeId == 2) {
+    workQueueType.value.schedule = hoursDefaultSchedule.value;
+  }
+  else {
+    workQueueType.value.schedule = noScheduleDefault.value;
+  }
+}
+const savePrevSchedule = () => {
+  prevSchedule.value = JSON.parse(JSON.stringify(workQueueType.value.schedule));
+}
+const workQueueTypeHiddenSelectedEventListener = (e)=> {
+  workQueueType.value.hiddenWhiteListedPositions = e;
+  workQueueType.value.hiddenWhiteListedPositionsChanged = true;
+}
+const workQueueTypeHiddenAllowEventListener = (e)=> {
+  workQueueType.value.hiddenAllow = (e === 0);
+}
+const workQueueTypeHiddenCheckboxEventListener = (e)=> {
+  workQueueType.value.hidden = e;
+}
+const  updateDefaultFields = (fieldName) => {
+  let fName = fieldName.text
+  let fShow = fieldName.show
+
+  workQueueType.value?.defaultColumnDisplay.forEach((c) => {
+    if (fName === c.text) {
+      c.show = !fShow
+      console.log(`Updated ${c.text} field from ${fShow} to ${c.show}`)
+    }
+  })
+  defaultFields.value = workQueueType.value?.defaultColumnDisplay
 }
 </script>
 

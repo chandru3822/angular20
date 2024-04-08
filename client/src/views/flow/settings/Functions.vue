@@ -6,16 +6,17 @@
           <v-toolbar-title class="app-title">Functions</v-toolbar-title>
         </v-toolbar>
         <v-container>
-          <v-list v-for="(f, index) in filterBy(functions, false, 'archived')"
+          <v-list v-for="(f, index) in filteredFunctions"
                   :key="index"  class="pa-0">
             <v-list-item :class="{'shaded-row': index % 2}">
               <v-list-item-content>
-                {{f.companyFunctionName}}
+                <router-link :to="`/settings/function/${f.id}`" class="router-link-td">
+                  {{f.companyFunctionName}}
+                </router-link>
               </v-list-item-content>
               <v-list-item-action class="clickable">
-                <v-btn :to="{ path: `/settings/function/${f.id}`}" text color="primary">
-                  <v-icon>edit</v-icon>
-                </v-btn>
+                <a-btn :to="`/settings/function/${f.id}`" variant="text" prepend-icon="edit">
+                </a-btn>
               </v-list-item-action>
             </v-list-item>
           </v-list>
@@ -26,47 +27,44 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
+<script setup>
+  import { handleHidingGlobalLoader, getRequest } from '@/helpers/helpers'
 
-  export default {
-    name: 'ProcessSteps',
-    mixins: [Vue2Filters.mixin],
 
-    data () {
-      return {
-        snackbar: {},
-        companyId: this.$store.state.user.details.companyId,
-        userId: this.$store.state.user.details.id,
-        functions: []
-      }
-    },
-    computed: {
-    },
-    methods: {
-      async getFunctions () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/function`)
-          this.functions = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteFunction () {
-        // await deleteRequest(`/processStep/${processStepId}`)
-      }
-    },
-    async created () {
-      this.getFunctions()
+  import {computed, getCurrentInstance, onMounted, ref} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+  const userStore = useUserStore()
+  const appStore = useAppStore()
+
+  const companyId = ref(userStore.details.companyId)
+  const userId = ref(userStore.details.id)
+  const functions = ref([])
+
+  const filteredFunctions = computed(() => {
+    return functions.value.filter(f => !f.archives)
+  })
+
+  const getFunctions = async () => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/function`)
+      functions.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.loading = false
     }
   }
+
+  onMounted(() => {
+    getFunctions()
+  })
+
 </script>
 
 <style scoped lang="scss">

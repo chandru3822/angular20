@@ -1,7 +1,7 @@
 <template>
   <v-card flat>
     <v-card-title>Advanced</v-card-title>
-    <v-text-field outlined dense
+    <a-text-field density="compact" variant="outlined"
                   v-model="expression"
                   label="Visibility"
                   hint="This expression must evaluate to a boolean"
@@ -16,18 +16,20 @@
           <template v-slot:activator="{ on:dialogOn, attrs }">
 
             <v-fade-transition leave-absolute>
-              <v-btn icon v-on="dialogOn">
-                <v-tooltip
-                  bottom
-                >
-                  <template v-slot:activator="{ on }">
-                    <v-icon v-on="on" v-bind="attrs">
-                      mdi-help-circle-outline
-                    </v-icon>
-                  </template>
-                  Available variables
-                </v-tooltip>
-              </v-btn>
+              <a-btn icon :activation-handler="dialogOn">
+                <template #default>
+                  <v-tooltip
+                    bottom
+                  >
+                    <template v-slot:activator="{ on }">
+                      <v-icon v-on="on" v-bind="attrs">
+                        mdi-help-circle-outline
+                      </v-icon>
+                    </template>
+                    Available variables
+                  </v-tooltip>
+                </template>
+              </a-btn>
             </v-fade-transition>
           </template>
 
@@ -48,51 +50,47 @@
 
             <v-card-actions>
               <v-spacer/>
-              <v-btn
-                color="primary"
-                text
-                @click="dialog = false"
-              >
-                Done
-              </v-btn>
+              <a-btn
+                  color="primary"
+                  variant="text"
+                  @click="dialog = false"
+                  text="Done"
+              ></a-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
       </template>
-    </v-text-field>
+    </a-text-field>
   </v-card>
 </template>
-<script>
-
+<script setup>
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {mapState} from "vuex";
 
-export default {
-  props: {
-    visibility: {
-      type: String
-    }
-  },
-  data() {
-    return {
-      expression: undefined,
-      dialog: false,
-    }
-  },
-  computed: {
-    ...mapState({
-      tags: (state) => state.proposal.tags
-    })
-  },
-  watch: {
-    visibility: function (arg) {
-      console.log("wtf")
-      this.expression = arg
-    }
-  },
-  methods: {
-    handleChange() {
-      this.$emit('input', this.expression)
-    }
+
+const props = defineProps({
+  visibility: {
+    type: String
   }
+})
+const { visibility } = toRefs(props)
+
+const expression = ref(undefined)
+const dialog = ref(false)
+
+const emit = defineEmits(['input'])
+
+//@kaleb not sure if these map state things are right
+const { tags } = mapState({
+  tags: (state) => state.proposal.tags
+})
+
+watch(visibility, async() => {
+  console.log("wtf")
+  this.expression = arg
+})
+
+const handleChange = () => {
+  emit('input', this.expression)
 }
 </script>

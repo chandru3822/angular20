@@ -3,25 +3,28 @@ import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
 import momentTimezonePlugin from "@fullcalendar/moment-timezone";
-import {AppMutations} from "@/stores/AppStore.js";
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getEventColorClass} from '@/helpers/helpers'
 import moment from "moment/moment.js";
 import {ScheduleMutations} from "@/stores/ScheduleStore.js";
 import constants from "@/helpers/constants.js";
 import FullCalendar from "@fullcalendar/vue";
 import cloneDeep from "lodash.clonedeep";
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const refs = vueInstance.$refs
 const filters = vueInstance.$filters
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
-
-const snackbar = ref({})
-
 
 // Calendar Info
 const calendarApi = ref(null)
@@ -33,6 +36,10 @@ const calendarLoading = ref(false)
 
 const maxSelectionAllowed = ref(10)
 const countErrorMessage = ref('Maximum Selection Reached')
+
+const timezoneFriendly = computed(() => {
+  return store.state.schedule.timezone?.value
+})
 
 const calendarOptions = ref({
   plugins: [
@@ -71,7 +78,7 @@ const calendarOptions = ref({
     weekday: 'long'
   },
   height: '100%',
-  timeZone: store.state.user.details.timezone.value || {},
+  timeZone: timezoneFriendly.value || {},
 
   customButtons: {
     customToday: {
@@ -113,9 +120,9 @@ const handleEventClick = (info) => {
   }
 }
 
-watch(() => store.state.schedule.timezone.value, (value) => {
+watch(() => timezoneFriendly, (value) => {
   //when the schedule timezone value changes, update the calendar plugin's timezone
-  calendarApi.value.setOption('timeZone', store.state.schedule.timezone.value)
+  calendarApi.value.setOption('timeZone', timezoneFriendly.value)
 })
 
 
@@ -128,7 +135,7 @@ const roundRobinValueChanged = ref(false) //field dirty - set on autocomplete in
 const roundRobinsLoading = ref(true) //controls loading state of autocomplete
 //method to get roundRobins list values (called on mounted)
 const getRoundRobins = async() => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data, status} = await getRequest(`/roundRobin/forUser`)
     roundRobins.value = data
@@ -136,9 +143,8 @@ const getRoundRobins = async() => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Round Robins')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Retrieving Round Robins')
+    appStore.loading = false
   }
 }
 // ----------------------------------------------------------------------------------
@@ -157,7 +163,7 @@ watch(selectedUsers, () => {
 
 const getRoundRobinUsers = async() => {
     roundRobinUsers.value = []
-    store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
     try {
       let params = {
         roundRobinIds: selectedRoundRobins.value?.length > 0 ? selectedRoundRobins.value.map(z => z.id) : null
@@ -168,9 +174,8 @@ const getRoundRobinUsers = async() => {
       handleHidingGlobalLoader(vueInstance, status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar.value = getSnackbar('ERROR', 'Error Retrieving Users')
-      store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-      store.commit(AppMutations.SET_LOADING, false)
+      snackbar('ERROR', 'Error Retrieving Users')
+      appStore.loading = false
     }
   }
 
@@ -279,8 +284,7 @@ const getEventSources = async(info, successCallback, failureCallback) => {
         calendarLoading.value = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar.value = getSnackbar('ERROR', 'Error Retrieving Events')
-        store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+        snackbar('ERROR', 'Error Retrieving Events')
         failureCallback(e)
         calendarLoading.value = false
       } finally {
@@ -358,9 +362,8 @@ const getAvailability = async(info) => {
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Availability')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Retrieving Availability')
+    appStore.loading = false
   }
 }
 

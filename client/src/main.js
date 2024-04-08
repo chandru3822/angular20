@@ -4,22 +4,24 @@ import Chat from 'vue-beautiful-chat'
 import Vue2Filters from 'vue2-filters'
 import App from '@/App.vue'
 import router from '@/router'
-import store from '@/store'
+import store, { pinia } from '@/store'
 import axios from 'axios'
-import { NotificationPlugin } from '@/plugins/notifications/NotificationPlugin'
 import { SnackbarPlugin } from '@/plugins/SnackbarPlugin'
 import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
-import { createPinia, PiniaVuePlugin } from 'pinia'
+import AlbatrossTextField from '@/components/customVuetify/AlbatrossTextField.vue'
+import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+import AlbatrossSelect from '@/components/customVuetify/AlbatrossSelect.vue'
+
 
 import '@/styles/main.scss'
 import { requestInterceptor, responseInterceptor  } from '@/helpers/interceptors'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
 const { VITE_GA_ID } = import.meta.env
 Vue.config.productionTip = false
 
-Vue.use(NotificationPlugin, { store })
-Vue.use(SnackbarPlugin, { store })
+Vue.use(SnackbarPlugin)
 Vue.use(Vue2Filters)
 Vue.prototype.$filters = Vue.options.filters
 
@@ -30,6 +32,19 @@ Vue.filter('formatDateZoneless', function(value) {
   }
 })
 
+Vue.filter('searchHighlight', function(value, query) {
+  if (value) {
+    return value.replace(new RegExp(query, "ig"),(v) => `<span class="grey lighten-2">${v}</span>`)
+  }
+})
+
+Vue.filter('fieldValues', function(field) {
+    if (Array.isArray(field.values)) {
+        return field?.values?.join(', ')
+    }
+    return field.values
+})
+
 Vue.filter('formatDate', function(value, type, format, inputFormat) {
   /*
   //  this part of the code: `moment(String(value))` was throwing format warnings from moment with regular timestamp formats
@@ -37,11 +52,13 @@ Vue.filter('formatDate', function(value, type, format, inputFormat) {
   //  TYPES: 'date', 'timestamp'
   */
 
-  let timezone = store?.state?.user?.details?.timezone?.value
+  const userStore = useUserStore()
+
+  let timezone = userStore.timezone.value
 
   //The schedule screen has it's own timezone. Use that if user is on schedule screen, else default to regular timezone
   if (router.currentRoute.name === 'schedule' && store?.state?.schedule?.timezone?.value) {
-	  timezone = store.state.schedule.timezone.value
+    timezone = store.state.schedule.timezone.value
   }
 
   if (!type || (type === 'timestamp' && !timezone)) {
@@ -73,6 +90,11 @@ Vue.filter('formatDate', function(value, type, format, inputFormat) {
 axios.interceptors.request.use(requestInterceptor)
 axios.interceptors.response.use((r) => r, responseInterceptor)
 
+//add the Albatross Components Globally so we can stop importing them everywhere
+Vue.component('a-select', AlbatrossSelect)
+Vue.component('a-text-field', AlbatrossTextField)
+Vue.component('a-btn', AlbatrossButton)
+
 Vue.use(
   VueGtag,
   {
@@ -82,9 +104,6 @@ Vue.use(
 )
 
 Vue.use(Chat)
-
-Vue.use(PiniaVuePlugin)
-const pinia = createPinia()
 
 new Vue({
   router,

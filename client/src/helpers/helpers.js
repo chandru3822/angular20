@@ -2,6 +2,10 @@ import axios from 'axios'
 import constants from './constants'
 import { AppMutations } from '@/stores/AppStore'
 import moment from 'moment'
+import Sortable from "sortablejs";
+import cloneDeep from "lodash.clonedeep";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useUserStore } from "@/stores/UserStorePinia.js";
 
 export function getSnackbar(type, text, displayMsgAsHtml) {
   //if you need a custom snackbar build it in your component
@@ -16,6 +20,33 @@ export function getMonthDateRange(month, year) {
   let startDate = moment([year, month - 1]).format("YYYY-MM-DD")
   let endDate = moment(startDate).endOf('month').format("YYYY-MM-DD")
   return {startDate, endDate}
+}
+
+export function defineSortableTable (selector, items, orderField, saveFunction, arrayIndex, nonRef) {
+  //note: `items` must be the ref, not the ref.value
+  //note update: when i tried to pass in ref.value it would fail. but then on an object that wasn't a ref it worked fine. thus the `nonRef` property.
+  //when the ref is an array of multiple sortable arrays in a for loop then send in the arrayIndex. see CompanyCustomFieldGroup.vue for example
+
+  //todo look into if this is still an issue: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+  let table = document.querySelector(selector)
+  Sortable.create(table, {
+    handle: '.handle',
+    onEnd({ newIndex, oldIndex }) {
+      let itemsToSort = arrayIndex !== null && arrayIndex !== undefined ? items.value[arrayIndex] : nonRef ? items : items.value
+      const rowSelected = itemsToSort.splice(oldIndex, 1)[0]
+      itemsToSort.splice(newIndex, 0, rowSelected)
+      let fieldGroupsClone = cloneDeep(itemsToSort)
+      //only save the rows that changed
+      let rowsToSave = []
+      fieldGroupsClone.forEach((g, idx) => {
+        if(g[orderField] !== idx) {
+          g[orderField] = idx
+          rowsToSave.push(g)
+        }
+      })
+      saveFunction(rowsToSave)
+    }
+  })
 }
 
 export function getYears(startingYear, sortDescending) {
@@ -163,11 +194,13 @@ export function cleanPhoneNumberForCopying(phoneNumberString) {
     return null
 }
 
-export function handleHidingGlobalLoader(instance, status) {
+export function handleHidingGlobalLoader(status) {
   //if a request is cancelled we should not turn off the spinner because the route changed and may have already turned the spinner back on
   //if the status is null it means that the request was cancelled (otherwise it will have a success or error status)
   if (status != null) {
-    instance.$store.commit(AppMutations.SET_LOADING, false)
+    // instance.$store.commit(AppMutations.SET_LOADING, false)
+    const appStore = useAppStore()
+    appStore.loading = false
   }
 }
 
@@ -321,8 +354,9 @@ export function getEventColorClass (index) {
     return colorClassList[index%20]
 }
 
-export function getProjectPath(instance) {
-  const projectPathSuffix = instance.$store.state.user.details.defaultProjectPage
+export function getProjectPath() {
+  const userStore = useUserStore()
+  const projectPathSuffix = userStore.details.defaultProjectPage
   if (projectPathSuffix === null || projectPathSuffix === 'tab_status') {
     return {pathSuffix: 'status', tabName: 'status'}
   } else if (projectPathSuffix === 'tab_processSteps') {

@@ -33,25 +33,35 @@
   </v-row>
 </template>
 
-<script>
-  export default {
-    name: 'EventSnippet',
-    props: {
-      projectId: Number,
-      events: Array
-    },
-    data () {
-      return {
-        headers: [
-          {text: 'ID', value: 'id', show: true, width: 80},
-          {text: 'Type', value: 'eventName', show: true},
-          {text: 'Start', value: 'start', show: true},
-          {text: 'Resource', value: 'resourceName', show: true},
-          {text: 'Status', value: 'eventStatusType', show: true},
-        ]
-      }
-    }
-  }
+<script setup>
+
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const headers = ref([
+  {text: 'ID', value: 'id', show: true, width: 80},
+  {text: 'Type', value: 'eventName', show: true},
+  {text: 'Start', value: 'start', show: true},
+  {text: 'Resource', value: 'resourceName', show: true},
+  {text: 'Status', value: 'eventStatusType', show: true},
+])
+
+const props = defineProps({
+  projectId: Number,
+  events: Array
+})
+const { projectId, events } = toRefs(props)
+
 </script>
 
 <style scoped lang="scss">

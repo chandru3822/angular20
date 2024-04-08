@@ -10,19 +10,19 @@
         >
           <v-toolbar-title class="one-hunned">
             <div class="d-flex justify-start align-center">
-              <v-btn
-                icon
-                @click="router.push('/smartlist')"
-              >
-                <v-icon>mdi-chevron-left</v-icon>
-              </v-btn>
+              <a-btn
+                  icon
+                  @click="router.push('/smartlist')"
+                  color="unset"
+                  prepend-icon="mdi-chevron-left"
+              ></a-btn>
 
-              <v-text-field
+              <a-text-field
                 v-show="isEditingReportName"
                 v-model="report.name"
-                outlined
+                variant="outlined"
                 placeholder="Type Name"
-                hide-details="true"
+                :hide-details="true"
                 ref="reportNameField"
                 class="report-name"
                 @blur="toggleEditingReportName"
@@ -38,15 +38,14 @@
 
               </span>
               <span class="owner-display pl-2">{{ (isOwner) ? 'Owner' : report.owner }}</span>
-              <v-btn
-                v-if="report?.id && canView"
-                color="primary"
-                text
-                @click="router.push(`/smartlistv1/${report.id}`)"
-              >
-                <v-icon class="mr-1">mdi-eye</v-icon>
-                View old smartlist editor
-              </v-btn>
+              <a-btn
+                  v-if="report?.id && canView"
+                  color="primary"
+                  variant="text"
+                  @click="router.push(`/smartlistv1/${report.id}`)"
+                  prepend-icon="mdi-eye"
+                  text="View old smartlist editor"
+              ></a-btn>
             </div>
           </v-toolbar-title>
           <v-toolbar-items>
@@ -72,16 +71,15 @@
               @updated-owner="updateOwner"
             />
 
-            <v-btn
-              id="reportEditor-save"
-              text
-              color="primary"
-              :disabled="!hasUnsavedChanges || (isEditing && !canEdit)"
-              @click="saveClicked"
-            >
-              <v-icon>save</v-icon>
-              Save
-            </v-btn>
+            <a-btn
+                id="reportEditor-save"
+                variant="text"
+                color="primary"
+                :disabled="!hasUnsavedChanges || (isEditing && !canEdit)"
+                @click="saveClicked"
+                prepend-icon="save"
+                text="Save"
+            ></a-btn>
 
             <SmartlistExport
               :smartlist="report"
@@ -212,19 +210,18 @@
       </v-card-text>
 
       <v-card-actions class="justify-end">
-        <v-btn
-          text
-          @click="showSaveDialog = false"
-        >
-          Cancel
-        </v-btn>
+        <a-btn
+            variant="text"
+            @click="showSaveDialog = false"
+            color="unset"
+            text="Cancel"
+        ></a-btn>
 
-        <v-btn
-          color="primary"
-          @click="[showSaveDialog = false, save()]"
-        >
-          Save
-        </v-btn>
+        <a-btn
+            color="primary"
+            @click="[showSaveDialog = false, save()]"
+            text="Save"
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -242,19 +239,14 @@
       </v-card-text>
 
       <v-card-actions class="justify-end">
-        <v-btn
-          text
-          @click="unsavedPromiseResolve(false)"
-        >
-          Leave Without Saving
-        </v-btn>
+        <a-btn
+            variant="text"
+            @click="unsavedPromiseResolve(false)"
+            color="unset"
+            text="Leave Without Saving"
+        ></a-btn>
 
-        <v-btn
-          color="primary"
-          @click="unsavedPromiseResolve(true)"
-        >
-          Save
-        </v-btn>
+        <a-btn color="primary" @click="unsavedPromiseResolve(true)" text="Save"></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -272,19 +264,18 @@
       </v-card-text>
 
       <v-card-actions class="justify-end">
-        <v-btn
-          text
-          @click="[revertObjectType(), showDataViewDialog = false]"
-        >
-          Cancel
-        </v-btn>
+        <a-btn
+            variant="text"
+            @click="[revertObjectType(), showDataViewDialog = false]"
+            color="unset"
+            text="Cancel"
+        ></a-btn>
 
-        <v-btn
-          color="primary"
-          @click="[showDataViewDialog = false, toggleDataView()]"
-        >
-          Save
-        </v-btn>
+        <a-btn
+            color="primary"
+            @click="[showDataViewDialog = false, toggleDataView()]"
+            text="Save"
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -292,10 +283,8 @@
 </template>
 
 <script setup>
-import useReportStore from '@/views/flow/smartlist/reportStore'
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import { getRequest, logError, postRequest, putRequest } from '@/helpers/helpers'
-import { AppMutations } from '@/stores/AppStore'
 import constants from '@/helpers/constants'
 import ReportFields from '@/views/flow/smartlist/editor/ReportFields.vue'
 import ReportRequirements from '@/views/flow/smartlist/editor/ReportRequirements.vue'
@@ -308,6 +297,8 @@ import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
 import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
@@ -320,16 +311,16 @@ const vueInstance = getCurrentInstance().proxy
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
-const reportStore = useReportStore()
-reportStore.$subscribe((mut, state) => localStorage.setItem('report', JSON.stringify(state)))
-
 const store = vueInstance.$store
-const hasViewAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW')
-const hasViewAllAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL')
-const hasAddAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
-const hasManageAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
-const isSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
-const isSystemAdmin = store.getters.isFullAdmin
+const userStore = useUserStore()
+const appStore = useAppStore()
+
+const hasViewAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'VIEW')
+const hasViewAllAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL')
+const hasAddAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+const hasManageAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
+const isSmartlistAdmin = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+const isSystemAdmin = userStore.isSystemAdmin
 
 const tab = ref(null)
 const loadingAvailableFields = ref(false)
@@ -380,7 +371,7 @@ const hasUnsavedChanges = computed(() => {
 })
 
 const isOwner = computed(() => {
-  return report.value?.ownerId === store.state.user.details.id
+  return report.value?.ownerId === userStore.details.id
 })
 
 const canView = computed(() => {
@@ -452,7 +443,7 @@ const getReport = async () => {
 
 const getFields = async () => {
   try {
-    const {data} = await getRequest(`/smartlist/${report.value.id}/field?timezone=${store.state.user.details.timezone.value}`)
+    const {data} = await getRequest(`/smartlist/${report.value.id}/field?timezone=${userStore.timezone.value}`)
     fields.value = cloneDeep(data)
     sourceFields.value = cloneDeep(data)
   } catch (e) {
@@ -485,7 +476,7 @@ const copied = async (copiedReport) => {
 
 const save = async () => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
 
     if (report.value?.id) {
       //send all fields for re-ordering, but send only requirements which have changed
@@ -522,7 +513,7 @@ const save = async () => {
     logError(e)
     snackbar('ERROR', e.message || e.data?.message || 'Error saving smartlist')
   } finally {
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
@@ -635,7 +626,7 @@ const updateRequirement = (requirement, index) => requirements.value.splice(inde
 
 const toggleDataView = async () => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     const selectedType = reportTypes.value.find(t => t.id === report.value.companyObjectTypeId)
     report.value.objectTypeId = selectedType.objectTypeId
 
@@ -644,7 +635,7 @@ const toggleDataView = async () => {
   } catch (e) {
     snackbar('ERROR', 'Unable to update project details setting')
   } finally {
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 

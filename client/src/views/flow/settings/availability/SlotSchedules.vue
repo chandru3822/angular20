@@ -8,24 +8,26 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newSchedule = {}]">
-              {{ addNew ? 'Cancel' : 'Add New'}}
-            </v-btn>
+            <a-btn variant="text"
+                             color="primary"
+                             @click="[addNew = !addNew, newSchedule = {}]"
+                             :text="addNew ? 'CANCEL' : 'ADD NEW'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-card color="transparent" flat v-if="addNew" class="mb-2 pa-5">
-          <v-text-field
+          <a-text-field
             label="New Schedule Name"
             v-model="newSchedule.scheduleName"
-          ></v-text-field>
-          <v-btn :disabled="!newSchedule.scheduleName"
-                 @click="saveSchedule(newSchedule)">
-            Save
-          </v-btn>
+          ></a-text-field>
+          <a-btn :disabled="!newSchedule.scheduleName"
+                           @click="saveSchedule(newSchedule)"
+                           text="SAVE"
+          />
         </v-card>
         <v-data-table
           :headers="headers"
-          :items="filterSchedules()"
+          :items="filterSchedules"
           :fixed-header="true"
           :items-per-page="-1"
           single-expand
@@ -45,15 +47,18 @@
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': slotSchedules.indexOf(item) % 2}">
               <h3>Edit Schedule</h3>
-              <v-text-field
+              <a-text-field
                 v-model="item.scheduleName"
                 label="Schedule Name"
               />
               <div class="mb-3">
-                <v-btn color="primary" class="mb-2" dark @click="item.slotTimes.push({id: null, startTime: null, endTime: null, archived: false})">
-                  Add Slot
-                </v-btn>
-                <v-list v-for="(st, index) in filterBy(item.slotTimes, false, 'archived')"
+                <a-btn
+                  color="primary"
+                  class="mb-2"
+                  dark @click="item.slotTimes.push({id: null, startTime: null, endTime: null, archived: false})"
+                  text="ADD SLOT"
+                />
+                <v-list v-for="(st, index) in item.slotTimes.filter(a => !a.archived)"
                         :key="index"  class="pa-0">
                   <v-list-item :class="{'shaded-row': index % 2}">
                     <v-list-item-content class="text-left">
@@ -73,9 +78,7 @@
                       />
                     </v-list-item-content>
                     <v-list-item-action>
-                      <v-btn text @click="st.archived = true">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
+                      <a-btn variant="text" @click="st.archived = true" prepend-icon="delete"/>
                     </v-list-item-action>
                   </v-list-item>
                 </v-list>
@@ -83,10 +86,10 @@
               <div class="error-text mb-2" v-if="saveError">
                 {{saveErrorMsg}}
               </div>
-              <v-btn color="primary" class="white--text mr-2"
-                     @click="saveSchedule(item)">
-                Save
-              </v-btn>
+              <a-btn color="primary" class="white--text mr-2"
+                               @click="saveSchedule(item)"
+                               text="SAVE"
+              />
             </td>
           </template>
 
@@ -94,12 +97,17 @@
             <tr  class="text-left" :class="{'shaded-row': slotSchedules.indexOf(item) % 2}">
               <td class="text-left">{{ item.scheduleName }}</td>
               <td class="text-right">
-                <v-btn small text color="primary" v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="userCanEdit && expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-btn small text color="primary" v-if="userCanDelete" @click="[itemToDelete = item, showDeleteDialog = true]"><v-icon>delete</v-icon></v-btn>
-
+                <a-btn size="small" variant="text" color="primary"
+                                 v-if="userCanEdit && !expanded.includes(item)"
+                                 @click="expanded = [item]" prepend-icon="edit"
+                />
+                <a-btn size="small" variant="text" color="primary"
+                                 v-if="userCanEdit && expanded.includes(item)"
+                                 @click="expanded = []" text="CANCEL"
+                />
+                <a-btn size="small" variant="text" color="primary" v-if="userCanDelete"
+                                 @click="[itemToDelete = item, showDeleteDialog = true]" prepend-icon="delete"
+                />
               </td>
             </tr>
           </template>
@@ -114,136 +122,135 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
-  import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import ZonelessTimePickerInput from "./ZonelessTimePickerInput";
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  export default {
-    name: 'SlotSchedules',
-    mixins: [Vue2Filters.mixin],
-    computed: {
-      itemToDeleteName() {
-        return this.itemToDelete ? this.itemToDelete.scheduleName : ''
-      }
-    },
-    components: {
-      ConfirmationDialog,
-      ZonelessTimePickerInput
-    },
-    data() {
-      return {
-        snackbar: {},
-        addNew: false,
-        showTime: false,
-        newSchedule: {},
-        saveError: false,
-        saveErrorMsg: '',
-        selectedSlotId: null,
-        allowedMinutesStep: m => m % 5 === 0,
-        slotSchedules: [],
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE'),
-        headers: [
-          {text: 'Schedule Name', value: 'scheduleName', show: true },
-          {text: '', value: 'icons', show: true},
-        ],
-        expanded: [],
-        showDeleteDialog: false,
-        itemToDelete:null,
-      }
-    },
-    created() {
-      this.getSchedules()
-    },
-    methods: {
-      clearInput () {
-        this.$emit('input', null)
-      },
-      filterSchedules () {
-        return this.slotSchedules.filter(s => { return !s.archived})
-      },
-      async saveSchedule (schedule) {
-        try {
-          this.saveError = false
-          this.saveErrorMsg = ''
 
-          schedule.slotTimes?.filter(st => !st.archived)?.forEach((st, stIdx) => {
-            //verify that no slot start time is >= the slot end time
-            if(!st.archived && (!st.startTime || !st.endTime)) {
-              this.saveError = true
-              this.saveErrorMsg = 'Slot Start and End Times cannot be empty'
-            } else if(moment(st.startTime, 'HH:mm').isSameOrAfter(moment(st.endTime, 'HH:mm'))) {
-              this.saveError = true
-              this.saveErrorMsg = 'Slot Start Time Cannot Be Before End Time'
-            } else {
-              //verify that no slots overlap
-              schedule.slotTimes?.filter(st => !st.archived)?.forEach((st2, st2Idx) => {
-                if (stIdx !== st2Idx && (moment(st.startTime, 'HH:mm').isBetween(moment(st2.startTime, 'HH:mm'), moment(st2.endTime, 'HH:mm'))
-                  || moment(st.endTime, 'HH:mm').isBetween(moment(st2.startTime, 'HH:mm'), moment(st2.endTime, 'HH:mm')))) {
-                  this.saveError = true
-                  this.saveErrorMsg = 'Slots Cannot Overlap'
-                }
-              })
+  import {getCurrentInstance, onMounted, ref, computed, watch, defineProps} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import {useRoute} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
+
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+  const userStore = useUserStore()
+  const route = useRoute()
+
+  const addNew = ref(false)
+  const showTime = ref(false)
+  const newSchedule = ref({})
+  const saveError = ref(false)
+  const saveErrorMsg = ref('')
+  const selectedSlotId = ref(null)
+  const allowedMinutesStep = ref(m => m % 5 === 0)
+  const slotSchedules = ref([])
+  const expanded = ref([])
+  const showDeleteDialog = ref(false)
+  const itemToDelete = ref(null)
+  const headers = ref([
+    {text: 'Schedule Name', value: 'scheduleName', show: true },
+    {text: '', value: 'icons', show: true},
+  ])
+  const emit = defineEmits(['input'])
+
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE')
+  })
+
+  const itemToDeleteName = computed(() => {
+    return itemToDelete.value ? itemToDelete.value.scheduleName : ''
+  })
+  const clearInput = () => {
+    emit('input', null)
+  }
+  const filterSchedules = computed(() => {
+    return slotSchedules.value.filter(s => { return !s.archived})
+  })
+
+  onMounted(() => {
+    getSchedules()
+  })
+
+  const saveSchedule = async  (schedule) => {
+    try {
+      saveError.value = false
+      saveErrorMsg.value = ''
+
+      schedule.slotTimes?.filter(st => !st.archived)?.forEach((st, stIdx) => {
+        //verify that no slot start time is >= the slot end time
+        if(!st.archived && (!st.startTime || !st.endTime)) {
+          saveError.value = true
+          saveErrorMsg.value = 'Slot Start and End Times cannot be empty'
+        } else if(moment(st.startTime, 'HH:mm').isSameOrAfter(moment(st.endTime, 'HH:mm'))) {
+          saveError.value = true
+          saveErrorMsg.value = 'Slot Start Time Cannot Be Before End Time'
+        } else {
+          //verify that no slots overlap
+          schedule.slotTimes?.filter(st => !st.archived)?.forEach((st2, st2Idx) => {
+            if (stIdx !== st2Idx && (moment(st.startTime, 'HH:mm').isBetween(moment(st2.startTime, 'HH:mm'), moment(st2.endTime, 'HH:mm'))
+              || moment(st.endTime, 'HH:mm').isBetween(moment(st2.startTime, 'HH:mm'), moment(st2.endTime, 'HH:mm')))) {
+              saveError.value = true
+              saveErrorMsg.value = 'Slots Cannot Overlap'
             }
           })
-          if(!this.saveError) {
-            this.$store.commit(AppMutations.SET_LOADING, true)
-            const {data, status} = await putRequest(`/availability/slotSchedule`, schedule)
-            if(!schedule.id) {
-              this.newSchedule = {}
-              this.addNew = false
-              this.slotSchedules.push(data)
-            }
-            this.snackbar = getSnackbar('SUCCESS', 'Schedule Saved')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            handleHidingGlobalLoader(this, status)
-          }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Schedule')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async getSchedules() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/availability/slotSchedules`, null, [])
-          this.slotSchedules = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Slot Schedules')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+      })
+      if(!saveError.value) {
+        appStore.loading = true
+        const {data, status} = await putRequest(`/availability/slotSchedule`, schedule)
+        if(!schedule.id) {
+          newSchedule.value = {}
+          addNew.value = false
+          slotSchedules.value.push(data)
         }
-      },
-      async deleteSchedule() {
-        const schedule = this.itemToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/availability/slotSchedule/${schedule.id}`)
-          schedule.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Schedule Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Schedule')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.closeDeleteDialog()
-      },
-      closeDeleteDialog(){
-        this.showDeleteDialog = false
-        this.itemToDelete = null
+        snackbar('SUCCESS', 'Schedule Saved')
+        handleHidingGlobalLoader(status)
       }
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Schedule')
+      appStore.loading = false
     }
+  }
+  const getSchedules = async () => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/availability/slotSchedules`, null, [])
+      slotSchedules.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Slot Schedules')
+      appStore.loading = false
+    }
+  }
+  const deleteSchedule = async () => {
+    const schedule = itemToDelete.value
+    appStore.loading = true
+    try {
+      const {status} = await deleteRequest(`/availability/slotSchedule/${schedule.id}`)
+      schedule.archived = true
+      snackbar('SUCCESS', 'Schedule Deleted')
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting Schedule')
+      appStore.loading = false
+    }
+    closeDeleteDialog()
+  }
+  const closeDeleteDialog = () => {
+    showDeleteDialog.value = false
+    itemToDelete.value = null
   }
 </script>
 

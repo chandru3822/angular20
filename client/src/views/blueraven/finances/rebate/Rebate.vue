@@ -18,30 +18,35 @@
   </v-container>
 </template>
 
-<script>
-  export default {
-    name: 'Rebate',
-    computed: {
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        model: '',
-        tabs: [ {
-          label: 'View Payments',
-          path: '/finances/rebate/viewPayments',
-          display: this.$store.getters.userHasFeature('REBATES')
-        }, {
-          label: 'Batches',
-          path: '/finances/rebate/batches',
-          display: this.$store.getters.userHasFeature('REBATES')
-        }]
-      }
-    },
-    methods: {
-    }
-  }
+<script setup>
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const model = ref('')
+
+const tabs = computed(() => {
+  return [ {
+    label: 'View Payments',
+    path: '/finances/rebate/viewPayments',
+    display: userStore.userHasFeature('REBATES')
+  }, {
+    label: 'Batches',
+    path: '/finances/rebate/batches',
+    display: userStore.userHasFeature('REBATES')
+  }]
+})
+const displayedTabs = computed(() => {
+  return tabs.value.filter(tab => tab.display)
+})
+
 </script>

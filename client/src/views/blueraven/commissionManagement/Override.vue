@@ -14,31 +14,44 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
-          <v-btn color="primary" class="white--text mr-2"
-                 v-if="userIsAdmin && overrideId"
-                 @click="showProjectAssignmentModal = true">
-            Admin
-          </v-btn>
-          <v-btn color="primary" class="white--text mr-2"
-                 :disabled="!override.name || !override.positionId || !override.total"
-                 v-if="userCanEdit"
-                 @click="saveOverride()">
-            Save
-          </v-btn>
-          <v-btn color="success" class="white--text mr-2"
-                 v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && overrideId && override.status === 'PENDING'"
-                 :disabled="errorMessages.length > 0"
-                 @click="approveOverride()">
-            Approve
-          </v-btn><v-btn color="error" class="white--text mr-2"
-                 v-if="overrideId && override.status !== 'ACTIVE' && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
-                 :disabled="errorMessages.length > 0"
-                 @click="openDeleteDialog(override, deleteTypes.OVERRIDE)">
-            Delete
-          </v-btn>
-          <v-btn color="error" class="mr-2" v-else-if="overrideId && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')" @click="inactivateConfirm=true">
-            Inactivate
-          </v-btn>
+          <a-btn
+              color="primary"
+              class="mr-2"
+              v-if="userIsAdmin && overrideId"
+              @click="showProjectAssignmentModal = true"
+              text="Admin"
+          ></a-btn>
+          <a-btn
+              color="primary"
+              class="mr-2"
+              :disabled="!override.name || !override.positionId || !override.total"
+              v-if="userCanEdit"
+              @click="saveOverride()"
+              text="Save"
+          ></a-btn>
+          <a-btn
+              color="success"
+              class="mr-2"
+              v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && overrideId && override.status === 'PENDING'"
+              :disabled="errorMessages.length > 0"
+              @click="approveOverride()"
+              text="Approve"
+          ></a-btn>
+          <a-btn
+              color="error"
+              class="mr-2"
+              v-if="overrideId && override.status !== 'ACTIVE' && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+              :disabled="errorMessages.length > 0"
+              @click="openDeleteDialog(override, deleteTypes.OVERRIDE)"
+              text="Delete"
+          ></a-btn>
+          <a-btn
+              color="error"
+              class="mr-2"
+              v-else-if="overrideId && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+              @click="inactivateConfirm=true"
+              text="Inactivate"
+          ></a-btn>
           <MultiOptionDialog
               :open-dialog="inactivateConfirm"
               :options="inactivateOptions"
@@ -52,7 +65,7 @@
             <div v-if="planHasActiveUsers()">
               You cannot set this plan to inactive with active users.
               <table class="table mt-2">
-                <tr v-for="(u, idx) in activeUsers()" :key="idx">
+                <tr v-for="(u, idx) in activeUsers" :key="idx">
                   <td class="pr-3">{{u.name}}</td>
                   <td>{{u.position}}</td>
                 </tr>
@@ -62,11 +75,16 @@
               Are you sure you want to inactivate this plan?
             </div>
           </MultiOptionDialog>
-          <v-btn color="primary" v-if="overrideId && override && userCanAdd" @click="showCloneDialog=true">Clone</v-btn>
+          <a-btn
+              color="primary"
+              v-if="overrideId && override && userCanAdd"
+              @click="showCloneDialog=true"
+              text="Clone"
+          ></a-btn>
           <ConfirmationDialog
               :open-dialog="showCloneDialog"
               @confirm="validateStartDates"
-              @@close-dialog="[showCloneDialog=false, cloneStartDate=null]"
+              @close-dialog="[showCloneDialog=false, cloneStartDate=null]"
               :disable-confirm="(override.assignedUsers.filter(u => u.selected).length > 0 && !cloneStartDate) ||
                              (override.assignedUsers.filter(u => u.selected).length === 0 && cloneStartDate != null)"
           >
@@ -127,30 +145,30 @@
         <v-row>
           <v-col cols="12" sm="6">
             <v-card flat class="pa-3" color="transparent">
-              <v-text-field text
+              <a-text-field
                             label="Name"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
-                            v-model="override.name"></v-text-field>
-              <v-text-field text
+                            v-model="override.name"></a-text-field>
+              <a-text-field
                             label="Description"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
-                            v-model="override.description"></v-text-field>
-              <v-select attach v-model="override.positionId"
+                            v-model="override.description"></a-text-field>
+              <a-select attach v-model="override.positionId"
                         :items="positions"
                         :readonly="!userCanEdit"
                         :disabled="override.id != null || !userCanEdit"
                         no-data-text="No Users Available"
                         label="Position Type"
-                        item-text="label"
+                        item-title="label"
                         item-value="id"
-              ></v-select>
-              <v-text-field text
+              ></a-select>
+              <a-text-field
                             :readonly="!userCanEdit"
                             :disabled="(override.id && override.status !== 'PENDING') || !userCanEdit"
                             :label="payRateText"
-                            v-model="override.total"></v-text-field>
+                            v-model="override.total"></a-text-field>
 
               <div v-if="customFieldGroups.length > 0">
                 <CustomValueInput
@@ -165,25 +183,25 @@
           </v-col>
           <v-col cols="12" sm="6">
             <v-card class="pa-3" v-if="overrideId">
-              <v-text-field text
+              <a-text-field
                             label="Status"
                             disabled
-                            v-model="override.status"></v-text-field>
-              <v-text-field text
+                            v-model="override.status"></a-text-field>
+              <a-text-field
                             v-if="override.createdBy"
                             disabled
                             label="Created By"
-                            v-model="override.createdBy.name"></v-text-field>
-              <v-text-field text
+                            v-model="override.createdBy.name"></a-text-field>
+              <a-text-field
                             disabled
                             v-if="override.approved"
                             label="Approved"
-                            v-model="override.approved"></v-text-field>
-              <v-text-field text
+                            v-model="override.approved"></a-text-field>
+              <a-text-field
                             disabled
                             label="Approved By"
                             v-if="override.approvedBy"
-                            v-model="override.approvedBy.name"></v-text-field>
+                            v-model="override.approvedBy.name"></a-text-field>
             </v-card>
           </v-col>
         </v-row>
@@ -197,10 +215,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="override.status === 'PENDING'" @click="addReceivingUser = !addReceivingUser">
-              <v-icon v-if="addReceivingUser">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                v-if="override.status === 'PENDING'"
+                @click="addReceivingUser = !addReceivingUser"
+                :prepend-icon="addReceivingUser ? 'remove' : 'add'"
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -216,32 +237,35 @@
                             autocomplete="off"
                             attach>
             </v-autocomplete>
-            <v-text-field text
+            <a-text-field
                           type="number"
                           label="M1 Allocation"
                           v-model="newReceivingUser.m1Allocation">
-            </v-text-field>
-          <v-text-field text
-                        v-if="positionId === 1"
+            </a-text-field>
+          <a-text-field
+                        v-if="commissionPositionId === 1"
                         type="number"
                         label="M2 Allocation"
                         v-model="newReceivingUser.m2Allocation">
-            </v-text-field>
-            <v-text-field text
+            </a-text-field>
+            <a-text-field
                           type="number"
                           label="Redline M1 Allocation"
                           v-model="newReceivingUser.redLineM1Allocation">
-            </v-text-field>
-            <v-text-field text
-                          v-if="positionId === 1"
+            </a-text-field>
+            <a-text-field
+                          v-if="commissionPositionId === 1"
                           type="number"
                           label="Redline M2 Allocation"
                           v-model="newReceivingUser.redLineM2Allocation">
-          </v-text-field>
-            <v-btn color="primary" class="mr-3 white--text" @click="addReceivingUserToOverride()"
-                   :disabled="!newReceivingUser.userId">
-              Add
-            </v-btn>
+          </a-text-field>
+          <a-btn
+              color="primary"
+              class="mr-3"
+              @click="addReceivingUserToOverride()"
+              :disabled="!newReceivingUser.userId"
+              text="Add"
+          ></a-btn>
         </v-card>
         <v-divider v-if="addAssignedUser"></v-divider>
         <v-data-table
@@ -267,30 +291,34 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4 text-left">
-              <v-text-field text
+              <a-text-field
                             type="number"
                             label="M1 Allocation"
                             v-model.number="item.m1Allocation">
-              </v-text-field>
-              <v-text-field text
-                            v-if="positionId === 1"
+              </a-text-field>
+              <a-text-field
+                            v-if="commissionPositionId === 1"
                             type="number"
                             label="M2 Allocation"
                             v-model.number="item.m2Allocation">
-              </v-text-field>
-              <v-text-field text
+              </a-text-field>
+              <a-text-field
                             type="number"
                             label="Redline M1 Allocation"
                             v-model.number="item.redLineM1Allocation">
-              </v-text-field>
-              <v-text-field text
-                            v-if="positionId === 1"
+              </a-text-field>
+              <a-text-field
+                            v-if="commissionPositionId === 1"
                             type="number"
                             label="Redline M2 Allocation"
                             v-model.number="item.redLineM2Allocation">
-              </v-text-field>
-              <v-btn color="primary" :disabled="!item.m1Allocation || (positionId === 1 && !item.m2Allocation)"
-                     @click="[expanded = [], updateReceivingUser(item)]">Save</v-btn>
+              </a-text-field>
+              <a-btn
+                  color="primary"
+                  :disabled="!item.m1Allocation || (commissionPositionId === 1 && !item.m2Allocation)"
+                  @click="[expanded = [], updateReceivingUser(item)]"
+                  text="Save"
+              ></a-btn>
             </td>
           </template>
 
@@ -299,21 +327,32 @@
               <td class="text-left">{{item.name}}</td>
               <td class="text-left">{{item.employeeId}}</td>
               <td class="text-left">{{item.m1Allocation}}</td>
-              <td class="text-left" v-if="positionId !== 4">{{item.m2Allocation}}</td>
+              <td class="text-left" v-if="commissionPositionId !== 4">{{item.m2Allocation}}</td>
               <td class="text-left">{{item.redLineM1Allocation}}</td>
-              <td class="text-left" v-if="positionId !== 4">{{item.redLineM2Allocation}}</td>
+              <td class="text-left" v-if="commissionPositionId !== 4">{{item.redLineM2Allocation}}</td>
               <td>
-                <v-btn small text color="primary" @click="expanded = [item]"
-                       v-if="override.status === 'PENDING' && !expanded.includes(item)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" @click="expanded = []"
-                       v-if="expanded.includes(item)">
-                  cancel
-                </v-btn>
-                <v-btn color="primary" text @click="openDeleteDialog(item, deleteTypes.RECEIVING)">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <a-btn
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="expanded = [item]"
+                    v-if="override.status === 'PENDING' && !expanded.includes(item)"
+                    prepend-icon="edit"
+                ></a-btn>
+                <a-btn
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="expanded = []"
+                    v-if="expanded.includes(item)"
+                    text="cancel"
+                ></a-btn>
+                <a-btn
+                    color="primary"
+                    variant="text"
+                    @click="openDeleteDialog(item, deleteTypes.RECEIVING)"
+                    prepend-icon="delete"
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -328,11 +367,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanAdd"
-                   @click="[addAssignedUser = !addAssignedUser, newAssignedUser = {}, userHistory = []]">
-              <v-icon v-if="addAssignedUser">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                v-if="userCanAdd"
+                @click="[addAssignedUser = !addAssignedUser, newAssignedUser = {}, userHistory = []]"
+                :prepend-icon="addAssignedUser ? 'remove' : 'add'"
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -401,10 +442,13 @@
             <div class="mb-2" v-else-if="newAssignedUser.showNote">
               {{newAssignedUser.noteMsg}}
             </div>
-            <v-btn color="primary" class="mr-3 white--text" @click="addAssignedUserToOverride()"
-                   :disabled="newAssignedUser.dateError || !newAssignedUser.userId || !newAssignedUser.startDate || errorLoadingUserHistory">
-              Add
-            </v-btn>
+            <a-btn
+                color="primary"
+                class="mr-3"
+                @click="addAssignedUserToOverride()"
+                :disabled="newAssignedUser.dateError || !newAssignedUser.userId || !newAssignedUser.startDate || errorLoadingUserHistory"
+                text="Add"
+            ></a-btn>
           </div>
         </v-card>
         <v-divider v-if="addAssignedUser"></v-divider>
@@ -464,10 +508,13 @@
               <div class="mb-2" v-else-if="item.showNote">
                 {{item.noteMsg}}
               </div>
-              <v-btn color="primary" class="mr-3 white--text" @click="updateAssignedUser(item)"
-                     :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory">
-                Save
-              </v-btn>
+              <a-btn
+                  color="primary"
+                  class="mr-3"
+                  @click="updateAssignedUser(item)"
+                  :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory"
+                  text="Save"
+              ></a-btn>
             </td>
           </template>
 
@@ -478,18 +525,30 @@
               <td class="text-left">{{item.startDate}}</td>
               <td class="text-left">{{item.endDate}}</td>
               <td>
-                <v-btn small text color="primary" @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
-                       v-if="override.status === 'PENDING' && !assignedUserExpanded.includes(item)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text @click="assignedUserExpanded = []"
-                       v-if="assignedUserExpanded.includes(item)">cancel
-                </v-btn>
-                <v-btn
-                  v-if="override.status === 'PENDING'"
-                  small text color="primary" @click="openDeleteDialog(item, deleteTypes.ASSIGNED)">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <a-btn
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
+                    v-if="override.status === 'PENDING' && !assignedUserExpanded.includes(item)"
+                    prepend-icon="edit"
+                ></a-btn>
+                <a-btn
+                    size="small"
+                    variant="text"
+                    @click="assignedUserExpanded = []"
+                    v-if="assignedUserExpanded.includes(item)"
+                    color="unset"
+                    text="cancel"
+                ></a-btn>
+                <a-btn
+                    v-if="override.status === 'PENDING'"
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="openDeleteDialog(item, deleteTypes.ASSIGNED)"
+                    prepend-icon="delete"
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -504,290 +563,288 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-  import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+
   import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/ProjectAssignmentModal";
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequestWithRequestParams, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import MultiOptionDialog from "@/components/MultiOptionDialog";
+  import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useRoute, useRouter} from "vue-router/composables";
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useBrsStore } from '@/stores/BrsStorePinia.js'
+  import debounce from 'lodash.debounce'
+  import { storeToRefs } from 'pinia'
 
-  const deleteTypes={
+  const brsStore = useBrsStore()
+  const { commissionPositionId } = storeToRefs(brsStore)
+  const appStore = useAppStore()
+  const route = useRoute()
+  const router = useRouter()
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
+
+  const deleteTypes = {
     OVERRIDE:0,
     RECEIVING:1,
     ASSIGNED:2
   }
 
-  export default {
-    name: 'Override',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      MultiOptionDialog,
-      ConfirmationDialog,
-      CustomValueInput,
-      DatetimePickerInput,
-      ProjectAssignmentModal
-    },
-    created() {
-      if(this.overrideId) {
-        this.getOverrideDetails()
-      } else {
-        this.dataLoading = false
-      }
-    },
-    computed: {
-      visibleReceivingHeaders() {
-        return this.receivingHeaders.filter(header => header.show === true)
-      },
-      itemToDeleteName() {
-        return this.itemToDelete ? this.itemToDelete.name : ''
-      },
-      cloneDialogTitle(){
-        return this.override ? `Clone ${this.override.name}` : "Clone"
-      },
-      inactivateOptions(){
-        return this.planHasActiveUsers() ? [] : ['inactivate']
-      }
-    },
-    watch: {
-      '$store.state.brs.commissionPositionId': function () {
-        //they can't switch between Setter/Closer while on an actual override plan
-        this.$router.push(`/commissionManagement/overrides`)
-      },
-      $route(to) {
-        // react to route changes...
-        // this.$router.push({name: 'commission', params: {id: to.params.id}})
-        // this.planId = to.params.id
-        this.overrideId = to.params.id
-        this.getOverrideDetails()
-      },
-      assignedUserSearch (val) {
-        if(!val) {
-          this.newAssignedUser.userId = null
-          this.assignedUsersToAdd = []
-          return
-        }
-        this.assignedUsersToAdd = []
-        this.getAssignedUsersDebounced(val)
-      },
-      receivingUserSearch (val) {
-        if(!val) {
-          this.receivingUsersToAdd = []
-          this.newReceivingUser.userId = null
-          return
-        }
-        this.receivingUsersToAdd = []
-        this.getReceivingUsersDebounced(val)
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        dataLoading: true,
-        cloneDialog: false,
-        showProjectAssignmentModal: false,
-        moment,
-        positionId: this.$store.state.brs.commissionPositionId,
-        payRateText: this.$store.state.brs.commissionPositionId === 4 ? 'Base Pay' : 'Rate per kW ($)',
-        cloneStartDate: null,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
-        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN'),
-        cloneDateError: false,
-        timezone: this.$store.state.user.details.timezone.value,
-        inactivateConfirm: false,
-        deleteConfirm: false,
-        overrideId: this.$route.params.id,
-        expanded: [],
-        assignedUserExpanded: [],
-        headers: [
-          {text: 'Name', value: 'name', show: true},
-          {text: 'Employee ID', value: 'employeeId', show: true},
-          {text: 'Start Date', value: 'startDate', show: true},
-          {text: 'End Date', value: 'endDate', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        receivingHeaders: [
-          {text: 'Name', value: 'name', show: true},
-          {text: 'Employee ID', value: 'employeeId', show: true},
-          {text: 'M1 Allocation', value: 'm1Allocation', show: true},
-          {text: 'M2 Allocation', value: 'm2Allocation', show: this.$store.state.brs.commissionPositionId !== 4},
-          {text: 'Redline M1', value: 'redLineM1Allocation', show: true},
-          {text: 'Redline M2', value: 'redLineM2Allocation', show: this.$store.state.brs.commissionPositionId !== 4},
-          {text: '', value: 'icons', show: true},
-        ],
-        override: {
-          approvedBy: {},
-          createdBy: {},
-          assignedUsers: []
-        },
-        positions: [
-          {id: 1, label: 'Closer'},
-          {id: 4, label: 'Setter'}
-        ],
-        addAssignedUser: false,
-        assignedUsersLoading: false,
-        newAssignedUser: {},
-        assignedUsersToAdd: [],
-        assignedUserSearch: null,
-        addReceivingUser: false,
-        receivingUsersLoading: false,
-        newReceivingUser: {
-          m1Allocation: 0,
-          m2Allocation: 0,
-          redLineM1Allocation: 0,
-          redLineM2Allocation: 0,
-        },
-        errorLoadingUserHistory: false,
-        historyHeaders: [
-          {text: 'Name', value: 'planName', show: true},
-          {text: 'Start Date', value: 'startDate', show: true},
-          {text: 'End Date', value: 'endDate', show: true},
-        ],
-        receivingUsersToAdd: [],
-        receivingUserSearch: null,
-        errorMessages: [],
-        userHistory: [],
-        customFieldGroups: [],
-        showDeleteDialog: false,
-        itemToDelete: null,
-        deleteType: null,
-        deleteTypes,
-        showCloneDialog: false
-      }
-    },
-    methods: {
-      updateDirtyValue(item) {
+  const dataLoading = ref(true);
+  const cloneDialog = ref(false);
+  const showProjectAssignmentModal = ref(false);
+  const payRateText = ref(commissionPositionId.value === 4 ? 'Base Pay' : 'Rate per kW ($)');
+  const cloneStartDate = ref(null);
+  const cloneDateError = ref(false);
+  const inactivateConfirm = ref(false);
+  const deleteConfirm = ref(false);
+  const expanded = ref([]);
+  const assignedUserExpanded = ref([]);
+  const headers = ref([
+    { text: 'Name', value: 'name', show: true },
+    { text: 'Employee ID', value: 'employeeId', show: true },
+    { text: 'Start Date', value: 'startDate', show: true },
+    { text: 'End Date', value: 'endDate', show: true },
+    { text: '', value: 'icons', show: true },
+  ]);
+  const receivingHeaders = ref([
+    { text: 'Name', value: 'name', show: true },
+    { text: 'Employee ID', value: 'employeeId', show: true },
+    { text: 'M1 Allocation', value: 'm1Allocation', show: true },
+    { text: 'M2 Allocation', value: 'm2Allocation', show: commissionPositionId.value !== 4 },
+    { text: 'Redline M1', value: 'redLineM1Allocation', show: true },
+    { text: 'Redline M2', value: 'redLineM2Allocation', show: commissionPositionId.value !== 4 },
+    { text: '', value: 'icons', show: true },
+  ]);
+  const override = ref({
+    approvedBy: {},
+    createdBy: {},
+    assignedUsers: []
+  });
+  const positions = ref([
+    { id: 1, label: 'Closer' },
+    { id: 4, label: 'Setter' }
+  ]);
+  const addAssignedUser = ref(false);
+  const assignedUsersLoading = ref(false);
+  const newAssignedUser = ref({});
+  const assignedUsersToAdd = ref([]);
+  const assignedUserSearch = ref(null);
+  const addReceivingUser = ref(false);
+  const receivingUsersLoading = ref(false);
+  const newReceivingUser = ref({
+    m1Allocation: 0,
+    m2Allocation: 0,
+    redLineM1Allocation: 0,
+    redLineM2Allocation: 0,
+  });
+  const errorLoadingUserHistory = ref(false);
+  const historyHeaders = ref([
+    { text: 'Name', value: 'planName', show: true },
+    { text: 'Start Date', value: 'startDate', show: true },
+    { text: 'End Date', value: 'endDate', show: true },
+  ]);
+  const receivingUsersToAdd = ref([]);
+  const receivingUserSearch = ref(null);
+  const errorMessages = ref([]);
+  const userHistory = ref([]);
+  const customFieldGroups = ref([]);
+  const showDeleteDialog = ref(false);
+  const itemToDelete = ref(null);
+  const deleteType = ref(null);
+  const showCloneDialog = ref(false);
+
+
+  const userCanAdd = computed(()  => {
+    return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
+  })
+  const userCanEdit = computed(()  => {
+    return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
+  })
+  const userIsAdmin = computed(()  => {
+    return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
+  })
+  const timezone = computed(()  => {
+    return userStore.timezone.value
+  })
+  const visibleReceivingHeaders = computed(()  => {
+    return receivingHeaders.value.filter(header => header.show === true)
+  })
+  const itemToDeleteName = computed(()  => {
+    return itemToDelete.value ? itemToDelete.value.name : ''
+  })
+  const cloneDialogTitle = computed(() => {
+    return override.value ? `Clone ${override.value.name}` : "Clone"
+  })
+  const inactivateOptions = computed(() => {
+    return planHasActiveUsers() ? [] : ['inactivate']
+  })
+  const overrideId = computed(() => {
+    return route.params.id
+  })
+  const activeUsers = computed(() => {
+    return override.value?.assignedUsers?.filter(u => {
+      return u.endDate === null || u.endDate > new Date()
+    })
+  })
+
+  onMounted(() => {
+    if(overrideId.value) {
+      getOverrideDetails()
+    } else {
+      dataLoading.value = false
+    }
+  })
+
+  watch(commissionPositionId, async() => {
+    //if they change the position (setter vs closer) have to go back to main page
+    await router.push('/commissionManagement/overrides')
+  })
+
+  watch(overrideId, () => {
+    getOverrideDetails()
+  })
+  watch(assignedUserSearch, (val) => {
+    if(!val) {
+      newAssignedUser.value.userId = null
+      assignedUsersToAdd.value = []
+      return
+    }
+    assignedUsersToAdd.value = []
+    getAssignedUsersDebounced(val)
+  })
+  watch(receivingUserSearch, (val) => {
+    if(!val) {
+      receivingUsersToAdd.value = []
+      newReceivingUser.value.userId = null
+      return
+    }
+    receivingUsersToAdd.value = []
+    getReceivingUsersDebounced(val)
+  })
+
+
+      const updateDirtyValue = (item) => {
         item.valueWasChanged = true
-        this.dataWasChanged = true
-      },
-      async getCustomFieldGroups() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        dataWasChanged.value = true
+      }
+      const getCustomFieldGroups = async() => {
+        appStore.loading = true
         try {
-          const params = {sourceId: this.overrideId, objectTypeId: 9}
+          const params = {sourceId: overrideId.value, objectTypeId: 9}
           const {data, status} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-          this.customFieldGroups = data
-          handleHidingGlobalLoader(this, status)
+          customFieldGroups.value = data
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error retrieving custom fields')
         }
-      },
-      async getOverrideDetails () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const getOverrideDetails = async () => {
+        appStore.loading = true
         try {
-          const {data, status} = await getRequest(`/commissionManagement/overrides/${this.overrideId}`, 'blueraven')
-          this.override = data
-          this.getCustomFieldGroups()
-          this.dataLoading = false
-          this.checkErrorMessages()
-          handleHidingGlobalLoader(this, status)
+          const {data, status} = await getRequest(`/commissionManagement/overrides/${overrideId.value}`, 'blueraven')
+          override.value = data
+          await getCustomFieldGroups()
+          dataLoading.value = false
+          checkErrorMessages()
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Override Details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Loading Override Details')
+          appStore.loading = false
         }
-      },
-      checkErrorMessages () {
-        this.errorMessages = []
+      }
+      const checkErrorMessages = () => {
+        errorMessages.value = []
         //sum of all m1 and m2's should equal rate per kw$ (or base pay for setter)
         let sum = 0
-        this.override?.receivingUsers?.forEach(ru => {
+        override.value?.receivingUsers?.forEach(ru => {
           sum += ru.m1Allocation + ru.m2Allocation
         })
-        if(sum !== this.override.total) {
-          this.errorMessages.push(`The sum of all milestone allocations must equal the ${this.payRateText}. `)
+        if(sum !== override.value.total) {
+          errorMessages.value.push(`The sum of all milestone allocations must equal the ${payRateText.value}. `)
         }
-      },
-      planHasActiveUsers () {
+      }
+      const planHasActiveUsers = () => {
         let hasActive = false
-        this.override?.assignedUsers?.forEach(u => {
+        override.value?.assignedUsers?.forEach(u => {
           if(u.endDate === null || u.endDate > new Date()){
             hasActive = true
           }
         })
         return hasActive
-      },
-      activeUsers () {
-        return this.override?.assignedUsers?.filter(u => {
-          return u.endDate === null || u.endDate > new Date()
-        })
-      },
-      // goToDetails (item) {
-      // },
-      async deleteOverride () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const deleteOverride = async () => {
+        appStore.loading = true
         try {
-          await deleteRequest(`/commissionManagement/overrides/${this.overrideId}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Override Plan Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$router.push({name: 'overrides'})
+          await deleteRequest(`/commissionManagement/overrides/${overrideId.value}`, 'blueraven')
+          snackbar('SUCCESS', 'Override Plan Deleted')
+          await router.push({name: 'overrides'})
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Override Plan')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Deleting Override Plan')
         }
-      },
-      async cloneOverride () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const cloneOverride = async () => {
+        appStore.loading = true
         try {
           let params = {
-            receivingUsers: this.override?.receivingUsers?.filter(u => u.selected).map(u => u.userId),
-            assignedUsers: this.override?.assignedUsers?.filter(u => u.selected).map(u => u.userId),
-            startDate: this.cloneStartDate,
+            receivingUsers: override.value?.receivingUsers?.filter(u => u.selected).map(u => u.userId),
+            assignedUsers: override.value?.assignedUsers?.filter(u => u.selected).map(u => u.userId),
+            startDate: cloneStartDate.value,
             backdateApprovalCreds: null
           }
-          const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/clone`, params, 'blueraven')
-          this.$router.push({name: 'override', params: {id: data.id}})
+          const {data} = await postRequest(`/commissionManagement/overrides/${overrideId.value}/clone`, params, 'blueraven')
+          await router.push({name: 'override', params: {id: data.id}})
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Cloning Override Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Cloning Override Plan')
+          appStore.loading = false
         }
-      },
-      async getUserHistory(userId) {
+      }
+      const getUserHistory = async(userId) => {
         //reset the rest of the new user fields if they change users
-        delete this.newAssignedUser.startDate
-        delete this.newAssignedUser.endDate
-        this.newAssignedUser.dateError = false
-        this.newAssignedUser.dateErrorMsg = ''
-        this.newAssignedUser.showNote = false
-        this.newAssignedUser.noteMsg = ''
-        this.errorLoadingUserHistory = false
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        delete newAssignedUser.value.startDate
+        delete newAssignedUser.value.endDate
+        newAssignedUser.value.dateError = false
+        newAssignedUser.value.dateErrorMsg = ''
+        newAssignedUser.value.showNote = false
+        newAssignedUser.value.noteMsg = ''
+        errorLoadingUserHistory.value = false
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/commissionManagement/overrides/assignedUsers/${userId}/history`, 'blueraven')
-          this.userHistory = data
-          handleHidingGlobalLoader(this, status)
+          userHistory.value = data
+          handleHidingGlobalLoader(status)
         } catch (e) {
-          this.errorLoadingUserHistory = true
+          errorLoadingUserHistory.value = true
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving User History')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving User History')
+          appStore.loading = false
         }
-      },
-      validateStartDates() {
+      }
+      const validateStartDates = () => {
         //this is used when cloning users
-        this.cloneDateError = false
-        this.override?.assignedUsers?.forEach(u => {
-          if(u.selected && u.startDate >= this.cloneStartDate) {
-            this.cloneDateError = true
+        cloneDateError.value = false
+        override.value?.assignedUsers?.forEach(u => {
+          if(u.selected && u.startDate >= cloneStartDate.value) {
+            cloneDateError.value = true
           }
         })
 
-        if(!this.cloneDateError) {
-          this.cloneOverride()
-          this.cloneDialog = false;
+        if(!cloneDateError.value) {
+          cloneOverride()
+          cloneDialog.value = false;
         }
-      },
-      checkDates(startDate, endDate, plans, item, existingId) {
+      }
+      const checkDates = (startDate, endDate, plans, item, existingId) => {
         //item = where to track the error
         item.dateError = false
 
@@ -798,7 +855,7 @@
           let overlap = []
           let hasActivePlan = false
           plans.forEach(p => {
-            if(this.dateRangeOverlap(startDate, endDate, p, existingId)) {
+            if(dateRangeOverlap(startDate, endDate, p, existingId)) {
               overlap.push(p)
             }
             // if any plan doesn't have an end date, then there is an active plan
@@ -814,8 +871,8 @@
             item.noteMsg = `The Current plan's end date will be set to ${moment(startDate).subtract(1, 'd').format('MM/DD/YYYY')}.`
           }
         }
-      },
-      dateRangeOverlap(start, end, plan, existingId) {
+      }
+      const dateRangeOverlap = (start, end, plan, existingId) => {
         let valueToCheck = plan.planId ?? plan.id
         //this will not allow them to go back in time to add plans before existing plans which seems to be ok
         if(valueToCheck === existingId) {
@@ -825,260 +882,238 @@
           //this is used when adding a new plan
           return start <= plan.startDate || start <= plan.endDate
         }
-      },
-      async saveOverride () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const saveOverride = async () => {
+        appStore.loading = true
         try {
           let params = {
-            name: this.override.name,
-            description: this.override.description,
-            positionId: this.override.positionId,
-            total: this.override.total,
-            id: this.override.id,
-            customFieldGroups: this.customFieldGroups
+            name: override.value.name,
+            description: override.value.description,
+            positionId: override.value.positionId,
+            total: override.value.total,
+            id: override.value.id,
+            customFieldGroups: customFieldGroups.value
           }
           const {data, status} = await postRequest(`/commissionManagement/overrides`, params, 'blueraven')
-          if(!this.overrideId) {
+          if(!overrideId.value) {
             //need to reload some stuff if this was a new plan
-            this.$router.push({name: 'override', params: {id: data.id}})
+            await router.push({name: 'override', params: {id: data.id}})
           }
-          this.checkErrorMessages()
-          handleHidingGlobalLoader(this, status)
+          checkErrorMessages()
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Override Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Saving Override Plan')
+          appStore.loading = false
         }
-      },
-      async approveOverride () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const approveOverride = async () => {
+        appStore.loading = true
         try {
-          const {data, status} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/approve`, {}, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Override Plan Approved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.override = data
-          handleHidingGlobalLoader(this, status)
+          const {data, status} = await postRequest(`/commissionManagement/overrides/${overrideId.value}/approve`, {}, 'blueraven')
+          snackbar('SUCCESS', 'Override Plan Approved')
+          override.value = data
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Approving Override Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Approving Override Plan')
+          appStore.loading = false
         }
-      },
-      async inactivateOverride () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const inactivateOverride = async () => {
+        appStore.loading = true
         try {
-          await postRequest(`/commissionManagement/overrides/${this.overrideId}/inactivate`, {}, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Override Plan Inactivated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$router.push({name: 'overrides'})
+          await postRequest(`/commissionManagement/overrides/${overrideId.value}/inactivate`, {}, 'blueraven')
+          snackbar('SUCCESS', 'Override Plan Inactivated')
+          await router.push({name: 'overrides'})
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Inactivating Override Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Inactivating Override Plan')
+          appStore.loading = false
         }
-      },
-      async updateAssignedUser(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const updateAssignedUser = async(item) => {
+        appStore.loading = true
         try {
-          const {status} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/updateUser`, item, 'blueraven')
-          this.assignedUserExpanded = []
-          this.userHistory = []
-          this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          const {status} = await postRequest(`/commissionManagement/overrides/${overrideId.value}/updateUser`, item, 'blueraven')
+          assignedUserExpanded.value = []
+          userHistory.value = []
+          snackbar('SUCCESS', 'Assigned User Updated')
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Assigned User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Updating Assigned User')
+          appStore.loading = false
         }
-      },
-      getAssignedUsersDebounced(val) {
-        clearTimeout(this._searchTimerId)
-        this._searchTimerId = setTimeout(() => {
-          this.getAssignedUsers(val)
-        }, 500) /* 500ms throttle */
-      },
-      async getAssignedUsers(query) {
-        if(this.addAssignedUser) {
-          this.assignedUsersLoading = true
+      }
+  const getAssignedUsersDebounced = debounce((val) => {
+    getAssignedUsers(val)
+  }, 500)
+  const getReceivingUsersDebounced = debounce((val) => {
+    getReceivingUsers(val)
+  }, 500)
+
+      const getAssignedUsers = async(query) => {
+        if(addAssignedUser.value) {
+          assignedUsersLoading.value = true
           try {
             let params = {
-              positionId: this.override.positionId,
+              positionId: override.value.positionId,
               query,
-              planId: this.override.id,
+              planId: override.value.id,
               isReceiving: false
             }
             const {data} = await getRequestWithParams(`/commissionManagement/overrides/_search`, {params}, 'blueraven')
-            this.assignedUsersToAdd = data
-            this.assignedUsersLoading = false
+            assignedUsersToAdd.value = data
+            assignedUsersLoading.value = false
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Override Plan Users')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            snackbar('ERROR', 'Error Retrieving Override Plan Users')
+            appStore.loading = false
           }
         }
-      },
-      async addAssignedUserToOverride() {
-        if(this.addAssignedUser) {
+      }
+      const addAssignedUserToOverride = async() => {
+        if(addAssignedUser.value) {
           try {
             let params = {
-              userId: this.newAssignedUser.userId,
-              startDate: this.newAssignedUser.startDate,
-              endDate: this.newAssignedUser.endDate
+              userId: newAssignedUser.value.userId,
+              startDate: newAssignedUser.value.startDate,
+              endDate: newAssignedUser.value.endDate
             }
-            const {data} = await postRequestWithRequestParams(`/commissionManagement/overrides/${this.override.id}/assignedUsers/${this.override.positionId}`, params, { addUserToPlan: true }, 'blueraven')
-            this.override.assignedUsers = data
-            this.newAssignedUser = {}
-            this.assignedUserSearch = null
-            this.addAssignedUser = false
+            const {data} = await postRequestWithRequestParams(`/commissionManagement/overrides/${override.value.id}/assignedUsers/${override.value.positionId}`, params, { addUserToPlan: true }, 'blueraven')
+            override.value.assignedUsers = data
+            newAssignedUser.value = {}
+            assignedUserSearch.value = null
+            addAssignedUser.value = false
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Assigning User')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            snackbar('ERROR', 'Error Assigning User')
+            appStore.loading = false
           }
         }
-      },
-      async deleteAssignedUser () {
-        const assignedUserId = this.itemToDelete.id
+      }
+      const deleteAssignedUser = async () => {
+        const assignedUserId = itemToDelete.value.id
         // console.log(assignedUserId)
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
-          const {status} = await deleteRequest(`/commissionManagement/overrides/${this.overrideId}/assignedUsers/${assignedUserId}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Assigned User Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.override.assignedUsers = this.override.assignedUsers.filter(au => {
+          const {status} = await deleteRequest(`/commissionManagement/overrides/${overrideId.value}/assignedUsers/${assignedUserId}`, 'blueraven')
+          snackbar('SUCCESS', 'Assigned User Deleted')
+          override.value.assignedUsers = override.value.assignedUsers.filter(au => {
             return au.id !== assignedUserId
           })
-          handleHidingGlobalLoader(this, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Assigned User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Deleting Assigned User')
+          appStore.loading = false
         }
-      },
-      getReceivingUsersDebounced(val) {
-        clearTimeout(this._searchReceivingTimerId)
-        this._searchReceivingTimerId = setTimeout(() => {
-          this.getReceivingUsers(val)
-        }, 500) /* 500ms throttle */
-      },
-      async getReceivingUsers(query) {
-        if(this.addReceivingUser) {
-          this.receivingUsersLoading = true
+      }
+      const getReceivingUsers = async(query) => {
+        if(addReceivingUser.value) {
+          receivingUsersLoading.value = true
           try {
             let params = {
               query,
-              planId: this.override.id,
+              planId: override.value.id,
               isReceiving: true,
-              positionId: this.override.positionId
+              positionId: override.value.positionId
             }
             const {data} = await getRequestWithParams(`/commissionManagement/overrides/_search`, {params}, 'blueraven')
-            this.receivingUsersToAdd = data
-            this.receivingUsersLoading = false
+            receivingUsersToAdd.value = data
+            receivingUsersLoading.value = false
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Receiving Override Users')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            snackbar('ERROR', 'Error Retrieving Receiving Override Users')
+            appStore.loading = false
           }
         }
-      },
-      async updateReceivingUser(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const updateReceivingUser = async(item) => {
+        appStore.loading = true
         try {
-          const {status} = await postRequest(`/commissionManagement/overrides/${this.override.id}/receivingUser`, item, 'blueraven')
-          this.checkErrorMessages()
-          handleHidingGlobalLoader(this, status)
+          const {status} = await postRequest(`/commissionManagement/overrides/${override.value.id}/receivingUser`, item, 'blueraven')
+          checkErrorMessages()
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Receiving User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Saving Receiving User')
+          appStore.loading = false
         }
-      },
-      async addReceivingUserToOverride() {
-        if(this.addReceivingUser) {
+      }
+      const addReceivingUserToOverride = async() => {
+        if(addReceivingUser.value) {
           try {
             let params = {
-              userId: this.newReceivingUser.userId,
-              m1Allocation: this.newReceivingUser.m1Allocation,
-              m2Allocation: this.newReceivingUser.m2Allocation,
-              redLineM1Allocation: this.newReceivingUser.redLineM1Allocation,
-              redLineM2Allocation: this.newReceivingUser.redLineM2Allocation
+              userId: newReceivingUser.value.userId,
+              m1Allocation: newReceivingUser.value.m1Allocation,
+              m2Allocation: newReceivingUser.value.m2Allocation,
+              redLineM1Allocation: newReceivingUser.value.redLineM1Allocation,
+              redLineM2Allocation: newReceivingUser.value.redLineM2Allocation
             }
-            const {data} = await postRequest(`/commissionManagement/overrides/${this.override.id}/receivingUsers`, params, 'blueraven')
-            this.override.receivingUsers.push(data)
-            this.checkErrorMessages()
-            this.newReceivingUser = {
+            const {data} = await postRequest(`/commissionManagement/overrides/${override.value.id}/receivingUsers`, params, 'blueraven')
+            override.value.receivingUsers.push(data)
+            checkErrorMessages()
+            newReceivingUser.value = {
               m1Allocation: 0,
               m2Allocation: 0,
               redLineM1Allocation: 0,
               redLineM2Allocation: 0,
             }
-            this.receivingUserSearch = null
-            this.addReceivingUser = false
+            receivingUserSearch.value = null
+            addReceivingUser.value = false
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Adding Receiving User')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            snackbar('ERROR', 'Error Adding Receiving User')
+            appStore.loading = false
           }
         }
-      },
-      async deleteReceivingUser () {
-        const receivingUserId = this.itemToDelete.userId
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const deleteReceivingUser = async () => {
+        const receivingUserId = itemToDelete.value.userId
+        appStore.loading = true
         try {
-          const {status} = await deleteRequest(`/commissionManagement/overrides/${this.overrideId}/receivingUsers/${receivingUserId}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Receiving User Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.override.receivingUsers = this.override.receivingUsers.filter(au => {
+          const {status} = await deleteRequest(`/commissionManagement/overrides/${overrideId.value}/receivingUsers/${receivingUserId}`, 'blueraven')
+          snackbar('SUCCESS', 'Receiving User Deleted')
+          override.value.receivingUsers = override.value.receivingUsers.filter(au => {
             return au.userId !== receivingUserId
           })
-          this.checkErrorMessages()
-          handleHidingGlobalLoader(this, status)
+          checkErrorMessages()
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Receiving User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Deleting Receiving User')
+          appStore.loading = false
         }
-        this.closeDeleteDialog()
-      },
-      deleteConfirmed(){
-        switch (this.deleteType){
+        closeDeleteDialog()
+      }
+      const deleteConfirmed = ()=> {
+        switch (deleteType.value){
           case deleteTypes.OVERRIDE:
-            this.deleteOverride()
+            deleteOverride()
             break
           case deleteTypes.RECEIVING:
-            this.deleteReceivingUser()
+            deleteReceivingUser()
             break
           case deleteTypes.ASSIGNED:
-            this.deleteAssignedUser()
+            deleteAssignedUser()
             break
           default:
         }
-        this.closeDeleteDialog()
-      },
-      openDeleteDialog(item, type) {
-        this.itemToDelete = item
-        this.deleteType=type
-        this.showDeleteDialog = true
-      },
-      closeDeleteDialog(){
-        this.showDeleteDialog = false
-        this.itemToDelete = null
-        this.deleteType=null
+        closeDeleteDialog()
       }
-    }
-  }
+      const openDeleteDialog = (item, type) => {
+        itemToDelete.value = item
+        deleteType.value=type
+        showDeleteDialog.value = true
+      }
+      const closeDeleteDialog = ()=> {
+        showDeleteDialog.value = false
+        itemToDelete.value = null
+        deleteType.value=null
+      }
+
 </script>
 
 <style lang="scss" scoped>

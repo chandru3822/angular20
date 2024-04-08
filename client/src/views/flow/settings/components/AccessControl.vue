@@ -24,7 +24,8 @@
       </template>
 
       <template v-slot:header.data-table-select="{ on, props }">
-        <v-simple-checkbox color="primary" v-bind="props" :ripple="false" v-on="on" v-if="userCanEdit" @input="dirtyFieldsCallback()"></v-simple-checkbox>
+        <v-simple-checkbox color="primary" v-bind="props" :ripple="false" v-on="on"
+                           v-if="userCanEdit" @input="dirtyFieldsCallback()"></v-simple-checkbox>
       </template>
 
       <template #item="{ item, index, isSelected, select }">
@@ -53,193 +54,204 @@
   </div>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
 
 import cloneDeep from 'lodash.clonedeep'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 
-export default {
-  name: 'AccessControl',
 
-  props: {
-    companyFeatures: {type: Array},
-    callback: Function,
-    dirtyFieldsCallback: Function,
-    userCanEdit: Boolean,
-    showSecondary: Boolean
-  },
-  watch: {
-    'selectedRows': function (newVal, oldVal, blah) {
-      this.alterEnabledFlagForRows(newVal, oldVal, blah)
-    }
-  },
-  data() {
-    return {
-      snackbar: {},
-      selectedRows: [],
-      userId: this.$route.params.id,
-      companyFeatureList: cloneDeep(this.companyFeatures),
-      features: [],
-      secondaryFeatureAccess: [],
-      accessControlList: [],
-      parentId: this.$store.state.user.details.parentCompanyId,
-      headers: [
-        { text: 'Feature', value: 'featureName', show: true },
+import {getCurrentInstance, onMounted, ref, toRefs, computed, watch} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
-      ],
-    }
-  },
-  created () {
-    this.getFeatures()
-    if(this.showSecondary) {
-      this.loadSecondary()
-    }
-  },
-  methods: {
-    async loadSecondary() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequestWithParams(`/feature/access/allUserPositions`, { params: {
-            userId: this.userId
-          }})
-        this.secondaryFeatureAccess = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Features')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    secondaryHasAccess (item, acl) {
-      let matchingAccessLevel = this.secondaryFeatureAccess.find(ac => { return ac.featureId === item.featureId && ac.accessCode === acl.accessCode })
-      return matchingAccessLevel?.enabled ?? false
-    },
-    populateHeaders () {
-      //todo. not my favorite
-      if(this.companyFeatureList?.length > 0) {
-        this.companyFeatureList[0]?.accessControl?.forEach(acl => {
-          this.headers.push({
-            text: acl.accessLevel,
-            value: 'MODIFY-ME',
-            custom: acl.accessCode,
-            accessControlId: acl.accessControlId,
-            show: true
-          })
-        })
-      }
-    },
-    populateSelectedRows () {
-      // this determines if the checkbox for selecting the row should be checked or not on page load
-      if(this.companyFeatureList?.length > 0) {
-        this.companyFeatureList.forEach(cfl => {
-          let countAccessControlLevels = cfl?.accessControl?.filter(ac => ac.usedByFeature).length
-          let countEnabled = 0
-          cfl.accessControl?.forEach(acl => {
-            if(acl.usedByFeature && acl.enabled) {
-              countEnabled++
-            }
-          })
-          if(countEnabled === countAccessControlLevels) {
-            this.selectedRows.push(cfl)
-          }
-        })
-      }
-    },
-    alterEnabledFlagForColumns (header) {
-      if(this.userCanEdit) {
-        header.selectAll = !header.selectAll
-        this.companyFeatureList.forEach(cf => {
-          cf.accessControl.forEach(acl => {
-            if(acl.usedByFeature && header.accessControlId === acl.accessControlId) {
-              if(acl.enabled !== header.selectAll) {
-                acl.dirty = true
-                cf.dirty = true
-              }
-              acl.enabled = header.selectAll
-            }
-          })
-        })
-        this.callback(this.companyFeatureList)
-      }
-    },
-    alterEnabledFlagForRows (newList, oldList) {
-      // filter the new list and remove everything that was in old list.  this is the row that was clicked
-      if(this.companyFeatureList.length === newList?.length) {
-        // select all
-        this.companyFeatureList.forEach(cfl => {
-          cfl.accessControl.forEach(ac => {
-            if(ac.usedByFeature) {
-              //if ac was not enabled, set dirty value to true
-              if (!ac.enabled) {
-                ac.dirty = true
-                cfl.dirty = true
-              }
-              ac.enabled = true
-            }
-          })
-        })
-      } else if (newList?.length === 0 && this.companyFeatureList.length === oldList?.length) {
-        // deselect all
-        this.companyFeatureList.forEach(cfl => {
-          cfl.accessControl.forEach(ac => {
-            if(ac.usedByFeature) {
-              //if ac was already enabled, set dirty value to true
-              if(ac.enabled) {
-                ac.dirty = true
-                cfl.dirty = true
-              }
-              ac.enabled = false
-            }
-          })
-        })
-      } else {
-        let selectedRow, enable
-        if(newList?.length > oldList?.length) {
-          selectedRow = newList?.filter(e => !oldList?.includes(e))[0]
-          enable = true
-        } else {
-          selectedRow = oldList?.filter(e => !newList?.includes(e))[0]
-          enable = false
-        }
-        let selectedCfl = this.companyFeatureList.find(cfl => { return cfl?.featureId === selectedRow?.featureId})
-        selectedCfl?.accessControl?.forEach(acl => {
-          if(acl.usedByFeature) {
-            if (acl.enabled !== enable) {
-              acl.dirty = true
-              selectedCfl.dirty = true
-            }
-            acl.enabled = enable
-          }
-        })
-      }
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const store = vueInstance.$store
+const userStore = useUserStore()
+const route = useRoute()
 
-      this.callback(this.companyFeatureList)
-    },
-    async getFeatures() {
-      if(this.companyFeatureList?.length === 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/feature/withAccess`)
-          this.companyFeatureList = data
-          this.populateHeaders()
-          this.populateSelectedRows()
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Features')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      } else {
-        this.populateHeaders()
-        this.populateSelectedRows()
-      }
-    },
+const props = defineProps({
+  companyFeatures: {type: Array},
+  callback: Function,
+  dirtyFieldsCallback: Function,
+  userCanEdit: Boolean,
+  showSecondary: Boolean
+})
 
+const { showSecondary, userCanEdit } = toRefs(props)
+
+const selectedRows = ref([])
+const companyFeatureList = ref(cloneDeep(props.companyFeatures))
+const features = ref([])
+const secondaryFeatureAccess = ref([])
+const accessControlList = ref([])
+const parentId = ref(userStore.details.parentCompanyId)
+const headers = ref([
+  { text: 'Feature', value: 'featureName', show: true },
+])
+
+const userId = computed(() => {
+  return route.params.id
+})
+
+watch(selectedRows, (newVal, oldVal, blah) => {
+  alterEnabledFlagForRows(newVal, oldVal, blah)
+})
+
+onMounted(() => {
+  getFeatures()
+  if (showSecondary.value) {
+    loadSecondary()
+  }
+})
+
+const loadSecondary = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequestWithParams(`/feature/access/allUserPositions`, { params: {
+        userId: userId.value
+      }})
+    secondaryFeatureAccess.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Features')
+
+    appStore.loading = false
   }
 }
+const secondaryHasAccess = (item, acl) => {
+  let matchingAccessLevel = secondaryFeatureAccess.value.find(ac => { return ac.featureId === item.featureId && ac.accessCode === acl.accessCode })
+  return matchingAccessLevel?.enabled ?? false
+}
+const populateHeaders = () => {
+  //todo. not my favorite
+  if(companyFeatureList.value?.length > 0) {
+    companyFeatureList.value[0]?.accessControl?.forEach(acl => {
+      headers.value.push({
+        text: acl.accessLevel,
+        value: 'MODIFY-ME',
+        custom: acl.accessCode,
+        accessControlId: acl.accessControlId,
+        show: true
+      })
+    })
+  }
+}
+const populateSelectedRows = () => {
+  // this determines if the checkbox for selecting the row should be checked or not on page load
+  if(companyFeatureList.value?.length > 0) {
+    companyFeatureList.value.forEach(cfl => {
+      let countAccessControlLevels = cfl?.accessControl?.filter(ac => ac.usedByFeature).length
+      let countEnabled = 0
+      cfl.accessControl?.forEach(acl => {
+        if(acl.usedByFeature && acl.enabled) {
+          countEnabled++
+        }
+      })
+      if(countEnabled === countAccessControlLevels) {
+        selectedRows.value.push(cfl)
+      }
+    })
+  }
+}
+const alterEnabledFlagForColumns = (header) => {
+  if(userCanEdit.value) {
+    header.selectAll = !header.selectAll
+    companyFeatureList.value.forEach(cf => {
+      cf.accessControl.forEach(acl => {
+        if(acl.usedByFeature && header.accessControlId === acl.accessControlId) {
+          if(acl.enabled !== header.selectAll) {
+            acl.dirty = true
+            cf.dirty = true
+          }
+          acl.enabled = header.selectAll
+        }
+      })
+    })
+    if(props.callback) {
+      props.callback(companyFeatureList.value)
+    }
+  }
+}
+const alterEnabledFlagForRows = (newList, oldList) => {
+  // filter the new list and remove everything that was in old list.  this is the row that was clicked
+  if(companyFeatureList.value.length === newList?.length) {
+    // select all
+    companyFeatureList.value.forEach(cfl => {
+      cfl.accessControl.forEach(ac => {
+        if(ac.usedByFeature) {
+          //if ac was not enabled, set dirty value to true
+          if (!ac.enabled) {
+            ac.dirty = true
+            cfl.dirty = true
+          }
+          ac.enabled = true
+        }
+      })
+    })
+  } else if (newList?.length === 0 && companyFeatureList.value.length === oldList?.length) {
+    // deselect all
+    companyFeatureList.value.forEach(cfl => {
+      cfl.accessControl.forEach(ac => {
+        if(ac.usedByFeature) {
+          //if ac was already enabled, set dirty value to true
+          if(ac.enabled) {
+            ac.dirty = true
+            cfl.dirty = true
+          }
+          ac.enabled = false
+        }
+      })
+    })
+  } else {
+    let selectedRow, enable
+    if(newList?.length > oldList?.length) {
+      selectedRow = newList?.filter(e => !oldList?.includes(e))[0]
+      enable = true
+    } else {
+      selectedRow = oldList?.filter(e => !newList?.includes(e))[0]
+      enable = false
+    }
+    let selectedCfl = companyFeatureList.value.find(cfl => { return cfl?.featureId === selectedRow?.featureId})
+    selectedCfl?.accessControl?.forEach(acl => {
+      if(acl.usedByFeature) {
+        if (acl.enabled !== enable) {
+          acl.dirty = true
+          selectedCfl.dirty = true
+        }
+        acl.enabled = enable
+      }
+    })
+  }
+  if(props.callback) {
+    props.callback(companyFeatureList.value)
+  }
+}
+const getFeatures = async () => {
+  if (companyFeatureList.value?.length === 0) {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/feature/withAccess`)
+      companyFeatureList.value = data
+      populateHeaders()
+      populateSelectedRows()
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Features')
+
+      appStore.loading = false
+    }
+  } else {
+    populateHeaders()
+    populateSelectedRows()
+  }
+}
+
 </script>
 <style lang="scss" scoped>
 

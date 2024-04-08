@@ -8,31 +8,39 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit" @click="editGroup = !editGroup">
-              <v-icon v-if="editGroup">mdi-close</v-icon>
-              <v-icon v-else>edit</v-icon>
-            </v-btn>
-            <v-btn text color="primary" @click="[addNew = !addNew, newCallGroup = {}]" v-if="userCanAdd">
-              {{'Add New'}}
-            </v-btn>
+            <a-btn variant="text" icon :large="vuetify.breakpoint.smAndDown"
+                             color="primary" v-if="userCanEdit" @click="editGroup = !editGroup"
+                             :prepend-icon="editGroup ? 'mid-close' : 'edit'"
+            />
+            <a-btn variant="text" color="primary"
+                             @click="[addNew = !addNew, newCallGroup = {}]" v-if="userCanAdd"
+                             :text="addNew ? 'Cancel' : 'Add New'"
+                   hide-text-on-mobile
+                   :icon="vuetify.breakpoint.smAndDown"
+                   :prepend-icon="vuetify.breakpoint.smAndDown ? addNew ? 'close' : 'add' : ''"
+            />
           </v-toolbar-items>
           <template v-slot:extension>
             <div v-if="editGroup">
-              <v-text-field text class="d-inline-block mt-4 edit-text"
+              <a-text-field  class="d-inline-block mt-4 edit-text"
                             label="Contacts per Phone Number"
                             type="text"
                             tabindex=1
                             v-model="maxCallCount">
-              </v-text-field>
-              <v-text-field text class="d-inline-block mt-4 edit-text"
+              </a-text-field>
+              <a-text-field  class="d-inline-block mt-4 edit-text"
                             type="text"
                             label="Days Per Period"
                             tabindex=1
                             v-model="daysPerPeriod">
-              </v-text-field>
-              <v-btn :disabled="!maxCallCount || !daysPerPeriod" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="saveGroupInfo()">
-                <v-icon>save</v-icon>
-              </v-btn>
+              </a-text-field>
+              <a-btn
+                :disabled="!maxCallCount || !daysPerPeriod"
+                variant="text" icon :large="vuetify.breakpoint.smAndDown"
+                color="primary"
+                @click="saveGroupInfo()"
+                prepend-icon="save"
+              />
             </div>
             <div v-else class="title-medium">
               <b>Contacts per Phone Number:</b> {{maxCallCount}}
@@ -43,28 +51,34 @@
         </v-app-bar>
         <v-container>
           <v-card color="transparent" flat v-if="addNew">
-            <v-text-field
+            <a-text-field
                 label="Call Group Name"
                 tabindex=1
                 v-model="newCallGroup.callGroupName"
-            ></v-text-field>
-            <v-btn color="primary" :disabled="!newCallGroup.callGroupName" @click="addCallGroup">Save</v-btn>
+            ></a-text-field>
+            <a-btn
+              color="primary"
+              :disabled="!newCallGroup.callGroupName"
+              @click="addCallGroup"
+              text="Save"
+              class="mb-3"
+            />
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
             <v-card-title class="pt-0">
-              <v-text-field
+              <a-text-field
                 v-model="search"
                 prepend-inner-icon="search"
                 label="Search"
                 single-line
                 hide-details
                 @input="debounceSearch"
-              ></v-text-field>
+              ></a-text-field>
             </v-card-title>
             <v-data-table
                 :headers="headers"
-                :items="filterCallGroups()"
+                :items="filterCallGroups"
                 :fixed-header="true"
                 :items-per-page="-1"
                 disable-sort
@@ -81,13 +95,29 @@
               <template #item.activePostalCodes="{item}">{{item.postalCodesCount}}</template>
               <template #item.activePhoneNumbers="{item}">{{item.activePhoneNumbersCount}}</template>
               <template #item.active="{item}">
-                <v-select attach style="width: 100px" v-model="item.active" :disabled="!userCanEdit" :items="items" @change="updateCallGroup(item)"></v-select>
+                <a-select attach style="width: 100px"
+                          v-model="item.active"
+                          :disabled="!userCanEdit"
+                          :items="items"
+                          @change="updateCallGroup(item)"></a-select>
               </template>
               <template #item.icons="{item}" class="text-right">
-                <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="goToCallGroup(item.id)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn v-if="userCanDelete" small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="callGroupToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <a-btn size="small" variant="text"
+                                 icon
+                                 :large="vuetify.breakpoint.smAndDown"
+                                 color="primary" @click="goToCallGroup(item.id)"
+                                 prepend-icon="edit"
+                />
+                <a-btn
+                  v-if="userCanDelete"
+                  size="small"
+                  variant="text"
+                  icon
+                  :large="vuetify.breakpoint.smAndDown"
+                  color="primary"
+                  @click="callGroupToDelete=item"
+                  prepend-icon="delete"
+                />
               </template>
             </v-data-table>
           </v-card>
@@ -100,155 +130,166 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
+<script setup>
+
   import debounce from 'lodash.debounce'
   import { handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  export default {
-    name: 'CallGroups',
-    components: {ConfirmationDialog},
-    mixins: [Vue2Filters.mixin],
 
-    data () {
-      return {
-        snackbar: {},
-        addNew: false,
-        search: null,
-        newCallGroup: {},
-        dataLoading: true,
-        editGroup: false,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE'),
-        companyId: this.$store.state.user.details.companyId,
-        userId: this.$store.state.user.details.id,
-        CallGroups: [],
-        maxCallCount: 20,
-        daysPerPeriod: 30,
-        headers: [
-          {text: 'Call Group Name', value: 'callGroupName', show: true},
-          {text: 'No. Postal Codes', value: 'activePostalCodes', show: true},
-          {text: 'Active Phone Numbers', value: 'activePhoneNumbers', show: true},
-          {text: 'Status', value: 'active', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        items: [
-          {text: 'Active', value: true},
-          {text: 'Disabled', value: false}
-        ],
-        callGroupToDelete: null
-      }
-    },
-    computed: {
-      callGroupToDeleteName(){
-        return this.callGroupToDelete ? this.callGroupToDelete.callGroupName : ''
-      }
-    },
-    methods: {
-      debounceSearch: debounce( function () {
-        //don't allow search to be null - causes issues
-        // this.search = this.search || ''
-        this.getCallGroups()
-      }, 500),
-      filterCallGroups () {
-        return this.CallGroups.filter(cg => { return !cg.archived})
-      },
-      goToCallGroup(groupId) {
-        this.$router.push({path: `/settings/callGroup/${groupId}/numbers`})
-      },
-      async getCallGroups () {
-        this.dataLoading = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequestWithParams(`/callGroup`, { params: { searchQuery: this.search}}, 'blueraven')
-          this.CallGroups = data
-          this.daysPerPeriod = data[0].daysPerPeriod
-          this.maxCallCount = data[0].maxCallCount
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.dataLoading = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteCallGroup () {
-        const groupId = this.callGroupToDelete.id
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/callGroup/${groupId}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Call Group Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Call Group')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.callGroupToDelete = null
-      },
-      async addCallGroup () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.newCallGroup.maxCallCount = this.maxCallCount
-          this.newCallGroup.daysPerPeriod = this.daysPerPeriod
-          const {data, status} = await postRequest(`/callGroup`, this.newCallGroup, 'blueraven')
-          this.$router.push({path: `/settings/callGroup/${data.id}/codes`})
-          this.snackbar = getSnackbar('SUCCESS', 'Call Group Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Call Group')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async updateCallGroup(item) {
-        this.showError = false
-        this.errorMsg = ''
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await postRequest(`/callGroup`, item, 'blueraven')
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          let msg = 'Error updating Call Group'
-          this.snackbar = getSnackbar('ERROR', msg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveGroupInfo () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const params = {
-            maxCallCount: this.maxCallCount,
-            daysPerPeriod: this.daysPerPeriod
-          }
-          const {status} = await postRequest(`/callGroup/config`, params, 'blueraven')
-          this.editGroup = false
-          this.snackbar = getSnackbar('SUCCESS', 'Call Group settings saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Call Group')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-    },
-    async created () {
-      this.getCallGroups()
+  import {getCurrentInstance, onMounted, ref, computed} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import {useRouter} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const vuetify = vueInstance.$vuetify
+  const store = vueInstance.$store
+  const userStore = useUserStore()
+  const router = useRouter()
+
+  const addNew = ref(false)
+  const search = ref(null)
+  const showError = ref(null)
+  const errorMsg = ref(null)
+  const newCallGroup = ref({})
+  const dataLoading = ref(true)
+  const editGroup = ref(false)
+  const CallGroups = ref([])
+  const maxCallCount = ref(20)
+  const daysPerPeriod = ref(30)
+  const headers = ref([
+    {text: 'Call Group Name', value: 'callGroupName', show: true},
+    {text: 'No. Postal Codes', value: 'activePostalCodes', show: true},
+    {text: 'Active Phone Numbers', value: 'activePhoneNumbers', show: true},
+    {text: 'Status', value: 'active', show: true},
+    {text: '', value: 'icons', show: true},
+  ])
+  const items =ref([
+    {text: 'Active', value: true},
+    {text: 'Disabled', value: false}
+  ])
+  const callGroupToDelete = ref(null)
+
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE')
+  })
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
+  const userId = computed(() => {
+    return userStore.details.id
+  })
+  const callGroupToDeleteName = computed(() => {
+    return callGroupToDelete.value ? callGroupToDelete.value.callGroupName : ''
+  })
+
+  const debounceSearch = debounce(() => {
+    //don't allow search to be null - causes issues
+    // search.value = search.value || ''
+    getCallGroups()
+    }, 500)
+
+  const filterCallGroups = computed(() => {
+    return CallGroups.value.filter(cg => { return !cg.archived})
+  })
+  const goToCallGroup = (groupId) => {
+    router.push({path: `/settings/callGroup/${groupId}/numbers`})
+  }
+  const getCallGroups = async () => {
+    dataLoading.value = true
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequestWithParams(`/callGroup`, { params: { searchQuery: search.value}}, 'blueraven')
+      CallGroups.value = data
+      daysPerPeriod.value = data[0].daysPerPeriod
+      maxCallCount.value = data[0].maxCallCount
+      dataLoading.value = false
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      dataLoading.value = false
+      snackbar('ERROR', 'Error Retrieving Data')
+
+      appStore.loading = false
     }
   }
+  const deleteCallGroup = async () => {
+    const groupId = callGroupToDelete.value.id
+    appStore.loading = true
+    try {
+      const {status} = await deleteRequest(`/callGroup/${groupId}`, 'blueraven')
+      snackbar('SUCCESS', 'Call Group Deleted')
+
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting Call Group')
+
+      appStore.loading = false
+    }
+    callGroupToDelete.value = null
+  }
+  const addCallGroup = async () => {
+    appStore.loading = true
+    try {
+      newCallGroup.value.maxCallCount = maxCallCount.value
+      newCallGroup.value.daysPerPeriod = daysPerPeriod.value
+      const {data, status} = await postRequest(`/callGroup`, newCallGroup.value, 'blueraven')
+      router.push({path: `/settings/callGroup/${data.id}/codes`})
+      snackbar('SUCCESS', 'Call Group Added')
+
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Adding Call Group')
+
+      appStore.loading = false
+    }
+  }
+  const updateCallGroup = async (item) => {
+    showError.value = false
+    errorMsg.value = ''
+    appStore.loading = true
+    try {
+      const {status} = await postRequest(`/callGroup`, item, 'blueraven')
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      let msg = 'Error updating Call Group'
+      snackbar('ERROR', msg)
+
+      appStore.loading = false
+    }
+  }
+  const saveGroupInfo = async () => {
+    appStore.loading = true
+    try {
+      const params = {
+        maxCallCount: maxCallCount.value,
+        daysPerPeriod: daysPerPeriod.value
+      }
+      const {status} = await postRequest(`/callGroup/config`, params, 'blueraven')
+      editGroup.value = false
+      snackbar('SUCCESS', 'Call Group settings saved')
+
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Call Group')
+      appStore.loading = false
+    }
+  }
+  onMounted(async () => {
+    getCallGroups()
+  })
 </script>
 
 <style lang="scss">

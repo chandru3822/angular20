@@ -20,7 +20,7 @@
           </v-autocomplete>
           <v-autocomplete v-model="userId"
                     :items="users"
-                    v-if="showAllUsers"
+                    v-if="viewAll"
                     :readonly="!viewAll"
                     :disabled="!viewAll"
                     label="Select a User..."
@@ -30,15 +30,15 @@
                     @input="[orgId = null, getApptLength()]"
                           attach>
           </v-autocomplete>
-          <v-text-field text
+          <a-text-field
                         v-else
                         :disabled="true"
                         label="User"
                         v-model="currentUser">
-          </v-text-field>
+          </a-text-field>
           <div class="mb-4" v-if="userId || orgId">
             <label>Default Appointment Length (minutes)</label>
-            <v-text-field
+            <a-text-field
               class="d-inline-block ml-3 shrink"
               style="width:100px;"
               type="number"
@@ -50,10 +50,14 @@
               placeholder="--"
               @input="valueChanged = true"
               v-model="defaultAppointmentLength"
-            ></v-text-field>
-            <v-btn class="d-inline-block" v-if="userIsAdmin && valueChanged" small text @click="saveApptLength()">
-              <v-icon>save</v-icon>
-            </v-btn>
+            ></a-text-field>
+            <a-btn class="d-inline-block"
+                             v-if="userIsAdmin && valueChanged"
+                             size="small"
+                             variant="text"
+                             @click="saveApptLength()"
+                             prepend-icon="save"
+            />
           </div>
         </div>
         <v-divider class="mb-2"></v-divider>
@@ -74,143 +78,151 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
 
-  import { handleHidingGlobalLoader, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequestWithParams, postRequest} from '@/helpers/helpers'
 
-  export default {
-    name: 'Availability',
+  import {getCurrentInstance, onMounted, ref, computed} from 'vue'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
 
-    computed: {
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      },
-      resourceProps() {
-        if (this.userId) {
-          return { userId: this.userId, useSlotSchedule: this.useSlotSchedule() }}
-        if (this.orgId) { return { orgId: this.orgId, useSlotSchedule: false }}
-      }
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+  const userStore = useUserStore()
+
+  const defaultAppointmentLength = ref(null)
+  //userId has to be a ref so that it can change
+  const userId = ref(userStore.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL') ? null : userStore.details.id)
+  const valueChanged = ref(false)
+  const orgs = ref([])
+  const orgId = ref(null)
+  const orgsLoading = ref(false)
+  const users = ref([])
+  // serId: 2410262
+  const usersLoading = ref(false)
+  const model = ref('')
+  const tabs = ref([
+    {
+      label: 'Schedule',
+      path: '/settings/availability/main/schedule',
+      display: userStore.userHasFeature('AVAILABILITY')
     },
-    data() {
-      return {
-        defaultAppointmentLength: null,
-        snackbar: {},
-        valueChanged: false,
-        orgs: [],
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'),
-        orgId: null,
-        orgsLoading: false,
-        users: [],
-        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'),
-        viewAll: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'),
-        userId: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL') ? null : this.$store.state.user.details.id,
-        showAllUsers: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'),
-        currentUser: this.$store.state.user.details.fullName,
-        // userId: 2410262,
-        usersLoading: false,
-        model: '',
-        tabs: [ {
-          label: 'Schedule',
-          path: '/settings/availability/main/schedule',
-          display: this.$store.getters.userHasFeature('AVAILABILITY')
-        }, {
-          label: 'Appointments',
-          path: '/settings/availability/main/appointments',
-          display: this.$store.getters.userHasFeature('AVAILABILITY')
-        }]
-      }
-    },
-    created() {
-      if(null !== this.userId) {
-        this.getApptLength()
+    {
+      label: 'Appointments',
+      path: '/settings/availability/main/appointments',
+      display: userStore.userHasFeature('AVAILABILITY')
+    }])
+  const displayedTabs = computed(() => {
+    return tabs.value.filter(tab => tab.display)
+  })
+  const viewAll = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL')
+  })
+  const userIsAdmin = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT')
+  })
+  const currentUser = computed(() => {
+    return userStore.details.fullName
+  })
+  const resourceProps = computed(() =>{
+    if (userId.value) {
+      return { userId: userId.value, useSlotSchedule: useSlotSchedule() }}
+    if (orgId.value) { return { orgId: orgId.value, useSlotSchedule: false }}
+  })
+
+  onMounted(() => {
+      if (null !== userId.value) {
+        getApptLength()
       } else {
-        this.getOrgs()
-        this.getUsers()
+        getOrgs()
+        getUsers()
       }
-    },
-    methods: {
-      useSlotSchedule() {
-        if(this.userId) {
-          let user = this.showAllUsers ? this.users.find(u => u.id === this.userId) : this.$store.state.user.details
-          let useSlots = false
-          user?.userPositions?.forEach(up => {
-            if(up.useSlotSchedule) {
-              useSlots = true
-            }
-          })
-          return useSlots
+    }
+  )
+
+  const useSlotSchedule = () => {
+    if(userId.value) {
+      let user = viewAll.value ? users.value.find(u => u.id === userId.value) : userStore.details
+      let useSlots = false
+      user?.userPositions?.forEach(up => {
+        if(up.useSlotSchedule) {
+          useSlots = true
         }
-        return false
-      },
-      async getOrgs() {
-        this.orgsLoading = true
-        try {
-          const {data} = await getRequestWithParams(`/org/getSchedulingOrgs`, { params: {
-            isSchedulingTool: false
+      })
+      return useSlots
+    }
+    return false
+  }
+  const getOrgs = async () => {
+    orgsLoading.value = true
+    try {
+      const {data} = await getRequestWithParams(`/org/getSchedulingOrgs`, { params: {
+        isSchedulingTool: false
+      }})
+      orgs.value = data
+      orgsLoading.value = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Organizations')
+
+    }
+  }
+  const getUsers = async () => {
+    appStore.loading = true
+    usersLoading.value = true
+    try {
+      const {data, status} = await getRequestWithParams(`/user/getSchedulingUsers`, { params: {
+        isSchedulingTool: false
+      }})
+      users.value = data
+      handleHidingGlobalLoader(status)
+      usersLoading.value = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Users')
+      appStore.loading = false
+    }
+  }
+  const saveApptLength = async () => {
+    try {
+      let params = {
+        userId: userId.value,
+        orgId: orgId.value,
+        defaultAppointmentLength: defaultAppointmentLength.value
+      }
+      await postRequest(`/availability/appointments/length`, params)
+      snackbar('SUCCESS', 'Appointment Length Saved')
+
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Appointment Length')
+
+    }
+  }
+  const getApptLength = async () => {
+    if(orgId.value || userId.value) {
+      // appStore.loading = true
+      valueChanged.value = false
+      try {
+        const {data} = await getRequestWithParams(`/availability/appointments/length`, { params: {
+            userId: userId.value,
+            orgId: orgId.value,
           }})
-          this.orgs = data
-          this.orgsLoading = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Organizations')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async getUsers() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        this.usersLoading = true
-        try {
-          const {data, status} = await getRequestWithParams(`/user/getSchedulingUsers`, { params: {
-            isSchedulingTool: false
-          }})
-          this.users = data
-          handleHidingGlobalLoader(this, status)
-          this.usersLoading = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Users')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async saveApptLength() {
-        try {
-          let params = {
-            userId: this.userId,
-            orgId: this.orgId,
-            defaultAppointmentLength: this.defaultAppointmentLength
-          }
-          await postRequest(`/availability/appointments/length`, params)
-          this.snackbar = getSnackbar('SUCCESS', 'Appointment Length Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Appointment Length')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async getApptLength() {
-        if(this.orgId || this.userId) {
-          // this.$store.commit(AppMutations.SET_LOADING, true)
-          this.valueChanged = false
-          try {
-            const {data} = await getRequestWithParams(`/availability/appointments/length`, { params: {
-                userId: this.userId,
-                orgId: this.orgId,
-              }})
-            this.defaultAppointmentLength = data
-            // this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.valueChanged = false
-            this.defaultAppointmentLength = null
-            // this.$store.commit(AppMutations.SET_LOADING, false)
-            this.snackbar = getSnackbar('ERROR', 'Error Loading Default Appointment Length')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-        }
-      },
+        defaultAppointmentLength.value = data
+        // appStore.loading = false
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        valueChanged.value = false
+        defaultAppointmentLength.value = null
+        // appStore.loading = false
+        snackbar('ERROR', 'Error Loading Default Appointment Length')
+
+      }
     }
   }
 </script>

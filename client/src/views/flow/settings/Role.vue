@@ -9,18 +9,22 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text :disabled="!role.roleName" @click="saveRole" color="primary">
-              <v-icon>save</v-icon>
-              Save
-            </v-btn>
+            <a-btn
+                variant="text"
+                :disabled="!role.roleName"
+                @click="saveRole"
+                color="primary"
+                prepend-icon="save"
+                text="Save"
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat class="mt-2 pa-5">
-          <v-text-field v-model="role.roleName"
+          <a-text-field v-model="role.roleName"
                         placeholder="Enter a value"
                         required
                         label="Role Name">
-          </v-text-field>
+          </a-text-field>
           <h3>Access Control</h3>
           <v-data-table
               :headers="headers"
@@ -56,94 +60,94 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
   import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
-  export default {
-    name: 'Role',
+  import {useRouter} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+  const router = useRouter()
 
-    data() {
-      return {
-        snackbar: {},
-        role: {},
-        roleId: this.$route.params.id,
-        features: [],
-        accessControlList: [],
-        headers: [
-          { text: 'Feature', value: 'featureName', show: true },
-        ],
-      }
-    },
-    created () {
-      if(this.roleId) {
-        this.getRole()
+  const role = ref({})
+  const features = ref([])
+  const accessControlList = ref([])
+  const headers = ref([
+    { text: 'Feature', value: 'featureName', show: true },
+  ])
+
+  const roleId = computed(() => {
+    return route.params.id
+  })
+
+  onMounted(() =>{
+    if(roleId.value) {
+      getRole()
+    } else {
+      getFeatures()
+    }
+  })
+  const saveRole = async () => {
+    appStore.loading = true
+    try {
+      if(roleId.value) {
+        const {status} = await putRequest(`/role/`, role.value)
+        router.push({name: 'role', params: {id: roleId.value}})
+        handleHidingGlobalLoader(status)
       } else {
-        this.getFeatures()
+        const {data, status} = await postRequest(`/role/`, role.value)
+        roleId.value = data.id
+        router.push({name: 'role', params: {id: roleId.value}})
+        handleHidingGlobalLoader(status)
       }
-    },
-    methods: {
-      async saveRole() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          if(this.roleId) {
-            const {status} = await putRequest(`/role`, this.role)
-            this.$router.push({name: 'role', params: {id: this.roleId}})
-            handleHidingGlobalLoader(this, status)
-          } else {
-            const {data, status} = await postRequest(`/role`, this.role)
-            this.roleId = data.id
-            this.$router.push({name: 'role', params: {id: this.roleId}})
-            handleHidingGlobalLoader(this, status)
-          }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Role')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Role')
+      appStore.loading = false
+    }
 
-      },
-      populateHeaders () {
-        //todo. not my favorite
-        this.role.companyFeatures[0]?.accessControl?.forEach(acl => {
-          this.headers.push({
-            text: acl.accessLevel,
-            value: acl.accessCode,
-            show: true
-          })
-        })
-      },
-      async getFeatures() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/feature/withAccess`)
-          this.role.companyFeatures = data
-          this.populateHeaders()
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Features')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getRole() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/role/${this.roleId}`)
-          this.role = data
-          this.populateHeaders()
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Role')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
+  }
+  const populateHeaders = () => {
+    //todo. not my favorite
+    role.value.companyFeatures[0]?.accessControl?.forEach(acl => {
+      headers.value.push({
+        text: acl.accessLevel,
+        value: acl.accessCode,
+        show: true
+      })
+    })
+  }
+  const getFeatures = async () => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/feature/withAccess`)
+      role.value.companyFeatures = data
+      populateHeaders()
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Features')
+      appStore.loading = false
     }
   }
+  const getRole = async () => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/role/${roleId.value}`)
+      role.value = data
+      populateHeaders()
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Role')
+      appStore.loading = false
+    }
+  }
+
 </script>
 
 <style lang="scss">

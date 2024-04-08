@@ -27,24 +27,14 @@
   </v-container>
 </template>
 
-<script>
-  export default {
-    name: 'Setter',
-    components: {
-    },
-    data () {
-      return {
-        snackbar: {},
-      }
-    },
-    computed: {},
-    watch: {},
-    methods: {
-      goToRoute(name) {
-        this.$router.push({name})
-      },
-    },
-  }
+<script setup>
+import {useRouter} from "vue-router/composables";
+
+const router = useRouter()
+
+const goToRoute = (name) => {
+  router.push({name})
+}
 </script>
 
 <style lang="scss" scoped>

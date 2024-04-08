@@ -1,14 +1,13 @@
 <template>
-  <v-btn
+  <a-btn
     @click.stop="exportSmartlist"
     :icon="!showText"
-    :text="showText"
+    :variant="showText ? 'text' : ''"
     class="pa-5"
     :disabled="disabled"
+    :text="showText ? 'Export' : ''"
   >
-    <v-icon>mdi-tray-arrow-down</v-icon>
-    <span v-if="showText">Export</span>
-  </v-btn>
+  </a-btn>
 </template>
 
 <script setup>
@@ -17,6 +16,8 @@ import { getRequestWithParams, getSnackbar, logError } from '@/helpers/helpers'
 import { DateTime } from 'luxon'
 import { saveAs } from 'file-saver'
 import { getCurrentInstance } from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const props = defineProps({
   smartlist: {
@@ -39,12 +40,14 @@ const emit = defineEmits(['exported'])
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
+const appStore = useAppStore()
 
 let exportSmartlist = async () => {
 
   try {
-    store.commit(AppMutations.SET_LOADING, true)
-    const params = {timezone: store.state.user.details.timezone.value}
+    appStore.loading = true
+    const params = {timezone: userStore.timezone.value}
     const {data} = await getRequestWithParams(`/smartlist/${props.smartlist.id}/export`, {params})
     let blob = new Blob([data], {
       type: 'text/csv;charset=utf-8'
@@ -55,7 +58,7 @@ let exportSmartlist = async () => {
     logError(e)
     store.commit(AppMutations.SHOW_SNACK, getSnackbar('ERROR', e.data.message))
   } finally {
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 </script>

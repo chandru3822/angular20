@@ -1,142 +1,3 @@
-<script setup>
-/*
-*@name CloserDashboardSettings
-*@author jess
-*@date 1/11/24
-*
-*@description
-*
-*/
-import {computed, getCurrentInstance, onMounted, ref} from "vue";
-import constants from "@/helpers/constants";
-import {AppMutations} from "@/stores/AppStore";
-import {Actions} from "@/store";
-import {getSnackbar} from "@/helpers/helpers";
-import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-
-const ImageTypeEnum = ref({
-  CLOSER_DASH_TOURNAMENT_HEADER_LOGO: {
-    key: "CLOSER_DASH_TOURNAMENT_HEADER_LOGO", //this needs to match the key, cuz dumb
-    header: 'Closer/Setter Dashboard Header Image',
-    description: 'Logo at the top of the Closer and Setter Incentive Dashboards',
-    label: 'dashboard header',
-    attachmentTypeId: 991,
-    add: false,
-    saving: false,
-    image: {}
-  },
-  CLOSER_DASH_TOURNAMENT_BACKGROUND: {
-    key: "CLOSER_DASH_TOURNAMENT_BACKGROUND", //this needs to match the key, cuz dumb
-    header: 'Closer/Setter Dashboard Background Image',
-    description: 'Background of the Closer and Setter Incentive Dashboards',
-    label: 'dashboard background',
-    attachmentTypeId: 992,
-    add: false,
-    saving: false,
-    image: {}
-  }
-})
-
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-
-const companyId = store.state.user.details.companyId
-const acceptedFileTypes = constants.STANDARD_IMAGES_ONLY
-
-const userCanEdit= store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
-
-let imageToDelete = ref(null)
-
-const deleteImageDialogText = computed(() => {
-  return `Are you sure you want to delete the ${ imageToDelete?.value?.label } logo?`
-})
-
-const loadImage = async(logoType) => {
-  try {
-    store.commit(AppMutations.SET_LOADING, true)
-    await store.dispatch(Actions.FILE_GET_ONE, {
-      attachmentTypeId: logoType.attachmentTypeId,
-      sourceId: companyId,
-      callback: async (img) => {
-        logoType.image = img
-        store.commit(AppMutations.SET_LOADING, false)
-      }
-    })
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    this.snackbar = getSnackbar('ERROR', 'Error Loading Image')
-    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    this.$store.commit(AppMutations.SET_LOADING, false)
-  }
-}
-
-const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit) => {
-  let snackbar
-  try {
-    store.commit(AppMutations.SET_LOADING, true)
-    let file = files[0]
-    await store.dispatch(Actions.FILE_UPLOAD, {
-      file: file,
-      sizeLimit,
-      attachmentTypeId,
-      sourceId,
-      displayName: file.name.substr(0, file.name.lastIndexOf('.')),
-      callback: async (img, error) => {
-        if (error?.error) {
-          snackbar = getSnackbar('ERROR', error.errorMsg)
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
-        } else {
-          ImageTypeEnum.value[imageType.key].image = img
-          ImageTypeEnum.value[imageType.key].add = false
-          ImageTypeEnum.value[imageType.key].saving = false
-          snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    })
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar = getSnackbar('ERROR', 'Error Uploading File')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
-  }
-}
-
-const deleteAttachment = async() => {
-  let snackbar
-  try {
-    store.commit(AppMutations.SET_LOADING, true)
-    let key = imageToDelete?.value?.key
-    await store.dispatch(Actions.FILE_DELETE, {
-      id: imageToDelete?.value?.image?.id,
-      callback: async () => {
-        ImageTypeEnum.value[key].image = {}
-        snackbar = getSnackbar('SUCCESS', 'Image Deleted')
-        store.commit(AppMutations.SHOW_SNACK, snackbar)
-        store.commit(AppMutations.SET_LOADING, false)
-        imageToDelete.value = null
-      }
-    })
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar = getSnackbar('ERROR', 'Error Deleting File')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
-    imageToDelete.value = null
-  }
-}
-
-onMounted(async () => {
-  //load each image for
-  Object.entries(ImageTypeEnum.value).forEach( ([key, value], idx) => {
-    loadImage(value)
-  })
-})
-
-</script>
-
 <template>
   <v-container>
     <v-row v-for="([key, imageType], idx) in Object.entries(ImageTypeEnum)">
@@ -145,15 +6,15 @@ onMounted(async () => {
           <v-toolbar-title class="title-large">{{ imageType.header }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <div v-if="userCanEdit">
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                   v-if="!imageType.saving && !imageType.image?.presignedUrl" @click="imageType.add = !imageType.add">
-              <v-icon v-if="imageType.add">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else
-                   @click="imageToDelete=imageType">
-              <v-icon>delete</v-icon>
-            </v-btn>
+            <a-btn variant="text" icon :large="$vuetify.breakpoint.smAndDown" color="primary"
+                   v-if="!imageType.saving && !imageType.image?.presignedUrl"
+                   @click="imageType.add = !imageType.add"
+                   :prepend-icon="imageType.add ? 'remove' : 'add'"
+            />
+            <a-btn variant="text" icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else
+                   @click="imageToDelete=imageType"
+                   prepend-icon="delete"
+            />
           </div>
         </v-toolbar>
         <div class="text-center">
@@ -186,6 +47,150 @@ onMounted(async () => {
     </ConfirmationDialog>
   </v-container>
 </template>
+
+<script setup>
+/*
+*@name CloserDashboardSettings
+*@author jess
+*@date 1/11/24
+*
+*@description
+*
+*/
+import {computed, getCurrentInstance, onMounted, ref} from "vue";
+import constants from "@/helpers/constants";
+import {AppMutations} from "@/stores/AppStore";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+import { useFileStore } from '@/stores/FileStore.js'
+
+
+
+const ImageTypeEnum = ref({
+  CLOSER_DASH_TOURNAMENT_HEADER_LOGO: {
+    key: "CLOSER_DASH_TOURNAMENT_HEADER_LOGO", //this needs to match the key, cuz dumb
+    header: 'Closer/Setter Dashboard Header Image',
+    description: 'Logo at the top of the Closer and Setter Incentive Dashboards',
+    label: 'dashboard header',
+    attachmentTypeId: 991,
+    add: false,
+    saving: false,
+    image: {}
+  },
+  CLOSER_DASH_TOURNAMENT_BACKGROUND: {
+    key: "CLOSER_DASH_TOURNAMENT_BACKGROUND", //this needs to match the key, cuz dumb
+    header: 'Closer/Setter Dashboard Background Image',
+    description: 'Background of the Closer and Setter Incentive Dashboards',
+    label: 'dashboard background',
+    attachmentTypeId: 992,
+    add: false,
+    saving: false,
+    image: {}
+  }
+})
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const userStore = useUserStore()
+const fileStore = useFileStore()
+
+const companyId = userStore.details.companyId
+const acceptedFileTypes = constants.STANDARD_IMAGES_ONLY
+
+const userCanEdit= userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+
+let imageToDelete = ref(null)
+
+const deleteImageDialogText = computed(() => {
+  return `Are you sure you want to delete the ${ imageToDelete?.value?.label } logo?`
+})
+
+const loadImage = async(logoType) => {
+  try {
+    appStore.loading = true
+    await fileStore.getOne({
+      attachmentTypeId: logoType.attachmentTypeId,
+      sourceId: companyId,
+      callback: async (img) => {
+        logoType.image = img
+        appStore.loading = false
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Image')
+    appStore.loading = false
+  }
+}
+
+const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit) => {
+  let snackbar
+  try {
+    appStore.loading = true
+    let file = files[0]
+    await fileStore.uploadFile({
+      file: file,
+      sizeLimit,
+      attachmentTypeId,
+      sourceId,
+      displayName: file.name.substr(0, file.name.lastIndexOf('.')),
+      callback: async (img, error) => {
+        if (error?.error) {
+          snackbar = snackbar('ERROR', error.errorMsg)
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          appStore.loading = false
+        } else {
+          ImageTypeEnum.value[imageType.key].image = img
+          ImageTypeEnum.value[imageType.key].add = false
+          ImageTypeEnum.value[imageType.key].saving = false
+          snackbar = snackbar('SUCCESS', 'Image Uploaded')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          appStore.loading = false
+        }
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar = snackbar('ERROR', 'Error Uploading File')
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    appStore.loading = false
+  }
+}
+
+const deleteAttachment = async() => {
+  let snackbar
+  try {
+    appStore.loading = true
+    let key = imageToDelete?.value?.key
+    await fileStore.deleteFile({
+      id: imageToDelete?.value?.image?.id,
+      callback: async () => {
+        ImageTypeEnum.value[key].image = {}
+        snackbar = snackbar('SUCCESS', 'Image Deleted')
+        store.commit(AppMutations.SHOW_SNACK, snackbar)
+        appStore.loading = false
+        imageToDelete.value = null
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar = snackbar('ERROR', 'Error Deleting File')
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    appStore.loading = false
+    imageToDelete.value = null
+  }
+}
+
+onMounted(async () => {
+  //load each image for
+  Object.entries(ImageTypeEnum.value).forEach( ([key, value], idx) => {
+    loadImage(value)
+  })
+})
+</script>
 
 <style scoped lang="scss">
 .company-logo-background {

@@ -19,11 +19,12 @@
 */
 
 import {getCurrentInstance, computed, defineProps, defineEmits} from 'vue'
-import {ProjectMutations} from "@/stores/ProjectStore";
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
-//instantiate the store
+
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const projectStore = useProjectStore()
 
 //props and emits
 const props = defineProps({
@@ -46,7 +47,7 @@ const selectView = (viewOption) => {
 
 //collapsed or expanded
 const isSidebarCollapsed = computed(() => {
-  return store.state.project.rightSideSplit
+  return projectStore.rightSideSplit
 })
 const collapseButtonClicked = () => {
   if(props.allowSidebarCollapse) {
@@ -56,7 +57,7 @@ const collapseButtonClicked = () => {
   }
 }
 const collapseExpandSide = () => {
-  store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
+  projectStore.rightSideSplit = !projectStore.rightSideSplit
 }
 
 const isMobile = computed(() => {
@@ -71,22 +72,33 @@ const isMobile = computed(() => {
 
   <v-row id="conversation-activity-container" ref="conversationActivityContainer" class="pa-0 pt-4 d-flex flex-column flex-nowrap" no-gutters>
     <div v-if="isSidebarCollapsed" class="pl-3 pt-2">
-      <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed':isSidebarCollapsed}" small text color="primary" @click="collapseExpandSide()">
-        <slot name="collapse-btn-icon">
-          <v-icon>mdi-menu</v-icon>
-        </slot>
-      </v-btn>
+      <a-btn class="d-inline-block align-self-center"
+             :class="{'title-collapsed':isSidebarCollapsed}"
+             size="small"
+             variant="text"
+             color="primary"
+             @click="collapseExpandSide()">
+        <template #default>
+          <slot name="collapse-btn-icon">
+            <v-icon>mdi-menu</v-icon>
+          </slot>
+        </template>
+      </a-btn>
     </div>
     <div v-else class="conversation-activity-header-container d-flex flex-column  one-hunned">
       <div class="pt-0 pl-6 d-flex align-center conversation-activity-header title-no-collapse headline-small">
           <slot name="title" v-if="!isSidebarCollapsed">Sidebar Title</slot>
         <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
         <slot name="header-actions" v-if="!isSidebarCollapsed"/>
-        <v-btn  v-if="!isMobile" class="d-inline-block align-self-center" :class="{'title-collapsed':isSidebarCollapsed}" small text color="primary" @click="collapseButtonClicked">
-          <slot name="collapse-btn-icon">
-            <v-icon>mdi-menu</v-icon>
-          </slot>
-        </v-btn>
+        <a-btn  v-if="!isMobile" class="d-inline-block align-self-center"
+                :class="{'title-collapsed':isSidebarCollapsed}" size="small"
+                variant="text" color="primary" @click="collapseButtonClicked">
+          <template #default>
+            <slot name="collapse-btn-icon">
+              <v-icon>mdi-menu</v-icon>
+            </slot>
+          </template>
+        </a-btn>
       </div>
       <slot v-if="!isSidebarCollapsed" name="header-second-line"/>
       <!-- i show this line regardless of selected tab so that the mb-3 sticks around. otherwise need to add it to the element above for only options 0 & 1-->
@@ -106,10 +118,17 @@ const isMobile = computed(() => {
           class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
       >
         <v-col v-for="(option, index) in viewOptions" :cols="12/viewOptions.length" class="px-0">
-          <v-btn v-if="option.visible" text :color="selectedOption === index ? 'white' : 'primary'" block elevation="0" @click="selectView(index)" :dark="selectedOption === index"
-                 :class="{'section-selected': selectedOption===index}" >
-            <v-icon>{{option.icon}}</v-icon>
-          </v-btn>
+          <a-btn
+              v-if="option.visible"
+              variant="text"
+              :color="selectedOption === index ? 'white' : 'primary'"
+              block
+              :elevation="0"
+              @click="selectView(index)"
+              :dark="selectedOption === index"
+              :class="{'section-selected': selectedOption===index}"
+              :prepend-icon="option.icon"
+          ></a-btn>
         </v-col>
       </v-row>
     </div>

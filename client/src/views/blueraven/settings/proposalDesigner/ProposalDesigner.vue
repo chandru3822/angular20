@@ -3,42 +3,76 @@
     <div class="toolbar">
       <v-tooltip bottom>
         <template #activator="{on, attrs}">
-          <v-btn v-bind="attrs" v-on="on" @click="save" :disabled="!isSaveable" text icon>
-            <v-icon v-if="isSaveable">cloud</v-icon>
-            <v-icon v-else>mdi-cloud-outline</v-icon>
-          </v-btn>
+          <a-btn
+              v-bind="attrs"
+              :activation-handler="on"
+              @click="save"
+              :disabled="!isSaveable"
+              variant="text"
+              icon
+              color="unset"
+              :prepend-icon="isSaveable ? 'cloud' : 'mdi-cloud-outline'"
+          ></a-btn>
         </template>
         <span>Save</span>
       </v-tooltip>
       <v-tooltip bottom>
         <template #activator="{on, attrs}">
-          <v-btn v-bind="attrs" v-on="on" @click="undo" :disabled="!canUndo" text icon>
-            <v-icon>undo</v-icon>
-          </v-btn>
+          <a-btn
+              v-bind="attrs"
+              :activation-handler="on"
+              @click="undo"
+              :disabled="!canUndo"
+              variant="text"
+              icon
+              color="unset"
+              prepend-icon="undo"
+          ></a-btn>
         </template>
         <span>Undo</span>
       </v-tooltip>
       <v-tooltip bottom>
         <template #activator="{on, attrs}">
-          <v-btn v-bind="attrs" v-on="on" @click="redo" :disabled="!canRedo" text icon>
-            <v-icon>redo</v-icon>
-          </v-btn>
+          <a-btn
+              v-bind="attrs"
+              :activation-handler="on"
+              @click="redo"
+              :disabled="!canRedo"
+              variant="text"
+              icon
+              color="unset"
+              prepend-icon="redo"
+          ></a-btn>
         </template>
         <span>Redo</span>
       </v-tooltip>
       <v-tooltip bottom>
         <template #activator="{on, attrs}">
-          <v-btn v-bind="attrs" v-on="on" @click="reset" :disabled="!(canRedo || canUndo)" icon text>
-            <v-icon>mdi-nuke</v-icon>
-          </v-btn>
+          <a-btn
+              v-bind="attrs"
+              :activation-handler="on"
+              @click="reset"
+              :disabled="!(canRedo || canUndo)"
+              icon
+              variant="text"
+              color="unset"
+              prepend-icon="mdi-nuke"
+          ></a-btn>
         </template>
         <span>Reset</span>
       </v-tooltip>
       <v-tooltip bottom>
         <template #activator="{on, attrs}">
-          <v-btn v-bind="attrs" v-on="on" @click="downloadPreview" :disabled="isSaveable" icon text>
-            <v-icon>mdi-file-pdf-box</v-icon>
-          </v-btn>
+          <a-btn
+              v-bind="attrs"
+              :activation-handler="on"
+              @click="downloadPreview"
+              :disabled="isSaveable"
+              icon
+              variant="text"
+              color="unset"
+              prepend-icon="mdi-file-pdf-box"
+          ></a-btn>
         </template>
         <span>Generate PDF Preview</span>
       </v-tooltip>
@@ -69,9 +103,16 @@
                 <v-card-title>
                   <v-tooltip>
                     <template #activator="{on, attrs}">
-                      <v-btn v-bind="attrs" v-on="on" @click="focusViewport" :disabled="!selected" icon text>
-                        <v-icon>mdi-image-filter-center-focus-weak</v-icon>
-                      </v-btn>
+                      <a-btn
+                          v-bind="attrs"
+                          :activation-handler="on"
+                          @click="focusViewport"
+                          :disabled="!selected"
+                          icon
+                          variant="text"
+                          color="unset"
+                          prepend-icon="mdi-image-filter-center-focus-weak"
+                      ></a-btn>
                     </template>
                     <span>Focus</span>
                   </v-tooltip>
@@ -112,7 +153,7 @@
     </div>
   </div>
 </template>
-<script>
+<script setup>
 import './styles/proposals.scss'
 import {mapState} from 'vuex'
 import Viewport from './viewport/Viewport'
@@ -129,6 +170,19 @@ import {AppMutations} from '@/stores/AppStore'
 import {VuexUndoRedoMixin} from './mixin/VuexUndoRedoMixin'
 import {Editor} from "@tiptap/vue-2";
 import {getExtensions} from "@/views/blueraven/settings/proposalDesigner/blocks/text/utils";
+
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 function fixContainer(revert = false) {
   document.querySelectorAll('.router-container').forEach((node) => {
@@ -164,112 +218,103 @@ const defaultDocument = {
   ]
 }
 
-export default {
-  name: 'ProposalDesigner',
-  components: {
-    AdvancedPanel,
-    ProposalTemplate,
-    Viewport,
-    StylePanel,
-    ImagePanel,
-    NestedTree,
-    AddComponentPanel,
-    TextMenuWidget
-  },
-  mixins: [StyleFixerMixin, VuexUndoRedoMixin],
-  created() {
-    this.$store.dispatch(ProposalActions.FETCH_TAGS)
-    this.$store.dispatch(ProposalActions.FETCH_TEMPLATE)
-  },
-  data() {
-    return {
-      tabs: null,
-      debug: false,
-      editable: true,
-      dragging: false,
-      activeEditor: undefined
-    }
-  },
-  provide() {
-    const editor = {}
-    Object.defineProperty(editor, 'current', {
-      enumerable: true,
-      get: () => this.activeEditor
-    })
-    return {
-      editor
-    }
-  },
-  watch: {
-    selectedId: function (id) {
-      const block = this.selected
-      if (this.activeEditor) {
-        this.activeEditor.destroy()
-        this.activeEditor = undefined
-      }
+//@kaleb i dont know how to add your mixins
+// mixins: [StyleFixerMixin, VuexUndoRedoMixin],
 
-      if (!block || block.blockType !== 'TextBlock') {
-        return
-      }
+//@kaleb or this provide stuff
+// provide() {
+//   const editor = {}
+//   Object.defineProperty(editor, 'current', {
+//     enumerable: true,
+//     get: () => this.activeEditor
+//   })
+//   return {
+//     editor
+//   }
+// },
 
-      const self = this
-      const content = block.blockValue ?? defaultDocument
-      this.activeEditor = new Editor({
-        content,
-        autofocus: true,
-        extensions: getExtensions({tags: this.tags}),
-        onUpdate({editor}) {
-          const payload = editor.getJSON()
-          self.updateValue(payload)
-        },
-      })
-    }
-  },
-  computed: {
-    selected() {
-      return this.$store.getters.selectedBlock
+onMounted(() => {
+  store.dispatch(ProposalActions.FETCH_TAGS)
+  store.dispatch(ProposalActions.FETCH_TEMPLATE)
+})
+
+const tabs = ref(null)
+const debug = ref(false)
+const editable = ref(true)
+const dragging = ref(false)
+const activeEditor = ref(undefined)
+const viewport = ref(null)
+
+const { selectedId, template, tags } = mapState({
+  selectedId: (state) => state.proposal.selectedId,
+  template: (state) => state.proposal.template,
+  tags: (state) => state.proposal.tags?.map(t => t.tagName)
+})
+
+watch(selectedId, async() => {
+  const block = selected.value
+  if (activeEditor.value) {
+    activeEditor.value.destroy()
+    activeEditor.value = undefined
+  }
+
+  if (!block || block.blockType !== 'TextBlock') {
+    return
+  }
+
+  const self = this
+  const content = block.blockValue ?? defaultDocument
+  activeEditor.value = new Editor({
+    content,
+    autofocus: true,
+    extensions: getExtensions({tags: tags.value}),
+    onUpdate({editor}) {
+      const payload = editor.getJSON()
+      self.updateValue(payload)
     },
-    parent() {
-      return this.$store.getters.findById(this.selected.parentId)
-    },
-    pages() {
-      return this.template?.filter(x => x.parentId === undefined)
-    },
-    isSaveable() {
-      return this.$store.getters.modifiedBlocks?.length > 0
-    },
-    isFullAdmin() {
-      return this.$store.getters.isFullAdmin
-    },
-    ...mapState({
-      selectedId: (state) => state.proposal.selectedId,
-      template: (state) => state.proposal.template,
-      tags: (state) => state.proposal.tags?.map(t => t.tagName)
+  })
+})
+
+    const selected = computed(() => {
+      return store.getters.selectedBlock
     })
-  },
-  methods: {
-    addComponent({blockType, blockTypeId, blockValue}) {
-      this.$store.commit(ProposalMutations.ADD_COMPONENT, {
-        parentId: this.selected.id,
+    const parent = computed(() => {
+      return store.getters.findById(selected.value.parentId)
+    })
+    const pages = computed(() => {
+      return template.value?.filter(x => x.parentId === undefined)
+    })
+    const isSaveable = computed(() => {
+      return store.getters.modifiedBlocks?.length > 0
+    })
+    const isFullAdmin = computed(() => {
+      return userStore.isSystemAdmin
+    })
+
+
+
+    const addComponent = ({blockType, blockTypeId, blockValue}) => {
+      store.commit(ProposalMutations.ADD_COMPONENT, {
+        parentId: selected.value.id,
         blockType,
         blockTypeId,
         blockValue,
         order: 1
       })
-    },
-    updateValue(value) {
-      this.$store.commit(ProposalMutations.SET_VALUE, {blockId: this.selected.id, value})
-    },
-    updateStyles(styles) {
-      this.$store.commit(ProposalMutations.SET_STYLE, {blockId: this.selected.id, styles})
-    },
-    updateVisibility(visibility) {
-      this.$store.commit(ProposalMutations.SET_VISIBILITY, {blockId: this.selected.id, visibility})
-    },
-    async downloadPreview() {
+    }
+    const updateValue = (value) => {
+      store.commit(ProposalMutations.SET_VALUE, {blockId: selected.value.id, value})
+    }
+    const updateStyles = (styles) => {
+      store.commit(ProposalMutations.SET_STYLE, {blockId: selected.value.id, styles})
+    }
+    const updateVisibility = (visibility) => {
+      store.commit(ProposalMutations.SET_VISIBILITY, {blockId: selected.value.id, visibility})
+    }
+    const downloadPreview = async() => {
       try {
 
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         const {data} = await apiRequest('blueraven', {
           method: 'post',
           url: '/proposal-preview/1',
@@ -289,31 +334,31 @@ export default {
           }, 100)
         }
       } catch (e) {
-        this.$snackbar('ERROR', e?.data?.message || 'Error while generating preview')
+        snackbar('ERROR', e?.data?.message || 'Error while generating preview')
         console.error(e)
       } finally {
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
-    },
-    async save() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      await this.$store.dispatch(ProposalActions.SAVE_TEMPLATE)
-      this.reset()
-      this.$store.commit(AppMutations.SET_LOADING, false)
-    },
-    selectNode(id) {
-      this.$store.commit(ProposalMutations.SET_SELECTED, id)
+    }
+    const save = async() => {
+      appStore.loading = true
+      await store.dispatch(ProposalActions.SAVE_TEMPLATE)
+      reset()
+      appStore.loading = false
+    }
+    const selectNode = (id) => {
+      store.commit(ProposalMutations.SET_SELECTED, id)
       // this.focusNode(id)
-    },
-    focusViewport() {
-      if (!this.selected) {
+    }
+    const focusViewport = () => {
+      if (!selected.value) {
         return
       }
 
-      this.focusNode(this.selected.id)
-    },
-    focusNode(id) {
-      const vp = this.$refs.viewport.$el
+      focusNode(selected.value.id)
+    }
+    const focusNode = (id) => {
+      const vp = viewport.value.$el
       const nodes = vp.querySelectorAll(`[data-id="${id}"]`)
       if (nodes.length > 0) {
         const rect = nodes[0].getBoundingClientRect()
@@ -321,8 +366,6 @@ export default {
         vp.scrollTo({top, behavior: 'smooth'})
       }
     }
-  }
-}
 </script>
 <style lang="scss" scoped>
 

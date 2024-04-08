@@ -1,36 +1,35 @@
 <template>
   <img v-if="uuid !== undefined" loading="lazy" :src="srcUrl" />
 </template>
-<script>
+<script setup>
 import constants from '@/helpers/constants'
+import { toRefs, computed } from 'vue'
 
-export default {
-  name: 'img-proxy',
-  props: {
-    uuid: String,
-    width: {
-      type: Number,
-      default: 1080
-    },
-    height: Number,
-    quality: Number
+const props = defineProps({
+  uuid: String,
+  width: {
+    type: Number,
+    default: 1080
   },
-  computed: {
-    srcUrl() {
+  height: Number,
+  quality: Number
+})
+const { uuid, width, height, quality } = toRefs(props)
+
+
+    const srcUrl = computed(() => {
       const queryParams = []
-      if (this.quality) {
-        queryParams.push('q=' + this.quality)
+      if (quality.value) {
+        queryParams.push('q=' + quality.value)
       }
 
-      if (this.height) {
-        queryParams.push('h=' + this.height)
+      if (height.value) {
+        queryParams.push('h=' + height.value)
       }
 
-      if (this.width) {
-        queryParams.push('w=' + this.width)
+      if (width.value) {
+        queryParams.push('w=' + width.value)
       }
-      return `${constants.VUE_APP_BASE_API}/public/image/${this.uuid}?${queryParams.join('&')}`
-    }
-  }
-}
+      return `${constants.VUE_APP_BASE_API}/public/image/${uuid.value}?${queryParams.join('&')}`
+    })
 </script>
