@@ -51,29 +51,29 @@
                           v-model="newParam.parameterName"
                           hint="* This should be a UI friendly name"
                           persistent-hint></a-text-field>
-            <v-select
+            <a-select
                 v-model="newParam.parameterTypeId"
                 :items="parameterTypes"
                 label="Parameter Type"
-                item-text="parameterType"
+                item-title="parameterType"
                 item-value="id"
-            ></v-select>
-            <v-select
+            ></a-select>
+            <a-select
                 v-if="newParam.parameterTypeId === 1"
                 v-model="newParam.systemValueId"
                 :items="systemValues"
                 label="System Value"
-                item-text="systemValue"
+                item-title="systemValue"
                 item-value="id"
-            ></v-select>
-            <v-select
+            ></a-select>
+            <a-select
                 v-else-if="newParam.parameterTypeId != null"
                 v-model="newParam.dataTypeId"
                 :items="dataTypes"
                 label="Data Type"
-                item-text="dataType"
+                item-title="dataType"
                 item-value="id"
-            ></v-select>
+            ></a-select>
             <div v-if="newParam.parameterTypeId != null && newParam.parameterTypeId !== 1">
               <v-checkbox label="Nullable"
                           class="default-text-color"
@@ -193,30 +193,26 @@
         <v-divider class="mt-5"></v-divider>
         <v-card flat class="px-3">
           <h3 class="pt-3">Save to Companies</h3>
-          <v-select attach v-model="selectedCompanies"
+          <a-select attach v-model="selectedCompanies"
                     :items="companies"
                     label="Select Companies"
-                    item-text="companyName"
+                    item-title="companyName"
                     item-value="id"
                     return-object
                     clearable
-                    multiple
-          >
-            <template
-                slot="selection"
-                slot-scope="{ item, index }"
-            >
-              <div v-if="index === 0 && selectedCompanies.length < 3">
+                    multiple>
+            <template v-slot:selection="{ item, index }">
+              <div v-if="index === 0 && selectedCompanies.length < 2">
                 <v-chip small v-for="sc in selectedCompanies">
                   <span>{{ sc.companyName }}</span>
                 </v-chip>
               </div>
               <span
-                  v-if="index === 1 && selectedCompanies.length >= 3"
+                  v-if="index === 1 && selectedCompanies.length >= 2"
                   class="primary--text text-caption"
               >{{ selectedCompanies.length }} selected</span>
             </template>
-          </v-select>
+          </a-select>
           <a-btn :disabled="selectedCompanies.length === 0"
                  class="mr-2"
                  text="Push to Companies"

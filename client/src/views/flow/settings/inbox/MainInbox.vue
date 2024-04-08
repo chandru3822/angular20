@@ -51,11 +51,11 @@
               class="albatross-body-2 mb-n4 mt-2 pr-6"
               clearable
             />
-            <v-select v-model="messageTypeFilter"
+            <a-select v-model="messageTypeFilter"
                       :items="messageTypes"
                       single-line
                       @change="reloadConversations"
-                      class="message-type-selector albatross-body-2 mb-n4 pr-6 mt-2"
+                      custom-classes="message-type-selector albatross-body-2 mb-n4 pr-6 mt-2"
                       prepend-icon="filter_alt"
             >
               <template v-slot:prepend>
@@ -66,7 +66,7 @@
                   {{ item }}
                 </span>
               </template>
-            </v-select>
+            </a-select>
             <v-chip label color="primary--text" class="sort-chip align-self-center albatross-body-2 mr-6 flex-shrink-0"
                     @click="sortOldToNew = !sortOldToNew">
               {{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}

@@ -24,14 +24,14 @@
               ></a-text-field>
             </v-col>
             <v-col>
-              <v-select label="Template type"
+              <a-select label="Template type"
                         v-model="selectedTempType"
                         :items="templateTypes"
                         @change="fetchTemplates"
-                        item-text="text"
+                        item-title="text"
                         item-value="text"
                         class="template-type-width"
-              ></v-select>
+              ></a-select>
 
               <v-autocomplete label="Documents"
                               v-model="selectedDocIds"

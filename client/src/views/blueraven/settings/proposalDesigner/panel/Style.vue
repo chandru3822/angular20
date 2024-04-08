@@ -86,7 +86,7 @@
           ></a-btn>
         </div>
 
-        <v-select dense
+        <a-select density="compact"
           v-if="cssStyle.backgroundImage"
           v-model="cssStyle.backgroundSize"
           :items="backgroundSizeItems"
@@ -100,7 +100,8 @@
 
     <div>
       <v-card-title>Props</v-card-title>
-      <v-select outlined dense
+      <a-select variant="outlined"
+                density="compact"
                 v-model="cssStyle.display"
                 :items="displayItems"
                 label="Display"
@@ -108,19 +109,22 @@
       />
 
       <fragment v-if="isFlex">
-        <v-select outlined dense
+        <a-select variant="outlined"
+                  density="compact"
                   v-model="cssStyle.flexDirection"
                   :items="flexDirectionItems"
                   label="Direction"
                   @change="doUpdateStyles({'flexDirection': $event})"
         />
-        <v-select outlined dense
+        <a-select variant="outlined"
+                  density="compact"
                   v-model="cssStyle.justifyContent"
                   :items="flexJustifyItems"
                   label="Justify"
                   @change="doUpdateStyles({'justifyContent': $event})"
         />
-        <v-select outlined dense
+        <a-select variant="outlined"
+                  density="compact"
                   v-model="cssStyle.alignItems"
                   :items="flexAlignItems"
                   label="Align"

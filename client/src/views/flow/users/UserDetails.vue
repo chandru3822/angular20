@@ -4,17 +4,17 @@
     <ConfirmationDialog :open-dialog="showEditModal" @confirm="validateForm" @close-dialog="showEditModal = false" parent-close>
       <template v-slot:title>User Overview</template>
       <v-form ref="userEditForm">
-        <v-select attach v-model="tempUser.userStatusTypeId"
+        <a-select attach v-model="tempUser.userStatusTypeId"
                   :items="userStatusTypes"
                   label="User Status"
                   :rules="requiredRules"
                   :readonly="!userCanEdit"
                   :disabled="!userCanEdit"
                   placeholder="Select a status..."
-                  item-text="userStatusType"
+                  item-title="userStatusType"
                   item-value="id"
                   autocomplete="off">
-        </v-select>
+        </a-select>
         <a-text-field
                       label="User First Name"
                       placeholder=" "
@@ -110,21 +110,21 @@
                   ></a-btn>
                 </template>
                 <v-card class="pa-5">
-                  <v-select
+                  <a-select
                       v-model="newCompany.id"
                       :items="filterUserCompanies()"
                       label="Company"
-                      item-text="companyName"
+                      item-title="companyName"
                       item-value="id"
                       @input="getUserStatusTypes(newCompany.id)"
-                  ></v-select>
-                  <v-select
+                  ></a-select>
+                  <a-select
                       v-model="newCompany.companyUserStatusTypeId"
                       :items="companyUserStatusTypes"
                       label="User Status"
-                      item-text="userStatusType"
+                      item-title="userStatusType"
                       item-value="id"
-                  ></v-select>
+                  ></a-select>
                   <a-btn
                       v-if="userIsAdmin"
                       color="primary"

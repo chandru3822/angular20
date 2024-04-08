@@ -21,22 +21,22 @@
                           persistent-hint></a-text-field>
             <a-text-field  label="Display Name"
                           v-model="newFunction.displayName"></a-text-field>
-            <v-select
+            <a-select
                 class="mt-2"
                 v-model="newFunction.dbFunctionTypeId"
                 :items="dbFunctionTypes"
                 label="Function Type"
-                item-text="functionType"
+                item-title="functionType"
                 item-value="id"
-            ></v-select>
-            <v-select
+            ></a-select>
+            <a-select
                 v-if="newFunction.dbFunctionTypeId === 1"
                 v-model="newFunction.returnDataTypeId"
                 :items="dataTypes"
                 label="Return Data Type"
-                item-text="dataType"
+                item-title="dataType"
                 item-value="id"
-            ></v-select>
+            ></a-select>
 
             <v-checkbox
                 type="checkbox"

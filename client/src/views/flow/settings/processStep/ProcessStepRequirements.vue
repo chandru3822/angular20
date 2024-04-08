@@ -57,16 +57,16 @@
         <v-row v-if="addNewRequirement">
           <v-col cols="12">
             <!--  TODO: need to protect against bad data when they go back and change the requirement type but have already selected other values lower in the form      -->
-            <v-select attach v-model="newRequirement.processStepRequirementTypeId"
+            <a-select attach v-model="newRequirement.processStepRequirementTypeId"
                       :items="availableRequirementTypes"
                       label="Select Requirement Type"
                       item-value="id"
-                      item-text="processStepRequirementType"
+                      item-title="processStepRequirementType"
                       @input="[selectRequirementType(), parent = {}, selectedCustomField = {}, selectedDataTypeRequirement = {},
                               validateRequirementForm(), selectedDataView = {}, selectedDataViewField = {},
                               selectedFunction = {}, newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
-            ></v-select>
+            ></a-select>
             <!--            show this for both custom fields AND statuses-->
             <v-autocomplete
                 v-if="newRequirement.processStepRequirementTypeId && (newRequirement.processStepRequirementTypeId === 1 || newRequirement.processStepRequirementTypeId === 7 || newRequirement.processStepRequirementTypeId === 8)"
@@ -96,16 +96,16 @@
                               selectedFunction = {}, newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-autocomplete>
-            <v-select attach
+            <a-select attach
                       v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 12"
                       v-model="selectedDataView"
                       :items="dataViews"
                       label="Select Data View"
                       item-value="id"
                       return-object
-                      item-text="displayName"
+                      item-title="displayName"
                       @input="[getDataViewFields()]"
-            ></v-select>
+            ></a-select>
             <v-autocomplete
                 v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 12 &&
                       selectedDataView.id != null && availableDataViewFields.length > 0"
@@ -122,15 +122,15 @@
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-autocomplete>
             <!-- if it is a function -->
-            <v-select
+            <a-select
                 v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"
                 v-model="selectedFunction"
                 :items="availableFunctions"
                 label="Function"
-                item-text="companyFunctionName"
+                item-title="companyFunctionName"
                 returnObject
                 @input="[loadFunctionParams(selectedFunction.dbFunctionId, true), loadOperatorTypes(selectedFunction.returnDataTypeId), loadDataTypeRequirements(selectedFunction.returnDataTypeId), validateRequirementForm()]"
-            ></v-select>
+            ></a-select>
             <div v-if="selectedFunction.id && newRequirement.requirementParamDynamicValues.length > 0">
               <h5 class="text-left">Dynamic Function Parameters</h5>
               <v-card flat>
@@ -181,7 +181,7 @@
                 </div>
               </v-card>
             </div>
-            <v-select
+            <a-select
                 v-if="(newRequirement.processStepRequirementTypeId !== 2 && newRequirement.processStepRequirementTypeId !== 7 && selectedCustomField.customFieldGroupAssignmentId)
                       || (newRequirement.processStepRequirementTypeId === 2 && selectedFunction.id)
                       || (newRequirement.processStepRequirementTypeId === 12 && selectedDataViewField.id)
@@ -191,9 +191,9 @@
                 :items="operatorTypes"
                 label="Operator"
                 @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm(), operatorDataTypeCheck()]"
-                item-text="operatorType"
+                item-title="operatorType"
                 item-value="id"
-            ></v-select>
+            ></a-select>
             <v-switch
                 v-if="newRequirement.operatorTypeId"
                 v-model="newRequirement.customValue"
@@ -211,7 +211,7 @@
                 @input="validateRequirementForm()"
                 label="Value">
             </a-text-field>
-            <v-select
+            <a-select
                 v-else-if="newRequirement.operatorTypeId
                               && newRequirement.customValue
                               && ![7,8,9,10,11].includes(newRequirement.processStepRequirementTypeId)
@@ -221,9 +221,9 @@
                 :items="selectedCustomField.listOfValues"
                 @change="validateRequirementForm()"
                 label="Available Values"
-                item-text="name"
+                item-title="name"
                 return-object
-            ></v-select>
+            ></a-select>
             <!-- if the requirement is event status -->
             <v-autocomplete
                 v-else-if="newRequirement.operatorTypeId && newRequirement.processStepRequirementTypeId === 11"
@@ -242,16 +242,16 @@
               </template>
             </v-autocomplete>
             <!-- currently only a listOfValueId can be a multiselect.  we may change this down the road for custom sql and system lists -->
-            <v-select
+            <a-select
                 v-else-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId !== null && selectedCustomField.allowMultiple"
                 v-model="selectedListOfValues"
                 :items="selectedCustomField.listOfValues"
                 label="Available Values"
                 multiple
                 @change="validateRequirementForm()"
-                item-text="name"
+                item-title="name"
                 return-object
-            ></v-select>
+            ></a-select>
             <v-autocomplete
                 v-else-if="newRequirement.operatorTypeId && (newRequirement.processStepRequirementTypeId === 7 || newRequirement.processStepRequirementTypeId === 8)"
                 v-model="selectedListOfValues"
@@ -289,15 +289,15 @@
                   }})</span>
               </template>
             </v-autocomplete>
-            <v-select
+            <a-select
                 v-else-if="newRequirement.operatorTypeId && !newRequirement.customValue"
                 v-model="selectedDataTypeRequirement"
                 :items="dataTypeRequirements"
                 label="Available Values"
                 @change="validateRequirementForm()"
-                item-text="dataTypeValue"
+                item-title="dataTypeValue"
                 return-object
-            ></v-select>
+            ></a-select>
             <a-text-field v-if="selectedDataTypeRequirement && selectedDataTypeRequirement.secondaryRequirement"
                           type="number"
                           v-model="newRequirement.secondaryRequirementValue"
@@ -422,16 +422,16 @@
                       </div>
                     </v-card>
                   </div>
-                  <v-select attach v-model="item.operatorTypeId"
+                  <a-select attach v-model="item.operatorTypeId"
                             :items="operatorTypes"
                             class="one-hunned"
                             label="Operator"
                             :readonly="(newRequirement.operatorTypeId === 5 && (selectedCustomField.dataTypeId === 7 || selectedCustomField.dataTypeId === 8)) || requirementIsReadonly(item)"
                             :disabled="(newRequirement.operatorTypeId === 5 && (selectedCustomField.dataTypeId === 7 || selectedCustomField.dataTypeId === 8)) || requirementIsReadonly(item)"
-                            item-text="operatorType"
+                            item-title="operatorType"
                             @change="operatorDataTypeCheck(item)"
                             item-value="id"
-                  ></v-select>
+                  ></a-select>
                   <v-switch v-model="item.customValue"
                             class="mx-2"
                             :readonly="(item.dataTypeId === 7) || item.dataTypeId === 3 || !userCanEdit || [7,8,9,10,11].includes(item.processStepRequirementTypeId)"
@@ -448,7 +448,7 @@
                       label="Value">
                   </a-text-field>
                   <!-- single select for dropdown, custom sql list, or system list -->
-                  <v-select
+                  <a-select
                       v-else-if="!item.customField.companySystemListId && item.customValue && item.customField && ![7,8,9,10,11].includes(item.processStepRequirementTypeId)
                             && ((item.customField.listOfValueId !== null || item.customField.customFieldSql !== null) && !item.customField.allowMultiple)"
                       v-model="item.listOfValueId"
@@ -456,9 +456,9 @@
                       :readonly="requirementIsReadonly(item)"
                       :items="item.availableListOfValues"
                       label="Available Values"
-                      item-text="name"
+                      item-title="name"
                       item-value="id"
-                  ></v-select>
+                  ></a-select>
                   <v-autocomplete
                       v-else-if="item.operatorTypeId && [7,8,9,10,11].includes(item.processStepRequirementTypeId)"
                       v-model="item.listOfValues"
@@ -472,50 +472,50 @@
                       return-object
                   >
                   </v-autocomplete>
-                  <v-select
+                  <a-select
                       v-else-if="(item.customValue && item.systemListId) || item.companySystemListId"
                       v-model="item.systemListOptionId"
                       :disabled="requirementIsReadonly(item)"
                       :readonly="requirementIsReadonly(item)"
                       :items="item.availableListOfValues"
                       label="Available Values"
-                      item-text="name"
+                      item-title="name"
                       item-value="id"
-                  ></v-select>
+                  ></a-select>
                   <!-- not sure what to do with this custom sql one yet -->
-                  <v-select
+                  <a-select
                       v-else-if="item.customValue && item.customFieldSql"
                       v-model="item.listOfValueId"
                       :disabled="requirementIsReadonly(item)"
                       :readonly="requirementIsReadonly(item)"
                       :items="item.availableListOfValues"
                       label="Available Values"
-                      item-text="name"
+                      item-title="name"
                       item-value="id"
-                  ></v-select>
+                  ></a-select>
                   <!-- at this point it should only show for multiselects -->
-                  <v-select
+                  <a-select
                       v-else-if="item.customValue && item.customField && item.customField.allowMultiple"
                       v-model="item.listOfValues"
                       :disabled="requirementIsReadonly(item)"
                       :readonly="requirementIsReadonly(item)"
                       :items="item.availableListOfValues"
                       label="Available Values"
-                      item-text="name"
+                      item-title="name"
                       multiple
                       return-object
-                  ></v-select>
-                  <v-select
+                  ></a-select>
+                  <a-select
                       v-else
                       v-model="item.dataTypeRequirement"
                       :items="dataTypeRequirements"
                       :disabled="requirementIsReadonly(item)"
                       :readonly="requirementIsReadonly(item)"
                       label="Available Values"
-                      item-text="dataTypeValue"
+                      item-title="dataTypeValue"
                       item-value="id"
                       return-object
-                  ></v-select>
+                  ></a-select>
                   <a-text-field v-if="item.dataTypeRequirement.secondaryRequirement"
                                 type="number"
                                 v-model="item.secondaryRequirementValue"

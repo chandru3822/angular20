@@ -136,16 +136,16 @@
                           @change="setFieldsDirty"
                           attach
           ></v-autocomplete>
-          <v-select attach
+          <a-select attach
                     v-model="user.notificationTypeId"
                     :items="userNotificationTypes"
                     label="Notification"
                     v-if="showOnUserProfile('Notification')"
-                    item-text="userNotificationType"
+                    item-title="userNotificationType"
                     item-value="id"
                     @change="setFieldsDirty"
                     autocomplete="off">
-          </v-select>
+          </a-select>
           <div v-if="smsTeams && smsTeams.length > 0" v-for="item in smsTeams" class="unassigned-notif-div d-flex">
             <span class="mt-4">{{ item.teamName }} SMS Team:</span>
             <v-checkbox class="pl-4 py-0" @change="checkForDeselect(item)" v-model="item.receiveUnassignedNotifications" label="Receive notifications for team's unassigned messages"></v-checkbox>

@@ -73,13 +73,13 @@
                   <a-btn variant="text" color="primary" @click="addPosition = !addPosition" prepend-icon="add"/>
                 </v-toolbar>
                 <v-card flat v-if="addPosition" color="transparent" class="px-4">
-                  <v-select
+                  <a-select
                     v-model="positionId"
                     :items="selectablePositions"
                     label="Positions"
-                    item-text="position"
+                    item-title="position"
                     item-value="id"
-                  ></v-select>
+                  ></a-select>
 
                   <a-btn color="primary" :disabled="!positionId" @click="addPositionToTeam" text="SAVE" class="mb-6"/>
                   <a-btn variant="text" color="primary" @click="[addPosition = !addPosition, positionId = null]" class="mb-6" text="CANCEL"/>

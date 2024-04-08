@@ -8,15 +8,15 @@
           <v-toolbar-items>
             <div class="position-selector">
               <span class="d-inline-block">Position: </span>
-              <v-select
+              <a-select
                   class="d-inline-block ml-3"
                   v-model="commissionPositionId"
                   :items="positions"
                   label=""
                   hide-details
-                  item-text="label"
+                  item-title="label"
                   item-value="id"
-              ></v-select>
+              ></a-select>
             </div>
           </v-toolbar-items>
           <v-tabs :optional="false" color="primary"

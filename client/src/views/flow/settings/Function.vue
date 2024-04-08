@@ -33,27 +33,27 @@
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': details.companyFunctionParams.indexOf(item) % 2}">
 <!--              they should not be able to edit system value types-->
-<!--              <v-select attach v-if="item.parameterTypeId === 1"-->
+<!--              <a-select attach v-if="item.parameterTypeId === 1"-->
 <!--                          v-model="item.systemValueId"-->
 <!--                          :items="systemValues"-->
 <!--                          label="System Value"-->
-<!--                          item-text="systemValue"-->
+<!--                          item-title="systemValue"-->
 <!--                          item-value="id"></v-select>-->
               <div v-if="item.parameterTypeId === 3">
-                <v-select attach v-model="item.processStepId"
+                <a-select attach v-model="item.processStepId"
                           :items="parentObjects"
                           label="Parent Object"
-                          item-text="processStepName"
+                          item-title="processStepName"
                           item-value="id"
                           @input="loadFieldsByParent(item.processStepId, item.dataTypeId)"
-                ></v-select>
-                <v-select attach v-if="item.processStepId"
+                ></a-select>
+                <a-select attach v-if="item.processStepId"
                           v-model="item.customFieldGroupAssignmentId"
                           :items="availableCustomFields"
                           label="Custom Field"
-                          item-text="fieldName"
+                          item-title="fieldName"
                           item-value="customFieldGroupAssignmentId"
-                ></v-select>
+                ></a-select>
               </div>
               <a-btn
                 @click="saveParam(item)"

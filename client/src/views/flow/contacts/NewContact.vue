@@ -68,14 +68,14 @@
                             id="qa-city-field"
                             :rules="cityRules"
                             v-model="contact.city"></a-text-field>
-              <v-select attach v-model="contact.companyStateId"
+              <a-select attach v-model="contact.companyStateId"
                         class="body-large"
                         :items="states"
                         label="State"
                         id="qa-state-field"
-                        item-text="state"
+                        item-title="state"
                         item-value="id"
-              ></v-select>
+              ></a-select>
             </v-col>
             <v-col cols="12" sm="6">
               <a-text-field
@@ -105,15 +105,14 @@
                             @keydown="isNumberOrHyphen"
                             :rules="postalCodeRules"
                             v-model="contact.postalCode"></a-text-field>
-              <v-select attach v-model="contact.companyCountryId"
+              <a-select attach v-model="contact.companyCountryId"
                         class="body-large"
                         :items="countries"
                         label="Country"
-                        style="color: red"
                         id="qa-country-field"
-                        item-text="country"
+                        item-title="country"
                         item-value="id"
-              ></v-select>
+              ></a-select>
             </v-col>
           </v-row>
         </v-container>

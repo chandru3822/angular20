@@ -28,16 +28,16 @@
               </template>
 
               <v-card class="pa-5">
-                <v-select
+                <a-select
                     v-model="selectedTag"
                     :items="availableTags"
                     @input="addTagToProject"
                     :loading="tagsLoading"
                     return-object
                     label="Select an Available Tag"
-                    item-text="tagName"
+                    item-title="tagName"
                     item-value="id"
-                ></v-select>
+                ></a-select>
               </v-card>
             </v-menu>
           </v-toolbar-items>

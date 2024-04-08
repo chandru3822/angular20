@@ -39,28 +39,27 @@
                         placeholder="Enter a name"
                         label="Action Name">
           </a-text-field>
-          <v-select attach v-model="newAction.actionTypeId"
+          <a-select attach v-model="newAction.actionTypeId"
                     :items="actionTypes"
                     label="Action Type"
-                    item-text="actionType"
+                    item-title="actionType"
                     item-value="id"
-          ></v-select>
+          ></a-select>
           <div v-if="newAction.actionTypeId && newAction.actionTypeId !== 3">
-            <v-select attach v-model="newAction.companyProcessStepStatusTypeId"
+            <a-select attach v-model="newAction.companyProcessStepStatusTypeId"
                       :items="statusTypes"
                       :clearable="true"
-
                       label="Action changes status of parent process step to"
-                      item-text="processStepStatusType"
+                      item-title="processStepStatusType"
                       item-value="id"
-            ></v-select>
-            <v-select attach v-model="newAction.companyProjectStatusTypeId"
+            ></a-select>
+            <a-select attach v-model="newAction.companyProjectStatusTypeId"
                       :items="companyProjectStatusTypes"
                       :clearable="true"
                       label="Action changes project status to"
-                      item-text="projectStatusType"
+                      item-title="projectStatusType"
                       item-value="id"
-            ></v-select>
+            ></a-select>
             <v-checkbox
                 dense
                 hide-details
@@ -168,31 +167,31 @@
                                 :disabled="!userCanEdit"
                                 label="Action Name">
                   </a-text-field>
-                  <v-select attach v-model="item.actionTypeId"
+                  <a-select attach v-model="item.actionTypeId"
                             :items="actionTypes"
                             :readonly="true"
                             :disabled="true"
                             label="Action Type"
-                            item-text="actionType"
+                            item-title="actionType"
                             item-value="id"
-                  ></v-select>
+                  ></a-select>
                   <div v-if="item.actionTypeId !== 3">
-                    <v-select attach v-model="item.companyProcessStepStatusTypeId"
+                    <a-select attach v-model="item.companyProcessStepStatusTypeId"
                               :items="statusTypes"
                               :clearable="userCanEdit"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               label="Action changes status of parent process step to"
-                              item-text="processStepStatusType"
+                              item-title="processStepStatusType"
                               item-value="id"
-                    ></v-select>
-                    <v-select attach v-model="item.companyProjectStatusTypeId"
+                    ></a-select>
+                    <a-select attach v-model="item.companyProjectStatusTypeId"
                               :items="companyProjectStatusTypes"
                               :clearable="true"
                               label="Action changes project status to"
-                              item-text="projectStatusType"
+                              item-title="projectStatusType"
                               item-value="id"
-                    ></v-select>
+                    ></a-select>
                     <v-checkbox
                         dense
                         hide-details
@@ -268,13 +267,13 @@
                       <v-card class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
                               v-if="addChildLink">
                         <h3>Add Child Link</h3>
-                        <v-select attach v-model="selectedLink"
+                        <a-select attach v-model="selectedLink"
                                   :items="availableLinks"
                                   label="Available Links"
-                                  item-text="link"
+                                  item-title="link"
                                   return-object
                                   @input="saveLinkToAction(item)"
-                        ></v-select>
+                        ></a-select>
                         <a-btn
                             variant="text"
                             color="primary"

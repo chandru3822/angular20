@@ -1,16 +1,16 @@
 <template>
   <v-card flat color="transparent">
     <h4 class="mb-3">{{rruleText}}</h4>
-    <v-select attach v-model="rruleRef.frequency"
+    <a-select attach v-model="rruleRef.frequency"
               :items="rruleConfig.frequencies"
               label="Repeats"
-              item-text="label"
+              item-title="label"
               return-object
               :readonly="readonly"
               :disabled="readonly"
               @input="updateRecurrenceString"
               autocomplete="off">
-    </v-select>
+    </a-select>
     <a-text-field
                   type="number"
                   label="Repeat every (add here)"
@@ -19,10 +19,10 @@
                   :disabled="readonly"
                   @input="updateRecurrenceString"
                   v-model="rruleRef.interval"></a-text-field>
-    <v-select attach v-model="rruleRef.months"
+    <a-select attach v-model="rruleRef.months"
               :items="rruleConfig.months"
               label="By Month"
-              item-text="label"
+              item-title="label"
               return-object
               multiple
               clearable
@@ -30,11 +30,11 @@
               :disabled="readonly"
               @input="updateRecurrenceString"
               autocomplete="off">
-    </v-select>
-    <v-select attach v-model="rruleRef.daysOfWeek"
+    </a-select>
+    <a-select attach v-model="rruleRef.daysOfWeek"
               :items="rruleConfig.daysOfWeek"
               label="By Day of Week"
-              item-text="label"
+              item-title="label"
               return-object
               clearable
               :readonly="readonly"
@@ -42,7 +42,7 @@
               @input="updateRecurrenceString"
               multiple
               autocomplete="off">
-    </v-select>
+    </a-select>
 
     <label>Ends</label>
     <v-radio-group :readonly="readonly"

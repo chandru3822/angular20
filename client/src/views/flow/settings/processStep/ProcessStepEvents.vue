@@ -31,13 +31,13 @@
                             item-text="eventName"
                             return-object
             ></v-autocomplete>
-            <v-select v-if="newEvent.id"
+            <a-select v-if="newEvent.id"
                       v-model="newEvent.initialCompanyEventStatusTypeId"
                       :items="newEvent.companyEventStatusTypes"
                       label="Select Initial Status"
                       item-value="id"
-                      item-text="eventStatusType"
-            ></v-select>
+                      item-title="eventStatusType"
+            ></a-select>
             <a-btn
                 color="primary"
                 :disabled="!newEvent.id || !newEvent.initialCompanyEventStatusTypeId"

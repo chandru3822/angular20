@@ -3,8 +3,8 @@
     <v-divider></v-divider>
     <v-card flat color="white" class="px-3 mt-3 square-card">
       <div class="pay-header pb-3">
-        <v-select v-model="batchId"
-                  class="batches-select"
+        <a-select v-model="batchId"
+                  custom-classes="batches-select"
                   label="Select a Batch"
                   hide-details
                   :items="batches"
@@ -12,15 +12,17 @@
                   item-value="id"
                   @change="getBatchDetails(batchId)"
         >
-          <template slot='selection' slot-scope='{ item }'>
+          <template v-slot:selection="{ item, index }">
             <span v-if="item.voidedBatch" class="error--text mr-2">VOIDED</span>
             #{{ item.displayName }}
           </template>
-          <template slot='item' slot-scope='{ item }'>
-            <span v-if="item.voidedBatch" class="error--text mr-2">VOIDED</span>
-            #{{ item.displayName }}
+          <template v-slot:item="{ props, item }">
+            <v-list-item v-bind="props">
+              <span v-if="item.voidedBatch" class="error--text mr-2">VOIDED</span>
+              #{{ item.displayName }}
+            </v-list-item>
           </template>
-        </v-select>
+        </a-select>
         <v-spacer></v-spacer>
         <span class="pl-4"
               v-show="batchLoaded && !voidedBatch">Payment Amount Total: <b>{{ paymentSum || 0 | currency('$', 2) }}</b></span>

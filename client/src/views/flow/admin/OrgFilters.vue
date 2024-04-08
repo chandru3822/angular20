@@ -15,18 +15,12 @@
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
           <h3>Add Org Filter</h3>
           <div class="mb-3">
-            <v-select attach v-model="newOrgFilter.orgLevelId"
+            <a-select attach v-model="newOrgFilter.orgLevelId"
                       :items="levels"
                       label="Level"
                       item-value="id"
-            >
-              <template slot="selection" slot-scope="data">
-                {{ data.item.level }} - {{ data.item.levelName }}
-              </template>
-              <template slot="item" slot-scope="data">
-                {{ data.item.level }} - {{ data.item.levelName }}
-              </template>
-            </v-select>
+                      :item-title="item => `${item.level} - ${item.levelName}`"
+            ></a-select>
             <a-text-field  v-model="newOrgFilter.rank" type="number"
                           label="Rank"/>
             <label>Show Type:</label>
@@ -62,18 +56,12 @@
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': orgFilters.indexOf(item) % 2}">
               <h3>Edit Org Filter</h3>
               <div class="mb-3">
-                <v-select attach v-model="item.orgLevelId"
+                <a-select attach v-model="item.orgLevelId"
                           :items="levels"
                           label="Level"
+                          :item-title="item => `${item.level} - ${item.levelName}`"
                           item-value="id"
-                >
-                  <template slot="selection" slot-scope="data">
-                    {{ data.item.level }} - {{ data.item.levelName }}
-                  </template>
-                  <template slot="item" slot-scope="data">
-                    {{ data.item.level }} - {{ data.item.levelName }}
-                  </template>
-                </v-select>
+                ></a-select>
                 <a-text-field  v-model="item.rank" type="number"
                               label="Rank"/>
                 <label>Show Type:</label>

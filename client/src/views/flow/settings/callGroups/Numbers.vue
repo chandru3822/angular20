@@ -68,7 +68,9 @@
               <template #item.dateCreated="{item}" class="text-left">{{item.dateCreated  | formatDate('date', 'M/D/YYYY')}}</template>
               <template #item.callCount="{item}" class="text-left">{{item.callCount}}</template>
               <template #item.active="{item}" class="text-left">
-                <v-select attach style="width: 120px" v-model="item.active" :disabled="!userCanEdit" :items="items" @change="updatePhoneNumber(item)"></v-select>
+                <a-select attach style="width: 120px" v-model="item.active"
+                          :disabled="!userCanEdit" :items="items"
+                          @change="updatePhoneNumber(item)"></a-select>
               </template>
               <template #item.icons="{item}">
                 <a-btn size="small"

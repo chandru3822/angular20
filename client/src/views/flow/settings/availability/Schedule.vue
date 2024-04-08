@@ -49,11 +49,11 @@
               <tr class="clickable" :class="{'shaded-row': index % 2}">
                 <td class="text-left">{{item.dayOfWeek}}</td>
                 <td class="text-left" v-if="useSlotSchedule">
-                  <v-select
+                  <a-select
                     v-model="item.resourceSlotScheduleId"
                     :items="slotSchedules"
                     label="Schedule"
-                    item-text="scheduleName"
+                    item-title="scheduleName"
                     item-value="id"
                     clearable
                     @change="[item.startTime = null, item.endTime = null]"
@@ -62,7 +62,7 @@
                       <!-- HTML that describes how select should render items when the select is open -->
                       {{ data.item.scheduleName }}
                     </template>
-                  </v-select>
+                  </a-select>
 
                   <v-card v-if="item.resourceSlotScheduleId" flat color="transparent" class="mb-4">
                     <div v-for="(slot, idx) in getMatchingSlots(item.resourceSlotScheduleId)" :key="idx">
@@ -212,11 +212,11 @@
                     <tr class="clickable" :class="{'shaded-row': index % 2}">
                       <td class="text-left">{{item.dayOfWeek}}</td>
                       <td class="text-left" v-if="useSlotSchedule">
-                        <v-select
+                        <a-select
                           v-model="item.resourceSlotScheduleId"
                           :items="slotSchedules"
                           label="Schedule"
-                          item-text="scheduleName"
+                          item-title="scheduleName"
                           item-value="id"
                           clearable
                           @change="item.startTime = null, item.endTime = null"
@@ -225,7 +225,7 @@
                             <!-- HTML that describes how select should render items when the select is open -->
                             {{ data.item.scheduleName }}
                           </template>
-                        </v-select>
+                        </a-select>
                         <v-card v-if="item.resourceSlotScheduleId" flat color="transparent" class="mb-4">
                           <div v-for="(slot, idx) in getMatchingSlots(item.resourceSlotScheduleId)" :key="idx">
                             <input type="checkbox"

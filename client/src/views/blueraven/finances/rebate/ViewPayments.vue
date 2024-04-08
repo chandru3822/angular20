@@ -2,16 +2,16 @@
   <v-container class="pa-0">
     <v-card flat color="white" class="px-3 mt-3 square-card">
       <div class="pay-header">
-        <v-select v-model="status"
-                  class="status-select pt-3 pl-1"
+        <a-select v-model="status"
+                  custom-classes="status-select pt-3 pl-1"
                   :items="statuses"
                   no-data-text="No Status Available"
                   label="Status: "
-                  item-text="text"
+                  item-title="text"
                   item-value="value"
                   v-bind:class="status"
                   @change="fetchPayments()"
-        ></v-select>
+        ></a-select>
         <v-spacer></v-spacer>
         <div v-if="status === 'approval'" class="pl-4">Payment Amount Total: <b>{{
             paymentSum || 0 | currency('$', 2)

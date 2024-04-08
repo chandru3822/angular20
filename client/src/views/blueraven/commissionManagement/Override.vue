@@ -155,15 +155,15 @@
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
                             v-model="override.description"></a-text-field>
-              <v-select attach v-model="override.positionId"
+              <a-select attach v-model="override.positionId"
                         :items="positions"
                         :readonly="!userCanEdit"
                         :disabled="override.id != null || !userCanEdit"
                         no-data-text="No Users Available"
                         label="Position Type"
-                        item-text="label"
+                        item-title="label"
                         item-value="id"
-              ></v-select>
+              ></a-select>
               <a-text-field
                             :readonly="!userCanEdit"
                             :disabled="(override.id && override.status !== 'PENDING') || !userCanEdit"

@@ -212,11 +212,11 @@
           </v-autocomplete>
         </v-col>
         <v-col id="time-zone-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
-          <v-select
+          <a-select
               v-model="scheduleTimezone"
               :items="timezones"
               label="Current Time Zone"
-              item-text="friendlyValue"
+              item-title="friendlyValue"
               :hide-details="true"
               return-object
               prepend-icon="mdi-web"

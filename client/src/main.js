@@ -11,6 +11,7 @@ import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
 import AlbatrossTextField from '@/components/customVuetify/AlbatrossTextField.vue'
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+import AlbatrossSelect from '@/components/customVuetify/AlbatrossSelect.vue'
 
 
 import '@/styles/main.scss'
@@ -90,6 +91,7 @@ axios.interceptors.request.use(requestInterceptor)
 axios.interceptors.response.use((r) => r, responseInterceptor)
 
 //add the Albatross Components Globally so we can stop importing them everywhere
+Vue.component('a-select', AlbatrossSelect)
 Vue.component('a-text-field', AlbatrossTextField)
 Vue.component('a-btn', AlbatrossButton)
 

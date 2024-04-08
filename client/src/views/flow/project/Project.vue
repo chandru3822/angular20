@@ -69,14 +69,14 @@
                           item-value="id"
                           @input="tempProject.reloadCoordinates = true"
           />
-          <v-select v-model="tempProject.companyCountryId"
+          <a-select v-model="tempProject.companyCountryId"
                     :items="countries"
                     label="Country"
                     :readonly="!userCanEdit"
                     :disabled="!userCanEdit"
                     :loading="countriesLoading"
                     @input="tempProject.reloadCoordinates = true"
-                    item-text="country"
+                    item-title="country"
                     item-value="id"
           />
         </div>

@@ -95,7 +95,11 @@
               <template #item.activePostalCodes="{item}">{{item.postalCodesCount}}</template>
               <template #item.activePhoneNumbers="{item}">{{item.activePhoneNumbersCount}}</template>
               <template #item.active="{item}">
-                <v-select attach style="width: 100px" v-model="item.active" :disabled="!userCanEdit" :items="items" @change="updateCallGroup(item)"></v-select>
+                <a-select attach style="width: 100px"
+                          v-model="item.active"
+                          :disabled="!userCanEdit"
+                          :items="items"
+                          @change="updateCallGroup(item)"></a-select>
               </template>
               <template #item.icons="{item}" class="text-right">
                 <a-btn size="small" variant="text"

@@ -104,10 +104,10 @@
                 align-self="center"
                 class="py-0"
               >
-                <v-select
+                <a-select
                   v-model="accessLevel.accessControlId"
                   :items="accessLevels"
-                  :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
+                  :item-title="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
                   item-value="accessControlId"
                   @input="[accessLevel.updated = true, accessLevel.deleted = false]"
                 >
@@ -120,7 +120,7 @@
                       Transfer Ownership
                     </v-list-item>
                   </template>
-                </v-select>
+                </a-select>
               </v-col>
 
               <v-col

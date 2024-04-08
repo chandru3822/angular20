@@ -20,16 +20,16 @@
         </v-toolbar>
         <div class="px-5" v-if="addNew">
           Add New Field to Milestone
-          <v-select attach
+          <a-select attach
                     class="mt-3"
                     v-model="selectedDataView"
                     :items="dataViews"
                     label="Select Data View"
                     item-value="id"
                     return-object
-                    item-text="displayName"
+                    item-title="displayName"
                     @input="[availableDataViewFields = [], selectedDataViewField = {}, getDataViewFields() ]"
-          ></v-select>
+          ></a-select>
           <v-autocomplete
             v-model="selectedDataViewField"
             :items="availableDataViewFields"

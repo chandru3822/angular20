@@ -56,11 +56,11 @@
               ></a-btn>
             </v-col>
             <v-col>
-              <v-select attach label="Proposal Number"
+              <a-select attach label="Proposal Number"
                         v-model="selectedProposal"
                         return-object
                         :items="requestItem.proposalNbrs"
-                        item-text="proposalNbr"
+                        item-title="proposalNbr"
                         @change="handleProposalSelection"
               />
               <v-checkbox label="Send English Installation Agreement"

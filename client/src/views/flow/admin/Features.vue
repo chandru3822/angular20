@@ -24,15 +24,15 @@
               <label>Is System:</label>
               <input class="ml-3" type="checkbox" v-model="selectedFeature.isSystem">
             </div>
-            <v-select
+            <a-select
                 v-else
                 v-model="selectedFeature"
                 :items="features"
                 label="Select a feature to use"
-                item-text="featureName"
+                item-title="featureName"
                 item-value="id"
                 return-object
-            ></v-select>
+            ></a-select>
           </div>
           <a-btn variant="text" text="Cancel" @click="[addNew = !addNew, selectedFeature = {}]"></a-btn>
           <a-btn :disabled="!selectedFeature || !selectedFeature.featureName || !selectedFeature.featureCode"

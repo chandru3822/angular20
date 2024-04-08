@@ -27,14 +27,14 @@
             <a-text-field  v-model="newDataView.viewName"
                           :rules="tableNameRule"
                           label="Table Name (all lower case, underscores instead of spaces)" />
-              <v-select label="Company Processes"
+              <a-select label="Company Processes"
                         v-model="selectedCompanyProcesses"
                         :items="companyProcesses"
-                        item-text="processName"
+                        item-title="processName"
                         placeholder="Select"
                         multiple
                         return-object>
-              </v-select>
+              </a-select>
             </v-form>
           </div>
           <div class="mb-3 error--text" v-if="saveError">

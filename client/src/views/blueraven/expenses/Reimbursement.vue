@@ -85,24 +85,24 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div class="flex-display pt-3">
-              <v-select v-model="selectedMonth"
+              <a-select v-model="selectedMonth"
                         :items="months"
                         hide-details
                         class="mr-3 reimbursement-range-selector"
                         single-line
                         label="Month"
-                        item-text="name"
+                        item-title="name"
                         item-value="id"
-              ></v-select>
-              <v-select v-model="selectedYear"
+              ></a-select>
+              <a-select v-model="selectedYear"
                         :items="years"
                         hide-details
                         class="reimbursement-range-selector"
                         single-line
                         label="Year"
-                        item-text="name"
+                        item-title="name"
                         item-value="id"
-              ></v-select>
+              ></a-select>
               <a-btn
                   color="primary"
                   class="ml-3"

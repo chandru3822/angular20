@@ -73,7 +73,7 @@
                             item-value="id"
                             @input="tempContact.reloadCoordinates = true"
             ></v-autocomplete>
-            <v-select v-model="tempContact.companyCountryId"
+            <a-select v-model="tempContact.companyCountryId"
                       class="body-large"
                       :items="countries"
                       label="Country"
@@ -81,9 +81,9 @@
                       :disabled="!userCanEdit"
                       :loading="countriesLoading"
                       @input="tempContact.reloadCoordinates = true"
-                      item-text="country"
+                      item-title="country"
                       item-value="id"
-            ></v-select>
+            ></a-select>
             <a-text-field
                           class="body-large"
                           label="Phone"
@@ -203,16 +203,16 @@
                 </template>
                 <v-card class="pa-5 body-large">
                   Select a process to be used
-                  <v-select v-model="selectedProcess"
+                  <a-select v-model="selectedProcess"
                             :items="availableProcesses"
                             label="Process"
                             id="qa-process-selector"
                             :loading="processesLoading"
                             placeholder="Select one..."
-                            item-text="processName"
+                            item-title="processName"
                             return-object
                             class="mt-2 qa-process-selector"
-                  ></v-select>
+                  ></a-select>
                   <a-btn
                       variant="text"
                       color="primary"
@@ -303,16 +303,16 @@
                 </template>
                 <v-card class="pa-5 body-large">
                   Select a process to be used
-                  <v-select v-model="selectedProcess"
+                  <a-select v-model="selectedProcess"
                             :items="availableProcesses"
                             label="Process"
                             id="qa-process-selector"
                             :loading="processesLoading"
                             placeholder="Select one..."
-                            item-text="processName"
+                            item-title="processName"
                             return-object
                             class="mt-2 qa-process-selector"
-                  ></v-select>
+                  ></a-select>
                   <a-btn
                       variant="text"
                       color="primary"

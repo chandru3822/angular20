@@ -81,17 +81,17 @@
               :style="{'border-top': line.id === 12 ? '2px solid #000' : ''}">
             <td class="funnel-td funnel-line-name">{{ line.name }}</td>
             <td class="funnel-td" :class="{'funnel-source': line.id === 12 || line.id === 13}">
-              <v-select v-if="line.id === 12"
-                        class="appts-created-pipeline-dropdown"
+              <a-select v-if="line.id === 12"
+                        custom-classes="appts-created-pipeline-dropdown"
                         v-model="brsProvidedSourceModel"
                         :items="brsProvidedSourceData"
-                        item-text="sourceName"
+                        item-title="sourceName"
                         item-value="sourceId"
                         placeholder="Select"
                         multiple
-                        outlined
-                        background-color="white"
-                        dense
+                        variant="outlined"
+                        bg-color="white"
+                        density="compact"
                         return-object
                         @input="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:selection="{ item, index }">
@@ -110,19 +110,19 @@
                   </v-list-item>
                   <v-divider class="mt-2"></v-divider>
                 </template>
-              </v-select>
+              </a-select>
 
-              <v-select v-if="line.id === 13"
-                        class="appts-created-pipeline-dropdown"
+              <a-select v-if="line.id === 13"
+                        custom-classes="appts-created-pipeline-dropdown"
                         v-model="selfGenSourceModel"
                         :items="selfGenSourceData"
-                        item-text="sourceName"
+                        item-title="sourceName"
                         item-value="sourceId"
                         placeholder="Select"
                         multiple
-                        outlined
-                        background-color="white"
-                        dense
+                        variant="outlined"
+                        bg-color="white"
+                        density="compact"
                         return-object
                         @input="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:selection="{ item, index }">
@@ -141,7 +141,7 @@
                   </v-list-item>
                   <v-divider class="mt-2"></v-divider>
                 </template>
-              </v-select>
+              </a-select>
             </td>
             <td class="funnel-td" @click="funnelDrilldown(line, 'today', 'apptsCreatedPipeline', false)">
               {{ line.today_count }}

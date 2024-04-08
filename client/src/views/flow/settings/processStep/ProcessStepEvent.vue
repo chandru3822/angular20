@@ -89,12 +89,12 @@
                         label="Action Name"
                         v-model="newEventAction.actionName">
           </a-text-field>
-          <v-select attach v-model="newEventAction.actionTypeId"
+          <a-select attach v-model="newEventAction.actionTypeId"
                     :items="actionTypes"
                     label="Action Type"
-                    item-text="actionType"
+                    item-title="actionType"
                     item-value="id"
-          ></v-select>
+          ></a-select>
           <div v-if="newEventAction.actionTypeId && newEventAction.actionTypeId === 2">
             <v-autocomplete
                 v-model="newEventAction.companyEventStatusTypeId"
@@ -178,14 +178,14 @@
                             label="Action Name"
                             v-model="action.actionName">
               </a-text-field>
-              <v-select attach v-model="action.actionTypeId"
+              <a-select attach v-model="action.actionTypeId"
                         :items="actionTypes"
                         :readonly="true"
                         :disabled="true"
                         label="Action Type"
-                        item-text="actionType"
+                        item-title="actionType"
                         item-value="id"
-              ></v-select>
+              ></a-select>
               <div>
                 <v-autocomplete
                     v-model="action.companyEventStatusTypeId"
@@ -295,13 +295,13 @@
                   <v-card class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
                           v-if="addChildLink">
                     <h3>Add Child Link</h3>
-                    <v-select attach v-model="selectedLink"
+                    <a-select attach v-model="selectedLink"
                               :items="availableLinks"
                               label="Available Links"
-                              item-text="link"
+                              item-title="link"
                               return-object
                               @input="saveLinkToAction(action)"
-                    ></v-select>
+                    ></a-select>
                     <a-btn
                         @click="addChildLink = false"
                         variant="text"

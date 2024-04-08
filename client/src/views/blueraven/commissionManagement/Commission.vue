@@ -142,13 +142,13 @@
                             :disabled="!userCanEdit"
                             label="Description"
                             v-model="commission.description"></a-text-field>
-              <v-select attach v-model="commission.positionId"
+              <a-select attach v-model="commission.positionId"
                         :items="positions"
                         no-data-text="No Users Available"
                         label="Position"
-                        item-text="label"
+                        item-title="label"
                         item-value="id"
-              ></v-select>
+              ></a-select>
               <a-text-field
                             :label="payRateText"
                             type="number"
@@ -201,13 +201,13 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addMilestone" class="square-card text-left pa-5">
-          <v-select attach v-model="selectedMilestone.id"
+          <a-select attach v-model="selectedMilestone.id"
                     :items="milestones"
                     :label="`Select a ${levelText}...`"
-                    item-text="milestoneType"
+                    item-title="milestoneType"
                     item-value="id"
                     autocomplete="off">
-          </v-select>
+          </a-select>
           <a-text-field
                         type="number"
                         :label="`${levelText} Payment $`"
@@ -352,28 +352,28 @@
             You must add milestones to this plan first.
           </div>
           <div v-else>
-            <v-select attach v-model="selectedSource.id"
+            <a-select attach v-model="selectedSource.id"
                       :items="sources"
                       label="Select a Source..."
-                      item-text="sourceName"
+                      item-title="sourceName"
                       item-value="id"
                       autocomplete="off">
-            </v-select>
+            </a-select>
             <a-text-field
                           label="Fee Amount"
                           v-model="selectedSource.feeAmount"></a-text-field>
-            <v-select attach v-model="selectedSource.feeTypeId"
+            <a-select attach v-model="selectedSource.feeTypeId"
                       :items="feeTypes"
                       label="Fee Type"
-                      item-text="label"
+                      item-title="label"
                       item-value="id"
-            ></v-select>
-            <v-select attach v-model="selectedSource.milestoneId"
+            ></a-select>
+            <a-select attach v-model="selectedSource.milestoneId"
                       :items="commission.milestones"
                       label="Deduct at Milestone"
-                      item-text="milestoneType"
+                      item-title="milestoneType"
                       item-value="milestoneId"
-            ></v-select>
+            ></a-select>
             <a-btn
                 color="primary"
                 class="mr-3"
@@ -409,18 +409,18 @@
               <a-text-field
                             label="Fee Amount"
                             v-model="item.feeAmount"></a-text-field>
-              <v-select attach v-model="item.feeTypeId"
+              <a-select attach v-model="item.feeTypeId"
                         :items="feeTypes"
                         label="Fee Type"
-                        item-text="label"
+                        item-title="label"
                         item-value="id"
-              ></v-select>
-              <v-select attach v-model="item.milestoneId"
+              ></a-select>
+              <a-select attach v-model="item.milestoneId"
                         :items="commission.milestones"
                         label="Deduct at Milestone"
-                        item-text="milestoneType"
+                        item-title="milestoneType"
                         item-value="milestoneId"
-              ></v-select>
+              ></a-select>
               <a-btn
                   :disabled="!item.feeAmount || !item.feeTypeId || !item.milestoneId"
                   @click="[sourceExpanded = [], updateSource(item)]"

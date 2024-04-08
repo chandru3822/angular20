@@ -55,11 +55,11 @@
           <span class="albatross-header-4-new">Add Template</span>
         </v-card-title>
         <v-card-text>
-          <v-select label="Template"
-                    class="template-selector pt-1"
+          <a-select label="Template"
+                    custom-classes="template-selector pt-1"
                     v-model="selectedTemplate"
                     :items="selectableTemplates"
-                    item-text="title"
+                    item-title="title"
                     item-value="id"
                     return-object
                     @change="sendTemplateMessage">
@@ -71,7 +71,7 @@
                 <span class="template-message">{{ data.item.message }}</span>
               </div>
             </template>
-          </v-select>
+          </a-select>
         </v-card-text>
       </v-card>
     </v-menu>

@@ -1,20 +1,15 @@
 <template>
   <v-card width="300px" min-height="270px" class="pa-6 d-flex flex-column">
     <div class="albatross-header-4-new">Add Member</div>
-    <v-select v-model="teamToSave"
+    <a-select v-model="teamToSave"
               :items="selectableTeams"
-              item-text="teamName"
+              item-title="teamName"
               label="Team"
               class="user-filter-select"
               @change="getSelectableUsers"
               menu-props="offset-y"
               return-object
-    > <template #item="{item}">
-                  <span>
-                    {{item.teamName}}
-                  </span>
-    </template>
-    </v-select>
+    ></a-select>
     <v-autocomplete v-model="ownersToSave"
                     :disabled="!teamToSave || selectableUsers.length == 0"
                     :items="selectableUsers"

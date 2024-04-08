@@ -86,13 +86,13 @@
               </v-autocomplete>
             </v-col>
             <v-col cols="3" md="2">
-              <v-select attach class="date-range-dropdown" py-2
+              <a-select attach custom-classes="date-range-dropdown  py-2"
                         v-model="selectedDateRange"
                         :items="dateRanges"
                         label="Date Range"
                         @change="setDateRange()"
                         hide-details
-              ></v-select>
+              ></a-select>
             </v-col>
             <v-col cols="3" md="2">
               <DatetimePickerInput :custom-class="'date-range-date'"  py-2
@@ -170,13 +170,13 @@
           <v-toolbar-title class="app-title">Key Performance Metrics</v-toolbar-title>
         </v-toolbar>
         <v-col cols="3" md="2">
-          <v-select attach class="date-range-dropdown" py-2
+          <a-select attach custom-classes="date-range-dropdown py-2"
                     v-model="metricsSelectedDateRange"
                     :items="dateRanges"
                     label="Date Range"
                     @change="setMetricsDateRange()"
                     hide-details
-          ></v-select>
+          ></a-select>
         </v-col>
         <v-col cols="3" md="2">
           <DatetimePickerInput :custom-class="'date-range-date'"  py-2
@@ -293,13 +293,13 @@
 
             <v-row>
               <v-col cols="5" md="2">
-                <v-select attach class="date-range-dropdown" py-2
+                <a-select attach custom-classes="date-range-dropdown py-2"
                           v-model="selectedDateRange"
                           :items="dateRanges"
                           label="Date Range"
                           @change="setDateRange()"
                           hide-details
-                ></v-select>
+                ></a-select>
               </v-col>
             </v-row>
             <v-row>
@@ -382,13 +382,13 @@
       </v-row>
       <v-row>
         <v-col cols="5" md="2">
-          <v-select attach class="date-range-dropdown" py-2
+          <a-select attach custom-classes="date-range-dropdown  py-2"
                     v-model="metricsSelectedDateRange"
                     :items="dateRanges"
                     label="Date Range"
                     @change="setMetricsDateRange()"
                     hide-details
-          ></v-select>
+          ></a-select>
         </v-col>
       </v-row>
       <v-row>

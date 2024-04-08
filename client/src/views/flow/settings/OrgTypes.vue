@@ -21,19 +21,19 @@
           <h3>Add Org Type</h3>
           <a-text-field  v-model="newOrgType.orgType"
                         label="Org Type Name" />
-          <v-select attach v-model="newOrgType.orgLevelId"
+          <a-select attach v-model="newOrgType.orgLevelId"
                     :items="levels"
                     label="Level"
-                    item-text="level"
+                    item-title="level"
                     item-value="id"
-          ></v-select>
-          <v-select attach v-if="newOrgType.orgLevelId"
+          ></a-select>
+          <a-select attach v-if="newOrgType.orgLevelId"
                     v-model="newOrgType.orgParentTypeId"
                     :items="filteredOrgTypes(newOrgType.orgLevelId)"
                     label="Parent"
-                    item-text="orgType"
+                    item-title="orgType"
                     item-value="id"
-          ></v-select>
+          ></a-select>
           <div class="mb-3" v-if="userStore.isParent">
             <label>Make available in children:</label>
             <input type="checkbox" class="ml-3" v-model="newOrgType.availableToChildren">
@@ -77,19 +77,19 @@
               <h3>Edit Org Type</h3>
               <a-text-field  v-model="item.orgType"
                             label="Org Type Name" />
-              <v-select attach v-model="item.orgLevelId"
+              <a-select attach v-model="item.orgLevelId"
                         :items="levels"
                         label="Level"
-                        item-text="level"
+                        item-title="level"
                         item-value="id"
-              ></v-select>
-              <v-select attach v-if="item.orgLevelId && item.orgLevelId"
+              ></a-select>
+              <a-select attach v-if="item.orgLevelId && item.orgLevelId"
                         v-model="item.orgParentTypeId"
                         :items="filteredOrgTypes(item.orgLevelId)"
                         label="Parent"
-                        item-text="orgType"
+                        item-title="orgType"
                         item-value="id"
-              ></v-select>
+              ></a-select>
               <div class="mb-3" v-if="userStore.isParent">
                 <label>Make available in children:</label>
                 <input type="checkbox" class="ml-3" v-model="item.availableToChildren">

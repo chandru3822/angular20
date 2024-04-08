@@ -359,11 +359,11 @@ onMounted(() => {
         <!--only show the other fields once state or project has been selected-->
         <div v-if="searchProject?.projectId || state?.id">
 
-          <v-select attach v-model="searchEventType"
+          <a-select attach v-model="searchEventType"
                     :items="eventTypes"
                     label="Event"
                     hide-details
-                    item-text="eventName"
+                    item-title="eventName"
                     item-value="id"
                     return-object
                     clearable

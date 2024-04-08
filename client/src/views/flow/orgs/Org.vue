@@ -18,16 +18,16 @@
             :disabled="!userCanEdit"
             label="Organization Name"
         ></a-text-field>
-        <v-select attach v-model="tempOrg.orgTypeId"
+        <a-select v-model="tempOrg.orgTypeId"
                   :items="orgTypes"
                   label="Organization Type"
                   :rules="requiredRules"
                   :readonly="!userCanEdit"
                   :disabled="!userCanEdit"
-                  item-text="orgType"
+                  item-title="orgType"
                   item-value="id"
                   @input="getAllOrgsByType(tempOrg.orgTypeId)"
-        ></v-select>
+        ></a-select>
         <v-autocomplete attach v-model="tempOrg.parentOrgId"
                         :items="parents"
                         :readonly="!userCanEdit"

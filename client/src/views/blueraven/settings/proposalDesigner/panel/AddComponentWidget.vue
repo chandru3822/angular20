@@ -2,12 +2,12 @@
   <v-card flat v-if="availableBlocks.length > 0">
     <v-card-title>Add Component</v-card-title>
     <div class="d-flex">
-      <v-select
-          outlined
-          dense
+      <a-select
+          variant="outlined"
+          density="compact"
           v-model="newComponent"
           :items="availableBlocks"
-          item-text="label"
+          item-title="label"
           item-value="id"
           return-object
           single-line

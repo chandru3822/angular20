@@ -37,53 +37,53 @@
           <div class="right-header-bar elevation-1">
             <div>From:</div>
             <div class="flex-display">
-              <v-select v-model="startMonth"
+              <a-select v-model="startMonth"
                         :items="months"
                         hide-details
-                        class="mr-2 range-selector"
+                        custom-classes="mr-2 range-selector"
                         single-line
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         label="Month"
-                        item-text="name"
+                        item-title="name"
                         item-value="id"
-              ></v-select>
-              <v-select v-model="startYear"
+              ></a-select>
+              <a-select v-model="startYear"
                         :items="years"
                         hide-details
-                        class="range-selector"
+                        custom-classes="range-selector"
                         single-line
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         label="Year"
                         item-text="name"
                         item-value="id"
-              ></v-select>
+              ></a-select>
             </div>
             <div>Thru:</div>
             <div class="flex-display">
-              <v-select v-model="endMonth"
+              <a-select v-model="endMonth"
                         :items="months"
                         hide-details
-                        class="mr-2 range-selector"
+                        custom-classes="mr-2 range-selector"
                         single-line
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         label="Month"
-                        item-text="name"
+                        item-title="name"
                         item-value="id"
-              ></v-select>
-              <v-select v-model="endYear"
+              ></a-select>
+              <a-select v-model="endYear"
                         :items="years"
                         hide-details
-                        class="range-selector"
+                        custom-classes="range-selector"
                         single-line
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         label="Year"
-                        item-text="name"
+                        item-title="name"
                         item-value="id"
-              ></v-select>
+              ></a-select>
             </div>
             <a-btn
                 color="primary"

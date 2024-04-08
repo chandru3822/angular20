@@ -15,18 +15,14 @@
       We assign users to conversations when they wish to send SMS to the customer. You are a part of more than 1 team, which team do you want to be added to this conversation?
     </v-card-text>
 
-    <v-select v-model="selectedSmsTeam"
+    <a-select v-model="selectedSmsTeam"
               :items="teamsAssociatedToUser"
-              item-text="teamName"
+              item-title="teamName"
               label="Team"
-              class="team-select pa-0 mt-4"
+              custom-classes="team-select pa-0 mt-4"
               return-object
-    ><template #item="{item}">
-                  <span>
-                    {{item.teamName}}
-                  </span>
-    </template>
-    </v-select>
+    >
+    </a-select>
     <v-card-actions class="pt-1 pb-0 px-0">
       <v-spacer/>
       <a-btn

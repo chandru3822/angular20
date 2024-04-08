@@ -6,30 +6,30 @@
           <v-toolbar-title class="app-title">
             <div class="flex-display">
               Monthly Budgets for:
-              <v-select v-model="startMonth"
+              <a-select v-model="startMonth"
                         :items="months"
                         hide-details
-                        class="mx-2 range-selector"
+                        custom-classes="mx-2 range-selector"
                         single-line
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         label="Month"
-                        item-text="name"
+                        item-title="name"
                         item-value="id"
                         @input="getBudgets"
-              ></v-select>
-              <v-select v-model="startYear"
+              ></a-select>
+              <a-select v-model="startYear"
                         :items="years"
                         hide-details
-                        class="range-selector"
+                        custom-classes="range-selector"
                         single-line
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         label="Year"
-                        item-text="name"
+                        item-title="name"
                         item-value="id"
                         @input="getBudgets"
-              ></v-select>
+              ></a-select>
             </div>
           </v-toolbar-title>
           <v-spacer></v-spacer>
@@ -59,20 +59,20 @@
                         label="Amount"
                         v-model.number="newBudget.amount">
           </a-text-field>
-          <v-select v-model="selectedMonth"
+          <a-select v-model="selectedMonth"
                     :items="months"
-                    class="mr-3 reimbursement-range-selector"
+                    custom-classes="mr-3 reimbursement-range-selector"
                     label="Month"
-                    item-text="name"
+                    item-title="name"
                     item-value="id"
-          ></v-select>
-          <v-select v-model="selectedYear"
+          ></a-select>
+          <a-select v-model="selectedYear"
                     :items="years"
-                    class="reimbursement-range-selector"
+                    custom-classes="reimbursement-range-selector"
                     label="Year"
-                    item-text="name"
+                    item-title="name"
                     item-value="id"
-          ></v-select>
+          ></a-select>
           <v-textarea class="py-2" hide-details
                       auto-grow filled
                       rows="4"
@@ -121,20 +121,20 @@
                               prepend-icon="mdi-currency-usd"
                               v-model.number="item.amount">
                 </a-text-field>
-                <v-select v-model="selectedMonth"
+                <a-select v-model="selectedMonth"
                           :items="months"
-                          class="mr-3 reimbursement-range-selector"
+                          custom-classes="mr-3 reimbursement-range-selector"
                           label="Month"
-                          item-text="name"
+                          item-title="name"
                           item-value="id"
-                ></v-select>
-                <v-select v-model="selectedYear"
+                ></a-select>
+                <a-select v-model="selectedYear"
                           :items="years"
-                          class="reimbursement-range-selector"
+                          custom-classes="reimbursement-range-selector"
                           label="Year"
-                          item-text="name"
+                          item-title="name"
                           item-value="id"
-                ></v-select>
+                ></a-select>
                 <v-textarea class="py-2" hide-details
                             auto-grow filled
                             rows="4"

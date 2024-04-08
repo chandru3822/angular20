@@ -33,13 +33,13 @@
                             v-model="user.lastName"></a-text-field>
             </v-col>
             <v-col cols="12" sm="6">
-              <v-select attach v-model="user.userStatusTypeId"
+              <a-select attach v-model="user.userStatusTypeId"
                         :items="userStatusTypes"
                         label="User Status"
                         :rules="requiredRules"
-                        item-text="userStatusType"
+                        item-title="userStatusType"
                         item-value="id"
-              ></v-select>
+              ></a-select>
               <a-text-field
                             label="Phone"
                             :rules="userPhoneRule"

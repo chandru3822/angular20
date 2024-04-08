@@ -121,14 +121,14 @@
                   </span>
                 </td>
                 <td class="text-left" :class="{'mb-4': vuetify.breakpoint.xsOnly && item.edit && isProject}">
-                  <v-select attach v-if="item.edit && isProject"
+                  <a-select attach v-if="item.edit && isProject"
                             v-model="item.companyObjectTypeTabId"
                             :items="objectTypeTabs"
                             label="Tab"
-                            item-text="tabName"
+                            item-title="tabName"
                             item-value="id"
                             autocomplete="off">
-                  </v-select>
+                  </a-select>
                   <span v-if="!item.edit && isProject">
                      <span v-if="isMobile" class="label-medium">Tab: </span>
                     {{item.tabName || 'n/a'}}

@@ -263,7 +263,7 @@
                   />
                 </v-col>
                 <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2" v-if="availabilityDateField.dateValue && !dateValueChanged">
-                  <v-select v-if="timeSlots.length > 0"
+                  <a-select v-if="timeSlots.length > 0"
                             v-model="selectedTimeSlot"
                             class="qa-round-robin-time-select"
                             :items="timeSlots"
@@ -272,13 +272,15 @@
                             label="Select an Available Time Slot"
                             return-object
                   >
-                    <template slot="selection" slot-scope="data">
-                      {{ data.item.scheduledStartTime | formatDate('timestamp') }}
+                    <template v-slot:selection="{ item, index }">
+                      {{ item.scheduledStartTime | formatDate('timestamp') }}
                     </template>
-                    <template slot="item" slot-scope="data">
-                      {{ data.item.scheduledStartTime | formatDate('timestamp') }}
+                    <template v-slot:item="{ props, item }">
+                      <v-list-item v-bind="props">
+                        {{ item.scheduledStartTime | formatDate('timestamp') }}
+                      </v-list-item>
                     </template>
-                  </v-select>
+                  </a-select>
                   <div v-else-if="searchedTimeSlots">No Times
                     Available for the
                     Selected Date

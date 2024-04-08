@@ -6,20 +6,20 @@
 
         <v-spacer/>
 
-        <v-select class="status-dropdown mr-3"
+        <a-select class="status-dropdown mr-3"
                   v-model="selectedObjectTypeId"
                   :items="objectTypes"
                   label="Type"
-                  item-text="text"
+                  item-title="text"
                   item-value="value"
                   hide-details
         />
 
-        <v-select class="status-dropdown"
+        <a-select class="status-dropdown"
                   v-model="selectedStatus"
                   :items="messageStatuses"
                   label="Status"
-                  item-text="text"
+                  item-title="text"
                   item-value="value"
                   hide-details
         />
@@ -80,11 +80,11 @@
           <td class="text-left">{{ item.created | formatDate('timestamp', 'M/D/YYYY h:mm a') }}</td>
           <td class="text-left">{{ item.sentByUserName }}</td>
           <td class="text-left">
-            <v-select
+            <a-select
                 v-model="item.messageRead"
                 :items="messageStatuses"
                 label="Status"
-                item-text="text"
+                item-title="text"
                 item-value="value"
                 @change="updateMessage(item)"/>
           </td>

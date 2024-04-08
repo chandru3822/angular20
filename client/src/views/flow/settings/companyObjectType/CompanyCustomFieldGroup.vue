@@ -267,11 +267,11 @@
                                      :disabled="!userCanEdit" @change="saveConditionalField(cf)"/>
                               Conditional On
                             </label>
-                            <v-select v-model="cf.conditionalOnId"
+                            <a-select v-model="cf.conditionalOnId"
                                       v-if="cf.hasConditionalOnId"
                                       :items="filterAvailableCustomFields(cf)"
                                       item-value="customFieldGroupAssignmentId"
-                                      item-text="fieldName"
+                                      item-title="fieldName"
                                       placeholder="Choose a field"
                                       @change="saveConditionalField(cf)"
                             />
