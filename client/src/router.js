@@ -8,6 +8,7 @@ import {getRequest} from '@/helpers/helpers'
 import ProposalVersionSettingsRoutes from '@/views/blueraven/settings/proposals/routes'
 import ProposalDesignerRoutes from '@/views/blueraven/settings/proposalDesigner/routes'
 import {AppMutations} from "@/stores/AppStore";
+import { ScheduleMutations } from '@/stores/ScheduleStore.js'
 
 Vue.use(Router)
 const nonRedirectPaths = ['/', '/home']
@@ -84,6 +85,7 @@ const router = new Router({
 
               const {data} = await getUser()
               store.commit(UserMutations.SET_DETAILS, data)
+				store.commit(ScheduleMutations.SET_TIMEZONE_SCHEDULE, data.timezone)
               next()
             } catch (e) {
               next('/login')

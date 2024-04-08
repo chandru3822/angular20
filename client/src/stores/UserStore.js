@@ -1,5 +1,6 @@
 import {postRequest} from "@/helpers/helpers"
 import moment from "moment-timezone";
+import { ScheduleMutations, ScheduleStore } from '@/stores/ScheduleStore.js'
 
 export const UserActions = {
   LOGIN_SUCCESS: 'loginSuccess',
@@ -53,6 +54,7 @@ export const UserStore = {
       state.details.timezone = timezone
       //todo: date/time inputs don't update when the zone is changed. should we refresh?
       commit(UserMutations.SET_DETAILS, state.details)
+		commit(ScheduleMutations.SET_TIMEZONE_SCHEDULE, state.details.timezone)
     },
     [UserActions.LOGIN_SUCCESS]: async ({ commit, getters }, details) => {
       commit(UserMutations.LOGIN_ERROR, '')
@@ -64,6 +66,7 @@ export const UserStore = {
         }
       }
       commit(UserMutations.SET_DETAILS, details)
+		commit(ScheduleMutations.SET_TIMEZONE_SCHEDULE, details.timezone)
 
       if (getters.userHasAnyFeature) {
         commit(UserMutations.AUTH_STATUS, true)
@@ -80,6 +83,7 @@ export const UserStore = {
 
       //update vuex store - user details
       await commit(UserMutations.SET_DETAILS, data)
+		commit(ScheduleMutations.SET_TIMEZONE_SCHEDULE, data.timezone)
 
       //refresh entire app and go to users home page if they have one
       if(data.homePagePath) {
