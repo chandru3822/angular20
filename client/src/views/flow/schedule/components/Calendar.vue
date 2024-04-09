@@ -954,7 +954,7 @@ const countSelected = computed(() => {
 
             d.groupId = Number(`${d.systemListTypeId}${d.resourceId}`)
             d.resourceId = Number(`${d.systemListTypeId}${d.resourceId}`)
-            d.backgroundColor = 'rgba(0,0,0,.25)'
+            d.backgroundColor = 'rgba(0,0,0,.12)'
             d.classNames = 'pl-2'
 
 
@@ -982,6 +982,7 @@ const countSelected = computed(() => {
               d.display = 'auto'
               d.title = d.title + ': ' + getFormattedDate(d.start, 'hh:mm') + '-' + getFormattedDate(d.end)
               d.textColor='rgba(0,0,0,0.87)'
+              d.backgroundColor='var(--v-grey-lighten1)'
             }
           })
 
@@ -998,7 +999,7 @@ const countSelected = computed(() => {
               //these values have already been pre-appended with the 1 or 2
               groupId: r.id,
               resourceId: r.id,
-              backgroundColor: 'rgba(0,0,0,.25)'
+              backgroundColor: 'rgba(0,0,0,.12)'
             })
           })
           return data;
@@ -1044,8 +1045,8 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
         d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
         let matchingResource = calendarOptions.value.resources.find(r => r.id === d.resourceId)
         if(d.eventStatusTypeId === 3) {
-          d.colorForBorder = '#919191'
-          d.textColor = '#919191'
+          d.colorForBorder = 'var(--v-grey-darken2)'
+          d.textColor = 'var(--v-grey-darken2)'
         } else {
           d.colorForBorder = matchingResource?.color
           d.textColor = 'var(--v-primary-base)'
@@ -1100,7 +1101,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
       })
 
       const handleEventClick = (info) => {
-        if(info.event.title && info.event.display === 'auto') {
+        if(info.event.title && info.event.display === 'auto' && info.event.extendedProps?.projectProcessStepId) {
           let props = info.event.extendedProps
           //open event clicks in new window every time so they dont have to keep reloading the calendar
           let routerData = router.resolve({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}/event/${props.projectProcessStepEventId}`})
