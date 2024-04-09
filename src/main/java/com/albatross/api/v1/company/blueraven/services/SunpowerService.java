@@ -232,7 +232,7 @@ public class SunpowerService {
       BigDecimal roundedValue = new BigDecimal(projectSize).setScale(2, RoundingMode.HALF_UP);
       BigDecimal roundedLoanAmount = new BigDecimal(pd.getLoanAmount()).setScale(2, RoundingMode.HALF_UP);
 
-      b.addParameter("project_size", roundedValue.toString());
+      b.addParameter("project_size_dc_kw", roundedValue.toString());
       b.addParameter("financial_amount", s(roundedLoanAmount));
       b.addParameter("financial_product_id", s(sp.getFinancialProductId()));
       b.addParameter("inverter_id", s(sp.getInverterId()));
