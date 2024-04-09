@@ -124,6 +124,7 @@ import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { ScheduleMutations } from '@/stores/ScheduleStore.js'
 
 const appStore = useAppStore()
 const fileStore = useFileStore()
@@ -220,6 +221,8 @@ const masquerade = async () => {
       //update the user
       const {data: currentUser} = await getRequest(`/user/current`)
       userStore.details = currentUser
+      //todo: fix when Schedule store is updated to Pinia @humes
+      //store.commit(ScheduleMutations.SET_TIMEZONE_SCHEDULE, currentUser.timezone)
       //then reload the screen
       window.location.reload()
     }

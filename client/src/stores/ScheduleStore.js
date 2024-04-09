@@ -1,3 +1,5 @@
+import moment from 'moment-timezone'
+
 export const ScheduleMutations = {
     SET_SELECTED_RESOURCE_ID: 'setSelectedResourceId',
     SHOW_HIDE_MAP:'showHideMap',
@@ -21,7 +23,15 @@ export const ScheduleStore = {
     mutations: {
         [ScheduleMutations.SET_SELECTED_RESOURCE_ID]: (state, resourceId) => (state.selectedResourceId = resourceId),
         [ScheduleMutations.SHOW_HIDE_MAP]: (state) => state.showMap = !state.showMap,
-        [ScheduleMutations.SET_TIMEZONE_SCHEDULE]:(state, timezone) => (state.timezone = timezone),
+        [ScheduleMutations.SET_TIMEZONE_SCHEDULE]:(state, timezone) => {
+			if (!timezone) {
+				timezone = {
+					friendlyValue: moment.tz.guess(),
+					value: moment.tz.guess()
+				}
+			}
+			state.timezone = timezone
+		},
         [ScheduleMutations.SET_START_TIME]: (state, startTime) => (state.startTime = startTime),
         [ScheduleMutations.SET_END_TIME]: (state, endTime) => (state.endTime = endTime)
     },
