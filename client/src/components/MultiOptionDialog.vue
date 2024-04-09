@@ -7,7 +7,7 @@
           class="albatross-header-2 lighten-2 pb-1"
           primary-title>
         <slot name="title">
-          Delete
+          {{ title }}
         </slot>
       </v-card-title>
       <v-card-text class="albatross-body-1 pb-4 default-text-color">
@@ -46,10 +46,15 @@ const snackbar = vueInstance.$snackbar
 const props = defineProps({
   openDialog: Boolean,
   hideTitle: Boolean,
-  options: Array
+  options: Array,
+  title: {
+    type: String,
+    required: false,
+    default: 'Delete'
+  }
 
 })
-const {openDialog, hideTitle, options} = toRefs(props)
+const {openDialog, hideTitle, options, title} = toRefs(props)
 
 
 const cancel = () => {

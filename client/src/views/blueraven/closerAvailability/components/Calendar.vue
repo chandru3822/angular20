@@ -23,6 +23,7 @@ const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const refs = vueInstance.$refs
 const filters = vueInstance.$filters
+const router = vueInstance.$router
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
 
@@ -47,6 +48,7 @@ const calendarOptions = ref({
   ],
   schedulerLicenseKey: constants.FULL_CALENDAR_LICENSE_KEY,
   initialView: 'resourceTimelineDay',
+  firstDay: 1,
   resources: [],
   resourceAreaWidth: 300,
   eventSources:[
@@ -70,12 +72,26 @@ const calendarOptions = ref({
   headerToolbar:{
     left: 'prev,customToday,next',
     center: 'title',
-    right: 'resourceTimelineDay,resourceTimelineWeek'
+    right: vuetify.breakpoint.mdAndUp ? 'resourceTimelineDay,resourceTimelineWeek': ''
   },
-  titleFormat:{ month: 'long',
-    year: 'numeric',
-    day: 'numeric',
-    weekday: 'long'
+  slotMinWidth:40,
+  slotMinTime:"04:00:00",
+  slotMaxTime:"23:00:00",
+  views:{
+    resourceTimelineDay:{
+      titleFormat:{ month: 'long',
+        year: 'numeric',
+        day: 'numeric',
+        weekday: 'long'
+      }
+    },
+    resourceTimelineWeek:{
+      titleFormat:{ month: 'short',
+        year: 'numeric',
+        day: 'numeric'
+      },
+      slotMinWidth:76,
+    }
   },
   height: '100%',
   timeZone: timezoneFriendly.value || {},
@@ -244,7 +260,7 @@ const getEventSources = async(info, successCallback, failureCallback) => {
           d.id = d.eventId
           // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
           // if resource is a user show on calendar using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
-          d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName}`
+          d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} ${d.eventName} ${d.eventName} ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
           d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
           //get all selected users who match the appt user_id
           let matchingUsers = selectedUsers.value.filter(r => r.userId === d.userId)
@@ -254,7 +270,7 @@ const getEventSources = async(info, successCallback, failureCallback) => {
               //if it is the first matching user then just update the existing data record
               if (idx === 0) {
                 d.resourceId = mu.id
-                d.title = `${d.projectName ?? ''} ${d.groupName ?? ''}`
+                d.title = `${d.projectName ?? ''} ${d.groupName ?? ''}\n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
                 d.colorForBorder = mu.color
                 d.textColor = 'var(--v-primary-base)'
                 d.classNames=['event-tile', mu?.eventColorClass]
@@ -262,7 +278,7 @@ const getEventSources = async(info, successCallback, failureCallback) => {
                 //otherwise need to add a record to data
                 let newRecord = cloneDeep(d)
                 newRecord.resourceId = mu.id
-                newRecord.title = `${newRecord.projectName ?? ''} ${newRecord.groupName ?? ''}`
+                newRecord.title = `${newRecord.projectName ?? ''} ${newRecord.groupName ?? ''}\n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
                 newRecord.colorForBorder = mu.color
                 additionalRecords.push(newRecord)
                 d.textColor = 'var(--v-primary-base)'
@@ -271,7 +287,7 @@ const getEventSources = async(info, successCallback, failureCallback) => {
             })
           } else if (matchingUsers.length === 1) {
             d.resourceId = matchingUsers[0].id
-            d.title = `${d.projectName ?? ''} ${d.groupName ?? ''}`
+            d.title = `${d.projectName ?? ''} ${d.groupName ?? ''}\n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
             d.colorForBorder = matchingUsers[0].color
             d.textColor = 'var(--v-primary-base)'
             d.classNames=['event-tile', matchingUsers[0].eventColorClass]
@@ -317,8 +333,7 @@ const getAvailability = async(info) => {
       }
       d.groupId = `${d.resourceId}`
       d.resourceId = `${d.resourceId}`
-      d.backgroundColor = 'rgba(0,0,0,.1)'
-
+      d.backgroundColor = 'rgba(0,0,0,.25)'
     if(!d.isSlotTime && d.display === 'inverse-background') {
       //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
       //do start time
@@ -337,9 +352,12 @@ const getAvailability = async(info) => {
       }
     }
 
-    if(d.display === 'background'){
-      d.title = d.title + ': ' + moment(d.start).format('h:mm') + '-' + moment(d.end).format('h:mm')
-    }
+      if(d.display === 'background' || d.display === 'auto'){
+        d.display = 'auto'
+        d.title = d.title + ': ' + moment(d.start).format('h:mm') + '-' + moment(d.end).format('h:mm')
+        d.textColor='rgba(0,0,0,0.87)'
+
+      }
   })
 
     //we do this for every resource, regardless of if they already have an availability or not
@@ -348,14 +366,14 @@ const getAvailability = async(info) => {
     selectedUsers.value.forEach(r => {
       data.push({
         start: moment.utc(info.start).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
-        end: moment.utc(info.end).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
+        end: moment.utc(info.start).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
         title: '',
         display: 'inverse-background',
         allDay: false,
         //these values have already been pre-appended with the 1 or 2
         groupId: r.id,
         resourceId: r.id,
-        backgroundColor: 'rgba(180, 34, 31, .3)'
+        backgroundColor: 'rgba(0,0,0,.25)'
       })
     })
     return data;
@@ -481,9 +499,15 @@ onMounted (async () => {
       </div>
     <FullCalendar ref="eventCalendar" id="closer-availability-calendar" :options="calendarOptions">
       <template v-slot:eventContent="{event}">
-        <span v-if="event.title !== 'null'" class="event-title text-no-wrap">{{event.title}}</span>
+        <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
+          <template v-slot:activator="{ on, attrs }">
+            <span v-if="event.title !== 'null'" v-bind="attrs" v-on="on" :class="{'text-no-wrap':event.display !== 'background'}" class="event-title body-medium">{{event.title}}</span>
+          </template>
+          <span>{{event.title}}</span>
+        </v-tooltip>
         <!--yes, 'null' is intentionally a string because that's how it comes back from the calendar-->
       </template>
+
     </FullCalendar>
     </div>
   </div>
@@ -494,7 +518,26 @@ onMounted (async () => {
 
 .event-tile{
   border-left-width: 20px;
-  height: 20px;
+  height: 28px;
+}
+
+.fc h2.fc-toolbar-title{
+  //headline-large
+  font-family: lato;
+  font-weight: 600;
+  font-size: 1.375rem;
+  line-height: 1.4;
+}
+
+#closer-availability-calendar-container .fc-toolbar-title {
+  @media(max-width: 960px) {
+    font-size: 1.25rem;
+  }
+}
+//add space for scrollbar so it doesn't block times
+#closer-availability-calendar-container > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th:nth-child(1) > div > div > table > thead > tr > th,
+#closer-availability-calendar-container > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th > div > div > div > table > tbody > tr.fc-timeline-header-row.fc-timeline-header-row-chrono > th {
+  padding-bottom: 8px;
 }
 
 .background-event {
@@ -503,11 +546,13 @@ onMounted (async () => {
   cursor: default;
   margin-left: 1px;
   margin-right: 1px;
-  opacity: 1;
+  opacity: 1 !important;
   color: black;
   overflow: hidden;
   border: solid 1px black;
 }
+
+
 #closer-availability-calendar-container .fc-timeline-event {
   /*height: inherit;*/
   border-radius: 5px;
@@ -521,22 +566,6 @@ onMounted (async () => {
 #closer-availability-calendar-container .cancelled-event-switch .v-input--selection-controls__input {
   transform: scale(0.775);
   transform-origin: center;
-}
-
-#closer-availability-calendar-container .fc-event.event-tile:hover {
-  color: inherit !important;
-  max-width: unset;
-  width: fit-content;
-  -webkit-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-  -moz-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-  box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-  z-index: 5;
-
-  span {
-    max-width: unset;
-    width: fit-content;
-    padding-right: 4px;
-  }
 }
 
 #closer-availability-calendar-container .fc-rows tr,
@@ -569,12 +598,41 @@ onMounted (async () => {
   z-index: 0;
   //  this keeps the calendar from being in front of the filter dropdowns.
 }
+
+#closer-availability-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th > div > div > div > table > tbody > tr > th.fc-slot > div > a.fc-timeline-slot-cushion{
+  cursor: default !important;
+  color: var(--v-grey-darken1)
+}
+#closer-availability-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th > div > div{
+  ::-webkit-scrollbar {
+    height: 0 !important;  /* Remove scrollbar space */
+    background: transparent !important;  /* Optional: just make scrollbar invisible */
+  }
+}
+//thickening and darkening the day dividers on week view of calendar
+#closer-availability-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th:nth-child(3) > div > div > div > table > tbody > tr:nth-child(1) > th.fc-timeline-slot.fc-timeline-slot-label.fc-day,
+#closer-availability-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th:nth-child(3) > div > div > div > table > tbody > tr.fc-timeline-header-row.fc-timeline-header-row-chrono > th:nth-child(19n+1),
+#closer-availability-calendar > div.fc-view-harness.fc-view-harness-active > div.fc-resourceTimelineWeek-view.fc-view.fc-resource-timeline.fc-resource-timeline-flat.fc-timeline.fc-timeline-overlap-enabled > table > tbody > tr > td:nth-child(3) > div > div > div > div.fc-timeline-slots > table > tbody > tr > td:nth-child(19n+1) {
+  border-left-width: 3px;
+}
 </style>
 
 <style lang="scss" scoped>
 .resource-title {
-  text-overflow: ellipsis;
   max-width: 60%;
+  white-space: break-spaces;
+  @media(max-width: 960px) {
+    max-width: 30%;
+  }
+}
+.v-tooltip__content {
+  background-color: white;
+  color: var(--v-grey-darken4);
+  outline-color: black;
+}
+.v-tooltip__content.menuable__content__active {
+  opacity: 1;
+  filter:  drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
 }
 
 #closer-availability-calendar-container {

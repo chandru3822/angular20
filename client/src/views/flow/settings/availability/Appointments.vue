@@ -69,7 +69,7 @@
                                text="CANCEL"
               />
               <a-btn color="primary"
-                               @click="saveAppt(newAppt)" class="white--text"
+                               @click="saveAppt(newAppt, false)" class="white--text"
                                :disabled="!newAppt.startTime || !newAppt.endTime || !newAppt.title || newAppt.title.length > 50"
                                text="SAVE"
               />
@@ -108,14 +108,10 @@
                   v-model="appt.title"
                   :maxlength="50"
                   counter
-                  :readonly="appt.recurringEventId != null"
-                  :disabled="appt.recurringEventId != null"
                   label="Title"
                 ></a-text-field>
                 <a-text-field
                   v-model="appt.description"
-                  :readonly="appt.recurringEventId != null"
-                  :disabled="appt.recurringEventId != null"
                   label="Description (optional)"
                 ></a-text-field>
                 <a-text-field
@@ -171,7 +167,7 @@
                   <v-card-actions>
                     <a-btn
                       color="primary"
-                      @click="saveAppt(appt)"
+                      @click="[itemToSave = appt, appt.repeat ? showSaveDialog = true : saveAppt(appt, false)]"
                       class="white--text"
                       :disabled="saveError || !appt.startTime || !appt.endTime || !appt.title || appt.title.length > 50"
                       text="SAVE"
@@ -216,6 +212,15 @@
                        @cancel="closeDeleteDialog">
       {{itemToDeleteString}}<br>
       <strong>{{ itemToDeleteDateString }}</strong>
+    </MultiOptionDialog>
+    <MultiOptionDialog :open-dialog="showSaveDialog"
+                       :options="saveOptions"
+                       title="Save Appointment(s)"
+                       @option-0="saveAppt(itemToSave, false)"
+                       @option-1="saveAppt(itemToSave, true)"
+                       @cancel="closeSaveDialog">
+      {{itemToSaveString}}<br>
+      <strong>{{ itemToSaveDateString }}</strong>
     </MultiOptionDialog>
   </v-container>
 </template>
@@ -301,7 +306,9 @@
     { text: '', value: 'icons', show: true}
   ])
   const showDeleteDialog = ref(false)
+  const showSaveDialog = ref(false)
   const itemToDelete = ref(null)
+  const itemToSave = ref(null)
 
   const timezone = computed(() => {
     return  userStore.timezone.value
@@ -333,6 +340,28 @@
     }
     return null
   })
+
+
+  const itemToSaveDateString = computed(() => {
+    return itemToSave.value ?
+      `${vueInstance.$filters.formatDate(itemToSave.value.startTime, itemToSave.value.allDay ? 'date' : 'timestamp') || ''} - ${vueInstance.$filters.formatDate(itemToSave.value.endTime, itemToSave.value.allDay ? 'date' : 'timestamp') || ''}`
+      : null
+  })
+  const itemToSaveString = computed(() => {
+    if(itemToSave.value) {
+      return itemToSave.value.recurringEventId ? "Do you want to save all occurrences of this appointment or this appointmnet only?"
+        : null
+    }
+    return null
+  })
+
+  const saveOptions = computed(() => {
+    if(itemToSave.value) {
+      return itemToSave.value.recurringEventId ? ['one only', 'all occurrences']
+        : ['confirm']
+    }
+    return null
+  })
   onMounted(() => {
     getAppointments()
   })
@@ -359,62 +388,75 @@
       }
     }
   }
-  const saveAppt = async (appt) => {
+  const saveAppt = (appt, saveRecurring = false) => {
     if((!appt.allDay && appt.startTime >= appt.endTime) || (appt.allDay && appt.startTime.split('T')[0] > appt.endTime.split('T')[0])) {
       saveError.value = true
       saveErrorMsg.value = '* Appointment End must be after Appointment Start'
     } else {
-      if(appt.repeat) {
-        // All day appointments don't have an attached timezone
-        //@TODO: ask randa if it's ok we only set these for non all-day recurring appointments
-        if (!appt.allDay) {
-          //if it is a repeating appt, then save the current users timezone and offset (required for adjusting DST later)
-          appt.originTimezone = timezone.value
-          appt.originTimezoneOffset = moment.tz(moment.utc(appt.startTime), timezone.value).utcOffset() * 60
-        }
+      if (saveRecurring === true) {
+        appointments.value.filter((a) => a?.recurringEventId === appt?.recurringEventId).forEach((a) => saveApptHelper(appt, a))
+
       } else {
-        //clear out recurrence fields if not repeat when saved
-        appt.recurrence = null
-        appt.recurringEventType = null
+        saveApptHelper(appt, appt)
       }
-      try {
-        appStore.loading = true
-
-        if(appt.allDay) {
-          appt.startTime = DateTime.fromISO(appt.startTime, {zone: 'utc'}).set({hour: 0, minute: 0, second: 0}).toISO()
-          appt.endTime = DateTime.fromISO(appt.endTime, {zone: 'utc'})
-                                 .set({hour: 0, minute: 0, second: 0})
-                                 .plus({days: 1})
-                                 .toISO()
-        }
-
-        //if the local date and the utc date are different, set the startTimeOffsetDay to true so the server knows what to do
-        let localAndUtcSame = moment(moment(appt.startTime).format('YYYY-MM-DD')).isSame(moment(appt.startTime).utc().format('YYYY-MM-DD'))
-
-        let params = {
-          orgId: orgId.value,
-          userId: userId.value,
-          ...appt,
-          startTimeOffsetDay: !localAndUtcSame && !appt.allDay,
-        }
-        const {data, status} = await postRequest(`/availability/appointment`, params)
-        addNew.value = false
-        expanded.value = []
-        //if repeating appointment - reload appointments to get full list
-        newAppt.value = {}
-        if(appt.repeat || appt.allDay) {
-          await getAppointments()
-        } else if(!appt.id) {
-          //else if new appointment - push into appointments
-          appointments.value.push(data)
-          appointments.value = orderBy(appointments.value, [s => s.startDate])
-        }
-        handleHidingGlobalLoader(status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        appStore.loading = false
-        snackbar('ERROR', 'Error Saving Appointment')
+      showSaveDialog.value = false
+    }
+  }
+  const saveApptHelper = async (apptSource, dest) => {
+    const appt_id = dest.id
+    dest = apptSource
+    dest.id = appt_id
+    const appt = dest
+    if (appt.repeat) {
+      // All day appointments don't have an attached timezone
+      //@TODO: ask randa if it's ok we only set these for non all-day recurring appointments
+      if (!appt.allDay) {
+        //if it is a repeating appt, then save the current users timezone and offset (required for adjusting DST later)
+        appt.originTimezone = timezone.value
+        appt.originTimezoneOffset = moment.tz(moment.utc(appt.startTime), timezone.value).utcOffset() * 60
       }
+    } else {
+      //clear out recurrence fields if not repeat when saved
+      appt.recurrence = null
+      appt.recurringEventType = null
+    }
+    try {
+      appStore.loading = true
+
+      if(appt.allDay) {
+        appt.startTime = DateTime.fromISO(appt.startTime, {zone: 'utc'}).set({hour: 0, minute: 0, second: 0}).toISO()
+        appt.endTime = DateTime.fromISO(appt.endTime, {zone: 'utc'})
+          .set({hour: 0, minute: 0, second: 0})
+          .plus({days: 1})
+          .toISO()
+      }
+
+      //if the local date and the utc date are different, set the startTimeOffsetDay to true so the server knows what to do
+      let localAndUtcSame = moment(moment(appt.startTime).format('YYYY-MM-DD')).isSame(moment(appt.startTime).utc().format('YYYY-MM-DD'))
+
+      let params = {
+        orgId: orgId.value,
+        userId: userId.value,
+        ...appt,
+        startTimeOffsetDay: !localAndUtcSame && !appt.allDay,
+      }
+      const {data, status} = await postRequest(`/availability/appointment`, params)
+      addNew.value = false
+      expanded.value = []
+      //if repeating appointment - reload appointments to get full list
+      newAppt.value = {}
+      if(appt.repeat || appt.allDay) {
+        await getAppointments()
+      } else if(!appt.id) {
+        //else if new appointment - push into appointments
+        appointments.value.push(data)
+        appointments.value = orderBy(appointments.value, [s => s.startDate])
+      }
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.loading = false
+      snackbar('ERROR', 'Error Saving Appointment')
     }
   }
   const filterAppointments = computed(() => {
@@ -499,6 +541,10 @@
   const closeDeleteDialog =()=> {
     showDeleteDialog.value = false
     itemToDelete.value = null
+  }
+  const closeSaveDialog =()=> {
+      showSaveDialog.value = false
+      itemToSave.value = null
   }
 </script>
 

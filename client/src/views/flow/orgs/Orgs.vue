@@ -18,7 +18,18 @@
                 @click="exportCsv"
                 prepend-icon="mdi-cloud-download"
                 :text="!constants.IS_MOBILE ? 'Export' : ''"
+                class="ml-2"
             ></a-btn>
+            <a-btn
+              variant="text"
+              color="primary"
+              to="/newOrg"
+              prepend-icon="add"
+              class="ml-2"
+              v-if="userStore.userHasFeatureAccessLevel('ORGS', 'ADD')"
+              :text="!constants.IS_MOBILE ? 'Add Organization' : ''"
+            >
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-data-table

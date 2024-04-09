@@ -1,5 +1,6 @@
 import {postRequest} from "@/helpers/helpers"
 import moment from "moment-timezone";
+import { ScheduleMutations, ScheduleStore } from '@/stores/ScheduleStore.js'
 
 export const UserActions = {
   LOGIN_SUCCESS: 'loginSuccess',
@@ -90,6 +91,7 @@ export const UserStore = {
     //   localStorage.removeItem('store')
     //   commit(UserMutations.RESET_STATE)
     // }
+      //todo: @humes do we need to do anything to make sure the schedule timezone updates whenever the user timezone updates?
   },
   getters: {
     // userHasAnyFeature: state => {
