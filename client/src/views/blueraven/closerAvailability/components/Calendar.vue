@@ -329,7 +329,7 @@ const getAvailability = async(info) => {
       }
       d.groupId = `${d.resourceId}`
       d.resourceId = `${d.resourceId}`
-      d.backgroundColor = 'rgba(0,0,0,.25)'
+      d.backgroundColor = 'rgba(0,0,0,.12)'
     if(!d.isSlotTime && d.display === 'inverse-background') {
       //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
       //do start time
@@ -352,7 +352,7 @@ const getAvailability = async(info) => {
         d.display = 'auto'
         d.title = d.title + ': ' + moment(d.start).format('h:mm') + '-' + moment(d.end).format('h:mm')
         d.textColor='rgba(0,0,0,0.87)'
-
+        d.backgroundColor='var(--v-grey-lighten1)'
       }
   })
 
@@ -369,7 +369,7 @@ const getAvailability = async(info) => {
         //these values have already been pre-appended with the 1 or 2
         groupId: r.id,
         resourceId: r.id,
-        backgroundColor: 'rgba(0,0,0,.25)'
+        backgroundColor: 'rgba(0,0,0,.12)'
       })
     })
     return data;
