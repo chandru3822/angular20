@@ -978,8 +978,10 @@ const countSelected = computed(() => {
               }
             }
 
-            if(d.display === 'background'){
+            if(d.display === 'background' || d.display === 'auto'){
+              d.display = 'auto'
               d.title = d.title + ': ' + getFormattedDate(d.start, 'hh:mm') + '-' + getFormattedDate(d.end)
+              d.textColor='rgba(0,0,0,0.87)'
             }
           })
 
@@ -989,14 +991,14 @@ const countSelected = computed(() => {
           calendarOptions.value.resources.forEach(r => {
             data.push({
               start: moment.utc(info.start).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
-              end: moment.utc(info.end).endOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
+              end: moment.utc(info.start).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
               title: '',
-              display: 'background',
+              display: 'inverse-background',
               allDay: false,
               //these values have already been pre-appended with the 1 or 2
               groupId: r.id,
               resourceId: r.id,
-              backgroundColor: 'rgba(255,255,255,0)'
+              backgroundColor: 'rgba(0,0,0,.25)'
             })
           })
           return data;

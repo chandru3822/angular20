@@ -348,9 +348,12 @@ const getAvailability = async(info) => {
       }
     }
 
-    if(d.display === 'background'){
-      d.title = d.title + ': ' + moment(d.start).format('h:mm') + '-' + moment(d.end).format('h:mm')
-    }
+      if(d.display === 'background' || d.display === 'auto'){
+        d.display = 'auto'
+        d.title = d.title + ': ' + moment(d.start).format('h:mm') + '-' + moment(d.end).format('h:mm')
+        d.textColor='rgba(0,0,0,0.87)'
+
+      }
   })
 
     //we do this for every resource, regardless of if they already have an availability or not
@@ -359,14 +362,14 @@ const getAvailability = async(info) => {
     selectedUsers.value.forEach(r => {
       data.push({
         start: moment.utc(info.start).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
-        end: moment.utc(info.end).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
+        end: moment.utc(info.start).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
         title: '',
-        display: 'background',
+        display: 'inverse-background',
         allDay: false,
         //these values have already been pre-appended with the 1 or 2
         groupId: r.id,
         resourceId: r.id,
-        backgroundColor: 'rgba(255,255,255,0)'
+        backgroundColor: 'rgba(0,0,0,.25)'
       })
     })
     return data;
