@@ -4,22 +4,28 @@
       <slot name="title" class="flex-grow-1">Color</slot>
       <span v-if="editing">
         <a-btn
-            v-if="editing"
-            variant="text"
-            @click="editing = false"
-            color="unset"
-            text="Cancel"
+          v-if="editing"
+          variant="text"
+          @click="editing = false"
+          color="unset"
+          text="Cancel"
         ></a-btn>
         <a-btn
-            v-if="editing"
-            variant="text"
-            @click="on"
-            color="unset"
-            text="Done"
-        >Done</a-btn>
+          v-if="editing"
+          variant="text"
+          @click="onDone"
+          color="unset"
+          text="Done"
+          >Done</a-btn
+        >
       </span>
 
-      <div v-else class="color-brick" @click="editing = true" :style="{'background-color' : color }" >
+      <div
+        v-else
+        class="color-brick"
+        @click="editing = true"
+        :style="{ 'background-color': color }"
+      >
         <span v-if="color === undefined">NA</span>
       </div>
     </v-subheader>
@@ -27,8 +33,9 @@
   </div>
 </template>
 <script setup>
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import { toRefs, ref, watch } from 'vue'
 
+const emit = defineEmits(['input'])
 const props = defineProps({
   value: {
     type: String
@@ -38,22 +45,19 @@ const props = defineProps({
     default: 'color'
   }
 })
-const { value, attr } = toRefs(props)
 
+const { value, attr } = toRefs(props)
 const editing = ref(false)
 const color = ref(undefined)
-const emit = defineEmits(['input'])
 
-watch(
-    () => value,
-    (newValue, oldValue) => {
-      color.value = newValue
-    }
-);
+watch(value, (newValue, oldValue) => {
+  color.value = newValue
+})
 
 const onDone = () => {
   editing.value = false
-  const color = (typeof color.value === 'object') ? color.value?.hexa : color.value
+  const color =
+    typeof color.value === 'object' ? color.value?.hexa : color.value
   emit('input', { [attr.value]: color })
 }
 </script>

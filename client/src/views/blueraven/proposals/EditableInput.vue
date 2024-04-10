@@ -4,40 +4,29 @@
     <a-text-field v-else v-model="name" solo single-line flat autofocus />
     <div v-if="editable">
       <a-btn
-          size="small"
-          icon
-          color="primary"
-          @click="handleEdit"
-          class="pl-2"
-          v-if="editable"
-          :prepend-icon="!isEditMode ? 'mdi-pencil' : 'mdi-close'"
+        size="small"
+        icon
+        color="primary"
+        @click="handleEdit"
+        class="pl-2"
+        v-if="editable"
+        :prepend-icon="!isEditMode ? 'mdi-pencil' : 'mdi-close'"
       ></a-btn>
       <a-btn
-          size="small"
-          icon
-          color="primary"
-          @click="handleSave"
-          v-if="editable && isEditMode"
-          prepend-icon="mdi-cloud"
+        size="small"
+        icon
+        color="primary"
+        @click="handleSave"
+        v-if="editable && isEditMode"
+        prepend-icon="mdi-cloud"
       ></a-btn>
     </div>
   </div>
 </template>
 <script setup>
+import { toRefs, ref, watch } from 'vue'
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
-
-const appStore = useAppStore()
-const route = useRoute()
-const router = useRouter()
-const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-
+const emit = defineEmits(['input'])
 const props = defineProps({
   value: { type: String, required: true },
   displayText: { type: String },
@@ -51,9 +40,7 @@ const name = ref(`${value.value}`)
 const originalValue = ref(`${value.value}`)
 const isEditMode = ref(false)
 
-const emit = defineEmits(['input'])
-
-watch(value, async(val) => {
+watch(value, async (val) => {
   name.value = `${val}`
   originalValue.value = `${val}`
 })

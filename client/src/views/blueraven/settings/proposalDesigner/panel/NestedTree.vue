@@ -1,47 +1,42 @@
 <template>
   <draggable
     class="node-container"
-    :class="{'is-dragging' : dragging}"
+    :class="{ 'is-dragging': dragging }"
     :list="sortedChildren"
     :move="checkMove"
     :disabled="true"
     @start="dragging = true"
-    @end="dragging = false">
+    @end="dragging = false"
+  >
     <div class="node-group" :key="child.id" v-for="child in children">
-      <div class="node"
-           :class="{ 'selected' : selected && selected.id === child.id }"
-           @click="handleClick(child)"
+      <div
+        class="node"
+        :class="{ selected: selected && selected.id === child.id }"
+        @click="handleClick(child)"
       >
-        #{{child.id}} - {{ child.blockType }}
+        #{{ child.id }} - {{ child.blockType }}
         <span v-if="child.modified">*</span>
       </div>
-      <tree class="node-sub"
-            v-on="$listeners"
-            :children="filterByParentId(child.id)" />
+      <nested-tree
+        class="node-sub"
+        v-on="$listeners"
+        :children="filterByParentId(child.id)"
+      />
     </div>
   </draggable>
 </template>
 <script setup>
 import debounce from 'lodash.debounce'
 import draggable from 'vuedraggable'
-import { ProposalMutations } from '@/views/blueraven/settings/proposalDesigner/store'
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { toRefs, computed, ref } from 'vue'
+import useProposalStore from '../store.js'
 
-const appStore = useAppStore()
-const route = useRoute()
-const router = useRouter()
-const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+const store = useProposalStore()
 
 const props = defineProps({
   children: {
     type: Array,
-    default: function() {
+    default: function () {
       return []
     }
   }
@@ -62,85 +57,84 @@ const emit = defineEmits(['select'])
 const dragging = ref(false)
 
 const selected = computed(() => {
-  return store.getters.selectedBlock
+  return store.selectedBlock
 })
 const sortedChildren = computed(() => {
   return children.value?.slice().sort(blockOrderSorter)
 })
 
-    const filterByParentId = (parent) => {
-      return store.getters.filterByParentId(parent)
-    }
-    const handleClick = (node) => {
-      store.commit(ProposalMutations.SET_SELECTED, node.id)
-      emit('select', node.id)
-    }
-    //todo; this should register in the undo history
-    const checkMove = debounce((evt) => {
-      const { draggedContext: active, relatedContext: target  } = evt ?? {}
+const filterByParentId = (parent) => {
+  return store.filterByParentId(parent)
+}
+const handleClick = (node) => {
+  store.setSelected(node.id)
+  emit('select', node.id)
+}
+//todo; this should register in the undo history
+const checkMove = debounce((evt) => {
+  const { draggedContext: active, relatedContext: target } = evt ?? {}
 
-      if (!active  || !active.element){
-        return false
-      }
+  if (!active || !active.element) {
+    return false
+  }
 
-      const isSameParent = active?.element?.parentId === target?.element?.parentId
-      if (!isSameParent){
-        return false
-      }
+  const isSameParent = active?.element?.parentId === target?.element?.parentId
+  if (!isSameParent) {
+    return false
+  }
 
-      const prev = target.list[target.index - 1]
+  const prev = target.list[target.index - 1]
 
-      const pos = prev
-        ? ((prev?.blockOrder - target?.element?.blockOrder) / 2) + target?.element?.blockOrder
-        : target?.element?.blockOrder + 1
+  const pos = prev
+    ? (prev?.blockOrder - target?.element?.blockOrder) / 2 +
+      target?.element?.blockOrder
+    : target?.element?.blockOrder + 1
 
-      // console.log({active, target, pos})
+  // console.log({active, target, pos})
 
-      //
-      // const draggedItem = draggedContext?.element
-      // const targetItem = relatedContext?.element
-      //
-      // if (!targetItem) {
-      //   return
-      // }
-      //
-      // const isPage = draggedItem?.blockType === 'PageBlock'
-      // if (!isPage && targetItem?.parentId === undefined || isPage && targetItem?.parentId !== undefined) {
-      //   return false
-      // }
-      //
-      // const canDrop = false
-      //
-      // const isTextBlock = draggedItem?.blockType === 'TextBlock' && targetItem?.blockType === 'TextBlock'
-      //
-      // const isRoot = targetItem?.parentId === undefined
-      //
-      // const isSameParent = draggedItem?.parentId === targetItem?.parentId
-      //
-      // const targetChildren = this.$store.getters.filterByParentId(targetItem?.parentId)
-      //   .slice()
-      //   .sort(blockOrderSorter)
-      //
-      // const indexOf = targetChildren.indexOf(targetItem)
-      // const next =  targetChildren[indexOf + 1]
-      //
-      //
-      // console.log({ indexOf, targetItem, next })
-      //
-      // let newOrder = targetChildren?.blockOrder + 1
-      // if (next){
-      //   newOrder = Math.abs(((targetItem?.blockOrder - next?.blockOrder) / 2)) + next?.blockOrder
-      // }
-      //
-      // // console.log({ draggedItem, targetItem })
-      store.commit(ProposalMutations.UPDATE_POSITION, {
-        blockId: active?.element.id,
-        pos,
-        parentId: target?.element?.parentId
-      })
-
-    }, 250)
-
+  //
+  // const draggedItem = draggedContext?.element
+  // const targetItem = relatedContext?.element
+  //
+  // if (!targetItem) {
+  //   return
+  // }
+  //
+  // const isPage = draggedItem?.blockType === 'PageBlock'
+  // if (!isPage && targetItem?.parentId === undefined || isPage && targetItem?.parentId !== undefined) {
+  //   return false
+  // }
+  //
+  // const canDrop = false
+  //
+  // const isTextBlock = draggedItem?.blockType === 'TextBlock' && targetItem?.blockType === 'TextBlock'
+  //
+  // const isRoot = targetItem?.parentId === undefined
+  //
+  // const isSameParent = draggedItem?.parentId === targetItem?.parentId
+  //
+  // const targetChildren = this.$store.getters.filterByParentId(targetItem?.parentId)
+  //   .slice()
+  //   .sort(blockOrderSorter)
+  //
+  // const indexOf = targetChildren.indexOf(targetItem)
+  // const next =  targetChildren[indexOf + 1]
+  //
+  //
+  // console.log({ indexOf, targetItem, next })
+  //
+  // let newOrder = targetChildren?.blockOrder + 1
+  // if (next){
+  //   newOrder = Math.abs(((targetItem?.blockOrder - next?.blockOrder) / 2)) + next?.blockOrder
+  // }
+  //
+  // // console.log({ draggedItem, targetItem })
+  store.updatePosition({
+    blockId: active?.element.id,
+    pos,
+    parentId: target?.element?.parentId
+  })
+}, 250)
 </script>
 <style lang="scss" scoped>
 .node-container {

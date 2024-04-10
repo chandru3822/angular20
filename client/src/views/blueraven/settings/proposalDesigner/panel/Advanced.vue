@@ -1,26 +1,22 @@
 <template>
   <v-card flat>
     <v-card-title>Advanced</v-card-title>
-    <a-text-field density="compact" variant="outlined"
-                  v-model="expression"
-                  label="Visibility"
-                  hint="This expression must evaluate to a boolean"
-                  @change="handleChange"
-                  clearable
+    <a-text-field
+      density="compact"
+      variant="outlined"
+      v-model="expression"
+      label="Visibility"
+      hint="This expression must evaluate to a boolean"
+      @change="handleChange"
+      clearable
     >
       <template v-slot:append-outer>
-        <v-dialog
-          v-model="dialog"
-          width="500"
-        >
-          <template v-slot:activator="{ on:dialogOn, attrs }">
-
+        <v-dialog v-model="dialog" width="500">
+          <template v-slot:activator="{ on: dialogOn, attrs }">
             <v-fade-transition leave-absolute>
               <a-btn icon :activation-handler="dialogOn">
                 <template #default>
-                  <v-tooltip
-                    bottom
-                  >
+                  <v-tooltip bottom>
                     <template v-slot:activator="{ on }">
                       <v-icon v-on="on" v-bind="attrs">
                         mdi-help-circle-outline
@@ -46,15 +42,15 @@
               </ul>
             </v-card-text>
 
-            <v-divider/>
+            <v-divider />
 
             <v-card-actions>
-              <v-spacer/>
+              <v-spacer />
               <a-btn
-                  color="primary"
-                  variant="text"
-                  @click="dialog = false"
-                  text="Done"
+                color="primary"
+                variant="text"
+                @click="dialog = false"
+                text="Done"
               ></a-btn>
             </v-card-actions>
           </v-card>
@@ -64,33 +60,30 @@
   </v-card>
 </template>
 <script setup>
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {mapState} from "vuex";
+import { toRefs, ref, watch } from 'vue'
+import useProposalStore from '../store.js'
+import { storeToRefs } from 'pinia'
 
+const store = useProposalStore()
 
 const props = defineProps({
   visibility: {
     type: String
   }
 })
-const { visibility } = toRefs(props)
+const emit = defineEmits(['input'])
 
+const { visibility } = toRefs(props)
 const expression = ref(undefined)
 const dialog = ref(false)
 
-const emit = defineEmits(['input'])
+const { tags } = storeToRefs(store)
 
-//@kaleb not sure if these map state things are right
-const { tags } = mapState({
-  tags: (state) => state.proposal.tags
-})
-
-watch(visibility, async() => {
-  console.log("wtf")
-  this.expression = arg
+watch(visibility, async (arg) => {
+  expression.value = arg
 })
 
 const handleChange = () => {
-  emit('input', this.expression)
+  emit('input', expression)
 }
 </script>

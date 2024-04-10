@@ -12,21 +12,17 @@
   </div>
 </template>
 <script setup>
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+const emit = defineEmits(['input'])
 const props = defineProps({
   value: {
     type: Object
   }
 })
 
-const emit = defineEmits(['input'])
-
-const handleChange = (e) => {
-  emit('input', e)
-}
+const handleChange = (e) => emit('input', e)
 </script>
 <style lang="scss" scoped>
-.zoom-control{
+.zoom-control {
   user-select: none;
 }
 </style>

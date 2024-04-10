@@ -4,26 +4,23 @@
   </div>
 </template>
 <script setup>
-import { mapState } from 'vuex'
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import { computed } from 'vue'
+import useProposalStore from '../store.js'
+import { storeToRefs } from 'pinia'
 
-//@kaleb??
+const store = useProposalStore()
+const { theme } = storeToRefs(store)
+
 const props = defineProps({
   themeKey: {
     type: String
   },
   blockStyle: {
     type: Object
-  },
-})
-//@kaleb not sure if these map state things are right
-const { theme } = mapState({
-  theme: (state) => state.proposal.theme,
+  }
 })
 
 const styles = computed(() => {
   return { ...(theme.value[props.themeKey] ?? {}), ...props.blockStyle }
 })
-
-
 </script>

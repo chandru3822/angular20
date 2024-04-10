@@ -5,115 +5,111 @@
       <v-spacer />
       <v-toolbar-items>
         <a-btn
-            class="toolbar-btn-text"
-            variant="text"
-            color="primary"
-            :to="`{'name' : 'proposalDesigner'}`"
-            text="Designer"
+          class="toolbar-btn-text"
+          variant="text"
+          color="primary"
+          :to="{ name: 'proposalDesigner' }"
+          text="Designer"
         ></a-btn>
         <a-btn
-            class="toolbar-btn-icon"
-            icon
-            size="large"
-            color="primary"
-            :to="`{'name' : 'proposalDesigner'}`"
-            prepend-icon="edit"
+          class="toolbar-btn-icon"
+          icon
+          size="large"
+          color="primary"
+          :to="{ name: 'proposalDesigner' }"
+          prepend-icon="edit"
         ></a-btn>
       </v-toolbar-items>
       <v-toolbar-items v-if="canCreateVersion">
         <a-btn
-            class="toolbar-btn-text"
-            variant="text"
-            color="primary"
-            @click="create"
-            text="Create New Version"
+          class="toolbar-btn-text"
+          variant="text"
+          color="primary"
+          @click="create"
+          text="Create New Version"
         ></a-btn>
         <a-btn
-            class="toolbar-btn-icon"
-            icon
-            size="large"
-            color="primary"
-            @click="create"
-            prepend-icon="mdi-plus"
+          class="toolbar-btn-icon"
+          icon
+          size="large"
+          color="primary"
+          @click="create"
+          prepend-icon="mdi-plus"
         ></a-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-divider />
     <v-container>
-      <div v-if="!loading && !versions.length">
-        No proposals available.
-      </div>
+      <div v-if="!loading && !versions.length">No proposals available.</div>
       <v-card v-if="versions.length" class="square-card">
-        <v-data-table id="proposal-version-table"
-                      :headers="headers"
-                      :items="versions"
-                      :options.sync="options"
-                      :server-items-length="totalVersions"
-                      :footer-props="footerProps"
-                      class="elevation-1"
-                      @click:row="handleClick">
-          <template #item.version="{item}">Version {{ item.version }}</template>
+        <v-data-table
+          id="proposal-version-table"
+          :headers="headers"
+          :items="versions"
+          :options.sync="options"
+          :server-items-length="totalVersions"
+          :footer-props="footerProps"
+          class="elevation-1"
+          @click:row="handleClick"
+        >
+          <template #item.version="{ item }"
+            >Version {{ item.version }}</template
+          >
           <template #item.status="{ item }">
-            <v-chip class="ma-2"
-                    label
-                    color="grey lighten-2"
-                    v-if="item.status">
+            <v-chip
+              class="ma-2"
+              label
+              color="grey lighten-2"
+              v-if="item.status"
+            >
               {{ item.status | capitalize }}
             </v-chip>
-            <v-chip class="ma-2 default-text-color"
-                    label
-                    color="primary lighten-9"
-                    v-if="item.primaryVersion">
+            <v-chip
+              class="ma-2 default-text-color"
+              label
+              color="primary lighten-9"
+              v-if="item.primaryVersion"
+            >
               Current
             </v-chip>
-
           </template>
           <template #item.dateModified="{ item }">
             <span> {{ item.dateModified | formatDate('timestamp') }}</span>
           </template>
-          <template #item.actions="{item}">
+          <template #item.actions="{ item }">
             <a-btn
-                class="ma-2"
-                variant="text"
-                icon
-                color="primary"
-                @click.navive.stop="showHistory(item.version)"
-                prepend-icon="mdi-history"
+              class="ma-2"
+              variant="text"
+              icon
+              color="primary"
+              @click.navive.stop="showHistory(item.version)"
+              prepend-icon="mdi-history"
             ></a-btn>
           </template>
         </v-data-table>
 
-        <proposal-version-history :visible.sync="history.show" :version="history.version"/>
-
+        <proposal-version-history
+          :visible.sync="history.show"
+          :version="history.version"
+        />
       </v-card>
     </v-container>
   </v-container>
-
 </template>
 <script setup>
 import { getRequestWithParams, postRequest } from '@/helpers/helpers'
-import ProposalVersionHistory from "@/views/blueraven/settings/proposals/ProposalVersionHistory.vue";
-import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
+import ProposalVersionHistory from '@/views/blueraven/settings/proposals/ProposalVersionHistory.vue'
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { computed, ref, onMounted, watch } from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useRouter } from 'vue-router/composables'
 
-const appStore = useAppStore()
-const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-
-// @kaleb mixins
-// mixins: [ProposalSettingsMixins],
 
 const loading = ref(true)
-const history = ref({show: false,version: undefined})
-const options = ref({sortBy: ['version'],sortDesc: [true]})
+const history = ref({ show: false, version: undefined })
+const options = ref({ sortBy: ['version'], sortDesc: [true] })
 const headers = ref([
   { text: '', value: 'status', sortable: false },
   { text: 'Version', value: 'version', sortable: false },
@@ -123,7 +119,8 @@ const headers = ref([
   { text: '', value: 'actions', sortable: false }
 ])
 const footerProps = ref({
-  'items-per-page-options': [5, 10, 20, 50, 100],})
+  'items-per-page-options': [5, 10, 20, 50, 100]
+})
 const totalVersions = ref(-1)
 const versions = ref([])
 
@@ -135,14 +132,18 @@ const canCreateVersion = computed(() => {
   if (!userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')) {
     return false
   }
-  return !loading.value && !versions.value.some(v => v.status === 'DRAFT')
+  return !loading.value && !versions.value.some((v) => v.status === 'DRAFT')
 })
 
-watch(options, (newVal) => {
-  getProposalFields()
-}, { deep: true })
+watch(
+  options,
+  (newVal) => {
+    getProposalFields()
+  },
+  { deep: true }
+)
 
-const create = async() => {
+const create = async () => {
   const { data } = await postRequest('/proposal/versions', {}, 'blueraven')
   versions.value.push({ ...data })
   await router.push({ name: 'proposalDetail', params: { id: data.id } })
@@ -150,22 +151,25 @@ const create = async() => {
 const handleClick = (item) => {
   router.push({ name: 'proposalDetail', params: { id: item.id } })
 }
-const getProposalFields = async() => {
+const getProposalFields = async () => {
   const { itemsPerPage, page } = options.value
   loading.value = true
-  const { data } = await getRequestWithParams(`/proposal/versions?size=${itemsPerPage}&page=${page - 1}`, {}, 'blueraven')
+  const { data } = await getRequestWithParams(
+    `/proposal/versions?size=${itemsPerPage}&page=${page - 1}`,
+    {},
+    'blueraven'
+  )
   totalVersions.value = data.totalElements ?? -1
   versions.value = [...data.content]
   loading.value = false
 }
-const showHistory = (versionId)=> {
+const showHistory = (versionId) => {
   history.value.version = versionId
   history.value.show = true
 }
-
 </script>
 <style scoped lang="scss">
-@import "@/styles/main.scss";
+@import '@/styles/main.scss';
 
 ::v-deep {
   .v-data-table__wrapper {
@@ -183,11 +187,12 @@ tr:nth-of-type(even) {
   @media (max-width: 960px) {
     display: none;
   }
-}.toolbar-btn-icon {
-   @media (min-width: 961px) {
-     display: none;
-   }
- }
+}
+.toolbar-btn-icon {
+  @media (min-width: 961px) {
+    display: none;
+  }
+}
 </style>
 <style lang="scss">
 @media (max-width: 770px) {

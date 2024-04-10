@@ -1,38 +1,26 @@
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 import cloneDeep from 'lodash.clonedeep'
-import {getRequest, getRequestWithParams, getSnackbar, postRequest} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
-
-export const ProposalActions = {
-  FETCH_TAGS: 'fetchTags',
-  FETCH_TEMPLATE: 'fetchTemplate',
-  FETCH_TEMPLATE_CONTEXT: 'fetchTemplateContext',
-  SAVE_TEMPLATE: 'saveTemplate'
-}
-
-export const ProposalMutations = {
-  RESET: 'proposal::resetChanged',
-  SET_SELECTED: 'proposal::setSelected',
-  SET_STYLE: 'proposal::setStyle',
-  SET_VISIBILITY: 'proposal:setVisibility',
-  SET_VALUE: 'proposal::setValue',
-  ADD_COMPONENT: 'proposal::addComponent',
-  REGISTER_EDITOR: 'proposal::registerEditor',
-  DEREGISTER_EDITOR: 'proposal::deRegisterEditor',
-  UPDATE_POSITION: 'proposal:updatePosition'
-}
+import {
+  getRequest,
+  getRequestWithParams,
+  postRequest
+} from '@/helpers/helpers.js'
 
 const removedUndefined = (object) => {
   if (!object) {
     return object
   }
 
-  return Object.keys(object)
-    //remove the keys if they are cleared out
-    .filter(key => object[key] !== undefined)
-    .reduce((obj, key) => {
-      obj[key] = object[key]
-      return obj
-    }, {})
+  return (
+    Object.keys(object)
+      //remove the keys if they are cleared out
+      .filter((key) => object[key] !== undefined)
+      .reduce((obj, key) => {
+        obj[key] = object[key]
+        return obj
+      }, {})
+  )
 }
 
 const blocksToJson = (blocks = []) => {
@@ -40,9 +28,9 @@ const blocksToJson = (blocks = []) => {
   const root = items.filter((i) => !i.parent)
 
   // eslint-disable-next-line no-unused-vars
-  const jsonsify = ({id, parent, ...block}) => {
+  const jsonsify = ({ id, parent, ...block }) => {
     const children = items.filter((i) => i.parent === id)
-    const item = {...block}
+    const item = { ...block }
     if (children.length) {
       item.children = children.map(jsonsify)
     }
@@ -51,122 +39,183 @@ const blocksToJson = (blocks = []) => {
   return root.map(jsonsify)
 }
 
-export default {
-  state: () => {
-    return {
-      _template: [],
-      template: [],
-      theme: {},
-      selectedId: undefined,
-      tags: [],
-      loading: false
-    }
-  },
-  mutations: {
-    setLoading(state, loading){
-      state.loading = loading
-    },
-    setTemplate(state, {template, theme}) {
-      //store a copy of the original
-      state._template = cloneDeep(template)
-      state.template = [...template]
-      state.theme = {...theme}
-    },
-    setTags(state, {tags}) {
-      state.tags = [...tags]
-    },
-    [ProposalMutations.RESET](state) {
-      state.template = cloneDeep(state._template)
-    },
-    [ProposalMutations.SET_SELECTED](state, selectedId) {
-      state.selectedId = selectedId
-    },
-    [ProposalMutations.SET_STYLE](state, {blockId, styles}) {
-      const found = state.template.find(block => block.id === blockId)
-      if (found) {
-        state.template = state.template.map(block => {
-          if (block.id !== blockId) {
-            return block
-          }
-          return {...block, modified: true, blockStyle: styles}
-        })
-      }
-    },
-    [ProposalMutations.SET_VALUE](state, {blockId, value}) {
-      const found = state.template.find(block => block.id === blockId)
-      if (found) {
-        state.template = state.template.map(block => {
-          if (block.id !== blockId) {
-            return block
-          }
-          return {...block, modified: true, blockValue: cloneDeep(value)}
-        })
-      }
-    },
-    [ProposalMutations.SET_VISIBILITY](state, {blockId, visibility}) {
-      const found = state.template.find(block => block.id === blockId)
-      if (found) {
-        state.template = state.template.map(block => {
-          if (block.id !== blockId) {
-            return block
-          }
-          return {...block, modified: true, visibility}
-        })
-      }
-    },
-    // [ProposalMutations.ADD_COMPONENT](state, { blockType, blockTypeId, blockValue, blockStyle, blockOrder, parentId }) {
-    //   const newBlock = {
-    //     id: 99999,
-    //     blockType,
-    //     blockTypeId,
-    //     blockValue,
-    //     blockStyle,
-    //     blockOrder,
-    //     parentId
-    //   }
-    //   console.log({ newBlock })
-    //   state.template = [...state.template, newBlock]
-    // },
-    [ProposalMutations.UPDATE_POSITION](state, {blockId, parentId, pos}) {
-      const found = state.template.find(block => block.id === blockId)
-      console.log({found: found.blockOrder, blockId, parentId, pos})
-      if (found) {
-        state.template = state.template.map(block => {
-          if (block.id !== blockId) {
-            return block
-          }
-          return {...block, blockOrder: pos, parentId, modified: true}
-        })
-      }
-    },
-  },
-  actions: {
-    [ProposalActions.FETCH_TEMPLATE]: async ({commit}) => {
-      const {data} = await getRequestWithParams(`/proposal/template/1`, {}, 'blueraven', {})
-      commit('setTemplate', {template: data?.blocks, theme: data?.theme?.themeStyle})
-    },
-    [ProposalActions.FETCH_TEMPLATE_CONTEXT]: async ({commit}, {proposalId}) => {
-      try {
-        commit('setLoading', true)
-        const {data} = await getRequestWithParams(`/proposal/${proposalId}/template`, {}, 'blueraven', {})
-        commit('setTemplate', {template: data?.blocks, theme: data?.theme?.themeStyle})
-      } catch (e) {
-        const snackbar = getSnackbar('ERROR', e?.data?.message || 'Error retrieving template')
-        commit('setTemplate', {template: [], theme: { } })
-        commit(AppMutations.SHOW_SNACK, snackbar)
-      }finally {
-        commit('setLoading', false)
-      }
-    },
-    //TODO: handle errors better
-    [ProposalActions.SAVE_TEMPLATE]: async ({commit, state, getters}) => {
-      const modifiedBlocks = getters.modifiedBlocks?.map(block => {
-        block.blockStyle = removedUndefined(block.blockStyle)
-        return block
+export default defineStore('proposalStore', () => {
+  //a copy of the original
+  const _template = ref([])
+  const template = ref([])
+  const theme = ref({})
+  const selectedId = ref(undefined)
+  const tags = ref([])
+  const loading = ref(false)
+  const modifiedBlocks = computed(() =>
+    template.value
+      .filter((b) => b.modified === true)
+      .map((b) => {
+        b.blockStyle = removedUndefined(b.blockStyle)
+        return b
+      })
+  )
+  const selectedBlock = computed(() =>
+    template.value.find((b) => b.id === selectedId.value)
+  )
+
+  const done = ref([])
+  const undone = ref([])
+  const newMutation = ref(true)
+
+  const canRedo = computed(() => undone.value.length > 0)
+  const canUndo = computed(() => done.value.length > 0)
+
+  const findById = (id) => {
+    if (!id) return null
+    return template.value.find((b) => b.id === id)
+  }
+
+  const filterByParentId = (parentId) => {
+    return template.value.filter((b) => b.parentId === parentId)
+  }
+
+  const asJson = () => {
+    return blocksToJson(template.value)
+  }
+
+  const setBaseline = (state) => {
+    _template.value = cloneDeep(state?.template)
+    template.value = [...state?.template]
+    theme.value = { ...state?.theme }
+  }
+
+  const setTemplate = (tmpl) => {
+    template.value = [...tmpl]
+    done.value.push(cloneDeep(template.value))
+  }
+
+  const reset = () => {
+    template.value = cloneDeep(_template.value)
+    undone.value = []
+    done.value = []
+  }
+
+  const setSelected = (id) => {
+    selectedId.value = id
+  }
+
+  const setStyle = ({ blockId, styles }) => {
+    const found = findById(blockId)
+    if (found) {
+      template.value = template.value.map((block) => {
+        if (block.id !== blockId) {
+          return block
+        }
+        return { ...block, modified: true, blockStyle: styles }
       })
 
-      if (modifiedBlocks.length > 0) {
-        const {data} = await postRequest(`/proposal/template/1/blocks`, {blocks: modifiedBlocks}, 'blueraven')
+      done.value.push(cloneDeep(template.value))
+    }
+  }
+
+  const setValue = ({ blockId, value }) => {
+    const found = findById(blockId)
+    if (found) {
+      template.value = template.value.map((block) => {
+        if (block.id !== blockId) {
+          return block
+        }
+        return { ...block, modified: true, blockValue: cloneDeep(value) }
+      })
+      done.value.push(cloneDeep(template.value))
+    }
+  }
+
+  const setVisibility = ({ blockId, visibility }) => {
+    const found = findById(blockId)
+    if (found) {
+      template.value = template.value.map((block) => {
+        if (block.id !== blockId) {
+          return block
+        }
+        return { ...block, modified: true, visibility }
+      })
+      done.value.push(cloneDeep(template.value))
+    }
+  }
+
+  const updatePosition = ({ blockId, parentId, position }) => {
+    const found = findById(blockId)
+    if (found) {
+      template.value = template.value.map((block) => {
+        if (block.id !== blockId) {
+          return block
+        }
+        return { ...block, modified: true, blockOrder: position, parentId }
+      })
+      done.value.push(cloneDeep(template.value))
+    }
+  }
+
+  const fetchTemplate = async () => {
+    try {
+      loading.value = true
+      const { data } = await getRequestWithParams(
+        `/proposal/template/1`,
+        {},
+        'blueraven',
+        {}
+      )
+
+      //set as baseline
+      setBaseline({
+        template: data?.blocks,
+        theme: data?.theme?.themeStyle
+      })
+    } catch (e) {
+      //clear baseline
+      setBaseline({
+        template: [],
+        theme: {}
+      })
+
+      console.error(e)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchTemplateContext = async ({ proposalId }) => {
+    try {
+      loading.value = true
+      const { data } = await getRequestWithParams(
+        `/proposal/${proposalId}/template`,
+        {},
+        'blueraven',
+        {}
+      )
+
+      //establish baseline
+      setBaseline({
+        template: data?.blocks,
+        theme: data?.theme?.themeStyle
+      })
+    } catch (e) {
+      //clear baseline
+      setBaseline({
+        template: [],
+        theme: {}
+      })
+      console.error(e)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const saveTemplate = async () => {
+    try {
+      if (modifiedBlocks.value.length > 0) {
+        const { data } = await postRequest(
+          `/proposal/template/1/blocks`,
+          { blocks: modifiedBlocks.value },
+          'blueraven'
+        )
         if (data) {
           const updated = data?.reduce((acc, obj) => {
             const key = obj?.id
@@ -176,42 +225,74 @@ export default {
             return acc
           }, {})
 
-          const template = state.template.map(b => {
+          const t = template.value.map((b) => {
             return updated[b.id] ? updated[b.id] : b
           })
-          commit('setTemplate', {template, theme: state?.theme})
+          //set template as original
+          _template.value = cloneDeep(t)
+          //reset so this becomes the new baseline
+          reset()
         }
       }
-    },
-    [ProposalActions.FETCH_TAGS]: async ({commit}) => {
-      const {data} = await getRequest('/proposal/template/tags', 'blueraven', [])
-      commit('setTags', {tags: data})
-    }
-  },
-  getters: {
-    modifiedBlocks(state) {
-      return state.template.filter(b => b.modified === true)
-    },
-
-    selectedBlock(state) {
-      return state.template.find((b) => b.id === state.selectedId)
-    },
-
-    findById: (state) => (id) => {
-      if (!id) return null
-      return state.template.find(b => b.id === id)
-    },
-
-    filterByParentId: (state) => (parentId) => {
-      return state.template.filter((b) => b.parentId === parentId)
-    },
-
-    theme(state) {
-      return state.theme
-    },
-
-    asJson: (state) => () => {
-      return blocksToJson(state.template)
+    } catch (e) {
+      console.error(e)
     }
   }
-}
+
+  const fetchTags = async () => {
+    try {
+      const { data } = await getRequest(
+        '/proposal/template/tags',
+        'blueraven',
+        []
+      )
+      tags.value = [...data]
+    } catch (e) {
+      tags.value = []
+    }
+  }
+
+  const redo = function () {
+    const mutation = undone.value.pop()
+    newMutation.value = false
+    template.value = [...mutation]
+    newMutation.value = true
+  }
+
+  const undo = function () {
+    const mutation = done.value.pop()
+    undone.value.push(mutation)
+    newMutation.value = false
+    template.value = [...mutation]
+    newMutation.value = true
+  }
+
+  return {
+    template,
+    _template,
+    theme,
+    selectedId,
+    tags,
+    loading,
+    modifiedBlocks,
+    selectedBlock,
+    findById,
+    filterByParentId,
+    asJson,
+    reset,
+    setSelected,
+    setTemplate,
+    setStyle,
+    setValue,
+    setVisibility,
+    updatePosition,
+    fetchTemplate,
+    fetchTemplateContext,
+    saveTemplate,
+    fetchTags,
+    undo,
+    redo,
+    canRedo,
+    canUndo
+  }
+})

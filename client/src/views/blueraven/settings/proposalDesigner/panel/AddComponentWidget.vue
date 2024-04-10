@@ -13,18 +13,19 @@
           single-line
       />
       <a-btn
-          color="primary"
-          :disabled="!newComponent"
-          @click="add(newComponent)"
-          text="Add"
+        color="primary"
+        :disabled="!newComponent"
+        @click="add(newComponent)"
+        text="Add"
       ></a-btn>
     </div>
   </v-card>
 </template>
 <script setup>
-import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
+import { computed, ref } from 'vue'
+import useProposalStore from '../store.js'
 
-const store = vueInstance.$store
+const store = useProposalStore()
 
 const TEXT_BLOCK = {
   id: 'TextBlock',
@@ -45,27 +46,41 @@ const TEXT_BLOCK = {
     ]
   }
 }
-const IMAGE_BLOCK = {id: 'ImageBlock', label: 'Image Block', typeId: 4, value: {url: 'https://picsum.photos/200'}}
-const CONTAINER_BLOCK = {id: 'ContainerBlock', label: 'Container Block', typeId: 2, value: {}}
-const PLACEHOLDER_BLOCK = {id: 'PlaceholderBlock', label: 'Placeholder Block', typeId: 5, value: {}}
+const IMAGE_BLOCK = {
+  id: 'ImageBlock',
+  label: 'Image Block',
+  typeId: 4,
+  value: { url: 'https://picsum.photos/200' }
+}
+const CONTAINER_BLOCK = {
+  id: 'ContainerBlock',
+  label: 'Container Block',
+  typeId: 2,
+  value: {}
+}
+const PLACEHOLDER_BLOCK = {
+  id: 'PlaceholderBlock',
+  label: 'Placeholder Block',
+  typeId: 5,
+  value: {}
+}
 
 const AVAILABLE = {
-  'PageBlock': [TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK],
-  'ContainerBlock': [TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK]
+  PageBlock: [TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK],
+  ContainerBlock: [TEXT_BLOCK, IMAGE_BLOCK, CONTAINER_BLOCK, PLACEHOLDER_BLOCK]
 }
 const newComponent = ref(null)
 
 const emit = defineEmits(['input'])
 
 const availableBlocks = computed(() => {
-  const selected = store.getters.selectedBlock
-  if (!selected) {
+  if (!store.selectedBlock) {
     return []
   }
-  return AVAILABLE[selected.blockType] ?? []
+  return AVAILABLE[store.selectedBlock?.blockType] ?? []
 })
-const add = ({id, typeId, value}) => {
-  emit('input', {blockType: id, blockTypeId: typeId, blockValue: value})
+const add = ({ id, typeId, value }) => {
+  emit('input', { blockType: id, blockTypeId: typeId, blockValue: value })
   newComponent.value = null
 }
 </script>

@@ -1,11 +1,10 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { AppMutations, AppStore } from '@/stores/AppStore'
-import ProposalStore, { ProposalMutations } from '@/views/blueraven/settings/proposalDesigner/store'
 import { createPinia, PiniaVuePlugin } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import { ScheduleStore } from "@/stores/ScheduleStore";
+import { ScheduleStore } from '@/stores/ScheduleStore'
 
 Vue.use(PiniaVuePlugin)
 export const pinia = createPinia()
@@ -28,10 +27,9 @@ export const Actions = {
 
 const store = new Vuex.Store({
   plugins: [
-    store => {
+    (store) => {
       store.commit(Mutations.INIT)
       store.subscribe((mutation, state) => {
-        if (mutation.type === ProposalMutations.REGISTER_EDITOR) return
         const { notifications, proposal, cancelTokens, ...newState } = state //don't store notifications
         localStorage.setItem('store', JSON.stringify(newState))
       })
@@ -68,7 +66,6 @@ const store = new Vuex.Store({
     // brs: BrsStore,
     // project: ProjectStore,
     app: AppStore,
-    proposal: ProposalStore,
     schedule: ScheduleStore
   },
   mutations: {
@@ -84,8 +81,9 @@ const store = new Vuex.Store({
         this.replaceState(Object.assign(state, hydratedState))
       }
     },
-    [AppMutations.SET_LOADING]: (state, loading) => (appStorePinia.loading = loading),
-    [AppMutations.SHOW_SNACK]: (state, snack) => (appStorePinia.showSnack(snack))
+    [AppMutations.SET_LOADING]: (state, loading) =>
+      (appStorePinia.loading = loading),
+    [AppMutations.SHOW_SNACK]: (state, snack) => appStorePinia.showSnack(snack)
   },
   actions: {
     // CANCEL_PENDING_REQUESTS(context) {
