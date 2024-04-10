@@ -11,15 +11,18 @@ BEGIN
             coalesce(new.message_sent_by_user_id, new.user_id), true)
     on conflict (user_id) do update
       set message_text   = new.message,
+          outbound_message = excluded.outbound_message,
+          date_modified = now(),
           created_by_id  = coalesce(new.message_sent_by_user_id, new.user_id),
           modified_by_id = coalesce(new.message_sent_by_user_id, new.user_id);
-
 
   elsif new.recipient_type_id = 2 then -- project
     insert into flow.sms_cache (project_id, message_text, outbound_message)
     values (new.project_id, new.message, true)
     on conflict (project_id) do update
-      set message_text = new.message;
+      set message_text = new.message,
+          outbound_message = excluded.outbound_message,
+          date_modified = now();
   end if;
 
   RETURN NULL;
@@ -56,7 +59,9 @@ BEGIN
             case when length(new.body) > 0 then new.body when new.num_media > 0 then 'Customer sent Image' else '' end,
             false)
     on conflict (user_id) do update
-      set message_text = excluded.message_text;
+      set message_text     = excluded.message_text,
+          outbound_message = excluded.outbound_message,
+          date_modified    = now();
 
   elsif new.to_phone = '+18014480212' then -- project
 
@@ -68,13 +73,17 @@ BEGIN
 
     insert into flow.sms_cache (project_id, message_text, outbound_message)
     values (v_project_id,
-            case when length(new.body) > 0
-              then new.body
-            when new.num_media > 0
-              then 'Customer sent Image' else '' end,
+            case
+              when length(new.body) > 0
+                then new.body
+              when new.num_media > 0
+                then 'Customer sent Image'
+              else '' end,
             false)
     on conflict (project_id) do update
-      set message_text = excluded.message_text;
+      set message_text     = excluded.message_text,
+          outbound_message = excluded.outbound_message,
+          date_modified    = now();
   end if;
 
   return null;
