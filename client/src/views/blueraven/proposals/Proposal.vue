@@ -65,14 +65,14 @@
               </template>
               <v-card flat color="white" class="pa-4" :elevation="0">
                 <a-autocomplete
-                    :items="versions"
-                    item-value="id"
-                    item-title="version"
-                    :loading="loadingVersions"
-                    hide-details
-                    class="mt-0"
-                    label="Select a version..."
-                    v-model="proposal.proposalVersionId"
+                  :items="versions"
+                  item-value="id"
+                  item-title="version"
+                  :loading="loadingVersions"
+                  hide-details
+                  class="mt-0"
+                  label="Select a version..."
+                  v-model="proposal.proposalVersionId"
                 />
                 <a-btn
                   color="primary"
@@ -368,7 +368,7 @@ const getValueFromCustomField = function (field) {
 }
 
 const isFieldVisible = (field) => {
-  if (!field?.visibility) {
+  if (field?.visibility === undefined || field?.visibility === null) {
     return true
   }
 
