@@ -76,21 +76,17 @@
             <div class="mb-4">
               <v-card flat class="square-card mb-3 pa-3" color="primary lighten-9" v-if="addNewProcessStepStatusType">
                 <h3>Assign a Status Type</h3>
-                <v-autocomplete label="Process Step Status Type"
+                <a-autocomplete label="Process Step Status Type"
                                 :items="availableCompanyProcessStepStatusTypes"
                                 v-model="newProcessStepStatusTypeId"
-                                item-text="processStepStatusType"
+                                item-title="processStepStatusType"
+                                :item-title="item => `${item.processStepStatusType} - ${item.rootProcessStepStatusType}`"
                                 item-value="id"
                                 attach
                                 :loading="companyStatusesLoading"
                                 autocomplete="off"
-                                @input="assignStatusTypeToProcessStep"
-                >
-                  <template slot="item" slot-scope="data">
-                    <!-- HTML that describes how select should render items when the select is open -->
-                    {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
-                  </template>
-                </v-autocomplete>
+                                @input="assignStatusTypeToProcessStep">
+                </a-autocomplete>
               </v-card>
               <v-data-table
                 v-if="expandPsst"
@@ -156,14 +152,14 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="square-card pa-2" color="primary lighten-9" v-if="addNewLink">
-              <v-autocomplete attach v-if="addNewLink"
+              <a-autocomplete attach v-if="addNewLink"
                         v-model="newLink.linkId"
                         :items="availableLinks"
                         label="Select Link"
-                        item-text="link"
+                        item-title="link"
                         item-value="id"
                         @input="assignNewLink"
-              ></v-autocomplete>
+              ></a-autocomplete>
             </v-card>
             <v-card flat v-if="processStep.links && processStep.links.length > 0 && expandLinks">
               <draggable v-model="processStep.links" group="links"

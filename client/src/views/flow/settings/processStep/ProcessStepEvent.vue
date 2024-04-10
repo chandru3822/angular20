@@ -10,18 +10,18 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card class="pa-4">
-          <v-autocomplete
+          <a-autocomplete
               v-model="selectedEvent.initialCompanyEventStatusTypeId"
               :items="companyEventStatuses"
               label="Initial Event Status"
-              item-text="eventStatusType"
+              item-title="eventStatusType"
               item-value="id"
           >
-            <template slot="item" slot-scope="data">
-              <!-- HTML that describes how select should render items when the select is open -->
-              {{ data.item.eventStatusType }} ({{ data.item.rootEventStatusType }})
+            <template v-slot:item="{ props, item }">
+            <!-- HTML that describes how select should render items when the select is open -->
+              {{ item.eventStatusType }} ({{ item.rootEventStatusType }})
             </template>
-          </v-autocomplete>
+          </a-autocomplete>
           <a-btn
               color="primary"
               @click="saveEventDetails(selectedEvent)"
@@ -96,19 +96,19 @@
                     item-value="id"
           ></a-select>
           <div v-if="newEventAction.actionTypeId && newEventAction.actionTypeId === 2">
-            <v-autocomplete
+            <a-autocomplete
                 v-model="newEventAction.companyEventStatusTypeId"
                 :items="companyEventStatuses"
                 label="Change Event Status To"
-                item-text="eventStatusType"
+                item-title="eventStatusType"
                 item-value="id"
                 clearable
-            ></v-autocomplete>
-            <v-autocomplete
+            ></a-autocomplete>
+            <a-autocomplete
                 v-model="newEventAction.companyProcessStepStatusTypeId"
                 :items="processStepStatuses"
                 label="Change Process Step Status To"
-                item-text="processStepStatusType"
+                item-title="processStepStatusType"
                 item-value="id"
                 clearable
             >
@@ -116,7 +116,7 @@
                 <!-- HTML that describes how select should render items when the select is open -->
                 {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
           </div>
           <div v-else-if="newEventAction.actionTypeId && newEventAction.actionTypeId === 3">
             <v-textarea required label="Banner Content" auto-grow filled
@@ -187,20 +187,20 @@
                         item-value="id"
               ></a-select>
               <div>
-                <v-autocomplete
+                <a-autocomplete
                     v-model="action.companyEventStatusTypeId"
                     :items="companyEventStatuses"
                     label="Change Event Status To"
-                    item-text="eventStatusType"
+                    item-title="eventStatusType"
                     item-value="id"
                     clearable
                     v-if="action.actionTypeId === 2"
-                ></v-autocomplete>
-                <v-autocomplete
+                ></a-autocomplete>
+                <a-autocomplete
                     v-model="action.companyProcessStepStatusTypeId"
                     :items="processStepStatuses"
                     label="Change Process Step Status To"
-                    item-text="processStepStatusType"
+                    item-title="processStepStatusType"
                     item-value="id"
                     clearable
                     :disabled="action.showOnCancelledCompletedProcessStep"
@@ -210,7 +210,7 @@
                     <!-- HTML that describes how select should render items when the select is open -->
                     {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
                   </template>
-                </v-autocomplete>
+                </a-autocomplete>
 
                 <v-card flat class="pb-5" color="transparent" v-if="[1,2].includes(action.actionTypeId)">
                   <div class="title-medium">Options</div>
@@ -387,14 +387,14 @@
                   <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
                           v-if="addChildFunction">
                     <h3>Add Child Function</h3>
-                    <v-autocomplete v-model="selectedChildFunction"
+                    <a-autocomplete v-model="selectedChildFunction"
                                     :items="childFunctions"
                                     label="Function"
-                                    item-text="companyFunctionName"
+                                    item-title="companyFunctionName"
                                     return-object
                                     attach
                                     @input="loadFunctionParams(selectedChildFunction.dbFunctionId, false)"
-                    ></v-autocomplete>
+                    ></a-autocomplete>
                     <div v-if="selectedChildFunction.id && selectedChildRequirementParamDynamicValues.length > 0">
                       <h5 class="text-left">Dynamic Function Parameters</h5>
                       <v-card flat color="transparent">

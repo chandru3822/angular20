@@ -16,15 +16,15 @@
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add State to Company</h3>
           <div class="mb-3">
-            <v-autocomplete
+            <a-autocomplete
                 v-model="selectedState"
                 :items="states"
                 label="Select a state to use"
-                item-text="state"
+                item-title="state"
                 item-value="id"
                 return-object
                 attach
-            ></v-autocomplete>
+            ></a-autocomplete>
           </div>
           <a-btn :disabled="!selectedState || !selectedState.id"
                  color="primary" class="white--text mr-2"

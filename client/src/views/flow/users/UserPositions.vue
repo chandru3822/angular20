@@ -21,29 +21,29 @@
             />
             <label>Make Primary:</label>
             <input type="checkbox" class="ml-3 mb-4" v-model="newPosition.primaryFlag">
-            <v-autocomplete v-model="newPosition.positionId"
+            <a-autocomplete v-model="newPosition.positionId"
                             :items="positions"
                             label="Positions"
-                            item-text="position"
+                            item-title="position"
                             item-value="id"
                             @input="populateHierarchy(newPosition, true)"/>
             <div v-if="newPositionHierarchyPopulated">
               <div v-for="(f, index) in filters" :key="index">
-                <v-autocomplete v-if="newPosition.keyedHierarchy && newPosition.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, newPosition)"
+                <a-autocomplete v-if="newPosition.keyedHierarchy && newPosition.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, newPosition)"
                                 v-model="newPosition.keyedHierarchy[f.orgLevelId]['orgId']"
                                 :items="getOrgsMatchingPositionOrgType(f.orgs, newPosition)"
                                 :rules="requiredRules"
                                 :label="f.levelName"
                                 item-value="id"
-                                item-text="orgName"
+                                item-title="orgName"
                 >
-                  <template slot="selection" slot-scope="{ item }">
+                  <template  v-slot:selection="{item, index}">
                     {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
                   </template>
-                  <template slot='item' slot-scope='{ item }'>
+                  <template v-slot:item="{ props, item }">
                     {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
                   </template>
-                </v-autocomplete>
+                </a-autocomplete>
               </div>
             </div>
             <div v-if="newPosition.startDate >= newPosition.endDate" class="error-text mb-2">
@@ -121,19 +121,19 @@
                   :format="'MM/DD/YYYY'"
                   label="End Date"
               />
-              <v-autocomplete v-model="item.positionId"
+              <a-autocomplete v-model="item.positionId"
                               :items="positions"
                               :readonly="true"
                               :disabled="true"
                               label="Positions"
                               @input="populateHierarchy(item, false)"
-                              item-text="position"
+                              item-title="position"
                               item-value="id"/>
               <label>Primary:</label>
               <input type="checkbox" class="ml-3 mb-4" v-model="item.primaryFlag"
                      :readonly="item.primary || !userCanEdit" :disabled="item.primary || !userCanEdit">
               <div v-for="(f, index) in filters" :key="index">
-                <v-autocomplete
+                <a-autocomplete
                     v-if="item.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, item)"
                     v-model="item.keyedHierarchy[f.orgLevelId]['orgId']"
                     :items="getOrgsMatchingPositionOrgType(f.orgs, item)"
@@ -141,20 +141,20 @@
                     :disabled="true"
                     :rules="requiredRules"
                     :label="f.levelName"
-                    item-text="orgName"
+                    item-title="orgName"
                     item-value="id"
                 >
-                  <template slot="selection" slot-scope="{ item }">
+                  <template  v-slot:selection="{item, index}">
                     <div style="color: #9E9E9E;">
                       {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
                     </div>
                   </template>
-                  <template slot='item' slot-scope='{ item }'>
-                    <div style="color: #9E9E9E;">
+                  <template v-slot:item="{ props, item }">
+                  <div style="color: #9E9E9E;">
                       {{ item.orgName }} <span v-if="item.showType">&nbsp;- {{ item.orgType }}</span>
                     </div>
                   </template>
-                </v-autocomplete>
+                </a-autocomplete>
               </div>
               <div v-if="item.startDate >= item.endDate" class="error-text mb-2">
                 End date must be null or after the start date

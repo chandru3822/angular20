@@ -34,14 +34,14 @@
                 <a-text-field class="one-hunned"
                               label="Work Queue Type"
                               v-model="workQueueType.workQueueType"></a-text-field>
-                <v-autocomplete
+                <a-autocomplete
                   v-model="workQueueType.workQueueCategoryId"
                   :items="workQueueCategories"
                   label="Work Queue Category"
-                  item-text="workQueueCategory"
+                  item-title="workQueueCategory"
                   item-value="id"
                   attach
-                ></v-autocomplete>
+                ></a-autocomplete>
               </div>
               <div>
                 <label>Use Event Data:</label>
@@ -56,15 +56,15 @@
                                   v-model.number="workQueueType.shortWindow"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
-                    <v-autocomplete
+                    <a-autocomplete
                       v-model="workQueueType.shortWindowDurationTypeId"
                       :items="durationTypes"
                       label="Short Window Duration Type"
                       :disabled="!editType"
-                      item-text="durationType"
+                      item-title="durationType"
                       item-value="id"
                       attach
-                    ></v-autocomplete>
+                    ></a-autocomplete>
                   </td>
                 </tr>
                 <tr>
@@ -75,15 +75,15 @@
                                   v-model.number="workQueueType.longWindow"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
-                    <v-autocomplete
+                    <a-autocomplete
                       v-model="workQueueType.longWindowDurationTypeId"
                       :items="durationTypes"
                       label="Long Window Duration Type"
                       :disabled="!editType"
-                      item-text="durationType"
+                      item-title="durationType"
                       item-value="id"
                       attach
-                    ></v-autocomplete>
+                    ></a-autocomplete>
                   </td>
                 </tr>
                 <tr>
@@ -94,16 +94,16 @@
                                   v-model.number="workQueueType.expectedCycle"></a-text-field>
                   </td>
                   <td class="wqt-row pl-2">
-                    <v-autocomplete
+                    <a-autocomplete
                       v-model="workQueueType.expectedCycleDurationTypeId"
                       :items="durationTypes"
                       label="Expected Cycle Duration Type"
                       @change="expectedCycleDurationChange()"
                       :disabled="!editType"
-                      item-text="durationType"
+                      item-title="durationType"
                       item-value="id"
                       attach
-                    ></v-autocomplete>
+                    ></a-autocomplete>
                   </td>
                 </tr>
                 <tr>

@@ -7,10 +7,10 @@
         </v-toolbar>
 
         <div>
-          <v-autocomplete v-model="selectedAttachmentTypeId"
+          <a-autocomplete v-model="selectedAttachmentTypeId"
                           :items="attachmentTypes"
                           label="Attachment Type"
-                          item-text="attachmentType"
+                          item-title="attachmentType"
                           item-value="id"
           />
           <!--          <br/>-->

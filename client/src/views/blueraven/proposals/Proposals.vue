@@ -9,30 +9,29 @@
           <v-row class="justify-space-between align-center">
             <v-col cols="12" lg="6">
               <a-text-field
-                  class="mt-5"
-                  prepend-inner-icon="search"
-                  label="Search projects..."
-                  v-model="searchQuery"
-                  @input="searchProjects"
+                class="mt-5"
+                prepend-inner-icon="search"
+                label="Search projects..."
+                v-model="searchQuery"
+                @input="searchProjects"
               />
             </v-col>
           </v-row>
         </v-toolbar>
 
-        <v-divider/>
+        <v-divider />
 
         <v-data-table
-            class="elevation-1 fix-column-width-bug"
-            :headers="headers"
-            :items="projects"
-            fixed-header
-            :options.sync="options"
-            disable-sort
-            :footer-props="footerProps"
-            :server-items-length="totalProjects"
-            :loading="isProjectsLoading"
+          class="elevation-1 fix-column-width-bug"
+          :headers="headers"
+          :items="projects"
+          fixed-header
+          :options.sync="options"
+          disable-sort
+          :footer-props="footerProps"
+          :server-items-length="totalProjects"
+          :loading="isProjectsLoading"
         >
-
           <template #no-data>
             <span class="default-text-color">No available projects</span>
           </template>
@@ -41,17 +40,30 @@
             <span class="default-text-color">No available projects</span>
           </template>
 
-          <template #item="{item}">
-            <tr class="clickable"
-                @click="router.push({name: 'proposalDesigns', params: {projectId: item.id}})">
+          <template #item="{ item }">
+            <tr
+              class="clickable"
+              @click="
+                router.push({
+                  name: 'proposalDesigns',
+                  params: { projectId: item.id }
+                })
+              "
+            >
               <td class="text-left">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/proposalDesigns/${item.id}`">
-                  {{item.id}}
+                <router-link
+                  class="router-link-td elevation-0 square-card"
+                  :to="`/proposalDesigns/${item.id}`"
+                >
+                  {{ item.id }}
                 </router-link>
               </td>
               <td class="text-left">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/proposalDesigns/${item.id}`">
-                  {{item.projectName}}
+                <router-link
+                  class="router-link-td elevation-0 square-card"
+                  :to="`/proposalDesigns/${item.id}`"
+                >
+                  {{ item.projectName }}
                 </router-link>
               </td>
             </tr>
@@ -63,28 +75,18 @@
 </template>
 
 <script setup>
-
-import {logError, getRequestWithParams} from '@/helpers/helpers'
+import { logError, getRequestWithParams } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router/composables'
 
-const appStore = useAppStore()
-const route = useRoute()
 const router = useRouter()
-const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-
-const options = ref({itemsPerPage: 100})
+const options = ref({ itemsPerPage: 100 })
 const headers = ref([
-  {text: 'ID', value: 'id', show: true},
-  {text: 'Name', value: 'projectName', show: true},
+  { text: 'ID', value: 'id', show: true },
+  { text: 'Name', value: 'projectName', show: true }
 ])
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100],
@@ -100,10 +102,10 @@ onMounted(() => {
 })
 
 const getProposalProjects = async () => {
-  const {page, itemsPerPage} = options.value
+  const { page, itemsPerPage } = options.value
   try {
     isProjectsLoading.value = true
-    const {data} = await getRequestWithParams(`/project/search`, {
+    const { data } = await getRequestWithParams(`/project/search`, {
       params: {
         query: searchQuery.value,
         page: page - 1,
@@ -118,13 +120,13 @@ const getProposalProjects = async () => {
     isProjectsLoading.value = false
   }
 }
-const searchProjects = debounce((query) => {
+const searchProjects = debounce(() => {
   getProposalProjects()
 }, 500)
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/main.scss";
+@import '@/styles/main.scss';
 
 ::v-deep {
   .v-data-table__wrapper {

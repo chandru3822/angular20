@@ -52,13 +52,13 @@
               v-model="newEvent.eventName"
             ></a-text-field>
 
-            <v-autocomplete
+            <a-autocomplete
               v-model="newEvent.resourceCustomFieldId"
               :items="eventResourceFields"
               label="Resource"
-              item-text="fieldName"
+              item-title="fieldName"
               item-value="id"
-            ></v-autocomplete>
+            ></a-autocomplete>
 
             <a-btn
               color="primary"

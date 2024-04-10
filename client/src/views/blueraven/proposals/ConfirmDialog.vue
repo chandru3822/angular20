@@ -2,9 +2,7 @@
   <v-dialog v-model="dialog" width="500">
     <v-card>
       <v-card-title class="card-title">
-        <slot name="title">
-          Confirm
-        </slot>
+        <slot name="title"> Confirm </slot>
       </v-card-title>
 
       <v-card-text class="pt-4">
@@ -14,18 +12,18 @@
       <v-card-actions>
         <slot name="actions" v-bind:cancel="cancel" v-bind:ok="ok">
           <a-btn
-              variant="text"
-              @click="cancel(false)"
-              class="text-capitalize"
-              color="unset"
-              :text="cancelButtonText"
+            variant="text"
+            @click="cancel(false)"
+            class="text-capitalize"
+            color="unset"
+            :text="cancelButtonText"
           ></a-btn>
           <v-spacer />
           <a-btn
-              color="primary"
-              @click="ok(true)"
-              class="text-capitalize"
-              :text="okButtonText"
+            color="primary"
+            @click="ok(true)"
+            class="text-capitalize"
+            :text="okButtonText"
           ></a-btn>
         </slot>
       </v-card-actions>
@@ -33,19 +31,7 @@
   </v-dialog>
 </template>
 <script setup>
-
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
-
-const appStore = useAppStore()
-const route = useRoute()
-const router = useRouter()
-const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+import { toRefs, ref, defineExpose } from 'vue'
 
 const props = defineProps({
   cancelButtonText: {
@@ -65,9 +51,9 @@ const reject = ref(null)
 
 const open = () => {
   dialog.value = true
-  return new Promise((resolve, reject) => {
-    resolve.value = resolve
-    reject.value = reject
+  return new Promise((res, rej) => {
+    resolve.value = res
+    reject.value = rej
   })
 }
 const ok = (value = true) => {
@@ -79,7 +65,9 @@ const cancel = (value = false) => {
   dialog.value = false
 }
 
+defineExpose({ open })
 </script>
+
 <style lang="scss" scoped>
 .card-title {
   word-break: initial;

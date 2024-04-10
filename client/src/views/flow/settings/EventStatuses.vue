@@ -21,12 +21,12 @@
           <h3>Add Event Status</h3>
           <a-text-field label="Event Status" v-model="newType.eventStatusType">
           </a-text-field>
-          <v-autocomplete single-line
+          <a-autocomplete single-line
                           :items="rootStatusTypes"
                           v-model="newType.eventStatusTypeId"
                           item-value="id"
                           label="Select a Category"
-                          item-text="eventStatusType"></v-autocomplete>
+                          item-title="eventStatusType"></a-autocomplete>
           <a-btn
             color="primary"
             :disabled="!newType.eventStatusTypeId || !newType.eventStatusType"
@@ -67,14 +67,14 @@
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                 ></a-text-field>
-                <v-autocomplete
+                <a-autocomplete
                   :items="rootStatusTypes"
                   v-model="item.eventStatusTypeId"
                   item-value="id"
                   :readonly="!userCanEdit"
                   :disabled="!userCanEdit"
                   label="Select a Category"
-                  item-text="eventStatusType"></v-autocomplete>
+                  item-title="eventStatusType"></a-autocomplete>
                 <a-btn
                   color="primary"
                   dark

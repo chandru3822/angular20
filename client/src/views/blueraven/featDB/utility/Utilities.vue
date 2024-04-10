@@ -41,18 +41,18 @@
                                 hide-details
                                 style="font-size: 14px;"
                   ></a-text-field>
-                  <v-autocomplete v-else-if="utilityFilters[header.value].type === 'select'"
+                  <a-autocomplete v-else-if="utilityFilters[header.value].type === 'select'"
                                   :items="states"
                                   v-model="utilityFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
-                                  filled
                                   type="search"
-                                  item-text="state"
-                                  dense
+                                  item-title="state"
+                                  variant="filled"
+                                  density="compact"
                                   hide-details
                                   attach
-                  ></v-autocomplete>
+                  ></a-autocomplete>
                 </div>
               </th>
             </tr>
@@ -121,25 +121,25 @@
                   type="search"
                   filled
               ></a-text-field>
-              <v-autocomplete
+              <a-autocomplete
                   label="Metro Area"
                   :items="metroAreas"
                   v-model="editedItem.metroAreaId"
                   required
-                  filled
+                  variant="filled"
                   attach
-              ></v-autocomplete>
-              <v-autocomplete label="State"
+              ></a-autocomplete>
+              <a-autocomplete label="State"
                               :items="states"
                               v-model="editedItem.companyStateId"
-                              item-text="state"
+                              item-title="state"
                               item-value="id"
                               type="search"
                               autocomplete="off"
                               required
-                              filled
+                              variant="filled"
                               attach
-              ></v-autocomplete>
+              ></a-autocomplete>
               <v-checkbox
                   v-if="!addMode"
                   label="Archived"

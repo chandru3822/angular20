@@ -1,10 +1,10 @@
 <!--This is a wrapper around the dropdown filters on the Users page-->
 <!--It adds a 'Select All' option to each of the dropdowns-->
 <template>
-  <v-autocomplete v-model="selectedItems"
+  <a-autocomplete v-model="selectedItems"
                   :items="items"
                   item-value="id"
-                  item-text="name"
+                  item-title="name"
                   multiple
                   placeholder="Select..."
                   height="35px"
@@ -12,24 +12,21 @@
                   class="user-filter-select"
                   @input="updateList"
   >
-    <v-list-item
-      slot="prepend-item"
-      ripple
-      @click="toggleAll"
-    >
-      <v-list-item-action>
-        <v-checkbox v-model="checkboxStatus" :indeterminate="getCheckboxStatus"></v-checkbox>
-      </v-list-item-action>
-      <v-list-item-title>Select All</v-list-item-title>
-    </v-list-item>
-    <v-divider
-      slot="prepend-item"
-      class="mt-2"
-    ></v-divider>
-    <template
-      slot="selection"
-      slot-scope="{ item, index }"
-    >
+    <template  v-slot:prepend-item>
+      <v-list-item
+        ripple
+        @click="toggleAll"
+      >
+        <v-list-item-action>
+          <v-checkbox v-model="checkboxStatus" :indeterminate="getCheckboxStatus"></v-checkbox>
+        </v-list-item-action>
+        <v-list-item-title>Select All</v-list-item-title>
+      </v-list-item>
+      <v-divider
+        class="mt-2"
+      ></v-divider>
+    </template>
+    <template  v-slot:selection="{item, index}">
       <v-chip small v-if="index === 0 && selectedItems.length < 2">
         <span>{{ item.name }}</span>
       </v-chip>
@@ -38,7 +35,7 @@
 
       >{{ selectedItems.length }} selected</span>
     </template>
-  </v-autocomplete>
+  </a-autocomplete>
 </template>
 
 

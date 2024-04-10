@@ -6,53 +6,62 @@
       </v-card-title>
 
       <div class="previews">
-        <div class="preview-image" :class="{'selected' : selected && selected.id === image.id }" v-for="image in images"
-             @click="select(image)">
-          <img-proxy :uuid="image.uuid" :alt="image.filename" :width="100"/>
+        <div
+          class="preview-image"
+          :class="{ selected: selected && selected.id === image.id }"
+          v-for="image in images"
+          @click="select(image)"
+        >
+          <img-proxy :uuid="image.uuid" :alt="image.filename" :width="100" />
         </div>
       </div>
 
       <div class="file-upload">
-        <v-container class="file-selector" @drop.prevent="addDragDocument" @dragover.prevent>
+        <v-container
+          class="file-selector"
+          @drop.prevent="addDragDocument"
+          @dragover.prevent
+        >
           <v-row no-gutters>
             <v-col :cols="8">
               <v-file-input
-                  dense
-                  counter
-                  multiple
-                  ref="fileInput"
-                  hide-details
-                  show-size
-                  outlined
-                  label="Upload New Images"
-                  v-model="uploadFiles"
+                dense
+                counter
+                multiple
+                ref="fileInput"
+                hide-details
+                show-size
+                outlined
+                label="Upload New Images"
+                v-model="uploadFiles"
               >
                 <template v-slot:selection="{ index, text }">
                   <v-chip
-                      v-if="index < 2"
-                      color="deep-purple accent-4"
-                      dark
-                      label
-                      small
+                    v-if="index < 2"
+                    color="deep-purple accent-4"
+                    dark
+                    label
+                    small
                   >
                     {{ text }}
                   </v-chip>
 
-                  <span v-else-if="index === 2"
-                        class="text-overline grey--text text--darken-3 mx-2"
+                  <span
+                    v-else-if="index === 2"
+                    class="text-overline grey--text text--darken-3 mx-2"
                   >
-                +{{ uploadFiles.length - 2 }} File(s)
-              </span>
+                    +{{ uploadFiles.length - 2 }} File(s)
+                  </span>
                 </template>
               </v-file-input>
             </v-col>
             <v-col :cols="4">
               <a-btn
-                  variant="text"
-                  :disabled="!uploadFiles.length"
-                  @click="uploadAttachments(uploadFiles)"
-                  color="unset"
-                  text="Upload"
+                variant="text"
+                :disabled="!uploadFiles.length"
+                @click="uploadAttachments(uploadFiles)"
+                color="unset"
+                text="Upload"
               ></a-btn>
             </v-col>
           </v-row>
@@ -61,29 +70,32 @@
 
       <v-card-actions>
         <a-btn
-            variant="text"
-            @click="cancel"
-            color="unset"
-            text="Cancel"
+          variant="text"
+          @click="cancel"
+          color="unset"
+          text="Cancel"
         ></a-btn>
         <v-spacer></v-spacer>
         <a-btn
-            color="primary"
-            @click="ok"
-            :disabled="!selected"
-            text="Ok"
+          color="primary"
+          @click="ok"
+          :disabled="!selected"
+          text="Ok"
         ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 <script setup>
-import {getRequestWithParams, getSnackbar, handleHidingGlobalLoader, logError} from '@/helpers/helpers'
+import {
+  getRequestWithParams,
+  handleHidingGlobalLoader,
+  logError
+} from '@/helpers/helpers'
 import ImgProxy from '@/components/ImgProxy'
-import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
-import {useFileStore} from '@/stores/FileStore.js'
-import {useAppStore} from '@/stores/AppStorePinia.js'
-
+import { getCurrentInstance, ref } from 'vue'
+import { useFileStore } from '@/stores/FileStore.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const fileStore = useFileStore()
 const appStore = useAppStore()
@@ -104,13 +116,18 @@ const _fetchProposalImages = async () => {
   try {
     appStore.loading = true
 
-    const {data, status} = await getRequestWithParams(`/attachment`, {
-      params: {
-        attachmentTypeId: 939 //PROPOSAL_TEMPLATE
-      }
-    }, null, [])
+    const { data, status } = await getRequestWithParams(
+      '/attachment',
+      {
+        params: {
+          attachmentTypeId: 939 //PROPOSAL_TEMPLATE
+        }
+      },
+      null,
+      []
+    )
 
-    images.value = data?.filter(a => IMAGE_REGEX.test(a.fileExtension))
+    images.value = data?.filter((a) => IMAGE_REGEX.test(a.fileExtension))
     handleHidingGlobalLoader(status)
   } catch (e) {
     logError(e)
@@ -122,16 +139,16 @@ const _fetchProposalImages = async () => {
 const open = () => {
   dialog.value = true
   _fetchProposalImages()
-  return new Promise(((resolve, reject) => {
-    resolve.value = resolve
-    reject.value = reject
-  }))
+  return new Promise((res, rej) => {
+    resolve.value = res
+    reject.value = rej
+  })
 }
 const select = (attachment) => {
   selected.value = attachment
 }
 const ok = () => {
-  resolve.value({uuid: selected.value.uuid})
+  resolve.value({ uuid: selected.value.uuid })
   dialog.value = false
   selected.value = null
 }
@@ -148,12 +165,12 @@ const uploadAttachments = async (files) => {
     try {
       appStore.loading = true
 
-      const filesToUpload = files?.map(file => {
+      const filesToUpload = files?.map((file) => {
         return {
           file,
           attachmentTypeId: PROPOSAL_TEMPLATE_ATTACHMENT_TYPE_ID,
           sourceId: null,
-          displayName: file.name.substr(0, file.name.lastIndexOf('.')),
+          displayName: file.name.substring(0, file.name.lastIndexOf('.')),
           deleteFirst: false
         }
       })
@@ -170,9 +187,12 @@ const uploadAttachments = async (files) => {
     }
   }
 }
+
+defineExpose({
+  open
+})
 </script>
 <style scoped lang="scss">
-
 .previews {
   padding: 10px;
   display: flex;

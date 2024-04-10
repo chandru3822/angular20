@@ -33,7 +33,7 @@
       </v-btn-toggle>
     </div>
     <v-card-text>
-      <v-autocomplete
+      <a-autocomplete
           v-if="enabled"
           v-model="selected"
           :items="content"
@@ -41,7 +41,7 @@
           multiple
           clearable
           :label="textLabel"
-          item-text="position"
+          item-title="position"
           item-value="positionId"
           return-object
           height="35px"
@@ -71,7 +71,7 @@
               class="primary--text text-caption"
           >{{ selected.length }} selected</span>
         </template>
-      </v-autocomplete>
+      </a-autocomplete>
       <a-btn
           v-if="userCanEdit && saveButton"
           color="primary"

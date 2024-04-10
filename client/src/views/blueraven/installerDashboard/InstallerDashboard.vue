@@ -20,13 +20,13 @@
           <v-divider class="mt-3"/>
           <v-row class="px-4">
             <v-col cols="3" md="2">
-              <v-autocomplete v-model="selectedRegionalManagers"
+              <a-autocomplete v-model="selectedRegionalManagers"
                               :items="regionalManagers"
                               label="Regional Installation Manager"
                               multiple
                               clearable
                               return-object
-                              item-text="fullName"
+                              item-title="fullName"
                               @change="getInstallationCrew()"
                               @click:clear="selectedInstallationCrews = []">
                 <v-list-item
@@ -51,39 +51,36 @@
                   {{ selectedRegionalManagers.length }} selected
                 </span>
                 </template>
-              </v-autocomplete>
+              </a-autocomplete>
             </v-col>
             <v-col cols="3" md="2">
-              <v-autocomplete v-model="selectedInstallationCrews"
+              <a-autocomplete v-model="selectedInstallationCrews"
                               :items="installationCrew"
                               label="Installation Crews"
                               multiple
                               clearable
                               return-object
-                              item-text="fullName">
-                <v-list-item
-                  slot="prepend-item"
-                  ripple
-                  @click="toggleSelectAllCrews()"
-                >
-                  <v-list-item-action>
-                    <v-icon>{{ iconCrews }}</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-title>Select All</v-list-item-title>
-                </v-list-item>
-                <v-divider
-                  slot="prepend-item"
-                  class="mt-2"
-                ></v-divider>
-                <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
-                >
-                <span v-if="index === 0" class="primary--text text-caption">
-                  {{ selectedInstallationCrews.length }} selected
-                </span>
+                              item-title="fullName">
+                <template  v-slot:prepend-item>
+                  <v-list-item
+                    ripple
+                    @click="toggleSelectAllCrews()"
+                  >
+                    <v-list-item-action>
+                      <v-icon>{{ iconCrews }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item>
+                  <v-divider
+                    class="mt-2"
+                  ></v-divider>
                 </template>
-              </v-autocomplete>
+                <template  v-slot:selection="{item, index}">
+                  <span v-if="index === 0" class="primary--text text-caption">
+                    {{ selectedInstallationCrews.length }} selected
+                  </span>
+                </template>
+              </a-autocomplete>
             </v-col>
             <v-col cols="3" md="2">
               <a-select attach custom-classes="date-range-dropdown  py-2"
@@ -224,13 +221,13 @@
           <v-row class="px-4">
             <v-row>
               <v-col cols="5" md="2">
-                <v-autocomplete v-model="selectedRegionalManagers" class="zzzz"
+                <a-autocomplete v-model="selectedRegionalManagers" class="zzzz"
                                 :items="regionalManagers"
                                 label="Regional Installation Manager"
                                 multiple
                                 clearable
                                 return-object
-                                item-text="fullName"
+                                item-title="fullName"
                                 @change="getInstallationCrew()"
                                 @click:clear="selectedInstallationCrews = []">
                   <v-list-item
@@ -255,30 +252,30 @@
                     {{ selectedRegionalManagers.length }} selected
                   </span>
                   </template>
-                </v-autocomplete>
+                </a-autocomplete>
               </v-col>
               <v-col cols="5" md="2">
-                <v-autocomplete v-model="selectedInstallationCrews"
+                <a-autocomplete v-model="selectedInstallationCrews"
                                 :items="installationCrew"
                                 label="Installation Crews"
                                 multiple
                                 clearable
                                 return-object
-                                item-text="fullName">
-                  <v-list-item
-                    slot="prepend-item"
-                    ripple
-                    @click="toggleSelectAllCrews()"
-                  >
-                    <v-list-item-action>
-                      <v-icon>{{ iconCrews }}</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-title>Select All</v-list-item-title>
-                  </v-list-item>
-                  <v-divider
-                    slot="prepend-item"
-                    class="mt-2"
-                  ></v-divider>
+                                item-title="fullName">
+                  <template  v-slot:prepend-item>
+                    <v-list-item
+                      ripple
+                      @click="toggleSelectAllCrews()"
+                    >
+                      <v-list-item-action>
+                        <v-icon>{{ iconCrews }}</v-icon>
+                      </v-list-item-action>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item>
+                    <v-divider
+                      class="mt-2"
+                    ></v-divider>
+                  </template>
                   <template
                     slot="selection"
                     slot-scope="{ item, index }"
@@ -287,7 +284,7 @@
                     {{ selectedInstallationCrews.length }} selected
                   </span>
                   </template>
-                </v-autocomplete>
+                </a-autocomplete>
               </v-col>
             </v-row>
 

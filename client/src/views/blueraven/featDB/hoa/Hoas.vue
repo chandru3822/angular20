@@ -39,18 +39,18 @@
                                 density="compact"
                                 hide-details
                   ></a-text-field>
-                  <v-autocomplete v-else-if="hoaFilters[header.value].type === 'select'"
+                  <a-autocomplete v-else-if="hoaFilters[header.value].type === 'select'"
                                   :items="states"
                                   v-model="hoaFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
-                                  filled
-                                  item-text="state"
-                                  dense
+                                  item-title="state"
+                                  variant="filled"
+                                  density="compact"
                                   type="search"
                                   autocomplete="off"
                                   hide-details
-                  ></v-autocomplete>
+                  ></a-autocomplete>
                 </div>
               </th>
             </tr>
@@ -127,26 +127,26 @@
                         required
                         variant="filled"
           ></a-text-field>
-          <v-autocomplete label="State"
+          <a-autocomplete label="State"
                           :items="states"
                           v-model="editedItem.companyStateId"
-                          item-text="state"
+                          item-title="state"
                           item-value="id"
                           autocomplete="off"
                           type="search"
                           required
-                          filled
-          ></v-autocomplete>
-          <v-autocomplete label="Management Company"
+                          variant="filled"
+          ></a-autocomplete>
+          <a-autocomplete label="Management Company"
                           v-if="!addingManagementCompany"
                           :items="managementCompanies"
                           v-model="editedItem.managementCompanyId"
-                          item-text="managementCompany"
+                          item-title="managementCompany"
                           item-value="id"
                           type="search"
                           autocomplete="off"
-                          filled
-          ></v-autocomplete>
+                          variant="filled"
+          ></a-autocomplete>
           <a-text-field label="New Management Company"
                         v-if="addingManagementCompany"
                         v-model="newManagementCompany"

@@ -99,23 +99,20 @@
                   :style="{width: header.width ? header.width : 'auto',
                           'padding-bottom': !header.orgFilter && !header.statusFilter ? '13px !important' : ''}">
                 {{ header.text }}
-                <v-autocomplete v-model="filters.orgs[header.level]"
+                <a-autocomplete v-model="filters.orgs[header.level]"
                                 :items="header.orgs"
                                 v-if="header.orgFilter"
-                                item-text="orgName"
+                                item-title="orgName"
                                 item-value="id"
                                 return-object
                                 multiple
                                 placeholder="Select..."
                                 height="35px"
-                                outlined
+                                variant="outlined"
                                 class="user-filter-select"
                                 @change="handleOrgFilterChange(false, header.level)"
                 >
-                  <template
-                    slot="selection"
-                    slot-scope="{ item, index }"
-                  >
+                  <template  v-slot:selection="{item, index}">
                     <v-chip small v-if="index === 0 && filters.orgs[header.level] && filters.orgs[header.level].length < 2">
                       <span>{{ item.orgName }}</span>
                     </v-chip>
@@ -137,37 +134,34 @@
                     <div v-if="header.showType">{{item.orgName}} ({{item.orgType}})</div>
                     <div v-else>{{item.orgName}}</div>
                   </template>
-                </v-autocomplete>
-                <v-autocomplete v-model="filters.statuses"
+                </a-autocomplete>
+                <a-autocomplete v-model="filters.statuses"
                                 :items="statuses"
                                 v-else-if="header.statusFilter"
                                 multiple
-                                item-text="userStatusType"
+                                item-title="userStatusType"
                                 item-value="id"
-                                outlined
+                                variant="outlined"
                                 placeholder="Select..."
                                 height="35px"
                                 class="user-filter-select"
                                 @input="getUsers(true)"
                 >
-                  <v-list-item
-                    slot="prepend-item"
-                    ripple
-                    @click="toggleSelectAllStatuses()"
-                  >
-                    <v-list-item-action>
-                      <v-icon>{{ icon }}</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-title>Select All</v-list-item-title>
-                  </v-list-item>
-                  <v-divider
-                    slot="prepend-item"
-                    class="mt-2"
-                  ></v-divider>
-                  <template
-                    slot="selection"
-                    slot-scope="{ item, index }"
-                  >
+                  <template  v-slot:prepend-item>
+                    <v-list-item
+                      ripple
+                      @click="toggleSelectAllStatuses()"
+                    >
+                      <v-list-item-action>
+                        <v-icon>{{ icon }}</v-icon>
+                      </v-list-item-action>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item>
+                    <v-divider
+                      class="mt-2"
+                    ></v-divider>
+                  </template>
+                  <template  v-slot:selection="{item, index}">
                     <v-chip small v-if="index === 0 && filters.statuses.length < 2">
                       <span>{{ item.userStatusType }}</span>
                     </v-chip>
@@ -176,11 +170,11 @@
                       class="primary--text text-caption"
                     >{{ filters.statuses.length }} selected</span>
                   </template>
-                </v-autocomplete>
-                <v-autocomplete v-model="filters.positions"
+                </a-autocomplete>
+                <a-autocomplete v-model="filters.positions"
                                 :items="positions"
                                 v-else-if="header.positionFilter"
-                                item-text="position"
+                                item-title="position"
                                 item-value="id"
                                 multiple
                                 placeholder="Select..."
@@ -189,10 +183,7 @@
                                 class="user-filter-select"
                                 @input="getUsers(true)"
                 >
-                  <template
-                    slot="selection"
-                    slot-scope="{ item, index }"
-                  >
+                  <template  v-slot:selection="{item, index}">
                     <v-chip small v-if="index === 0 && filters.positions && filters.positions.length < 2">
                       <span>{{ item.position }}</span>
                     </v-chip>
@@ -201,7 +192,7 @@
                       class="primary--text text-caption"
                     >{{ filters.positions.length }} selected</span>
                   </template>
-                </v-autocomplete>
+                </a-autocomplete>
                 <v-checkbox v-else-if="header.selectFilter"
                             :disabled="allUsersLoading"
                             v-model="selectAllUsers" @change="toggleSelectAllUsers()"></v-checkbox>
@@ -293,27 +284,25 @@
         </v-tabs>
           </v-toolbar-items>
         <v-divider></v-divider>
-        <div v-if="messageTab == 1"  class="pa-6">
+        <div v-if="messageTab === 1"  class="pa-6">
           <label class="mr-2">To:</label>
-          <v-autocomplete
+          <a-autocomplete
             v-model="selectedUsers"
             :items="allUsers"
             multiple
             clearable
             label="Select user(s)"
-            item-text="fullName"
+            item-title="fullName"
             item-value="id"
             height="35px"
             @click:clear="clearUsersAutocomplete()"
             class="d-inline-block mr-3 user-autocomplete">
-            <v-divider
-              slot="prepend-item"
-              class="mt-2"
-            ></v-divider>
-            <template
-              slot="selection"
-              slot-scope="{ item, index }"
-            >
+            <template  v-slot:prepend-item>
+              <v-divider
+                class="mt-2"
+              ></v-divider>
+            </template>
+            <template  v-slot:selection="{item, index}">
               <v-chip small v-if="index === 0 && selectedUsers && selectedUsers.length < 2">
                 <span>{{ item.fullName }}</span>
               </v-chip>
@@ -335,7 +324,7 @@
                 </v-list-item>
               </template>
             </template>
-          </v-autocomplete>
+          </a-autocomplete>
 
           <div class="mb-3 flex-display">
             <label class="mt-5 mr-2">From:</label>
@@ -386,24 +375,22 @@
             <span>You will not be assigned to bulk conversations sent from this screen. If you wish to stay on top of
             conversations, use Inbox to send messages. <br></span>
             <label class="mr-2">To:</label>
-            <v-autocomplete
+            <a-autocomplete
               v-model="selectedUsers"
               :items="allUsers"
               multiple
               clearable
-              item-text="fullName"
+              item-title="fullName"
               item-value="id"
               height="35px"
               @click:clear="clearUsersAutocomplete()"
               class="d-inline-block mr-3 user-autocomplete">
-              <v-divider
-                slot="prepend-item"
-                class="mt-2"
-              ></v-divider>
-              <template
-                slot="selection"
-                slot-scope="{ item, index }"
-              >
+              <template  v-slot:prepend-item>
+                <v-divider
+                  class="mt-2"
+                ></v-divider>
+              </template>
+              <template  v-slot:selection="{item, index}">
                 <v-chip small v-if="index === 0 && selectedUsers && selectedUsers.length < 2">
                   <span>{{ item.fullName }}</span>
                 </v-chip>
@@ -412,7 +399,7 @@
                   class="primary--text text-caption"
                 >{{ selectedUsers.length }} selected</span>
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
 
           <div class="flex-display justify-end">
             <v-textarea solo v-model="textMessage"
@@ -504,31 +491,31 @@
     ></a-btn>
 
     <v-row style="width: 90%; margin-left: auto; margin-right: auto;" >
-      <v-autocomplete v-for="header of headers"
+      <a-autocomplete v-for="header of headers"
                       v-model="filters.orgs[header.level]"
                       :items="header.orgs"
                       :label="header.text"
                       v-if="header.orgFilter"
-                      item-text="orgName"
+                      item-title="orgName"
                       item-value="id"
                       return-object
                       multiple
                       placeholder="Select..."
                       height="35px"
-                      outlined
+                      variant="outlined"
                       class="user-images-filter-select"
                       @change="changeImageFilter(false, header.level)"
       >
-      </v-autocomplete>
-      <v-autocomplete attach
+      </a-autocomplete>
+      <a-autocomplete attach
                       label="Users per page"
                       v-model="usersPerPage"
                       :items="usersPerPageOptions"
-                      item-text="email"
+                      item-title="email"
                       item-value="email"
                       class="user-images-filter-select"
                       auto-select-first
-                      outlined
+                      variant="outlined"
                       @change="returnToPageOne()"
       />
       <a-btn

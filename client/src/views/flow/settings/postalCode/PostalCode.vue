@@ -23,46 +23,46 @@
                 :rules="requiredRules"
                 hide-details
             ></a-text-field>
-            <v-autocomplete
+            <a-autocomplete
                 :items="zones"
                 item-value="id"
-                item-text="zoneName"
+                item-title="zoneName"
                 clearable
                 hide-details
                 class="mt-5"
                 label="Postal Code Zone"
                 v-model="postalCode.postalCodeZoneId"
-            ></v-autocomplete>
-            <v-autocomplete
+            ></a-autocomplete>
+            <a-autocomplete
                 :items="states"
                 item-value="id"
-                item-text="state"
+                item-title="state"
                 clearable
                 :rules="requiredRules"
                 hide-details
                 class="mt-5"
                 label="State"
                 v-model="postalCode.stateId"
-            ></v-autocomplete>
-            <v-autocomplete
+            ></a-autocomplete>
+            <a-autocomplete
                 :items="roundRobins"
                 item-value="id"
-                item-text="roundRobinName"
+                item-title="roundRobinName"
                 clearable
                 hide-details
                 class="mt-5"
                 label="Round Robin"
                 v-model="postalCode.roundRobinId"
-            ></v-autocomplete>
-            <v-autocomplete
+            ></a-autocomplete>
+            <a-autocomplete
                 :items="callGroups"
                 item-value="id"
-                item-text="callGroupName"
+                item-title="callGroupName"
                 clearable
                 class="mt-5"
                 label="Call Group"
                 v-model="postalCode.callGroupId"
-            ></v-autocomplete>
+            ></a-autocomplete>
             <v-checkbox label="Disqualified"
                         class="default-text-color"
                         v-model="postalCode.disqualified"/>

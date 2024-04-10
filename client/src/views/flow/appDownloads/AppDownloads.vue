@@ -22,12 +22,12 @@
 
           <v-card class="pa-5">
             <!--    cant change this part cuz the steps used are different depending on if the user is an admin or not -->
-            <v-autocomplete v-model="newBuild.branch"
+            <a-autocomplete v-model="newBuild.branch"
                             :items="branches"
                             label="Branch"
                             placeholder="Select one..."
             />
-            <v-autocomplete v-model="newBuild.dataSource"
+            <a-autocomplete v-model="newBuild.dataSource"
                             :items="dataSources"
                             label="Pointed At Data Source"
                             placeholder="Select one..."

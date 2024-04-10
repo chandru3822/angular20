@@ -1,10 +1,10 @@
 <template>
-  <editor-content :editor="editor"/>
+  <editor-content :editor="editor" />
 </template>
 
 <script setup>
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {EditorContent} from '@tiptap/vue-2'
+import { toRefs } from 'vue'
+import { EditorContent } from '@tiptap/vue-2'
 
 const props = defineProps({
   editor: {
@@ -13,7 +13,6 @@ const props = defineProps({
   }
 })
 const { editor } = toRefs(props)
-
 </script>
 
 <style lang="scss">
@@ -71,7 +70,7 @@ const { editor } = toRefs(props)
     .selectedCell:after {
       z-index: 2;
       position: absolute;
-      content: "";
+      content: '';
       left: 0;
       right: 0;
       top: 0;
@@ -99,5 +98,4 @@ const { editor } = toRefs(props)
 .resize-cursor {
   cursor: ew-resize;
 }
-
 </style>

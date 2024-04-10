@@ -7,10 +7,10 @@
             <v-col cols="6" class="">
               <div v-if="!selectedWorkQueueCategoryId && !categoriesLoading" class="body-medium error--text mb-2">
                 Please select a Work Queue Category</div>
-              <v-autocomplete v-model="selectedWorkQueueCategoryId"
+              <a-autocomplete v-model="selectedWorkQueueCategoryId"
                               :items="workQueueCategories"
                               label="Work Queue Category"
-                              item-text="workQueueCategory"
+                              item-title="workQueueCategory"
                               item-value="id"
                               solo
                               hide-details
@@ -19,7 +19,7 @@
                               dark
                               class="work-queue-selector d-inline-block clickable"
                               @input="loadBoth()"
-              ></v-autocomplete>
+              ></a-autocomplete>
               <div class="radio-group-container mt-0">
                 <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column :disabled="!selectedWorkQueueCategoryId">
                   <v-radio class="d-inline-block mx-4 wq-radio-label"

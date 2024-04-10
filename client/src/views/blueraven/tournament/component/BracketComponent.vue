@@ -18,14 +18,14 @@
           Bracket User Override
         </v-card-title>
         <v-card-text class="pt-4">
-          <v-autocomplete
+          <a-autocomplete
               v-model="overrideUser"
               :items="overrideUsers"
               label="Select a user"
-              item-text="fullName"
+              item-title="fullName"
               return-object
               attach
-          ></v-autocomplete>
+          ></a-autocomplete>
 
           <div v-if="overrideUser.id">
             <strong>{{ showScoreData.user }} will be replaced by {{ overrideUser.fullName }}</strong>

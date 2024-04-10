@@ -353,36 +353,29 @@
                   <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
                           v-if="addChildProcess">
                     <h3>Add Child Process Step</h3>
-                    <v-autocomplete v-model="newChildProcessStep.processStepId"
+                    <a-autocomplete v-model="newChildProcessStep.processStepId"
                                     :items="childProcessSteps"
                                     label="Process Step"
                                     @input="[getCancelledStatuses(newChildProcessStep), getStatusesAssignedToStep(newChildProcessStep)]"
-                                    item-text="processStepName"
+                                    item-title="processStepName"
                                     item-value="id"
                                     attach
-                    ></v-autocomplete>
-                    <v-autocomplete v-model="newChildProcessStep.initialCompanyProcessStepStatusTypeId"
+                    ></a-autocomplete>
+                    <a-autocomplete v-model="newChildProcessStep.initialCompanyProcessStepStatusTypeId"
                                     :items="activeStatusesAssignedToStep"
                                     label="Set initial status to:"
-                                    item-text="processStepStatusType"
+                                    item-title="processStepStatusType"
+                                    :item-title="item => `${item.processStepStatusType} - (${item.rootProcessStepStatusType})`"
                                     item-value="id"
-                                    attach
-                    >
-                      <template slot="item" slot-scope="data">
-                        {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
-                      </template>
-                    </v-autocomplete>
-                    <v-autocomplete v-model="newChildProcessStep.existingCompanyProcessStepStatusTypeId"
+                                    attach>
+                    </a-autocomplete>
+                    <a-autocomplete v-model="newChildProcessStep.existingCompanyProcessStepStatusTypeId"
                                     :items="cancelledCompanyStatuses"
                                     label="Set status of existing Active steps of the same type to:"
-                                    item-text="processStepStatusType"
+                                    :item-title="item => `${item.processStepStatusType} - (${item.rootProcessStepStatusType})`"
                                     item-value="id"
-                                    attach
-                    >
-                      <template slot="item" slot-scope="data">
-                        {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
-                      </template>
-                    </v-autocomplete>
+                                    attach>
+                    </a-autocomplete>
                     <div class="mt-3">
                       <a-btn
                           :disabled="!newChildProcessStep.processStepId || !newChildProcessStep.existingCompanyProcessStepStatusTypeId || !newChildProcessStep.initialCompanyProcessStepStatusTypeId"
@@ -421,22 +414,22 @@
                         <tr>
                           <td :colspan="headers.length" class="pa-4"
                               :class="{'shaded-row': item.processStepActionChildProcesses.indexOf(cp) % 2}">
-                            <v-autocomplete v-model="cp.initialCompanyProcessStepStatusTypeId"
+                            <a-autocomplete v-model="cp.initialCompanyProcessStepStatusTypeId"
                                             :items="activeStatusesAssignedToStep"
                                             :disabled="!userCanEdit"
                                             label="Set initial status as:"
-                                            item-text="processStepStatusType"
+                                            item-title="processStepStatusType"
                                             item-value="id"
                                             attach
-                            ></v-autocomplete>
-                            <v-autocomplete v-model="cp.existingCompanyProcessStepStatusTypeId"
+                            ></a-autocomplete>
+                            <a-autocomplete v-model="cp.existingCompanyProcessStepStatusTypeId"
                                             :items="cancelledCompanyStatuses"
                                             :disabled="!userCanEdit"
                                             label="Set status of existing Active steps of the same type to:"
-                                            item-text="processStepStatusType"
+                                            item-title="processStepStatusType"
                                             item-value="id"
                                             attach
-                            ></v-autocomplete>
+                            ></a-autocomplete>
                             <a-btn
                                 color="primary"
                                 class=""
@@ -505,15 +498,15 @@
                   <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
                           v-if="addChildFunction">
                     <h3>Add Child Function</h3>
-                    <v-autocomplete v-model="selectedChildFunction"
+                    <a-autocomplete v-model="selectedChildFunction"
                                     :items="childFunctions"
                                     label="Function"
-                                    item-text="companyFunctionName"
+                                    item-title="companyFunctionName"
                                     item-value="id"
                                     return-object
                                     attach
                                     @input="loadFunctionParams(selectedChildFunction.dbFunctionId, false)"
-                    ></v-autocomplete>
+                    ></a-autocomplete>
                     <div v-if="selectedChildFunction.id && selectedChildRequirementParamDynamicValues.length > 0">
                       <h5 class="text-left">Dynamic Function Parameters</h5>
                       <v-card flat color="transparent">

@@ -171,17 +171,17 @@
 
           <!-- DROPDOWNS -->
           <div id="pipeline-header-right-side">
-            <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
+            <a-autocomplete custom-classes="appts-to-fdc-pipeline-dropdown"
                             ref="areaSelect"
                             v-model="areaModel"
                             :items="areaData"
-                            item-text="org_name"
+                            item-title="org_name"
                             item-value="org_id"
                             label="Area"
                             no-data-text="No areas available"
-                            outlined
+                            variant="outlined"
+                            density="compact"
                             multiple
-                            dense
                             hide-details
                             @input="areaValuesChanged = true"
                             return-object>
@@ -212,18 +212,18 @@
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
 
-            <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
+            <a-autocomplete custom-classes="appts-to-fdc-pipeline-dropdown"
                             v-model="regionModel"
                             :items="regionData"
-                            item-text="org_name"
+                            item-title="org_name"
                             item-value="org_id"
                             label="Region"
                             no-data-text="No regions available"
-                            outlined
                             multiple
-                            dense
+                            variant="outlined"
+                            density="compact"
                             @input="regionValuesChanged = true"
                             hide-details
                             return-object
@@ -255,19 +255,19 @@
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
 
-            <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
+            <a-autocomplete custom-classes="appts-to-fdc-pipeline-dropdown"
                             ref="districtSelect"
                             v-model="districtModel"
                             :items="districtData"
-                            item-text="org_name"
+                            item-title="org_name"
                             item-value="org_id"
                             label="District"
                             no-data-text="No districts available"
-                            outlined
                             multiple
-                            dense
+                            variant="outlined"
+                            density="compact"
                             hide-details
                             @input="districtValuesChanged = true"
                             return-object>
@@ -298,18 +298,18 @@
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
 
-            <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
+            <a-autocomplete custom-classes="appts-to-fdc-pipeline-dropdown"
                             v-model="officeModel"
                             :items="officeData"
-                            item-text="org_name"
+                            item-title="org_name"
                             item-value="org_id"
                             label="Office"
                             no-data-text="No offices available"
-                            outlined
+                            variant="outlined"
+                            density="compact"
                             multiple
-                            dense
                             @input="officeValuesChanged = true"
                             hide-details
                             return-object
@@ -341,17 +341,17 @@
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
-            </v-autocomplete>
-            <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
+            </a-autocomplete>
+            <a-autocomplete custom-classes="appts-to-fdc-pipeline-dropdown"
                             v-model="repModel"
                             :items="repData"
-                            item-text="name"
+                            item-title="name"
                             item-value="user_position_id"
                             label="Rep"
                             no-data-text="No reps available"
-                            outlined
+                            variant="outlined"
+                            density="compact"
                             multiple
-                            dense
                             @input="repValuesChanged = true"
                             hide-details
                             return-object
@@ -384,7 +384,7 @@
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
 
             <a-btn
                 v-if="!isCloser && !isCloserMgr"

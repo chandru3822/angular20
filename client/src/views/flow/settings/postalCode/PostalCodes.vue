@@ -33,14 +33,14 @@
                 tabindex=1
                 v-model="newPostalCode.placeName"
               ></a-text-field>
-              <v-autocomplete
+              <a-autocomplete
                 :items="states"
                 item-value="id"
-                item-text="state"
+                item-title="state"
                 clearable
                 label="State"
                 v-model="newPostalCode.stateId"
-              ></v-autocomplete>
+              ></a-autocomplete>
               <a-btn
                   color="primary"
                   :disabled="!newPostalCode.postalCode || !newPostalCode.placeName || !newPostalCode.stateId"

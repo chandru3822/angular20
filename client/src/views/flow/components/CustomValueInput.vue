@@ -115,20 +115,19 @@
             autocomplete="off"
         />
 
-        <v-autocomplete
+        <a-autocomplete
             v-if="field.dataTypeId === 6 && field.hasListValues"
             v-model="field.intValue"
-            text
+            :variant="filled ? 'filled' : 'text'"
             attach
             :hide-no-data="field.lazyLoadValues"
             :required="required"
             :clearable="!readonly"
             :readonly="readonly"
             :disabled="readonly"
-            :class="[customClass, {'error--text': readonly || required}]"
+            :custom-classes="classesAsString"
             :loading="isLoading"
             placeholder=" "
-            :filled="filled"
             item-disabled="archived"
             :rules="rules"
             :items="getListOfValues()"
@@ -136,7 +135,7 @@
             :hide-details="hideDetails"
             :hint="hint"
             item-value="id"
-            item-text="name"
+            item-title="name"
             @input="handleInput"
             autocomplete="off"
         >
@@ -146,31 +145,30 @@
               <v-list-item-subtitle v-if="item.description" v-text="item.description" />
             </v-list-item-content>
           </template>
-        </v-autocomplete>
+        </a-autocomplete>
 
-        <v-autocomplete
+        <a-autocomplete
             v-if="field.dataTypeId === 7 || field.dataTypeId === 10"
-            text
+            :variant="filled ? 'filled' : 'text'"
             attach
             :required="required"
             multiple
             placeholder=" "
             v-model="field.intArrayValue"
             :hide-no-data="field.lazyLoadValues"
-            :search-input.sync="search"
-            :filled="filled"
+            :search-input="search"
             :items="getListOfValues()"
             item-disabled="archived"
             :clearable="!readonly"
             :readonly="readonly"
             :disabled="readonly"
-            :class="[customClass, {'error--text': readonly}]"
+            :class="classesAsString"
             :rules="rules"
             :label="getFieldName()"
             :hide-details="hideDetails"
             :hint="hint"
             item-value="id"
-            item-text="name"
+            item-title="name"
             @input="handleInput"
             autocomplete="off"
         >
@@ -180,22 +178,21 @@
               <v-list-item-subtitle v-if="item.description" v-text="item.description" />
             </v-list-item-content>
           </template>
-        </v-autocomplete>
+        </a-autocomplete>
 
-        <v-autocomplete
+        <a-autocomplete
             v-if="field.dataTypeId === 8 && !field.systemReadonly"
             v-model="field.intValue"
-            text
+            :variant="filled ? 'filled' : 'text'"
             attach
             :required="required"
-            :search-input.sync="search"
+            :search-input="search"
             :hide-no-data="field.lazyLoadValues"
             :clearable="!readonly"
-            :filled="filled"
             item-disabled="archived"
             :readonly="readonly"
             :disabled="readonly"
-            :class="[customClass, {'error--text': readonly}]"
+            :class="classesAsString"
             :items="getListOfValues()"
             :label="getFieldName()"
             :hide-details="hideDetails"
@@ -203,7 +200,7 @@
             :rules="rules"
             placeholder=" "
             item-value="id"
-            item-text="name"
+            item-title="name"
             @input="handleInput"
             autocomplete="off"
         >
@@ -213,16 +210,15 @@
               <v-list-item-subtitle v-if="item.description" v-text="item.description" />
             </v-list-item-content>
           </template>
-        </v-autocomplete>
+        </a-autocomplete>
 
-        <v-autocomplete
+        <a-autocomplete
             v-if="field.dataTypeId === 9"
             v-model="field.intValue"
-            :search-input.sync="search"
+            :search-input="search"
             :hide-no-data="field.lazyLoadValues"
-            text
+            :variant="filled ? 'filled' : 'text'"
             attach
-            :filled="filled"
             :required="required"
             :clearable="!readonly"
             item-disabled="archived"
@@ -231,12 +227,12 @@
             :hide-details="hideDetails"
             :readonly="readonly"
             :disabled="readonly"
-            :class="[customClass, {'error--text': readonly}]"
+            :class="classesAsString"
             :rules="rules"
             :hint="hint"
             placeholder=" "
             item-value="id"
-            item-text="name"
+            item-title="name"
             @input="handleInput"
             autocomplete="off"
         >
@@ -254,7 +250,7 @@
               <v-list-item-subtitle v-if="item.description" v-text="item.description" />
             </v-list-item-content>
           </template>
-        </v-autocomplete>
+        </a-autocomplete>
 
         <div v-if="field.dataTypeId === 13" class="one-hunned">
           <!-- this hidden text field makes the form's required fields validation work -->
@@ -370,7 +366,7 @@ const { apiPath, required, readonly, field, useFieldAncillaryName, showFieldName
   hideLabel, hideDetails, lockFeature, copyFeature, listOfValueFilter, hint, minDate,
   maxDate, variant, customClass, appendIcon } = toRefs(props)
 
-const search = ref(null)
+const search = ref('')
 const isLoading = ref(false)
 const toolbarOptions = ref({
   modules: {
@@ -433,6 +429,14 @@ const fieldAncillaryName = computed(() => {
   } else {
     return field.value.fieldName
   }
+})
+
+const classesAsString = computed(() => {
+  let extraClasses = ''
+  if(readonly.value || required.value) {
+    extraClasses += ' error--text'
+  }
+  return customClass.value + extraClasses
 })
 
 watch(search, (val) => {

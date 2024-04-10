@@ -85,10 +85,10 @@
                   </v-col>
 
                   <v-col cols="12" md="4">
-                    <v-autocomplete
+                    <a-autocomplete
                         v-model="smartlist.companyObjectTypeId"
                         :items="companyObjectTypes"
-                        item-text="objectType"
+                        item-title="objectType"
                         :readonly="!userCanEdit"
                         item-value="companyObjectTypeId"
                         label="Rows"

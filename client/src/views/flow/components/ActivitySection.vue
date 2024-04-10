@@ -188,7 +188,7 @@
         <div v-if="editedActivity.createdById !== currentUserId && !addActivity && previouslySelectedTopics.value?.length > 0" class="pt-2">
           Existing topics: {{previouslySelectedTopicNames.value}}
         </div>
-        <v-autocomplete
+        <a-autocomplete
             v-model="selectedTopics"
             class="mt-3"
             :items="editedActivity.createdById !== currentUserId && !addActivity && previouslySelectedTopics.value?.length > 0 ? topics.filter(t => {return !previouslySelectedTopics.value.find(pst => pst.id === t.id)}) : topics"
@@ -197,8 +197,8 @@
             label="Topics"
             return-object
             menu-props="closeOnContentClick"
-            item-text="hashtag"
-        ></v-autocomplete>
+            item-title="hashtag"
+        ></a-autocomplete>
         <v-checkbox
             v-if="null != $route.params.processStepId
                 || null != $route.params.ppsEventId

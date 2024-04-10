@@ -322,18 +322,18 @@ onMounted(() => {
     </div>
     <div v-show="!showSearchResults" class="project-search-field-container pt-1">
       <div class="one-hunned pb-3">
-        <v-autocomplete attach v-model="state" class="pb-2 body-large"
+        <a-autocomplete attach v-model="state" class="pb-2 body-large"
         :items="states"
         label="State"
         clearable
         return-object
         hide-details
-        dense
-        item-text="state"
+        density="compact"
+        item-title="state"
         item-value="id"
         @click:clear="clear"
         :disabled="!!searchProject?.projectId"
-        ></v-autocomplete>
+        ></a-autocomplete>
         <v-autocomplete v-model="searchProject"
                         :items="searchProjects"
                         :loading="searchProjectsLoading"
@@ -370,10 +370,10 @@ onMounted(() => {
                     class="pb-2"
                     v-if="searchProject?.projectId"
           />
-          <v-autocomplete attach v-model="selectedEventTypes"
+          <a-autocomplete attach v-model="selectedEventTypes"
                           :items="eventTypes"
                           label="Event"
-                          item-text="eventName"
+                          item-title="eventName"
                           item-value="id"
                           return-object
                           hide-details
@@ -383,10 +383,7 @@ onMounted(() => {
                           multiple
                           v-else
           >
-            <template
-                slot="selection"
-                slot-scope="{ item, index }"
-            >
+            <template  v-slot:selection="{item, index}">
               <div v-if="index === 0 && selectedEventTypes.length < 3">
                 <v-chip small v-for="sp in selectedEventTypes">
                   <span>{{ sp.eventName }}</span>
@@ -397,25 +394,25 @@ onMounted(() => {
                   class="primary--text text-caption"
               >{{ selectedEventTypes.length }} selected</span>
             </template>
-          </v-autocomplete>
+          </a-autocomplete>
 
-          <v-autocomplete v-model="searchEventStatusType"
+          <a-autocomplete v-model="searchEventStatusType"
                           :items="eventStatusTypes"
                           label="Event Status"
                           :disabled="!searchEventType?.id && selectedEventTypes.length === 0"
                           clearable
                           hide-details
                           class="pb-2"
-                          item-text="eventStatusType"
+                          item-title="eventStatusType"
                           item-value="id"
                           return-object
           />
-          <v-autocomplete v-model="selectedProcessStepStatusType"
+          <a-autocomplete v-model="selectedProcessStepStatusType"
                           :items="processStepStatusTypes"
                           label="Process Step Status"
                           clearable
                           hide-details
-                          item-text="processStepStatusType"
+                          item-title="processStepStatusType"
                           item-value="id"
                           return-object
           />

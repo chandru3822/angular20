@@ -33,17 +33,17 @@
 
           <!-- DROPDOWNS -->
           <div id="pipeline-header-right-side">
-            <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
+            <a-autocomplete class="appts-to-fdc-pipeline-dropdown"
                             ref="areaSelect"
                             v-model="areaModel"
                             :items="areaData"
-                            item-text="org_name"
+                            item-title="org_name"
                             item-value="org_id"
                             label="Area"
                             no-data-text="No areas available"
-                            outlined
                             multiple
-                            dense
+                            variant="outlined"
+                            density="compact"
                             hide-details
                             @input="areaValuesChanged = true"
                             return-object>
@@ -74,19 +74,19 @@
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
 
-            <v-autocomplete class="pipeline-dropdown"
+            <a-autocomplete class="pipeline-dropdown"
                             v-model="regionModel"
                             ref="regionSelect"
                             :items="regionData"
-                            item-text="org_name"
+                            item-title="org_name"
                             item-value="org_id"
                             label="Region"
                             no-data-text="No regions available"
-                            outlined
                             multiple
-                            dense
+                            variant="outlined"
+                            density="compact"
                             return-object
                             @input="regionValuesChanged = true">
               <template v-slot:selection="{ item, index }">
@@ -116,19 +116,19 @@
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
 
-            <v-autocomplete class="pipeline-dropdown"
+            <a-autocomplete class="pipeline-dropdown"
                             ref="districtSelect"
                             v-model="districtModel"
                             :items="districtData"
-                            item-text="org_name"
+                            item-title="org_name"
                             item-value="org_id"
                             label="District"
                             no-data-text="No districts available"
-                            outlined
                             multiple
-                            dense
+                            variant="outlined"
+                            density="compact"
                             return-object
                             @input="districtValuesChanged = true">
               <template v-slot:selection="{ item, index }">
@@ -158,20 +158,20 @@
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
 
 
-            <v-autocomplete class="pipeline-dropdown"
+            <a-autocomplete class="pipeline-dropdown"
                             ref="officeSelect"
                             v-model="officeModel"
                             :items="officeData"
-                            item-text="org_name"
+                            item-title="org_name"
                             item-value="org_id"
                             label="Office"
                             no-data-text="No offices available"
-                            outlined
                             multiple
-                            dense
+                            variant="outlined"
+                            density="compact"
                             return-object
                             @input="officeValuesChanged = true">
               <template v-slot:selection="{ item, index }">
@@ -201,17 +201,17 @@
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
-            </v-autocomplete>
-            <v-autocomplete class="pipeline-dropdown"
+            </a-autocomplete>
+            <a-autocomplete class="pipeline-dropdown"
                             v-model="repModel"
                             :items="repData"
-                            item-text="name"
+                            item-title="name"
                             item-value="user_position_id"
                             label="Rep"
                             no-data-text="No reps available"
-                            outlined
                             multiple
-                            dense
+                            variant="outlined"
+                            density="compact"
                             :disabled="repsLoading"
                             hide-details
                             return-object
@@ -246,7 +246,7 @@
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
 
             <a-btn
                 v-if="!isSetter && !isSetterMgr"

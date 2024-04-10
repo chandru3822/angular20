@@ -4,30 +4,30 @@
     v-if="canEdit"
     class="flex-shrink-1 flex-grow-0"
   >
-    <v-autocomplete
+    <a-autocomplete
       v-show="!showPsEventField"
       v-model="newValue"
       :items="calculatedAvailableFields"
-      item-text="calculatedName"
+      item-title="calculatedName"
       return-object
       placeholder="Add Column"
       :loading="loading"
-      solo
-      hide-details="true"
+      variant="solo"
+      hide-details
       class="field-selector pa-4"
       @change="afterFieldSelected"
     />
 
-    <v-autocomplete
+    <a-autocomplete
       v-show="showPsEventField"
       ref="psEventField"
       :items="calculatedAvailablePsEvents"
       v-model="newPsEvent"
-      item-text="name"
+      item-title="name"
       return-object
       placeholder="Type or Select Name"
-      solo
-      hide-details="true"
+      variant="solo"
+      hide-details
       class="pa-2"
       @change="add"
     >
@@ -40,7 +40,7 @@
         ></a-btn>
       </template>
 
-    </v-autocomplete>
+    </a-autocomplete>
   </v-col>
 
   <v-col class="flex-grow-1 flex-shrink-0 overflow-auto">

@@ -5,19 +5,19 @@
     <v-card color="white" class="home-card">
       <v-card-title>Welcome to Albatross!</v-card-title>
       <v-card-text>
-        <v-autocomplete v-if="!userIsAlbatross"
+        <a-autocomplete v-if="!userIsAlbatross"
                         v-model="user.homePageCompanyFeatureId"
                         :items="homePages"
                         label="Set a Default Home Page"
                         clearable
-                        item-text="featureName"
+                        item-title="featureName"
                         item-value="id"
                         autocomplete="off"
                         persistent-hint
                         hint="* This will be used the next time you log in and can be changed at any time under Settings - User Profile"
                         type="search"
                         attach
-        ></v-autocomplete>
+        ></a-autocomplete>
         <a-btn @click="saveUserHomePage"
                v-if="!userIsAlbatross"
                text="Save"

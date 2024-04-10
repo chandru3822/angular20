@@ -1,15 +1,22 @@
 <template>
   <div class="proposal-img" :style="styles">
-    <img-proxy v-if="blockValue.uuid" :uuid="blockValue.uuid" alt="an image block" />
+    <img-proxy
+      v-if="blockValue.uuid"
+      :uuid="blockValue.uuid"
+      alt="an image block"
+    />
     <img v-else :src="blockValue.url" alt="an image block" loading="lazy" />
   </div>
 </template>
 
-
 <script setup>
-import { mapState } from 'vuex'
 import ImgProxy from '@/components/ImgProxy'
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import { computed } from 'vue'
+import useProposalStore from '../store.js'
+import { storeToRefs } from 'pinia'
+
+const store = useProposalStore()
+const { theme } = storeToRefs(store)
 
 const props = defineProps({
   themeKey: {
@@ -22,11 +29,6 @@ const props = defineProps({
     type: Object,
     required: true
   }
-})
-
-//@kaleb not sure if these map state things are right
-const { theme } = mapState({
-  theme: (state) => state.proposal.theme,
 })
 
 const styles = computed(() => {

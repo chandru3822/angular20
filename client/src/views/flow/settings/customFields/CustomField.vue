@@ -79,14 +79,14 @@
                      v-model="customField.allowSelectSelf">
             </div>
           </div>
-          <v-autocomplete
+          <a-autocomplete
             v-model="customField.companyDataType"
             :items="filterCompanyDataTypes"
             :disabled="undefined !== customFieldId || !userCanEdit"
             :readonly="undefined !== customFieldId || !userCanEdit"
             tabindex="2"
             label="Data Type"
-            item-text="companyDataType"
+            item-title="companyDataType"
             item-value="id"
             autocomplete="off"
             return-object
@@ -97,14 +97,14 @@
             v-if="userStore.userHasFeature('SYSTEM') && customField.companyDataType && customField.companyDataType.customBehavior">
 
             <div v-if="isSystemReference(customField.companyDataType.companyDataType)">
-              <v-autocomplete
+              <a-autocomplete
                 v-model="customField.flowCustomFieldId"
                 :items="availableCustomFields"
-                :search-input.sync="customFieldQuery"
+                :search-input="customFieldQuery"
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
                 label="Flow System Field"
-                item-text="fieldName"
+                item-title="fieldName"
                 item-value="id"
                 hide-no-data
                 cache-items
@@ -138,20 +138,20 @@
             </div>
           </div>
 
-          <v-autocomplete
+          <a-autocomplete
             v-if="customField.companyDataType && customField.companyDataType.systemList"
             v-model="customField.companySystemListId"
             :items="systemLists"
             :disabled="undefined !== customFieldId || !userCanEdit"
             :readonly="undefined !== customFieldId || !userCanEdit"
             label="System List Type"
-            item-text="systemList"
+            item-title="systemList"
             item-value="companySystemListId"
             @change="getSystemListOptions(customField.companySystemListId)"
             attach
           />
 
-          <v-autocomplete
+          <a-autocomplete
             v-if="customField.companySystemListId && systemLists.find(sl => sl.companySystemListId === customField.companySystemListId)  && systemLists.find(sl => sl.companySystemListId === customField.companySystemListId).hasSubOptions"
             v-model="customField.systemListOptionIds"
             :items="systemListOptions"
@@ -159,7 +159,7 @@
             :disabled="!userCanEdit"
             multiple
             label="System List Options"
-            item-text="name"
+            item-title="name"
             item-value="id"
             attach
           />

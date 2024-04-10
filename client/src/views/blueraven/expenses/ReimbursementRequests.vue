@@ -20,34 +20,22 @@
         <v-divider></v-divider>
         <v-card flat v-if="createNew" class="pa-4">
           <h3>Add Expense Item</h3>
-          <!--          <v-autocomplete v-model="newReimbursementRequest.userId"-->
-          <!--                          :items="users"-->
-          <!--                          :loading="usersLoading"-->
-          <!--                          :search-input.sync="userSearchText"-->
-          <!--                          label="Purchaser"-->
-          <!--                          clearable-->
-          <!--                          item-text="fullName"-->
-          <!--                          item-value="id"-->
-          <!--                          autocomplete="off"-->
-          <!--                          type="search"-->
-          <!--                          @click:clear="users = []"-->
-          <!--          ></v-autocomplete>-->
-          <v-autocomplete v-model="newReimbursementRequest.expenseBudgetUserId"
+          <a-autocomplete v-model="newReimbursementRequest.expenseBudgetUserId"
                           :items="usersWithBudget"
                           label="Purchaser"
-                          item-text="fullName"
+                          item-title="fullName"
                           item-value="id"
                           @input="[newReimbursementRequest.expenseBudgetId = null, getTheBudgetsForUser(newReimbursementRequest.expenseBudgetUserId, false, true)]"
-          ></v-autocomplete>
-          <v-autocomplete v-model="newReimbursementRequest.expenseBudgetId"
+          ></a-autocomplete>
+          <a-autocomplete v-model="newReimbursementRequest.expenseBudgetId"
                           :items="budgetsForUser"
                           label="Selected Budget"
                           :loading="budgetsLoading"
                           :disabled="!newReimbursementRequest.expenseBudgetUserId"
-                          item-text="fullBudgetName"
+                          item-title="fullBudgetName"
                           item-value="id"
                           @change="getMonthlyBudgetReport(true)">
-          </v-autocomplete>
+          </a-autocomplete>
           <div v-if="newReimbursementRequest.expenseBudgetId">
             <SpinnerInline v-if="loadingBudgetReport" :size="20" color="primary"/>
             <BudgetReportTable v-else class="mb-4" :budget="selectedBudgetReport"></BudgetReportTable>
@@ -59,28 +47,21 @@
               :format="'MM/DD/YYYY'"
               label="Expense Date"
           />
-          <v-autocomplete v-model="newReimbursementRequest.glCodeId"
+          <a-autocomplete v-model="newReimbursementRequest.glCodeId"
                           :items="glCodes"
                           :loading="glCodesLoading"
                           label="GL Code"
-                          item-text="code"
+                          :item-title="item => `${item.code} - ${item.description}`"
                           item-value="id"
-                          :filter="searchGlCodes"
-          >
-            <template slot='item' slot-scope='{ item }'>
-              {{ item.code }} - {{ item.description }}
-            </template>
-            <template slot='selection' slot-scope='{ item }'>
-              {{ item.code }} - {{ item.description }}
-            </template>
-          </v-autocomplete>
-          <v-autocomplete v-model="newReimbursementRequest.budgetTypeId"
+                          :filter="searchGlCodes">
+          </a-autocomplete>
+          <a-autocomplete v-model="newReimbursementRequest.budgetTypeId"
                           :items="budgetTypes"
                           :loading="budgetTypesLoading"
                           label="Budget Type"
-                          item-text="name"
+                          item-title="name"
                           item-value="id"
-          ></v-autocomplete>
+          ></a-autocomplete>
           <a-text-field
                         prepend-icon="mdi-currency-usd"
                         type="number"
@@ -218,25 +199,25 @@
             <v-col cols="12" sm="5">
               <h3 class="mb-5">Reimbursement Request Details</h3>
               <v-form ref="editRequestForm">
-                <v-autocomplete v-model="selectedRequest.expenseBudgetUserId"
+                <a-autocomplete v-model="selectedRequest.expenseBudgetUserId"
                                 :items="usersWithBudget"
                                 label="Purchaser"
                                 :rules="requiredRules"
-                                item-text="fullName"
+                                item-title="fullName"
                                 item-value="id"
                                 @input="[selectedRequest.expenseBudgetId = null, getTheBudgetsForUser(selectedRequest.expenseBudgetUserId)]"
-                ></v-autocomplete>
-                <v-autocomplete v-model="selectedRequest.expenseBudgetId"
+                ></a-autocomplete>
+                <a-autocomplete v-model="selectedRequest.expenseBudgetId"
                                 :items="budgetsForUser"
                                 label="Selected Budget"
                                 :rules="requiredRules"
                                 :loading="budgetsLoading"
                                 :disabled="!selectedRequest.expenseBudgetUserId"
-                                item-text="fullBudgetName"
+                                item-title="fullBudgetName"
                                 item-value="id"
                                 @change="getMonthlyBudgetReport(false)"
                 >
-                </v-autocomplete>
+                </a-autocomplete>
                 <DatetimePickerInput
                     v-model="selectedRequest.expenseDate"
                     :timezone="timezone"
@@ -245,27 +226,21 @@
                     :format="'MM/DD/YYYY'"
                     label="Expense Date"
                 />
-                <v-autocomplete v-model="selectedRequest.glCodeId"
+                <a-autocomplete v-model="selectedRequest.glCodeId"
                                 :items="glCodes"
                                 label="GL Code"
                                 :rules="requiredRules"
                                 item-value="id"
-                                :filter="searchGlCodes"
-                >
-                  <template slot='item' slot-scope='{ item }'>
-                    {{ item.code }} - {{ item.description }}
-                  </template>
-                  <template slot='selection' slot-scope='{ item }'>
-                    {{ item.code }} - {{ item.description }}
-                  </template>
-                </v-autocomplete>
-                <v-autocomplete v-model="selectedRequest.budgetTypeId"
+                                :item-title="item => `${item.code} - ${item.description}`"
+                                :filter="searchGlCodes">
+                </a-autocomplete>
+                <a-autocomplete v-model="selectedRequest.budgetTypeId"
                                 :items="budgetTypes"
                                 label="Budget Type"
                                 :rules="requiredRules"
-                                item-text="name"
+                                item-title="name"
                                 item-value="id"
-                ></v-autocomplete>
+                ></a-autocomplete>
                 <a-text-field
                               type="number"
                               label="Amount"

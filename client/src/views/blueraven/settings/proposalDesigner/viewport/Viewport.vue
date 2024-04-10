@@ -3,10 +3,10 @@
     <div
       class="screen"
       :style="{
-        transform: `translateX(0vw) scale(${zoom / 100})`,
+        transform: `translateX(0vw) scale(${zoom / 100})`
       }"
     >
-      <slot />
+      <slot></slot>
       <div class="spacer" />
     </div>
     <div class="zoom-wrap" v-if="isZoomable">
@@ -14,16 +14,16 @@
     </div>
   </div>
 </template>
+
 <script setup>
 import ZoomControl from './Zoom.vue'
-import { ProposalMutations } from '../store'
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
+import useProposalStore from '../store.js'
 
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
+const store = useProposalStore()
 
 const findParent = (node, className) => {
-  let nodeClassNames = node?.className?.split(' ') ?? []
+  const nodeClassNames = node?.className?.split(' ') ?? []
   if (nodeClassNames.includes(className)) {
     return node
   }
@@ -36,23 +36,23 @@ const findParent = (node, className) => {
 const isZoomable = ref(false)
 const zoom = ref(75)
 
-onMounted(() => {
-  document
-    .getElementsByClassName('viewport')[0]
-    .addEventListener('mousedown', this.handleClick, false)
-})
-
-
 const handleClick = ({ target }) => {
   const closest = findParent(target, 'block-ui')
   const type = closest?.getAttribute('data-type')
   if (type) {
     const id = parseInt(closest.getAttribute('data-id'), 10)
-    store.commit(ProposalMutations.SET_SELECTED, id)
+    store.setSelected(id)
   } else {
-    store.commit(ProposalMutations.SET_SELECTED, null)
+    store.setSelected(null)
   }
 }
+
+onMounted(() => {
+  document
+    .getElementsByClassName('viewport')[0]
+    .addEventListener('mousedown', handleClick, false)
+})
+// TODO: handle unmount
 </script>
 <style lang="scss" scoped>
 .viewport {
@@ -70,14 +70,14 @@ const handleClick = ({ target }) => {
       transparent 0,
       transparent 75%,
       #f5f5f5 0
-  ),
-  linear-gradient(
+    ),
+    linear-gradient(
       45deg,
       #f5f5f5 25%,
       transparent 0,
       transparent 75%,
       #f5f5f5 0
-  );
+    );
   background-position: 0 0, 13px 13px;
   background-size: 26px 26px;
   background-repeat: repeat;

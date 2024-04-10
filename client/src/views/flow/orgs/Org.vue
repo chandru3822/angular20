@@ -28,34 +28,34 @@
                   item-value="id"
                   @input="getAllOrgsByType(tempOrg.orgTypeId)"
         ></a-select>
-        <v-autocomplete attach v-model="tempOrg.parentOrgId"
+        <a-autocomplete attach v-model="tempOrg.parentOrgId"
                         :items="parents"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         label="Parent Organization"
-                        item-text="orgName"
+                        item-title="orgName"
                         item-value="id"
-        ></v-autocomplete>
-        <v-autocomplete attach v-model="tempOrg.companyStateId"
+        ></a-autocomplete>
+        <a-autocomplete attach v-model="tempOrg.companyStateId"
                         :items="states"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         label="State"
                         clearable
-                        item-text="state"
+                        item-title="state"
                         item-value="id"
-        ></v-autocomplete>
-        <v-autocomplete v-model="tempOrg.companyTimezoneId"
+        ></a-autocomplete>
+        <a-autocomplete v-model="tempOrg.companyTimezoneId"
                         :items="companyTimezones"
                         label="Time Zone"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         hide-details
                         clearable
-                        item-text="timezone"
+                        item-title="timezone"
                         item-value="id"
                         attach
-        ></v-autocomplete>
+        ></a-autocomplete>
         <h6 class="mt-1 red-text" v-if="tempOrg.schedulable && !tempOrg.companyTimezoneId">* Required when
           Schedulable
           Organization</h6>

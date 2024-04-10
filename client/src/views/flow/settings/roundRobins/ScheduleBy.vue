@@ -22,16 +22,16 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addScheduler" class="square-card text-left pa-5">
-          <v-autocomplete v-model="selectedScheduler"
+          <a-autocomplete v-model="selectedScheduler"
                           :items="schedulers"
                           label="Select a User..."
                           :loading="schedulersLoading"
-                          item-text="fullName"
+                          item-title="fullName"
                           item-value="userId"
                           return-object
                           autocomplete="off"
                           attach>
-          </v-autocomplete>
+          </a-autocomplete>
           <a-btn
               color="primary"
               class="mr-3"

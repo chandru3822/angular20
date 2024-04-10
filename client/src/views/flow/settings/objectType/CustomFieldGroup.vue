@@ -190,45 +190,33 @@
                     <v-radio label="Reference Field: from Process Step"
                              value="ancillary"></v-radio>
                   </v-radio-group>
-                  <v-autocomplete v-if="newFieldType === 'native' || !isProject"
+                  <a-autocomplete v-if="newFieldType === 'native' || !isProject"
                                   v-model="newField"
                                   :items="availableCustomFields"
                                   label="New Custom Field"
-                                  item-text="fieldName"
+                                  item-title="fieldName"
                                   return-object
                                   autocomplete="off"
-                                  @input="assignCustomField(item)"
-                  >
-                    <template slot='item' slot-scope='{ item }'>
-                      {{ item.fieldName }}
-                    </template>
-                  </v-autocomplete>
-                  <v-autocomplete v-if="newFieldType === 'ancillary' && isProject"
+                                  @input="assignCustomField(item)">
+                  </a-autocomplete>
+                  <a-autocomplete v-if="newFieldType === 'ancillary' && isProject"
                                   v-model="parent"
                                   :items="parentObjects"
                                   label="Parent Object"
-                                  item-text="name"
+                                  item-title="name"
                                   return-object
                                   autocomplete="off"
-                                  @input="loadFieldsByParent"
-                  >
-                    <template slot='item' slot-scope='{ item }'>
-                      {{ item.name }}
-                    </template>
-                  </v-autocomplete>
-                  <v-autocomplete v-if="newFieldType === 'ancillary' && isProject"
+                                  @input="loadFieldsByParent">
+                  </a-autocomplete>
+                  <a-autocomplete v-if="newFieldType === 'ancillary' && isProject"
                                   v-model="selectedAncillaryField"
                                   :items="ancillaryCustomFields"
                                   label="Custom Field"
-                                  item-text="fieldName"
+                                  item-title="fieldName"
                                   return-object
                                   autocomplete="off"
-                                  @input="assignAncillaryCustomField(item)"
-                  >
-                    <template slot='item' slot-scope='{ item }'>
-                      {{ item.fieldName }}
-                    </template>
-                  </v-autocomplete>
+                                  @input="assignAncillaryCustomField(item)">
+                  </a-autocomplete>
                 </v-col>
                 <v-col  cols="12"  class="px-3 py-0 justify" >
 <!--                  <h3 class="text-left">Assigned Custom Fields</h3>-->

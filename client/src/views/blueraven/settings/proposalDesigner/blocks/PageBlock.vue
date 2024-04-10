@@ -5,13 +5,17 @@
 </template>
 
 <script setup>
-import { mapState } from 'vuex'
 import constants from '@/helpers/constants'
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import { computed } from 'vue'
+import useProposalStore from '../store.js'
+import { storeToRefs } from 'pinia'
 
-const styleUpdatedFn = function(el, binding) {
+const store = useProposalStore()
+const { theme } = storeToRefs(store)
+
+const vProposalStyle = function (el, binding) {
   const replacer = {
-    'backgroundImage': (value) => {
+    backgroundImage: (value) => {
       return `url(${constants.VUE_APP_BASE_API}/public/image/${value}?q=80&w=1080)`
     }
   }
@@ -26,7 +30,7 @@ const styleUpdatedFn = function(el, binding) {
         newVal = replacerElement(value)
       }
     }
-    el.style[newKey] = (newVal !== undefined) ? newVal : ''
+    el.style[newKey] = newVal !== undefined ? newVal : ''
   })
 }
 
@@ -36,25 +40,12 @@ const props = defineProps({
   },
   blockStyle: {
     type: Object
-  },
+  }
 })
 
-// @kaleb - not sure how to put this directive in
-  // directives: {
-  //   'proposal-style': {
-  //     bind: styleUpdatedFn,
-  //     update: styleUpdatedFn
-  //   }
-  // }
-
-//@kaleb not sure if these map state things are right
-  const { theme } = mapState({
-    theme: (state) => state.proposal.theme,
-  })
-
-  const styles = computed(() => {
-    return { ...(theme.value[props.themeKey] ?? {}), ...props.blockStyle }
-  })
+const styles = computed(() => {
+  return { ...(theme.value[props.themeKey] ?? {}), ...props.blockStyle }
+})
 </script>
 <style lang="scss" scoped>
 .proposal-page {
@@ -64,7 +55,7 @@ const props = defineProps({
   background-color: white;
   box-shadow: 0 0 5px 0 darkgrey;
   box-sizing: border-box;
-  position:relative;
+  position: relative;
 
   &:not(:last-child) {
     margin-bottom: 10px;

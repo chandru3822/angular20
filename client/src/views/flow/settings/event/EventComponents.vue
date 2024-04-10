@@ -22,10 +22,10 @@
         <div class="mb-4">
           <v-card flat class="square-card mb-3 pa-3" color="primary lighten-9" v-if="addNewEventStatusType">
             <h3>Assign a Status Type</h3>
-            <v-autocomplete label="Event Status Type"
+            <a-autocomplete label="Event Status Type"
                             :items="availableCompanyEventStatusTypes"
                             v-model="newEventStatusTypeId"
-                            item-text="eventStatusType"
+                            item-title="eventStatusType"
                             item-value="id"
                             hide-details
                             :loading="companyStatusesLoading"
@@ -35,7 +35,7 @@
                 <!-- HTML that describes how select should render items when the select is open -->
                 {{ item.eventStatusType }} ({{ item.rootEventStatusType }})
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
             <v-checkbox v-model="newEventStatusEditableInSchedule" label="Editable in Schedule"/>
             <AlbatrossButton @click="assignStatusTypeToEvent">Save</AlbatrossButton>
           </v-card>

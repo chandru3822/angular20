@@ -93,12 +93,12 @@
 
         <v-row class="no-gutters ml-4">
           <v-col cols="4">
-            <v-autocomplete
+            <a-autocomplete
               v-model="report.companyObjectTypeId"
               :disabled="!canEdit && isEditing"
               :items="filteredReportTypes"
               item-value="companyObjectTypeId"
-              item-text="objectType"
+              item-title="objectType"
               label="Data Type"
               placeholder="Data Type"
               :rules="constants.BASIC_REQUIRED_RULE"

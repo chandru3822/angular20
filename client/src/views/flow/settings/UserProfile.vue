@@ -112,30 +112,30 @@
       <v-col cols="12" md="6">
         <h3 class="title-medium pb-2">Preferences</h3>
         <v-card flat color="transparent">
-          <v-autocomplete v-if="!userIsAlbatross && showOnUserProfile('Default Home Page')"
+          <a-autocomplete v-if="!userIsAlbatross && showOnUserProfile('Default Home Page')"
                           v-model="user.homePageCompanyFeatureId"
                           :items="homePages"
                           label="Default Home Page"
                           clearable
-                          item-text="featureName"
+                          item-title="featureName"
                           item-value="id"
                           autocomplete="off"
                           type="search"
                           @change="setFieldsDirty"
                           attach
-          ></v-autocomplete>
-          <v-autocomplete v-if="!userIsAlbatross && showOnUserProfile('Default Project Page')"
+          ></a-autocomplete>
+          <a-autocomplete v-if="!userIsAlbatross && showOnUserProfile('Default Project Page')"
                           v-model="user.defaultProjectPage"
                           :items="projectPages"
                           label="Default Project Page"
                           clearable
-                          item-text="tabName"
+                          item-title="tabName"
                           item-value="uniqueIdentifier"
                           autocomplete="off"
                           type="search"
                           @change="setFieldsDirty"
                           attach
-          ></v-autocomplete>
+          ></a-autocomplete>
           <a-select attach
                     v-model="user.notificationTypeId"
                     :items="userNotificationTypes"

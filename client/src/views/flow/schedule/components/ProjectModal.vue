@@ -288,16 +288,16 @@ const cancelProjectProcessStepEvent = async() => {
     <!--  When the event hasn't been scheduled  -->
     <div v-if="userCanEdit && project.editableInSchedule">
       <v-card-text class="py-0" id="randa-test">
-        <v-autocomplete v-model="project.resource"
+        <a-autocomplete v-model="project.resource"
                         :items="project.resources"
                         :label="project.resourceFieldName  || 'Resource'"
-						:disabled="isResourceReadOnly"
+                        :disabled="isResourceReadOnly"
                         placeholder=" "
                         return-object
                         clearable
                         hide-details
-                        dense
-                        item-text="name"
+                        density="compact"
+                        item-title="name"
                         item-value="id"
                         @input="[validateSaveEvent(), setSelectedResourceInStore(project.resource?.id)]"
                         @click:clear="setSelectedResourceInStore(null)"
@@ -305,10 +305,10 @@ const cancelProjectProcessStepEvent = async() => {
                         :active="!!resourceFromCalendar"
         >              <!--setting the 'active' prop this way forces the value to appear when when click the schedule button on the calendar-->
 
-          <template v-slot:item="data">
-            <div class="body-large">{{data.item.name}}</div>
+          <template v-slot:item="{ props, item }">
+            <div class="body-large">{{item.name}}</div>
           </template>
-        </v-autocomplete>
+        </a-autocomplete>
         <DatetimePickerInput
             v-model="project.start"
             :timezone="timezone?.value"

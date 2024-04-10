@@ -11,16 +11,16 @@
                 tabindex=1
                 v-model="tournament.tournamentName"
             ></a-text-field>
-            <v-autocomplete
+            <a-autocomplete
                 readonly
                 disabled
                 v-model="tournament.tournamentOwnerTypeId"
                 :items="ownerTypes"
                 label="Owner Type"
-                item-text="ownerType"
+                item-title="ownerType"
                 item-value="id"
                 attach
-            ></v-autocomplete>
+            ></a-autocomplete>
             <DatetimePickerInput
                 v-model="tournament.startDate"
                 :readonly="!edit"
@@ -39,16 +39,16 @@
                 :format="'MMMM DD, YYYY'"
                 label="Tournament End Date"
             />
-            <v-autocomplete
+            <a-autocomplete
                 readonly
                 disabled
                 v-model="tournament.tournamentFormulaId"
                 :items="formulas"
                 label="Scoring Formula"
-                item-text="formulaTitle"
+                item-title="formulaTitle"
                 item-value="id"
                 attach
-            ></v-autocomplete>
+            ></a-autocomplete>
             <div v-if="tournament.tournamentFormulaFields && tournament.tournamentFormulaFields.length > 0"
                  v-for="tff in tournament.tournamentFormulaFields">
               <TournamentCustomField

@@ -40,17 +40,17 @@
                                 variant="filled"
                                 hide-details
                   ></a-text-field>
-                  <v-autocomplete v-else-if="ahjFilters[header.value].type === 'select'"
+                  <a-autocomplete v-else-if="ahjFilters[header.value].type === 'select'"
                                   :items="states"
                                   v-model="ahjFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
-                                  filled
-                                  item-text="state"
-                                  dense
+                                  variant="filled"
+                                  density="compact"
+                                  item-title="state"
                                   hide-details
                                   attach
-                  ></v-autocomplete>
+                  ></a-autocomplete>
                 </div>
               </th>
             </tr>
@@ -111,25 +111,25 @@
                             required
                             filled
               ></a-text-field>
-              <v-autocomplete label="Metro Area"
+              <a-autocomplete label="Metro Area"
                               :items="metroAreas"
                               v-model="editedItem.metroAreaId"
-                              item-text="metroArea"
+                              item-title="metroArea"
                               item-value="id"
                               required
-                              filled
+                              variant="filled"
                               attach
-              ></v-autocomplete>
-              <v-autocomplete label="State"
+              ></a-autocomplete>
+              <a-autocomplete label="State"
                               :items="states"
                               v-model="editedItem.companyStateId"
-                              item-text="state"
+                              item-title="state"
                               item-value="id"
                               autocomplete="off"
                               required
-                              filled
+                              variant="filled"
                               attach
-              ></v-autocomplete>
+              ></a-autocomplete>
 
             </v-card-text>
 

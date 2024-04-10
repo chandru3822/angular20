@@ -50,7 +50,7 @@ public class EnFinService {
     JSONObject applicantDetails = new JSONObject();
     JSONObject quoteDetails = new JSONObject();
 
-    projectDetails.put("partnerInstallerEmail", "propertyandfinancing@blueravensolar.com");
+    projectDetails.put("partnerInstallerEmail", propLogDetail.getSalesRepresentativeEmail() != null ? propLogDetail.getSalesRepresentativeEmail() : "propertyandfinancing@blueravensolar.com");
     projectDetails.put("organizationName", "Blue Raven Solar");
     projectDetails.put("designPartnerName", "Blue Raven Solar");
     projectDetails.put("financingType", "Loan");

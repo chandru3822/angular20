@@ -1,31 +1,21 @@
 <template>
   <a-btn
-      :class="stateClass"
-      :disabled="currentState === 'DISABLED'"
-      v-bind="$attrs"
-      :activation-handler="$listeners"
+    :class="stateClass"
+    :disabled="currentState === 'DISABLED'"
+    v-bind="$attrs"
+    :activation-handler="$listeners"
   >
     <template #default>
       <v-progress-circular indeterminate :size="20" v-if="loading" />
-      <v-icon v-if="currentState === 'SUCCESS'">mdi-check-circle-outline</v-icon>
+      <v-icon v-if="currentState === 'SUCCESS'"
+        >mdi-check-circle-outline</v-icon
+      >
       <slot v-bind:currentState="currentState"></slot>
     </template>
   </a-btn>
 </template>
 <script setup>
-
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
-
-const appStore = useAppStore()
-const route = useRoute()
-const router = useRouter()
-const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+import { toRefs, computed } from 'vue'
 
 const props = defineProps({
   loading: {
@@ -48,7 +38,7 @@ const STATE_CLASS = {
   DISABLED: 'state-default',
   ERROR: 'state-error',
   SUCCESS: 'state-success',
-  DEFAULT: 'state-default',
+  DEFAULT: 'state-default'
 }
 
 const currentState = computed(() => {
