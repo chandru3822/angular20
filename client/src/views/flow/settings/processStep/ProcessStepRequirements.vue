@@ -68,34 +68,34 @@
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></a-select>
             <!--            show this for both custom fields AND statuses-->
-            <v-autocomplete
+            <a-autocomplete
                 v-if="newRequirement.processStepRequirementTypeId && (newRequirement.processStepRequirementTypeId === 1 || newRequirement.processStepRequirementTypeId === 7 || newRequirement.processStepRequirementTypeId === 8)"
                 v-model="parent"
                 :items="parentObjects"
                 label="Parent Object"
                 return-object
-                item-text="processStepName"
+                item-title="processStepName"
                 attach
                 @input="[loadValues(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
                         validateRequirementForm(),
                         selectedFunction = {}, newRequirement.operatorTypeId = null,
                         newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
-            ></v-autocomplete>
+            ></a-autocomplete>
             <!-- if it is a process step custom field it needs parent, other custom fields do not-->
-            <v-autocomplete
+            <a-autocomplete
                 v-if="newRequirement.processStepRequirementTypeId && ((newRequirement.processStepRequirementTypeId === 1 && parent.id) || newRequirement.processStepRequirementTypeId === 3 || newRequirement.processStepRequirementTypeId === 4)"
                 v-model="selectedCustomField"
                 :items="customFields"
                 label="Custom Field"
                 return-object
                 attach
-                item-text="fieldName"
+                item-title="fieldName"
                 @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),
                               selectedDataTypeRequirement = {},
                               validateRequirementForm(),
                               selectedFunction = {}, newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
-            ></v-autocomplete>
+            ></a-autocomplete>
             <a-select attach
                       v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 12"
                       v-model="selectedDataView"
@@ -106,7 +106,7 @@
                       item-title="displayName"
                       @input="[getDataViewFields()]"
             ></a-select>
-            <v-autocomplete
+            <a-autocomplete
                 v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 12 &&
                       selectedDataView.id != null && availableDataViewFields.length > 0"
                 v-model="selectedDataViewField"
@@ -114,13 +114,13 @@
                 label="Data View Field"
                 return-object
                 attach
-                item-text="fieldName"
+                item-title="fieldName"
                 @input="[loadOperatorTypes(selectedDataViewField.dataTypeId), loadDataTypeRequirements(selectedDataViewField.dataTypeId),
                               selectedDataTypeRequirement = {},
                               validateRequirementForm(),
                               selectedFunction = {}, newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
-            ></v-autocomplete>
+            ></a-autocomplete>
             <!-- if it is a function -->
             <a-select
                 v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"
@@ -225,7 +225,7 @@
                 return-object
             ></a-select>
             <!-- if the requirement is event status -->
-            <v-autocomplete
+            <a-autocomplete
                 v-else-if="newRequirement.operatorTypeId && newRequirement.processStepRequirementTypeId === 11"
                 v-model="selectedListOfValues"
                 :items="eventStatuses"
@@ -233,14 +233,14 @@
                 multiple
                 attach
                 @change="validateRequirementForm()"
-                item-text="eventStatusType"
+                item-title="eventStatusType"
                 return-object
             >
               <template slot="item" slot-scope="data">
                 <!-- HTML that describes how select should render items when the select is open -->
                 {{ data.item.eventStatusType }}
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
             <!-- currently only a listOfValueId can be a multiselect.  we may change this down the road for custom sql and system lists -->
             <a-select
                 v-else-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId !== null && selectedCustomField.allowMultiple"
@@ -252,7 +252,7 @@
                 item-title="name"
                 return-object
             ></a-select>
-            <v-autocomplete
+            <a-autocomplete
                 v-else-if="newRequirement.operatorTypeId && (newRequirement.processStepRequirementTypeId === 7 || newRequirement.processStepRequirementTypeId === 8)"
                 v-model="selectedListOfValues"
                 :items="processStepStatuses"
@@ -260,7 +260,7 @@
                 multiple
                 attach
                 @change="validateRequirementForm()"
-                item-text="processStepStatusType"
+                item-title="processStepStatusType"
                 return-object
             >
               <template slot="item" slot-scope="data">
@@ -269,8 +269,8 @@
                 <span v-if="newRequirement.processStepRequirementTypeId === 7"
                       class="ml-1">({{ data.item.rootProcessStepStatusType }})</span>
               </template>
-            </v-autocomplete>
-            <v-autocomplete
+            </a-autocomplete>
+            <a-autocomplete
                 v-else-if="newRequirement.operatorTypeId && (newRequirement.processStepRequirementTypeId === 9 || newRequirement.processStepRequirementTypeId === 10)"
                 v-model="selectedListOfValues"
                 :items="projectStatuses"
@@ -278,7 +278,7 @@
                 multiple
                 attach
                 @change="validateRequirementForm()"
-                item-text="projectStatusType"
+                item-title="projectStatusType"
                 return-object
             >
               <template slot="item" slot-scope="data">
@@ -288,7 +288,7 @@
                     data.item.projectStatusType
                   }})</span>
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
             <a-select
                 v-else-if="newRequirement.operatorTypeId && !newRequirement.customValue"
                 v-model="selectedDataTypeRequirement"
@@ -459,7 +459,7 @@
                       item-title="name"
                       item-value="id"
                   ></a-select>
-                  <v-autocomplete
+                  <a-autocomplete
                       v-else-if="item.operatorTypeId && [7,8,9,10,11].includes(item.processStepRequirementTypeId)"
                       v-model="item.listOfValues"
                       :disabled="requirementIsReadonly(item)"
@@ -468,10 +468,10 @@
                       label="Available Values"
                       multiple
                       @change="validateRequirementForm()"
-                      item-text="name"
+                      item-title="name"
                       return-object
                   >
-                  </v-autocomplete>
+                  </a-autocomplete>
                   <a-select
                       v-else-if="(item.customValue && item.systemListId) || item.companySystemListId"
                       v-model="item.systemListOptionId"

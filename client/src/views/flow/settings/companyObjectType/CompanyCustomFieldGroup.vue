@@ -179,45 +179,33 @@
                     <v-radio label="Reference Field: viewed only from other process steps or objects"
                              value="ancillary"/>
                   </v-radio-group>
-                  <v-autocomplete v-if="newFieldType === 'native'"
+                  <a-autocomplete v-if="newFieldType === 'native'"
                                   v-model="newField"
                                   :items="availableCustomFields"
                                   label="New Custom Field"
-                                  item-text="fieldName"
+                                  item-title="fieldName"
                                   return-object
                                   autocomplete="off"
-                                  @input="assignCustomField(item)"
-                  >
-                    <template slot="item" slot-scope="{ item }">
-                      {{ item.fieldName }}
-                    </template>
-                  </v-autocomplete>
-                  <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                  @input="assignCustomField(item)">
+                  </a-autocomplete>
+                  <a-autocomplete v-if="newFieldType === 'ancillary'"
                                   v-model="parent"
                                   :items="parentObjects"
                                   label="Parent Object"
-                                  item-text="name"
+                                  item-title="name"
                                   return-object
                                   autocomplete="off"
-                                  @input="loadFieldsByParent"
-                  >
-                    <template slot="item" slot-scope="{ item }">
-                      {{ item.name }}
-                    </template>
-                  </v-autocomplete>
-                  <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                  @input="loadFieldsByParent">
+                  </a-autocomplete>
+                  <a-autocomplete v-if="newFieldType === 'ancillary'"
                                   v-model="selectedAncillaryField"
                                   :items="ancillaryCustomFields"
                                   label="Custom Field"
-                                  item-text="fieldName"
+                                  item-title="fieldName"
                                   return-object
                                   autocomplete="off"
-                                  @input="assignCustomField(item, true)"
-                  >
-                    <template slot="item" slot-scope="{ item }">
-                      {{ item.fieldName }}
-                    </template>
-                  </v-autocomplete>
+                                  @input="assignCustomField(item, true)">
+                  </a-autocomplete>
                 </v-col>
                 <v-col cols="12" class="pl-3 pr-3 justify" v-if="!item.customFields || item.customFields.length === 0">
                   No fields assigned to this group
@@ -285,7 +273,7 @@
                                 Read Only
                               </label>
                               <div v-if="cf.customFieldGroupAssignmentReadOnly" class="d-flex align-center">
-                                <v-autocomplete
+                                <a-autocomplete
                                   v-if="cf.customFieldGroupAssignmentReadOnly"
                                   v-model="cf.whiteListedPositions"
                                   :items="positions"
@@ -293,30 +281,27 @@
                                   multiple
                                   clearable
                                   label="White Listed Positions"
-                                  item-text="position"
+                                  item-title="position"
                                   item-value="positionId"
                                   return-object
                                   height="35px"
                                   class="d-inline-block mr-3"
                                   @change="cf.positionsChanged = true">
-                                  <v-list-item
-                                    slot="prepend-item"
-                                    ripple
-                                    @click="toggleSelectAllPositions(cf, 'whiteListedPositions')"
-                                  >
-                                    <v-list-item-action>
-                                      <v-icon>{{ icon(cf) }}</v-icon>
-                                    </v-list-item-action>
-                                    <v-list-item-title>Select All</v-list-item-title>
-                                  </v-list-item>
-                                  <v-divider
-                                    slot="prepend-item"
-                                    class="mt-2"
-                                  ></v-divider>
-                                  <template
-                                    slot="selection"
-                                    slot-scope="{ item, index }"
-                                  >
+                                  <template  v-slot:prepend-item>
+                                    <v-list-item
+                                      ripple
+                                      @click="toggleSelectAllPositions(cf, 'whiteListedPositions')"
+                                    >
+                                      <v-list-item-action>
+                                        <v-icon>{{ icon(cf) }}</v-icon>
+                                      </v-list-item-action>
+                                      <v-list-item-title>Select All</v-list-item-title>
+                                    </v-list-item>
+                                    <v-divider
+                                      class="mt-2"
+                                    ></v-divider>
+                                  </template>
+                                  <template  v-slot:selection="{item, index}">
                                     <v-chip small
                                             v-if="index === 0 && cf.whiteListedPositions && cf.whiteListedPositions.length < 2">
                                       <span>{{ item.position }}</span>
@@ -326,7 +311,7 @@
                                       class="primary--text text-caption"
                                     >{{ cf.whiteListedPositions.length }} selected</span>
                                   </template>
-                                </v-autocomplete>
+                                </a-autocomplete>
 
                                 <a-btn
                                   color="primary"
@@ -348,38 +333,35 @@
                                 Hidden
                               </label>
                               <div v-if="cf.customFieldGroupAssignmentHidden" class="d-flex align-center">
-                                <v-autocomplete
+                                <a-autocomplete
                                   v-model="cf.hiddenWhiteListedPositions"
                                   :items="positions"
                                   :loading="positionsLoading"
                                   multiple
                                   clearable
                                   label="White Listed Positions"
-                                  item-text="position"
+                                  item-title="position"
                                   item-value="positionId"
                                   return-object
                                   height="35px"
                                   class="d-inline-block mr-3"
                                   @change="cf.hiddenPositionsChanged = true"
                                 >
-                                  <v-list-item
-                                    slot="prepend-item"
-                                    ripple
-                                    @click="toggleSelectAllPositions(cf, 'hiddenWhiteListedPositions')"
-                                  >
-                                    <v-list-item-action>
-                                      <v-icon>{{ icon(cf, 'hiddenWhiteListedPositions') }}</v-icon>
-                                    </v-list-item-action>
-                                    <v-list-item-title>Select All</v-list-item-title>
-                                  </v-list-item>
-                                  <v-divider
-                                    slot="prepend-item"
-                                    class="mt-2"
-                                  ></v-divider>
-                                  <template
-                                    slot="selection"
-                                    slot-scope="{ item, index }"
-                                  >
+                                  <template  v-slot:prepend-item>
+                                    <v-list-item
+                                      ripple
+                                      @click="toggleSelectAllPositions(cf, 'hiddenWhiteListedPositions')"
+                                    >
+                                      <v-list-item-action>
+                                        <v-icon>{{ icon(cf, 'hiddenWhiteListedPositions') }}</v-icon>
+                                      </v-list-item-action>
+                                      <v-list-item-title>Select All</v-list-item-title>
+                                    </v-list-item>
+                                    <v-divider
+                                      class="mt-2"
+                                    ></v-divider>
+                                  </template>
+                                  <template  v-slot:selection="{item, index}">
                                     <v-chip small
                                             v-if="index === 0 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length < 2">
                                       <span>{{ item.position }}</span>
@@ -389,7 +371,7 @@
                                       class="primary--text text-caption"
                                     >{{ cf.hiddenWhiteListedPositions.length }} selected</span>
                                   </template>
-                                </v-autocomplete>
+                                </a-autocomplete>
 
                                 <a-btn
                                   color="primary"

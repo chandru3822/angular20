@@ -24,26 +24,22 @@
       </v-toolbar>
       <div>
         <v-card flat class="square-card mb-3 pa-3" color="primary lighten-9" v-if="addNewWorkQueueType">
-          <v-autocomplete v-model="newWorkQueueType.workQueueTypeId"
+          <a-autocomplete v-model="newWorkQueueType.workQueueTypeId"
                           :items="workQueueTypes"
                           label="Select Work Queue Type"
                           item-value="id"
-                          item-text="workQueueType"
+                          :item-title="item => `${item.workQueueCategory} - ${item.workQueueType}`"
                           attach
           >
-            <template slot="item" slot-scope="data">
-              <!-- HTML that describes how select should render items when the select is open -->
-              {{ data.item.workQueueCategory }} - {{ data.item.workQueueType }}
-            </template>
-          </v-autocomplete>
-          <v-autocomplete
+          </a-autocomplete>
+          <a-autocomplete
             v-model="newWorkQueueType.projectStatuses"
             :items="newWorkQueueType.tempStatuses"
             multiple
             :readonly="!userCanEdit"
             :disabled="!userCanEdit"
             label="Project Status Types"
-            item-text="uniqueText"
+            item-title="uniqueText"
             return-object>
             <template #selection="{ item, index }">
                     <span :class="{'bold': item.isRoot}">
@@ -72,15 +68,15 @@
                 </v-list-item>
               </template>
             </template>
-          </v-autocomplete>
-          <v-autocomplete
+          </a-autocomplete>
+          <a-autocomplete
             v-model="newWorkQueueType.processStepStatuses"
             :items="newWorkQueueType.tempProcessStepStatuses"
             multiple
             :readonly="!userCanEdit"
             :disabled="!userCanEdit"
             label="Process Step Status Types"
-            item-text="uniqueText"
+            item-title="uniqueText"
             return-object>
             <template #selection="{ item, index }">
                     <span :class="{'bold': item.isRoot}">
@@ -109,8 +105,8 @@
                 </v-list-item>
               </template>
             </template>
-          </v-autocomplete>
-          <v-autocomplete
+          </a-autocomplete>
+          <a-autocomplete
             v-if="showEventFields"
             v-model="newWorkQueueType.eventStatuses"
             :items="newWorkQueueType.tempEventStatuses"
@@ -118,7 +114,7 @@
             :readonly="!userCanEdit"
             :disabled="!userCanEdit"
             label="Event Status Types"
-            item-text="uniqueText"
+            item-title="uniqueText"
             return-object>
             <template #selection="{ item, index }">
                     <span :class="{'bold': item.isRoot}">
@@ -147,7 +143,7 @@
                 </v-list-item>
               </template>
             </template>
-          </v-autocomplete>
+          </a-autocomplete>
           <a-btn
               color="primary"
               :disabled="!newWorkQueueType.workQueueTypeId || (!newWorkQueueType.projectStatuses || newWorkQueueType.projectStatuses.length === 0) || (!newWorkQueueType.processStepStatuses || newWorkQueueType.processStepStatuses.length === 0) || (showEventFields && (!newWorkQueueType.eventStatuses || newWorkQueueType.eventStatuses.length === 0))"
@@ -179,7 +175,7 @@
               <td :colspan="headers.length" class="pa-4"
                   :class="{'shaded-row': (processStep && processStep.workQueueTypes.indexOf(item) % 2) || (event && event.workQueueTypes.indexOf(item) % 2)}">
 
-                <v-autocomplete
+                <a-autocomplete
                   v-model="item.projectStatuses"
                   :items="item.tempStatuses"
                   multiple
@@ -187,7 +183,7 @@
                   :readonly="!userCanEdit"
                   :disabled="!userCanEdit"
                   label="Project Status Types"
-                  item-text="uniqueText"
+                  item-title="uniqueText"
                   return-object>
                   <template #selection="{ item: status, index }" v-if="showShit">
                           <span :class="{'bold': status.isRoot}">
@@ -214,9 +210,9 @@
                       </v-list-item>
                     </template>
                   </template>
-                </v-autocomplete>
+                </a-autocomplete>
 
-                <v-autocomplete
+                <a-autocomplete
                   v-model="item.processStepStatuses"
                   :items="item.tempProcessStepStatuses"
                   multiple
@@ -224,7 +220,7 @@
                   :readonly="!userCanEdit"
                   :disabled="!userCanEdit"
                   label="Process Step Status Types"
-                  item-text="uniqueText"
+                  item-title="uniqueText"
                   return-object>
                   <template #selection="{ item: status, index }" v-if="showPsShit">
                           <span :class="{'bold': status.isRoot}">
@@ -251,9 +247,9 @@
                       </v-list-item>
                     </template>
                   </template>
-                </v-autocomplete>
+                </a-autocomplete>
 
-                <v-autocomplete
+                <a-autocomplete
                   v-if="showEventFields"
                   v-model="item.eventStatuses"
                   :items="item.tempEventStatuses"
@@ -262,7 +258,7 @@
                   :readonly="!userCanEdit"
                   :disabled="!userCanEdit"
                   label="Event Status Types"
-                  item-text="uniqueText"
+                  item-title="uniqueText"
                   return-object>
                   <template #selection="{ item: status, index }" v-if="showEventShit">
                           <span :class="{'bold': status.isRoot}">
@@ -289,7 +285,7 @@
                       </v-list-item>
                     </template>
                   </template>
-                </v-autocomplete>
+                </a-autocomplete>
 
                 <a-btn
                     class="mt-3"

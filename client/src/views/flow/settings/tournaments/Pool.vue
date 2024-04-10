@@ -120,14 +120,14 @@
 
           </v-toolbar>
           <v-card flat v-if="addPosition">
-            <v-autocomplete
+            <a-autocomplete
                 v-model="positionId"
                 :items="positions"
                 :loading="positionsLoading"
                 label="Positions"
-                item-text="position"
+                item-title="position"
                 item-value="id"
-            ></v-autocomplete>
+            ></a-autocomplete>
 
             <a-btn
                 color="primary"
@@ -288,15 +288,15 @@
             </div>
           </v-card>
           <v-card flat v-if="addUser">
-            <v-autocomplete
+            <a-autocomplete
                 v-model="userId"
                 :items="users"
                 label="Users"
                 :loading="usersLoading"
-                item-text="fullName"
+                item-title="fullName"
                 item-value="id"
                 attach
-            ></v-autocomplete>
+            ></a-autocomplete>
 
             <a-btn
                 color="primary"

@@ -126,10 +126,10 @@
                     <!--                               value="ancillary"></v-radio>-->
                     <!--                    </v-radio-group>-->
 
-                    <v-autocomplete v-model="newField"
+                    <a-autocomplete v-model="newField"
                                     :items="availableCustomFields"
                                     label="New Custom Field"
-                                    item-text="fieldName"
+                                    item-title="fieldName"
                                     return-object
                                     autocomplete="off"
                                     @input="assignCustomField(item)"
@@ -137,7 +137,7 @@
                       <template slot='item' slot-scope='{ item }'>
                         {{ item.fieldName }}
                       </template>
-                    </v-autocomplete>
+                    </a-autocomplete>
                     <a-btn
                       variant="text"
                       color="primary"

@@ -65,14 +65,14 @@
             </a-text-field>
             <span class="body-medium">days</span>
           </div>
-          <v-autocomplete v-model="roundRobin.companyTimezoneId"
+          <a-autocomplete v-model="roundRobin.companyTimezoneId"
                           :items="companyTimezones"
                           label="Time Zone"
                           style="width: 200px;"
-                          item-text="timezone"
+                          item-title="timezone"
                           item-value="id"
                           attach
-          ></v-autocomplete>
+          ></a-autocomplete>
 
           <div class="d-flex align-center mb-4">Uses Total Lead Allocation?
           <!--                <v-checkbox label="Uses Total Lead Allocation?" v-model="roundRobin.usesTotalLeadAllocation"></v-checkbox>-->

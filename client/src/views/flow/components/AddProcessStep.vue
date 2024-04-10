@@ -23,28 +23,28 @@
 
     <v-card class="pa-5">
       <!--    cant change this part cuz the steps used are different depending on if the user is an admin or not -->
-      <v-autocomplete v-model="selectedStep"
+      <a-autocomplete v-model="selectedStep"
                       :items="steps"
                       label="Process Steps"
-                      item-text="processStepName"
+                      item-title="processStepName"
                       item-value="id"
                       placeholder="Select one..."
                       @input="[getCancelledStatuses(), getActiveStatusesAssignedToStep() ]"
                       return-object
       />
-      <v-autocomplete v-model="newPps.initialCompanyProcessStepStatusTypeId"
+      <a-autocomplete v-model="newPps.initialCompanyProcessStepStatusTypeId"
                       :disabled="null === selectedStep"
                       :items="activeStatusesAssignedToStep"
                       label="Set initial status to:"
-                      item-text="processStepStatusType"
+                      item-title="processStepStatusType"
                       item-value="id"
                       placeholder="Select one..."
                       attach/>
-      <v-autocomplete v-model="newPps.existingCompanyProcessStepStatusTypeId"
+      <a-autocomplete v-model="newPps.existingCompanyProcessStepStatusTypeId"
                       :disabled="null === selectedStep"
                       :items="cancelledCompanyStatuses"
                       label="Set status of existing active steps of the same type to:"
-                      item-text="processStepStatusType"
+                      item-title="processStepStatusType"
                       item-value="id"
                       placeholder="Select one..."
                       attach/>

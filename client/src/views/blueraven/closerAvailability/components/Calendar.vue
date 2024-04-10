@@ -415,7 +415,7 @@ onMounted (async () => {
     <div id="calendar-filter-container" class="pa-6 pt-4">
   <v-row class="py-0 d-flex align-baseline">
     <v-col class="py-0" >
-      <v-autocomplete v-model="selectedRoundRobins"
+      <a-autocomplete v-model="selectedRoundRobins"
                       :items="roundRobins"
                       label="Round Robin"
                       multiple
@@ -425,7 +425,7 @@ onMounted (async () => {
                       hide-details
                       return-object
                       @input="roundRobinValueChanged = true"
-                      item-text="roundRobinName"
+                      item-title="roundRobinName"
                       @blur="getRoundRobinUsers(selectedRoundRobins)"
                       item-value="id"
                       attach
@@ -442,12 +442,12 @@ onMounted (async () => {
               class="primary--text text-caption"
           >{{ selectedRoundRobins.length }} selected</span>
         </template>
-      </v-autocomplete>
+      </a-autocomplete>
 
     </v-col>
     <!--        <v-col id="placeholder-col-2" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
     <v-col id="user-resources-col" class="py-0">
-      <v-autocomplete ref="pczuSelect"
+      <a-autocomplete ref="pczuSelect"
                       v-model="selectedUsers"
                       :items="roundRobinUsers"
                       label="User Resources"
@@ -458,7 +458,7 @@ onMounted (async () => {
                       :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
                       :loading="usersLoading"
                       return-object
-                      item-text="fullName"
+                      item-title="fullName"
                       item-value="id"
                       @input="[userValuesChanged = true, limiter()]"
                       attach
@@ -484,7 +484,7 @@ onMounted (async () => {
           ></v-divider>
         </template>
 
-      </v-autocomplete>
+      </a-autocomplete>
     </v-col>
   </v-row>
     </div>

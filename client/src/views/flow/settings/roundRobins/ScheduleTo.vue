@@ -21,24 +21,24 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addUser" class="square-card text-left pa-5">
-          <v-autocomplete v-model="selectedUser"
+          <a-autocomplete v-model="selectedUser"
                           :items="users"
                           label="Select a User..."
                           :loading="usersLoading"
-                          item-text="fullName"
+                          item-title="fullName"
                           item-value="userId"
                           return-object
                           autocomplete="off"
                           attach>
-          </v-autocomplete>
-          <v-autocomplete v-model="newUserCompanyTimezoneId"
+          </a-autocomplete>
+          <a-autocomplete v-model="newUserCompanyTimezoneId"
                           :items="companyTimezones"
                           label="Time Zone"
                           v-if="roundRobin.remote"
-                          item-text="timezone"
+                          item-title="timezone"
                           item-value="id"
                           attach
-          ></v-autocomplete>
+          ></a-autocomplete>
           <a-btn
               color="primary"
               class="mr-3 mt-5"
@@ -81,16 +81,16 @@
 
           <template #item.timezone="{ item, index }" class="text-left timezone-column" v-if="roundRobin.remote">
             <span v-if="!item.edit">{{ item.timezone || '--' }}</span>
-            <v-autocomplete v-if="item.edit"
+            <a-autocomplete v-if="item.edit"
                             v-model="item.companyTimezoneId"
                             :items="companyTimezones"
                             label="Time Zone"
                             style="width: 200px;"
-                            item-text="timezone"
+                            item-title="timezone"
                             item-value="id"
                             hide-details
                             attach
-            ></v-autocomplete>
+            ></a-autocomplete>
             <a-btn
                 class="d-inline-block"
                 size="x-small"

@@ -17,10 +17,10 @@
             cols="8"
             class="py-0"
           >
-            <v-autocomplete
+            <a-autocomplete
               :items="filteredSharables"
               label="Add Users and Organizations"
-              :item-text="(i) => (i.isUser) ? `${i.name} - ${i.position}` : i.name"
+              :item-title="(i) => (i.isUser) ? `${i.name} - ${i.position}` : i.name"
               return-object
               @input="updateNewAccess"
             />
@@ -30,10 +30,10 @@
             cols="4"
             class="py-0"
           >
-            <v-autocomplete
+            <a-autocomplete
               v-model="newAccess.accessControlId"
               :items="accessLevels"
-              :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
+              :item-title="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
               item-value="accessControlId"
             />
           </v-col>

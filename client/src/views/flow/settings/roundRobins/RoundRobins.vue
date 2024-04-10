@@ -28,14 +28,14 @@
               tabindex=1
               v-model="newRoundRobin.distributionTimeFrameDays"
             ></a-text-field>
-            <v-autocomplete v-model="newRoundRobin.companyTimezoneId"
+            <va-autocomplete v-model="newRoundRobin.companyTimezoneId"
                             :items="companyTimezones"
                             label="Time Zone"
                             style="width: 200px;"
-                            item-text="timezone"
+                            item-title="timezone"
                             item-value="id"
                             attach
-            ></v-autocomplete>
+            ></va-autocomplete>
             <a-btn
               color="primary"
               :disabled="!newRoundRobin.roundRobinName || !newRoundRobin.distributionTimeFrameDays || !newRoundRobin.distributionTimeFrameDays"

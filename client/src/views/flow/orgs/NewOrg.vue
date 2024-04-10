@@ -27,40 +27,40 @@
                             label="Organization Name"
                             :rules="requiredRules"
                             v-model="org.orgName"></a-text-field>
-              <v-autocomplete v-model="selectedOrgType"
+              <a-autocomplete v-model="selectedOrgType"
                               :items="orgTypes"
                               label="Organization Type"
                               :rules="requiredRules"
-                              item-text="orgType"
+                              item-title="orgType"
                               item-value="id"
                               return-object
                               @input="getAllOrgsByType()"
                               attach
-              ></v-autocomplete>
-              <v-autocomplete v-model="org.parentOrgId"
+              ></a-autocomplete>
+              <a-autocomplete v-model="org.parentOrgId"
                               :items="parents"
                               label="Parent Organization"
-                              item-text="orgName"
+                              item-title="orgName"
                               item-value="id"
                               attach
-              ></v-autocomplete>
-              <v-autocomplete attach v-model="org.companyStateId"
+              ></a-autocomplete>
+              <a-autocomplete attach v-model="org.companyStateId"
                               :items="states"
                               label="State"
-                              item-text="state"
+                              item-title="state"
                               item-value="id"
-              ></v-autocomplete>
+              ></a-autocomplete>
               <v-checkbox label="Show in Scheduling Tool" class="mb-n4" v-model="org.schedulable" @change="getCompanyTimezones(org.schedulable)"></v-checkbox>
               <div v-if="org.schedulable">
-                <v-autocomplete v-model="org.companyTimezoneId"
+                <a-autocomplete v-model="org.companyTimezoneId"
                                 :items="companyTimezones"
                                 label="Timezone"
                                 hide-details
-                                item-text="timezone"
+                                item-title="timezone"
                                 item-value="id"
                                 attach
                                 class="pt-0"
-                ></v-autocomplete>
+                ></a-autocomplete>
                 <h6 class="mt-3 error-text" v-if="org.schedulable && !org.companyTimezoneId">* Required when Schedulable Organization</h6>
               </div>
               <v-checkbox class="mb-n4" v-if="userStore.isParent" label="Make available in children" v-model="org.availableToChildren"></v-checkbox>

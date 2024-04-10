@@ -34,10 +34,10 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addNewCommissionPlan" class="square-card text-left pa-5">
-          <v-autocomplete v-model="newCommissionPlan.id"
+          <a-autocomplete v-model="newCommissionPlan.id"
                           :items="commissionPlans"
                           label="Select a Plan to Add"
-                          item-text="name"
+                          item-title="name"
                           item-value="id"
                           autocomplete="off"
                           attach
@@ -177,10 +177,10 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addNewOverridePlan" class="square-card text-left pa-5">
-          <v-autocomplete v-model="newOverridePlan.id"
+          <a-autocomplete v-model="newOverridePlan.id"
                           :items="overridePlans"
                           label="Select a Plan to Add This User"
-                          item-text="name"
+                          item-title="name"
                           item-value="id"
                           autocomplete="off"
                           attach
@@ -332,10 +332,10 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addNewReceivingPlan" class="square-card text-left pa-5">
-          <v-autocomplete v-model="cloneOverridePlan"
+          <a-autocomplete v-model="cloneOverridePlan"
                           :items="overridePlans"
                           label="Select a Plan to Clone"
-                          item-text="name"
+                          item-title="name"
                           item-value="id"
                           return-object
                           autocomplete="off"

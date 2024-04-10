@@ -30,14 +30,14 @@
                     item-title="displayName"
                     @input="[availableDataViewFields = [], selectedDataViewField = {}, getDataViewFields() ]"
           ></a-select>
-          <v-autocomplete
+          <a-autocomplete
             v-model="selectedDataViewField"
             :items="availableDataViewFields"
             label="Data View Field"
             return-object
             attach
-            item-text="fieldName"
-          ></v-autocomplete>
+            item-title="fieldName"
+          ></a-autocomplete>
           <a-btn
               v-if="userCanEdit"
               :disabled="!selectedDataViewField.id"

@@ -201,19 +201,19 @@
         </v-toolbar>
         <v-card flat class="px-5">
           <v-card-text class="py-1">
-            <v-autocomplete v-model="selectedExpense.expenseBudgetUserId"
+            <a-autocomplete v-model="selectedExpense.expenseBudgetUserId"
                             :items="usersWithBudget"
                             label="Purchaser"
-                            item-text="fullName"
+                            item-title="fullName"
                             item-value="id"
                             @input="getTheBudgetsForUser(selectedExpense.expenseBudgetUserId)"
-            ></v-autocomplete>
-            <v-autocomplete v-model="selectedExpense.expenseBudgetId"
+            ></a-autocomplete>
+            <a-autocomplete v-model="selectedExpense.expenseBudgetId"
                             :items="budgetsForUser"
                             label="Selected Budget"
-                            item-text="fullBudgetName"
+                            item-title="fullBudgetName"
                             item-value="id"
-            ></v-autocomplete>
+            ></a-autocomplete>
             <DatetimePickerInput
                 v-model="selectedExpense.expenseDate"
                 :timezone="timezone"
@@ -221,27 +221,20 @@
                 :format="'MM/DD/YYYY'"
                 label="Expense Date"
             />
-            <v-autocomplete v-model="selectedExpense.glCodeId"
+            <a-autocomplete v-model="selectedExpense.glCodeId"
                             :items="glCodes"
                             label="GL Code"
-                            item-text="code"
+                            :item-title="item => `${item.code} - ${item.description}`"
                             item-value="id"
-                            :filter="searchGlCodes"
-            >
-              <template slot='item' slot-scope='{ item }'>
-                {{ item.code }} - {{ item.description }}
-              </template>
-              <template slot='selection' slot-scope='{ item }'>
-                {{ item.code }} - {{ item.description }}
-              </template>
-            </v-autocomplete>
+                            :filter="searchGlCodes">
+            </a-autocomplete>
 
-            <v-autocomplete v-model="selectedExpense.budgetTypeId"
+            <a-autocomplete v-model="selectedExpense.budgetTypeId"
                             :items="budgetTypes"
                             label="Budget Type"
-                            item-text="name"
+                            item-title="name"
                             item-value="id"
-            ></v-autocomplete>
+            ></a-autocomplete>
             <a-text-field
                           type="number"
                           prepend-icon="mdi-currency-usd"

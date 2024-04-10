@@ -179,15 +179,15 @@
         </div>
         <v-card class="square-card px-4 pt-4 mt-4">
 
-          <v-autocomplete
+          <a-autocomplete
               v-model="selectedEvent.companyEventStatusTypeId"
               :items="companyEventStatuses"
               label="Event Status"
               :disabled="!userIsAdmin || isEventReadonly"
-              item-text="eventStatusType"
+              item-title="eventStatusType"
               item-value="id"
               @input="[statusChanged = true, defaultValuesChanged = true]"
-          ></v-autocomplete>
+          ></a-autocomplete>
           <a-btn
               color="primary"
               v-if="selectedEvent.uniqueBehaviorTypeId === 1 && !uniqueAlreadyHasValue"
@@ -230,7 +230,7 @@
                 />
               </v-col>
             </v-row>
-            <v-autocomplete
+            <a-autocomplete
                 v-if="selectedEvent && selectedEvent.availableResources && !getDefaultFieldHidden(selectedEvent.resourceHiddenWhiteListedPositions, selectedEvent.resourceHidden, selectedEvent.resourceHiddenAllow)"
                 v-model="selectedEvent.resourceId"
                 :items="selectedEvent.availableResources"
@@ -238,10 +238,10 @@
                 :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly, selectedEvent.resourceReadOnlyAllow)"
                 :rules="getResourceRequirement()"
                 label="Resource"
-                item-text="name"
+                item-title="name"
                 item-value="id"
                 @input="defaultValuesChanged = true"
-            ></v-autocomplete>
+            ></a-autocomplete>
           </v-container>
 
           <div v-if="selectedEvent.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">

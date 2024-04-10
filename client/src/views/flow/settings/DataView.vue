@@ -25,15 +25,15 @@
                   </span>
                 </span>
                 <div v-else>
-                  <v-autocomplete
+                  <a-autocomplete
                     v-model="dataView.companyProcesses"
                     :items="companyProcesses"
                     label="Company Processes"
                     attach
                     multiple
-                    item-text="processName"
+                    item-title="processName"
                     return-object
-                  ></v-autocomplete>
+                  ></a-autocomplete>
                 </div>
               </div>
             </div>
@@ -106,41 +106,41 @@
                 <v-radio label="Custom Field" :value="2"></v-radio>
               </v-radio-group>
 
-              <v-autocomplete
+              <a-autocomplete
                 v-if="fieldType === 1"
                 v-model="selectedDefaultField"
                 :items="defaultFields"
                 label="Default Field"
                 attach
                 @change="[getProcessStepEventData(), getProcessStepData(), setObjectTypeId(selectedDefaultField)]"
-                item-text="fieldName"
-                return-object></v-autocomplete>
-              <v-autocomplete
+                item-title="fieldName"
+                return-object></a-autocomplete>
+              <a-autocomplete
                 v-if="selectedDefaultField && selectedDefaultField.objectTypeId === 6"
                 v-model="newField.processStepEventId"
                 :items="processStepEvents"
                 label="Process Step Event"
                 attach
-                item-text="eventName"
+                item-title="eventName"
                 item-value="id">
                 <template slot='item' slot-scope='{ item }'>
                   {{ item.processStepName }} - {{ item.eventName }}
                 </template>
-              </v-autocomplete>
-              <v-autocomplete
+              </a-autocomplete>
+              <a-autocomplete
                 v-else-if="selectedDefaultField && selectedDefaultField.objectTypeId === 4"
                 v-model="newField.processStepId"
                 :items="processSteps"
                 label="Process Step"
                 attach
-                item-text="processStepName"
+                item-title="processStepName"
                 item-value="id">
-              </v-autocomplete>
-              <v-autocomplete v-if="fieldType === 2"
+              </a-autocomplete>
+              <a-autocomplete v-if="fieldType === 2"
                               v-model="cfgaParentObject"
                               :items="parentObjects"
                               label="Parent Object"
-                              item-text="name"
+                              item-title="name"
                               return-object
                               autocomplete="off"
                               @input="[setObjectTypeId(cfgaParentObject), loadFieldsByParent(false), loadProcessStepEvents()]"
@@ -148,28 +148,25 @@
                 <template slot='item' slot-scope='{ item }'>
                   {{ item.name }}
                 </template>
-              </v-autocomplete>
-              <v-autocomplete v-if="cfgaParentObject && cfgaParentObject.objectTypeId === 4"
+              </a-autocomplete>
+              <a-autocomplete v-if="cfgaParentObject && cfgaParentObject.objectTypeId === 4"
                               v-model="parentProcessStepEvent"
                               :items="parentProcessStepEvents"
                               label="Process Step Event"
-                              item-text="eventName"
+                              item-title="eventName"
                               return-object
                               autocomplete="off"
                               @input="[loadFieldsByParent(true), setObjectTypeId({objectTypeId: 6})]"
               >
-              </v-autocomplete>
-              <v-autocomplete v-if="cfgaParentObject && cfgaParentObject.id"
+              </a-autocomplete>
+              <a-autocomplete v-if="cfgaParentObject && cfgaParentObject.id"
                               v-model="newField.customFieldGroupAssignmentId"
                               :items="customFields"
                               label="Custom Field"
-                              item-text="fieldName"
+                              item-title="fieldName"
                               item-value="customFieldGroupAssignmentId"
                               autocomplete="off">
-                <template slot='item' slot-scope='{ item }'>
-                  {{ item.fieldName }}
-                </template>
-              </v-autocomplete>
+              </a-autocomplete>
 
               <div class="mb-3" v-if="[4,6].includes(selectedObjectTypeId)">
                 <span class="mr-3">Update First Value Only?</span>
@@ -349,17 +346,17 @@
                     <a-text-field  v-model="childField.fieldToUpdate"
                                   :rules="fieldToUpdateRule"
                                   label="Child Field to Update"/>
-                    <v-autocomplete
+                    <a-autocomplete
                       v-model="childField.uniqueBehaviorTypeId"
                       :items="uniqueBehaviorTypes"
                       label="Unique Behavior Types"
                       attach
                       item-value="id"
-                      item-text="uniqueBehaviorType">
-                      <template slot="item" slot-scope="data">
+                      item-title="uniqueBehaviorType">
+                      <template v-slot:item="{ props, item }">
                         {{ data.item.uniqueBehaviorType }} - {{ data.item.description }}
                       </template>
-                    </v-autocomplete>
+                    </a-autocomplete>
                     <div class="mb-3 error--text" v-if="childSaveError">
                       {{ childSaveErrorMsg }}
                     </div>

@@ -8,15 +8,15 @@
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
           ></a-text-field>
-          <v-autocomplete
+          <a-autocomplete
               :items="rootStatusTypes"
               v-model="projectStatus.projectStatusTypeId"
               item-value="id"
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
               label="Select a Category"
-              item-text="projectStatusType"
-              attach></v-autocomplete>
+              item-title="projectStatusType"
+              attach></a-autocomplete>
           <v-textarea
               label="Description"
               outlined

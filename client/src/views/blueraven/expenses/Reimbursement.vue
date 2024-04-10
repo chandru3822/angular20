@@ -25,20 +25,20 @@
               :format="'MM/DD/YYYY'"
               label="Expense Date"
           />
-          <v-autocomplete v-model="selectedBudgetId"
+          <a-autocomplete v-model="selectedBudgetId"
                           :items="availableBudgets"
                           disabled
                           readonly
                           label="Expense Budget"
-                          item-text="fullBudgetName"
+                          item-title="fullBudgetName"
                           item-value="id"
-          ></v-autocomplete>
-          <v-autocomplete v-model="newReimbursement.budgetTypeId"
+          ></a-autocomplete>
+          <a-autocomplete v-model="newReimbursement.budgetTypeId"
                           :items="budgetTypes"
                           label="Budget Type"
-                          item-text="name"
+                          item-title="name"
                           item-value="id"
-          ></v-autocomplete>
+          ></a-autocomplete>
           <label>Details:</label>
           <v-textarea class="py-2 gray lighten-4" hide-details
                       auto-grow filled

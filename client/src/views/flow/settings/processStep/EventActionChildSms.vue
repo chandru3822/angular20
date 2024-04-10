@@ -18,25 +18,25 @@
     <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
             v-if="addChildSms">
       <h3>Add Child Sms</h3>
-      <v-autocomplete v-model="selectedTemplate"
+      <a-autocomplete v-model="selectedTemplate"
                       :items="childSmsTemplates"
                       label="SMS Template"
-                      item-text="title"
+                      item-title="title"
                       item-value="id"
                       return-object
                       @input="selectedTeams=[]"
                       attach
-      ></v-autocomplete>
-      <v-autocomplete v-if="selectedTemplate.id"
+      ></a-autocomplete>
+      <a-autocomplete v-if="selectedTemplate.id"
                       v-model="selectedTeams"
                       :items="selectedTemplate.teams"
                       label="Select SMS Team(s)"
-                      item-text="teamName"
+                      item-title="teamName"
                       item-value="id"
                       multiple
                       return-object
                       attach
-      ></v-autocomplete>
+      ></a-autocomplete>
       <div class="mt-3">
         <a-btn
             :disabled="!selectedTemplate || selectedTemplate.id == null"

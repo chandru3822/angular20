@@ -35,15 +35,15 @@
       </v-col>
     </v-row>
     <v-card class="square-card pa-5 mb-3" v-if="isAdmin">
-      <v-autocomplete v-model="selectedUserId"
+      <a-autocomplete v-model="selectedUserId"
                       :items="users"
                       label="Please select a user"
-                      item-text="fullName"
+                      item-title="fullName"
                       item-value="id"
                       hide-details
                       attach
                       @change="loadResidualData()"
-      ></v-autocomplete>
+      ></a-autocomplete>
     </v-card>
     <div   v-if="!dataLoading && residualData && residualData.user_id">
       <v-row>

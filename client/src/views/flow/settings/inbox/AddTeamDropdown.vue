@@ -10,21 +10,17 @@
               menu-props="offset-y"
               return-object
     ></a-select>
-    <v-autocomplete v-model="ownersToSave"
+    <a-autocomplete v-model="ownersToSave"
                     :disabled="!teamToSave || selectableUsers.length == 0"
                     :items="selectableUsers"
                     multiple
-                    item-text="name"
+                    item-title="name"
                     label="Select Owners"
                     height="35px"
                     class="user-filter-select"
                     return-object
-                    menu-props="offset-y"
-    >
-      <template
-        slot="selection"
-        slot-scope="{ item, index }"
-      >
+                    menu-props="offset-y">
+      <template  v-slot:selection="{item, index}">
         <v-chip small v-if="index === 0 && ownersToSave && ownersToSave.length < 2">
           <span>{{ item.name }}</span>
         </v-chip>
@@ -33,7 +29,7 @@
           class="primary--text caption"
         >{{ ownersToSave.length }} selected</span>
       </template>
-    </v-autocomplete>
+    </a-autocomplete>
 
 
     <v-card-actions>

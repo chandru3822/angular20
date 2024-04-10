@@ -19,16 +19,16 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addCode" class="square-card text-left pa-5 mt-3">
-          <v-autocomplete
+          <a-autocomplete
             :items="availablePostalCodes"
             item-value="id"
-            item-text="postalCode"
+            item-title="postalCode"
             clearable
             return-object
             label="Postal Code"
             @change="addCodeToZone()"
             v-model="newCode"
-          ></v-autocomplete>
+          ></a-autocomplete>
         </v-card>
         <v-divider v-if="addCode"></v-divider>
         <v-card-title class="pt-0">

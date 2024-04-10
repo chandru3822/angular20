@@ -70,11 +70,11 @@
               </div>
             </div>
             <div v-if="displayChangeOwner">
-              <v-autocomplete v-model="processStep.owner"
+              <a-autocomplete v-model="processStep.owner"
                               :items="availableOwners"
                               class="mt-1"
                               label="Select Owner"
-                              item-text="fullName"
+                              item-title="fullName"
                               :readonly="!userCanEdit"
                               :disabled="!userCanEdit"
                               return-object
@@ -91,7 +91,7 @@
                     <span class="albatross-body-3">Select Me</span>
                   </v-tooltip>
                 </template>
-              </v-autocomplete>
+              </a-autocomplete>
             </div>
             <div>
               <a-btn
@@ -129,19 +129,19 @@
         <div class="pps-subheader albatross-header-3">
           All Events
           <!--          only allow events added to active process steps -->
-          <v-autocomplete
+          <a-autocomplete
               v-model="eventToAdd"
               v-if="processStep.processStepStatusTypeId === 1 && userCanAddEvents && processStepEvents && processStepEvents.length > 0"
               :items="processStepEvents"
               placeholder="Select Event to add"
-              item-text="eventName"
+              item-title="eventName"
               item-value="id"
               return-object
               dense
               style="z-index: 10"
               class="mt-2"
               @input="addEvent()"
-          ></v-autocomplete>
+          ></a-autocomplete>
         </div>
         <div v-for="e in processStep.projectProcessStepEvents" :key="e.id" class="d-inline-block mr-4 mt-2">
           <EventButton

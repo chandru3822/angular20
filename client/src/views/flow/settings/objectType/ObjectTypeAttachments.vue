@@ -15,14 +15,14 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card class="square-card pa-2" color="primary lighten-9" v-if="addNewType">
-          <v-autocomplete v-model="newType.attachmentTypeId"
+          <a-autocomplete v-model="newType.attachmentTypeId"
                           :items="availableAttachmentTypes"
                           label="Select Attachment Type"
-                          item-text="attachmentType"
+                          item-title="attachmentType"
                           item-value="id"
                           @input="assignNewType"
                           attach
-          ></v-autocomplete>
+          ></a-autocomplete>
         </v-card>
 
           <v-data-table

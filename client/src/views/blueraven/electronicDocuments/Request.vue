@@ -33,16 +33,16 @@
                         class="template-type-width"
               ></a-select>
 
-              <v-autocomplete label="Documents"
+              <a-autocomplete label="Documents"
                               v-model="selectedDocIds"
                               :items="documents"
                               multiple
                               autocomplete="off"
                               no-data-text="No documents found"
-                              item-text="name"
+                              item-title="name"
                               item-value="id"
                               @change="populateDocName"
-              ></v-autocomplete>
+              ></a-autocomplete>
               <a-text-field
                   v-show="selectedDocIds.length === 1"
                   label="Document Name"

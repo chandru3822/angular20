@@ -17,14 +17,14 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addCode" class="square-card text-left pa-5">
-          <v-autocomplete
+          <a-autocomplete
               :items="availablePostalCodes"
               item-value="id"
-              item-text="postalCode"
+              item-title="postalCode"
               label="Postal Code"
               return-object
               v-model="newCode"
-          ></v-autocomplete>
+          ></a-autocomplete>
           <div class="error-text mb-3" v-if="showError">{{ errorMsg }}</div>
           <a-btn color="primary" class="mr-3 " @click="addCodeToRoundRobin()"
                            :disabled="!newCode.id" text="Add"></a-btn>

@@ -64,15 +64,15 @@
                 ></a-btn>
               </template>
               <v-card flat color="white" class="pa-4" :elevation="0">
-                <v-autocomplete
-                  :items="versions"
-                  item-value="id"
-                  item-text="version"
-                  :loading="loadingVersions"
-                  hide-details
-                  class="mt-0"
-                  label="Select a version..."
-                  v-model="proposal.proposalVersionId"
+                <a-autocomplete
+                    :items="versions"
+                    item-value="id"
+                    item-title="version"
+                    :loading="loadingVersions"
+                    hide-details
+                    class="mt-0"
+                    label="Select a version..."
+                    v-model="proposal.proposalVersionId"
                 />
                 <a-btn
                   color="primary"

@@ -62,13 +62,13 @@
           <h3>Add Project Status</h3>
           <a-text-field label="Project Status" v-model="newType.projectStatusType">
           </a-text-field>
-          <v-autocomplete single-line
+          <a-autocomplete single-line
                           :items="rootStatusTypes"
                           v-model="newType.projectStatusTypeId"
                           item-value="id"
                           label="Select a Category"
-                          item-text="projectStatusType"
-                          attach></v-autocomplete>
+                          item-title="projectStatusType"
+                          attach></a-autocomplete>
           <a-btn
               color="primary"
               :disabled="!newType.projectStatusTypeId || !newType.projectStatusType"

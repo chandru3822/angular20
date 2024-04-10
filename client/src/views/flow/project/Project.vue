@@ -58,14 +58,14 @@
             />
             <a class="edit-state-link" @click="editState = true">Click here to edit state</a>
           </div>
-          <v-autocomplete v-else
+          <a-autocomplete v-else
                           v-model="tempProject.companyStateId"
                           :items="states"
                           label="State"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           :loading="statesLoading"
-                          item-text="state"
+                          item-title="state"
                           item-value="id"
                           @input="tempProject.reloadCoordinates = true"
           />
@@ -80,23 +80,23 @@
                     item-value="id"
           />
         </div>
-        <v-autocomplete v-model="tempProject.owner"
+        <a-autocomplete v-model="tempProject.owner"
                         :readonly="projectOwnerFieldIsReadOnly()"
                         :disabled="projectOwnerFieldIsReadOnly()"
                         :items="availableOwners"
                         :loading="ownersLoading"
                         label="Project Owner"
                         clearable
-                        item-text="fullName"
+                        item-title="fullName"
                         return-object
                         autocomplete="off"/>
-        <v-autocomplete v-model="tempProject.companyProjectStatusTypeId"
+        <a-autocomplete v-model="tempProject.companyProjectStatusTypeId"
                         :items="statuses"
                         :readonly="projectStatusIsReadOnly()"
                         :disabled="projectStatusIsReadOnly()"
                         :loading="statusesLoading"
                         label="Project Stage"
-                        item-text="projectStatusType"
+                        item-title="projectStatusType"
                         item-value="id"
         />
       </v-form>

@@ -137,18 +137,14 @@
                 <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2}">
                   <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                     <h3 class="text-left">Add Ancillary Field</h3>
-                    <v-autocomplete v-model="selectedAncillaryField"
+                    <a-autocomplete v-model="selectedAncillaryField"
                                     :items="ancillaryCustomFields"
                                     label="Ancillary Custom Field"
-                                    item-text="fieldName"
+                                    item-title="fieldName"
                                     return-object
                                     autocomplete="off"
-                                    @input="assignAncillaryCustomField(item)"
-                    >
-                      <template slot='item' slot-scope='{ item }'>
-                        {{ item.fieldName }}
-                      </template>
-                    </v-autocomplete>
+                                    @input="assignAncillaryCustomField(item)">
+                    </a-autocomplete>
                     <a-btn
                         variant="text"
                         color="primary"

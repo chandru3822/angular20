@@ -6,13 +6,13 @@
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0 d-flex align-baseline">
         <v-col id="states-filter-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
-          <v-autocomplete attach v-model="selectedStates"
+          <a-autocomplete attach v-model="selectedStates"
                     :items="sortedStates"
                     label="States"
                     multiple
                     hide-details
                     return-object
-                    item-text="state"
+                    item-title="state"
                     item-value="id"
                     @blur="filterOrgsAndUsers"
           >
@@ -44,10 +44,10 @@
               <v-icon class="mr-4">{{selectedStates.findIndex(s => s.stateId === item.stateId) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
               <span class="wrap-dropdown-item py-2">{{ item.state }}</span>
             </template>
-          </v-autocomplete>
+          </a-autocomplete>
         </v-col>
         <v-col id="org-resource-types-filter-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
-          <v-autocomplete v-model="selectedOrgTypes"
+          <a-autocomplete v-model="selectedOrgTypes"
                           allow-overflow
                     :items="sortedOrgTypes"
                     label="Organization Resource Types"
@@ -56,7 +56,7 @@
                     :loading="orgTypesLoading"
                     hide-details
                     return-object
-                    item-text="orgType"
+                    item-title="orgType"
                     item-value="id"
                     @input="orgTypeValuesChanged = true"
                     @blur="filterOrgsAndUsers"
@@ -92,11 +92,11 @@
               <v-icon class="mr-4">{{selectedOrgTypes.findIndex(ot => ot.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
               <span class="wrap-dropdown-item py-2">{{ item.orgType }}</span>
             </template>
-          </v-autocomplete>
+          </a-autocomplete>
         </v-col>
 <!--        <v-col id="placeholder-col-1" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
         <v-col id="org-resources-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
-          <v-autocomplete v-model="selectedOrgs"
+          <a-autocomplete v-model="selectedOrgs"
                           ref="orgSelector"
                           :items="sortedOrgs"
                           label="Organization Resources"
@@ -107,7 +107,7 @@
                           :error="countSelected >= maxSelectionAllowed"
                           :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
                           return-object
-                          item-text="orgName"
+                          item-title="orgName"
                           item-value="id"
                           @input="[orgValuesChanged = true, limiter()]"
                           @blur="reloadCalendar"
@@ -125,27 +125,24 @@
               <v-icon class="mr-4">{{selectedOrgs.findIndex(o => o.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
               <span class="wrap-dropdown-item py-2">{{ item.orgName }}</span>
             </template>
-          </v-autocomplete>
+          </a-autocomplete>
         </v-col>
         <v-col id="placeholder-desktop-col" v-if="$vuetify.breakpoint.md && !mapOpen" cols="0" md="3" class="py-0"/>
         <v-col id="position-resource-types-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
-          <v-autocomplete v-model="selectedPositions"
+          <a-autocomplete v-model="selectedPositions"
                           :items="sortedPositions"
                           label="Position Resource Types"
                           multiple
                           hide-details
                           :loading="positionsLoading"
                           return-object
-                          item-text="position"
+                          item-title="position"
                           item-value="id"
                           @input="positionValuesChanged = true"
                           @blur="filterOrgsAndUsers"
                           attach
           >
-            <template
-                slot="selection"
-                slot-scope="{ item, index }"
-            >
+            <template  v-slot:selection="{item, index}">
               <div v-if="index === 0 && selectedPositions.length < 3">
                 <v-chip small close @click:close="selectedPositions.splice(idx, 1)"
                         v-for="(sr, idx) in selectedPositions">
@@ -157,30 +154,28 @@
                   class="primary--text text-caption"
               >{{ selectedPositions.length }} selected</span>
             </template>
-            <v-list-item
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllPositions()">
-              <v-list-item-action class="mr-4">
-                <v-icon>{{ iconPositions }}</v-icon>
-              </v-list-item-action>
-              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
-            </v-list-item>
-            <v-divider
-                slot="prepend-item"
-                class="mt-2"
-            ></v-divider>
-            <template v-slot:item="{item}">
+            <template  v-slot:prepend-item>
+              <v-list-item ripple
+                  @click="toggleSelectAllPositions()">
+                <v-list-item-action class="mr-4">
+                  <v-icon>{{ iconPositions }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider class="mt-2"
+              ></v-divider>
+            </template>
+            <template v-slot:item="{ props, item }">
               <!--The only purpose of this template is to allow the items to wrap-->
               <v-icon class="mr-4">{{selectedPositions.findIndex(p => p.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
               <span class="wrap-dropdown-item py-2">{{ item.position }}</span>
             </template>
-          </v-autocomplete>
+          </a-autocomplete>
 
         </v-col>
 <!--        <v-col id="placeholder-col-2" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
         <v-col id="user-resources-col"  cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
-          <v-autocomplete v-model="selectedUsers"
+          <a-autocomplete v-model="selectedUsers"
                           :items="sortedUsers"
                           label="User Resources"
                           multiple
@@ -190,16 +185,13 @@
                           :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
                           :loading="usersLoading"
                           return-object
-                          item-text="fullName"
+                          item-title="fullName"
                           item-value="id"
                           @input="[userValuesChanged = true, limiter()]"
                           @blur="reloadCalendar"
                           attach
           >
-            <template
-                slot="selection"
-                slot-scope="{ item, index }"
-            >
+            <template  v-slot:selection="{item, index}">
               <span v-if="index === 0" class="primary--text text-caption">
                 {{ selectedUsers.length }} selected
               </span>
@@ -209,7 +201,7 @@
               <v-icon class="mr-4">{{selectedUsers.findIndex(u => u.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
               <span class="wrap-dropdown-item py-2">{{ item.fullName }}</span>
             </template>
-          </v-autocomplete>
+          </a-autocomplete>
         </v-col>
         <v-col id="time-zone-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <a-select

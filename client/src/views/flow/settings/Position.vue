@@ -44,25 +44,25 @@
                         @input="setFieldsDirty"
                         label="Position Name">
           </a-text-field>
-          <v-autocomplete
+          <a-autocomplete
             v-if="!positionId"
             v-model="clonePositionId"
             :items="positions"
             label="Position to Clone (optional)"
-            item-text="position"
+            item-title="position"
             item-value="id"
-          ></v-autocomplete>
+          ></a-autocomplete>
           <div v-show="!clonePositionId">
-            <v-autocomplete
+            <a-autocomplete
                 v-model="position.orgTypeId"
                 :items="orgTypes"
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
                 label="Organization Type"
-                item-text="orgType"
+                item-title="orgType"
                 item-value="id"
                 @change="setFieldsDirty"
-            ></v-autocomplete>
+            ></a-autocomplete>
             <div class="mb-3">
               <label>Enable 2-way SMS:</label>
               <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.smsEnabled" @change="setFieldsDirty">

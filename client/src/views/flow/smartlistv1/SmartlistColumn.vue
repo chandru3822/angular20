@@ -27,11 +27,11 @@
       <v-col class="text-left">
 
         <template v-if="isProjectDetails === true">
-          <v-autocomplete
+          <a-autocomplete
               v-model="newField"
               label="Field"
               :items="filteredProjectDetailsColumns"
-              item-value="projectDetailsColumn"
+              item-title="projectDetailsColumn"
               return-object
               item-text="name"
               attach
@@ -39,56 +39,56 @@
         </template>
 
         <template v-else>
-          <v-autocomplete
+          <a-autocomplete
               v-model="newField.objectTypeId"
               label="Object Type"
               :items="companyObjectTypes"
               item-value="objectTypeId"
-              item-text="objectType"
+              item-title="objectType"
               @input="getAvailableFields"
               attach
           />
 
-          <v-autocomplete
+          <a-autocomplete
               v-if="newField.objectTypeId !== null && newField.objectTypeId === 4"
               v-model="newField.processStepId"
               label="Process Step"
               :items="availableProcessSteps"
               item-value="processStepId"
-              item-text="processStepName"
+              item-title="processStepName"
               @input="calculateAvailableFields"
               attach
           />
 
-          <v-autocomplete
+          <a-autocomplete
               v-if="newField.objectTypeId !== null && newField.objectTypeId === 6"
               v-model="newField.eventId"
               label="Event"
               :items="availableEvents"
               item-value="eventId"
-              item-text="eventName"
+              item-title="eventName"
               @input="[calculateAvailableFields(), getProcessStepEvents()]"
               attach
           />
 
-          <v-autocomplete
+          <a-autocomplete
               v-if="(newField.objectTypeId === 4 && newField.processStepId) || (newField.objectTypeId === 6 && newField.eventId) || (newField.objectTypeId != null && ![4, 6].includes(newField.objectTypeId))"
               v-model="newField.selectedField"
               label="Field"
               :items="availableFields"
-              item-text="name"
+              item-title="name"
               :item-value="item =>`${item.name} - ${item.smartlistFieldId} - ${item.customFieldGroupAssignmentId}`"
               return-object
               attach
           />
 
-          <v-autocomplete
+          <a-autocomplete
               v-if="newField.objectTypeId !== null && newField.objectTypeId === 6 && newField.eventId"
               v-model="newField.processStepEventId"
               label="Process Step"
               :items="fetchedProcessStepEvents"
               item-value="id"
-              item-text="processStepName"
+              item-title="processStepName"
               attach
           />
         </template>

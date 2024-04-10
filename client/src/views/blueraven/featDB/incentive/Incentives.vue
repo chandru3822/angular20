@@ -39,44 +39,44 @@
                                 density="compact"
                                 hide-details
                   ></a-text-field>
-                  <v-autocomplete v-else-if="incentiveFilters[header.value].type === 'select' && header.value === 'state'"
+                  <a-autocomplete v-else-if="incentiveFilters[header.value].type === 'select' && header.value === 'state'"
                                   :items="states"
                                   v-model="incentiveFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
                                   filled
-                                  :item-text=header.value
+                                  :item-title=header.value
                                   dense
                                   type="search"
                                   autocomplete="off"
                                   hide-details
-                  ></v-autocomplete>
-                  <v-autocomplete v-else-if="incentiveFilters[header.value].type === 'select' && header.value === 'type'"
+                  ></a-autocomplete>
+                  <a-autocomplete v-else-if="incentiveFilters[header.value].type === 'select' && header.value === 'type'"
                                   :items="types"
                                   v-model="incentiveFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
-                                  filled
-                                  :item-text=header.value
+                                  :item-title="header.value"
                                   item-value="type"
-                                  dense
+                                  variant="filled"
+                                  density="compact"
                                   type="search"
                                   autocomplete="off"
                                   hide-details
-                  ></v-autocomplete>
-                  <v-autocomplete v-else-if="incentiveFilters[header.value].type === 'select' && header.value === 'status'"
+                  ></a-autocomplete>
+                  <a-autocomplete v-else-if="incentiveFilters[header.value].type === 'select' && header.value === 'status'"
                                   :items="statuses"
                                   v-model="incentiveFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
-                                  filled
-                                  :item-text=header.value
+                                  :item-title="header.value"
                                   item-value="status"
-                                  dense
+                                  variant="filled"
+                                  density="compact"
                                   type="search"
                                   autocomplete="off"
                                   hide-details
-                  ></v-autocomplete>
+                  ></a-autocomplete>
                 </div>
               </th>
             </tr>
@@ -158,34 +158,34 @@
                         required
                         variant="filled"
           ></a-text-field>
-          <v-autocomplete label="State"
+          <a-autocomplete label="State"
                           :items="states"
                           v-model="editedItem.companyStateId"
-                          item-text="state"
+                          item-title="state"
                           item-value="id"
                           autocomplete="off"
                           type="search"
                           required
                           filled
-          ></v-autocomplete>
-          <v-autocomplete label="Type"
+          ></a-autocomplete>
+          <a-autocomplete label="Type"
                           :items="types"
                           v-model="editedItem.typeId"
-                          item-text="type"
+                          item-title="type"
                           item-value="id"
                           autocomplete="off"
                           type="search"
                           filled
-          ></v-autocomplete>
-          <v-autocomplete label="Status"
+          ></a-autocomplete>
+          <a-autocomplete label="Status"
                           :items="statuses"
                           v-model="editedItem.statusId"
-                          item-text="status"
+                          item-title="status"
                           item-value="id"
                           autocomplete="off"
                           type="search"
-                          filled
-          ></v-autocomplete>
+                          variant="filled"
+          ></a-autocomplete>
         </v-card-text>
 
         <v-card-actions>

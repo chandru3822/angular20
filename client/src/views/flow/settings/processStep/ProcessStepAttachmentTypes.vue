@@ -24,13 +24,13 @@
         </v-toolbar>
         <v-row v-if="addNewType">
           <v-col cols="12">
-            <v-autocomplete v-model="newType"
+            <a-autocomplete v-model="newType"
                             :items="availableTypes"
                             label="Select Attachment Type"
                             item-value="id"
-                            item-text="attachmentType"
+                            item-title="attachmentType"
                             return-object
-            ></v-autocomplete>
+            ></a-autocomplete>
             <a-btn
                 color="primary"
                 :disabled="!newType.id"

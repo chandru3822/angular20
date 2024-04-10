@@ -62,17 +62,17 @@
                 @change="tempContact.reloadCoordinates = true"
                 label="Postal Code"
             ></a-text-field>
-            <v-autocomplete v-model="tempContact.companyStateId"
+            <a-autocomplete v-model="tempContact.companyStateId"
                             class="body-large"
                             :items="states"
                             label="State"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
                             :loading="statesLoading"
-                            item-text="state"
+                            item-title="state"
                             item-value="id"
                             @input="tempContact.reloadCoordinates = true"
-            ></v-autocomplete>
+            ></a-autocomplete>
             <a-select v-model="tempContact.companyCountryId"
                       class="body-large"
                       :items="countries"
@@ -110,7 +110,7 @@
                           :disabled="!userCanEdit"
                           v-model="tempContact.email"></a-text-field>
           </div>
-          <v-autocomplete v-model="tempContact.owner"
+          <a-autocomplete v-model="tempContact.owner"
                           class="body-large"
                           :readonly="contactOwnerFieldIsReadOnly()"
                           :disabled="contactOwnerFieldIsReadOnly()"
@@ -118,7 +118,7 @@
                           :loading="ownersLoading"
                           label="Contact Owner"
                           clearable
-                          item-text="fullName"
+                          item-title="fullName"
                           return-object
                           autocomplete="off">
             <template v-slot:prepend v-if="!contactOwnerFieldIsReadOnly()">
@@ -129,7 +129,7 @@
                 <span class="albatross-body-3">Select Me</span>
               </v-tooltip>
             </template>
-          </v-autocomplete>
+          </a-autocomplete>
         </v-card-text>
       </v-form>
       <template v-slot:no><div class="body-medium">Cancel</div></template>

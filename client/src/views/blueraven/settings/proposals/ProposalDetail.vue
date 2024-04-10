@@ -58,9 +58,9 @@
     </v-toolbar>
     <div v-if="detail">
       <div class="top-actions">
-        <v-autocomplete
-          outlined
-          dense
+        <a-autocomplete
+          variant="outlined"
+          density="compact"
           autofocus
           clearable
           single-line
@@ -70,7 +70,7 @@
           class="pr-2"
           v-model="propType"
           :items="types"
-          item-text="name"
+          item-title="name"
           item-value="id"
           @change="changer"
           placeholder="Please select a type"

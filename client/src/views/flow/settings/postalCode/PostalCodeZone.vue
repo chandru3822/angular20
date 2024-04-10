@@ -23,17 +23,17 @@
               label="Zone Name"
               hide-details
             ></a-text-field>
-            <v-autocomplete v-model="postalCodeZone.metroAreaId"
+            <a-autocomplete v-model="postalCodeZone.metroAreaId"
                             :items="metroAreas"
                             class="mt-4"
                             label="Metro Area"
                             clearable
                             hide-details
-                            item-text="name"
+                            item-title="name"
                             item-value="id"
                             autocomplete="off"
                             attach
-            ></v-autocomplete>
+            ></a-autocomplete>
             <a-text-field  class="my-4"
               v-model.number="postalCodeZone.adderAmount"
               label="Adder Amount"
@@ -48,15 +48,15 @@
                 text="Add Postal Code to Zone"
             ></a-btn>
             <v-card v-if="addPostalCode" class="pa-3 mb-3">
-              <v-autocomplete
+              <a-autocomplete
                   :items="availablePostalCodes"
                   item-value="id"
-                  item-text="postalCode"
+                  item-title="postalCode"
                   label="New Postal Code"
                   return-object
                   v-model="selectedPostalCode"
                   @input="savePostalCodeToZone"
-              ></v-autocomplete>
+              ></a-autocomplete>
             </v-card>
             <v-data-table
                 :headers="headers"

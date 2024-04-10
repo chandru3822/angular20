@@ -7,10 +7,10 @@
                       @close-dialog="$emit('dialogClosed')"
   >
     <template v-slot:title>Change Process Step Status</template>
-    <v-autocomplete
+    <a-autocomplete
         v-model="projectProcessStep.newStatusToUse"
         :items="statuses"
-        item-text="processStepStatusType"
+        item-title="processStepStatusType"
         item-value="companyProcessStepStatusTypeId"
         :label="`Status To Change To (${newStatusOptional === true ? 'Optional' : 'Required'})`"
         return-object
@@ -24,12 +24,12 @@
     </div>
     <div v-if="(projectProcessStep.newStatusToUse && projectProcessStep.newStatusToUse.processStepStatusTypeId !== 3) || newStatusOptional === true">
       Please select what to do with all existing Active steps of the same type.
-      <v-autocomplete
+      <a-autocomplete
           v-if="projectProcessStep.newStatusToUse"
           v-model="projectProcessStep.newStatusToUse.cancelledCompanyProcessStepStatusTypeId"
           :items="cancelledCompanyStatuses"
           label="Status To Use For Existing (Required)"
-          item-text="processStepStatusType"
+          item-title="processStepStatusType"
           item-value="id"
           attach
       />

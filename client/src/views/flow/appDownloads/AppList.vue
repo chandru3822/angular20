@@ -8,14 +8,14 @@
       </v-toolbar-title>
       <v-spacer v-if="userCanEdit"></v-spacer>
       <div v-if="userCanEdit">
-        <v-autocomplete v-model="minVersion"
+        <a-autocomplete v-model="minVersion"
                         class="d-inline-block"
                         :items="buildNumbers"
                         :readonly="!editMinVersion"
                         :disabled="!editMinVersion"
                         hide-details
                         label="Min Required Build Number"
-        ></v-autocomplete>
+        ></a-autocomplete>
         <a-btn
             variant="text"
             color="primary"

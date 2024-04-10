@@ -10,17 +10,16 @@
     :class="{'py-3': !showFieldInput && !showPsEventInput && !showOperatorInput && !showValueInput}"
   >
     <v-col class="flex-grow-1 flex-shrink-0 d-flex justify-center align-center">
-      <v-autocomplete
+      <a-autocomplete
         v-show="showFieldInput"
         ref="requirementField"
         v-model="requirement"
         :items="calculatedAvailableFields"
-        item-text="calculatedName"
+        item-title="calculatedName"
         return-object
         placeholder="Add Filter"
-        solo
-        :flat="isEditorInUse"
-        hide-details="true"
+        :variant="isEditorInUse ? 'flat' : 'solo'"
+        hide-details
         :class="{'field-selector': !isEditorInUse}"
         @change="afterFieldSelected"
         @focus="onFieldFocus"
@@ -33,7 +32,7 @@
               prepend-icon="mdi-close"
           ></a-btn>
         </template>
-      </v-autocomplete>
+      </a-autocomplete>
 
       <span
         v-if="requirement?.displayValue"
@@ -42,18 +41,17 @@
         <span class="highlight-background pa-2 rounded">{{ requirement.name }}</span>
       </span>
 
-      <v-autocomplete
+      <a-autocomplete
         v-show="showPsEventInput"
         ref="psEventField"
         v-model="psEvent"
         :items="calculatedAvailablePsEvents"
-        item-text="name"
+        item-title="name"
         item-value="id"
         return-object
         placeholder="Type or Select Name"
-        solo
-        :flat="isEditorInUse"
-        hide-details="true"
+        :variant="isEditorInUse ? 'flat' : 'solo'"
+        hide-details
         :class="{'field-selector': !isEditorInUse}"
         @blur="afterPsEventSelected"
       >
@@ -65,20 +63,19 @@
               prepend-icon="mdi-close"
           ></a-btn>
         </template>
-      </v-autocomplete>
+      </a-autocomplete>
 
-      <v-autocomplete
+      <a-autocomplete
         v-show="showOperatorInput"
         ref="operatorField"
         v-model="operator"
         :items="availableOperators"
-        item-text="operatorType"
+        item-title="operatorType"
         item-value="id"
         return-object
         placeholder="Type or Select Operator"
-        solo
-        flat
-        hide-details="true"
+        :variant="isEditorInUse ? 'flat' : 'solo'"
+        hide-details
         :class="{'field-selector': !isEditorInUse}"
         @change="afterOperatorSelected"
       >
@@ -90,7 +87,7 @@
               prepend-icon="mdi-close"
           ></a-btn>
         </template>
-      </v-autocomplete>
+      </a-autocomplete>
 
       <span
         v-if="operator?.displayValue"
@@ -148,21 +145,20 @@
         ></a-btn>
       </span>
 
-      <v-autocomplete
+      <a-autocomplete
         v-show="showValueInput && requirement?.hasListValues"
         ref="listOfValueField"
         v-model="value"
         :key="UUID()"
         :items="calculatedAvailableValues"
-        item-text="name"
+        item-title="name"
         item-value="id"
         return-object
         placeholder="Type or Select Value"
-        solo
-        flat
+        :variant="isEditorInUse ? 'flat' : 'solo'"
         hide-details="true"
         :multiple="requirement?.allowMultiple"
-        ripple="false"
+        :ripple="false"
         :class="{'field-selector': !isEditorInUse}"
         @change="afterValueSelected(false)"
       >
@@ -184,7 +180,7 @@
               prepend-icon="mdi-close"
           ></a-btn>
         </template>
-      </v-autocomplete>
+      </a-autocomplete>
 
       <a-text-field
         v-show="showSecondaryValueInput"

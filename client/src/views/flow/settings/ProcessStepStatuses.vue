@@ -59,13 +59,13 @@
                           placeholder="Enter a type"
                           label="Status Type">
             </a-text-field>
-            <v-autocomplete single-line
+            <a-autocomplete single-line
                             :items="rootStatusTypes"
                             v-model="newType.processStepStatusTypeId"
                             item-value="id"
                             label="Select a Category"
-                            item-text="processStepStatusType"
-                            attach></v-autocomplete>
+                            item-title="processStepStatusType"
+                            attach></a-autocomplete>
             <a-btn
               color="primary"
               :disabled="!newType.processStepStatusTypeId || !newType.processStepStatusType"
@@ -102,16 +102,16 @@
                                 :readonly="!userCanEdit"
                                 :disabled="!userCanEdit"
                   ></a-text-field>
-                  <v-autocomplete
+                  <a-autocomplete
                     :items="filteredRootStatuses"
                     v-model="item.processStepStatusTypeId"
                     item-value="id"
                     :readonly="!userCanEdit"
                     :disabled="!userCanEdit || item.processStepStatusTypeId === 3"
                     label="Select a Category"
-                    item-text="processStepStatusType"
+                    item-title="processStepStatusType"
                     attach
-                  ></v-autocomplete>
+                  ></a-autocomplete>
                   <a-btn
                     v-if="userCanEdit"
                     color="primary"

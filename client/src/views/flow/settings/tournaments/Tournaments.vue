@@ -29,24 +29,24 @@
                 tabindex=1
                 v-model="newTournament.tournamentName"
             ></a-text-field>
-            <v-autocomplete
+            <a-autocomplete
               v-model="newTournament.tournamentOwnerTypeId"
               :items="ownerTypes"
               label="Owner Type"
               @change="getTournamentFormulas()"
-              item-text="ownerType"
+              item-title="ownerType"
               item-value="id"
               :attach="true"
-            ></v-autocomplete>
-            <v-autocomplete
+            ></a-autocomplete>
+            <a-autocomplete
               v-model="newTournament.tournamentFormulaId"
               :items="formulas"
               label="Scoring Formula"
-              item-text="formulaTitle"
+              item-title="formulaTitle"
               item-value="id"
               :attach="true"
               @change="getTournamentFormulaFields"
-            ></v-autocomplete>
+            ></a-autocomplete>
 
             <div v-if="newTournament.tournamentFormulaFields && newTournament.tournamentFormulaFields.length > 0"
                  v-for="tff in newTournament.tournamentFormulaFields">

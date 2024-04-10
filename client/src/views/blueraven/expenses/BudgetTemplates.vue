@@ -19,12 +19,12 @@
         <v-divider></v-divider>
         <v-card flat v-if="createNew" class="pa-4">
           <h3>New Template</h3>
-          <v-autocomplete v-model="newTemplate.userId"
+          <a-autocomplete v-model="newTemplate.userId"
                           :items="availableUsers"
                           label="Assign to User"
-                          item-text="fullName"
+                          item-title="fullName"
                           item-value="id"
-          ></v-autocomplete>
+          ></a-autocomplete>
           <a-text-field
                         type="number"
                         prepend-icon="mdi-currency-usd"

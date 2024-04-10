@@ -27,12 +27,12 @@
       <v-col class="text-left">
 
         <template v-if="isProjectDetails === true">
-          <v-autocomplete
+          <a-autocomplete
               v-model="newRequirement.selectedField"
               label="Field"
               :items="filteredProjectDetailsRequirements"
               item-value="project_details_column"
-              item-text="name"
+              item-title="name"
               return-object
               attach
               @input="[
@@ -44,34 +44,34 @@
         </template>
 
         <template v-else>
-          <v-autocomplete
+          <a-autocomplete
               v-model="newRequirement.objectTypeId"
               label="Object Type"
               :items="companyObjectTypes"
               item-value="objectTypeId"
-              item-text="objectType"
+              item-title="objectType"
               @input="[resetNewObjectType(), getAvailableFields()]"
               attach
           />
 
-          <v-autocomplete
+          <a-autocomplete
               v-if="newRequirement.objectTypeId !== null && newRequirement.objectTypeId === 4"
               v-model="newRequirement.processStepId"
               label="Process Step"
               :items="availableProcessSteps"
               item-value="processStepId"
-              item-text="processStepName"
+              item-title="processStepName"
               @input="[resetNewProcessStep(), calculateAvailableFields()]"
               attach
           />
 
-          <v-autocomplete
+          <a-autocomplete
               v-if="newRequirement.objectTypeId !== null && newRequirement.objectTypeId === 6"
               v-model="newRequirement.eventId"
               label="Event"
               :items="availableEvents"
               item-value="eventId"
-              item-text="eventName"
+              item-title="eventName"
               @input="[
             resetNewProcessStep(),
             calculateAvailableFields(),
@@ -80,12 +80,12 @@
               attach
           />
 
-          <v-autocomplete
+          <a-autocomplete
               v-if="(newRequirement.objectTypeId === 4 && newRequirement.processStepId) || (newRequirement.objectTypeId === 6 && newRequirement.eventId) || (newRequirement.objectTypeId != null && ![4, 6].includes(newRequirement.objectTypeId))"
               v-model="newRequirement.selectedField"
               label="Field"
               :items="availableFields"
-              item-text="name"
+              item-title="name"
               :item-value="item =>`${item.name} - ${item.smartlistFieldId} - ${item.customFieldGroupAssignmentId}`"
               return-object
               attach
@@ -99,24 +99,24 @@
           ]"
           />
 
-          <v-autocomplete
+          <a-autocomplete
               v-if="newRequirement.objectTypeId !== null && newRequirement.objectTypeId === 6 && newRequirement.eventId"
               v-model="newRequirement.processStepEventId"
               label="Process Step"
               :items="fetchedProcessStepEvents"
               item-value="id"
-              item-text="processStepName"
+              item-title="processStepName"
               attach
           />
         </template>
 
-        <v-autocomplete
+        <a-autocomplete
             v-if="newRequirement.selectedField"
             v-model="newRequirement.operatorTypeId"
             label="Operator"
             :items="operators"
             attach
-            item-text="operatorType"
+            item-title="operatorType"
             item-value="id"
             @input="resetNewOperatorType"
         />
@@ -131,33 +131,33 @@
         />
 
         <!--      if field is a single-select item -->
-        <v-autocomplete
+        <a-autocomplete
             v-if="newRequirement.operatorTypeId !== null && newRequirement.isCustomValue && isListField && !newRequirement.selectedField.allowMultiple"
             v-model="newRequirement.listOfValueId"
             :items="newRequirement.selectedField.listOfValues"
             label="Available Values (list of value id)"
-            item-text="name"
+            item-title="name"
             item-value="id"
         />
 
         <!--      if field is a multi-select list -->
-        <v-autocomplete
+        <a-autocomplete
             v-else-if="newRequirement.operatorTypeId && newRequirement.isCustomValue && newRequirement.selectedField.listOfValueId !== null && newRequirement.selectedField.allowMultiple"
             v-model="newRequirement.listOfValueIds"
             :items="newRequirement.selectedField.listOfValues"
             label="Available Values"
             multiple
-            item-text="name"
+            item-title="name"
             item-value="id"
         />
 
         <!--      if field doesn't have any custom values, display the data type requirements -->
-        <v-autocomplete
+        <a-autocomplete
             v-else-if="newRequirement.operatorTypeId !== null && !newRequirement.isCustomValue"
             v-model="newRequirement.dataTypeRequirementId"
             label="Available Values"
             :items="dataTypeRequirements"
-            item-text="dataTypeValue"
+            item-title="dataTypeValue"
             item-value="id"
             @input="resetNewDataTypeRequirement"
         />
@@ -257,71 +257,71 @@
           <td :colspan="headers.length" class="text-left expanded-row">
 
             <template v-if="isProjectDetails === true">
-              <v-autocomplete
+              <a-autocomplete
                   v-model="expandedRequirement"
                   :items="[expandedRequirement]"
                   label="Field"
-                  item-text="name"
+                  item-title="name"
                   disabled
                   attach
               />
             </template>
 
             <template v-else>
-              <v-autocomplete
+              <a-autocomplete
                   v-model="expandedRequirement"
                   :items="[expandedRequirement]"
                   label="Object Type"
-                  item-text="objectType"
+                  item-title="objectType"
                   disabled
                   attach
               />
 
-              <v-autocomplete
+              <a-autocomplete
                   v-if="expandedRequirement.objectTypeId !== null && expandedRequirement.objectTypeId === 4"
                   v-model="expandedRequirement"
                   :items="[expandedRequirement]"
                   label="Process Step"
-                  item-text="processStepName"
+                  item-title="processStepName"
                   disabled
                   attach
               />
 
-              <v-autocomplete
+              <a-autocomplete
                   v-if="expandedRequirement.objectTypeId !== null && expandedRequirement.objectTypeId === 6"
                   v-model="expandedRequirement"
                   :items="[expandedRequirement]"
                   label="Event"
-                  item-text="eventName"
+                  item-title="eventName"
                   disabled
                   attach
               />
 
-              <v-autocomplete
+              <a-autocomplete
                   v-model="expandedRequirement"
                   :items="[expandedRequirement]"
                   label="Field"
-                  item-text="name"
+                  item-title="name"
                   disabled
                   attach
               />
 
-              <v-autocomplete
+              <a-autocomplete
                   v-if="expandedRequirement.objectTypeId !== null && expandedRequirement.objectTypeId === 6"
                   v-model="expandedRequirement"
                   :items="[expandedRequirement]"
                   label="Process Step"
-                  item-text="processStepName"
+                  item-title="processStepName"
                   disabled
                   attach
               />
             </template>
 
-            <v-autocomplete
+            <a-autocomplete
                 v-model="expandedRequirement.operatorTypeId"
                 label="Operator"
                 :items="operators"
-                item-text="operatorType"
+                item-title="operatorType"
                 item-value="id"
                 attach
             />
@@ -337,33 +337,33 @@
             />
 
             <!--      if field is a single-select item -->
-            <v-autocomplete
+            <a-autocomplete
                 v-if="expandedRequirement.operatorTypeId !== null && expandedRequirement.isCustomValue && isExpandedListField && !expandedRequirement.allowMultiple"
                 v-model="expandedRequirement.listOfValueId"
                 :items="expandedRequirement.availableListOfValues"
                 label="Available Values"
-                item-text="name"
+                item-title="name"
                 item-value="id"
             />
 
             <!--      if field is a multi-select list -->
-            <v-autocomplete
+            <a-autocomplete
                 v-else-if="expandedRequirement.operatorTypeId && expandedRequirement.isCustomValue && isExpandedListField && expandedRequirement.allowMultiple"
                 v-model="expandedRequirement.listOfValueIds"
                 :items="expandedRequirement.availableListOfValues"
                 label="Available Values"
                 multiple
-                item-text="name"
+                item-title="name"
                 item-value="id"
             />
 
             <!--      if field doesn't have any custom values, display the data type requirements -->
-            <v-autocomplete
+            <a-autocomplete
                 v-else-if="expandedRequirement.operatorTypeId !== null && !expandedRequirement.isCustomValue"
                 v-model="expandedRequirement.dataTypeRequirementId"
                 label="Available Values"
                 :items="dataTypeRequirements"
-                item-text="dataTypeValue"
+                item-title="dataTypeValue"
                 item-value="id"
                 @input="resetNewDataTypeRequirement"
             />

@@ -85,24 +85,24 @@
                   label="End Date"
                   :min-date="newPosition.startDate"
               />
-              <v-autocomplete v-model="newPosition.positionId"
+              <a-autocomplete v-model="newPosition.positionId"
                               :items="positions"
                               :rules="requiredRules"
                               label="Position"
-                              item-text="position"
+                              item-title="position"
                               item-value="id"
                               attach
                               @input="populateHierarchy(newPosition, true)"/>
               <div v-if="newPositionHierarchyPopulated">
                 <div v-for="(f, index) in filters" :key="index">
-                  <v-autocomplete
+                  <a-autocomplete
                       v-if="newPosition.keyedHierarchy && newPosition.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, newPosition)"
                       v-model="newPosition.keyedHierarchy[f.orgLevelId]['orgId']"
                       :items="getOrgsMatchingPositionOrgType(f.orgs, newPosition)"
                       :label="f.levelName"
                       :rules="requiredRules"
                       item-value="id"
-                      item-text="orgName"
+                      item-title="orgName"
                       autocomplete="off"
                       type="search"
                       attach
@@ -113,7 +113,7 @@
                     <template slot='item' slot-scope='{ item }'>
                       {{ item.orgName }}{{ item.showType ? ' (' + item.orgType + ')' : '' }}
                     </template>
-                  </v-autocomplete>
+                  </a-autocomplete>
                 </div>
               </div>
               <a-btn

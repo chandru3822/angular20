@@ -81,9 +81,9 @@
               :class="{'small-width': viewWidth===1264 && route.path.includes('inboxConversation')}"
             >
             </v-checkbox>
-            <v-autocomplete v-model="selectedTeamFilters"
+            <a-autocomplete v-model="selectedTeamFilters"
                             :items="teamFilterOptions"
-                            item-text="teamName"
+                            item-title="teamName"
                             item-value="id"
                             prepend-icon="group"
                             class="filter-control albatross-body-2 align-self-end flex-shrink-1  mr-6"
@@ -120,10 +120,10 @@
                   class="primary--text text-caption"
                 >{{ selectedTeamFilters.length }} selected</span>
               </template>
-            </v-autocomplete>
-            <v-autocomplete v-model="selectedOwnerFilters"
+            </a-autocomplete>
+            <a-autocomplete v-model="selectedOwnerFilters"
                             :items="ownerFilterOptions"
-                            item-text="name"
+                            item-title="name"
                             item-value="userId"
                             prepend-icon="person"
                             class="filter-control albatross-body-2 align-self-end flex-shrink-1"
@@ -132,24 +132,21 @@
                             @input="reloadConversations"
                             multiple
                             clearable>
-              <v-list-item
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllOwners()"
-              >
-                <v-list-item-action>
-                  <v-icon>{{ ownersIcon }}</v-icon>
-                </v-list-item-action>
-                <v-list-item-title>Select All</v-list-item-title>
-              </v-list-item>
-              <v-divider
-                slot="prepend-item"
-                class="mt-2"
-              ></v-divider>
-              <template
-                slot="selection"
-                slot-scope="{ item, index }"
-              >
+              <template  v-slot:prepend-item>
+                <v-list-item
+                  ripple
+                  @click="toggleSelectAllOwners()"
+                >
+                  <v-list-item-action>
+                    <v-icon>{{ ownersIcon }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-title>Select All</v-list-item-title>
+                </v-list-item>
+                <v-divider
+                  class="mt-2"
+                ></v-divider>
+              </template>
+              <template  v-slot:selection="{item, index}">
                 <v-chip small
                         v-if="index <= ownerFilterChipLimit && selectedOwnerFilters && selectedOwnerFilters.length <= ownerFilterChipLimit">
                   <span>{{ item.userName }}</span>
@@ -159,7 +156,7 @@
                   class="primary--text text-caption"
                 >{{ selectedOwnerFilters.length }} selected</span>
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
             <v-spacer></v-spacer>
           </v-row>
         </v-toolbar-items>

@@ -123,14 +123,14 @@
                   <a-btn variant="text" color="primary" @click="addUser = !addUser" prepend-icon="add"/>
                 </v-toolbar>
                 <v-card flat v-if="addUser" color="transparent" class="px-4 mb-6">
-                  <v-autocomplete
+                  <a-autocomplete
                     v-model="userId"
                     :items="users"
                     label="Users"
-                    item-text="fullName"
+                    item-title="fullName"
                     item-value="id"
                     attach
-                  ></v-autocomplete>
+                  ></a-autocomplete>
 
                   <a-btn color="primary" :disabled="!userId" @click="addUserToTeam" text="SAVE"/>
                   <a-btn variant="text" color="primary" @click="[addUser = !addUser, userId = null]" text="CANCEL"/>
@@ -172,14 +172,14 @@
                   <a-btn variant="text" color="primary" @click="addOrg = !addOrg" prepend-icon="add"/>
                 </v-toolbar>
                 <v-card flat v-if="addOrg" color="transparent" class="px-4 mb-6">
-                  <v-autocomplete
+                  <a-autocomplete
                     v-model="orgId"
                     :items="orgs"
                     label="Organizations"
-                    item-text="orgName"
+                    item-title="orgName"
                     item-value="id"
                     attach
-                  ></v-autocomplete>
+                  ></a-autocomplete>
 
                   <a-btn color="primary" :disabled="!orgId" @click="addOrgToTeam" text="SAVE"/>
                   <a-btn variant="text" color="primary" @click="[addOrg = !addOrg, orgId = null]" text="CANCEL"/>

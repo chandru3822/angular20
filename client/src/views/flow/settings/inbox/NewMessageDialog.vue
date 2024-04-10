@@ -13,14 +13,14 @@
       <br>
       <div class="flex-display" v-if="isInbox">
         <label class="mt-5 mr-2">To:</label>
-        <v-autocomplete
+        <a-autocomplete
           v-model="selectedProjectIds"
           :items="sortedProjects"
           :search-input.sync="projectQuery"
           multiple
           cache-items
           clearable
-          item-text="firstName"
+          item-title="firstName"
           item-value="id"
           :disabled="selectedUserIds.length > 0"
           label="Enter project ID"
@@ -42,10 +42,7 @@
               </v-list-item-content>
             </v-list-item>
           </template>
-          <template
-            slot="selection"
-            slot-scope="{ item, index }"
-          >
+          <template  v-slot:selection="{item, index}">
             <v-chip small v-if="selectedProjectIds.length < 3">
               <span>{{ item.projectName }}</span>
             </v-chip>
@@ -53,17 +50,17 @@
               v-if="index === 1 && selectedProjectIds.length >= 3"
             >{{ selectedProjectIds.length }} selected&nbsp;&nbsp;</span>
           </template>
-        </v-autocomplete>
+        </a-autocomplete>
       </div>
 
       <div class="select-user-div">
         <label v-if="!isInbox" class="mt-5 mr-2">To:</label>
-        <v-autocomplete
+        <a-autocomplete
           v-model="selectedUserIds"
           :items="sortedUsers"
           multiple
           :disabled="selectedProjectIds.length > 0 && isInbox"
-          item-text="name"
+          item-title="name"
           item-value="userId"
           :label="selectedUserIds.length > 0 ? '' : 'Select users'"
           class="pa-0 mt-4 select-users"
@@ -84,10 +81,7 @@
             </v-list-item-content>
           </v-list-item>
         </template>
-        <template
-          slot="selection"
-          slot-scope="{ item, index }"
-        >
+        <template  v-slot:selection="{item, index}">
           <v-chip small v-if="selectedUserIds.length < 2">
             <span>{{ item.name }}</span>
           </v-chip>
@@ -95,7 +89,7 @@
             v-if="index === 1 && selectedUserIds.length >= 2"
           >{{ selectedUserIds.length }} selected</span>
         </template>
-        </v-autocomplete>
+        </a-autocomplete>
         <router-link  class="pt-5 pl-5"
                       :class="selectedUserIds.length > 1 ? 'disabled-open-conversation' : 'open-conversation-link'"
                       v-if="selectedUserIds.length > 0"

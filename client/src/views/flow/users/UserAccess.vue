@@ -42,11 +42,11 @@
         <v-card class="square-card text-left pa-5 elevation-1">
           <SpinnerInline v-if="calendarAccessLoading" :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
           <div v-else>
-            <v-autocomplete v-model="userOrgCalendars"
+            <a-autocomplete v-model="userOrgCalendars"
                             v-if="!userHasFullAccess"
                             :items="orgCalendars"
                             label="Selected Org Calendar(s)"
-                            item-text="orgName"
+                            item-title="orgName"
                             item-value="orgId"
                             return-object
                             multiple
@@ -66,7 +66,7 @@
                   {{ userOrgCalendars.length }} calendars selected
                 </span>
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
             <v-checkbox
                 class="pt-2 mb-4"
                 v-model="userHasFullAccess"

@@ -43,18 +43,18 @@
             <v-icon class="ranking-table-icon mr-2 default-text-color">mdi-sort-descending</v-icon>
             <span>Round Robin Lead Allocation Rank</span>
           </div>
-          <v-autocomplete class="table-header-dropdown"
+          <a-autocomplete class="table-header-dropdown"
                           label="Round Robin"
                           v-model="selectedRoundRobin"
                           :items="roundRobins"
-                          item-text="roundRobinName"
+                          item-title="roundRobinName"
                           item-value="id"
                           no-data-text="No Round Robins available"
-                          outlined
-                          dense
+                          variant="outlined"
+                          density="compact"
                           hide-details
                           @input="loadRoundRobinLeadAllocationRankData"
-          ></v-autocomplete>
+          ></a-autocomplete>
         </div>
 
         <table v-if="leadAllocationRankingData.length > 0">
@@ -111,18 +111,18 @@
             <v-icon class="ranking-table-icon mr-2 default-text-color">mdi-chevron-double-down</v-icon>
             <span>Office FDC Rank</span>
           </div>
-          <v-autocomplete class="table-header-dropdown"
+          <a-autocomplete class="table-header-dropdown"
                           label="Closer Office"
                           v-model="selectedCloserOffice"
                           :items="closerOffices"
-                          item-text="orgName"
+                          item-title="orgName"
                           item-value="id"
                           no-data-text="No Closer Offices available"
-                          outlined
-                          dense
+                          variant="outlined"
+                          density="compact"
                           hide-details
                           @input="loadRepRankingsByOrg(selectedCloserOffice)"
-          ></v-autocomplete>
+          ></a-autocomplete>
         </div>
 
         <table v-if="officeFdcRankingData.length > 0">

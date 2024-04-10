@@ -23,9 +23,9 @@
                         label="Title" />
           <v-textarea v-model="newTemplate.message"
                       label="Message" />
-          <v-autocomplete v-model="newTemplate.teamIds"
+          <a-autocomplete v-model="newTemplate.teamIds"
                           :items="selectableTeams"
-                          item-text="teamName"
+                          item-title="teamName"
                           item-value="id"
                           multiple
                           placeholder="Select Team(s)"
@@ -33,10 +33,7 @@
                           outlined
                           class="team-select"
           >
-            <template
-              slot="selection"
-              slot-scope="{ item, index }"
-            >
+            <template  v-slot:selection="{item, index}">
               <v-chip small v-if="index === 0 && newTemplate.teamIds && newTemplate.teamIds.length < 2">
                 <span>{{ item.teamName }}</span>
               </v-chip>
@@ -45,7 +42,7 @@
                 class="primary--text caption"
               >{{ newTemplate.teamIds.length }} selected</span>
             </template>
-          </v-autocomplete>
+          </a-autocomplete>
           <a-btn
             variant="text"
             color="primary"
@@ -73,16 +70,16 @@
         >
           <template v-slot:header.teamIds="{ header }">
             <div class="d-flex align-baseline filter-dropdown"> <div>{{ header.text }}<v-icon small @click="showFilter = !showFilter">mdi-filter</v-icon></div>
-            <v-autocomplete v-if="showFilter"
+            <a-autocomplete v-if="showFilter"
                             v-model="teamFilter"
                             :items="selectableTeams"
-                            item-text="teamName"
+                            item-title="teamName"
                             item-value="id"
                             clearable
                             autofocus
                             placeholder="Enter Team Name"
                             class="pl-3 font-weight-regular albatross-body-2"
-            ></v-autocomplete>
+            ></a-autocomplete>
            </div>
           </template>
           <template #no-data>
@@ -102,16 +99,16 @@
               ></v-textarea>
 
 
-              <v-autocomplete v-model="item.teamIds"
+              <a-autocomplete v-model="item.teamIds"
                               :items="selectableTeams"
-                              item-text="teamName"
+                              item-title="teamName"
                               item-value="id"
                               multiple
                               label="Teams"
                               class="team-select mt-0 pb-3"
               >
 
-              </v-autocomplete>
+              </a-autocomplete>
 
               <a-btn
                 color="primary"

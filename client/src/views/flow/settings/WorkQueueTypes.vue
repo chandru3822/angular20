@@ -15,15 +15,15 @@
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar toolbar-z-index-override">
-          <v-autocomplete
+          <a-autocomplete
               v-model="selectedWorkQueueCategoryId"
               :items="filteredCategories"
               label="Work Queue Category"
-              item-text="workQueueCategory"
+              item-title="workQueueCategory"
               item-value="id"
               @input="filterCategories()"
               attach
-          ></v-autocomplete>
+          ></a-autocomplete>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn variant="text" :hide-text-on-mobile="true" :text="addNew ? 'Cancel' : 'Add New'"
@@ -40,14 +40,14 @@
                           placeholder="Enter a type"
                           label="Work Queue Type">
             </a-text-field>
-            <v-autocomplete
+            <a-autocomplete
                 v-model="newType.workQueueCategoryId"
                 :items="workQueueCategories"
                 label="Work Queue Category"
-                item-text="workQueueCategory"
+                item-title="workQueueCategory"
                 item-value="id"
                 attach
-            ></v-autocomplete>
+            ></a-autocomplete>
             <div>
               <label>Use Event Data:</label>
               <input type="checkbox" class="ml-3" v-model="newType.useEventData">

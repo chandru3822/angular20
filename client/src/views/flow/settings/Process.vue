@@ -7,24 +7,25 @@
           <v-spacer></v-spacer>
           <div v-if="changesMade">
             <a-btn
-              class="mr-2"
-              :to="{ path: `/settings/processes`}"
-              text="CANCEL"
+                class="mr-2"
+                :to="{ path: `/settings/processes`}"
+                text="CANCEL"
             />
             <a-btn
-              color="primary white--text"
-              @click="saveProcess"
-              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
-              text="SAVE CHANGES"
+                color="primary white--text"
+                @click="saveProcess"
+                v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+                text="SAVE CHANGES"
             />
           </div>
         </v-toolbar>
         <v-toolbar flat>
-            <a-text-field class=" d-inline-block mt-4" v-if="editName" v-model="process.processName" :class="{'one-hunned': isMobile}"></a-text-field>
-            <span v-else :class="{'one-hunned': isMobile}">
-              {{  processId ? process.processName : 'New Process Step'}}
+          <a-text-field class=" d-inline-block mt-4" v-if="editName" v-model="process.processName"
+                        :class="{'one-hunned': isMobile}"></a-text-field>
+          <span v-else :class="{'one-hunned': isMobile}">
+              {{ processId ? process.processName : 'New Process Step' }}
             </span>
-            <a-btn
+          <a-btn
               class="d-inline-block"
               size="small"
               variant="text"
@@ -32,8 +33,8 @@
               v-if="processId && editName && userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
               @click="saveProcess()"
               prepend-icon="save"
-            />
-            <a-btn
+          />
+          <a-btn
               class="d-inline-block"
               size="small"
               variant="text"
@@ -41,97 +42,97 @@
               v-else-if="processId && userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
               @click="editName = true"
               prepend-icon="edit"
-            />
+          />
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn
-              variant="text"
-              color="primary"
-              @click="getAvailableProcessSteps()"
-              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
-              :hide-text-on-mobile="isMobile"
-              :prepend-icon="addNew && isMobile ? 'mdi-close' : isMobile ? 'mdi-plus' : ''"
-              :text="addNew ? 'CANCEL' : 'ADD PROCESS STEP'"
+                variant="text"
+                color="primary"
+                @click="getAvailableProcessSteps()"
+                v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+                :hide-text-on-mobile="isMobile"
+                :prepend-icon="addNew && isMobile ? 'mdi-close' : isMobile ? 'mdi-plus' : ''"
+                :text="addNew ? 'CANCEL' : 'ADD PROCESS STEP'"
             />
           </v-toolbar-items>
         </v-toolbar>
         <div class="flex-display align-baseline">
-          <v-autocomplete
-            v-model="process.denyListPositions"
-            :items="owningPositions"
-            multiple
-            clearable
-            item-text="position"
-            item-value="positionId"
-            return-object
-            label="Positions that Cannot Add Project to Process"
-        >
+          <a-autocomplete
+              v-model="process.denyListPositions"
+              :items="owningPositions"
+              multiple
+              clearable
+              item-title="position"
+              item-value="positionId"
+              return-object
+              label="Positions that Cannot Add Project to Process"
+          >
             <template v-slot:selection="{item, index}">
               <v-chip small v-if="process.denyListPositions && process.denyListPositions.length < 10">
-              <span>{{ item.position }}</span>
+                <span>{{ item.position }}</span>
               </v-chip>
               <span
-                  v-if="index == 1 && process.denyListPositions && process.denyListPositions.length >= 10"
+                  v-if="index === 1 && process.denyListPositions && process.denyListPositions.length >= 10"
                   class="primary--text text-caption"
               >{{ process.denyListPositions.length }} selected</span>
             </template>
             <template v-slot:prepend-item>
-            <v-list-item
-              @click="toggleSelectAllPositions(process)">
-            <v-list-item-action>
-              <v-icon>{{ icon }}</v-icon>
-            </v-list-item-action>
-            <v-list-item-title>Select All</v-list-item-title>
-          </v-list-item>
-            <v-divider
-                class="mt-2"
-            ></v-divider>
+              <v-list-item
+                  @click="toggleSelectAllPositions()">
+                <v-list-item-action>
+                  <v-icon>{{ icon }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-title>Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
+                  class="mt-2"
+              ></v-divider>
             </template>
-        </v-autocomplete>
+          </a-autocomplete>
           <a-btn
-            @click="saveDeniedPositions"
-            variant="text"
-            icon
-            color="primary"
-            class="mb-5"
-            prepend-icon="save"
+              @click="saveDeniedPositions"
+              variant="text"
+              icon
+              color="primary"
+              class="mb-5"
+              prepend-icon="save"
           />
         </div>
         <v-container v-if="addNew">
-          <v-autocomplete v-model="newProcessStep.processStepId"
+          <a-autocomplete v-model="newProcessStep.processStepId"
                           :items="availableProcessSteps"
                           no-data-text="No Steps Available"
                           label="Select a Process Step"
-                          item-text="processStepName"
+                          item-title="processStepName"
                           item-value="id"
                           attach
-          ></v-autocomplete>
-          <v-autocomplete v-model="newProcessStep.owningPositions"
+          ></a-autocomplete>
+          <a-autocomplete v-model="newProcessStep.owningPositions"
                           :items="owningPositions"
                           no-data-text="No Positions Available"
                           label="Select Owning Positions"
-                          item-text="position"
+                          item-title="position"
                           item-value="positionId"
                           multiple
                           return-object
                           attach
-          ></v-autocomplete>
+          ></a-autocomplete>
           <!--  per scott: temporarily removing requirement for orgId        -->
           <a-btn
-            color="primary"
-            :disabled="!newProcessStep.processStepId || !newProcessStep.owningPositions || newProcessStep.owningPositions.length === 0"
-            @click="assignProcessStep"
-            text="SAVE"
+              color="primary"
+              :disabled="!newProcessStep.processStepId || !newProcessStep.owningPositions || newProcessStep.owningPositions.length === 0"
+              @click="assignProcessStep"
+              text="SAVE"
           />
         </v-container>
         <a-text-field
-          v-model="search"
-          class="mb-3 px-3 col-12"
-          :style="{width: isMobile ? '100%' : '250px'}"
-          append-inner-icon="mdi-magnify"
-          label="Search"
-          single-line
-          hide-details
+            v-model="search"
+            class="mb-3 px-3 col-12"
+            :style="{width: isMobile ? '100%' : '250px'}"
+            append-inner-icon="mdi-magnify"
+            label="Search"
+            single-line
+            hide-details
         ></a-text-field>
         <v-data-table
             id="process-step-table"
@@ -158,42 +159,43 @@
               <v-card flat color="transparent" class="text-left pa-4">
                 <div class="mb-2">
                   <label>Initial Step:</label>
-                  <input type="checkbox" class="ml-2" v-model="item.initialStep" @change="getActiveProcessAssignedToProcessStep(item)">
-                  <v-autocomplete v-model="item.companyProcessStepStatusTypeId"
+                  <input type="checkbox" class="ml-2" v-model="item.initialStep"
+                         @change="getActiveProcessAssignedToProcessStep(item)">
+                  <a-autocomplete v-model="item.companyProcessStepStatusTypeId"
                                   v-if="item.initialStep"
                                   :loading="statusesLoading"
                                   class="mt-4 mb-2"
                                   :items="processStepStatusTypes"
                                   label="Initial Process Step Status Type"
-                                  item-text="processStepStatusType"
+                                  item-title="processStepStatusType"
                                   item-value="id"
                                   attach
-                  ></v-autocomplete>
+                  ></a-autocomplete>
                 </div>
-                <v-autocomplete v-model="item.owningPositions"
+                <a-autocomplete v-model="item.owningPositions"
                                 class="pt-4"
                                 :items="owningPositions"
                                 no-data-text="No Positions Available"
                                 label="Select Owning Positions"
-                                item-text="position"
+                                item-title="position"
                                 item-value="positionId"
                                 multiple
                                 return-object
                                 attach
-                ></v-autocomplete>
+                ></a-autocomplete>
                 <div class="mt-3 text-center">
                   <a-btn
-                    color="primary"
-                    :disabled="(item.initialStep && !item.companyProcessStepStatusTypeId) || (!item.owningPositions || item.owningPositions.length === 0)"
-                    @click="saveProcessStepProcess(item)"
-                    text="SAVE"
+                      color="primary"
+                      :disabled="(item.initialStep && !item.companyProcessStepStatusTypeId) || (!item.owningPositions || item.owningPositions.length === 0)"
+                      @click="saveProcessStepProcess(item)"
+                      text="SAVE"
                   />
                   <a-btn
-                    variant="text"
-                    color="primary"
-                    class="ml-3"
-                    @click="expanded = []"
-                    text="CANCEL"
+                      variant="text"
+                      color="primary"
+                      class="ml-3"
+                      @click="expanded = []"
+                      text="CANCEL"
                   />
                 </div>
               </v-card>
@@ -201,40 +203,44 @@
           </template>
 
 
-              <template #item.processStepName="{item}" class="text-left">{{ item.processStepName }}</template>
-              <template #item.positionName="{item}" class="text-left">
-                <span v-for="(op,idx) in item.owningPositions" :key="idx">{{op.position}}<br/></span>
-              </template>
-              <template #item.dateModified="{item}" class="text-left">{{ item.dateModified ? item.dateModified : item.dateCreated | formatDate('date') }}</template>
-              <template #item.initialStep="{item}" class="text-center">
-                <input type="checkbox" v-model="item.initialStep"
-                       disabled readonly>
-              </template>
-              <template #item.processStepStatusType="{item}" class="text-left">{{ item.processStepStatusType }}</template>
-              <template #item.icons="{item}">
-                <div style="display: flex; float: right;">
-                  <a-btn
-                    variant="text"
-                    color="primary"
-                    @click="[expanded.includes(item) ? expanded = [] : expanded = [item], getActiveProcessAssignedToProcessStep(item)]"
-                    v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
-                    :prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
-                  />
-                  <a-btn
-                    :disabled="!userCanDelete"
-                    variant="text"
-                    color="primary"
-                    @click="processStepToDelete=item"
-                    prepend-icon="delete"
-                  />
-                </div>
-              </template>
+          <template #item.processStepName="{item}" class="text-left">{{ item.processStepName }}</template>
+          <template #item.positionName="{item}" class="text-left">
+            <span v-for="(op,idx) in item.owningPositions" :key="idx">{{ op.position }}<br/></span>
+          </template>
+          <template #item.dateModified="{item}" class="text-left">
+            {{ item.dateModified ? item.dateModified : item.dateCreated | formatDate('date') }}
+          </template>
+          <template #item.initialStep="{item}" class="text-center">
+            <input type="checkbox" v-model="item.initialStep"
+                   disabled readonly>
+          </template>
+          <template #item.processStepStatusType="{item}" class="text-left">{{ item.processStepStatusType }}</template>
+          <template #item.icons="{item}">
+            <div style="display: flex; float: right;">
+              <a-btn
+                  variant="text"
+                  color="primary"
+                  @click="[expanded.includes(item) ? expanded = [] : expanded = [item], getActiveProcessAssignedToProcessStep(item)]"
+                  v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+                  :prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
+              />
+              <a-btn
+                  :disabled="!userCanDelete"
+                  variant="text"
+                  color="primary"
+                  @click="processStepToDelete=item"
+                  prepend-icon="delete"
+              />
+            </div>
+          </template>
 
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-dialog="!!processStepToDelete" @confirm="deleteStepFromProcess" @close-dialog="processStepToDelete = null">
-      Are you sure you want to delete this process step from the {{process.processName}} process: <strong>{{processStepToDeleteName}}</strong>
+    <ConfirmationDialog :open-dialog="!!processStepToDelete" @confirm="deleteStepFromProcess"
+                        @close-dialog="processStepToDelete = null">
+      Are you sure you want to delete this process step from the {{ process.processName }} process:
+      <strong>{{ processStepToDeleteName }}</strong>
 
     </ConfirmationDialog>
   </v-container>
@@ -245,15 +251,22 @@ import orderBy from 'lodash.orderby'
 import cloneDeep from 'lodash.clonedeep'
 
 import {getActiveAssignedToProcessStep} from '@/services/processStepStatusTypeService'
-import { handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  deleteRequest,
+  putRequest,
+  postRequest,
+  getSnackbar
+} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 
-
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import {useAppStore} from '@/stores/AppStorePinia.js'
+
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -284,12 +297,12 @@ const breadcrumbs = ref([
   },
 ])
 const headers = ref([
-  { text: 'Name', value: 'processStepName', show: true},
-  { text: 'Owning Positions', value: 'positionName', sortable: false, show: true},
-  { text: 'Last Modified', value: 'dateModified', show: true},
-  { text: 'Initial', value: 'initialStep', show: true},
-  { text: 'Status Type', value: 'processStepStatusType', show: true},
-  { text: null, value: 'icons', show: true},
+  {text: 'Name', value: 'processStepName', show: true},
+  {text: 'Owning Positions', value: 'positionName', sortable: false, show: true},
+  {text: 'Last Modified', value: 'dateModified', show: true},
+  {text: 'Initial', value: 'initialStep', show: true},
+  {text: 'Status Type', value: 'processStepStatusType', show: true},
+  {text: null, value: 'icons', show: true},
 ])
 const footerProps = ref({
   'items-per-page-text': 'Rows per page:',
@@ -320,7 +333,7 @@ onMounted(() => {
 const processStepToDeleteName = computed(() => {
   return processStepToDelete.value ? processStepToDelete.value.processStepName : ''
 })
-const selectAll = computed(() =>{
+const selectAll = computed(() => {
   return process.value.denyListPositions?.length === owningPositions.value?.length
 })
 const selectSome = computed(() => {
@@ -335,12 +348,14 @@ const icon = computed(() => {
   }
   return 'check_box_outline_blank'
 })
-const isMobile = computed(() =>{
+const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
 })
 
 const filterProcesses = computed(() => {
-  return process.value.processStepProcesses.filter(psp => { return !psp.archived})
+  return process.value.processStepProcesses.filter(psp => {
+    return !psp.archived
+  })
 })
 const getProcessDetails = async () => {
   appStore.loading = true
@@ -368,7 +383,7 @@ const toggleSelectAllPositions = () => {
     }
   })
 }
-const saveDeniedPositions = async() => {
+const saveDeniedPositions = async () => {
   appStore.loading = true;
   try {
     const {status} = await putRequest(`/processes/saveDenyListPositions`, process.value)
@@ -383,7 +398,7 @@ const saveDeniedPositions = async() => {
   }
 }
 const saveRowChanges = async (rows) => {
-  if(rows?.length > 0) {
+  if (rows?.length > 0) {
     appStore.loading = true
     try {
       const {status} = await putRequest(`/processes/${processId.value}/processStepProcesses`, rows)
@@ -452,7 +467,7 @@ const deleteStepFromProcess = async () => {
     appStore.loading = false
   }
 }
-const getPositions = async() => {
+const getPositions = async () => {
   try {
     const {data, status} = await getRequest(`/position/withParent`)
     owningPositions.value = data
@@ -469,7 +484,7 @@ const getAvailableProcessSteps = async () => {
     //reset field in case they hit cancel
     newProcessStep.value = {}
     addNew.value = !addNew.value
-    if(addNew.value) {
+    if (addNew.value) {
       appStore.loading = true
       const {data, status} = await getRequest(`/processes/${processId.value}/availableProcessSteps`)
       availableProcessSteps.value = data
@@ -499,7 +514,7 @@ const assignProcessStep = async () => {
   }
 }
 const getActiveProcessAssignedToProcessStep = async (item) => {
-  if(item.initialStep) {
+  if (item.initialStep) {
     processStepStatusTypes.value = []
     statusesLoading.value = true
     try {
@@ -534,6 +549,7 @@ const getActiveProcessAssignedToProcessStep = async (item) => {
 @media (max-width: 770px) {
   #process-step-table {
     padding-bottom: 12px;
+
     div.v-data-footer {
       display: inline-block;
       width: 100%;

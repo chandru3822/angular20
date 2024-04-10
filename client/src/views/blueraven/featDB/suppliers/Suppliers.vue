@@ -39,18 +39,18 @@
                                 dense
                                 hide-details
                   ></a-text-field>
-                  <v-autocomplete v-else-if="supplierFilters[header.value].type === 'select'"
+                  <a-autocomplete v-else-if="supplierFilters[header.value].type === 'select'"
                                   :items="states"
                                   v-model="supplierFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
-                                  filled
-                                  item-text="state"
-                                  dense
+                                  item-title="state"
+                                  variant="filled"
+                                  density="compact"
                                   type="search"
                                   autocomplete="off"
                                   hide-details
-                  ></v-autocomplete>
+                  ></a-autocomplete>
                 </div>
               </th>
             </tr>
@@ -120,18 +120,18 @@
           <a-text-field label="Name"
                         v-model="editedItem.name"
                         required
-                        filled
+                        variant="filled"
           ></a-text-field>
-          <v-autocomplete label="State"
+          <a-autocomplete label="State"
                           :items="states"
                           v-model="editedItem.companyStateId"
-                          item-text="state"
+                          item-title="state"
                           item-value="id"
                           autocomplete="off"
                           type="search"
                           required
-                          filled
-          ></v-autocomplete>
+                          variant="filled"
+          ></a-autocomplete>
         </v-card-text>
 
         <v-card-actions>

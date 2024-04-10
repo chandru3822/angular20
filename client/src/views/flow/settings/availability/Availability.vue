@@ -8,28 +8,28 @@
           </v-toolbar-title>
         </v-toolbar>
         <div class="px-4">
-          <v-autocomplete v-if="viewAll"
+          <a-autocomplete v-if="viewAll"
                     v-model="orgId"
                     :items="orgs"
                     label="Select an Organization..."
-                    item-text="orgName"
+                    item-title="orgName"
                     item-value="id"
                     autocomplete="off"
                     @input="[userId = null, getApptLength()]"
                           attach>
-          </v-autocomplete>
-          <v-autocomplete v-model="userId"
+          </a-autocomplete>
+          <a-autocomplete v-model="userId"
                     :items="users"
                     v-if="viewAll"
                     :readonly="!viewAll"
                     :disabled="!viewAll"
                     label="Select a User..."
-                    item-text="fullName"
+                    item-title="fullName"
                     item-value="id"
                     autocomplete="off"
                     @input="[orgId = null, getApptLength()]"
                           attach>
-          </v-autocomplete>
+          </a-autocomplete>
           <a-text-field
                         v-else
                         :disabled="true"

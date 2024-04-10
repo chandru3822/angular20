@@ -121,16 +121,16 @@
             <v-row class="mx-3">
               <!--Resource Fields-->
               <v-col cols="12" md="5">
-                <v-autocomplete
+                <a-autocomplete
                   v-model="event.resourceCustomFieldId"
                   :items="eventResourceFields"
                   :disabled="!userCanEdit"
                   :rules="requiredRules"
                   label="Resource"
                   @change="resourceFieldChanged = true"
-                  item-text="fieldName"
+                  item-title="fieldName"
                   item-value="id"
-                ></v-autocomplete>
+                ></a-autocomplete>
                 <v-row class="flex-display">
                   <multi-select-group
                     v-if="!eventLoading"
@@ -302,45 +302,33 @@
                                value="ancillary"></v-radio>
                     </v-radio-group>
 
-                    <v-autocomplete v-model="newField"
+                    <a-autocomplete v-model="newField"
                                     v-if="newFieldType === 'native'"
                                     :items="availableCustomFields"
                                     label="New Custom Field"
-                                    item-text="fieldName"
+                                    item-title="fieldName"
                                     return-object
                                     autocomplete="off"
-                                    @input="assignCustomField(item)"
-                    >
-                      <template slot='item' slot-scope='{ item }'>
-                        {{ item.fieldName }}
-                      </template>
-                    </v-autocomplete>
-                    <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                    @input="assignCustomField(item)">
+                    </a-autocomplete>
+                    <a-autocomplete v-if="newFieldType === 'ancillary'"
                                     v-model="parent"
                                     :items="parentObjects"
                                     label="Parent Object"
-                                    item-text="name"
+                                    item-title="name"
                                     return-object
                                     autocomplete="off"
-                                    @input="loadFieldsByParent"
-                    >
-                      <template slot='item' slot-scope='{ item }'>
-                        {{ item.name }}
-                      </template>
-                    </v-autocomplete>
-                    <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                    @input="loadFieldsByParent">
+                    </a-autocomplete>
+                    <a-autocomplete v-if="newFieldType === 'ancillary'"
                                     v-model="selectedAncillaryField"
                                     :items="ancillaryCustomFields"
                                     label="Custom Field"
-                                    item-text="fieldName"
+                                    item-title="fieldName"
                                     return-object
                                     autocomplete="off"
-                                    @input="assignAncillaryCustomField(item)"
-                    >
-                      <template slot='item' slot-scope='{ item }'>
-                        {{ item.fieldName }}
-                      </template>
-                    </v-autocomplete>
+                                    @input="assignAncillaryCustomField(item)">
+                    </a-autocomplete>
                     <a-btn variant="text"
                                      color="primary"
                                      @click="addField = false"
@@ -513,19 +501,19 @@
         <v-card>
           <div v-if="userIsAdmin" class="snippet-selector-grid">
             <div class="label-medium">Field to Display on Event Snippet</div>
-            <v-autocomplete
+            <a-autocomplete
                 label="Custom Field Group"
                 v-model="cfgToDisplayOnSnippet"
                 return-object
                 clearable
-                item-text="groupName"
+                item-title="groupName"
                 :items="filterCustomFieldGroups"/>
-            <v-autocomplete
+            <a-autocomplete
                 v-if="cfgToDisplayOnSnippet"
                 label="Custom Field"
                 v-model="cfToDisplayOnSnippet"
                 :items="nonAncillaryGfgFields(cfgToDisplayOnSnippet.customFields)"
-                item-text="fieldName"
+                item-title="fieldName"
                 item-value="id"
                 return-object
             />
