@@ -85,7 +85,11 @@
             >
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2, 'mobile-tr': vuetify.breakpoint.xsOnly}">
-                  <td class="text-left clickable" @click="goToType(item.id)">{{ item.attachmentType }}</td>
+                  <td class="text-left clickable">
+                    <router-link :to="getPath()" class="router-link-td">
+                      {{ item.attachmentType }}
+                    </router-link>
+                  </td>
                   <td class="text-right" :class="{'d-flex flex-column align-end': vuetify.breakpoint.xsOnly}">
                     <a-btn
                       size="small"
@@ -167,8 +171,8 @@
   onMounted(() => {
     getAttachmentTypes()
   })
-  const goToType = (typeId) => {
-    router.push({path: `/settings/attachment/${typeId}/customFieldGroups`})
+  const getPath = (typeId) => {
+    return {path: `/settings/attachment/${typeId}/customFieldGroups`}
   }
   const getAttachmentTypes = async () => {
     appStore.loading = true

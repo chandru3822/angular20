@@ -7,7 +7,6 @@
             :items="sortedSteps"
             :fixed-header="true"
             :items-per-page="-1"
-            @click:row="goToProjectProcessStep"
             id="qa-process-step-table"
             hide-default-footer
             disable-sort
@@ -22,12 +21,18 @@
           </template>
 
           <template #item.id="{item}" class="text-left" id="qa-process-link">
-            {{ item.projectProcessStepId }}
+            <router-link :to="getProjectProcessStepPath(item)">
+              {{ item.projectProcessStepId }}
+            </router-link>
           </template>
-          <template #item.processStepName="{item}" class="text-left" id="qa-process-step-name">{{item.processStepName}}</template>
-          <template #item.dateCreated="{item}" class="text-left" id="qa-process-date-created">{{ item.dateCreated | formatDate('timestamp') }}</template>
-          <template #item.owner="{item}" class="text-left" id="qa-process-owner-name">{{ item.owner && item.owner.fullName }}</template>
-          <template #item.processStepStatusType="{item}" class="text-left" id="qa-process-status">{{item.processStepStatusType}}</template>
+          <template #item.processStepName="{item}" class="text-left" id="qa-process-step-name">{{item.processStepName}}
+          </template>
+          <template #item.dateCreated="{item}" class="text-left" id="qa-process-date-created">{{ item.dateCreated | formatDate('timestamp') }}
+          </template>
+          <template #item.owner="{item}" class="text-left" id="qa-process-owner-name">{{ item.owner && item.owner.fullName }}
+          </template>
+          <template #item.processStepStatusType="{item}" class="text-left" id="qa-process-status">{{item.processStepStatusType}}
+          </template>
 
         </v-data-table>
       </v-card>
@@ -69,11 +74,8 @@ const headers = ref([
   {text: 'Status', value: 'processStepStatusType', show: true},
 ])
 
-const goToPath = (path)  => {
-  router.push(path)
-}
-const goToProjectProcessStep = (processStep) => {
-  goToPath(`/project/${projectId.value}/processStep/${processStep.projectProcessStepId}`)
+const getProjectProcessStepPath= (processStep) => {
+  return `/project/${projectId.value}/processStep/${processStep.projectProcessStepId}`
 }
 </script>
 

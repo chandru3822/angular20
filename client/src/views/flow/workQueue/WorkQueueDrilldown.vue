@@ -447,7 +447,7 @@ const getWorkDetails = async() => {
         r.notes = JSON.parse(r['Notes'])
         r.followUpDate = null != r.notes[0]?.followUpDate && undefined !== r.notes[0]?.followUpDate ? moment.utc(r.notes[0]?.followUpDate, 'YYYY-MM-DD').format('M/D/YYYY') : null,
             r.firstNoteCreatedAt = r.notes[0]?.dateCreated,
-            r.firstNoteCreatedAtFormatted = null != r.notes[0]?.dateCreated && undefined !== r.notes[0]?.dateCreated ? moment.utc(r.notes[0]?.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(timezone).format('M/D/YYYY h:mm a') : null,
+            r.firstNoteCreatedAtFormatted = null != r.notes[0]?.dateCreated && undefined !== r.notes[0]?.dateCreated ? moment.utc(r.notes[0]?.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(timezone.value).format('M/D/YYYY h:mm a') : null,
             r.firstNoteContent = r.notes[0]?.note
         // r.activeProcessSteps = JSON.parse(r['Active Process Steps'])
         if('Owning Positions' in results.value[0]) {
@@ -647,7 +647,7 @@ const updateRowNotes = (item) => {
   results.value[notesPpsIndex.value].firstNoteCreatedAt = item.dateCreated
   matchInFilteredResults.firstNoteCreatedAt = item.dateCreated
 
-  let dateFormatted = null != item.dateCreated ? moment.utc(item.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(timezone).format('M/D/YYYY h:mm a') : null
+  let dateFormatted = null != item.dateCreated ? moment.utc(item.dateCreated, 'YYYY-MM-DDTHH:mm:ssZ').tz(timezone.value).format('M/D/YYYY h:mm a') : null
   results.value[notesPpsIndex.value].firstNoteCreatedAtFormatted = dateFormatted
   matchInFilteredResults.firstNoteCreatedAtFormatted = dateFormatted
 
