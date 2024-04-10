@@ -319,7 +319,7 @@ const dirtyCfvs = ref([])
 const filters = ref({})
 const confirmDialogRef = ref(null)
 const proposalForm = ref(null)
-const deleteConfirmDialog = ref(null)
+const deleteConfirmDialogRef = ref(null)
 
 provide('editor', undefined)
 
