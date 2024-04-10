@@ -429,7 +429,7 @@ const mapResourceEvents =  ref([])
 const checkedResources =  ref([])
 const daySelector =  ref(false)
 const dayOptions =  ref([])
-const timezone =  ref(store.state.schedule.timezone.value || store.state.user.details.timezone.value)
+const timezone =  ref(store.state.schedule.timezone.value || store.state.user.details.timezone)
 const timezones = ref([
   { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
   { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
@@ -938,7 +938,7 @@ const countSelected = computed(() => {
             userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
             startTime: info.start,
             endTime: info.end,
-            timezone: timezone.value.value
+            timezone: timezone.value?.value || timezone.value //this is dumb but the way we save the timezone in the user store is different than how we do it in the schedule store, so if the initial value is from the user store, it will be different than if we change the schedule tool timezone afterwards. todo: I should probably go back and see if I can clean this up
           }
           const {data} = await postRequest(`/schedule/availability`, params)
 
