@@ -1,5 +1,6 @@
 <template>
   <v-btn
+    :id="id"
     :text="props.variant === 'text'"
     :outlined="props.variant === 'outlined'"
     :loading="props.loading"
@@ -41,6 +42,7 @@ import { defineProps } from 'vue'
 //note in vue3 using the prepend icon you can't change its size. so for now if the size of the icon is custom, then a default template must be sent in to override
 //note the text-none class means that you dont have to specify casing, just pass the text in the way you want it to appear
 const props = defineProps({
+  id: String, //i dont think this id is required to be a prop but it is required on input fields so doing for consistency
   to: [Object, String], //fields without a defined default will default to null
   variant: String, //using `variant` to prep for vue3, if there is not a variant set it will default to null which is why the text color is set to white if there is no variant
   elevation: Number,

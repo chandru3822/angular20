@@ -3,6 +3,7 @@
                 :placeholder="placeholder"
                 :value="value"
                 :type="type"
+                :id="id"
                 :prepend-icon="prependIcon"
                 :prepend-inner-icon="prependInnerIcon"
                 :append-icon="appendInnerIcon"
@@ -52,6 +53,7 @@ const props = defineProps({
   value: [String, Number],
   placeholder: String, //fields without a defined default will default to null
   label: String,
+  id: String,
   variant: String,
   hint: String,
   rows: [ Number, String ],

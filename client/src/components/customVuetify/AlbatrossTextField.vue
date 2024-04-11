@@ -3,6 +3,7 @@
                 :placeholder="placeholder"
                 :value="value"
                 :type="type"
+                :id="id"
                 :prepend-icon="prependIcon"
                 :prepend-inner-icon="prependInnerIcon"
                 :append-icon="appendInnerIcon"
@@ -46,6 +47,7 @@ const basicRequiredRule = ref(constants.BASIC_REQUIRED_RULE)
 const props = defineProps({
   value: [String, Number],
   placeholder: String, //fields without a defined default will default to null
+  id: String,
   label: String,
   variant: String,
   hint: String,
