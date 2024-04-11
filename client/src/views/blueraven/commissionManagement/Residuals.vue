@@ -118,11 +118,11 @@
           <v-col cols="12" sm="6">
             <v-card class="pa-3">
               <v-card-title>Project Override</v-card-title>
-              <v-autocomplete v-model="projectId"
+              <a-autocomplete v-model="projectId"
                               :items="projects"
                               :loading="projectsLoading"
                               :search-input.sync="projectSearch"
-                              item-text="projectNameWithId"
+                              item-title="projectNameWithId"
                               label="Project..."
                               clearable
                               prepend-icon="search"
@@ -130,12 +130,8 @@
                               autocomplete="off"
                               type="search"
                               @click:clear="projects = []"
-                              attach
-              >
-                <template slot='item' slot-scope='{ item }'>
-                  {{ item.projectName }} - {{ item.id }}
-                </template>
-              </v-autocomplete>
+                              attach>
+              </a-autocomplete>
               <DatetimePickerInput
                   v-model="projectOverrideDate"
                   :timezone="timezone"

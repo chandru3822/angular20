@@ -334,14 +334,14 @@ onMounted(() => {
         @click:clear="clear"
         :disabled="!!searchProject?.projectId"
         ></a-autocomplete>
-        <v-autocomplete v-model="searchProject"
+        <a-autocomplete v-model="searchProject"
                         :items="searchProjects"
                         :loading="searchProjectsLoading"
                         cache-items
                         :search-input.sync="search"
                         clearable
                         label="Project"
-                        item-text="displayName"
+                        item-title="displayName"
                         item-value="projectId"
                         autocomplete="off"
                         :disabled="!!state?.id"
@@ -355,7 +355,7 @@ onMounted(() => {
             <!-- HTML that describe how select should render items when the select is open -->
             {{ data.item.displayName }}
           </template>
-        </v-autocomplete>
+        </a-autocomplete>
         <!--only show the other fields once state or project has been selected-->
         <div v-if="searchProject?.projectId || state?.id">
 

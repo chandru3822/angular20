@@ -116,19 +116,19 @@
                             class="mt-3"
                             label="Project ID"
                             v-model="accountingSearch.projectId"></a-text-field>
-              <v-autocomplete v-model="accountingSearch.customerId"
+              <a-autocomplete v-model="accountingSearch.customerId"
                               :items="customers"
                               :loading="customersLoading"
                               :search-input.sync="customerSearch"
                               label="Customer..."
                               clearable
-                              item-text="fullName"
+                              item-title="fullName"
                               item-value="id"
                               autocomplete="off"
                               type="search"
                               @click:clear="customers = []"
                               attach
-              ></v-autocomplete>
+              ></a-autocomplete>
 
               <div class="text-left">
                 <a-btn
