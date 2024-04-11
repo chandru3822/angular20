@@ -135,7 +135,7 @@ onMounted(() => {
       try {
         let params = {}
         if(dashboardType.value === DashboardTypeEnum.SETTERMGR){
-          let userPositions = store.state.user.details.userPositions
+          let userPositions = userStore.details.userPositions
           let userOffice = userPositions.filter(position => position.primaryFlag && !position.endDate)[0]
           let userOfficeId = userOffice ? userOffice.orgId : null
 
@@ -145,7 +145,7 @@ onMounted(() => {
             setterMgrOfficeId: userOfficeId ? userOfficeId : null
           }
         } else if (dashboardType.value === DashboardTypeEnum.SETTER){
-          let userPositions = store.state.user.details.userPositions
+          let userPositions = userStore.details.userPositions
           let userOffice = userPositions.filter(position => position.primaryFlag && !position.endDate)[0]
           let userOfficeId = userOffice ? userOffice.orgId : null
 

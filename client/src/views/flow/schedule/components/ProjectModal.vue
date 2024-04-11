@@ -73,7 +73,7 @@ watch(() => props.resourceFromCalendar, () => {
 const isUserWhitelisted = computed(() => {
 	if(event.value?.readonlyWhiteListedPositions) {
 		for (let wlp of event.value?.readonlyWhiteListedPositions) {
-			let match = store.state.user.details.userPositions.find(up => up.positionId === wlp.positionId)
+			let match = userStore.details.userPositions.find(up => up.positionId === wlp.positionId)
 			if (match) {
 				return true //if the user has a position that matches any of the whiteList positions, the user should see the event
 			}

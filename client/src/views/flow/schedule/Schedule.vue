@@ -133,7 +133,7 @@
     return userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
   })
   const timezone = computed(() => {
-    return store.state.schedule.timezone?.value === null ? userstore.details.timezone : store.state.user.details.timezone
+    return store.state.schedule.timezone?.value === null ? userStore.timezone : userStore.timezone
   })
 
   watch(selectedProject, () => {
@@ -165,7 +165,7 @@
   }
   const loadTimezone = () => {
         if(store.state.schedule.timezone?.value === null) {
-          timezone.value = store.state.user.details.timezone
+          timezone.value = userStore.timezone
           updateTimezone()
         }
         else {
