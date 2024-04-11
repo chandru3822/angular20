@@ -26,10 +26,6 @@ const snackbar = ref({})
 
 // Calendar Info
 const calendarApi = ref(null)
-const calendarStart = ref(null)
-const calendarView = ref(null)
-const calendarStartTime = ref(null)
-const calendarEndTime = ref(null)
 const calendarLoading = ref(false)
 
 const maxSelectionAllowed = ref(10)
@@ -48,6 +44,7 @@ const calendarOptions = ref({
     (info, successCallback, failureCallback) => getEventSources(info, successCallback, failureCallback)
   ],
   eventClick: (eventClickInfo) => handleEventClick(eventClickInfo),
+  datesSet: (dateInfo) => updateCalDates(dateInfo),
   navLinks: true,
   navLinkDayClick: "resourceTimeline",
   slotLabelDidMount:function ({el, date, view, level}) {
@@ -104,21 +101,18 @@ const reloadCalendar = () =>{
   let calendarApi = refs.eventCalendar.getApi()
   calendarApi.refetchEvents()
 }
-
-const setCalendarStartAndEndTimes = () => {
-  calendarStart.value = calendarApi.value.getDate()
-  calendarView.value = calendarApi.value.view?.type
-  if(calendarView.value === 'resourceTimelineDay') {
-    calendarStartTime.value = moment(calendarStart.value).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
-    calendarEndTime.value = moment(calendarStart.value).add(1, 'd').startOf('d').subtract(1, 's').utc().format('YYYY-MM-DD HH:mm:ss')
-  } else {
-    //moment starts on sunday, isoWeek starts on monday
-    calendarStartTime.value = moment(calendarStart.value).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
-    calendarEndTime.value = moment(calendarStart.value).endOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
+const updateCalDates = async(info) => {
+  let start = info.start
+  let end = info.end
+  let diff = moment(end).diff(start, 'days')
+  if(diff > 7){
+    //for some reason when you click the date header in the week view, it sometimes tries to navigate to the month view; this prevents that
+    //it seems like it should be forcing it to navigate to the current date, but for some reason, it navigates to the date that was clicked...if it ain't broke...
+    let calendarApi = refs.eventCalendar.getApi()
+    calendarApi.changeView('resourceTimelineDay', new Date)
   }
-  store.commit(ScheduleMutations.SET_START_TIME, calendarStartTime.value)
-  store.commit(ScheduleMutations.SET_END_TIME, calendarEndTime.value)
 }
+
 
 const handleEventClick = (info) => {
   if(info.event.title && info.event.display === 'auto' && info.event.extendedProps?.projectProcessStepId) {
@@ -400,8 +394,6 @@ const getFormattedDate = (date) => {
 
 onMounted (async () => {
   calendarApi.value = refs.eventCalendar.getApi()
-  calendarStart.value = calendarApi.value.getDate()
-  setCalendarStartAndEndTimes()
   await getRoundRobins()
   await getRoundRobinUsers()
 })
