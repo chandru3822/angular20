@@ -13,7 +13,7 @@ export const useScheduleStore = defineStore('schedule', {
 	persist: true,
 	state: () => ({...defaultState}),
 	getters: {
-		timezone() {
+		getTimezone() {
 			if (!this.timezone) {
 				this.timezone = {
 					friendlyValue: moment.tz.guess(),
