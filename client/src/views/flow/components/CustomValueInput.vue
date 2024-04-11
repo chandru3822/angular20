@@ -80,7 +80,7 @@
         />
 
         <!--        12 is the new SYSTEM_readonly field. but i think we can use this same field as id=10 will ALWAYS be readonly and (never required i think)-->
-        <v-textarea
+        <a-textarea
             v-if="field.dataTypeId === 5 || field.dataTypeId === 12 || (field.dataTypeId === 8 && field.systemReadonly)"
             auto-grow
             rows="1"
@@ -90,7 +90,7 @@
             :class="[customClass, {'error--text': readonly || required}]"
             placeholder=" "
             :rules="rules"
-            :filled="filled"
+            :variant="variant"
             :label="getFieldName()"
             :hide-details="hideDetails"
             v-model="field.textValue"

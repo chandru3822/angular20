@@ -40,12 +40,13 @@
                           item-value="id"
           ></a-autocomplete>
           <label>Details:</label>
-          <v-textarea class="py-2 gray lighten-4" hide-details
-                      auto-grow filled
+          <a-textarea class="py-2 gray lighten-4" hide-details
+                      auto-grow
+                      variant="filled"
                       rows="4"
-                      background-color="#F2F6F8"
+                      bg-color="#F2F6F8"
                       v-model="newReimbursement.details">
-          </v-textarea>
+          </a-textarea>
           <label>Receipt Image: </label>
           <div v-if="!receiptLogo || !receiptLogo.id" class="mb-5">
             <form enctype="multipart/form-data" novalidate>

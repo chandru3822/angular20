@@ -22,13 +22,16 @@
       </v-row>
       <v-row class="data-container">
         <v-col cols="6">
-          <v-textarea v-model="optionsValue" outlined @input="optionsValueInput()"
-                      ref="inputField" auto-grow
+          <a-textarea v-model="optionsValue"
+                      variant="outlined"
+                      @input="optionsValueInput()"
+                      ref="inputField"
+                      auto-grow
                       label="Data Value" />
         </v-col>
         <v-col cols="6" class="">
-          <v-textarea outlined v-model="compositionValue" auto-grow>
-          </v-textarea>
+          <a-textarea variant="outlined" v-model="compositionValue" auto-grow>
+          </a-textarea>
         </v-col>
       </v-row>
       <v-row class="py-3">

@@ -250,10 +250,10 @@
                                       :hint="`Max allowed: ${filters.currency(getCurrentMaxAdjustment(item), '$', 2)}`"
                                       v-model.number="item.adjustment">
                         </a-text-field>
-                        <v-textarea
+                        <a-textarea
                           label="Notes"
                           v-model="item.adjustmentNote"
-                        ></v-textarea>
+                        ></a-textarea>
                         <v-data-table
                           :headers="adjustmentHistoryHeaders"
                           :items="item.adjustmentHistory"
@@ -350,10 +350,10 @@
                                       :hint="`Max allowed: ${$filters.currency(_getCurrentMaxAdjustment(item), '$', 2)}`"
                                       v-model.number="item.adjustment">
                         </a-text-field>
-                        <v-textarea
+                        <a-textarea
                           label="Notes"
                           v-model="item.adjustmentNote"
-                        ></v-textarea>
+                        ></a-textarea>
                         <v-data-table
                           :headers="adjustmentHistoryHeaders"
                           :items="item.adjustmentHistory"

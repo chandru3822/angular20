@@ -5,7 +5,7 @@
       <v-row>
         <v-col cols="6">
           <h3 class="mb-5">Paste the v-btn code here</h3>
-          <v-textarea v-model="vBtnValue" outlined @input="vBtnInput()"
+          <a-textarea v-model="vBtnValue" variant="outlined" @input="vBtnInput()"
                       ref="inputField" auto-grow
                       label="V-BTN Value" />
           <a-btn
@@ -31,8 +31,8 @@
                 v-if="albatrossButtonValue"
                 @click="copyToClipboard" prepend-icon="mdi-content-copy"></a-btn>
           </div>
-          <v-textarea outlined v-model="albatrossButtonValue" auto-grow>
-          </v-textarea>
+          <a-textarea variant="outlined" v-model="albatrossButtonValue" auto-grow>
+          </a-textarea>
         </v-col>
       </v-row>
 

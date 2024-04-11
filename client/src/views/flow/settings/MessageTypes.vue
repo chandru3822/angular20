@@ -24,7 +24,7 @@
                           label="Title" />
             <a-text-field  v-model="newType.description"
                           label="Description" />
-            <v-textarea text v-model="newType.content" auto-grow outlined hide-details
+            <a-textarea text v-model="newType.content" auto-grow variant="outlined" hide-details
                           label="Content" />
             <div class="helper-buttons">
               <a v-for="hb in helperButtons" class="mr-3"
@@ -74,7 +74,7 @@
                               label="Title" />
                 <a-text-field  v-model="item.description"
                               label="Description" />
-                <v-textarea text v-model="item.content" auto-grow outlined hide-details
+                <a-textarea text v-model="item.content" auto-grow variant="outlined" hide-details
                               label="Content" />
 
                 <div class="helper-buttons">

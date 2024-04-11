@@ -104,10 +104,10 @@
             />
           </div>
           <div v-else-if="newAction.actionTypeId">
-            <v-textarea required label="Banner Content" auto-grow filled
+            <a-textarea required label="Banner Content" auto-grow variant="filled"
                         style="margin: 15px 0 -15px 0"
                         v-model="newAction.content">
-            </v-textarea>
+            </a-textarea>
             <div>
               <label>Banner Text Color:</label>
               <v-color-picker class="my-3"
@@ -286,10 +286,10 @@
                     </div>
                   </div>
                   <div v-else>
-                    <v-textarea required label="Banner Content" auto-grow filled
+                    <a-textarea required label="Banner Content" auto-grow variant="filled"
                                 style="margin: 15px 0 -15px 0"
                                 v-model="item.content">
-                    </v-textarea>
+                    </a-textarea>
                     <div>
                       <label>Banner Text Color:</label>
                       <v-color-picker class="my-3"

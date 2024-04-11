@@ -112,9 +112,9 @@
                   label="New End Date"
               />
               <label>Note:</label>
-              <v-textarea filled class="mt-4"
+              <a-textarea variant="filled" class="mt-4"
                           v-model="item.note">
-              </v-textarea>
+              </a-textarea>
               <a-btn
                   color="primary"
                   :disabled="!item.endDate && !item.note"
@@ -254,9 +254,9 @@
                   @input="checkDates(item.startDate, item.endDate, closer.overrides, item, item.id)"
               />
               <label>Note:</label>
-              <v-textarea filled class="mt-4"
+              <a-textarea variant="filled" class="mt-4"
                           v-model="item.note">
-              </v-textarea>
+              </a-textarea>
               <div v-if="item.dateError" class="error--text mb-2">
                 * Error: {{item.dateErrorMsg}}
               </div>
@@ -386,9 +386,9 @@
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': receivingSelectedIndex % 2}">
               <label>Note:</label>
-              <v-textarea filled class="mt-4"
+              <a-textarea variant="filled" class="mt-4"
                           v-model="item.note">
-              </v-textarea>
+              </a-textarea>
               <a-btn
                   color="primary"
                   :disabled="!item.endDate && !item.note"

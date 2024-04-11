@@ -159,22 +159,21 @@
           text="Add note"
       ></a-btn>
       <div v-else>
-        <!--        <v-textarea outlined v-model="editedActivity.note"></v-textarea>-->
         <Mentionable
             :keys="['@']"
             :items="users"
             offset="6"
             insert-space
         >
-          <v-textarea class="body-large note-text-area"
+          <a-textarea class="body-large note-text-area"
                       hide-details
                       auto-grow
                       autofocus
                       rows="2"
-                      outlined
+                      variant="outlined"
                       :disabled="editedActivity.createdById !== currentUserId && !addActivity"
                       v-model="editedActivity.note">
-          </v-textarea>
+          </a-textarea>
 
           <template #no-result>
             No result

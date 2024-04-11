@@ -10,6 +10,7 @@ import { SnackbarPlugin } from '@/plugins/SnackbarPlugin'
 import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
 import AlbatrossTextField from '@/components/customVuetify/AlbatrossTextField.vue'
+import AlbatrossTextarea from '@/components/customVuetify/AlbatrossTextarea.vue'
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 import AlbatrossSelect from '@/components/customVuetify/AlbatrossSelect.vue'
 import AlbatrossAutocomplete from '@/components/customVuetify/AlbatrossAutocomplete.vue'
@@ -95,6 +96,7 @@ axios.interceptors.response.use((r) => r, responseInterceptor)
 Vue.component('a-autocomplete', AlbatrossAutocomplete)
 Vue.component('a-select', AlbatrossSelect)
 Vue.component('a-text-field', AlbatrossTextField)
+Vue.component('a-textarea', AlbatrossTextarea)
 Vue.component('a-btn', AlbatrossButton)
 
 Vue.use(

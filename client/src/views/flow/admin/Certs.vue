@@ -30,12 +30,13 @@
                 :format="'MM/DD/YYYY'"
                 label="Expiration Date"
             />
-            <v-textarea class="body-medium" hide-details
+            <a-textarea class="body-medium" hide-details
                         auto-grow
                         rows="4"
                         label="Notes (optional)"
-                        outlined v-model="selectedCert.notes">
-            </v-textarea>
+                        variant="outlined"
+                        v-model="selectedCert.notes">
+            </a-textarea>
           </div>
           <a-btn variant="text" text="Cancel" @click="[addNew = !addNew, selectedCert = {}]"></a-btn>
           <a-btn :disabled="!selectedCert || !selectedCert.certName || !selectedCert.expirationDate"
@@ -75,12 +76,13 @@
                     :format="'MM/DD/YYYY'"
                     label="Expiration Date"
                 />
-                <v-textarea class="body-medium" hide-details
+                <a-textarea class="body-medium" hide-details
                             auto-grow
                             rows="4"
                             label="Notes (optional)"
-                            outlined v-model="item.notes">
-                </v-textarea>
+                            variant="outlined"
+                            v-model="item.notes">
+                </a-textarea>
               </div>
               <a-btn :disabled="!item.certName || !item.expirationDate"
                      text="Save" class="mr-2"

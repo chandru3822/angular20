@@ -27,9 +27,9 @@
               v-model="title"
               :disabled="!selected?.length"
           />
-          <v-textarea
+          <a-textarea
               :disabled="!selected?.length"
-              solo
+              variant="solo"
               no-resize
               name="input-7-4"
               label="Message"

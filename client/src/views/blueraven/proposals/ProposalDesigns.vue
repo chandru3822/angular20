@@ -330,11 +330,12 @@
         <v-card-title>Request New Design</v-card-title>
         <v-card-text class="default-text-color">
           Describe your request (Required)
-          <v-textarea
+          <a-textarea
             required
             auto-grow
-            outlined
-            counter="250"
+            variant="outlined"
+            counter
+            :maxlength="250"
             color="#808588"
             v-model="newDesignRequest.description"
           />
@@ -431,11 +432,12 @@
         </v-card-subtitle>
         <v-card-text>
           Additional comments (optional)
-          <v-textarea
+          <a-textarea
             required
             auto-grow
-            outlined
-            counter="250"
+            variant="outlined"
+            counter
+            :maxlength="250"
             color="#808588"
             v-model="newDesignRequest.description"
           />

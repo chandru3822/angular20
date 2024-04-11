@@ -11,13 +11,15 @@
           offset="6"
           insert-space
       >
-        <v-textarea class="body-medium" hide-details
+        <a-textarea class="body-medium"
+                    hide-details
                     auto-grow
                     rows="4"
                     @change="dirtyNote = true"
-                    background-color="grey lighten-4"
-                    filled v-model="note.note">
-        </v-textarea>
+                    bg-color="grey lighten-4"
+                    variant="filled"
+                    v-model="note.note">
+        </a-textarea>
 
         <template #no-result>
           <div class="dim">
@@ -94,12 +96,13 @@
                 offset="6"
                 insert-space
             >
-              <v-textarea class="py-2" hide-details
+              <a-textarea class="py-2" hide-details
                           auto-grow
                           rows="4"
                           @change="dirtyNote = true"
-                          background-color="transparent"
-                          filled v-model="item.note"></v-textarea>
+                          bg-color="transparent"
+                          variant="filled"
+                          v-model="item.note"></a-textarea>
 
               <template #no-result>
                 <div class="dim">
@@ -202,12 +205,14 @@
                 offset="6"
                 insert-space
             >
-              <v-textarea solo v-model="item.reply"
+              <a-textarea variant="solo"
+                          v-model="item.reply"
                           hide-details
                           auto-grow
                           @change="dirtyNote = true"
                           rows="1"
-                          placeholder="Add a comment..." class="mt-1"></v-textarea>
+                          placeholder="Add a comment..."
+                          class="mt-1"></a-textarea>
 
               <template #no-result>
                 <div class="dim">
@@ -248,12 +253,13 @@
                   offset="6"
                   insert-space
               >
-                <v-textarea class="py-2" hide-details
+                <a-textarea class="py-2" hide-details
                             auto-grow
                             @change="dirtyNote = true"
                             rows="4"
-                            background-color="grey lighten-4"
-                            filled v-model="cn.note"></v-textarea>
+                            bg-color="grey lighten-4"
+                            variant="filled"
+                            v-model="cn.note"></a-textarea>
 
                 <template #no-result>
                   <div class="dim">

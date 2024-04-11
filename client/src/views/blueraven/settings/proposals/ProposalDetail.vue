@@ -42,10 +42,10 @@
           <template v-slot:title>Confirm</template>
           <div>Please provide a description of changes made:</div>
           <v-form>
-            <v-textarea
+            <a-textarea
               v-model="publishNote"
               class="mt-3"
-              solo
+              variant="solo"
               autofocus
               clearable
               no-resize

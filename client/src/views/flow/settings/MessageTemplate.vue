@@ -21,7 +21,7 @@
           <h3>Add Template</h3>
           <a-text-field  v-model="newTemplate.title"
                         label="Title" />
-          <v-textarea v-model="newTemplate.message"
+          <a-textarea v-model="newTemplate.message"
                       label="Message" />
           <a-autocomplete v-model="newTemplate.teamIds"
                           :items="selectableTeams"
@@ -92,11 +92,11 @@
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-6" :class="{'shaded-row': filterTemplates.indexOf(item) % 2}">
               <a-text-field  v-model="item.title" label="Template Name" class="pb-4"/>
-              <v-textarea v-model="item.message"
+              <a-textarea v-model="item.message"
                           label="Template Message"
                           auto-grow
-                          outlined
-              ></v-textarea>
+                          variant="outlined"
+              ></a-textarea>
 
 
               <a-autocomplete v-model="item.teamIds"

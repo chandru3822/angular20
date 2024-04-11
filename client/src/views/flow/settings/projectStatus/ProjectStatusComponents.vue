@@ -17,13 +17,13 @@
               label="Select a Category"
               item-title="projectStatusType"
               attach></a-autocomplete>
-          <v-textarea
+          <a-textarea
               label="Description"
-              outlined
+              variant="outlined"
               hide-details
               auto-grow
               v-model="projectStatus.description"
-          ></v-textarea>
+          ></a-textarea>
 
           <v-checkbox label="Use as Milestone"
                       class="default-text-color"

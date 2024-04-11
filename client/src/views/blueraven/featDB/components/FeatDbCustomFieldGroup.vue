@@ -18,18 +18,18 @@
             :lock-feature="true"
             :copy-feature="true"
         />
-        <v-textarea v-if="showOtherField(field.intValue, field.listOfValues)"
+        <a-textarea v-if="showOtherField(field.intValue, field.listOfValues)"
                     v-model="field.textValue"
                     :readonly="!userCanEdit"
                     :disabled="!userCanEdit"
                     @change="[field.valueWasChanged = true, callback(field)]"
                     label="Other Value"
-                    filled
+                    variant="filled"
                     hide-details
                     auto-grow
                     :rows="1"
                     class="other-field override-readonly-font-color mt-3"
-        ></v-textarea>
+        ></a-textarea>
       </div>
       <div v-if="!!hardcodedDocs && !!hardcodedDocs.get(group.id)">
         <FeatDbCard :title="hardcodedDocs.get(group.id).title">

@@ -274,10 +274,10 @@
                                       persistent-hint
                                       v-model.number="item.adjustment">
                         </a-text-field>
-                        <v-textarea
+                        <a-textarea
                             label="Notes"
                             v-model="item.adjustmentNote"
-                        ></v-textarea>
+                        ></a-textarea>
                       </v-card-text>
                       <v-divider></v-divider>
                       <v-card-actions>
