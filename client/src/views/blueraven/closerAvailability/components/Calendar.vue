@@ -29,10 +29,6 @@ const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
 
 // Calendar Info
 const calendarApi = ref(null)
-const calendarStart = ref(null)
-const calendarView = ref(null)
-const calendarStartTime = ref(null)
-const calendarEndTime = ref(null)
 const calendarLoading = ref(false)
 
 const maxSelectionAllowed = ref(10)
@@ -55,6 +51,7 @@ const calendarOptions = ref({
     (info, successCallback, failureCallback) => getEventSources(info, successCallback, failureCallback)
   ],
   eventClick: (eventClickInfo) => handleEventClick(eventClickInfo),
+  datesSet: (dateInfo) => updateCalDates(dateInfo),
   navLinks: true,
   navLinkDayClick: "resourceTimeline",
   slotLabelDidMount:function ({el, date, view, level}) {
@@ -111,24 +108,21 @@ const reloadCalendar = () =>{
   let calendarApi = refs.eventCalendar.getApi()
   calendarApi.refetchEvents()
 }
-
-const setCalendarStartAndEndTimes = () => {
-  calendarStart.value = calendarApi.value.getDate()
-  calendarView.value = calendarApi.value.view?.type
-  if(calendarView.value === 'resourceTimelineDay') {
-    calendarStartTime.value = moment(calendarStart.value).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
-    calendarEndTime.value = moment(calendarStart.value).add(1, 'd').startOf('d').subtract(1, 's').utc().format('YYYY-MM-DD HH:mm:ss')
-  } else {
-    //moment starts on sunday, isoWeek starts on monday
-    calendarStartTime.value = moment(calendarStart.value).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
-    calendarEndTime.value = moment(calendarStart.value).endOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
+const updateCalDates = async(info) => {
+  let start = info.start
+  let end = info.end
+  let diff = moment(end).diff(start, 'days')
+  if(diff > 7){
+    //for some reason when you click the date header in the week view, it sometimes tries to navigate to the month view; this prevents that
+    //it seems like it should be forcing it to navigate to the current date, but for some reason, it navigates to the date that was clicked...if it ain't broke...
+    let calendarApi = refs.eventCalendar.getApi()
+    calendarApi.changeView('resourceTimelineDay', new Date)
   }
-  scheduleStore.startTime = calendarStartTime.value
-  scheduleStore.endTime = calendarEndTime.value
 }
 
+
 const handleEventClick = (info) => {
-  if(info.event.title && info.event.display === 'auto') {
+  if(info.event.title && info.event.display === 'auto' && info.event.extendedProps?.projectProcessStepId) {
     let props = info.event.extendedProps
     //open event clicks in new window every time so they dont have to keep reloading the calendar
     let routerData = router.resolve({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}/event/${props.projectProcessStepEventId}`})
@@ -333,7 +327,7 @@ const getAvailability = async(info) => {
       }
       d.groupId = `${d.resourceId}`
       d.resourceId = `${d.resourceId}`
-      d.backgroundColor = 'rgba(0,0,0,.25)'
+      d.backgroundColor = 'rgba(0,0,0,.12)'
     if(!d.isSlotTime && d.display === 'inverse-background') {
       //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
       //do start time
@@ -356,7 +350,7 @@ const getAvailability = async(info) => {
         d.display = 'auto'
         d.title = d.title + ': ' + moment(d.start).format('h:mm') + '-' + moment(d.end).format('h:mm')
         d.textColor='rgba(0,0,0,0.87)'
-
+        d.backgroundColor='var(--v-grey-lighten1)'
       }
   })
 
@@ -373,7 +367,7 @@ const getAvailability = async(info) => {
         //these values have already been pre-appended with the 1 or 2
         groupId: r.id,
         resourceId: r.id,
-        backgroundColor: 'rgba(0,0,0,.25)'
+        backgroundColor: 'rgba(0,0,0,.12)'
       })
     })
     return data;
@@ -403,8 +397,6 @@ const getFormattedDate = (date) => {
 
 onMounted (async () => {
   calendarApi.value = refs.eventCalendar.getApi()
-  calendarStart.value = calendarApi.value.getDate()
-  setCalendarStartAndEndTimes()
   await getRoundRobins()
   await getRoundRobinUsers()
 })
