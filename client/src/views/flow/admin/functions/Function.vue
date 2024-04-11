@@ -79,11 +79,12 @@
                           class="default-text-color"
                           v-model="newParam.nullable"
               />
-              <v-textarea class="body-medium" hide-details
+              <a-textarea class="body-medium" hide-details
                           auto-grow
                           rows="4"
                           label="Description"
-                          outlined v-model="newParam.description"/>
+                          variant="outlined"
+                          v-model="newParam.description"/>
             </div>
           </div>
           <a-btn :disabled="!newParam || !newParam.parameterName || ( newParam.parameterTypeId !== 1 && !newParam.dataTypeId)
@@ -127,11 +128,12 @@
                                 class="default-text-color"
                                 v-model="item.nullable"
                     />
-                    <v-textarea class="body-medium" hide-details
+                    <a-textarea class="body-medium" hide-details
                                 auto-grow
                                 rows="4"
                                 label="Description"
-                                outlined v-model="item.description"/>
+                                variant="outlined"
+                                v-model="item.description"/>
                   </div>
                 </div>
                 <a-btn class="mr-2" text="Save"

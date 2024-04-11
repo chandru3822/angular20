@@ -69,12 +69,13 @@
                         v-model.number="newReimbursementRequest.amount">
           </a-text-field>
           <label>Notes:</label>
-          <v-textarea class="py-2" hide-details
-                      auto-grow filled
+          <a-textarea class="py-2" hide-details
+                      auto-grow
+                      variant="filled"
                       rows="4"
-                      background-color="#F2F6F8"
+                      bg-color="#F2F6F8"
                       v-model="newReimbursementRequest.notes">
-          </v-textarea>
+          </a-textarea>
           <a-btn
               color="primary"
               :disabled="!newReimbursementRequest.expenseDate || !newReimbursementRequest.glCodeId || !newReimbursementRequest.budgetTypeId || !newReimbursementRequest.expenseBudgetId || !newReimbursementRequest.amount"
@@ -163,12 +164,13 @@
                 </template>
                 <v-card class="pa-5">
                   <label>Reason for Rejection: (required)</label>
-                  <v-textarea class="py-2" hide-details
-                              auto-grow filled
+                  <a-textarea class="py-2" hide-details
+                              auto-grow
+                              variant="filled"
                               rows="4"
-                              background-color="#F2F6F8"
+                              bg-color="#F2F6F8"
                               v-model="selectedRequest.notes">
-                  </v-textarea>
+                  </a-textarea>
                   <a-btn
                       @click="rejectRequest(selectedRequest)"
                       :disabled="!selectedRequest.notes"
@@ -249,19 +251,21 @@
                               v-model.number="selectedRequest.amount">
                 </a-text-field>
                 <label>Request Details:</label>
-                <v-textarea class="py-2" hide-details
-                            auto-grow filled
+                <a-textarea class="py-2" hide-details
+                            auto-grow
+                            variant="filled"
                             rows="4"
-                            background-color="#F2F6F8"
+                            bg-color="#F2F6F8"
                             v-model="selectedRequest.details">
-                </v-textarea>
+                </a-textarea>
                 <label>Admin Notes:</label>
-                <v-textarea class="py-2" hide-details
-                            auto-grow filled
+                <a-textarea class="py-2" hide-details
+                            auto-grow
+                            variant="filled"
                             rows="4"
-                            background-color="#F2F6F8"
+                            bg-color="#F2F6F8"
                             v-model="selectedRequest.notes">
-                </v-textarea>
+                </a-textarea>
               </v-form>
             </v-col>
             <v-col cols="12" sm="7" class="pt-0">

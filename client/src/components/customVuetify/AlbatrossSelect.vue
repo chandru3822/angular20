@@ -1,5 +1,6 @@
 <template>
   <v-select
+      :id="id"
       :placeholder="placeholder"
       :value="value"
       :items="items"
@@ -59,6 +60,7 @@ const snackbar = vueInstance.$snackbar
 const basicRequiredRule = ref(constants.BASIC_REQUIRED_RULE)
 
 const props = defineProps({
+  id: String,
   value: [String, Number, Object, Array], //object for when return-object, array for when multiple
   items: {
     type: Array,

@@ -56,7 +56,7 @@
             autocomplete="off"
         />
 
-        <v-textarea
+        <a-textarea
             v-if="field.dataTypeId === 5"
             auto-grow
             rows="1"

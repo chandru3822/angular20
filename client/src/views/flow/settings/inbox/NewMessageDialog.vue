@@ -100,13 +100,13 @@
       </div>
 
       <div class="flex-display">
-        <v-textarea class="message-text-area" hide-details
+        <a-textarea class="message-text-area" hide-details
                     placeholder="Enter message here"
                     auto-grow
-                    outlined
+                    variant="outlined"
                     rows="4"
                     v-model="message">
-        </v-textarea>
+        </a-textarea>
         <a-btn
           variant="text"
           icon

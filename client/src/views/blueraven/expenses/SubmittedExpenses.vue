@@ -242,19 +242,21 @@
                           v-model.number="selectedExpense.amount">
             </a-text-field>
             <label>Details:</label>
-            <v-textarea class="py-2" hide-details
-                        auto-grow filled
+            <a-textarea class="py-2" hide-details
+                        auto-grow
+                        variant="filled"
                         rows="4"
-                        background-color="#F2F6F8"
+                        bg-color="#F2F6F8"
                         v-model="selectedExpense.details">
-            </v-textarea>
+            </a-textarea>
             <label>Notes:</label>
-            <v-textarea class="py-2" hide-details
-                        auto-grow filled
+            <a-textarea class="py-2" hide-details
+                        auto-grow
+                        variant="filled"
                         rows="4"
-                        background-color="#F2F6F8"
+                        bg-color="#F2F6F8"
                         v-model="selectedExpense.notes">
-            </v-textarea>
+            </a-textarea>
 
             <label>Receipt Image:</label>
             <div class="receipt-image-background">

@@ -1,5 +1,5 @@
 <template>
-  <v-text-field
+  <v-textarea
                 :placeholder="placeholder"
                 :value="value"
                 :type="type"
@@ -9,13 +9,18 @@
                 :append-icon="appendInnerIcon"
                 :append-outer-icon="appendIcon"
                 :clearable="clearable"
-                @input="v => $emit('input', v)"
+                @change="v => $emit('change', v)"
                 v-on="$listeners"
                 :hint="hint"
+                :auto-grow="autoGrow"
+                :autofocus="autofocus"
+                :no-resize="noResize"
+                :rows="rows"
                 :single-line="singleLine"
                 :rules="combinedRules"
                 :readonly="readonly"
                 :disabled="disabled"
+                :background-color="bgColor"
                 :hide-details="hideDetails"
                 :counter="counter"
                 :dense="density === 'compact'"
@@ -28,7 +33,7 @@
                 :persistent-hint="persistentHint"
                 :class="[customClasses]"
                 :label="label">
-  </v-text-field>
+  </v-textarea>
 </template>
 
 <script setup>
@@ -47,12 +52,14 @@ const basicRequiredRule = ref(constants.BASIC_REQUIRED_RULE)
 const props = defineProps({
   value: [String, Number],
   placeholder: String, //fields without a defined default will default to null
-  id: String,
   label: String,
+  id: String,
   variant: String,
   hint: String,
+  rows: [ Number, String ],
   color: String,
   clearIcon: String,
+  bgColor: String, //vuetify3 = bgColor
   prependIcon: String,
   prependInnerIcon: String,
   //vue2's appendIconOuter = appendIcon in vue3
@@ -71,6 +78,9 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  autoGrow: Boolean,
+  autofocus: Boolean,
+  noResize: Boolean,
   required: Boolean,
   readonly: Boolean,
   disabled: Boolean,

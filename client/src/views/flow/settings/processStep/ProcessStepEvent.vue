@@ -119,10 +119,10 @@
             </a-autocomplete>
           </div>
           <div v-else-if="newEventAction.actionTypeId && newEventAction.actionTypeId === 3">
-            <v-textarea required label="Banner Content" auto-grow filled
+            <a-textarea required label="Banner Content" auto-grow variant="filled"
                         style="margin: 15px 0 -15px 0"
                         v-model="newEventAction.content">
-            </v-textarea>
+            </a-textarea>
             <div>
               <label>Banner Text Color:</label>
               <v-color-picker class="my-3"
@@ -638,10 +638,10 @@
                 ></EventActionChildSms>
               </div>
               <div v-if="action.actionTypeId === 3">
-                <v-textarea required label="Banner Content" auto-grow filled
+                <a-textarea required label="Banner Content" auto-grow variant="filled"
                             style="margin: 15px 0 -15px 0"
                             v-model="action.content">
-                </v-textarea>
+                </a-textarea>
                 <div>
                   <label>Banner Text Color:</label>
                   <v-color-picker class="my-3"

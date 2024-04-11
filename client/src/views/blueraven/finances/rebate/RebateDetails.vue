@@ -234,8 +234,8 @@
                               @close-dialog="cancelNotesDialog"
                               :disable-confirm="!userCanEdit">
             <template v-slot:title>Notes</template>
-            <v-textarea v-model="notesItem.void_note" density="compact" variant="outlined" auto-grow rows="5">
-            </v-textarea>
+            <a-textarea v-model="notesItem.void_note" density="compact" variant="outlined" auto-grow rows="5">
+            </a-textarea>
             <template v-slot:no>cancel</template>
             <template v-slot:yes>save</template>
           </ConfirmationDialog>
@@ -247,8 +247,8 @@
           >
             <template v-slot:title>Confirm</template>
             Are you sure you want to void this payment?
-            <v-textarea v-model="notesItem.void_note" outlined auto-grow>
-            </v-textarea>
+            <a-textarea v-model="notesItem.void_note" variant="outlined" auto-grow>
+            </a-textarea>
             <template v-slot:no>cancel</template>
             <template v-slot:yes>void</template>
           </ConfirmationDialog>

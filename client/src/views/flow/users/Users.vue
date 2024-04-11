@@ -402,11 +402,11 @@
             </a-autocomplete>
 
           <div class="flex-display justify-end">
-            <v-textarea solo v-model="textMessage"
+            <a-textarea v-model="textMessage"
                         auto-grow
                         rows="4"
-                        outlined
-                        placeholder="Enter message here" class="message-text-area py-1 pr-3"></v-textarea>
+                        variant="outlined"
+                        placeholder="Enter message here" class="message-text-area py-1 pr-3"></a-textarea>
 
               <v-tooltip bottom small>
                 <template v-slot:activator="{on, attrs}">

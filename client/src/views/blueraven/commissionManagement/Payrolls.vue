@@ -26,22 +26,20 @@
                 :format="'MMMM DD, YYYY'"
                 label="End Date"
             />
-            <v-autocomplete ref="repAutocomplete"
+            <a-autocomplete ref="repAutocomplete"
                             v-model="payrollSearch.salesRepId"
                             :items="reps"
                             :loading="repsLoading"
                             :search-input.sync="repSearch"
                             label="Sales Rep..."
                             clearable
-                            item-text="name"
+                            item-title="name"
                             item-value="userId"
                             type="search"
                             @click:clear="reps = []"
                             attach
-            ></v-autocomplete>
-            <!--            <a-text-field -->
-            <!--                          label="Sales Rep"-->
-            <!--                          v-model="payrollSearch.salesRep"></a-text-field>-->
+            ></a-autocomplete>
+
             <div class="text-left">
               <a-btn
                   color="primary"
@@ -140,7 +138,7 @@ const footerProps = ref({
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
 })
 const reps = ref([])
-const repSearch = ref(null)
+const repSearch = ref('')
 const repsLoading = ref(false)
 const dataLoading = ref(false)
 const headers = ref([

@@ -73,12 +73,13 @@
                     item-title="name"
                     item-value="id"
           ></a-select>
-          <v-textarea class="py-2" hide-details
-                      auto-grow filled
+          <a-textarea class="py-2" hide-details
+                      auto-grow
+                      variant="filled"
                       rows="4"
-                      background-color="#F2F6F8"
+                      bg-color="#F2F6F8"
                       v-model="newBudget.notes">
-          </v-textarea>
+          </a-textarea>
           <a-btn
               color="primary"
               :disabled="!newBudget.userId || !newBudget.amount || !selectedYear || !selectedMonth"
@@ -135,12 +136,13 @@
                           item-title="name"
                           item-value="id"
                 ></a-select>
-                <v-textarea class="py-2" hide-details
-                            auto-grow filled
+                <a-textarea class="py-2" hide-details
+                            auto-grow
+                            variant="filled"
                             rows="4"
-                            background-color="#F2F6F8"
+                            bg-color="#F2F6F8"
                             v-model="item.notes">
-                </v-textarea>
+                </a-textarea>
                 <a-btn
                     :disabled="false"
                     color="primary"

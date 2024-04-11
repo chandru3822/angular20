@@ -75,11 +75,12 @@
             <v-checkbox label="Sales Partners"
                         class="default-text-color"
                         v-model="postalCode.salesPartners"/>
-            <v-textarea class="body-medium" hide-details
+            <a-textarea class="body-medium" hide-details
                         auto-grow
                         rows="4"
                         label="Notes"
-                        outlined v-model="postalCode.notes"/>
+                        variant="outlined"
+                        v-model="postalCode.notes"/>
           </v-card>
         </v-container>
       </v-col>

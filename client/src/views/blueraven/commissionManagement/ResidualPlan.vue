@@ -147,19 +147,19 @@
         <v-card v-if="addUser" class="square-card text-left px-5 pb-5">
           <v-row>
             <v-col cols="12" md="6">
-              <v-autocomplete v-model="newUser.userId"
+              <a-autocomplete v-model="newUser.userId"
                               :items="usersToAdd"
                               :loading="usersLoading"
                               prepend-icon="search"
                               cache-items
                               :search-input.sync="userSearch"
                               label="Search for a user..."
-                              item-text="name"
+                              item-title="name"
                               item-value="userId"
                               autocomplete="off"
                               attach
               >
-              </v-autocomplete>
+              </a-autocomplete>
               <DatetimePickerInput
                   v-model="newUser.startDate"
                   :timezone="timezone"

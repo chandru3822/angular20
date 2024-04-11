@@ -121,7 +121,7 @@
                 v-model="customField.customFieldSqlKey"
                 label="SQL Key"
               />
-              <v-textarea auto-grow outlined
+              <a-textarea auto-grow variant="outlined"
                 v-model="customField.customFieldSql"
                 label="SQL"
               />

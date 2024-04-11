@@ -21,10 +21,11 @@
                       :rules="[urlRule]" label="URL" filled></a-text-field>
         <a-text-field v-model="selectedLink.username" label="Username" filled></a-text-field>
         <a-text-field v-model="selectedLink.password" label="Password" filled></a-text-field>
-        <v-textarea label="Notes" auto-grow filled
+        <a-textarea label="Notes" auto-grow
+                    variant="filled"
                     style="margin: 15px 0 -15px 0"
                     v-model="selectedLink.notes">
-        </v-textarea>
+        </a-textarea>
       </v-form>
     </template>
     <v-list v-show="links.length > 0" v-for="(link, index) of links"

@@ -226,17 +226,17 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addReceivingUser" class="square-card text-left pa-5">
-            <v-autocomplete v-model="newReceivingUser.userId"
+            <a-autocomplete v-model="newReceivingUser.userId"
                             :items="receivingUsersToAdd"
                             :loading="receivingUsersLoading"
                             prepend-icon="search"
                             :search-input.sync="receivingUserSearch"
                             label="Search for a user..."
-                            item-text="name"
+                            item-title="name"
                             item-value="userId"
                             autocomplete="off"
                             attach>
-            </v-autocomplete>
+            </a-autocomplete>
             <a-text-field
                           type="number"
                           label="M1 Allocation"
@@ -384,13 +384,13 @@
           <div v-else>
             <v-row>
               <v-col cols="12" md="6">
-                <v-autocomplete v-model="newAssignedUser.userId"
+                <a-autocomplete v-model="newAssignedUser.userId"
                                 :items="assignedUsersToAdd"
                                 :loading="assignedUsersLoading"
                                 prepend-icon="search"
                                 :search-input.sync="assignedUserSearch"
                                 label="Search for a user..."
-                                item-text="name"
+                                item-title="name"
                                 item-value="userId"
                                 autocomplete="off"
                                 @input="getUserHistory(newAssignedUser.userId)"
@@ -399,7 +399,7 @@
                   <template slot='item' slot-scope='{ item }'>
                     {{ item.name }} - {{ item.position }}
                   </template>
-                </v-autocomplete>
+                </a-autocomplete>
                 <DatetimePickerInput
                   v-model="newAssignedUser.startDate"
                   :timezone="this.timezone"

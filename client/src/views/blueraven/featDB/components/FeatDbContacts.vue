@@ -34,12 +34,14 @@
         <a-text-field v-model="selectedContact.phoneNumber" label="Phone" filled></a-text-field>
         <a-text-field v-model="selectedContact.email" label="Email" type="email" filled></a-text-field>
         <a-text-field v-model="selectedContact.hours" label="Hours" filled></a-text-field>
-        <v-textarea label="Address" auto-grow filled
+        <a-textarea label="Address" auto-grow
+                    variant="filled"
                     v-model="selectedContact.address">
-        </v-textarea>
-        <v-textarea label="Notes" auto-grow filled
+        </a-textarea>
+        <a-textarea label="Notes" auto-grow
+                    variant="filled"
                     v-model="selectedContact.notes">
-        </v-textarea>
+        </a-textarea>
         <div class="contact-btns">
           <a-btn
               color="primary"
