@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import theme from '@/helpers/defaultTheme.js'
 import { shadeColorByPercent } from '@/helpers/helpers'
+import cloneDeep from 'lodash.clonedeep'
 
 const defaultState = {
   loading: false,
@@ -9,7 +10,7 @@ const defaultState = {
   redirectUrl: null,
   spinnerUrl: null,
   announcements: [],
-  theme: theme.LIGHT,
+  theme: cloneDeep(theme.LIGHT),
   snack: {
     show: false
   }
