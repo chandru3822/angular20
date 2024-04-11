@@ -3,6 +3,7 @@
     <SidePanelExpansionPanel header="Overview" :is-disabled="!props.isExpandable" :section-expanded="opened">
       <template v-slot:tool-btn>
         <a-btn
+            id="qa-page-overview-edit"
             size="small"
             class="mx-2"
             variant="text"

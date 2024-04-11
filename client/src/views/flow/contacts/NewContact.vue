@@ -5,7 +5,7 @@
         Add Contact
         <v-spacer></v-spacer>
         <a-btn
-            v-if="!constants.IS_MOBILE"
+            v-if="$vuetify.breakpoint.smAndUp"
             variant="text"
             color="primary"
             class="mr-3 body-medium"
@@ -13,7 +13,8 @@
             text="Cancel"
         ></a-btn>
         <a-btn
-            v-if="!constants.IS_MOBILE"
+            id="qa-add-contact-save"
+            v-if="$vuetify.breakpoint.smAndUp"
             color="primary "
             :disabled="loadingInsertFields"
             @click="validate(true)"
@@ -21,7 +22,7 @@
             text="Save"
         ></a-btn>
       </v-card-title>
-      <v-card-text  v-if="constants.IS_MOBILE">
+      <v-card-text v-if="$vuetify.breakpoint.xsOnly">
         <a-btn
             variant="text"
             class="mr-3 body-medium"

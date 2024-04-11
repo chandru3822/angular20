@@ -4,7 +4,6 @@ import { AppMutations, AppStore } from '@/stores/AppStore'
 import { createPinia, PiniaVuePlugin } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import { ScheduleStore } from '@/stores/ScheduleStore'
 
 Vue.use(PiniaVuePlugin)
 export const pinia = createPinia()
@@ -65,8 +64,8 @@ const store = new Vuex.Store({
     // user: UserStore,
     // brs: BrsStore,
     // project: ProjectStore,
-    app: AppStore,
-    schedule: ScheduleStore
+    app: AppStore
+    // schedule: ScheduleStore
   },
   mutations: {
     // ADD_CANCEL_TOKEN(state, token) {

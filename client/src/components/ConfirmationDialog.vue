@@ -25,6 +25,7 @@
         <a-btn
             @click.native="no"
             variant="text"
+            id="qa-confirmation-dialog-no"
             color="primary"
             class="text-capitalize mr-2 mb-2"
         >
@@ -37,6 +38,7 @@
             color="primary"
             class="elevation-2 text-capitalize mr-2 mb-2"
             :disabled="disableConfirm"
+            id="qa-confirmation-dialog-yes"
             :class="confirmClass"
             @click="yes"
         >

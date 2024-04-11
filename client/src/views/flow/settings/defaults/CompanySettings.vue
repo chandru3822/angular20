@@ -30,8 +30,6 @@
           <a-text-field v-model.number="company.minuteIncrement"
                         placeholder="Enter a value"
                         required
-                        solo
-                        variant="solo"
                         :rules="rules"
                         @input="forceInteger"
                         :step="1"

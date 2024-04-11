@@ -16,8 +16,6 @@
       :append-outer-icon="appendIcon"
       :clearable="clearable"
       :menu-props="menuProps"
-      @input="v => $emit('input', v)"
-      @change="v => $emit('change', v)"
       v-on="$listeners"
       :hint="hint"
       :single-line="singleLine"

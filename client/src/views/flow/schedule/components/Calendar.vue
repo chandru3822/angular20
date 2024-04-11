@@ -283,23 +283,24 @@ import cloneDeep from 'lodash.clonedeep'
 import {getSchedulingOrgTypes} from '@/services/orgService'
 import {AppMutations} from '@/stores/AppStore'
 
-import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar, getEventColorClass} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getEventColorClass} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import FullCalendar from "@fullcalendar/vue";
 import momentTimezonePlugin from "@fullcalendar/moment-timezone";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
-import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
 import {computed, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue";
 import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
+import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 
 const appStore = useAppStore()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
@@ -1098,10 +1099,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
         }
       }
 
-      const changeTimezone = async (tz) => {
-        //update the timezone in the schedule store
-        await store.dispatch(ScheduleActions.CHANGE_TIMEZONE_SCHEDULE, tz)
-      }
+      const changeTimezone = async (tz) => scheduleStore.timezone = tz
 
       const getFormattedDate = (date) => {
         //used for formatting the start/end for the hoverTitle
@@ -1118,8 +1116,8 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
           calendarStartTime.value = moment(calendarStart.value).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
           calendarEndTime.value = moment(calendarStart.value).endOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
         }
-        store.commit(ScheduleMutations.SET_START_TIME, calendarStartTime.value)
-        store.commit(ScheduleMutations.SET_END_TIME, calendarEndTime.value)
+		scheduleStore.startTime = calendarStartTime.value
+		scheduleStore.endTime = calendarEndTime.value
         props.dateCallback(calendarStartTime.value, calendarEndTime.value)
       }
 

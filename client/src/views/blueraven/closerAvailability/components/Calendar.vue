@@ -3,20 +3,21 @@ import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
 import momentTimezonePlugin from "@fullcalendar/moment-timezone";
-import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getEventColorClass} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, postRequest, getEventColorClass} from '@/helpers/helpers'
 import moment from "moment/moment.js";
-import {ScheduleMutations} from "@/stores/ScheduleStore.js";
 import constants from "@/helpers/constants.js";
 import FullCalendar from "@fullcalendar/vue";
 import cloneDeep from "lodash.clonedeep";
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
@@ -122,8 +123,8 @@ const setCalendarStartAndEndTimes = () => {
     calendarStartTime.value = moment(calendarStart.value).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
     calendarEndTime.value = moment(calendarStart.value).endOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
   }
-  store.commit(ScheduleMutations.SET_START_TIME, calendarStartTime.value)
-  store.commit(ScheduleMutations.SET_END_TIME, calendarEndTime.value)
+  scheduleStore.startTime = calendarStartTime.value
+  scheduleStore.endTime = calendarEndTime.value
 }
 
 const handleEventClick = (info) => {

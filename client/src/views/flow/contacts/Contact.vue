@@ -16,6 +16,7 @@
         <v-card-text class="pt-4 px-0">
           <div>
             <a-text-field
+                id="qa-first-name-field"
                 v-model="tempContact.firstName"
                 :rules="requiredRules"
                 :readonly="!userCanEdit"
@@ -25,6 +26,7 @@
             ></a-text-field>
             <a-text-field
                 class="body-large"
+                id="qa-last-name-field"
                 v-model="tempContact.lastName"
                 :rules="requiredRules"
                 :readonly="!userCanEdit"
@@ -35,6 +37,7 @@
                 class="body-large"
                 v-model="tempContact.street1"
                 label="Street"
+                id="qa-address-field"
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
                 :maxlength="100"
@@ -42,6 +45,7 @@
                 @change="tempContact.reloadCoordinates = true"
             ></a-text-field>
             <a-text-field
+                id="qa-city-field"
                 class="body-large"
                 v-model="tempContact.city"
                 label="City"
@@ -54,6 +58,7 @@
                 type="text"
                 v-model="tempContact.postalCode"
                 counter
+                id="qa-zip-field"
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
                 :maxlength="10"
@@ -66,6 +71,7 @@
                             class="body-large"
                             :items="states"
                             label="State"
+                            id="qa-state-field"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
                             :loading="statesLoading"
@@ -78,6 +84,7 @@
                       :items="countries"
                       label="Country"
                       :readonly="!userCanEdit"
+                      id="qa-country-field"
                       :disabled="!userCanEdit"
                       :loading="countriesLoading"
                       @input="tempContact.reloadCoordinates = true"
@@ -88,6 +95,7 @@
                           class="body-large"
                           label="Phone"
                           placeholder=" "
+                          id="qa-phone-field"
                           :rules="contactPhoneRule"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
@@ -96,6 +104,7 @@
                           class="body-large"
                           label="Mobile"
                           placeholder=" "
+                          id="qa-mobile-field"
                           :rules="contactPhoneRule"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
@@ -112,6 +121,7 @@
           </div>
           <a-autocomplete v-model="tempContact.owner"
                           class="body-large"
+                          id="qa-owner-field"
                           :readonly="contactOwnerFieldIsReadOnly()"
                           :disabled="contactOwnerFieldIsReadOnly()"
                           :items="availableOwners"
@@ -152,6 +162,7 @@
       <template v-slot:header-btn>
         <div class="mt-3">
           <a-btn
+              id="qa-delete-contact"
               variant="text"
               color="primary"
               v-if="userCanDelete"
@@ -246,7 +257,9 @@
           <div class=menu-option :class="{'body-large': !showMobileAssociatedProjects, 'label-large': showMobileAssociatedProjects}" @click="openTab('associatedProjects')">Associated Projects</div>
           <div class=menu-option :class="{'body-large': !showMobileNotes, 'label-large': showMobileNotes}" @click="openTab('notes')">Notes</div>
           <div class=menu-option :class="{'body-large': !showMobileDocuments, 'label-large': showMobileDocuments}" @click="openTab('documents')">Documents</div>
-          <div v-if="userCanDelete && !(contact.projects && contact.projects.length > 0)" class="body-large menu-option" @click="deleteContactConfirm = true" style="color: #B4221F">Delete Contact</div>
+          <div v-if="userCanDelete && !(contact.projects && contact.projects.length > 0)" class="body-large menu-option"
+               id="qa-delete-contact"
+               @click="deleteContactConfirm = true" style="color: #B4221F">Delete Contact</div>
           <div v-else class="body-large menu-option" style="color: #FECDD2">Delete Contact</div>
 
         </div>
@@ -355,21 +368,13 @@
               <div>
                 <a-btn
                     color="primary"
-                    class="body-medium mt-3 hide-xs"
+                    class="body-medium mt-3"
                     v-if="userCanEdit"
+                    id="qa-edit-contact-save"
                     :loading="fieldsLoading"
                     :disabled="fieldsSaving"
                     @click="validateFields(true)"
                     text="Save Fields"
-                ></a-btn>
-                <a-btn
-                    color="primary"
-                    class="body-medium mt-3 show-xs"
-                    v-if="userCanEdit"
-                    :loading="fieldsLoading"
-                    :disabled="fieldsSaving"
-                    @click="validateFields(true)"
-                    text="Save"
                 ></a-btn>
               </div>
             </v-toolbar-items>
@@ -447,17 +452,9 @@
               <div>
                 <a-btn
                     color="primary"
-                    class="body-medium mt-3 hide-xs"
+                    class="body-medium mt-3"
                     v-if="userCanEdit"
-                    :loading="fieldsLoading"
-                    :disabled="fieldsSaving"
-                    @click="validateFields(true)"
-                    text="Save Fields"
-                ></a-btn>
-                <a-btn
-                    color="primary"
-                    class="body-medium mt-3 show-xs"
-                    v-if="userCanEdit"
+                    id="qa-edit-contact-save"
                     :loading="fieldsLoading"
                     :disabled="fieldsSaving"
                     @click="validateFields(true)"

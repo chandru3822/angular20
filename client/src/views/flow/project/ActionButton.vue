@@ -4,7 +4,7 @@
       :disabled="!canPerformAction"
       color="primary"
       class="action-button"
-      @click="[canPerformAction = false, completeAction(actionResult)]">
+      @click="completeAction(actionResult)">
     <template v-slot:default>
       <div>
         <div class="action-button-name">
@@ -45,7 +45,6 @@ const props = defineProps({
   followMultipleLinks: Function
 })
 const { actionResult, canPerformAction, completeAction, followMultipleLinks } = toRefs(props)
-
 
 const getColor = () => {
   return canPerformAction.value ? 'white' : null
