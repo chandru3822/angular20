@@ -72,17 +72,18 @@
   import ThreeColumnLayoutMobile from "@/views/ThreeColumnLayoutMobile.vue";
   import ProjectSearchDialog from "@/views/flow/schedule/components/ProjectSearchDialog.vue";
   import ProjectModal from "@/views/flow/schedule/components/ProjectModal.vue";
-  import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
   import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 
   import {useUserStore} from '@/stores/UserStorePinia.js'
   import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
   import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
   const appStore = useAppStore()
   const route = useRoute()
   const router = useRouter()
   const userStore = useUserStore()
+  const scheduleStore = useScheduleStore()
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
@@ -172,12 +173,11 @@
           timezone.value = store.state.schedule.timezone
         }
       }
-  const updateTimezone = () => {
-        store.dispatch(ScheduleActions.CHANGE_TIMEZONE, timezone.value)
-      }
+  const updateTimezone = () => scheduleStore.timezone = timezone.value
+
       const showHideMap = (show)=> {
         if(show !== showMap.value) {
-          store.commit(ScheduleMutations.SHOW_HIDE_MAP)
+			scheduleStore.showMap = !scheduleStore.showMap
         }
       }
       const validateSaveEvent =  () => {
@@ -267,7 +267,7 @@
           if(onLoad === true){
             toggleSelectedProjectMapPin(onLoad)
           }
-          store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, project.resourceId)
+		  scheduleStore.resourceId = project.selectedResourceId
           selectedProject.value.resource = { id: selectedProject.value.resourceId, name: selectedProject.value.resourceName }
         } catch (e) {
           console.error('*** ERROR ***', e)

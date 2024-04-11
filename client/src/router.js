@@ -9,13 +9,14 @@ import {pinia} from '@/store'
 import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
-import { ScheduleMutations } from '@/stores/ScheduleStore.js'
+import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 Vue.use(Router)
 const nonRedirectPaths = ['/', '/home']
 const userStore = useUserStore(pinia)
 const appStore = useAppStore(pinia)
 const fileStore = useFileStore(pinia)
+const scheduleStore = useScheduleStore(pinia)
 
 const router = new Router({
   mode: 'history',
@@ -108,8 +109,7 @@ const router = new Router({
 
               const {data} = await getUser()
               userStore.details = data
-                //todo: fix when Schedule store is updated to Pinia @humes
-                //store.commit(ScheduleMutations.SET_TIMEZONE_SCHEDULE, data.timezone)
+			  scheduleStore.timezone = data.timezone
               next()
             } catch (e) {
               next('/login')

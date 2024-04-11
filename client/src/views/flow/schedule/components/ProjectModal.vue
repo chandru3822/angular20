@@ -13,12 +13,12 @@ import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from "@/
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/eventStatusTypeService.js";
-import {ScheduleMutations} from "@/stores/ScheduleStore.js";
 import { getEventDefaultFieldReadOnly } from '@/services/customFieldService.js'
 
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -26,6 +26,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const scheduleStore = useScheduleStore()
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const emit = defineEmits(['toggleProjectMapPin', 'updateEvents'])
@@ -121,14 +122,7 @@ onMounted(async () => {
 	}
 })
 
-const setSelectedResourceInStore = (resourceId) => {
-  if(resourceId){
-    store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, resourceId)
-  }
-  else {
-    store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, null)
-  }
-}
+const setSelectedResourceInStore = (resourceId) => scheduleStore.selectedResourceId = resourceId ?? null
 
 const openInNewTab = (path) => {
   let routerData = router.resolve({path})

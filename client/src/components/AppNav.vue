@@ -153,18 +153,19 @@ import axios from 'axios'
 import AnnouncementDropdown from '@/components/AnnouncementDropdown.vue'
 import moment from 'moment'
 import {useNotificationStore} from '@/stores/NotificationStorePinia.js'
-import { ScheduleMutations } from '@/stores/ScheduleStore.js'
 
 import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
 import {useUserStore} from '@/stores/UserStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import {useAppStore} from '@/stores/AppStorePinia.js'
+import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 const appStore = useAppStore()
 const notificationStore = useNotificationStore()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
@@ -365,8 +366,7 @@ const clearMasquerade = async () => {
       //update the user
       const {data: currentUser} = await getRequest(`/user/current`)
       userStore.details = currentUser
-      //todo: fix when Schedule store is updated to Pinia @humes
-      // this.$store.commit(ScheduleMutations.SET_TIMEZONE_SCHEDULE, currentUser.timezone)
+	  scheduleStore.timezone = currentUser.timezone
       //then reload the screen
       window.location.reload()
     }
