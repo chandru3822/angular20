@@ -323,7 +323,7 @@ const scheduleTimezone = computed(() => {
 })
 
 const userTimezone = computed(() => {
-  return store.state.user.details.timezone?.value
+  return userStore.timezone.value
 })
 
 const calendarOptions = ref({
