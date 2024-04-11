@@ -9,7 +9,6 @@
                 :append-icon="appendInnerIcon"
                 :append-outer-icon="appendIcon"
                 :clearable="clearable"
-                @change="v => $emit('change', v)"
                 v-on="$listeners"
                 :hint="hint"
                 :auto-grow="autoGrow"

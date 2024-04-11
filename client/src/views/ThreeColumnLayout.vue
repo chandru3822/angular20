@@ -3,7 +3,7 @@
     <v-row>
       <v-toolbar v-if="!props.headerHidden" flat :height="props.headerLarge ? '94px' : '64px'" class="three-column-header px-5">
         <slot name="header">
-          <v-toolbar-title class="headline-medium d-flex align-center mr-6">
+          <v-toolbar-title id="qa-three-column-header-title" class="headline-medium d-flex align-center mr-6">
             <slot name="back-btn"></slot>
             {{ props.headerText }}
           </v-toolbar-title>

@@ -8,6 +8,7 @@
           <v-toolbar-items>
 
             <a-btn
+                id="qa-new-contact-single"
                 variant="text"
                 v-if="canAdd && (!userStore.isParent|| !companies || companies.length === 1)"
                 to="/newContact"
@@ -23,6 +24,7 @@
                     :close-on-content-click="false">
               <template v-slot:activator="{ on }">
                 <a-btn
+                    id="qa-new-contact-multi"
                     variant="text"
                     :activation-handler="on"
                     color="primary"
@@ -46,6 +48,7 @@
             class="elevation-1 mt-3"
         >
           <a-text-field
+              id="qa-contact-search"
               class="mt-5 body-large"
               prepend-inner-icon="search"
               clearable

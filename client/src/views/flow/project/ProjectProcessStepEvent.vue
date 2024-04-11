@@ -160,7 +160,7 @@
 
       </ConfirmationDialog>
       <div class="error-text pb-4 px-6" v-if="eventActionMissingRequirements">
-        {{ saveErrorMsg.value }}
+        {{ saveErrorMsg }}
       </div>
       <v-card class="pa-4 square-card mb-2"
               v-if="selectedEvent.uniqueBehaviorTypeId === 1 && (!project.postalCode || !project.companyStateId)">
@@ -621,7 +621,7 @@ const followMultipleLinks = (action) => {
   let params = {
     projectId: projectId.value,
     ppsId: projectProcessStepId.value,
-    ppseId: ppseId.value
+    ppseId: ppsEventId.value
   }
 
   action?.childLinks?.forEach(link => {
@@ -642,7 +642,6 @@ const validateActionRequirements = async (action) => {
   if ((actionRequiresStart.value && !selectedEvent.value.startTime) ||
       (actionRequiresEnd.value && !selectedEvent.value.endTime) ||
       (actionRequiresResource.value && !selectedEvent.value.resourceId) || cfHasMissing) {
-
     eventActionMissingRequirements.value = true
 
   } else {

@@ -9,7 +9,6 @@
                 :append-icon="appendInnerIcon"
                 :append-outer-icon="appendIcon"
                 :clearable="clearable"
-                @input="v => $emit('input', v)"
                 v-on="$listeners"
                 :hint="hint"
                 :single-line="singleLine"

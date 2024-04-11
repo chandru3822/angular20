@@ -137,7 +137,7 @@
               item-title="eventName"
               item-value="id"
               return-object
-              dense
+              density="compact"
               style="z-index: 10"
               class="mt-2"
               @input="addEvent()"
@@ -774,9 +774,9 @@ const handleOnCompleteError = (actionId, errorMessage) => {
 const addEvent =  async () => {
   appStore.loading = true
   try {
-    const {data} = await postRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${eventToAdd.value.id}`)
+    const {data} = await postRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${eventToAdd.value.id}`, {})
     emit('refresh-upcoming-events')
-    router.push(`/project/${projectId.value}/processStep/${data.projectProcessStepId}/event/${data.id}`)
+    await router.push(`/project/${projectId.value}/processStep/${data.projectProcessStepId}/event/${data.id}`)
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
