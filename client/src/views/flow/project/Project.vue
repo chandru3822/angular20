@@ -338,7 +338,7 @@ import StatusTrackerItem from "@/views/flow/project/StatusTrackerItem";
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
 import ThreeColumnLayoutMobile from '@/views/ThreeColumnLayoutMobile'
 import { useProjectStore } from '@/stores/ProjectStore.js'
-import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
+import { useNotificationStore } from '@/stores/NotificationStore.js'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'

@@ -259,7 +259,7 @@ import ProjectActivity from "@/views/flow/project/ProjectActivity.vue";
 
 import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
 import {useUserStore} from "@/stores/UserStore.js";
-import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
+import { useNotificationStore } from '@/stores/NotificationStore.js'
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()

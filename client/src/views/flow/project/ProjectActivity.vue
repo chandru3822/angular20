@@ -188,7 +188,7 @@ import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignme
 import debounce from 'lodash.debounce'
 import CollapsableRightPanel from "@/layouts/CollapsableRightPanel.vue";
 import { useProjectStore } from '@/stores/ProjectStore.js'
-import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
+import { useNotificationStore } from '@/stores/NotificationStore.js'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'

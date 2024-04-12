@@ -5,7 +5,7 @@
 import constants from '@/helpers/constants'
 import {getCurrentInstance, onBeforeUnmount, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
-import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
+import { useNotificationStore } from '@/stores/NotificationStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
