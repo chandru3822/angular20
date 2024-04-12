@@ -212,6 +212,7 @@
               :hide-details="true"
               return-object
               prepend-icon="mdi-web"
+			  @change="updateTimezone"
           />
         </v-col>
         <v-col id="cancelled-events-toggle-col" class="py-0 d-flex align-start" cols="9" sm="4" md="3">
@@ -307,6 +308,7 @@ const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const refs = vueInstance.$refs
 const filters = vueInstance.$filters
+const userCanEdit = computed(() => userStore.userHasFeatureAccessLevel('SCHEDULE', 'EDIT'))
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
 
@@ -319,13 +321,8 @@ const props = defineProps({
   preselectedEvent: {type:Object, required: false}
 })
 
-const scheduleTimezone = computed(() => {
-  return store.state.schedule.timezone?.value
-})
-
-const userTimezone = computed(() => {
-  return userStore.timezone.value
-})
+const scheduleTimezone = computed(() => scheduleStore.getTimezone)
+const userTimezone = computed(() => userStore.timezone)
 
 const calendarOptions = ref({
   plugins: [
@@ -380,7 +377,7 @@ const calendarOptions = ref({
     }
   },
   height: '100%',
-  timeZone: scheduleTimezone.value || {},
+  timeZone: scheduleTimezone || {},
 
   customButtons: {
     customToday: {
@@ -435,6 +432,8 @@ const timezones = ref([
   { friendlyValue: 'US/Eastern', value: 'America/New_York'},
   { friendlyValue: 'US/Mountain', value: 'America/Denver'}
 ])
+
+const updateTimezone = (newTimezone) => scheduleStore.timezone = newTimezone
 
 //states
 const sortedStates = computed(() => {
@@ -534,17 +533,17 @@ const countSelected = computed(() => {
     watch(() => scheduleTimezone, (value) => {
         //when the schedule timezone value changes, update the calendar plugin's timezone
         let calendarApi = refs.eventCalendar.getApi()
-        calendarApi.setOption('timeZone', scheduleTimezone.value)
+        calendarApi.setOption('timeZone', scheduleTimezone)
         //and show a snackbar if the timezones don't match
-        if(userTimezone.value !== scheduleTimezone.value) {
+        if(userTimezone !== scheduleTimezone) {
           let snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
           store.commit(AppMutations.SHOW_SNACK, snackbar)
         }
       })
-      watch(userTimezone, () => {
+      watch(userTimezone, (newVal) => {
         //when the value of the timezone changes (either via the time zone dropdown selector or a change in the user store timezone value),
         // update the timezone for the schedule page
-        changeTimezone(userTimezone.value)
+        changeTimezone(newVal)
       })
 
 // whenever selectedUsers or selectedOrgs changes, concat them both into resources
@@ -577,7 +576,7 @@ const isResourceOnMap = (resource) => {
 }
 const isAssignedResource = (resource) => {
   let result = false
-  const selectedResourceId = store.state.schedule.selectedResourceId
+  const selectedResourceId = scheduleStore.selectedResourceId
   if(!selectedResourceId || selectedResourceId < 0){
     return false
   }
@@ -893,7 +892,7 @@ const handlePopulatingMapPins = (addPin, resource, doCallback) => {
             userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
             startTime: info.start,
             endTime: info.end,
-            timezone: scheduleTimezone.value
+            timezone: scheduleTimezone
           }
           const {data} = await postRequest(`/schedule/availability`, params)
 

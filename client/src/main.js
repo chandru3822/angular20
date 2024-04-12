@@ -19,6 +19,7 @@ import AlbatrossAutocomplete from '@/components/customVuetify/AlbatrossAutocompl
 import '@/styles/main.scss'
 import { requestInterceptor, responseInterceptor  } from '@/helpers/interceptors'
 import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 const { VITE_GA_ID } = import.meta.env
 Vue.config.productionTip = false
@@ -55,12 +56,13 @@ Vue.filter('formatDate', function(value, type, format, inputFormat) {
   */
 
   const userStore = useUserStore()
+  const scheduleStore = useScheduleStore()
 
   let timezone = userStore.timezone.value
 
   //The schedule screen has it's own timezone. Use that if user is on schedule screen, else default to regular timezone
-  if (router.currentRoute.name === 'schedule' && store?.state?.schedule?.timezone?.value) {
-    timezone = store.state.schedule.timezone.value
+  if (router.currentRoute.name === 'schedule' && scheduleStore.timezone) {
+    timezone = scheduleStore.timezone
   }
 
   if (!type || (type === 'timestamp' && !timezone)) {

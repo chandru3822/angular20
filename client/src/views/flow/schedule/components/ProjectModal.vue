@@ -55,9 +55,7 @@ const userCanManage = computed(() => {
 const userIsAdmin = computed(() => {
   return  userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')
 })
-const timezoneFriendly = computed(() => {
-  return  store.state.schedule.timezone.friendlyValue
-})
+const timezoneFriendly = computed(() => scheduleStore.timezone.friendlyValue)
 
 watch(() => props.resourceFromCalendar, () => {
   if(props.resourceFromCalendar.id) {

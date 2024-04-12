@@ -34,9 +34,7 @@ const calendarLoading = ref(false)
 const maxSelectionAllowed = ref(10)
 const countErrorMessage = ref('Maximum Selection Reached')
 
-const timezoneFriendly = computed(() => {
-  return store.state.schedule.timezone?.value
-})
+const timezoneFriendly = computed(() => scheduleStore.timezone?.value)
 
 const calendarOptions = ref({
   plugins: [

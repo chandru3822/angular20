@@ -126,16 +126,12 @@ const mapChild =ref()
 const activeComp = computed(() => {
   return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
 })
-const showMap = computed(() => {
-  return store.state.schedule.showMap
-})
+const showMap = computed(() => scheduleStore.showMap)
 
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
 })
-const timezone = computed(() => {
-  return store.state.schedule.timezone?.value === null ? userStore.timezone : userStore.timezone
-})
+const timezone = computed(() => userStore.timezone)
 
 watch(selectedProject, () => {
   validateSaveEvent()
