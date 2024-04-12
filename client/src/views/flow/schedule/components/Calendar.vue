@@ -816,6 +816,7 @@ const closeResource = (resource) => {
     toggleMapPinForResource(resource)
   }
   calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
+  limiter()
 }
 const toggleScheduleResource = (resource) =>{
   if(!isAssignedResource(resource)){
