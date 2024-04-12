@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useBrsStore} from '@/stores/BrsStorePinia.js'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import { storeToRefs } from 'pinia'

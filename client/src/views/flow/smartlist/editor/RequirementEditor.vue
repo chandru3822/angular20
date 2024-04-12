@@ -216,7 +216,7 @@
 import { getRequest, logError, UUID } from '@/helpers/helpers'
 import { computed, getCurrentInstance, nextTick, onMounted, ref } from 'vue'
 import cloneDeep from 'lodash.clonedeep'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 const emit = defineEmits(['adding', 'added', 'updated', 'cancelled', 'in-progress'])
 

@@ -125,7 +125,7 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, defineSortableTable} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import { getCurrentInstance, computed, ref, onMounted } from 'vue'
-  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useUserStore} from '@/stores/UserStore.js'
   import { useAppStore } from '@/stores/AppStorePinia.js'
   const appStore = useAppStore()
   const userStore = useUserStore()

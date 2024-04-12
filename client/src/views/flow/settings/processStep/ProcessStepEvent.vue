@@ -946,7 +946,7 @@ import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import EventActionChildSms from "@/views/flow/settings/processStep/EventActionChildSms.vue";
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 

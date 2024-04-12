@@ -24,7 +24,7 @@
 
 <script setup>
 import constants from '@/helpers/constants'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 
 import {ref, onMounted, getCurrentInstance, computed, defineProps, watch} from "vue";

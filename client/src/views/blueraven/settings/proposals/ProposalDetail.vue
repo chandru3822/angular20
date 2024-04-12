@@ -214,7 +214,7 @@ import ProposalVersionHistory from "@/views/blueraven/settings/proposals/Proposa
 import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 

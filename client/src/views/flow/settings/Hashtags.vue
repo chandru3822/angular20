@@ -191,7 +191,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 
 import { computed, getCurrentInstance, ref, onMounted } from "vue";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy

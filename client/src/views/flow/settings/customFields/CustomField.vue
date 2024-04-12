@@ -292,7 +292,7 @@ import {
   postRequest
 } from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"

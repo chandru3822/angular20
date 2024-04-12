@@ -101,7 +101,7 @@ import { getRequestWithParams, postRequest } from '@/helpers/helpers'
 import ProposalVersionHistory from '@/views/blueraven/settings/proposals/ProposalVersionHistory.vue'
 
 import { computed, ref, onMounted, watch } from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useRouter } from 'vue-router/composables'
 
 const router = useRouter()

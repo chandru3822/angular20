@@ -195,7 +195,7 @@
 
 import { getRequest, handleHidingGlobalLoader, logError, postRequest, putRequest, UUID } from '@/helpers/helpers'
 import { getCurrentInstance, ref, computed } from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy

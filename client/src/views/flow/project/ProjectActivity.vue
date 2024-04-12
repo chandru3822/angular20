@@ -187,11 +187,11 @@ import AddTeamDropdown from '@/views/flow/settings/inbox/AddTeamDropdown'
 import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignmentDialog'
 import debounce from 'lodash.debounce'
 import CollapsableRightPanel from "@/layouts/CollapsableRightPanel.vue";
-import { useProjectStore } from '@/stores/ProjectStorePinia.js'
-import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStore.js'
+import { useNotificationStore } from '@/stores/NotificationStore.js'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 

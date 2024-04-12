@@ -27,10 +27,10 @@ import Spinner from '@/components/Spinner'
 import AnnouncementAlert from '@/components/AnnouncementAlert.vue'
 import ReloadPrompt from '@/components/ReloadPrompt.vue'
 import {getCurrentInstance, onMounted, ref, computed, watch} from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import theme from '@/helpers/defaultTheme.js'
-import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
+import { useNotificationStore } from '@/stores/NotificationStore.js'
 import cloneDeep from 'lodash.clonedeep'
 
 const vueInstance = getCurrentInstance().proxy

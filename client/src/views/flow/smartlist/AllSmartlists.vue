@@ -147,7 +147,7 @@ import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
 import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 import constants from '@/helpers/constants'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100],

@@ -33,7 +33,7 @@ import SetterMilestoneDrilldown from "@/views/blueraven/setterDashboard/SetterMi
 import CloserMilestoneDrilldown from "@/views/blueraven/closerDashboard/CloserMilestoneDrilldown";
 import {getCurrentInstance, watch, toRefs, ref, computed, onMounted} from "vue";
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import {useUserStore} from "@/stores/UserStorePinia.js";
+import {useUserStore} from "@/stores/UserStore.js";
 
 const userStore = useUserStore()
 const appStore = useAppStore()

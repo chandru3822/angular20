@@ -140,7 +140,7 @@
   import {getCurrentInstance, onMounted, ref, computed, watch} from 'vue'
   import {onBeforeRouteLeave} from 'vue-router/composables'
   import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useUserStore } from '@/stores/UserStore.js'
   import {useRouter, useRoute} from "vue-router/composables"
   import { useAppStore } from '@/stores/AppStorePinia.js'
   const appStore = useAppStore()

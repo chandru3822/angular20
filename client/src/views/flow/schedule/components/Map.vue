@@ -120,7 +120,7 @@ import debounce from "lodash.debounce";
 import {getCurrentInstance, ref, watch} from "vue";
 import MapPopUp from "@/views/flow/schedule/components/MapPopUp.vue"
 
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 

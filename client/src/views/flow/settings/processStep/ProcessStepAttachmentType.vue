@@ -232,7 +232,7 @@ import orderBy from 'lodash.orderby'
 import draggable from 'vuedraggable'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";

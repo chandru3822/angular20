@@ -98,7 +98,7 @@ import {handleHidingGlobalLoader, deleteRequest, getRequest, getSnackbar, postRe
 import orderBy from 'lodash.orderby'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

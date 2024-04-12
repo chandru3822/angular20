@@ -101,7 +101,7 @@
 
 import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useRoute} from "vue-router/composables";
 

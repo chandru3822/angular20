@@ -171,7 +171,7 @@ import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepSta
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 

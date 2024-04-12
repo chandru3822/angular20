@@ -13,7 +13,7 @@
 import SpinnerInline from "@/components/SpinnerInline.vue";
 import {getCurrentInstance, ref, watch, computed, onMounted} from 'vue'
 import { onBeforeRouteLeave } from 'vue-router/composables'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 //FYI: Vue2 w/composition API requires some additional definitions that Vue 3 might not (vueInstance...for example)
 const vueInstance = getCurrentInstance().proxy

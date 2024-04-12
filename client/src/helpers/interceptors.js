@@ -2,7 +2,7 @@ import router from '@/router.js'
 import store, { pinia } from '@/store.js'
 import constants from '@/helpers/constants.js'
 import axios from 'axios'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'
 

@@ -61,7 +61,7 @@ import {computed, getCurrentInstance, onMounted, ref} from "vue";
 import constants from "@/helpers/constants";
 import {AppMutations} from "@/stores/AppStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()
 import { useFileStore } from '@/stores/FileStore.js'

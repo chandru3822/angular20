@@ -575,7 +575,7 @@ import MultiSelectGroup from "@/components/MultiSelectGroup";
 
 
 import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()

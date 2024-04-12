@@ -167,7 +167,7 @@ import FeatDbCustomFieldGroup from "@/views/blueraven/featDB/components/FeatDbCu
 import FeatDbContact from "@/views/blueraven/featDB/components/FeatDbContacts.vue";
 import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 

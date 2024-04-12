@@ -94,7 +94,7 @@ import {getStates} from '@/services/stateService'
 import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import constants from "@/helpers/constants";
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"

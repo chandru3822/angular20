@@ -134,7 +134,7 @@ import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import moment from 'moment'
 
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()
 

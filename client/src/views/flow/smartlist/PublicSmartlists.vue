@@ -66,7 +66,7 @@ import { getRequest, logError } from '@/helpers/helpers'
 import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
 import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import constants from '@/helpers/constants'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100],

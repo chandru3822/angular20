@@ -1,4 +1,4 @@
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 const userStore = useUserStore()
 

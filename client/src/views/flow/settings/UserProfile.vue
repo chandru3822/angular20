@@ -231,7 +231,7 @@ import { useFirebase } from '@/firebase/firebase.js'
 import { onBeforeRouteLeave } from 'vue-router/composables'
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
 
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 import {useRouter} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'

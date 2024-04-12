@@ -103,7 +103,7 @@ const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 
 const userStore = useUserStore()
 import {defineProps} from 'vue'

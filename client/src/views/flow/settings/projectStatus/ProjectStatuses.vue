@@ -174,7 +174,7 @@ import orderBy from 'lodash.orderby'
 import {getCompanyProjectStatusTypes, getProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {handleHidingGlobalLoader, deleteRequest, putRequest, defineSortableTable} from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted, onUpdated} from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()
 

@@ -489,7 +489,7 @@ import {
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 const addNew = ref(false)
 const newFieldType = ref('native')
 const deleteError = ref(false)

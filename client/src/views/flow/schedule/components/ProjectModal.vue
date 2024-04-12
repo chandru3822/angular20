@@ -15,7 +15,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/eventStatusTypeService.js";
 import { getEventDefaultFieldReadOnly } from '@/services/customFieldService.js'
 
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
@@ -55,9 +55,7 @@ const userCanManage = computed(() => {
 const userIsAdmin = computed(() => {
   return  userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')
 })
-const timezoneFriendly = computed(() => {
-  return  store.state.schedule.timezone.friendlyValue
-})
+const timezoneFriendly = computed(() => scheduleStore.timezone.friendlyValue)
 
 watch(() => props.resourceFromCalendar, () => {
   if(props.resourceFromCalendar.id) {

@@ -194,7 +194,7 @@ import { AppMutations } from '@/stores/AppStore'
 import {getRequest, getRequestWithParams, putRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 
 import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
-import {useUserStore} from "@/stores/UserStorePinia.js";
+import {useUserStore} from "@/stores/UserStore.js";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()

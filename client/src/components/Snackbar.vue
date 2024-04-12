@@ -27,14 +27,10 @@
 </template>
 
 <script setup>
-import { getCurrentInstance, ref } from 'vue'
-
+import { ref } from 'vue'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 const appStore = useAppStore()
-
 const snackbar = ref({})
 const show = ref(false)
 
@@ -45,14 +41,6 @@ appStore.$subscribe((mut, state) => {
     appStore.snack.show = false
   }
 })
-
-//@TODO: subscribe to the old app store until pinia takes over, then remove this
-store.subscribe((mutation, state) => {
-  if (mutation.type === "SHOW_SNACK") {
-    snackbar.value = state.app.snack
-    show.value = true
-  }
-});
 </script>
 
 <style scoped lang="scss">

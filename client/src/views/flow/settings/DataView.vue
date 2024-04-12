@@ -507,7 +507,7 @@ import cloneDeep from 'lodash.clonedeep'
 
 
 import {getCurrentInstance, computed, onMounted, ref} from "vue";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import {useRouter, useRoute} from "vue-router/composables"
 

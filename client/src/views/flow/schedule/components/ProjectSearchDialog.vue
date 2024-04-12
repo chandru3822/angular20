@@ -20,9 +20,10 @@ import {getStatusTypes} from "@/services/processStepStatusTypeService.js";
 import ProjectSearchResultCard from "@/views/flow/schedule/components/ProjectSearchResultCard.vue";
 import SpinnerInline from "@/components/SpinnerInline.vue";
 
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 const props = defineProps({
   states: {
@@ -40,6 +41,7 @@ const appStore = useAppStore()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
@@ -178,8 +180,8 @@ const getProjects = async(resetQuery) => {
         processStepStatusTypeId: selectedProcessStepStatusType.value.id,
         eventStatusTypeId: searchEventStatusType.value.id,
         companyStateId: state.value.id,
-        startTime: store.state.schedule.startTime,
-        endTime: store.state.schedule.endTime,
+        startTime: scheduleStore.startTime,
+        endTime: scheduleStore.endTime,
         search:""
       }, { size: itemsPerPage, page: page.value})
       projects.value = projects.value.concat(data.content || [])

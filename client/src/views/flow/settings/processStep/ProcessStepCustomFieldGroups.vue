@@ -484,7 +484,7 @@ import orderBy from "lodash.orderby"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, toRefs, computed, ref, onMounted, onUpdated} from 'vue'
 import {useRoute} from "vue-router/composables";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import {defineProps} from 'vue'
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue"
 

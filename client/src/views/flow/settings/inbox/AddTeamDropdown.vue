@@ -48,7 +48,7 @@
 
 <script setup>
 import {getRequest, postRequest} from "@/helpers/helpers";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 
 import {ref, onMounted, getCurrentInstance, computed, defineProps} from "vue";
