@@ -24,7 +24,7 @@
         />
       </v-toolbar-items>
       <v-tabs :optional="false" color="primary"
-              slot="extension"
+              v-slot:extension
               class="hello"
               dense
               background-color="white" v-model="model" slider-color="primary" style="margin-top: 60px">

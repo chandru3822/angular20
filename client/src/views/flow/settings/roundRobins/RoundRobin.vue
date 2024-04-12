@@ -93,7 +93,7 @@
     <v-divider></v-divider>
     <!--    <v-toolbar dense color="white" tabs flat class="elevation-1">-->
     <v-tabs :optional="false" color="primary" id="round-robin-tabs"
-            slot="extension"
+            v-slot:extension
             class="hello"
             dense
             background-color="white" v-model="model" slider-color="primary">

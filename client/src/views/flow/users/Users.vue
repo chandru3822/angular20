@@ -274,7 +274,7 @@
             <a class="close-modal-x pb-3" title="Close" @click="cancelSendMessageDialog">×</a>
         </v-card-title>
           <v-toolbar-items>
-        <v-tabs color="primary" slot="extension" slider-color="primary" class="message-tabs">
+        <v-tabs color="primary" v-slot:extension slider-color="primary" class="message-tabs">
             <v-tab @click="messageTab = 1">
               Emails
             </v-tab>
@@ -437,11 +437,11 @@
                             return-object
                             @change="handleTemplateSelection">
 
-                    <template slot="item" slot-scope="data">
+                    <template v-slot:item="{ props, item }">
                       <!-- HTML that describes how select should render items when the select is open -->
                       <div class="ellipse">
-                        <h4 class="template-title">{{ data.item.title }}<br /></h4>
-                        <span class="template-message">{{ data.item.message }}</span>
+                        <h4 class="template-title">{{ item.title }}<br /></h4>
+                        <span class="template-message">{{ item.message }}</span>
                       </div>
                     </template>
                   </a-select>

@@ -75,7 +75,7 @@
                       <a-text-field
                                     v-if="item.edit"
                                     v-model="item.groupName">
-                        <template slot="append-outer">
+                        <template v-slot:append-outer>
                           <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
                           <v-icon @click="item.edit = false">clear</v-icon>
                         </template>
@@ -134,7 +134,7 @@
                                     autocomplete="off"
                                     @input="assignCustomField(item)"
                     >
-                      <template slot='item' slot-scope='{ item }'>
+                      <template v-slot:item="{ props, item }">
                         {{ item.fieldName }}
                       </template>
                     </a-autocomplete>

@@ -64,11 +64,11 @@
                     return-object
                     @change="sendTemplateMessage">
 
-            <template slot="item" slot-scope="data">
+            <template v-slot:item="{ props, item }">
               <!-- HTML that describes how select should render items when the select is open -->
               <div class="ellipse">
-                <h4 class="template-title">{{ data.item.title }}<br /></h4>
-                <span class="template-message">{{ data.item.message }}</span>
+                <h4 class="template-title">{{ item.title }}<br /></h4>
+                <span class="template-message">{{ item.message }}</span>
               </div>
             </template>
           </a-select>

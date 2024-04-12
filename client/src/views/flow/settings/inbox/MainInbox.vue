@@ -93,24 +93,21 @@
                             clearable
                             @input="teamSelectionChanged"
                             v-if="teamFilterOptions.length > 1">
-              <v-list-item
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllTeams()"
-              >
-                <v-list-item-action>
-                  <v-icon>{{ teamsIcon }}</v-icon>
-                </v-list-item-action>
-                <v-list-item-title>Select All</v-list-item-title>
-              </v-list-item>
-              <v-divider
-                slot="prepend-item"
-                class="mt-2"
-              ></v-divider>
-              <template
-                slot="selection"
-                slot-scope="{ item, index }"
-              >
+              <template  v-slot:prepend-item>
+                <v-list-item
+                  ripple
+                  @click="toggleSelectAllTeams()"
+                >
+                  <v-list-item-action>
+                    <v-icon>{{ teamsIcon }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-title>Select All</v-list-item-title>
+                </v-list-item>
+                <v-divider
+                  class="mt-2"
+                ></v-divider>
+              </template>
+              <template  v-slot:selection="{item, index}">
                 <v-chip small
                         v-if="index <= teamFilterChipLimit && selectedTeamFilters && selectedTeamFilters.length <= teamFilterChipLimit">
                   <span>{{ item.teamName }}</span>

@@ -29,24 +29,21 @@
                               item-title="fullName"
                               @change="getInstallationCrew()"
                               @click:clear="selectedInstallationCrews = []">
-                <v-list-item
-                  slot="prepend-item"
-                  ripple
-                  @click="toggleSelectAllManagers()"
-                >
-                  <v-list-item-action>
-                    <v-icon>{{ iconManagers }}</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-title>Select All</v-list-item-title>
-                </v-list-item>
-                <v-divider
-                  slot="prepend-item"
-                  class="mt-2"
-                ></v-divider>
-                <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
-                >
+                <template  v-slot:prepend-item>
+                  <v-list-item
+                    ripple
+                    @click="toggleSelectAllManagers()"
+                  >
+                    <v-list-item-action>
+                      <v-icon>{{ iconManagers }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item>
+                  <v-divider
+                    class="mt-2"
+                  ></v-divider>
+                </template>
+                <template  v-slot:selection="{item, index}">
                 <span v-if="index === 0" class="primary--text text-caption">
                   {{ selectedRegionalManagers.length }} selected
                 </span>
@@ -230,24 +227,21 @@
                                 item-title="fullName"
                                 @change="getInstallationCrew()"
                                 @click:clear="selectedInstallationCrews = []">
-                  <v-list-item
-                    slot="prepend-item"
-                    ripple
-                    @click="toggleSelectAllManagers()"
-                  >
-                    <v-list-item-action>
-                      <v-icon>{{ iconManagers }}</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-title>Select All</v-list-item-title>
-                  </v-list-item>
-                  <v-divider
-                    slot="prepend-item"
-                    class="mt-2"
-                  ></v-divider>
-                  <template
-                    slot="selection"
-                    slot-scope="{ item, index }"
-                  >
+                  <template  v-slot:prepend-item>
+                    <v-list-item
+                      ripple
+                      @click="toggleSelectAllManagers()"
+                    >
+                      <v-list-item-action>
+                        <v-icon>{{ iconManagers }}</v-icon>
+                      </v-list-item-action>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item>
+                    <v-divider
+                      class="mt-2"
+                    ></v-divider>
+                  </template>
+                  <template  v-slot:selection="{item, index}">
                   <span v-if="index === 0" class="primary--text text-caption">
                     {{ selectedRegionalManagers.length }} selected
                   </span>
@@ -276,10 +270,7 @@
                       class="mt-2"
                     ></v-divider>
                   </template>
-                  <template
-                    slot="selection"
-                    slot-scope="{ item, index }"
-                  >
+                  <template  v-slot:selection="{item, index}">
                   <span v-if="index === 0" class="primary--text text-caption">
                     {{ selectedInstallationCrews.length }} selected
                   </span>

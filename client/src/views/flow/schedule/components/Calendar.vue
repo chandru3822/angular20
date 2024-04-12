@@ -28,17 +28,17 @@
                 class="primary--text text-caption"
               >{{ selectedStates.length }} selected</span>
             </template>
-            <v-list-item
-              slot="prepend-item"
-              ripple
-              @click="toggleSelectAllStates()">
-                <v-icon class="mr-4">{{ iconStates }}</v-icon>
-              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
-            </v-list-item>
-            <v-divider
-              slot="prepend-item"
-              class="mt-2"
-            ></v-divider>
+            <template  v-slot:prepend-item>
+              <v-list-item
+                ripple
+                @click="toggleSelectAllStates()">
+                  <v-icon class="mr-4">{{ iconStates }}</v-icon>
+                <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
+                class="mt-2"
+              ></v-divider>
+            </template>
 
             <template v-slot:item="{item}">
               <v-icon class="mr-4">{{selectedStates.findIndex(s => s.stateId === item.stateId) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
@@ -74,19 +74,19 @@
                   class="primary--text text-caption"
               >{{ selectedOrgTypes.length }} selected</span>
             </template>
-            <v-list-item
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllOrgTypes()">
-              <v-list-item-action class="mr-4">
-                <v-icon>{{ iconOrgTypes }}</v-icon>
-              </v-list-item-action>
-              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
-            </v-list-item>
-            <v-divider
-                slot="prepend-item"
-                class="mt-2"
-            ></v-divider>
+            <template  v-slot:prepend-item>
+              <v-list-item
+                  ripple
+                  @click="toggleSelectAllOrgTypes()">
+                <v-list-item-action class="mr-4">
+                  <v-icon>{{ iconOrgTypes }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
+                  class="mt-2"
+              ></v-divider>
+            </template>
             <template v-slot:item="{item}">
               <!--The only purpose of this template is to allow the items to wrap-->
               <v-icon class="mr-4">{{selectedOrgTypes.findIndex(ot => ot.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>

@@ -58,9 +58,9 @@
                     clearable
                     @change="[item.startTime = null, item.endTime = null]"
                   >
-                    <template slot="item" slot-scope="data">
+                    <template v-slot:item="{ props, item }">
                       <!-- HTML that describes how select should render items when the select is open -->
-                      {{ data.item.scheduleName }}
+                      {{ item.scheduleName }}
                     </template>
                   </a-select>
 
@@ -221,9 +221,9 @@
                           clearable
                           @change="item.startTime = null, item.endTime = null"
                         >
-                          <template slot="item" slot-scope="data">
+                          <template v-slot:item="{ props, item }">
                             <!-- HTML that describes how select should render items when the select is open -->
-                            {{ data.item.scheduleName }}
+                            {{ item.scheduleName }}
                           </template>
                         </a-select>
                         <v-card v-if="item.resourceSlotScheduleId" flat color="transparent" class="mb-4">

@@ -53,10 +53,7 @@
                             clearable
                             autocomplete="off"
                             attach>
-              <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
-              >
+              <template  v-slot:selection="{item, index}">
                 <v-chip small v-if="index < 21 && userOrgCalendars.length < 21"
                         close @click:close="userOrgCalendars.splice(index, 1)">
                   <span>{{ item.orgName }}</span>

@@ -123,7 +123,7 @@
                 attach
                 item-title="eventName"
                 item-value="id">
-                <template slot='item' slot-scope='{ item }'>
+                <template v-slot:item="{ props, item }">
                   {{ item.processStepName }} - {{ item.eventName }}
                 </template>
               </a-autocomplete>
@@ -145,7 +145,7 @@
                               autocomplete="off"
                               @input="[setObjectTypeId(cfgaParentObject), loadFieldsByParent(false), loadProcessStepEvents()]"
               >
-                <template slot='item' slot-scope='{ item }'>
+                <template v-slot:item="{ props, item }">
                   {{ item.name }}
                 </template>
               </a-autocomplete>

@@ -20,7 +20,7 @@
             </div>
           </v-toolbar-items>
           <v-tabs :optional="false" color="primary"
-                  slot="extension"
+                   v-slot:extension
                   show-arrows
                   background-color="white" v-model="model" slider-color="primary">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">

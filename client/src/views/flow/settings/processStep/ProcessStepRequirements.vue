@@ -236,9 +236,9 @@
                 item-title="eventStatusType"
                 return-object
             >
-              <template slot="item" slot-scope="data">
+              <template v-slot:item="{ props, item }">
                 <!-- HTML that describes how select should render items when the select is open -->
-                {{ data.item.eventStatusType }}
+                {{ item.eventStatusType }}
               </template>
             </a-autocomplete>
             <!-- currently only a listOfValueId can be a multiselect.  we may change this down the road for custom sql and system lists -->
@@ -263,11 +263,11 @@
                 item-title="processStepStatusType"
                 return-object
             >
-              <template slot="item" slot-scope="data">
+              <template v-slot:item="{ props, item }">
                 <!-- HTML that describes how select should render items when the select is open -->
-                {{ data.item.processStepStatusType }}
+                {{ item.processStepStatusType }}
                 <span v-if="newRequirement.processStepRequirementTypeId === 7"
-                      class="ml-1">({{ data.item.rootProcessStepStatusType }})</span>
+                      class="ml-1">({{ item.rootProcessStepStatusType }})</span>
               </template>
             </a-autocomplete>
             <a-autocomplete
@@ -281,11 +281,11 @@
                 item-title="projectStatusType"
                 return-object
             >
-              <template slot="item" slot-scope="data">
+              <template v-slot:item="{ props, item }">
                 <!-- HTML that describes how select should render items when the select is open -->
-                {{ data.item.projectStatusType }}
+                {{ item.projectStatusType }}
                 <span v-if="newRequirement.projectStatusTypeId === 9" class="ml-1">({{
-                    data.item.projectStatusType
+                    item.projectStatusType
                   }})</span>
               </template>
             </a-autocomplete>

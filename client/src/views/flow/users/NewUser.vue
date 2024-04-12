@@ -107,10 +107,10 @@
                       type="search"
                       attach
                   >
-                    <template slot="selection" slot-scope="{ item }">
+                    <template  v-slot:selection="{item, index}">
                       {{ item.orgName }}{{ item.showType ? ' (' + item.orgType + ')' : '' }}
                     </template>
-                    <template slot='item' slot-scope='{ item }'>
+                    <template v-slot:item="{ props, item }">
                       {{ item.orgName }}{{ item.showType ? ' (' + item.orgType + ')' : '' }}
                     </template>
                   </a-autocomplete>

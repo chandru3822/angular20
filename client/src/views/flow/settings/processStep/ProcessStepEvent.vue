@@ -112,9 +112,9 @@
                 item-value="id"
                 clearable
             >
-              <template slot="item" slot-scope="data">
+              <template v-slot:item="{ props, item }">
                 <!-- HTML that describes how select should render items when the select is open -->
-                {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
+                {{ item.processStepStatusType }} ({{ item.rootProcessStepStatusType }})
               </template>
             </a-autocomplete>
           </div>
@@ -206,9 +206,9 @@
                     :disabled="action.showOnCancelledCompletedProcessStep"
                     v-if="action.actionTypeId === 2"
                 >
-                  <template slot="item" slot-scope="data">
+                  <template v-slot:item="{ props, item }">
                     <!-- HTML that describes how select should render items when the select is open -->
-                    {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
+                    {{ item.processStepStatusType }} ({{ item.rootProcessStepStatusType }})
                   </template>
                 </a-autocomplete>
 

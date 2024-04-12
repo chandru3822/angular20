@@ -396,7 +396,7 @@
                                 @input="getUserHistory(newAssignedUser.userId)"
                                 attach
                 >
-                  <template slot='item' slot-scope='{ item }'>
+                  <template v-slot:item="{ props, item }">
                     {{ item.name }} - {{ item.position }}
                   </template>
                 </a-autocomplete>

@@ -114,7 +114,7 @@
                       <a-text-field
                                     v-if="item.edit"
                                     v-model="item.groupName">
-                        <template slot="append-outer">
+                        <template v-slot:append-outer>
                           <v-icon color="primary" @click="[saveGroupName(item), item.edit = false]">save</v-icon>
                           <v-icon color="primary" @click="item.edit = false">clear</v-icon>
                         </template>
