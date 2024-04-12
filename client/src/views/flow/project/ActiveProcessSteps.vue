@@ -1,12 +1,20 @@
 <template>
-  <SidePanelExpansionPanel v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
+  <SidePanelExpansionPanel v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
                            header="Active Process Steps"
                            :section-expanded="sectionExpanded"
                            :is-loading="isProcessStepsLoading"
                            @click="toggleCollapseExpand"
   >
     <template v-slot:tool-btn>
-      <v-btn text small color="primary" class="pa-2 mx-2" @click.stop :to="`/project/${projectId}/processSteps`"><v-icon :size="20">mdi-format-list-bulleted</v-icon></v-btn>
+      <a-btn
+          variant="text"
+          size="small"
+          color="primary"
+          class="pa-2 mx-2"
+          @click.native.stop
+          :to="`/project/${projectId}/processSteps`"
+          prepend-icon="mdi-format-list-bulleted"
+      ></a-btn>
     </template>
     <template v-slot:expanded-content>
       <ActiveProjectProcessStepSnippet class="px-3"
@@ -14,15 +22,15 @@
                                        :projectId="projectId"
                                        :contactId="project.contactId"/>
       <v-row
-          v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
+          v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
           class="text-left pt-0 px-0"
       >
         <v-col class="px-3 py-0">
           <AddProcessStep
               title="Add Process Step"
-              v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD') && !hideAddBtn"
+              v-if="project.processId && userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD') && !hideAddBtn"
               class="d-inline-block"
-              :admin="$store.getters.isFullAdmin"
+              :admin="userStore.isSystemAdmin"
               :project-id="projectId"
               :process-id="project.processId"
               :contact-id="project.contactId"
@@ -35,90 +43,98 @@
   </SidePanelExpansionPanel>
 </template>
 
-<script>
-
+<script setup>
 import {getRequest, logError} from '@/helpers/helpers'
 import ActiveProjectProcessStepSnippet from '@/views/flow/project/ActiveProjectProcessStepSnippet'
 import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
-
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
-import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
-import {ProjectMutations} from "@/stores/ProjectStore";
+import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
-export default {
-  name: 'ActiveProcessSteps',
-  components: {
-    SidePanelExpansionPanel,
-    SpinnerInline,
-    ActiveProjectProcessStepSnippet,
-    ProjectProcessStepSnippet,
-    AddProcessStep,
-  },
-  props: {
-    project: Object,
-    updateKey: Number,
-    hideAddBtn: {
-      type: Boolean,
-      default: false
-    }
-  },
-  watch: {
-    updateKey: function () {
-      this.getProcessSteps()
-    },
-  },
-  data() {
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const projectStore = useProjectStore()
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  project: Object,
+  updateKey: Number,
+  hideAddBtn: {
+    type: Boolean,
+    default: false
+  }
+})
+const { project, updateKey, hideAddBtn } = toRefs(props)
+
+watch(updateKey, () => {
+  getProcessSteps()
+})
+
+const projectId = computed(() => {
+  return parseInt(route.params.projectId)
+})
+const processSteps = ref([])
+const customFieldGroups = ref([])
+const menuOpen = ref(false)
+const isProcessStepsLoading = ref(false)
+const stepsSearch = ref('')
+const isProcessStepsExpanded = ref(false)
+
+onMounted(() => {
+  getProcessSteps()
+})
+
+const filteredProcessSteps = computed(() => {
+  return stepsSearch.value === '' ? processStepsByName.value : processStepsByName.value.filter(psn => psn.processStepName.toLowerCase().includes(stepsSearch.value.toLowerCase()))
+})
+const sectionExpanded = computed(() => {
+  return projectStore.activePpsDropdown
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+})
+const userHasEventsFeature = computed(() => {
+  return userStore.userHasFeature('EVENTS')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const processStepsByName = computed(() => {
+  const names = [...new Set(processSteps.value.map(step => step.processStepName))]
+  return names.map(processStepName => {
     return {
-      projectId: parseInt(this.$route.params.projectId),
-      processSteps: [],
-      sectionExpanded: this.$store.state.project.activePpsDropdown,
-      customFieldGroups: [],
-      menuOpen: false,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
-      isProcessStepsLoading: false,
-      snackbar: {},
-      stepsSearch: '',
-      isProcessStepsExpanded: false,
-      companyId: this.$store.state.user.details.companyId,
+      processStepName,
+      processSteps: processSteps.value.filter(step => step.processStepName === processStepName)
     }
-  },
-  created() {
-    this.getProcessSteps()
-  },
-  computed: {
-    processStepsByName() {
-      const names = [...new Set(this.processSteps.map(step => step.processStepName))]
+  })
+})
 
-      return names.map(processStepName => {
-        return {
-          processStepName,
-          processSteps: this.processSteps.filter(step => step.processStepName === processStepName)
-        }
-      })
-    }
-  },
-  methods: {
-    filteredProcessSteps() {
-      return this.stepsSearch === '' ? this.processStepsByName : this.processStepsByName.filter(psn => psn.processStepName.toLowerCase().includes(this.stepsSearch.toLowerCase()))
-    },
-    getProcessSteps: async function () {
-      try {
-        this.isProcessStepsLoading = true
-        const {data} = await getRequest(`/project/${this.projectId}/upcomingProcessSteps`)
-        this.processSteps = data
-      } catch (e) {
-        logError(e)
-      } finally {
-        this.isProcessStepsLoading = false
-      }
-    },
-    toggleCollapseExpand(){
-      this.$store.commit(ProjectMutations.ACTIVE_PPS_COLLAPSE)
-    }
+const getProcessSteps = async () => {
+  try {
+    isProcessStepsLoading.value = true
+    const {data} = await getRequest(`/project/${projectId.value}/upcomingProcessSteps`)
+    processSteps.value = data
+  } catch (e) {
+    logError(e)
+  } finally {
+    isProcessStepsLoading.value = false
   }
 }
+const toggleCollapseExpand = () => {
+  projectStore.activePpsDropdown = !projectStore.activePpsDropdown
+}
+
+
 </script>
 
 <style lang="scss" scoped>
@@ -157,8 +173,5 @@ export default {
 
   margin-left: 12px;
 
-  & > .v-btn__content {
-    color: white !important;
-  }
 }
 </style>

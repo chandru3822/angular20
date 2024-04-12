@@ -295,6 +295,7 @@ public class ScheduleQuery {
                    else ps.company_id = :companyId end
           and ps.archived is not true
           and p.archived is false
+          and ppse.archived is false
           and case when :isParent then
                        p.company_state_id in (select id from flow.company_state where state_id = (select state_id from flow.company_state where id = :companyStateId))
                    else p.company_state_id = :companyStateId end
@@ -309,6 +310,44 @@ public class ScheduleQuery {
         limit :limit
         offset :offset
         """;
+
+    //language=PostgreSQL
+    public final static String getProjectsCount = """
+            select count(distinct ppse)
+            from flow.project_process_step pps
+               inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id
+               inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+               inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+               inner join flow.event e on pse.event_id = e.id
+               inner join flow.project p on p.id = pps.project_id
+               inner join flow.process_step ps on ps.id = pps.process_step_id
+               inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
+               inner join flow.company_state cs on cs.id = p.company_state_id
+               inner join flow.state s on s.id = cs.state_id
+               inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
+               inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
+               inner join flow.system_list sl on sl.id = csl.system_list_id
+               left join flow.user_position up on up.id = ppse.resource_id and sl.system_list_type_id = 2
+               left join flow.position pos on pos.id = up.position_id
+               left join flow.user u on u.id = up.user_id
+               left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
+        where case when :isParent
+                     then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
+                   else ps.company_id = :companyId end
+          and ps.archived is not true
+          and p.archived is false
+          and ppse.archived is false
+          and case when :isParent then
+                       p.company_state_id in (select id from flow.company_state where state_id = (select state_id from flow.company_state where id = :companyStateId))
+                   else p.company_state_id = :companyStateId end
+          and case when ppse.start_time is not null then ppse.start_time >= :startTime::timestamp else 1=1 end
+          and case when ppse.end_time is not null then ppse.end_time <= :endTime::timestamp else 1=1 end
+          and pse.event_id  = any(array[ :eventIds ])
+          and cpsst.process_step_status_type_id = :processStepStatusTypeId
+          and cest.event_status_type_id = :eventStatusTypeId
+          and lower(translate(coalesce(p.project_name, ''), '*,.& ', '')) like
+              '%' || lower(trim(translate(:search, '*,.& ', ''))) || '%'
+            """;
 
   //language=PostgreSQL
   public final static String getAvailableProjectResources = """
@@ -328,6 +367,8 @@ public class ScheduleQuery {
            e.event_name,
            ppse.company_event_status_type_id,
            cest.event_status_type_id,
+           cest.event_status_type,
+           ecest.editable_in_schedule as "editableInSchedule",
            sl.id as system_list_id,
            array_to_json(cf.system_list_option_ids) as system_list_option_ids,
            pps.id as project_process_step_id,
@@ -370,6 +411,7 @@ public class ScheduleQuery {
            inner join flow.state s on s.id = cs.state_id
            inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
            inner join flow.event e on pse.event_id = e.id
+           inner join flow.event_company_event_status_type ecest on ecest.company_event_status_type_id = cest.id and ecest.event_id = e.id
            inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
            inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
            inner join flow.system_list sl on sl.id = csl.system_list_id

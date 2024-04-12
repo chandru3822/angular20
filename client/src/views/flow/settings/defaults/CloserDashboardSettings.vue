@@ -1,3 +1,53 @@
+<template>
+  <v-container>
+    <v-row v-for="([key, imageType], idx) in Object.entries(ImageTypeEnum)">
+      <v-col cols="12">
+        <v-toolbar color="white" class="elevation-1">
+          <v-toolbar-title class="title-large">{{ imageType.header }}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <div v-if="userCanEdit">
+            <a-btn variant="text" icon :large="$vuetify.breakpoint.smAndDown" color="primary"
+                   v-if="!imageType.saving && !imageType.image?.presignedUrl"
+                   @click="imageType.add = !imageType.add"
+                   :prepend-icon="imageType.add ? 'remove' : 'add'"
+            />
+            <a-btn variant="text" icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else
+                   @click="imageToDelete=imageType"
+                   prepend-icon="delete"
+            />
+          </div>
+        </v-toolbar>
+        <div class="text-center">
+          <div class="mt-4" v-if="imageType.add">
+            <form enctype="multipart/form-data" novalidate>
+              <input
+                type="file"
+                :accept="acceptedFileTypes"
+                class="file-input clickable body-medium mx-6"
+                :disabled="imageType.saving"
+                @change="uploadFile(imageType, $event.target.files, imageType.attachmentTypeId, companyId, 1048576)"
+                name="avatar"
+              >
+              <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
+            </form>
+          </div>
+          <div class="company-logo-background" v-else-if="imageType.image?.presignedUrl">
+            <img class="company-logo" :src="imageType.image.presignedUrl" alt="image preview">
+          </div>
+          <div class="mt-4" v-else>
+            No image uploaded
+          </div>
+        </div>
+      </v-col>
+    </v-row>
+
+    <ConfirmationDialog :open-dialog="!!imageToDelete" @confirm="deleteAttachment"
+                        @close-dialog="imageToDelete=null">
+      {{ deleteImageDialogText }}
+    </ConfirmationDialog>
+  </v-container>
+</template>
+
 <script setup>
 /*
 *@name CloserDashboardSettings
@@ -10,9 +60,13 @@
 import {computed, getCurrentInstance, onMounted, ref} from "vue";
 import constants from "@/helpers/constants";
 import {AppMutations} from "@/stores/AppStore";
-import {Actions} from "@/store";
-import {getSnackbar} from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+import { useFileStore } from '@/stores/FileStore.js'
+
+
 
 const ImageTypeEnum = ref({
   CLOSER_DASH_TOURNAMENT_HEADER_LOGO: {
@@ -39,11 +93,14 @@ const ImageTypeEnum = ref({
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const userStore = useUserStore()
+const fileStore = useFileStore()
 
-const companyId = store.state.user.details.companyId
+const companyId = userStore.details.companyId
 const acceptedFileTypes = constants.STANDARD_IMAGES_ONLY
 
-const userCanEdit= store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+const userCanEdit= userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
 
 let imageToDelete = ref(null)
 
@@ -53,29 +110,28 @@ const deleteImageDialogText = computed(() => {
 
 const loadImage = async(logoType) => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
-    await store.dispatch(Actions.FILE_GET_ONE, {
+    appStore.loading = true
+    await fileStore.getOne({
       attachmentTypeId: logoType.attachmentTypeId,
       sourceId: companyId,
       callback: async (img) => {
         logoType.image = img
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    this.snackbar = getSnackbar('ERROR', 'Error Loading Image')
-    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    this.$store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Loading Image')
+    appStore.loading = false
   }
 }
 
 const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit) => {
   let snackbar
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     let file = files[0]
-    await store.dispatch(Actions.FILE_UPLOAD, {
+    await fileStore.uploadFile({
       file: file,
       sizeLimit,
       attachmentTypeId,
@@ -83,47 +139,47 @@ const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit
       displayName: file.name.substr(0, file.name.lastIndexOf('.')),
       callback: async (img, error) => {
         if (error?.error) {
-          snackbar = getSnackbar('ERROR', error.errorMsg)
+          snackbar = snackbar('ERROR', error.errorMsg)
           store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         } else {
           ImageTypeEnum.value[imageType.key].image = img
           ImageTypeEnum.value[imageType.key].add = false
           ImageTypeEnum.value[imageType.key].saving = false
-          snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
+          snackbar = snackbar('SUCCESS', 'Image Uploaded')
           store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar = getSnackbar('ERROR', 'Error Uploading File')
+    snackbar = snackbar('ERROR', 'Error Uploading File')
     store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
 const deleteAttachment = async() => {
   let snackbar
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     let key = imageToDelete?.value?.key
-    await store.dispatch(Actions.FILE_DELETE, {
+    await fileStore.deleteFile({
       id: imageToDelete?.value?.image?.id,
       callback: async () => {
         ImageTypeEnum.value[key].image = {}
-        snackbar = getSnackbar('SUCCESS', 'Image Deleted')
+        snackbar = snackbar('SUCCESS', 'Image Deleted')
         store.commit(AppMutations.SHOW_SNACK, snackbar)
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
         imageToDelete.value = null
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar = getSnackbar('ERROR', 'Error Deleting File')
+    snackbar = snackbar('ERROR', 'Error Deleting File')
     store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     imageToDelete.value = null
   }
 }
@@ -134,58 +190,7 @@ onMounted(async () => {
     loadImage(value)
   })
 })
-
 </script>
-
-<template>
-  <v-container>
-  <v-row v-for="([key, imageType], idx) in Object.entries(ImageTypeEnum)">
-    <v-col cols="12">
-      <v-toolbar color="white" class="elevation-1">
-        <v-toolbar-title class="title-large">{{ imageType.header }}</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <div v-if="userCanEdit">
-          <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                 v-if="!imageType.saving && !imageType.image?.presignedUrl" @click="imageType.add = !imageType.add">
-            <v-icon v-if="imageType.add">remove</v-icon>
-            <v-icon v-else>add</v-icon>
-          </v-btn>
-          <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else
-                 @click="imageToDelete=imageType">
-            <v-icon>delete</v-icon>
-          </v-btn>
-        </div>
-      </v-toolbar>
-      <div class="text-center">
-        <div class="mt-4" v-if="imageType.add">
-          <form enctype="multipart/form-data" novalidate>
-            <input
-                type="file"
-                :accept="acceptedFileTypes"
-                class="file-input clickable body-medium mx-6"
-                :disabled="imageType.saving"
-                @change="uploadFile(imageType, $event.target.files, imageType.attachmentTypeId, companyId, 1048576)"
-                name="avatar"
-            >
-            <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
-          </form>
-        </div>
-        <div class="company-logo-background" v-else-if="imageType.image?.presignedUrl">
-          <img class="company-logo" :src="imageType.image.presignedUrl" alt="image preview">
-        </div>
-        <div class="mt-4" v-else>
-          No image uploaded
-        </div>
-      </div>
-    </v-col>
-  </v-row>
-
-  <ConfirmationDialog :open-dialog="!!imageToDelete" @confirm="deleteAttachment"
-                      @close-dialog="imageToDelete=null">
-    {{ deleteImageDialogText }}
-  </ConfirmationDialog>
-  </v-container>
-</template>
 
 <style scoped lang="scss">
 .company-logo-background {

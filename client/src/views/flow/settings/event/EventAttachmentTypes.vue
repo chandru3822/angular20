@@ -6,25 +6,15 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import ObjectTypeAttachments from "@/views/flow/settings/objectType/ObjectTypeAttachments";
+import {ref, getCurrentInstance} from "vue";
+const vueInstance = getCurrentInstance().proxy
+import {useRoute} from "vue-router/composables"
+const route = useRoute()
 
-export default {
-  name: 'EventAttachments',
-  components: {
-    ObjectTypeAttachments
-  },
-  data () {
-    return {
-      primaryId: parseInt(this.$route.params.id)
-    }
-  },
-  watch: {},
-  created () {
-  },
-  methods: {
-  }
-}
+const primaryId = ref(parseInt(route.params.id))
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

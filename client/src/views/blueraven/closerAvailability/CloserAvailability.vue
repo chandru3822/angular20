@@ -1,58 +1,46 @@
 <template>
   <v-container>
     <v-row id="closer-availability-container">
-      <v-col cols="12" md="12" class="map-row" style="overflow: auto;">
+      <v-col cols="12" md="12" class="map-row pa-0" style="overflow: auto;">
         <!-- map-resources allows the calendar to send events back to the map -->
         <Calendar :map-resources="mapResources"
                   ref="calendar"
-                  :callback="this.resourceMapCallback"
-                  :date-callback="this.dateCallback"></Calendar>
+                  :callback="resourceMapCallback"
+                  :date-callback="dateCallback"></Calendar>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
-<script>
+<script setup>
 import Calendar from './components/Calendar'
+import { ref } from 'vue'
 
-export default {
-  name: 'CloserAvailability',
-  components: {
-    Calendar
-  },
-  data() {
-    return {
-      snackbar: {},
-      timezone: this.$store.state.user.details.timezone.value,
-      startTime: null,
-      endTime: null,
-      mapResources: [],
-      selectedRows: [],
-      selectedResources: [],
-      state: {},
-      caState: null,
-      eventTypes: [],
-      selectedEventTypes: [],
-      eventTypesChanged: false,
-      searchProjectsLoading: false,
-      asyncActions: {}
+const startTime = ref(null)
+const endTime = ref(null)
+const mapResources = ref([])
+const selectedRows = ref([])
+const selectedResources = ref([])
+const state = ref({})
+const caState = ref(null)
+const eventTypes = ref([])
+const selectedEventTypes = ref([])
+const eventTypesChanged = ref(false)
+const searchProjectsLoading = ref(false)
+const asyncActions = ref({})
+
+    const resourceMapCallback = (newValue) => {
+      mapResources.value = newValue
     }
-  },
-  methods: {
-    resourceMapCallback(newValue) {
-      this.mapResources = newValue
-    },
-    dateCallback(startTime, endTime) {
-      this.startTime = startTime
-      this.endTime = endTime
-    },
-  }
-}
+    const dateCallback = (startTime, endTime) => {
+      startTime.value = startTime
+      endTime.value = endTime
+    }
 </script>
 
 <style lang="scss" scoped>
 #closer-availability-container {
-  height: calc(100vh - 100px);
+  height: calc(100vh - 60px);
 }
 </style>
 

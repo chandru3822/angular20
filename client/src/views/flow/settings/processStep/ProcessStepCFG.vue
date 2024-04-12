@@ -2,67 +2,72 @@
   <v-container class="custom-field-group-container py-0">
     <v-row>
       <v-col cols="12" class="py-0">
-            <ProcessStepCustomFieldGroups :customFieldGroups="processStep.customFieldGroups"></ProcessStepCustomFieldGroups>
+            <ProcessStepCustomFieldGroups v-if="!loading" :customFieldGroups="processStep.customFieldGroups"></ProcessStepCustomFieldGroups>
       </v-col>
 
     </v-row>
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
 
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
   import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
+  import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useRoute} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  export default {
-    name: 'ProcessStepCFG',
-    components: {
-      ProcessStepCustomFieldGroups,
-    },
-    data () {
-      return {
-        snackbar: {},
-        loading: true,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        processStepId: this.$route.params.id,
-        companyId: this.$store.state.user.details.companyId,
-        processStep: {},
-        breadcrumbs: [
+  const appStore = useAppStore()
+  const route = useRoute()
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
+
+        const loading = ref( true)
+        const processStep = ref( {})
+        const breadcrumbs = ref( [
           {
             text: 'Back',
             disabled: false,
             exact: true,
             to: `/settings/processSteps`
-          },
-        ]
-      }
-    },
-    computed: {
-    },
-    async created () {
-      await this.getProcessStepDetails()
-    },
-    methods: {
-      async getProcessStepDetails () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        this.loading = true
+          }
+        ])
+
+  const processStepId = computed(() => {
+    return route.params.id
+  })
+
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
+
+  onMounted(async () => {
+      await getProcessStepDetails()
+    
+  })
+    
+      const getProcessStepDetails = async () => {
+        appStore.loading = true
+        loading.value = true
         try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data, status} = await getRequest(`/processStep/${this.processStepId}`)
-          this.processStep = data
-          this.loading = false
-          handleHidingGlobalLoader(this, status)
+          appStore.loading = true
+          const {data, status} = await getRequest(`/processStep/${processStepId.value}`)
+          processStep.value = data
+          loading.value = false
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.loading = false
         }
-      },
-    }
-
-  }
+      }
 </script>
 
 <style scoped lang="scss">

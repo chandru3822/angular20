@@ -50,10 +50,11 @@ public class ProjectController {
     @RequestParam(required = false) String overrideType,
     @RequestParam(required = false) String sortColumn,
     @RequestParam(required = false) String sortDirection,
+    @RequestParam(required = false) Boolean includeCommissionDetails,
     Pageable pageable) {
     return new ResponseEntity<>(
       projectService.searchProjects(
-        query, companyProjectStatusTypeId, overrideType, sortColumn, sortDirection, pageable),
+        query, companyProjectStatusTypeId, overrideType, sortColumn, sortDirection, includeCommissionDetails, pageable),
       HttpStatus.OK);
   }
 
@@ -75,8 +76,14 @@ public class ProjectController {
 
   @GetMapping(value = "/{projectId}/statusFields")
   public List<ProjectStatusField> getStatusFieldsByProject(@PathVariable Long projectId) {
-    return projectService.getStatusFieldsByProject(projectId);
+    return projectService.getStatusFieldsByProject(projectId, null);
   }
+
+    @GetMapping(value = "/{projectId}/statusFields/{companyProjectStatusTypeId}")
+    public List<ProjectStatusField> getStatusFieldsByProjectForStatus(@PathVariable Long projectId,
+                                                                      @PathVariable Long companyProjectStatusTypeId) {
+        return projectService.getStatusFieldsByProject(projectId, companyProjectStatusTypeId);
+    }
 
   @DeleteMapping(value = "/{projectId}")
   public void deleteProject(

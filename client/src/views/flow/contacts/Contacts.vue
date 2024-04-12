@@ -6,11 +6,15 @@
           <v-toolbar-title class="title-large-medium">Contacts</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="canAdd && (!$store.getters.isParent(parentId) || !companies || companies.length === 1)"
-                   to="/newContact" color="primary" >
-              <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE" class="body-medium">Add Contact</span>
-            </v-btn>
+
+            <a-btn
+                id="qa-new-contact-single"
+                variant="text"
+                v-if="canAdd && (!userStore.isParent|| !companies || companies.length === 1)"
+                to="/newContact"
+                color="primary"
+                :text="!constants.IS_MOBILE ? 'Add Contact' : ''"
+            ></a-btn>
             <v-menu data-app left
                     v-else-if="canAdd && companies && companies.length > 1"
                     offset-y
@@ -19,10 +23,14 @@
                     class="account-menu"
                     :close-on-content-click="false">
               <template v-slot:activator="{ on }">
-                <v-btn text v-on="on" color="primary">
-                  <v-icon>add</v-icon>
-                  <span v-if="!constants.IS_MOBILE" class="body-medium">Add Contact</span>
-                </v-btn>
+                <a-btn
+                    id="qa-new-contact-multi"
+                    variant="text"
+                    :activation-handler="on"
+                    color="primary"
+                    prepend-icon="add"
+                    :text="!constants.IS_MOBILE ? 'Add Contact' : ''"
+                ></a-btn>
               </template>
               <v-list dense class="pa-3">
                 <v-list-item  @click="menuOpen = false" :to="`/newContact?cid=${c.id}`"
@@ -36,18 +44,18 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-toolbar
-          color="white"
-          class="elevation-1 mt-3"
+            color="white"
+            class="elevation-1 mt-3"
         >
-          <v-text-field
+          <a-text-field
+              id="qa-contact-search"
               class="mt-5 body-large"
               prepend-inner-icon="search"
-              text
               clearable
               label="Search contacts..."
               v-model="search"
               @input="debounceGetContacts"
-          ></v-text-field>
+          ></a-text-field>
           <v-spacer></v-spacer>
         </v-toolbar>
         <v-data-table
@@ -103,146 +111,154 @@
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
 
 import {
   handleHidingGlobalLoader,
   getRequestWithParams,
-  getSnackbar
+
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 import axios from 'axios'
 
-export default {
-  name: 'Contacts',
-  data () {
-    return {
-      initialLoad: true,
-      delay: 500,
-      constants,
-      menuOpen: false,
-      companies: this.$store.state.user.companies,
-      canAdd: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADD'),
-      dialog: false,
-      snackbar: {},
-      contacts: [],
-      parentId: this.$store.state.user.details.parentCompanyId,
-      descending: true,
-      footerProps: {
-        'items-per-page-options': [25, 50, 100, 1000],
-        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-      },
-      page: 1,
-      options: {
-        itemsPerPage: 100
-      },
-      totalContacts: 0,
-      dataLoading: true,
-      headers: [
-        { text: 'Contact Name', value: 'fullName', show: true },
-        { text: 'Owner', value: 'ownerFullName', show: true },
-        { text: 'State', value: 'state', show: true },
-        { text: 'Date Created', value: 'dateCreated', show: true },
-      ],
-      search: '',
-      source: null
-    }
-  },
-  watch: {
-    options: {
-      handler () {
-        if(!this.initialLoad) {
-          this.getContacts()
-        }
-      },
-      deep: true,
-    },
-    page() {
-      //this will also scroll when the rows per page changes IF not on the first page, which is correct behavior since it is resetting the search page back to 0
-      let table = this.$refs['pageable-table'];
-      let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
-      // this.$vuetify.goTo(table); // to table
-      this.$vuetify.goTo(table, {container: wrapper}); // to header
-    }
-  },
-  beforeRouteEnter(to, from, next) {
-    //if coming to this page from the contact details - use the previously used search
-    next((vm) => {
-      if(from?.fullPath.includes('/contact/')) {
-        vm.search = localStorage.getItem('contactSearch') || ''
-      } else {
-        localStorage.removeItem('contactSearch')
-      }
-      vm.getContacts()
-    });
-  },
-  methods: {
-    clickRow(id){
-      this.$router.push({name: 'contact', params: {id}})
-    },
-    debounceGetContacts: debounce( function () {
-      this.dataLoading = true
-      //don't allow search to be null - causes issues
-      this.search = this.search || ''
-      localStorage.setItem('contactSearch', this.search)
-      this.getContacts()
-    }, 500),
-    async getContacts () {
-      const { page, itemsPerPage } = this.options
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-      if(this.source){
-        this.source.cancel();
-      }
-      const CancelToken = axios.CancelToken;
-      this.source = CancelToken.source();
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
 
-      try {
-        const {data, status} = await getRequestWithParams(`/contact/search`, {
-          source: this.source,
-          cancelToken: this.source.token,
-          params: {
-            query: this.search,
-            page: page - 1,
-            size: itemsPerPage
-        }}, null, [])
-        this.contacts = data.content || []
-        this.totalContacts = data.totalElements
-        this.dataLoading = false
-        this.initialLoad = false
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contacts')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+const initialLoad = ref(true)
+const delay = ref(500)
+const menuOpen = ref(false)
+const dialog = ref(false)
+const contacts = ref([])
+const descending = ref(true)
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 1000],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const page = ref(1)
+const options = ref({itemsPerPage: 100})
+const totalContacts = ref(0)
+const dataLoading = ref(true)
+const headers = ref([
+  { text: 'Contact Name', value: 'fullName', show: true },
+  { text: 'Owner', value: 'ownerFullName', show: true },
+  { text: 'State', value: 'state', show: true },
+  { text: 'Date Created', value: 'dateCreated', show: true },
+])
+const search = ref('')
+const source = ref(null)
+
+const companies = computed(() => {
+  return userStore.companies
+})
+const canAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('CONTACTS', 'ADD')
+})
+const useSavedFilter = computed(() => {
+  return route.params.useSavedFilter
+})
+
+watch(
+    () => options,
+    (newValue, oldValue) => {
+      if (!initialLoad.value) {
+        getContacts();
       }
-    }
+    },
+    { deep: true }
+)
+watch(page, async() => {
+  //this will also scroll when the rows per page changes IF not on the first page, which is correct behavior since it is resetting the search page back to 0
+  let table = vueInstance.$refs['pageable-table'];
+  let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+  vuetify.goTo(table, {container: wrapper}); // to header
+})
+
+onMounted(() => {
+  if(useSavedFilter.value === 'true') {
+    search.value = localStorage.getItem('contactSearch') || ''
+  } else {
+    localStorage.removeItem('contactSearch')
+  }
+  getContacts()
+})
+
+
+const clickRow = (id) => {
+  router.push({name: 'contact', params: {id}})
+}
+const debounceGetContacts = debounce(async() => {
+  dataLoading.value = true
+  //don't allow search to be null - causes issues
+  search.value = search.value || ''
+  localStorage.setItem('contactSearch', search.value)
+  getContacts()
+}, 500)
+
+const getContacts = async () => {
+  const { page, itemsPerPage } = options.value
+
+  if(source.value){
+    source.value.cancel();
+  }
+  const CancelToken = axios.CancelToken;
+  source.value = CancelToken.source();
+
+  try {
+    const {data, status} = await getRequestWithParams(`/contact/search`, {
+      source: source.value,
+      cancelToken: source.value.token,
+      params: {
+        query: search.value,
+        page: page - 1,
+        size: itemsPerPage
+      }}, null, [])
+    contacts.value = data.content || []
+    totalContacts.value = data.totalElements
+    dataLoading.value = false
+    initialLoad.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Contacts')
+
+    appStore.loading = false
   }
 }
 </script>
 
 <style lang="scss">
-  #contacts-container .v-data-table__wrapper {
-    height: calc(100vh - 290px);
-    min-height: 300px;
-  }
-  #contacts-container .v-data-footer__pagination {
-    display: none !important;
-  }
+#contacts-container .v-data-table__wrapper {
+  height: calc(100vh - 290px);
+  min-height: 300px;
+}
+#contacts-container .v-data-footer__pagination {
+  display: none !important;
+}
 </style>
 
 <style lang="scss" scoped>
-  #contacts-container {
-    margin-top: -15px;
-    padding-left: 0;
-    padding-right: 0;
-    padding-top: 0;
-  }
-  .contact-table {
-    margin-top: 2px;
-    word-break: break-word;
-  }
+#contacts-container {
+  margin-top: -15px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
+.contact-table {
+  margin-top: 2px;
+  word-break: break-word;
+}
 </style>
 

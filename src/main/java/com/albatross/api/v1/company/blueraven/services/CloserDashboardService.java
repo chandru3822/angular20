@@ -13,7 +13,6 @@ import com.albatross.api.v1.flow.model.roundRobin.RoundRobin;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -106,32 +105,20 @@ public class CloserDashboardService {
     }
   }
 
-  public List<RoundRobinLeadAllocationScores> getRoundRobinLeadAllocationRank(
+  public List<CloserTableScore> getRoundRobinLeadAllocationRank(
       Integer roundRobinId, Integer timeInterval) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("roundRobinId", roundRobinId);
     params.put("timeInterval", timeInterval);
     params.put("currentUserId", securityService.getCurrentUser().getId());
 
-    List<RoundRobinLeadAllocationScores> roundRobinLeadAllocationData =
+    List<CloserTableScore> roundRobinLeadAllocationData =
         sqlCache.queryBySql(
             CloserDashboardQuery.getRoundRobinLeadAllocationRank,
             params,
-            RoundRobinLeadAllocationScores.class);
+          CloserTableScore.class);
 
-    List<Long> userIds = roundRobinLeadAllocationData.stream().map(RoundRobinLeadAllocationScores::getUserId).collect(Collectors.toList());
-
-    Map<Long, String> userImageUrls = getUserImages(userIds);
-
-    for (RoundRobinLeadAllocationScores row : roundRobinLeadAllocationData) {
-      if (userImageUrls.get(row.getUserId()) != null) {
-        row.setUserImageUrl(userImageUrls.get(row.getUserId()));
-        row.setUserImageAltText(
-            "Photo of " + row.getCloserName() + ", a Blue Raven Solar employee");
-      } else {
-        row.setUserImageAltText("User photo placeholder");
-      }
-    }
+    getUserImages(roundRobinLeadAllocationData);
 
     return roundRobinLeadAllocationData;
   }
@@ -170,56 +157,46 @@ public class CloserDashboardService {
     }
   }
 
-  public String getCloserTableScores(
-      Integer timeInterval, Boolean officeFdcRank, Long selectedOrgId) {
-    JSONObject closerDashboardData = new JSONObject();
-
+  public List<CloserTableScore> getRepRankings(Integer timeInterval, Long selectedOrgId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("currentUserId", securityService.getCurrentUser().getId());
     params.put("timeInterval", timeInterval);
-    params.put("officeFdcRank", officeFdcRank);
     params.put("selectedOrgId", selectedOrgId);
 
-    if (officeFdcRank) {
-      List<CloserTableScores> closerTableScores = sqlCache.queryBySql(CloserDashboardQuery.getCloserTableScoresOffice, params, CloserTableScores.class);
-      closerDashboardData.put("officeFdcRankValues", closerTableScores);
-      return getUserImages("officeFdcRankValues", closerDashboardData);
-    } else {
-      List<CloserTableScores> closerTableScores = sqlCache.queryBySql(CloserDashboardQuery.getCloserTableScoresRep, params, CloserTableScores.class);
-      closerDashboardData.put("companyRankingValues", closerTableScores);
-      return getUserImages("companyRankingValues", closerDashboardData);
-    }
+    List<CloserTableScore> closerTableScores = sqlCache.queryBySql(CloserDashboardQuery.getCloserRankings, params, CloserTableScore.class);
+
+    //process the user images
+    getUserImages(closerTableScores);
+
+    return closerTableScores;
   }
 
-  public Map<Long, String> getUserImages(List<Long> userIds) {
-    return attachmentService.getAttachmentPresignedUrlsForUserList(userIds, 9L);
+  public List<CloserTableScore> getCloserOrgRankings(Integer timeInterval) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("currentUserId", securityService.getCurrentUser().getId());
+    params.put("timeInterval", timeInterval);
+
+    List<CloserTableScore> closerTableScores = sqlCache.queryBySql(CloserDashboardQuery.getCloserOrgRankings, params, CloserTableScore.class);
+
+    return closerTableScores;
   }
 
-  public String getUserImages(String key, JSONObject closerDashboardData) {
-    List<Long> userIds = new ArrayList<>();
-
-    for (Object row : closerDashboardData.getJSONArray(key)) {
-      JSONObject rowObject = (JSONObject) row;
-      userIds.add(rowObject.getLong("userId"));
-    }
+  public void getUserImages(List<CloserTableScore> scores) {
+    List<Long> userIds = scores.stream().map(CloserTableScore::getUserId).collect(Collectors.toList());
 
     Map<Long, String> userImageUrls =
         attachmentService.getAttachmentPresignedUrlsForUserList(userIds, 9L);
 
-    for (Object row : closerDashboardData.getJSONArray(key)) {
-      JSONObject rowObject = (JSONObject) row;
-
-      if (userImageUrls.get(rowObject.getLong("userId")) != null) {
-        rowObject.put("userImageUrl", userImageUrls.get(rowObject.getLong("userId")));
-        rowObject.put(
-            "userImageAltText",
-            "Photo of " + rowObject.get("name") + ", a Blue Raven Solar employee");
+    for (CloserTableScore score : scores) {
+      String imageUrl = userImageUrls.get(score.getUserId());
+      if (imageUrl != null) {
+        score.setUserImageUrl(imageUrl);
+        score.setUserImageAltText(
+            "Photo of " + score.getCloserName() + ", a Blue Raven Solar employee");
       } else {
-        rowObject.put("userImageAltText", "User photo placeholder");
+        score.setUserImageAltText("User photo placeholder");
       }
     }
-
-    return closerDashboardData.toString();
   }
 
   public List<Source> getBrsProvidedSources() {

@@ -1,116 +1,115 @@
 <template>
   <v-container v-if="logoLoaded" class="home-page home-background"
-    :style="{'background-image': null != homePageLogo.presignedUrl
+               :style="{'background-image': null != homePageLogo.presignedUrl
                   ? `url(${homePageLogo.presignedUrl})` : ''}">
     <v-card color="white" class="home-card">
       <v-card-title>Welcome to Albatross!</v-card-title>
       <v-card-text>
-        <v-autocomplete v-if="!userIsAlbatross"
+        <a-autocomplete v-if="!userIsAlbatross"
                         v-model="user.homePageCompanyFeatureId"
                         :items="homePages"
                         label="Set a Default Home Page"
                         clearable
-                        item-text="featureName"
+                        item-title="featureName"
                         item-value="id"
                         autocomplete="off"
                         persistent-hint
                         hint="* This will be used the next time you log in and can be changed at any time under Settings - User Profile"
                         type="search"
                         attach
-        ></v-autocomplete>
-        <v-btn @click="saveUserHomePage"
+        ></a-autocomplete>
+        <a-btn @click="saveUserHomePage"
                v-if="!userIsAlbatross"
-               color="primary" class="mt-4 white--text">
-          Save
-        </v-btn>
+               text="Save"
+               class="mt-4">
+        </a-btn>
       </v-card-text>
     </v-card>
   </v-container>
 </template>
 
-<script>
+<script setup>
 
-import {AppMutations} from "@/stores/AppStore";
-import {handleHidingGlobalLoader, getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
-import {Actions} from "@/store";
+import {handleHidingGlobalLoader, getRequest, putRequest} from "@/helpers/helpers";
+import {computed, getCurrentInstance, onMounted, ref} from 'vue'
 
-export default {
-  name: 'home',
-  components: {},
-  data () {
-    return {
-      snackbar: {},
-      logoLoaded: false,
-      homePages: [],
-      homePageLogo: {},
-      //todo: 333 = home page logo - do this on backend?
-      homePageAttachmentTypeId: 333,
-      companyId: this.$store.state.user.details.companyId,
-      userIsAlbatross: this.$store.state.user.details.highestCompanyId === 1,
-      user: this.$store.state.user.details,
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const appStore = useAppStore()
+const fileStore = useFileStore()
+const snackbar = vueInstance.$snackbar
+
+const logoLoaded = ref(false)
+const homePages = ref([])
+const homePageLogo = ref({})
+const homePageAttachmentTypeId = 333
+
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const userIsAlbatross = computed(() => {
+  return userStore.details.highestCompanyId === 1
+})
+const user = computed(() => {
+  return userStore.details
+})
+
+onMounted(() => {
+  loadHomePageLogo()
+  getHomePages()
+})
+
+const saveUserHomePage = async () => {
+  appStore.loading = true
+  try {
+    let tempUsr = {
+      homePageCompanyFeatureId: user.value.homePageCompanyFeatureId
     }
-  },
-  created () {
-    //on context switching had to turn off the spinner
-    this.loadHomePageLogo()
-    this.getHomePages()
-    // this.$store.commit(AppMutations.SET_LOADING, false)
-	},
-  computed: {},
-  methods: {
-    async saveUserHomePage () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let tempUsr = {
-          homePageCompanyFeatureId: this.user.homePageCompanyFeatureId
-        }
-        const {status} = await putRequest(`/user/homePage`, tempUsr)
-        this.snackbar = getSnackbar('SUCCESS', 'Default Home Page Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Default Home Page')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getHomePages () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/feature/homePages`)
-        if (status) {
-          this.homePages = data.filter(d => {
-            return this.$store.getters.userHasFeature(d.featureCode)
-          })
-        }
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Home Pages')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async loadHomePageLogo () {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await this.$store.dispatch(Actions.FILE_GET_ONE, {
-          attachmentTypeId: this.homePageAttachmentTypeId,
-          sourceId: this.companyId,
-          callback: async (img) => {
-            this.homePageLogo = img
-            this.logoLoaded = true
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        })
-      } catch(e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Loading Background Image')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
+    const {status} = await putRequest(`/user/homePage`, tempUsr)
+    snackbar('SUCCESS', 'Default Home Page Saved')
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Default Home Page')
+  }
+}
+const getHomePages = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/feature/homePages`)
+    if (status) {
+      homePages.value = data.filter(d => {
+        return userStore.userHasFeature(d.featureCode)
+      })
     }
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Home Pages')
+    appStore.loading = false
+  }
+}
+const loadHomePageLogo = async () => {
+  try {
+    appStore.loading = true
+    await fileStore.getOne({
+      attachmentTypeId: homePageAttachmentTypeId,
+      sourceId: companyId.value,
+      callback: async (img) => {
+        homePageLogo.value = img
+        logoLoaded.value = true
+        appStore.loading = false
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Background Image')
+    appStore.loading = false
   }
 }
 </script>

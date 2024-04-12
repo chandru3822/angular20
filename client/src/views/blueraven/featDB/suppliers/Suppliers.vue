@@ -3,22 +3,25 @@
     <v-row>
       <v-col cols="12"  class="pt-0 px-0">
         <v-data-table
-          :headers="headers"
-          :items="filteredSuppliers"
-          :loading="dataLoading"
-          :items-per-page="100"
-          :mobile-breakpoint="0"
-          fixed-header
-          :footer-props="footerProps"
-          class="elevation-1 supplier-table"
+            :headers="headers"
+            :items="filteredSuppliers"
+            :loading="dataLoading"
+            :items-per-page="100"
+            :mobile-breakpoint="0"
+            fixed-header
+            :footer-props="footerProps"
+            class="elevation-1 supplier-table"
         >
           <template #header.icons="{}">
             <div class="text-right mr-2">
-              <v-btn text @click="addItem" color="primary"
-                     v-if="$store.getters.userHasFeatureAccessLevel('SUPPLIERS', 'ADD')">
-                <v-icon>add</v-icon>
-                <span v-if="!constants.IS_MOBILE">Add New</span>
-              </v-btn>
+              <a-btn
+                  variant="text"
+                  @click="addItem"
+                  color="primary"
+                  v-if="userStore.userHasFeatureAccessLevel('SUPPLIERS', 'ADD')"
+                  prepend-icon="add"
+                  text="Add New"
+              ></a-btn>
             </div>
           </template>
 
@@ -28,26 +31,26 @@
                   :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
               >
                 <div v-if="supplierFilters[header.value]" class="pt-2 table-filter">
-                  <v-text-field v-if="supplierFilters[header.value].type === 'text'"
+                  <a-text-field v-if="supplierFilters[header.value].type === 'text'"
                                 v-model="supplierFilters[header.value].value"
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
                                 clearable
                                 filled
                                 dense
                                 hide-details
-                  ></v-text-field>
-                  <v-autocomplete v-else-if="supplierFilters[header.value].type === 'select'"
+                  ></a-text-field>
+                  <a-autocomplete v-else-if="supplierFilters[header.value].type === 'select'"
                                   :items="states"
                                   v-model="supplierFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
-                                  filled
-                                  item-text="state"
-                                  dense
+                                  item-title="state"
+                                  variant="filled"
+                                  density="compact"
                                   type="search"
                                   autocomplete="off"
                                   hide-details
-                  ></v-autocomplete>
+                  ></a-autocomplete>
                 </div>
               </th>
             </tr>
@@ -55,23 +58,43 @@
 
           <template #item="{ item, index }">
             <tr :class="['text-sm-left', {'shaded-row': !(index % 2)}]">
-              <td class="text-left clickable" @click="$router.push({ path: `supplier/${item.id}/details` })">
-                {{ item.name || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/supplier/${item.id}/details`">
+                  {{ item.name || '' }}
+                </router-link>
               </td>
-              <td class="text-left clickable" @click="$router.push({ path: `supplier/${item.id}/details` })">
-                {{ item.state || '' }}
+              <td class="text-left clickable">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/database/supplier/${item.id}/details`">
+                  {{ item.state || '' }}
+                </router-link>
               </td>
               <td class="text-right">
-                <v-btn :to="`/database/supplier/${item.id}/details`" text x-small fab>
-                  <v-icon>mdi-arrow-right</v-icon>
-                </v-btn>
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('SUPPLIERS', 'EDIT')" small color="primary"
-                        class="mr-3 feat-db-link-icon" @click="editSupplier(item)">
-                  edit
-                </v-icon><v-icon v-if="$store.getters.userHasFeatureAccessLevel('SUPPLIERS', 'DELETE')" small color="primary"
-                        class="mr-3 feat-db-link-icon" @click="deleteSupplier(item)">
-                  delete
-                </v-icon>
+                <a-btn
+                    :to="`/database/supplier/${item.id}/details`"
+                    variant="text"
+                    size="x-small"
+                    fab
+                    color="unset"
+                    prepend-icon="mdi-arrow-right"
+                ></a-btn>
+                <a-btn
+                    v-if="userStore.userHasFeatureAccessLevel('SUPPLIERS', 'EDIT')"
+                    size="small"
+                    icon
+                    color="primary"
+                    class="mr-3 feat-db-link-icon"
+                    @click="editSupplier(item)"
+                    prepend-icon="edit"
+                ></a-btn>
+                <a-btn
+                    v-if="userStore.userHasFeatureAccessLevel('SUPPLIERS', 'DELETE')"
+                    size="small"
+                    color="primary"
+                    icon
+                    class="mr-3 feat-db-link-icon"
+                    @click="deleteSupplier(item)"
+                    prepend-icon="delete"
+                ></a-btn>
               </td>
             </tr>
           </template>
@@ -86,7 +109,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-<!--todo: update to ConfirmationDialog-->
+    <!--todo: update to ConfirmationDialog-->
     <v-dialog v-model="supplierDialog" max-width="500px">
       <v-card>
         <v-card-title>
@@ -94,30 +117,38 @@
         </v-card-title>
 
         <v-card-text>
-          <v-text-field label="Name"
+          <a-text-field label="Name"
                         v-model="editedItem.name"
                         required
-                        filled
-          ></v-text-field>
-          <v-autocomplete label="State"
+                        variant="filled"
+          ></a-text-field>
+          <a-autocomplete label="State"
                           :items="states"
                           v-model="editedItem.companyStateId"
-                          item-text="state"
+                          item-title="state"
                           item-value="id"
                           autocomplete="off"
                           type="search"
                           required
-                          filled
-          ></v-autocomplete>
+                          variant="filled"
+          ></a-autocomplete>
         </v-card-text>
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="close">Cancel</v-btn>
-          <v-btn color="primary" raised @click="newSupplierDuplicateCheck" class="white--text"
-                 :disabled="!editedItem.name?.trim() || !editedItem.companyStateId">
-            {{ btnTxt }}
-          </v-btn>
+          <a-btn
+              color="primary"
+              variant="text"
+              @click="close"
+              text="Cancel"
+          ></a-btn>
+          <a-btn
+              color="primary"
+              raised
+              @click="newSupplierDuplicateCheck"
+              :disabled="!editedItem.name?.trim() || !editedItem.companyStateId"
+              :text="btnTxt"
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -140,224 +171,214 @@
       <template v-slot:yes>Create</template>
     </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="!!supplierToDelete" @confirm="confirmDeleteSupplier" @close-dialog="supplierToDelete=null">
-    Are you sure you want to delete {{ supplierToDeleteName }}?
+      Are you sure you want to delete {{ supplierToDeleteName }}?
     </ConfirmationDialog>
   </v-container>
 </template>
 
-<script>
+<script setup>
 import constants from "@/helpers/constants";
 import cloneDeep from "lodash.clonedeep";
 import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
-import {AppMutations} from "@/stores/AppStore";
-import {deleteRequest, getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
+
+import {deleteRequest, getRequest,  handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: "suppliers",
-  components: {ConfirmationDialog},
-  data: () => ({
-    constants,
-    dataLoading: true,
-    supplierFilters: {
-      name: {value: '', type: 'text', model: 'name'},
-      state: {value: [], type: 'select', model: 'state'},
-    },
-    states: [],
-    tabs: FEAT_DB_TABS,
-    headers: [
-      {text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 300, show: true},
-      {text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 150, show: true},
-      {text: null, value: 'icons', sortable: false, show: true, width: 50}
-    ],
-    footerProps: {
-      showFirstLastPage: !constants.IS_MOBILE,
-      firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
-      lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
-      'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
-      'items-per-page-options': [25, 50, 100, 1000]
-    },
-    supplierDialog: false,
-    editedItem: {
-      name: '',
-    },
-    suppliers: [],
-    addMode: false,
-    supplierToDelete: null,
-    duplicateDialog: false,
-    duplicateSupplierMatch: null
-  }),
-  computed: {
-    filteredSuppliers() {
-      return this.suppliers && this.suppliers.filter(supplier => {
-        return Object.keys(this.supplierFilters).every(filterName => {
-          const filter = this.supplierFilters[filterName]
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-          if (filter.value?.length < 1) {
-            return true
-          }
+const dataLoading = ref(true)
+const supplierFilters = ref({name: {value: '', type: 'text', model: 'name'},state: {value: [], type: 'select', model: 'state'},})
+const states = ref([])
+const tabs = ref(FEAT_DB_TABS)
+const headers = ref([
+  {text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 300, show: true},
+  {text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 150, show: true},
+  {text: null, value: 'icons', sortable: false, show: true, width: 50}
+])
+const footerProps = ref({showFirstLastPage: !constants.IS_MOBILE,firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+  'items-per-page-options': [25, 50, 100, 1000]})
+const supplierDialog = ref(false)
+const editedItem = ref({name: '',})
+const suppliers = ref([])
+const addMode = ref(false)
+const supplierToDelete = ref(null)
+const duplicateDialog = ref(false)
+const duplicateSupplierMatch = ref(null)
 
-          if (!supplier[filterName]) {
-            return false
-          }
 
-          if (filter.value !== null && filter.value !== undefined) {
-            return supplier[filterName].toLowerCase().includes(filter.value.toLowerCase())
-          } else if (filter.value === undefined) {
-            filter.value = []
-          } else {
-            filter.value = ''
-          }
-        })
-      })
-    },
-    formTitle() {
-      return this.addMode ? 'Create Supplier' : 'Update Supplier'
-    },
-    btnTxt() {
-      return this.addMode ? 'Add' : 'Update'
-    },
-    supplierToDeleteName(){
-      return this.supplierToDelete ? this.supplierToDelete.name : ''
-    },
-  },
-  async created() {
-    this.$store.commit(AppMutations.SET_LOADING, true)
-    this.currentUser = this.$store.state.user.details.id
-    this.fetchStates()
-    await this.fetchSuppliers()
-  },
-  methods: {
-    async fetchSuppliers() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest('/featDb/supplier/list/all', 'blueraven')
-        this.suppliers = cloneDeep(data).filter(supplier => supplier.archived === false)
-        this.dataLoading = false
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.dataLoading = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+const filteredSuppliers = computed(() => {
+  return suppliers.value && suppliers.value.filter(supplier => {
+    return Object.keys(supplierFilters.value).every(filterName => {
+      const filter = supplierFilters.value[filterName]
+
+      if (filter.value?.length < 1) {
+        return true
       }
-    },
 
-    async fetchStates() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getActiveStates()
-        this.states = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      if (!supplier[filterName]) {
+        return false
       }
-    },
-    addItem() {
-      this.addMode = true
-      this.supplierDialog = true
-    },
-    editSupplier (item) {
-      this.editedItem = Object.assign({}, item)
-      this.addMode = false
-      this.supplierDialog = true
-    },
-    close() {
-      this.supplierDialog = false
-      this.editedItem = {}
-    },
-    deleteSupplier(item) {
-      this.supplierToDelete = {
-        id: item.id,
-        name: item.name
-      }
-    },
-    async confirmDeleteSupplier() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await deleteRequest(`/featDb/supplier/${this.supplierToDelete.id}`, 'blueraven')
-        this.snackbar = getSnackbar('SUCCESS', 'Supplier deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        await this.fetchSuppliers().then(() => this.fetchStates())
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error deleting Supplier')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.supplierToDelete = null
-    },
 
-    newSupplierDuplicateCheck() {
-      this.duplicateSupplierMatch = this.suppliers.find(supplier => {
-
-        return this.doNamesMatch(this.editedItem.name, supplier.name) &&
-            this.editedItem.companyStateId === supplier.companyStateId
-      })
-      if(this.duplicateSupplierMatch){
-        this.supplierDialog = false
-        //add state name for display purposes
-        this.editedItem.state = this.states.find(state => state.id === this.editedItem.companyStateId)?.state
-        this.duplicateDialog = true
+      if (filter.value !== null && filter.value !== undefined) {
+        return supplier[filterName].toLowerCase().includes(filter.value.toLowerCase())
+      } else if (filter.value === undefined) {
+        filter.value = []
       } else {
-        this.saveSupplier()
+        filter.value = ''
       }
-    },
+    })
+  })
+})
+const formTitle = computed(() => {
+  return addMode.value ? 'Create Supplier' : 'Update Supplier'
+})
+const btnTxt = computed(() => {
+  return addMode.value ? 'Add' : 'Update'
+})
+const supplierToDeleteName = computed(() => {
+  return supplierToDelete.value ? supplierToDelete.value.name : ''
+})
 
-    doNamesMatch(name1, name2){
-      //step 1: remove all punctuation and whitespaces (we don't care if those match)
-      const name1Clean = this.cleanName(name1)
-      const name2Clean = this.cleanName(name2)
-      //step 2: check if name1 contains name2 or vice versa, if so they match
-      return name2Clean && name1Clean &&
-          ((name2Clean.length > 0 && name1Clean.indexOf(name2Clean) >= 0)
-          || (name1Clean && name1Clean.length > 0 && name2Clean.indexOf(name1Clean) >= 0))
-    },
+onMounted(async() => {
+  fetchStates()
+  await fetchSuppliers()
+})
 
-    cleanName(name){
-      return name && name.length > 0 ? name.replace(/[^\w]/g, '').toLowerCase() : name
-    },
+const fetchSuppliers = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest('/featDb/supplier/list/all', 'blueraven')
+    suppliers.value = cloneDeep(data).filter(supplier => supplier.archived === false)
+    dataLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
 
-    async saveSupplier() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      if (this.addMode) {
-        try {
-          const {status} = await postRequest('/featDb/supplier', this.editedItem, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Supplier created')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error creating Supplier')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      } else {
-        try {
-          const {status} = await putRequest(`/featDb/supplier/simpleUpdate`, this.editedItem, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Supplier updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error updating Supplier')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-
-      this.close()
-      await this.fetchSuppliers()
-      this.editedItem = {}
-    },
+    dataLoading.value = false
+    appStore.loading = false
   }
 }
+const fetchStates = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getActiveStates()
+    states.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving States')
+
+    appStore.loading = false
+  }
+}
+const addItem = ()  => {
+  addMode.value = true
+  supplierDialog.value = true
+}
+const editSupplier =  (item)  => {
+  editedItem.value = Object.assign({}, item)
+  addMode.value = false
+  supplierDialog.value = true
+}
+const close = ()  => {
+  supplierDialog.value = false
+  editedItem.value = {}
+}
+const deleteSupplier = (item)  => {
+  supplierToDelete.value = {
+    id: item.id,
+    name: item.name
+  }
+}
+const confirmDeleteSupplier = async() => {
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/featDb/supplier/${supplierToDelete.value.id}`, 'blueraven')
+    snackbar('SUCCESS', 'Supplier deleted')
+
+    await fetchSuppliers().then(() => fetchStates())
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error deleting Supplier')
+
+    appStore.loading = false
+  }
+  supplierToDelete.value = null
+}
+const newSupplierDuplicateCheck = ()  => {
+  duplicateSupplierMatch.value = suppliers.value.find(supplier => {
+
+    return doNamesMatch(editedItem.value.name, supplier.name) &&
+        editedItem.value.companyStateId === supplier.companyStateId
+  })
+  if(duplicateSupplierMatch.value){
+    supplierDialog.value = false
+    //add state name for display purposes
+    editedItem.value.state = states.value.find(state => state.id === editedItem.value.companyStateId)?.state
+    duplicateDialog.value = true
+  } else {
+    saveSupplier()
+  }
+}
+const doNamesMatch = (name1, name2) => {
+  //step 1: remove all punctuation and whitespaces (we don't care if those match)
+  const name1Clean = cleanName(name1)
+  const name2Clean = cleanName(name2)
+  //step 2: check if name1 contains name2 or vice versa, if so they match
+  return name2Clean && name1Clean &&
+      ((name2Clean.length > 0 && name1Clean.indexOf(name2Clean) >= 0)
+          || (name1Clean && name1Clean.length > 0 && name2Clean.indexOf(name1Clean) >= 0))
+}
+const cleanName = (name) => {
+  return name && name.length > 0 ? name.replace(/[^\w]/g, '').toLowerCase() : name
+}
+const saveSupplier = async() => {
+  appStore.loading = true
+  if (addMode.value) {
+    try {
+      const {status} = await postRequest('/featDb/supplier', editedItem.value, 'blueraven')
+      snackbar('SUCCESS', 'Supplier created')
+
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error creating Supplier')
+
+      appStore.loading = false
+    }
+  } else {
+    try {
+      const {status} = await putRequest(`/featDb/supplier/simpleUpdate`, editedItem.value, 'blueraven')
+      snackbar('SUCCESS', 'Supplier updated')
+
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error updating Supplier')
+
+      appStore.loading = false
+    }
+  }
+
+  close()
+  await fetchSuppliers()
+  editedItem.value = {}
+}
+
 </script>
 
 <style lang="scss" scoped>
@@ -392,12 +413,6 @@ export default {
   .table-filter {
     font-weight: normal;
     margin-bottom: 10px;
-
-    .v-text-field,
-    .v-select {
-      font-size: 0.875rem;
-      margin-left: 15px;
-    }
   }
 }
 

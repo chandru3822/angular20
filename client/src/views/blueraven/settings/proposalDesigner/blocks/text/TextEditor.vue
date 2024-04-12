@@ -1,20 +1,18 @@
 <template>
-  <editor-content :editor="editor"/>
+  <editor-content :editor="editor" />
 </template>
 
-<script>
-import {EditorContent} from '@tiptap/vue-2'
+<script setup>
+import { toRefs } from 'vue'
+import { EditorContent } from '@tiptap/vue-2'
 
-export default {
-  name: 'TextEditor',
-  props: {
-    editor: {
-      type: Object,
-      required: true
-    }
-  },
-  components: {EditorContent}
-}
+const props = defineProps({
+  editor: {
+    type: Object,
+    required: true
+  }
+})
+const { editor } = toRefs(props)
 </script>
 
 <style lang="scss">
@@ -72,7 +70,7 @@ export default {
     .selectedCell:after {
       z-index: 2;
       position: absolute;
-      content: "";
+      content: '';
       left: 0;
       right: 0;
       top: 0;
@@ -100,5 +98,4 @@ export default {
 .resize-cursor {
   cursor: ew-resize;
 }
-
 </style>

@@ -6,112 +6,122 @@
           <v-toolbar-title class="title-large">Postal Codes</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newPostalCode = {}, getStates()]" v-if="userCanAdd">
-              <span v-if="!addNew">{{ 'Add New' }}</span>
-              <span v-else>{{ 'Cancel' }}</span>
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                @click="[addNew = !addNew, newPostalCode = {}, getAllStates()]"
+                v-if="userCanAdd"
+                :text="!addNew ? 'Add New' : 'Cancel'"
+            ></a-btn>
+
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
           <v-card color="transparent" flat v-if="addNew">
             <v-form ref="postalCodeForm">
-              <v-text-field
+              <a-text-field
                 label="Postal Code"
                 tabindex=1
                 counter
-                maxlength="10"
-                @keypress="isNumberOrHyphen"
+                :maxlength="10"
+                @keydown="isNumberOrHyphen"
                 :rules="postalCodeRules"
                 v-model="newPostalCode.postalCode"
-              ></v-text-field>
-              <v-text-field
+              ></a-text-field>
+              <a-text-field
                 label="Place Name"
                 tabindex=1
                 v-model="newPostalCode.placeName"
-              ></v-text-field>
-              <v-autocomplete
+              ></a-text-field>
+              <a-autocomplete
                 :items="states"
                 item-value="id"
-                item-text="state"
+                item-title="state"
                 clearable
                 label="State"
                 v-model="newPostalCode.stateId"
-              ></v-autocomplete>
-              <v-btn color="primary"
-                     :disabled="!newPostalCode.postalCode || !newPostalCode.placeName || !newPostalCode.stateId"
-                     @click="validateForm" class="mb-3">Save
-              </v-btn>
+              ></a-autocomplete>
+              <a-btn
+                  color="primary"
+                  :disabled="!newPostalCode.postalCode || !newPostalCode.placeName || !newPostalCode.stateId"
+                  @click="validateForm"
+                  class="mb-3"
+                  text="Save"
+              ></a-btn>
+
             </v-form>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
             <v-card-title class="pt-0">
-              <v-text-field
+              <a-text-field
                 v-model="search"
                 clearable
                 prepend-inner-icon="search"
                 label="Search postal codes"
                 single-line
                 hide-details
-              ></v-text-field>
+              ></a-text-field>
             </v-card-title>
             <v-data-table
               :headers="headers"
               :search="search"
-              :items="filterPostalCodes()"
+              :items="filteredPostalCodes"
               :fixed-header="true"
               :options.sync="options"
               :footer-props="footerProps"
-              :mobile-breakpoint="0"
               :loading="dataLoading"
               class="elevation-1 round-robin-table table-striped"
             >
-
-              <template #item="{ item, index }">
-                <tr class="clickable">
-                  <td class="text-left">
+                  <template #item.postalCode="{item, index}" class="text-left">
                     <router-link :to="`/settings/zip/postalCode/${item.id}`">{{ item.postalCode }}</router-link>
-                  </td>
-                  <td class="text-left">
+                  </template>
+                  <template #item.placeName="{item, index}" class="text-left">
                     <router-link :to="`/settings/zip/postalCode/${item.id}`">{{ item.placeName }}</router-link>
-                  </td>
-                  <td class="text-left">
+                  </template>
+                  <template #item.zoneName="{item, index}" class="text-left">
                     <router-link :to="`/settings/zip/zone/${item.postalCodeZoneId}`">{{ item.zoneName }}</router-link>
-                  </td>
-                  <td class="text-left">
+                  </template>
+                  <template #item.state="{item, index}" class="text-left">
                     {{ item.stateAbbreviation }}
-                  </td>
-                  <td class="text-left">
+                  </template>
+                  <template #item.roundRobinName="{item, index}" class="text-left">
                     <router-link :to="`/settings/roundRobin/${item.roundRobinId}/codes`">{{ item.roundRobinName }}</router-link>
-                  </td>
-                  <td class="text-left">
+                  </template>
+                  <template #item.callGroupName="{item, index}" class="text-left">
                     <router-link :to="`/settings/callGroup/${item.callGroupId}/codes`">{{ item.callGroupName }}</router-link>
-                  </td>
-                  <td class="text-left">
-                    <v-checkbox disabled readonly v-model="item.disqualified"></v-checkbox>
-                  </td>
-                  <td class="text-left">
-                    <v-checkbox disabled readonly v-model="item.selfGen"></v-checkbox>
-                  </td>
-                  <td class="text-left">
-                    <v-checkbox disabled readonly v-model="item.insideSales"></v-checkbox>
-                  </td>
-                  <td class="text-left">
-                    <v-checkbox disabled readonly v-model="item.salesPartners"></v-checkbox>
-                  </td>
-                  <td class="text-right">
-                    <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                           :to="`/settings/zip/postalCode/${item.id}`">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                    <v-btn v-if="userCanDelete" icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                           @click="[itemToDelete=item, showDeleteDialog=true]">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </td>
-                </tr>
-              </template>
+                  </template>
+                  <template #item.disqualified="{item, index}" class="text-left">
+                    <v-checkbox disabled readonly dense hide-details v-model="item.disqualified"></v-checkbox>
+                  </template>
+                  <template #item.selfGenOnly="{item, index}" class="text-left">
+                    <v-checkbox disabled readonly dense hide-details v-model="item.selfGen"></v-checkbox>
+                  </template>
+                  <template #item.insideSales="{item, index}" class="text-left">
+                    <v-checkbox disabled readonly dense hide-details v-model="item.insideSales"></v-checkbox>
+                  </template>
+                  <template #item.salesPartners="{item, index}" class="text-left">
+                    <v-checkbox disabled readonly dense hide-details v-model="item.salesPartners"></v-checkbox>
+                  </template>
+                  <template #item.icons="{item, index}" class="text-right">
+                    <a-btn
+                        icon
+                        color="primary"
+                        :to="`/settings/zip/postalCode/${item.id}`"
+                        prepend-icon="edit"
+                        :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
+                    ></a-btn>
 
+                    <a-btn
+                        v-if="userCanDelete"
+                        icon
+                        color="primary"
+                        @click="[itemToDelete=item, showDeleteDialog=true]"
+                        prepend-icon="delete"
+                        :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                    ></a-btn>
+
+                  </template>
             </v-data-table>
           </v-card>
         </v-container>
@@ -127,9 +137,9 @@
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
+<script setup>
+
+
 import {
   handleHidingGlobalLoader,
   isNumberOrHyphen,
@@ -141,36 +151,35 @@ import {
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import constants from "@/helpers/constants";
 import {getStates} from "@/services/stateService";
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRouter} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
-export default {
-  name: 'PostalCodes',
-  components: {ConfirmationDialog},
-  mixins: [Vue2Filters.mixin],
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-  data() {
-    return {
-      snackbar: {},
-      addNew: false,
-      isNumberOrHyphen,
-      search: null,
-      newPostalCode: {},
-      states: [],
-      dataLoading: true,
-      footerProps: {
+      const addNew = ref(false)
+      const search = ref(null)
+      const newPostalCode = ref({})
+      const states = ref([])
+      const dataLoading = ref(true)
+      const footerProps = ref({
         'items-per-page-options': [25, 50, 100, 1000],
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-      },
-      options: {
+      })
+      const options = ref({
         itemsPerPage: 100
-      },
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
-      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
-      companyId: this.$store.state.user.details.companyId,
-      userId: this.$store.state.user.details.id,
-      postalCodeRules: constants.POSTAL_CODE_FIVE_REQUIRED_RULES,
-      postalCodes: [],
-      headers: [
+      })
+      const postalCodeRules = ref(constants.POSTAL_CODE_FIVE_REQUIRED_RULES)
+      const postalCodes = ref([])
+      const showDeleteDialog = ref(false)
+      const itemToDelete = ref(null)
+      const headers = ref([
         {text: 'Postal Code', value: 'postalCode', show: true},
         {text: 'Name', value: 'placeName', show: true},
         {text: 'Zone', value: 'zoneName', show: true},
@@ -182,97 +191,107 @@ export default {
         {text: 'Inside Sales', value: 'insideSales', show: true},
         {text: 'Sales Partners', value: 'salesPartners', show: true},
         {text: '', value: 'icons', show: true},
-      ],
-      showDeleteDialog: false,
-      itemToDelete: null
-    }
-  },
-  computed: {
-    itemToDeleteName() {
-      return this.itemToDelete ? this.itemToDelete.postalCode : '';
-    }
-  },
-  methods: {
-    async validateForm() {
-      if (this.$refs.postalCodeForm.validate()) {
-        await this.addPostalCode()
+      ])
+
+const postalCodeForm = ref(null)
+
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
+})
+const userCanDelete = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE')
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const itemToDeleteName = computed(() => {
+  return itemToDelete.value?.postalCode || ''
+})
+const filteredPostalCodes = computed(() => {
+  return postalCodes.value.filter(pcz => {
+    return !pcz.archived
+  })
+})
+
+onMounted(() => {
+  getPostalCodes()
+})
+
+
+    const validateForm = async () => {
+      if (vueInstance.$refs.postalCodeForm.validate()) {
+        await addPostalCode()
       }
-    },
-    async getStates() {
-      if (this.addNew) {
+    }
+    const getAllStates = async () => {
+      if (addNew.value) {
         try {
           const {data, status} = await getStates()
-          this.states = data
+          states.value = data
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          snackbar('ERROR', 'Error Retrieving Data')
         }
       }
-    },
-    filterPostalCodes() {
-      return this.postalCodes.filter(pcz => {
-        return !pcz.archived
-      })
-    },
-    async getPostalCodes() {
-      this.dataLoading = true
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+
+    const getPostalCodes = async () => {
+      dataLoading.value = true
+      appStore.loading = true
       try {
         const {data, status} = await getRequest(`/postalCode`)
-        this.postalCodes = data
-        this.dataLoading = false
-        handleHidingGlobalLoader(this, status)
+        postalCodes.value = data
+        dataLoading.value = false
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.dataLoading = false
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        dataLoading.value = false
+        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.loading = false
       }
-    },
-    async deletePostalCode() {
-      this.itemToDelete.archived = true
-      const postalCodeId = this.itemToDelete.id
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const deletePostalCode = async () => {
+      itemToDelete.value.archived = true
+      const postalCodeId = itemToDelete.value.id
+      appStore.loading = true
       try {
         const {status} = await deleteRequest(`/postalCode/${postalCodeId}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Postal Code Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        snackbar('SUCCESS', 'Postal Code Deleted')
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Postal Code')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Deleting Postal Code')
+        appStore.loading = false
       }
-      this.closeDeleteDialog()
-    },
-    async addPostalCode() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      closeDeleteDialog()
+    }
+    const addPostalCode = async () => {
+      appStore.loading = true
       try {
-        const {data, status} = await postRequest(`/postalCode`, this.newPostalCode)
-        this.$router.push({path: `/settings/zip/postalCode/${data.id}`})
-        this.snackbar = getSnackbar('SUCCESS', 'Postal Code Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        const {data, status} = await postRequest(`/postalCode`, newPostalCode.value)
+        router.push({path: `/settings/zip/postalCode/${data.id}`})
+        snackbar('SUCCESS', 'Postal Code Added')
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         let msg = e?.data?.message ? e.data.message : 'Error Adding Postal Code'
-        this.snackbar = getSnackbar('ERROR', msg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', msg)
+        appStore.loading = false
       }
-    },
-    closeDeleteDialog() {
-      this.showDeleteDialog = false;
-      this.itemToDelete = null;
     }
-  },
-  async created() {
-    this.getPostalCodes()
-  }
-}
+    const closeDeleteDialog = () => {
+      showDeleteDialog.value = false
+      itemToDelete.value = null
+    }
+
+
+
 </script>
 
 <style lang="scss">
@@ -280,6 +299,9 @@ export default {
   height: calc(100vh - 300px);
   min-height: 300px;
   border-top: solid 1px #E0E0E0;
+}
+#postal-codes > div.row > div > div > div > div.v-data-table.round-robin-table.v-data-table--mobile > div.v-data-table__wrapper > table > tbody > tr > td {
+  min-height: 36px;
 }
 </style>
 

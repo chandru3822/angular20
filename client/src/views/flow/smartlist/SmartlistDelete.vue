@@ -1,24 +1,26 @@
 <template>
-<v-btn
-  @click.stop="showDialog = true"
+<a-btn
+  @click.native.stop="showDialog = true"
   :icon="!showText"
-  :text="showText"
+  :variant="showText ? 'text' : ''"
   class="pa-5"
   :disabled="!smartlistId || disabled"
 >
-  <v-icon>mdi-delete</v-icon>
-  <span v-if="showText">Delete</span>
+  <template #default>
+    <v-icon>mdi-delete</v-icon>
+    <span v-if="showText">Delete</span>
 
-  <ConfirmationDialog
-    v-if="showDialog"
-    :parent-close="true"
-    :open-dialog="showDialog"
-    @confirm="deleteSmartlist"
-    @close-dialog="showDialog = false"
-  >
-    Do you want to delete this smartlist?
-  </ConfirmationDialog>
-</v-btn>
+    <ConfirmationDialog
+      v-if="showDialog"
+      :parent-close="true"
+      :open-dialog="showDialog"
+      @confirm="deleteSmartlist"
+      @close-dialog="showDialog = false"
+    >
+      Do you want to delete this smartlist?
+    </ConfirmationDialog>
+  </template>
+</a-btn>
 </template>
 
 <script setup>
@@ -26,6 +28,7 @@ import { AppMutations } from '@/stores/AppStore'
 import { deleteRequest, getSnackbar, logError } from '@/helpers/helpers'
 import { getCurrentInstance, ref } from 'vue'
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const props = defineProps({
   smartlistId: {
@@ -62,13 +65,14 @@ let showDialog = ref(false)
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const appStore = useAppStore()
 
 let deleteSmartlist = async () => {
 
   let snackbar
 
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     await deleteRequest(`/smartlist/${props.smartlistId}`)
     snackbar = getSnackbar('SUCCESS', 'Smartlist Deleted')
     emit('deleted')
@@ -76,7 +80,7 @@ let deleteSmartlist = async () => {
     logError(e)
     snackbar = getSnackbar('ERROR', 'Unable to delete smartlist')
   } finally {
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     store.commit(AppMutations.SHOW_SNACK, snackbar)
     showDialog.value = false
   }

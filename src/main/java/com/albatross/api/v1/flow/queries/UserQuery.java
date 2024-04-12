@@ -34,6 +34,7 @@ public class UserQuery {
           where id = :id;
           update flow.user_company uc
               set home_page_company_feature_id = :homePageCompanyFeatureId,
+                  default_project_page = :defaultProjectPage,
                   date_modified = now()
           where uc.company_id = :companyId
             and uc.user_id = :id
@@ -97,6 +98,7 @@ public class UserQuery {
           u.default_company_id,
           ust.user_status_type,
           uc.home_page_company_feature_id,
+          uc.default_project_page,
           f.feature_path as home_page_path,
           ust.id as user_status_type_id,
           ust.has_access,
@@ -153,6 +155,7 @@ public class UserQuery {
            u.default_company_id,
            ust.user_status_type,
            uc.home_page_company_feature_id,
+           uc.default_project_page,
            f.feature_path as home_page_path,
            ust.id as user_status_type_id,
            ust.has_access,
@@ -307,6 +310,7 @@ public class UserQuery {
                    )                                                                                        as has_access,
                    coalesce(u.default_company_id, uc.company_id)                                            as company_id,
                    uc.home_page_company_feature_id,
+                   uc.default_project_page,
                    f.feature_path                                                                           as home_page_path,
                    (select parent_company_id
                     from flow.company c
@@ -395,7 +399,8 @@ public class UserQuery {
                  timezone,
                  full_name,
                  highest_company_id,
-                 "userPositions"
+                 "userPositions",
+                 default_project_page
           from t1
         """;
 
@@ -447,6 +452,7 @@ public class UserQuery {
                  c.aws_bucket,
                  c.minute_increment,
                  c.api_path,
+                 uc.default_project_page,
                  (select has_access
                   from flow.company_user_status cus
                          inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
@@ -533,7 +539,8 @@ public class UserQuery {
                has_access,
                parent_company_id,
                highest_parent_company_id,
-               highest_company_id
+               highest_company_id,
+               default_project_page
         from t1
         """;
 
@@ -733,6 +740,16 @@ public class UserQuery {
       where (uc.company_id = :companyId or (c.parent_company_id = :parentCompanyId and :parentCompanyId != 1))
         and u.archived = false
         and ust.has_access is true
+      union all
+      select o.id,
+             o.org_name as first_name,
+             '' as last_name,
+             o.org_name as full_name,
+             o.org_name as value,
+             ocfv.text_value
+      from flow.org o
+               inner join flow.organization_custom_field_value ocfv on o.id = ocfv.org_id
+      where o.org_type_id = 10 and o.active_flag = true and o.archived = false and ocfv.custom_field_group_assignment_id = 484 and ocfv.text_value is not null
       order by last_name, first_name desc
     """;
 
@@ -926,5 +943,15 @@ public class UserQuery {
       and up.archived is not true
       and ust.has_access is true
     limit 1
+    """;
+
+  //PostgreSQL
+  public final static String getNotificationEnabledUsers = """
+    select distinct u.id, u.first_name, u.last_name
+    from flow.user_notification_token unt
+             inner join flow.user u on u.id = unt.user_id
+    where unt.archived is false
+      and case when :query::varchar is not null then user_full_name_search like lower(:query) || '%' else 1 = 1 end
+    limit :limit offset :offset
     """;
 }

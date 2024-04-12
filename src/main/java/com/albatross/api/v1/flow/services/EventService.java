@@ -285,16 +285,28 @@ public class EventService {
   }
 
   public Optional<EventCompanyEventStatusType> assignStatusToEvent(
-      Long companyEventStatusTypeId, Long eventId) {
+      Long companyEventStatusTypeId, Long eventId, Boolean editableInSchedule) {
     User currentUser = securityService.getCurrentUser();
 
     Map<String, Object> params = new HashMap<>();
     params.put("eventId", eventId);
     params.put("companyEventStatusTypeId", companyEventStatusTypeId);
     params.put("createdById", currentUser.trueUserId());
+    params.put("editableInSchedule", editableInSchedule);
 
     Long id = sqlCache.updateBySqlReturningId(EventQuery.assignStatusToEvent, params, "id").longValue();
     return getEventCompanyProcessStepStatusType(id);
+  }
+
+  public void updateEditableInScheduleForEventStatusType(Long companyEventStatusTypeId, Long eventId, Boolean editableInSchedule) {
+      User currentUser = securityService.getCurrentUser();
+
+      Map<String, Object> params = new HashMap<>();
+      params.put("eventId", eventId);
+      params.put("companyEventStatusTypeId", companyEventStatusTypeId);
+      params.put("currentUserId", currentUser.trueUserId());
+      params.put("editableInSchedule", editableInSchedule);
+      sqlCache.updateBySql(EventQuery.updateEditableInScheduleForStatusType, params);
   }
 
   public Optional<EventCompanyEventStatusType> getEventCompanyProcessStepStatusType(Long id) {

@@ -8,16 +8,15 @@
           <v-toolbar-items>
             <div class="position-selector">
               <span class="d-inline-block">Position: </span>
-              <v-select
-                class="d-inline-block ml-3"
-                v-model="selectedPositionId"
-                :items="positions"
-                label=""
-                hide-details
-                item-text="label"
-                item-value="id"
-                @change="changeSelectedPosition(selectedPositionId)"
-              ></v-select>
+              <a-select
+                  class="d-inline-block ml-3"
+                  v-model="commissionPositionId"
+                  :items="positions"
+                  label=""
+                  hide-details
+                  item-title="label"
+                  item-value="id"
+              ></a-select>
             </div>
           </v-toolbar-items>
           <v-tabs :optional="false" color="primary"
@@ -25,7 +24,7 @@
                   show-arrows
                   background-color="white" v-model="model" slider-color="primary">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
-              {{tab.label}}
+              {{ tab.label }}
             </v-tab>
           </v-tabs>
         </v-app-bar>
@@ -36,78 +35,80 @@
   </v-container>
 </template>
 
-<script>
-  import {BrsMutations} from '@/stores/BrsStore'
+<script setup>
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useBrsStore} from '@/stores/BrsStorePinia.js'
+import {getCurrentInstance, computed, ref, onMounted} from 'vue'
+import { storeToRefs } from 'pinia'
+import {useRoute} from "vue-router/composables";
 
-  export default {
-    name: 'Commissions',
+const route = useRoute()
+const userStore = useUserStore()
+const brsStore = useBrsStore()
+const { commissionPositionId } = storeToRefs(brsStore)
 
-    computed: {
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      },
-    },
-    created() {
-      if(!this.$store.state.brs.commissionPositionId) {
-        this.changeSelectedPosition(1)
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        model: '',
-        selectedPositionId: this.$store.state.brs.commissionPositionId,
-        positions: [
-          {id: 1, label: 'Closer'},
-          {id: 4, label: 'Setter'}
-        ],
-        tabs: [ {
-          label: 'Users',
-          path: `/commissionManagement/users`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Commissions',
-          path: `/commissionManagement/commissions`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Overrides',
-          path: `/commissionManagement/overrides`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Accounting Review',
-          path: `/commissionManagement/accounting/current`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Payroll Search',
-          path: `/commissionManagement/payroll`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Residual Plans',
-          path: '/commissionManagement/residualPlans',
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Residuals',
-          path: '/commissionManagement/residuals',
-          display: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
-        }, {
-          label: 'Closer Residuals',
-          path: '/commissionManagement/closerResiduals',
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }, {
-          label: 'Residual Search',
-          path: `/commissionManagement/residualSearch`,
-          display: this.$store.getters.userHasFeature('COMMISSIONS')
-        }
-        ]
-      }
-    },
-    methods: {
-      changeSelectedPosition(positionId) {
-        this.$store.commit(BrsMutations.SET_COMMISSION_POSITION_ID, positionId)
-        // this.$router.push(`/commissionManagement/${this.selectedPositionId}/users`)
-      }
-    }
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+
+const userCanCommission = computed(() => {
+  return userStore.userHasFeature('COMMISSIONS')
+})
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
+})
+
+const tabs = computed(() => {
+  return [{
+    label: 'Users',
+    path: `/commissionManagement/users`,
+    display: userCanCommission.value
+  }, {
+    label: 'Commissions',
+    path: `/commissionManagement/commissions`,
+    display: userCanCommission.value
+  }, {
+    label: 'Overrides',
+    path: `/commissionManagement/overrides`,
+    display: userCanCommission.value
+  }, {
+    label: 'Accounting Review',
+    path: `/commissionManagement/accounting/current`,
+    display: userCanCommission.value
+  }, {
+    label: 'Payroll Search',
+    path: `/commissionManagement/payroll`,
+    display: userCanCommission.value
+  }, {
+    label: 'Residual Plans',
+    path: '/commissionManagement/residualPlans',
+    display: userCanCommission.value
+  }, {
+    label: 'Residuals',
+    path: '/commissionManagement/residuals',
+    display: userIsAdmin.value
+  }, {
+    label: 'Closer Residuals',
+    path: '/commissionManagement/closerResiduals',
+    display: userCanCommission.value
+  }, {
+    label: 'Residual Search',
+    path: `/commissionManagement/residualSearch`,
+    display: userCanCommission.value
   }
+  ]
+})
+const displayedTabs = computed(() => {
+  return tabs.value.filter(tab => tab.display)
+})
+onMounted(() => {
+})
+
+const model = ref('')
+const positions = ref([
+  {id: 1, label: 'Closer'},
+  {id: 4, label: 'Setter'}
+])
+
 </script>
 
 <style lang="scss" scoped>

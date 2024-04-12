@@ -3,48 +3,62 @@
     <v-subheader class="pl-0 d-flex">
       <slot name="title" class="flex-grow-1">Color</slot>
       <span v-if="editing">
-        <v-btn v-if="editing" text @click="editing = false">Cancel</v-btn>
-        <v-btn v-if="editing" text @click="onDone">Done</v-btn>
+        <a-btn
+          v-if="editing"
+          variant="text"
+          @click="editing = false"
+          color="unset"
+          text="Cancel"
+        ></a-btn>
+        <a-btn
+          v-if="editing"
+          variant="text"
+          @click="onDone"
+          color="unset"
+          text="Done"
+          >Done</a-btn
+        >
       </span>
 
-      <div v-else class="color-brick" @click="editing = true" :style="{'background-color' : color }" >
+      <div
+        v-else
+        class="color-brick"
+        @click="editing = true"
+        :style="{ 'background-color': color }"
+      >
         <span v-if="color === undefined">NA</span>
       </div>
     </v-subheader>
     <v-color-picker v-if="editing" v-model="color" />
   </div>
 </template>
-<script>
-export default {
-  props: {
-    value: {
-      type: String
-    },
-    attr: {
-      type: String,
-      default: 'color'
-    }
+<script setup>
+import { toRefs, ref, watch } from 'vue'
+
+const emit = defineEmits(['input'])
+const props = defineProps({
+  value: {
+    type: String
   },
-  data() {
-    return {
-      editing: false,
-      color: undefined
-    }
-  },
-  watch: {
-    value: {
-      handler: function(newVal) {
-        this.color = newVal
-      }
-    }
-  },
-  methods: {
-    onDone() {
-      this.editing = false
-      const color = (typeof this.color === 'object') ? this.color?.hexa : this.color
-      this.$emit('input', { [this.attr]: color })
-    }
+  attr: {
+    type: String,
+    default: 'color'
   }
+})
+
+const { value, attr } = toRefs(props)
+const editing = ref(false)
+const color = ref(undefined)
+
+watch(value, (newValue, oldValue) => {
+  color.value = newValue
+})
+
+const onDone = () => {
+  editing.value = false
+  const color =
+    typeof color.value === 'object' ? color.value?.hexa : color.value
+  emit('input', { [attr.value]: color })
 }
 </script>
 

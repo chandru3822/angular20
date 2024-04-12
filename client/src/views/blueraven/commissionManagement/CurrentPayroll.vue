@@ -7,19 +7,25 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="flex-display align-center" >
-          <v-btn v-if="payrollStatus.action && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')" :color="payrollStatus.actionColor"
-                 class="white--text" @click="submitForApproval(payrollStatus.action)">
-            {{payrollStatus.actionText}}
-          </v-btn>
+          <a-btn
+              v-if="payrollStatus.action && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')"
+              :color="payrollStatus.actionColor"
+              class=""
+              @click="submitForApproval(payrollStatus.action)"
+              :text="payrollStatus.actionText"
+          ></a-btn>
           <!-- currently only "Approve" has a secondary action which requires a dialog confirm. will have to update if that changes -->
           <v-dialog
-            v-if="payrollStatus.secondaryAction && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')"
+            v-if="payrollStatus.secondaryAction && userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')"
             v-model="approveConfirm"
             width="500">
             <template v-slot:activator="{ on }">
-              <v-btn v-on="on" :color="payrollStatus.secondaryActionColor" class="white--text ml-3">
-                {{payrollStatus.secondaryActionText}}
-              </v-btn>
+              <a-btn
+                  :activation-handler="on"
+                  :color="payrollStatus.secondaryActionColor"
+                  class="ml-3"
+                  :text="payrollStatus.secondaryActionText"
+              ></a-btn>
             </template>
             <v-card>
               <v-card-title
@@ -34,7 +40,7 @@
 
                 <DatetimePickerInput
                   v-model="payDate"
-                  :timezone="this.timezone"
+                  :timezone="timezone"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
                   label="Date Paid"
@@ -46,17 +52,18 @@
 
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn
-                  @click="approveConfirm = false">
-                  No
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  class="white--text"
-                  :disabled="null == payDate"
-                  @click="submitForApproval(payrollStatus.secondaryAction)">
-                  Yes
-                </v-btn>
+                <a-btn
+                    @click="approveConfirm = false"
+                    color="unset"
+                    text="No"
+                ></a-btn>
+                <a-btn
+                    color="primary"
+                    class=""
+                    :disabled="null == payDate"
+                    @click="submitForApproval(payrollStatus.secondaryAction)"
+                    text="Yes"
+                ></a-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -68,26 +75,36 @@
         <v-row>
           <v-col cols="12" sm="6">
             <v-card flat color="transparent" class="pa-3">
-              <v-text-field text readonly label="Payroll ID #" v-model="currentPayroll.id"></v-text-field>
+              <a-text-field  readonly label="Payroll ID #" v-model="currentPayroll.id"></a-text-field>
               <DatetimePickerInput
                   v-model="currentPayroll.periodEnd"
-                  :timezone="this.timezone"
+                  :timezone="timezone"
                   :readonly="!userCanEdit"
                   :disabled="!userCanEdit"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
                   label="Period Ending"
               />
-              <v-text-field text
+              <a-text-field
                             label="Description"
                             placeholder=" "
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
-                            v-model="currentPayroll.description"></v-text-field>
+                            v-model="currentPayroll.description"></a-text-field>
 
               <div class="text-left">
-                <v-btn color="primary" dark v-if="userCanEdit" @click="saveChangesToPayroll()">Save Changes</v-btn>
-                <v-btn color="primary" class="ml-3" dark @click="exportAccountingReview()">Export</v-btn>
+                <a-btn
+                    color="primary"
+                    v-if="userCanEdit"
+                    @click="saveChangesToPayroll()"
+                    text="Save Changes"
+                ></a-btn>
+                <a-btn
+                    color="primary"
+                    class="ml-3"
+                    @click="exportAccountingReview()"
+                    text="Export"
+                ></a-btn>
               </div>
             </v-card>
           </v-col>
@@ -95,27 +112,37 @@
             <v-card class="pa-3">
               <label>Approved for Pay Only:</label>
               <input type="checkbox" class="ml-2" v-model="accountingSearch.showSelectedOnly">
-              <v-text-field text
+              <a-text-field
                             class="mt-3"
                             label="Project ID"
-                            v-model="accountingSearch.projectId"></v-text-field>
-              <v-autocomplete v-model="accountingSearch.customerId"
+                            v-model="accountingSearch.projectId"></a-text-field>
+              <a-autocomplete v-model="accountingSearch.customerId"
                               :items="customers"
                               :loading="customersLoading"
                               :search-input.sync="customerSearch"
                               label="Customer..."
                               clearable
-                              item-text="fullName"
+                              item-title="fullName"
                               item-value="id"
                               autocomplete="off"
                               type="search"
                               @click:clear="customers = []"
                               attach
-              ></v-autocomplete>
+              ></a-autocomplete>
 
               <div class="text-left">
-                <v-btn color="primary" dark @click="getAccountingData()">Search</v-btn>
-                <v-btn class="ml-3" text color="primary" @click="[accountingSearch = {}, getAccountingData()]">Reset</v-btn>
+                <a-btn
+                    color="primary"
+                    @click="getAccountingData()"
+                    text="Search"
+                ></a-btn>
+                <a-btn
+                    class="ml-3"
+                    variant="text"
+                    color="primary"
+                    @click="[accountingSearch = {}, getAccountingData()]"
+                    text="Reset"
+                ></a-btn>
               </div>
             </v-card>
           </v-col>
@@ -126,14 +153,14 @@
       <v-col>
         <v-card>
           <v-card-title class="pt-0">
-            <v-text-field
+            <a-text-field
               v-model="search"
               prepend-inner-icon="search"
               label="Search"
               single-line
               hide-details
               @input="debounceSearch"
-            ></v-text-field>
+            ></a-text-field>
           </v-card-title>
           <v-divider></v-divider>
           <v-data-table
@@ -199,10 +226,15 @@
                     v-model="item.dialog"
                     width="500">
                     <template v-slot:activator="{ on }">
-                      <v-btn x-small color="primary" dark fab class="ml-2" v-on="on"
-                             @click="[delete item.adjustment, delete item.adjustmentNote, getAdjustmentHistory(item)]" >
-                        <v-icon>add</v-icon>
-                      </v-btn>
+                      <a-btn
+                          size="x-small"
+                          color="primary"
+                          fab
+                          class="ml-2"
+                          :activation-handler="on"
+                          @click="[delete item.adjustment, delete item.adjustmentNote, getAdjustmentHistory(item)]"
+                          prepend-icon="add"
+                      ></a-btn>
                     </template>
                     <v-card>
                       <v-card-title class="text-h5 grey lighten-2" primary-title>
@@ -210,18 +242,18 @@
                       </v-card-title>
                       <v-card-text class="pt-3">
                         <strong>Type: </strong>Commission
-                        <v-text-field text
+                        <a-text-field
                                       type="number"
                                       label="Adjustment Amount"
                                       prepend-icon="mdi-currency-usd"
                                       persistent-hint
-                                      :hint="`Max allowed: ${$filters.currency(_getCurrentMaxAdjustment(item), '$', 2)}`"
+                                      :hint="`Max allowed: ${filters.currency(getCurrentMaxAdjustment(item), '$', 2)}`"
                                       v-model.number="item.adjustment">
-                        </v-text-field>
-                        <v-textarea
+                        </a-text-field>
+                        <a-textarea
                           label="Notes"
                           v-model="item.adjustmentNote"
-                        ></v-textarea>
+                        ></a-textarea>
                         <v-data-table
                           :headers="adjustmentHistoryHeaders"
                           :items="item.adjustmentHistory"
@@ -246,14 +278,18 @@
                       <v-divider></v-divider>
                       <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn @click="item.dialog = false">
-                          Cancel
-                        </v-btn>
-                        <v-btn color="primary" class="white--text"
-                               :disabled="adjustmentDisabled(item)"
-                               @click="addAdjustment(item)">
-                          Add
-                        </v-btn>
+                        <a-btn
+                            @click="item.dialog = false"
+                            color="unset"
+                            text="Cancel"
+                        ></a-btn>
+                        <a-btn
+                            color="primary"
+                            :disabled="adjustmentDisabled(item)"
+                            @click="addAdjustment(item)"
+                            text="Add"
+                        ></a-btn>
+
                       </v-card-actions>
                     </v-card>
                   </v-dialog>
@@ -290,10 +326,15 @@
                     v-model="item.dialog"
                     width="500">
                     <template v-slot:activator="{ on }">
-                      <v-btn x-small color="primary" dark fab class="ml-2" v-on="on"
-                             @click="[delete item.adjustment, delete item.adjustmentNote, getAdjustmentHistory(item)]" >
-                        <v-icon>add</v-icon>
-                      </v-btn>
+                      <a-btn
+                          size="x-small"
+                          color="primary"
+                          fab
+                          class="ml-2"
+                          :activation-handler="on"
+                          @click="[delete item.adjustment, delete item.adjustmentNote, getAdjustmentHistory(item)]"
+                          prepend-icon="add"
+                      ></a-btn>
                     </template>
                     <v-card>
                       <v-card-title class="text-h5 grey lighten-2" primary-title>
@@ -301,18 +342,18 @@
                       </v-card-title>
                       <v-card-text class="pt-3">
                         <strong>Type: </strong>Commission
-                        <v-text-field text
+                        <a-text-field
                                       type="number"
                                       label="Adjustment Amount"
                                       prepend-icon="mdi-currency-usd"
                                       persistent-hint
                                       :hint="`Max allowed: ${$filters.currency(_getCurrentMaxAdjustment(item), '$', 2)}`"
                                       v-model.number="item.adjustment">
-                        </v-text-field>
-                        <v-textarea
+                        </a-text-field>
+                        <a-textarea
                           label="Notes"
                           v-model="item.adjustmentNote"
-                        ></v-textarea>
+                        ></a-textarea>
                         <v-data-table
                           :headers="adjustmentHistoryHeaders"
                           :items="item.adjustmentHistory"
@@ -337,14 +378,17 @@
                       <v-divider></v-divider>
                       <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn @click="item.dialog = false">
-                          Cancel
-                        </v-btn>
-                        <v-btn color="primary" class="white--text"
-                               :disabled="adjustmentDisabled(item)"
-                               @click="addAdjustment(item)">
-                          Add
-                        </v-btn>
+                        <a-btn
+                            @click="item.dialog = false"
+                            color="unset"
+                            text="Cancel"
+                        ></a-btn>
+                        <a-btn
+                            color="primary"
+                            :disabled="adjustmentDisabled(item)"
+                            @click="addAdjustment(item)"
+                            text="Add"
+                        ></a-btn>
                       </v-card-actions>
                     </v-card>
                   </v-dialog>
@@ -379,92 +423,65 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+
   import cloneDeep from 'lodash.clonedeep'
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
-  import Vue2Filters from "vue2-filters";
   import constants from "@/helpers/constants";
   import sumBy from "lodash.sumby";
   import { saveAs } from 'file-saver'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+  import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useRoute} from "vue-router/composables";
+  import { useBrsStore } from '@/stores/BrsStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import debounce from 'lodash.debounce'
 
-  export default {
-    name: 'CurrentPayroll',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      CustomValueInput,
-      DatetimePickerInput
-    },
-    watch: {
-      '$store.state.brs.commissionPositionId': function () {
-        this.positionId = this.$store.state.brs.commissionPositionId
-        this.getCurrentPayroll()
-      },
-      customerSearch (val) {
-        if(!val) {
-          this.customers = []
-          this.accountingSearch.customerId = null
-          return
-        }
-        this.customers = []
-        this.getCustomersDebounced(val)
-      },
-      repSearch (val) {
-        if(!val) {
-          this.accountingSearch.salesRepId = null
-          this.reps = []
-          return
-        }
-        this.reps = []
-        this.getRepsDebounced(val)
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        dataLoading: true,
-        selectAll: false,
-        customers: [],
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
-        customerSearch: null,
-        customersLoading: false,
-        positionId: this.$store.state.brs.commissionPositionId,
-        reps: [],
-        repSearch: null,
-        repsLoading: false,
-        approveConfirm: false,
-        search: '',
-        debouncedSearch: '',
-        payDate: null,
-        additionalPayrollDataNeeded: false,
-        payrollLoading: true,
-        payrollSummary: [],
-        timezone: this.$store.state.user.details.timezone.value,
-        adjustmentHistoryHeaders: [
+  const route = useRoute()
+  const userStore = useUserStore()
+  const brsStore = useBrsStore()
+  const appStore = useAppStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
+  const filters = vueInstance.$filters
+
+        const dataLoading = ref(true)
+        const selectAll = ref(false)
+        const customers = ref([])
+        const customerSearch = ref(null)
+        const customersLoading = ref(false)
+        const positionId = ref(brsStore.commissionPositionId)
+        const reps = ref([])
+        const repSearch = ref(null)
+        const repsLoading = ref(false)
+        const approveConfirm = ref(false)
+        const search = ref('')
+        const debouncedSearch = ref('')
+        const payDate = ref(null)
+        const additionalPayrollDataNeeded = ref(false)
+        const payrollLoading = ref(true)
+        const payrollSummary = ref([])
+        const accountingData = ref([])
+        const masterSelectedPayrollIds = ref([])
+        const currentPayroll = ref({})
+        const payrollStatus = ref({})
+        const accountingSearch = ref({})
+        const totalPay = ref(null)
+        const adjustmentHistoryHeaders = ref([
           {text: 'Adjustment Type', value: 'adjustmentType', show: true},
           {text: 'Amount', value: 'amount', show: true},
           {text: 'Note', value: 'note', show: true},
           {text: 'Created By', value: 'createdBy', show: true},
           {text: 'Created', value: 'created', show: true},
-        ],
-        accountingData: [],
-        masterSelectedPayrollIds: [],
-        // options: {
-        //   // itemsPerPage: 100
-        //   itemsPerPage: 10
-        // },
-        footerProps: {
+        ])
+        const footerProps = ref({
           'items-per-page-options': [25, 50, 100, 500, 1000],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        currentPayroll: {},
-        payrollStatus: {},
-        accountingSearch: {},
-        totalPay: null,
-        closerHeaders: [
+        })
+        const closerHeaders = ref([
           // {text: 'Select For Pay', value: 'select', show: true},
           {text: 'Project ID', value: 'project_id', show: true},
           {text: 'Customer Name', value: 'customer_name', show: true},
@@ -500,8 +517,8 @@
           {text: 'Overrides Paid to Date', value: 'overrides_paid_to_date', show: true},
           {text: 'Override Pay', value: 'current_pay_overrides', show: true},
           {text: 'Remaining Value Overrides', value: 'remaining_value_overrides', show: true},
-        ],
-        setterHeaders: [
+        ])
+        const setterHeaders = ref([
           // {text: 'Select For Pay', value: 'select', show: true},
           {text: 'Project ID', value: 'project_id', show: true},
           {text: 'Customer Name', value: 'customer_name', show: true},
@@ -521,90 +538,112 @@
           {text: 'Override Earned', value: 'override_earned', show: true},
           {text: 'Overrides Paid to Date', value: 'overrides_paid_to_date', show: true},
           {text: 'Override Pay', value: 'current_pay_overrides', show: true},
-        ],
-      }
-    },
-    computed: {
-      headers() {
-        return this.positionId === 1 ? this.closerHeaders : this.setterHeaders
-      }
-    },
-    created() {
-      this.getCurrentPayroll()
-    },
-    methods: {
-      _getCurrentMaxAdjustment(item){
+        ])
+
+
+
+      const userCanAdd = computed(() => {
+        return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')
+      })
+      const userCanEdit = computed(() => {
+        return userStore.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT')
+      })
+      const timezone = computed(() => {
+        return userStore.timezone.value
+      })
+      const headers = computed(() => {
+        return positionId.value === 1 ? closerHeaders.value : setterHeaders.value
+      })
+
+      watch(customerSearch, (val) => {
+        if(!val) {
+          customers.value = []
+          accountingSearch.value.customerId = null
+          return
+        }
+        customers.value = []
+        getCustomersDebounced(val)
+      })
+
+      watch(repSearch, (val) => {
+        if(!val) {
+          accountingSearch.value.salesRepId = null
+          reps.value = []
+          return
+        }
+        reps.value = []
+        getRepsDebounced(val)
+      })
+      onMounted(() => {
+        getCurrentPayroll()
+      })
+
+      const getCurrentMaxAdjustment = (item)=> {
         const maxAdjustment = item.remaining_value_commissions - (item.current_pay_commissions < 0 ? 0 : item.current_pay_commissions) - item.commission_forfeited_by_closer - item.commission_forfeited_paid_to_date
         return (maxAdjustment < 0) ? 0 : maxAdjustment
-      },
-
-      adjustmentDisabled(item){
-        const maxAdjustment = this._getCurrentMaxAdjustment(item)
+      }
+      const adjustmentDisabled = (item)=> {
+        const maxAdjustment = getCurrentMaxAdjustment(item)
         return !item.adjustment || item.adjustment === 0 || !item.adjustmentNote || item.adjustment > maxAdjustment
-      },
-
-      toggleSelectAll () {
-        this.accountingData.forEach(ad => {
-          ad.selected = this.selectAll
+      }
+      const toggleSelectAll =  () => {
+        accountingData.value.forEach(ad => {
+          ad.selected = selectAll.value
         })
-        if(this.selectAll) {
-          this.currentPayroll.selectedProjectIds = this.accountingData.map(ad => ad.project_id)
+        if(selectAll.value) {
+          currentPayroll.value.selectedProjectIds = accountingData.value.map(ad => ad.project_id)
         } else {
-          this.currentPayroll.selectedProjectIds = []
+          currentPayroll.value.selectedProjectIds = []
         }
-      },
-      toggleSingleSelect(item) {
+      }
+      const toggleSingleSelect = (item) => {
         if(item.selected) {
-          this.currentPayroll.selectedProjectIds.push(item.project_id)
+          currentPayroll.value.selectedProjectIds.push(item.project_id)
         } else {
-          this.currentPayroll.selectedProjectIds = this.currentPayroll.selectedProjectIds.filter(p => p !== item.project_id)
+          currentPayroll.value.selectedProjectIds = currentPayroll.value.selectedProjectIds.filter(p => p !== item.project_id)
         }
-      },
-      async submitForApproval (action) {
+      }
+      const submitForApproval = async (action) => {
         //to avoid any unsaved changes prior to approval we are just saving changes prior to submitting
-        const val = await this.saveChangesToPayroll(true)
+        const val = await saveChangesToPayroll(true)
         //dont submit for approval if the save changes request failed
         if(val) {
-          this.totalPay = sumBy(this.accountingData,  function(o) { return o.selected ? o.current_pay : 0 })
-          let selectedIds = this.accountingData.filter(ad => ad.selected).map(ad => ad.project_id)
+          totalPay.value = sumBy(accountingData.value,  function(o) { return o.selected ? o.current_pay : 0 })
+          let selectedIds = accountingData.value.filter(ad => ad.selected).map(ad => ad.project_id)
           let params = {
-            payDate: this.payDate
+            payDate: payDate.value
           }
-          if(this.payrollStatus.showSelect && (!selectedIds || selectedIds.length === 0)) {
-            this.snackbar = getSnackbar('WARNING', 'You must select at least one project.')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          if(payrollStatus.value.showSelect && (!selectedIds || selectedIds.length === 0)) {
+            snackbar('WARNING', 'You must select at least one project.')
           } else {
-            this.$store.commit(AppMutations.SET_LOADING, true)
+            appStore.loading = true
             try {
-              await postRequest(`/payroll/${this.currentPayroll.id}/${action}`, params, 'blueraven')
-              this.snackbar = getSnackbar('SUCCESS', 'Successfully Updated')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              await this.getCurrentPayroll()
+              await postRequest(`/payroll/${currentPayroll.value.id}/${action}`, params, 'blueraven')
+              snackbar('SUCCESS', 'Successfully Updated')
+              await getCurrentPayroll()
             } catch (e) {
               console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error Updating')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
+              snackbar('ERROR', 'Error Updating')
+              appStore.loading = false
             }
           }
         }
-      },
-      async getAdjustmentHistory (item) {
+      }
+      const getAdjustmentHistory = async (item) => {
         try {
           let params = {
             projectId: item.project_id
           }
-          const {data} = await getRequestWithParams(`/payroll/${this.currentPayroll.id}/adjustments`, {params}, 'blueraven')
-          this.$set(item, 'adjustmentHistory', data)
+          const {data} = await getRequestWithParams(`/payroll/${currentPayroll.value.id}/adjustments`, {params}, 'blueraven')
+          vueInstance.$set(item, 'adjustmentHistory', data)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Adjustment History')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Adjustment History')
+          appStore.loading = false
         }
-      },
-      async addAdjustment (item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const addAdjustment = async (item) => {
+        appStore.loading = true
         try {
           let params = {
             projectId: item.project_id,
@@ -614,209 +653,193 @@
             amount: item.adjustment,
             note: item.adjustmentNote
           }
-          await postRequest(`/payroll/${this.currentPayroll.id}/adjustments`, params, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Adjustment Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          await this.getCurrentPayroll()
+          await postRequest(`/payroll/${currentPayroll.value.id}/adjustments`, params, 'blueraven')
+          snackbar('SUCCESS', 'Adjustment Added')
+          await getCurrentPayroll()
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Adjustment')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Adding Adjustment')
+          appStore.loading = false
         }
-      },
-      async saveChangesToPayroll (keepLoading) {
+      }
+      const saveChangesToPayroll = async (keepLoading) => {
         let params = {
-          description: this.currentPayroll.description,
-          periodEnd: this.currentPayroll.periodEnd,
-          projectIds: this.currentPayroll.selectedProjectIds
+          description: currentPayroll.value.description,
+          periodEnd: currentPayroll.value.periodEnd,
+          projectIds: currentPayroll.value.selectedProjectIds
         }
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
-          const {data} = await postRequest(`/payroll/${this.currentPayroll.id}`, params, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Successfully Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.currentPayroll = data
-          this.totalPay = sumBy(this.accountingData,  function(o) { return o.selected ? o.current_pay : 0 })
-          this.additionalPayrollDataNeeded = null == this.currentPayroll.periodEnd || null == this.currentPayroll.description
-          this.getStatusColor()
-          if(null != this.currentPayroll.periodEnd) {
-            await this.getCurrentPayroll()
+          const {data} = await postRequest(`/payroll/${currentPayroll.value.id}`, params, 'blueraven')
+          snackbar('SUCCESS', 'Successfully Updated')
+          currentPayroll.value = data
+          totalPay.value = sumBy(accountingData.value,  function(o) { return o.selected ? o.current_pay : 0 })
+          additionalPayrollDataNeeded.value = null == currentPayroll.value.periodEnd || null == currentPayroll.value.description
+          getStatusColor()
+          if(null != currentPayroll.value.periodEnd) {
+            await getCurrentPayroll()
           } else {
-            this.dataLoading = false
-            this.accountingData = []
+            dataLoading.value = false
+            accountingData.value = []
           }
           if(!keepLoading) {
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            appStore.loading = false
           }
           return true
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Updating')
+          appStore.loading = false
           return false
         }
-      },
-      getStatusColor () {
-        this.payrollStatus = {}
-        switch(this.currentPayroll.status) {
+      }
+      const getStatusColor =  () => {
+        payrollStatus.value = {}
+        switch(currentPayroll.value.status) {
           case 'PENDING':
-            this.payrollStatus.message = 'This payroll is pending.'
-            this.payrollStatus.color = '#DCDCDC'
-            this.payrollStatus.showSelect = true
-            this.payrollStatus.action = 'submit'
-            this.payrollStatus.actionText = 'Submit For Approval'
-            this.payrollStatus.actionColor = 'primary'
+            payrollStatus.value.message = 'This payroll is pending.'
+            payrollStatus.value.color = '#DCDCDC'
+            payrollStatus.value.showSelect = true
+            payrollStatus.value.action = 'submit'
+            payrollStatus.value.actionText = 'Submit For Approval'
+            payrollStatus.value.actionColor = 'primary'
             break
           case 'SUBMITTED':
-            this.payrollStatus.message = 'This payroll has been Submitted.'
-            this.payrollStatus.color = '#DCDCDC'
-            this.payrollStatus.showSelect = false
-            this.payrollStatus.action = 'reject'
-            this.payrollStatus.actionText = 'Reject'
-            this.payrollStatus.actionColor = 'error'
-            this.payrollStatus.secondaryAction = 'approve'
-            this.payrollStatus.secondaryActionText = 'Approve'
-            this.payrollStatus.secondaryActionColor = 'green'
+            payrollStatus.value.message = 'This payroll has been Submitted.'
+            payrollStatus.value.color = '#DCDCDC'
+            payrollStatus.value.showSelect = false
+            payrollStatus.value.action = 'reject'
+            payrollStatus.value.actionText = 'Reject'
+            payrollStatus.value.actionColor = 'error'
+            payrollStatus.value.secondaryAction = 'approve'
+            payrollStatus.value.secondaryActionText = 'Approve'
+            payrollStatus.value.secondaryActionColor = 'green'
             break
           case 'REJECTED':
-            this.payrollStatus.message = 'This payroll has been Rejected.'
-            this.payrollStatus.color = 'error'
-            this.payrollStatus.textColor = 'white'
-            this.payrollStatus.showSelect = true
-            this.payrollStatus.action = 'submit'
-            this.payrollStatus.actionText = 'Submit For Approval'
-            this.payrollStatus.actionColor = 'primary'
+            payrollStatus.value.message = 'This payroll has been Rejected.'
+            payrollStatus.value.color = 'error'
+            payrollStatus.value.textColor = 'white'
+            payrollStatus.value.showSelect = true
+            payrollStatus.value.action = 'submit'
+            payrollStatus.value.actionText = 'Submit For Approval'
+            payrollStatus.value.actionColor = 'primary'
             break
           default:
-            this.payrollStatus = {}
+            payrollStatus.value = {}
         }
-      },
-      async getCurrentPayroll () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const getCurrentPayroll = async () => {
+        appStore.loading = true
         try {
-          const {data, status} = await getRequest(`/payroll/current/${this.positionId}`, 'blueraven', [])
-          this.currentPayroll = data
+          const {data, status} = await getRequest(`/payroll/current/${positionId.value}`, 'blueraven', [])
+          currentPayroll.value = data
 
-          this.masterSelectedPayrollIds = cloneDeep(this.currentPayroll.selectedProjectIds)
-          this.getStatusColor()
-          this.payrollLoading = false
-          this.additionalPayrollDataNeeded = null == this.currentPayroll.periodEnd || null == this.currentPayroll.description
-          if(null != this.currentPayroll.periodEnd) {
-            await this.getAccountingData()
+          masterSelectedPayrollIds.value = cloneDeep(currentPayroll.value.selectedProjectIds)
+          getStatusColor()
+          payrollLoading.value = false
+          additionalPayrollDataNeeded.value = null == currentPayroll.value.periodEnd || null == currentPayroll.value.description
+          if(null != currentPayroll.value.periodEnd) {
+            await getAccountingData()
           } else {
-            this.dataLoading = false
-            this.accountingData = []
+            dataLoading.value = false
+            accountingData.value = []
           }
-          handleHidingGlobalLoader(this, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Current Payroll')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Loading Current Payroll')
+          appStore.loading = false
         }
-      },
-      async getAccountingData () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const getAccountingData = async () => {
+        appStore.loading = true
         try {
           let params = {
-            payrollId: this.currentPayroll.id,
-            periodEnd: this.currentPayroll.periodEnd,
-            projectId: this.accountingSearch.projectId,
-            customerId: this.accountingSearch.customerId,
-            salesRepId: this.accountingSearch.salesRepId,
-            positionId: this.positionId
+            payrollId: currentPayroll.value.id,
+            periodEnd: currentPayroll.value.periodEnd,
+            projectId: accountingSearch.value.projectId,
+            customerId: accountingSearch.value.customerId,
+            salesRepId: accountingSearch.value.salesRepId,
+            positionId: positionId.value
           }
-          if(this.currentPayroll?.status !== 'PENDING' && this.currentPayroll?.status !== 'REJECTED') {
-            params.selectedProjectIds = this.currentPayroll.selectedProjectIds
+          if(currentPayroll.value?.status !== 'PENDING' && currentPayroll.value?.status !== 'REJECTED') {
+            params.selectedProjectIds = currentPayroll.value.selectedProjectIds
           }
           const {data} = await postRequest(`/commissionManagement/accountReview/search`, params, 'blueraven', [])
-          this.accountingData = []
+          accountingData.value = []
           data.forEach(d => {
-            d.selected = !!this.currentPayroll.selectedProjectIds?.includes(d.project_id)
-            if(this.accountingSearch?.showSelectedOnly && d.selected) {
-              this.accountingData.push(d)
+            d.selected = !!currentPayroll.value.selectedProjectIds?.includes(d.project_id)
+            if(accountingSearch.value?.showSelectedOnly && d.selected) {
+              accountingData.value.push(d)
             }
           })
-          if(!this.accountingSearch?.showSelectedOnly) {
-            this.accountingData = data
+          if(!accountingSearch.value?.showSelectedOnly) {
+            accountingData.value = data
           }
-          if(this.currentPayroll?.selectedProjectIds?.length === data.length) {
-            this.selectAll = true
+          if(currentPayroll.value?.selectedProjectIds?.length === data.length) {
+            selectAll.value = true
           }
 
-          this.totalPay = sumBy(this.accountingData,  function(o) { return o.selected ? o.current_pay : 0 })
+          totalPay.value = sumBy(accountingData.value,  function(o) { return o.selected ? o.current_pay : 0 })
 
-          this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          dataLoading.value = false
+          appStore.loading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Accounting Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Loading Accounting Data')
+          appStore.loading = false
         }
-      },
-      getCustomersDebounced(val) {
-        clearTimeout(this._searchTimerId)
-        this._searchTimerId = setTimeout(() => {
-          this.getCustomers(val)
-        }, 500) /* 500ms throttle */
-      },
-      async getCustomers(query) {
-          this.customersLoading = true
+      }
+      const getCustomers = async(query) => {
+          customersLoading.value = true
           try {
             let params = {
               query,
               size: 10
             }
             const {data} = await getRequestWithParams(`/contact/search`, {params})
-            this.customers = data.content
-            this.customersLoading = false
+            customers.value = data.content
+            customersLoading.value = false
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Customers')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            snackbar('ERROR', 'Error Retrieving Customers')
           }
-      },
-      debounceSearch () {
-        clearTimeout(this._textSearchTimerId)
-        this._textSearchTimerId = setTimeout(() => {
-          this.debouncedSearch = this.search
-        }, 700)
+      }
+  const getCustomersDebounced = debounce((val) => {
+    getCustomers(val)
+  }, 500)
+  //wtf?
+  const debounceSearch = debounce(() => {
+    debouncedSearch.value = search.value
+  }, 500)
+  const getRepsDebounced = debounce((val) => {
+    getReps(val)
+  }, 500)
 
-      },
-      getRepsDebounced(val) {
-        clearTimeout(this._repTimerId)
-        this._repTimerId = setTimeout(() => {
-          this.getReps(val)
-        }, 500) /* 500ms throttle */
-      },
-      async getReps(query) {
-        this.repsLoading = true
+      const getReps = async(query) => {
+        repsLoading.value = true
         try {
           let params = {
             query,
             size: 10
           }
           const {data} = await getRequestWithParams(`/commissionManagement/overrides/_search`, {params}, 'blueraven')
-          this.reps = data
-          this.repsLoading = false
+          reps.value = data
+          repsLoading.value = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Sales Reps')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          snackbar('ERROR', 'Error Retrieving Sales Reps')
         }
-      },
-      async exportAccountingReview () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const exportAccountingReview = async () => {
+        appStore.loading = true
         try {
           let filename = 'Accounting Review.csv';
           let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,User ID,Employee ID,Current Pay,Source,Cancelled,IAS,FDS,FAS,Utility Bill Verified,%/$ Dep,HOI,HOI-R,SC,Commission Plan,Commission Strategy,Commissions Earned,Commission Paid to Date,Commission Forfeited Paid to Date,Commission Forfeited by Closer,Forfeited Amount,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides';
           csvData += '\n';
 
-          this.accountingData.forEach(p => {
-            if (this.masterSelectedPayrollIds?.includes(p.project_id)) {
+          accountingData.value.forEach(p => {
+            if (masterSelectedPayrollIds.value?.includes(p.project_id)) {
               csvData +=
                 p.project_id + ',"' +
                 p.customer_name + '",' +
@@ -859,16 +882,13 @@
           });
 
           saveAs(blob, filename);
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          appStore.loading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Exporting Accounting Review')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Exporting Accounting Review')
+          appStore.loading = false
         }
-      },
-    }
-  }
+      }
 </script>
 
 <style lang="scss" scoped>

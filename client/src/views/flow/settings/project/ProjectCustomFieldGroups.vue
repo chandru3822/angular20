@@ -4,21 +4,7 @@
   </v-container>
 </template>
 
-<script>
-import CustomFieldGroup from '../objectType/CustomFieldGroup'
-
-export default {
-  name: 'ProjectCustomFieldGroup',
-  components: {
-    CustomFieldGroup
-  },
-  data () {
-    return {
-    }
-  },
-  watch: {},
-  created () {},
-  methods: {}
-}
+<script setup>
+import CustomFieldGroup from '@/views/flow/settings/objectType/CustomFieldGroup'
 </script>
 

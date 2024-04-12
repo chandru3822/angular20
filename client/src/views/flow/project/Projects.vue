@@ -7,18 +7,17 @@
         </v-toolbar>
 
         <v-card
-          class="white elevation-1 mt-3 px-3 pt-1 square-card"
+            class="white elevation-1 mt-3 px-3 pt-1 square-card"
         >
-          <v-text-field
-            class="pt-3"
-            prepend-inner-icon="search"
-            text
-            clearable
-            label="Search projects..."
-            v-model="searchQuery"
-            @input="searchProjects"
-            @click:clear="searchProjects()"
-            :keyup.enter="closeKeyboard"
+          <a-text-field
+              class="pt-3"
+              prepend-inner-icon="search"
+              clearable
+              label="Search projects..."
+              v-model="searchQuery"
+              @input="searchProjects"
+              @click:clear="searchProjects()"
+              :keyup.enter="closeKeyboard"
           />
 
           <v-spacer/>
@@ -26,19 +25,18 @@
 
         <v-divider/>
         <v-data-table
-          class="elevation-1 table-striped"
-          :headers="headers"
-          :items="projects"
-          fixed-header
-          ref="pageable-table"
-          :page.sync="page"
-          :options.sync="options"
-          disable-sort
-          :footer-props="footerProps"
-          :server-items-length="totalProjects"
-          :loading="isProjectsLoading"
-          :class="{'fix-column-width-bug': !isMobile}"
-          @click:row.stop="goToRoute"
+            class="elevation-1 table-striped clickable"
+            :headers="headers"
+            :items="projects"
+            fixed-header
+            ref="pageable-table"
+            :page.sync="page"
+            :options.sync="options"
+            disable-sort
+            :footer-props="footerProps"
+            :server-items-length="totalProjects"
+            :loading="isProjectsLoading"
+            :class="{'fix-column-width-bug': !isMobile}"
         >
           <template #no-data>
             <span class="default-text-color">No available projects</span>
@@ -48,166 +46,174 @@
             <span class="default-text-color">No available projects</span>
           </template>
 
-              <template #item.id="{item: project, index}" class="text-left py-0 pl-4 clickable">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
-                  {{project.id}}
-                </router-link>
-              </template>
-              <template #item.projectName="{item: project, index}" class="text-left text--black clickable">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
-                  {{project.projectName}}
-                </router-link>
-              </template>
-              <template #item.stateAbbreviation="{item: project, index}" class="text-left clickable">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
-                  {{project.stateAbbreviation}}
-                </router-link>
-              </template>
-              <template #item.projectStatusType="{item: project, index}" class="text-left clickable">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
-                  {{project.projectStatusType}}
-                </router-link>
-              </template>
-              <template #item.dateCreated="{item: project, index}" class="text-left clickable">
-                 <span class="clickable">{{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</span>
-              </template>
+          <template #item.id="{item: project, index}" class="text-left py-0 pl-4 clickable">
+            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
+              {{project.id}}
+            </router-link>
+          </template>
+          <template #item.projectName="{item: project, index}" class="text-left text--black clickable">
+            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
+              {{project.projectName}}
+            </router-link>
+          </template>
+          <template #item.stateAbbreviation="{item: project, index}" class="text-left clickable">
+            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
+              {{project.stateAbbreviation}}
+            </router-link>
+          </template>
+          <template #item.projectStatusType="{item: project, index}" class="text-left clickable">
+            <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
+              {{project.projectStatusType}}
+            </router-link>
+          </template>
+          <template #item.dateCreated="{item: project, index}" class="text-left clickable">
+            <span class="clickable">
+              <router-link :to="`${getRoute(project)}`" class="router-link-td elevation-0 square-card">
+                {{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}
+              </router-link>
+            </span>
+          </template>
         </v-data-table>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
-<script>
+<script setup>
 
-  import {logError, getRequestWithParams} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import debounce from 'lodash.debounce'
-  import axios from 'axios'
+import {logError, getRequestWithParams, getProjectPath} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import debounce from 'lodash.debounce'
+import axios from 'axios'
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  export default {
-    name: 'Projects',
-    beforeRouteEnter(to, from, next) {
-      //if coming to this page from the project details - use the previously used searchQuery
-      next((vm) => {
-        if(from?.fullPath.includes('/project/')) {
-          vm.searchQuery = localStorage.getItem('projectSearch') || ''
-        } else {
-          localStorage.removeItem('projectSearch')
-        }
-        vm.getProjects()
-      });
-    },
-    data() {
-      return {
-        initialLoad: true,
-        options: {
-          itemsPerPage: 100
-        },
-        headers: [
-          {text: 'ID', value: 'id', show: true},
-          {text: 'Name', value: 'projectName', show: true},
-          {text: 'State', value: 'stateAbbreviation', show: true},
-          {text: 'Status', value: 'projectStatusType', show: true},
-          {text: 'Date Created', value: 'dateCreated', show: true}
-        ],
-        footerProps: {
-          'items-per-page-options': [25, 50, 100],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        projects: [],
-        from: null,
-        searchQuery: '',
-        totalProjects: 0,
-        page: 1,
-        isProjectsLoading: false,
-        showConfirmDialog: false,
-        snackbar: {},
-        source: null
-      }
-    },
-    watch: {
-      options: {
-        handler() {
-          if(!this.initialLoad) {
-            this.getProjects()
-          }
-        }
-      },
-      page() {
-        let table = this.$refs['pageable-table'];
-        let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
 
-        this.$vuetify.goTo(table); // to table
-        this.$vuetify.goTo(table, {container: wrapper}); // to header
-      }
-    },
-    computed: {
-      isMobile(){
-        return this.$vuetify.breakpoint.smAndDown
-      }
-    },
-    methods: {
-      goToRoute(project) {
-        this.$router.push({name: 'projectStatus', params: {projectId: project.id}})
-      },
-      async getProjects() {
-        const {page, itemsPerPage} = this.options
+const initialLoad = ref(true)
+const options = ref({itemsPerPage: 100})
+const headers = ref([
+  {text: 'ID', value: 'id', show: true},
+  {text: 'Name', value: 'projectName', show: true},
+  {text: 'State', value: 'stateAbbreviation', show: true},
+  {text: 'Status', value: 'projectStatusType', show: true},
+  {text: 'Date Created', value: 'dateCreated', show: true}
+])
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const projects = ref([])
+const from = ref(null)
+const searchQuery = ref('')
+const totalProjects = ref(0)
+const page = ref(1)
+const isProjectsLoading = ref(false)
+const showConfirmDialog = ref(false)
+const source = ref(null)
 
-        if(this.source){
-          this.source.cancel();
-        }
-        const CancelToken = axios.CancelToken;
-        this.source = CancelToken.source();
+const useSavedFilter = computed(() => {
+  return route.params.useSavedFilter
+})
 
-        try {
-          this.isProjectsLoading = true
-          const {data} = await getRequestWithParams(`/project/search`, {
-            source: this.source,
-            cancelToken: this.source.token,
-            params: {
-              query: this.searchQuery,
-              page: page - 1,
-              size: itemsPerPage
-            }
-          }, null, [])
-          this.projects = data.content || []
-          this.totalProjects = data.totalElements
-          this.initialLoad = false
-        } catch (e) {
-          logError(e)
-        } finally {
-          this.isProjectsLoading = false
-        }
-      },
-      searchProjects: debounce(function () {
-        //don't allow searchQuery to be null - causes issues
-        this.searchQuery = this.searchQuery || ''
-        localStorage.setItem('projectSearch', this.searchQuery)
-        this.getProjects()
-      }, 500),
-      closeKeyboard(){
-        document.activeElement.blur()
+onMounted(() => {
+  if(useSavedFilter.value === 'true') {
+    searchQuery.value = localStorage.getItem('projectSearch') || ''
+  } else {
+    localStorage.removeItem('projectSearch')
+  }
+  getProjects()
+})
+
+watch(page, async() => {
+  let table = vueInstance.$refs['pageable-table'];
+  let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+
+  vuetify.goTo(table); // to table
+  vuetify.goTo(table, {container: wrapper}); // to header
+})
+
+watch(
+    () => options.value,
+    () => {
+      if(!initialLoad.value) {
+        getProjects()
       }
     }
+)
+
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+const getRoute = (project) => {
+  const defaultProjectPage = getProjectPath().pathSuffix
+  return `/project/${project.id}/${defaultProjectPage}`
+}
+const getProjects = async() => {
+  const {page, itemsPerPage} = options.value
+
+  if(source.value){
+    source.value.cancel();
   }
+  const CancelToken = axios.CancelToken;
+  source.value = CancelToken.source();
+
+  try {
+    isProjectsLoading.value = true
+    const {data} = await getRequestWithParams(`/project/search`, {
+      source: source.value,
+      cancelToken: source.value.token,
+      params: {
+        query: searchQuery.value,
+        page: page - 1,
+        size: itemsPerPage
+      }
+    }, null, [])
+    projects.value = data.content || []
+    totalProjects.value = data.totalElements
+    initialLoad.value = false
+  } catch (e) {
+    logError(e)
+  } finally {
+    isProjectsLoading.value = false
+  }
+}
+const searchProjects = debounce((query) => {
+  //don't allow searchQuery to be null - causes issues
+  searchQuery.value = searchQuery.value || ''
+  localStorage.setItem('projectSearch', searchQuery.value)
+  getProjects()
+}, 500)
+const closeKeyboard = () => {
+  document.activeElement.blur()
+}
 </script>
 
 <style lang="scss">
-  #projects-container .v-data-footer__pagination {
-    display: none !important;
-  }
+#projects-container .v-data-footer__pagination {
+  display: none !important;
+}
 </style>
 <style scoped lang="scss">
-  @import "@/styles/main.scss";
+@import "@/styles/main.scss";
 
-  ::v-deep {
-    .v-data-table__wrapper {
-      height: calc(100vh - 290px);
-      min-height: 300px;
-    }
+::v-deep {
+  .v-data-table__wrapper {
+    height: calc(100vh - 290px);
+    min-height: 300px;
   }
+}
 
-  tr:nth-of-type(even) {
-    @extend .shaded-row;
-  }
+tr:nth-of-type(even) {
+  @extend .shaded-row;
+}
 </style>

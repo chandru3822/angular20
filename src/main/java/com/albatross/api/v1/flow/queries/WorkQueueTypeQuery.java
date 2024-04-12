@@ -103,7 +103,8 @@ public class WorkQueueTypeQuery {
                (select duration_type from flow.duration_type dt where dt.id = wqt.short_window_duration_type_id) as expected_cycle_duration_type,
                expected_target,
                inverse_expectation,
-               json(wqt.schedule) as schedule
+               json(wqt.schedule) as schedule,
+               json(wqt.default_column_display) as defaultColumnDisplay
         from flow.work_queue_type wqt
                inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
                inner join flow.smartlist s on s.work_queue_type_id = wqt.id
@@ -211,7 +212,8 @@ public class WorkQueueTypeQuery {
              expected_cycle_duration_type_id = :expectedCycleDurationTypeId,
              inverse_expectation = :inverseExpectation,
              expected_target = :expectedTarget,
-             schedule = :schedule
+             schedule = :schedule,
+             default_column_display = json(:defaultColumnDisplay)
          where id = :id
        """;
 

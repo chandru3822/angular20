@@ -127,16 +127,8 @@ select *
                                                             :isParent::boolean,
                                                             :limit::bigint, :offset::bigint,
                                                             :companyProjectStatusTypeId::bigint,
-                                                            :sortColumn::character varying, :sortDirection::character varying)
-    """;
-
-  //language=PostgreSQL
-  public final static String searchDownlineCount = """
-      select *
-      from flow.search_projects_with_down_line_count(:query::character varying, :companyId::bigint,
-                                                              :userId::bigint,
-                                                              :isParent::boolean,
-                                                            :companyProjectStatusTypeId::bigint)
+                                                            :sortColumn::character varying, :sortDirection::character varying,
+                                                            :includeCommissionDetails::boolean)
     """;
 
   //language=PostgreSQL
@@ -152,11 +144,6 @@ select *
                                   :sortDirection::character varying)
     """;
 
-  //language=PostgreSQL
-  public final static String searchCount = """
-    select * from flow.search_all_projects_count(:query::character varying, :companyId::bigint, :isParent::boolean,
-                                                            :companyProjectStatusTypeId::bigint)
-    """;
 
   //language=PostgreSQL
   public final static String searchByOwner = """
@@ -164,13 +151,8 @@ select *
     from flow.search_projects_by_user(:query::character varying, :companyId::bigint,
                                  :userId::bigint,  :isParent::boolean,:limit::bigint, :offset::bigint,
                                                             :companyProjectStatusTypeId::bigint,
-                                                            :sortColumn::character varying, :sortDirection::character varying)
-    """;
-
-  //language=PostgreSQL
-  public final static String searchByOwnerCount = """
-    select * from flow.search_projects_by_user_count(:query::character varying, :companyId::bigint, :userId::bigint, :isParent::boolean,
-                                                            :companyProjectStatusTypeId::bigint)
+                                                            :sortColumn::character varying, :sortDirection::character varying,
+                                                            :includeCommissionDetails::boolean)
     """;
 
   //language=PostgreSQL
@@ -864,56 +846,60 @@ where contact_id = :contactId
     """;
 
   public final static String getStatusFieldsByProject = """
-    with fields as (select cpsfa.id,
-                           cpsfa.company_project_status_type_id,
-                           coalesce(dvcfc.display_name, dvfc.display_name) as field_name,
-                           case
-                               when dvcfc.id is not null then ubt.return_data_type_id
-                               when dvfc.id is not null and def.data_type_id is not null then def.data_type_id
-                               when dvfc.id is not null and def.data_type_id is null
-                                   then (select f.company_data_type_id
-                                         from flow.custom_field_group_assignment c
-                                                  inner join flow.custom_field f on f.id = c.custom_field_id
-                                                  inner join flow.company_data_type t on t.id = f.company_data_type_id
-                                         where c.id = dvfc.custom_field_group_assignment_id)
-                               end                                                      as data_type_id,
-                           case
-                               when cpsfa.data_view_child_field_config_id is not null then
-                                   (select flow.get_value_for_data_view_child_field(cpsfa.data_view_child_field_config_id,
-                                                                                    :projectId))::text
-                               else (select flow.get_value_for_data_view_field(cpsfa.data_view_field_config_id,
-                                                                               :projectId)) end::text as field_value
-                    from flow.company_project_status_field_assignment cpsfa
-                             inner join flow.company_project_status_type cpst
-                                        on cpsfa.company_project_status_type_id = cpst.id
-                             left join flow.data_view_field_config dvfc on cpsfa.data_view_field_config_id = dvfc.id
-                             left join flow.data_view_child_field_config dvcfc
-                                       on cpsfa.data_view_child_field_config_id = dvcfc.id
-                             left join flow.default_field def on def.id = dvfc.default_field_id
-                             left join flow.unique_behavior_type ubt on ubt.id = dvcfc.unique_behavior_type_id
-                    where cpsfa.archived is false
-                      and cpst.company_id = :companyId)
-    select cpst.id,
-           cpst.project_status_type_id,
-           cpst.project_status_type,
-           cpst.company_id,
-           cpst.icon_tag,
-           cpst.display_order,
-           cpst.description,
-           cpst.is_milestone,
-           coalesce((
-                        SELECT array_to_json(array_agg(row_to_json(assignedFields)))
-                        FROM (
-                                 SELECT id,
-                                        data_type_id as "dataTypeId",
-                                        field_name as "fieldName",
-                                        field_value as "fieldValue"
-                                 FROM fields f
-                                 WHERE f.company_project_status_type_id = cpst.id) assignedFields), '[]') AS "assignedFields"
-    from flow.company_project_status_type cpst
-    where cpst.archived is false
-      and cpst.is_milestone is true
-      and cpst.company_id = :companyId
-    order by cpst.display_order;
-    """;
+                with fields as (select cpsfa.id,
+                                       cpsfa.company_project_status_type_id,
+                                       coalesce(dvcfc.display_name, dvfc.display_name) as field_name,
+                                       case
+                                           when dvcfc.id is not null then ubt.return_data_type_id
+                                           when dvfc.id is not null and def.data_type_id is not null then def.data_type_id
+                                           when dvfc.id is not null and def.data_type_id is null
+                                               then (select t.data_type_id
+                                                     from flow.custom_field_group_assignment c
+                                                              inner join flow.custom_field f on f.id = c.custom_field_id
+                                                              inner join flow.company_data_type t on t.id = f.company_data_type_id
+                                                     where c.id = dvfc.custom_field_group_assignment_id)
+                                           end                                                      as data_type_id,
+                                       case
+                                           when cpsfa.data_view_child_field_config_id is not null then
+                                               (select flow.get_value_for_data_view_child_field(cpsfa.data_view_child_field_config_id,
+                                                                                                :projectId))::text
+                                           else (select flow.get_value_for_data_view_field(cpsfa.data_view_field_config_id,
+                                                                                           :projectId)) end::text as field_value
+                                from flow.company_project_status_field_assignment cpsfa
+                                         inner join flow.company_project_status_type cpst
+                                                    on cpsfa.company_project_status_type_id = cpst.id
+                                                    and case when :companyProjectStatusTypeId::int is not null then
+                                                            cpst.id = :companyProjectStatusTypeId::int else true end
+                                         left join flow.data_view_field_config dvfc on cpsfa.data_view_field_config_id = dvfc.id
+                                         left join flow.data_view_child_field_config dvcfc
+                                                   on cpsfa.data_view_child_field_config_id = dvcfc.id
+                                         left join flow.default_field def on def.id = dvfc.default_field_id
+                                         left join flow.unique_behavior_type ubt on ubt.id = dvcfc.unique_behavior_type_id
+                                where cpsfa.archived is false
+                                  and cpst.company_id = :companyId)
+                select cpst.id,
+                       cpst.project_status_type_id,
+                       cpst.project_status_type,
+                       cpst.company_id,
+                       cpst.icon_tag,
+                       cpst.display_order,
+                       cpst.description,
+                       cpst.is_milestone,
+                       coalesce((
+                                    SELECT array_to_json(array_agg(row_to_json(assignedFields)))
+                                    FROM (
+                                             SELECT id,
+                                                    data_type_id as "dataTypeId",
+                                                    field_name as "fieldName",
+                                                    field_value as "fieldValue"
+                                             FROM fields f
+                                             WHERE f.company_project_status_type_id = cpst.id) assignedFields), '[]') AS "assignedFields"
+                from flow.company_project_status_type cpst
+                where cpst.archived is false
+                  and cpst.is_milestone is true
+                  and cpst.company_id = :companyId
+                  and case when :companyProjectStatusTypeId::int is not null then
+                                   cpst.id = :companyProjectStatusTypeId::int else true end
+                order by cpst.display_order;
+          """;
 }

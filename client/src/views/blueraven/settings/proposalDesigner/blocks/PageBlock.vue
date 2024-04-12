@@ -4,13 +4,18 @@
   </div>
 </template>
 
-<script>
-import { mapState } from 'vuex'
+<script setup>
 import constants from '@/helpers/constants'
+import { computed } from 'vue'
+import useProposalStore from '../store.js'
+import { storeToRefs } from 'pinia'
 
-const styleUpdatedFn = function(el, binding) {
+const store = useProposalStore()
+const { theme } = storeToRefs(store)
+
+const vProposalStyle = function (el, binding) {
   const replacer = {
-    'backgroundImage': (value) => {
+    backgroundImage: (value) => {
       return `url(${constants.VUE_APP_BASE_API}/public/image/${value}?q=80&w=1080)`
     }
   }
@@ -25,28 +30,22 @@ const styleUpdatedFn = function(el, binding) {
         newVal = replacerElement(value)
       }
     }
-    el.style[newKey] = (newVal !== undefined) ? newVal : ''
+    el.style[newKey] = newVal !== undefined ? newVal : ''
   })
 }
 
-export default {
-  name: 'PageBlock',
-  props: ['blockStyle', 'themeKey'],
-  directives: {
-    'proposal-style': {
-      bind: styleUpdatedFn,
-      update: styleUpdatedFn
-    }
+const props = defineProps({
+  themeKey: {
+    type: String
   },
-  computed: {
-    styles() {
-      return { ...(this.theme[this.themeKey] ?? {}), ...this.blockStyle }
-    },
-    ...mapState({
-      theme: (state) => state.proposal.theme
-    })
+  blockStyle: {
+    type: Object
   }
-}
+})
+
+const styles = computed(() => {
+  return { ...(theme.value[props.themeKey] ?? {}), ...props.blockStyle }
+})
 </script>
 <style lang="scss" scoped>
 .proposal-page {
@@ -56,7 +55,7 @@ export default {
   background-color: white;
   box-shadow: 0 0 5px 0 darkgrey;
   box-sizing: border-box;
-  position:relative;
+  position: relative;
 
   &:not(:last-child) {
     margin-bottom: 10px;

@@ -85,7 +85,7 @@ public class TagQuery {
     from flow.project_tag pt
         inner join flow.tag t on t.id = pt.tag_id
         inner join flow."user" uc on uc.id = pt.created_by_id
-        inner join flow."user" um on um.id = pt.modified_by_id
+        left join flow."user" um on um.id = pt.modified_by_id
         inner join flow.project proj on pt.project_id = proj.id
     where pt.project_id = :projectId
     order by date_modified desc

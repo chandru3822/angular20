@@ -25,15 +25,20 @@
 */
 import {ref, defineProps, defineEmits, onMounted, watch} from 'vue'
 
+
 const props = defineProps({
   menuItems: Array, //@required
+  headerHidden: Boolean,
   headerHeight: String, //@optional
   headerColor: String, //@optional
   viewChangeCallback: Function, //@required,
-  subMenuSelectedView: Object //@optional, allows us to close the menu when using a submenu and the route doesn't change
-
+  subMenuSelectedView: Object, //@optional, allows us to close the menu when using a submenu and the route doesn't change
+  useRightPanelMobile:Boolean,
+  rightOpen:Boolean,
 })
 const emit = defineEmits(['selectMenuItem'])
+
+const showRight = ref(props.rightOpen)
 
 const showMenu=ref(false)
 const toggleMenu = (forceClose) => {
@@ -75,10 +80,8 @@ const chooseSelectedView = (view, id) => {
       </v-list>
     </v-navigation-drawer>
   <v-row>
-    <v-toolbar id="three-column-header" flat :height="headerHeight" :color="headerColor ? headerColor : 'grey lighten-2'">
-    <v-btn small text color="primary" @click="toggleMenu(false)" >
-      <v-icon>mdi-menu</v-icon>
-    </v-btn>
+    <v-toolbar  v-if="!headerHidden" id="three-column-header" flat :height="headerHeight" :color="headerColor ? headerColor : 'grey lighten-2'">
+    <a-btn size="small" variant="text" prepend-icon="mdi-menu" @click="toggleMenu(false)"/>
     <slot name="header-contents">
     </slot>
     </v-toolbar>
@@ -88,6 +91,10 @@ const chooseSelectedView = (view, id) => {
     <slot name="main-column"/>
     </v-col>
   </v-row>
+    <v-navigation-drawer v-if="useRightPanelMobile" v-model="rightOpen" width="85%" right absolute temporary clipped stateless><!--stateless makes it so clicking content doesn't trigger the sidebar to close-->
+      <slot name="right-column"/>
+    </v-navigation-drawer>
+
   </v-container>
 </template>
 

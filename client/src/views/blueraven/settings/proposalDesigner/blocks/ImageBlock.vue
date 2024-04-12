@@ -1,39 +1,39 @@
 <template>
   <div class="proposal-img" :style="styles">
-    <img-proxy v-if="blockValue.uuid" :uuid="blockValue.uuid" alt="an image block" />
+    <img-proxy
+      v-if="blockValue.uuid"
+      :uuid="blockValue.uuid"
+      alt="an image block"
+    />
     <img v-else :src="blockValue.url" alt="an image block" loading="lazy" />
   </div>
 </template>
 
-
-<script>
-import { mapState } from 'vuex'
+<script setup>
 import ImgProxy from '@/components/ImgProxy'
+import { computed } from 'vue'
+import useProposalStore from '../store.js'
+import { storeToRefs } from 'pinia'
 
-export default {
-  name: 'ImageBlock',
-  components: { ImgProxy },
-  props: {
-    themeKey: {
-      type: String
-    },
-    blockStyle: {
-      type: Object
-    },
-    blockValue: {
-      type: Object,
-      required: true
-    }
+const store = useProposalStore()
+const { theme } = storeToRefs(store)
+
+const props = defineProps({
+  themeKey: {
+    type: String
   },
-  computed: {
-    styles() {
-      return { ...this.theme[this.themeKey] ?? {}, ...this.blockStyle }
-    },
-    ...mapState({
-      theme: (state) => state.proposal.theme
-    })
+  blockStyle: {
+    type: Object
+  },
+  blockValue: {
+    type: Object,
+    required: true
   }
-}
+})
+
+const styles = computed(() => {
+  return { ...(theme.value[props.themeKey] ?? {}), ...props.blockStyle }
+})
 </script>
 <style lang="scss" scoped>
 .proposal-img img {

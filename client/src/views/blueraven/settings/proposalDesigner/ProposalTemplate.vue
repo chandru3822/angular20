@@ -2,12 +2,12 @@
   <fragment>
     <component
       class="block-ui"
-      :is="blockType"
+      :is="blocks[blockType]"
       :key="child.id"
       :class="{
-        'debug' : debug ,
-        'editable' : editable,
-        'selected': selectedId === child.id
+        debug: debug,
+        editable: editable,
+        selected: selectedId === child.id
       }"
       :style="{ zIndex: 100 + depth }"
       :data-type="blockType"
@@ -19,7 +19,7 @@
       v-bind="{ ...child }"
       v-for="{ blockType, blockOrder, parentId, ...child } in sortedChildren"
     >
-      <block
+      <proposal-template
         :children="filterByParentId(child.id)"
         :debug="debug"
         :depth="depth + 1"
@@ -28,57 +28,54 @@
     </component>
   </fragment>
 </template>
-<script>
+<script setup>
 import { Fragment } from 'vue-frag'
 import Blocks from './blocks'
+import { toRefs, computed } from 'vue'
+import useProposalStore from './store.js'
 
-export default {
-  name: 'block',
-  components: {
-    Fragment,
-    ...Blocks
+const store = useProposalStore()
+const blocks = { ...Blocks }
+const props = defineProps({
+  debug: {
+    type: Boolean,
+    default: false
   },
-  props: {
-    debug: {
-      type: Boolean,
-      default: false
-    },
-    editable: {
-      type: Boolean,
-      default: false
-    },
-    depth: {
-      type: Number,
-      default: 0
-    },
-    children: {
-      type: Array,
-      default: function() {
-        return []
-      }
-    }
+  editable: {
+    type: Boolean,
+    default: false
   },
-  computed: {
-    sortedChildren() {
-      return this.children.slice().sort(((a, b) => {
-        if (a.blockOrder > b.blockOrder) {
-          return 1
-        }
-        if (a.blockOrder < b.blockOrder) {
-          return -1
-        }
-        return 0
-      }))
-    },
-    selectedId() {
-      return this.editable ? this.$store.state.proposal.selectedId : -1
-    }
+  depth: {
+    type: Number,
+    default: 0
   },
-  methods: {
-    filterByParentId(parent) {
-      return this.$store.getters.filterByParentId(parent)
+  children: {
+    type: Array,
+    default: function () {
+      return []
     }
   }
+})
+
+const { debug, editable, depth, children } = toRefs(props)
+
+const sortedChildren = computed(() => {
+  return children.value?.slice().sort((a, b) => {
+    if (a.blockOrder > b.blockOrder) {
+      return 1
+    }
+    if (a.blockOrder < b.blockOrder) {
+      return -1
+    }
+    return 0
+  })
+})
+const selectedId = computed(() => {
+  return editable.value ? store.selectedId : -1
+})
+
+const filterByParentId = (parent) => {
+  return store.filterByParentId(parent)
 }
 </script>
 <style lang="scss">

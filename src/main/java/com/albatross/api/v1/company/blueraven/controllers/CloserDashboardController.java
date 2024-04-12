@@ -52,7 +52,7 @@ public class CloserDashboardController {
   }
 
   @GetMapping(value = "/getRoundRobinLeadAllocationRank")
-  public List<RoundRobinLeadAllocationScores> getRoundRobinLeadAllocationRank(
+  public List<CloserTableScore> getRoundRobinLeadAllocationRank(
       @RequestParam Integer roundRobinId, @RequestParam Integer timeInterval) {
     return closerDashboardService.getRoundRobinLeadAllocationRank(roundRobinId, timeInterval);
   }
@@ -62,12 +62,16 @@ public class CloserDashboardController {
     return closerDashboardService.getCloserOffices(userOrgId);
   }
 
-  @GetMapping(value = "/getCloserTableScores")
-  public String getCloserTableScores(
+  @GetMapping(value = "/getRepRankings")
+  public List<CloserTableScore> getRepRankings(
       @RequestParam Integer timeInterval,
-      @RequestParam Boolean officeFdcRank,
       @RequestParam(required = false) Long selectedOrgId) {
-    return closerDashboardService.getCloserTableScores(timeInterval, officeFdcRank, selectedOrgId);
+    return closerDashboardService.getRepRankings(timeInterval, selectedOrgId);
+  }
+
+  @GetMapping(value = "/getOrgRankings")
+  public List<CloserTableScore> getOrgRankings(@RequestParam Integer timeInterval) {
+    return closerDashboardService.getCloserOrgRankings(timeInterval);
   }
 
   @GetMapping(value="/leaderboardBookings")

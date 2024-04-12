@@ -8,12 +8,15 @@
             <v-spacer></v-spacer>
             <v-toolbar-items class="flex-display">
               <div class="flex-display align-center">
-                <v-btn class="save-btn text-capitalize"
+                <a-btn class="save-btn text-capitalize"
                        @click="saveChangesToDefaultFields"
                        color="primary"
                        v-if="userCanEdit"
-                >Save Default Event Fields
-                </v-btn>
+                       text="Save Default Event Fields"
+                       hide-text-on-mobile
+                       :icon="vuetify.breakpoint.smAndDown"
+                       :prepend-icon="vuetify.breakpoint.smAndDown ? 'save' : ''"
+                />
               </div>
             </v-toolbar-items>
           </v-toolbar>
@@ -21,12 +24,12 @@
             <v-row class="mx-3" cols="12">
               <!--Start Time White Listed Fields-->
               <v-col cols="12" md="5" class="py-0">
-                <v-text-field
+                <a-text-field
                   label="Start Time"
                   readonly disabled
                   single-line
                   hide-details
-                ></v-text-field>
+                ></a-text-field>
                 <v-row class="flex-display">
                   <multi-select-group
                     v-if="!eventLoading"
@@ -69,12 +72,12 @@
               <v-col style="height: 0" cols="0" md="1"></v-col>
               <!--End Time White Listed Fields-->
               <v-col cols="12" md="5" class="py-0">
-                <v-text-field
+                <a-text-field
                   label="End Time"
                   readonly disabled
                   single-line
                   hide-details
-                ></v-text-field>
+                ></a-text-field>
                 <v-row class="flex-display">
                   <multi-select-group
                     v-if="!eventLoading"
@@ -118,16 +121,16 @@
             <v-row class="mx-3">
               <!--Resource Fields-->
               <v-col cols="12" md="5">
-                <v-autocomplete
+                <a-autocomplete
                   v-model="event.resourceCustomFieldId"
                   :items="eventResourceFields"
                   :disabled="!userCanEdit"
                   :rules="requiredRules"
                   label="Resource"
                   @change="resourceFieldChanged = true"
-                  item-text="fieldName"
+                  item-title="fieldName"
                   item-value="id"
-                ></v-autocomplete>
+                ></a-autocomplete>
                 <v-row class="flex-display">
                   <multi-select-group
                     v-if="!eventLoading"
@@ -174,40 +177,43 @@
           <v-toolbar-title class="title-large">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="!createNew && userCanAdd" @click="createNew = !createNew">
-              <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE">Create Group</span>
-            </v-btn>
+            <a-btn variant="text"
+                             color="primary"
+                             v-if="!createNew && userCanAdd"
+                             @click="createNew = !createNew"
+                             prepend-icon="add"
+                             :text="!constants.IS_MOBILE ? 'Create Group' : ''"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="createNew" text class="text-left one-hunned pa-3 square-card add-new" flat
                 color="primary lighten-9">
           <div>
-            <v-text-field
+            <a-text-field
               label="Group Name"
               tabindex=1
               v-model="newGroup.groupName"
-            ></v-text-field>
+            ></a-text-field>
           </div>
-          <v-btn
+          <a-btn
             color="primary"
             class="mr-2"
             :disabled="!newGroup.groupName"
-            @click="saveFieldGroup()">
-            Save
-          </v-btn>
-          <v-btn
-            text color="primary"
-            @click="[newGroup = {}, createNew = false]">
-            Cancel
-          </v-btn>
+            @click="saveFieldGroup()"
+            text="SAVE"
+          />
+          <a-btn
+            variant="text" color="primary"
+            @click="[newGroup = {}, createNew = false]"
+            text="CANCEL"
+          />
         </v-card>
         <v-row>
           <v-col cols="12">
             <v-data-table
               :key="componentKey"
               :headers="headers"
-              :items="filterCustomFieldGroups()"
+              :items="filterCustomFieldGroups"
               :items-per-page="-1"
               single-expand
               :expanded.sync="expanded"
@@ -215,7 +221,7 @@
               hide-default-header
               :sort-desc="[false]"
               :sort-by="['groupOrder']"
-              class="elevation-1 fix-column-width-bug event-cfg-table square-card"
+              class="elevation-1 event-cfg-table square-card"
             >
               <template #no-data>
                 <span class="default-text-color">No custom field groups for this event</span>
@@ -226,58 +232,66 @@
               </template>
 
               <template #item="{ item, index }">
-                <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
+                <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2, 'mobile-tr': vuetify.breakpoint.xsOnly}">
                   <td style="width: 50px">
-                    <v-btn text icon small class="handle" v-if="userCanEdit">
-                      <v-icon>drag_handle</v-icon>
-                    </v-btn>
+                    <a-btn variant="text" icon size="small"
+                                     class="handle" v-if="userCanEdit"
+                                     prepend-icon="drag_handle"
+                    />
                   </td>
-                  <td class="text-left">
+                  <td class="text-left" :class="{'mb-4': vuetify.breakpoint.xsOnly && item.edit}">
                     <div v-if="userCanEdit">
-                      <v-text-field text
+                      <a-text-field
                                     v-if="item.edit"
                                     v-model="item.groupName">
                         <template slot="append-outer">
                           <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
                           <v-icon @click="item.edit = false">clear</v-icon>
                         </template>
-                      </v-text-field>
+                      </a-text-field>
                       <a style="text-decoration: underline;" v-else @click="item.edit = true">
                         {{ item.groupName }}
                       </a>
                     </div>
-                    <span v-else>{{ item.groupName }}</span>
+                    <span v-else>
+                      <span v-if="isMobile" class="label-medium">Name: </span>
+                      {{ item.groupName }}
+                    </span>
                   </td>
                   <td>
                     <div class="item-icons">
                       <v-tooltip left>
                         <template v-slot:activator="{ on, attrs }">
-                          <v-btn icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
-                                 v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                          <a-btn variant="text"
+                                           icon
+                                           color="primary"
+                                           @click="copyToClipBoard(item.id)" v-bind="attrs"
+                                           :activation-handler="on"
+                                           prepend-icon="mdi-information"
+                          />
                         </template>
                         <span>Custom Field Group Id: {{item.id}}</span>
                         <div class="text-center">(click to copy)</div>
                       </v-tooltip>
-                      <v-btn v-if="userCanAdd" small text color="primary"
-                             @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
-                        <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
-                        <v-icon v-else>add</v-icon>
-                      </v-btn>
-                      <v-btn small text color="primary"
-                             @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
-                        <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
-                        <v-icon v-else>expand_more</v-icon>
-                      </v-btn>
-                      <v-btn v-if="userCanEdit" text color="primary" @click="cfgToDelete=item">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
+                      <a-btn v-if="userCanAdd" variant="text" size="small" color="primary"
+                                       @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]"
+                                       :prepend-icon="addField && expanded.includes(item) ? 'remove' : 'add'"
+                      />
+                      <a-btn size="small" variant="text" color="primary"
+                             @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]"
+                             :prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
+                      />
+                      <a-btn v-if="userCanEdit" variant="text"
+                                       color="primary" @click="cfgToDelete=item"
+                                       prepend-icon="delete"
+                      />
                     </div>
                   </td>
                 </tr>
               </template>
 
               <template #expanded-item="{ headers, item }">
-                <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2}">
+                <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2, 'mobile-width': vuetify.breakpoint.smAndDown}">
                   <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                     <h3 class="text-left">Add New Field</h3>
                     <v-radio-group v-model="newFieldType"
@@ -288,46 +302,38 @@
                                value="ancillary"></v-radio>
                     </v-radio-group>
 
-                    <v-autocomplete v-model="newField"
+                    <a-autocomplete v-model="newField"
                                     v-if="newFieldType === 'native'"
                                     :items="availableCustomFields"
                                     label="New Custom Field"
-                                    item-text="fieldName"
+                                    item-title="fieldName"
                                     return-object
                                     autocomplete="off"
-                                    @input="assignCustomField(item)"
-                    >
-                      <template slot='item' slot-scope='{ item }'>
-                        {{ item.fieldName }}
-                      </template>
-                    </v-autocomplete>
-                    <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                    @input="assignCustomField(item)">
+                    </a-autocomplete>
+                    <a-autocomplete v-if="newFieldType === 'ancillary'"
                                     v-model="parent"
                                     :items="parentObjects"
                                     label="Parent Object"
-                                    item-text="name"
+                                    item-title="name"
                                     return-object
                                     autocomplete="off"
-                                    @input="loadFieldsByParent"
-                    >
-                      <template slot='item' slot-scope='{ item }'>
-                        {{ item.name }}
-                      </template>
-                    </v-autocomplete>
-                    <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                    @input="loadFieldsByParent">
+                    </a-autocomplete>
+                    <a-autocomplete v-if="newFieldType === 'ancillary'"
                                     v-model="selectedAncillaryField"
                                     :items="ancillaryCustomFields"
                                     label="Custom Field"
-                                    item-text="fieldName"
+                                    item-title="fieldName"
                                     return-object
                                     autocomplete="off"
-                                    @input="assignAncillaryCustomField(item)"
-                    >
-                      <template slot='item' slot-scope='{ item }'>
-                        {{ item.fieldName }}
-                      </template>
-                    </v-autocomplete>
-                    <v-btn text color="primary" @click="addField = false">Cancel</v-btn>
+                                    @input="assignAncillaryCustomField(item)">
+                    </a-autocomplete>
+                    <a-btn variant="text"
+                                     color="primary"
+                                     @click="addField = false"
+                                     text="CANCEL"
+                    />
                   </v-col>
                   <v-col cols="12" class="px-3 py-0 pt-2 justify"
                          v-if="!addField && (!item.customFields || item.customFields.length === 0)">
@@ -339,7 +345,7 @@
                                :disabled="!userCanEdit"
                                group="customFields" @start="drag=true" @end="drag=false"
                                @change="saveFieldChanges(item.customFields)">
-                      <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
+                      <v-list v-for="(cf, index) in item.customFields.filter(a => !a.archived)"
                               :key="index" class="pa-0" color="transparent">
                         <v-list-item :class="{grab: !item.eventId}">
                           <v-list-item-action>
@@ -420,11 +426,13 @@
                                         @checkbox-changed="cfgHiddenCheckboxEventListener($event, cf)"></multi-select-group>
 
                                       <br/>
-                                      <v-btn color="primary" dark class="d-inline-block white--text"
-                                             @click="saveHiddenAndWhiteList(cf)">
-                                        <v-icon class="mr-2">save</v-icon>
-                                        Save Hidden
-                                      </v-btn>
+                                      <a-btn color="primary"
+                                                       dark
+                                                       class="d-inline-block white--text"
+                                                       @click="saveHiddenAndWhiteList(cf)"
+                                                       prepend-icon="save"
+                                                       text="Save Hidden"
+                                      />
                                     </v-card-text>
                                   </v-card>
                                   </v-row>
@@ -434,39 +442,52 @@
                           </v-list-item-content>
                           <v-tooltip left>
                             <template v-slot:activator="{ on, attrs }">
-                              <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)" v-bind="attrs"
-                                     v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                              <a-btn variant="text" icon
+                                               color="primary"
+                                               @click="copyToClipBoard(cf.customFieldGroupAssignmentId)"
+                                               v-bind="attrs"
+                                               :activation-handler="on"
+                                               prepend-icon="mdi-information"
+                              />
                             </template>
                             <span>Custom Field Group Assignment Id: {{cf.customFieldGroupAssignmentId}}</span>
                             <div class="text-center">(click to copy)</div>
                           </v-tooltip>
-                          <v-btn text color="primary" small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit)]">
-                            <v-icon>edit</v-icon>
-                          </v-btn>
+                          <a-btn variant="text"
+                                           color="primary"
+                                           size="small"
+                                           v-if="userCanEdit"
+                                           @click="[$set(cf, 'edit', !cf.edit)]"
+                                           prepend-icon="edit"
+                          />
                           <v-menu offset-y
-                                  v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                                  v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
-                                  <v-btn text small color="primary" v-on="{...tooltip, ...menu}"
-                                         v-if="!cf.ancillaryCustomFieldGroupAssignmentId">
-                                    <v-icon>mdi-cursor-move</v-icon>
-                                  </v-btn>
+                                  <a-btn variant="text" size="small"
+                                                   color="primary" :activation-handler="{...tooltip, ...menu}"
+                                                   v-if="!cf.ancillaryCustomFieldGroupAssignmentId"
+                                                   prepend-icon="mdi-cursor-move"
+                                  />
                                 </template>
                                 <span>Move to Other Group</span>
                               </v-tooltip>
                             </template>
                             <v-list>
                               <v-list-item
-                                v-for="(cfg, index) in filterBy(localCustomFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.eventId })"
+                                v-for="(cfg, index) in localCustomFieldGroups.filter((g) => { return g.id !== cf.customFieldGroupId && !g.eventId })"
                                 :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
                                 <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
                               </v-list-item>
                             </v-list>
                           </v-menu>
-                          <v-btn text color="primary" v-if="userCanEdit" @click="[cFieldToDelete=cf]">
-                            <v-icon>delete</v-icon>
-                          </v-btn>
+                          <a-btn variant="text"
+                                           color="primary"
+                                           v-if="userCanEdit"
+                                           @click="[cFieldToDelete=cf]"
+                                           prepend-icon="delete"
+                          />
                         </v-list-item>
                         <v-divider v-if="cf.edit"></v-divider>
                       </v-list>
@@ -480,23 +501,29 @@
         <v-card>
           <div v-if="userIsAdmin" class="snippet-selector-grid">
             <div class="label-medium">Field to Display on Event Snippet</div>
-            <v-autocomplete
+            <a-autocomplete
                 label="Custom Field Group"
                 v-model="cfgToDisplayOnSnippet"
                 return-object
                 clearable
-                item-text="groupName"
-                :items="filterCustomFieldGroups()"/>
-            <v-autocomplete
+                item-title="groupName"
+                :items="filterCustomFieldGroups"/>
+            <a-autocomplete
                 v-if="cfgToDisplayOnSnippet"
                 label="Custom Field"
                 v-model="cfToDisplayOnSnippet"
                 :items="nonAncillaryGfgFields(cfgToDisplayOnSnippet.customFields)"
-                item-text="fieldName"
+                item-title="fieldName"
                 item-value="id"
                 return-object
             />
-            <v-btn v-if="cfToDisplayOnSnippet" @click="saveCfToDisplayOnSnippet" color="primary"><v-icon class="mr-2">save</v-icon>save field to display</v-btn>
+            <a-btn
+              v-if="cfToDisplayOnSnippet"
+              @click="saveCfToDisplayOnSnippet"
+              color="primary"
+              prepend-icon="save"
+              text="Save Field to Display"
+            />
           </div>
           <div v-else class="pa-5 d-flex align-baseline" style="gap: 1rem">
             <div class="label-medium">Field to Display on Event Snippet: </div>
@@ -526,10 +553,9 @@
   </v-container>
 </template>
 
-<script>
-import Vue2Filters from 'vue2-filters'
+<script setup>
 import draggable from 'vuedraggable'
-import {AppMutations} from '@/stores/AppStore'
+
 import {getEventTypes} from '@/services/scheduleService'
 import {
   getRequest,
@@ -537,15 +563,29 @@ import {
   deleteRequest,
   postRequest,
   getRequestWithParams,
-  getSnackbar, handleHidingGlobalLoader
+  handleHidingGlobalLoader,
+  defineSortableTable
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import Sortable from "sortablejs";
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from "lodash.orderby"
 import { getEventResourceFields } from "@/services/eventService"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import MultiSelectGroup from "../../../../components/MultiSelectGroup";
+import MultiSelectGroup from "@/components/MultiSelectGroup";
+
+
+import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const snackbar = vueInstance.$snackbar
+const route = useRoute()
+const vuetify = vueInstance.$vuetify
 
 const WhiteListTypeEnum = Object.freeze({
   EVENT_START_TIME_READ_ONLY: 6,
@@ -556,672 +596,632 @@ const WhiteListTypeEnum = Object.freeze({
   EVENT_RESOURCE_HIDDEN: 16
 });
 
-export default {
-  name: 'EventCustomFieldGroups',
-  mixins: [Vue2Filters.mixin],
-  components: {
-    MultiSelectGroup,
-    ConfirmationDialog,
-    draggable,
-  },
-  updated() {
-    // this had to be in updated vs mounted so that after the re-render the dragging still works
-    let table = document.querySelector('.event-cfg-table tbody')
-    const _self = this
-    Sortable.create(table, {
-      handle: '.handle',
-      onEnd({newIndex, oldIndex}) {
-        if (_self.localCustomFieldGroups?.length > 0) {
-          const rowSelected = _self.localCustomFieldGroups.splice(oldIndex, 1)[0]
-          _self.localCustomFieldGroups.splice(newIndex, 0, rowSelected)
-          let rowsClone = cloneDeep(_self.localCustomFieldGroups)
+onMounted(() => {
+  defineSortableTable('.event-cfg-table tbody', localCustomFieldGroups, 'groupOrder', saveRowChanges)
+})
 
-          let rowsToSave = []
-          rowsClone.forEach((r, idx) => {
-            //check if the row needs to be saved before updating display order
-            //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-            let save = r.newGroupOrder === undefined ? r.groupOrder !== idx : r.newGroupOrder !== idx
-            //update display order
-            r.groupOrder = idx
-            //save only rows that changed
-            if (save) {
-              _self.localCustomFieldGroups[idx].newGroupOrder = idx
-              rowsToSave.push(r)
-            }
-          })
-          _self.saveRowChanges(rowsToSave)
+const componentKey = ref(0)
+const deleteError = ref(false)
+const deleteHeader = ref(null)
+const deleteText = ref(null)
+const fieldsInUse = ref([])
+const positions = ref([])
+const positionsLoading = ref(false)
+const resourceFieldChanged = ref(false)
+const newGroup = ref({})
+const event = ref({})
+const eventLoading = ref(false)
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const newField = ref({})
+// selectedIndex is a dumb work around because `index` is not available in the `expanded-item` slot yet
+const selectedIndex = ref(null)
+const createNew = ref(false)
+const newFieldType = ref('native')
+const addField = ref(false)
+const selectedGroupId = ref(null)
+const availableCustomFields = ref([])
+const parent = ref({})
+const parentObjects = ref([])
+const selectedAncillaryField = ref({})
+const ancillaryCustomFields = ref([])
+const headers = ref([
+  {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
+  {text: 'Name', value: 'groupName', show: true},
+  {text: null, value: 'icons', show: true}
+])
+const expanded = ref([])
+const eventResourceFields = ref([])
+const eventTypes = ref([])
+const cfgToDisplayOnSnippet = ref(null)
+const cfToDisplayOnSnippet = ref(null)
+const cfgToDelete = ref(null)
+const cFieldToDelete = ref(null)
+
+watch(cfgToDisplayOnSnippet, () => {
+  if (cfgToDisplayOnSnippet.value === null){
+    event.value.snippetCustomField = null
+  }
+})
+const localCustomFieldGroups = computed( {
+  get() {
+    return event.value?.customFieldGroups
+  },
+  set(val) {
+    val.forEach(v => {
+      v.groupOrder = v.newGroupOrder ?? v.groupOrder
+    })
+    return orderBy(val, v => v.groupOrder)
+  }
+})
+const eventId = computed(() => {
+  return parseInt(route.params.id)
+})
+const cfgToDeleteName = computed(() => {
+  return cfgToDelete.value ? cfgToDelete.value.groupName : ''
+})
+const cFieldToDeleteName = computed(() => {
+  return cFieldToDelete.value ? cFieldToDelete.value.fieldName : ''
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+onMounted(async () => {
+  await getResourceFields()
+  await getPositions()
+  await getEvent()
+})
+const nonAncillaryGfgFields = (fields) => {
+  return fields.filter(f => !f.ancillaryCustomFieldGroupAssignmentId)
+}
+const getResourceFields = async () => {
+  appStore.loading = true
+  try {
+    const {data} = await getEventResourceFields(eventId.value)
+    eventResourceFields.value = data
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
+  }
+}
+const getEvent = async () => {
+  appStore.loading = true
+  try {
+    eventLoading.value = true;
+    const {data} = await getRequest(`/event/${eventId.value}`)
+    event.value = data
+    getDisplayOnSnippet()
+    appStore.loading = false
+    eventLoading.value = false;
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+    appStore.loading = false
+  }
+}
+const getDisplayOnSnippet = ()=> {
+  for(let cfg of event.value.customFieldGroups){
+    const customFieldToDisplay = cfg.customFields.find(cf => cf.displayOnSnippet === true)
+    if(customFieldToDisplay) {
+      cfgToDisplayOnSnippet.value = cfg
+      cfToDisplayOnSnippet.value = customFieldToDisplay
+      break
+    }
+  }
+}
+const startTimeReadOnlySelectedEventListener = (e)=> {
+  event.value.startTimeWhiteListedPositions = e;
+  event.value.startTimePositionsChanged = true;
+}
+const startTimeReadOnlyAllowEventListener = (e)=> {
+  event.value.startTimeReadOnlyAllow = (e === 0);
+}
+const startTimeReadOnlyCheckboxEventListener = (e)=> {
+  event.value.startTimeReadOnly = e;
+}
+const startTimeHiddenSelectedEventListener = (e)=> {
+  event.value.startTimeHiddenWhiteListedPositions = e;
+  event.value.startTimeHiddenPositionsChanged = true;
+}
+const startTimeHiddenAllowEventListener = (e)=> {
+  event.value.startTimeHiddenAllow = (e === 0);
+}
+const startTimeHiddenCheckboxEventListener = (e)=> {
+  event.value.startTimeHidden = e;
+}
+const endTimeReadOnlySelectedEventListener = (e)=> {
+  event.value.endTimeWhiteListedPositions = e;
+  event.value.endTimePositionsChanged = true;
+}
+const endTimeReadOnlyAllowEventListener = (e)=> {
+  event.value.endTimeReadOnlyAllow = (e === 0);
+}
+const endTimeReadOnlyCheckboxEventListener = (e)=> {
+  event.value.endTimeReadOnly = e;
+}
+const endTimeHiddenSelectedEventListener = (e)=> {
+  event.value.endTimeHiddenWhiteListedPositions = e;
+  event.value.endTimeHiddenPositionsChanged = true;
+}
+const endTimeHiddenAllowEventListener = (e)=> {
+  event.value.endTimeHiddenAllow = (e === 0);
+}
+const endTimeHiddenCheckboxEventListener = (e)=> {
+  event.value.endTimeHidden = e;
+}
+const resourceReadOnlySelectedEventListener = (e)=> {
+  event.value.resourceWhiteListedPositions = e;
+  event.value.resourcePositionsChanged = true;
+}
+const resourceReadOnlyAllowEventListener = (e)=> {
+  event.value.resourceReadOnlyAllow = (e === 0);
+}
+const resourceReadOnlyCheckboxEventListener = (e)=> {
+  event.value.resourceReadOnly = e;
+}
+const resourceHiddenSelectedEventListener = (e)=> {
+  event.value.resourceHiddenWhiteListedPositions = e;
+  event.value.resourceHiddenPositionsChanged = true;
+}
+const resourceHiddenAllowEventListener = (e)=> {
+  event.value.resourceHiddenAllow = (e === 0);
+}
+const resourceHiddenCheckboxEventListener = (e)=> {
+  event.value.resourceHidden = e;
+}
+const cfgReadOnlySelectedEventListener = (e, cf)=> {
+  cf.whiteListedPositions = e;
+  cf.positionsChanged = true;
+}
+const cfgReadOnlyAllowEventListener = (e, cf)=> {
+  cf.customFieldGroupAssignmentReadOnlyAllow = (e == 0);
+  cf.positionsChanged = true;
+}
+const cfgReadOnlyCheckboxEventListener = (e, cf)=> {
+  cf.customFieldGroupAssignmentReadOnly = e;
+  cf.positionsChanged = true;
+}
+const cfgHiddenSelectedEventListener = (e, cf)=> {
+  cf.hiddenWhiteListedPositions = e;
+  cf.hiddenPositionsChanged = true;
+}
+const cfgHiddenAllowEventListener = (e, cf)=> {
+  cf.customFieldGroupAssignmentHiddenAllow = (e == 0);
+  cf.hiddenPositionsChanged = true;
+}
+const cfgHiddenCheckboxEventListener = (e, cf)=> {
+  cf.customFieldGroupAssignmentHidden = e;
+  cf.hiddenPositionsChanged = true;
+}
+const selectAll = (f, fieldName) => {
+  return f[fieldName]?.length === positions.value?.length
+}
+const selectSome = (f, fieldName) => {
+  return f[fieldName]?.length > 0 && !selectAll(f)
+}
+const icon = (f, fieldName) => {
+  if (selectAll(f, fieldName)) {
+    return 'check_box'
+  }
+  if (selectSome(f, fieldName)) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+}
+const saveChangesToDefaultFields = async () => {
+  if (vueInstance.$refs.defaultFieldForm.validate()) {
+    //save the read only and resource custom fields
+    appStore.loading = true
+    try {
+      await postRequest(`/event/${eventId.value}/saveChangesToDefaultFields`, event.value)
+      if (event.value.startTimePositionsChanged || (!event.value.startTimeReadOnly && event.value.startTimeWhiteListedPositions?.length > 0)) {
+        saveWhiteListedPositions(WhiteListTypeEnum.EVENT_START_TIME_READ_ONLY, (!event.value.startTimeReadOnly && event.value.startTimeWhiteListedPositions?.length > 0) ? [] : event.value.startTimeWhiteListedPositions)
+      }
+      if (event.value.startTimeHiddenPositionsChanged || (!event.value.startTimeHidden && event.value.startTimeHiddenWhiteListedPositions?.length > 0)) {
+        saveWhiteListedPositions(WhiteListTypeEnum.EVENT_START_TIME_HIDDEN, (!event.value.startTimeHidden && event.value.startTimeHiddenWhiteListedPositions?.length > 0) ? [] : event.value.startTimeHiddenWhiteListedPositions)
+      }
+      if (event.value.endTimePositionsChanged || (!event.value.endTimeReadOnly && event.value.endTimeWhiteListedPositions?.length > 0)) {
+
+        for (var i = 0; i < event.value.endTimeWhiteListedPositions.length; i++) {
+          event.value.endTimeWhiteListedPositions[i].allowFlag = true;
+          //Do something
         }
+
+        saveWhiteListedPositions(WhiteListTypeEnum.EVENT_END_TIME_READ_ONLY, (!event.value.endTimeReadOnly && event.value.endTimeWhiteListedPositions?.length > 0) ? [] : event.value.endTimeWhiteListedPositions)
+      }
+      if (event.value.endTimeHiddenPositionsChanged || (!event.value.endTimeHidden && event.value.endTimeHiddenWhiteListedPositions?.length > 0)) {
+        saveWhiteListedPositions(WhiteListTypeEnum.EVENT_END_TIME_HIDDEN, (!event.value.endTimeHidden && event.value.endTimeHiddenWhiteListedPositions?.length > 0) ? [] : event.value.endTimeHiddenWhiteListedPositions)
+      }
+      if (event.value.resourcePositionsChanged || (!event.value.resourceReadOnly && event.value.resourceWhiteListedPositions?.length > 0)) {
+        saveWhiteListedPositions(WhiteListTypeEnum.EVENT_RESOURCE_READ_ONLY, (!event.value.resourceReadOnly && event.value.resourceWhiteListedPositions?.length > 0) ? [] : event.value.resourceWhiteListedPositions)
+      }
+      if (event.value.resourceHiddenPositionsChanged || (!event.value.resourceHidden && event.value.resourceHiddenWhiteListedPositions?.length > 0)) {
+        saveWhiteListedPositions(WhiteListTypeEnum.EVENT_RESOURCE_HIDDEN, (!event.value.resourceHidden && event.value.resourceHiddenWhiteListedPositions?.length > 0) ? [] : event.value.resourceHiddenWhiteListedPositions)
+      }
+      snackbar('SUCCESS', 'Event Changes Saved')
+
+      appStore.loading = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Changes')
+
+      appStore.loading = false
+    }
+  }
+}
+const saveWhiteListedPositions = async (whiteListTypeId, whiteListedPositions) => {
+  try {
+    await putRequest(`/event/${eventId.value}/saveWhiteListPositions/${whiteListTypeId}`, whiteListedPositions)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving')
+
+    appStore.loading = false
+  }
+}
+const saveDetailView = async (cf) => {
+  //because the the dumb dom i have to flip the detailView before I save it
+  let detailViewValue = !cf.detailView
+  appStore.loading = true
+  try {
+    await putRequest(`/customFieldGroup/saveDetailView/${cf.customFieldGroupAssignmentId}?detailView=${detailViewValue}`)
+    snackbar('SUCCESS', 'Value Saved')
+
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving')
+
+    appStore.loading = false
+  }
+}
+const saveCfToDisplayOnSnippet = async ()=> {
+  appStore.loading = true
+  try {
+    await putRequest(`/customFieldGroup/saveDisplayOnSnippet/${cfToDisplayOnSnippet.value.customFieldGroupAssignmentId}`)
+    snackbar('SUCCESS', 'Custom Field to Display on Snippet Saved')
+
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Custom Field to Display on Snippet')
+
+    appStore.loading = false
+  }
+}
+const saveFieldGroup = async () => {
+  appStore.loading = true
+  try {
+    newGroup.value.eventId = route.params.id
+
+    const {data} = await postRequest(`/customFieldGroup/addEventCustomFieldGroup`, newGroup.value)
+    localCustomFieldGroups.value.push(data)
+    newGroup.value = {}
+    createNew.value = false
+    snackbar('SUCCESS', 'Group Saved')
+
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Group')
+
+    appStore.loading = false
+  }
+}
+const deleteWithChecks = async (item, customFieldGroupId, customFieldGroupAssignmentId) => {
+  appStore.loading = true
+  try {
+    let url = customFieldGroupAssignmentId ? `/customFieldGroup/deleteFieldFromGroup/${customFieldGroupAssignmentId}` : `/customFieldGroup/${customFieldGroupId}`
+    await deleteRequest(url)
+    fieldsInUse.value = []
+    item.archived = true
+    snackbar('SUCCESS', 'Item Deleted')
+
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting')
+
+    appStore.loading = false
+  }
+  cfgToDelete.value = null
+  cFieldToDelete.value = null
+}
+const saveGroupName = async (group) => {
+  appStore.loading = true
+  try {
+    await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
+    snackbar('SUCCESS', 'Group Name Updated')
+
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Change')
+
+    appStore.loading = false
+  }
+}
+const moveFieldToOtherGroup = async (field, newGroup) => {
+  appStore.loading = true
+  try {
+    await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
+    snackbar('SUCCESS', 'Field Moved')
+
+    //currently reloading the page because moving the field in the UI seems too hard (even though it isn't i just cant make myself do it right now)
+    window.location.reload()
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Moving Field')
+
+    appStore.loading = false
+  }
+}
+const fetchAvailableCustomFields = async (objectTypeId, groupId) => {
+  appStore.loading = true
+  try {
+    if (addField.value && newFieldType.value === 'native') {
+      const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
+        params: {
+          companyObjectTypeId: objectTypeId,
+          groupId,
+          eventId: eventId.value
+        }
+      })
+      availableCustomFields.value = data
+      parentObjects.value = []
+      ancillaryCustomFields.value = []
+    } else if (addField.value && newFieldType.value === 'ancillary') {
+      availableCustomFields.value = []
+      const {data} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, {params: {id: processStepId.value}})
+      selectedAncillaryField.value = {}
+      parentObjects.value = data
+    }
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+    appStore.loading = false
+  }
+}
+const loadFieldsByParent = async () => {
+  appStore.loading = true
+  try {
+    if (parent.value.isProcessStep) {
+      const {data} = await getRequest(`/customField/getByParentProcessStep/${parent.value.id}`)
+      ancillaryCustomFields.value = data
+    } else if (parent.value.objectTypeId === 8) {
+      const {data, status} = await getRequest(`/customField/getByDataView/${parent.value.id}`)
+      ancillaryCustomFields.value = data
+      handleHidingGlobalLoader(status)
+    } else {
+      const {data} = await getRequest(`/customField/getByParentType/${parent.value.id}`)
+      ancillaryCustomFields.value = data
+    }
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+    appStore.loading = false
+  }
+}
+const saveUseParentData = async (field) => {
+  //because of the dim dam dumb dom i have to flip the boolean before I save it
+  field.useParentData = !field.useParentData
+  appStore.loading = true
+  try {
+    await putRequest(`/customFieldGroup/saveUseParentData`, field)
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Field')
+
+    appStore.loading = false
+  }
+}
+const saveReadOnlyAndWhiteList = async (field) => {
+  appStore.loading = true
+  try {
+    field.customFieldGroupAssignmentReadOnlyAllow = null != field.customFieldGroupAssignmentReadOnlyAllow ? field.customFieldGroupAssignmentReadOnlyAllow : true
+    field.whiteListedPositions = null != field.whiteListedPositions ? field.whiteListedPositions : []
+    await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
+    field.positionsChanged = false
+    if (!field.customFieldGroupAssignmentReadOnly) {
+      vueInstance.$set(field, 'whiteListedPositions', [])
+    }
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Field')
+
+    appStore.loading = false
+  }
+}
+const saveHiddenAndWhiteList = async (field) => {
+  appStore.loading = true
+  try {
+    field.customFieldGroupAssignmentHiddenAllow = null != field.customFieldGroupAssignmentHiddenAllow ? field.customFieldGroupAssignmentHiddenAllow : true
+    field.hiddenWhiteListedPositions = null != field.hiddenWhiteListedPositions ? field.hiddenWhiteListedPositions : []
+
+    await putRequest(`/customFieldGroup/saveHiddenAndWhiteList?savePositions=${field.hiddenPositionsChanged ?? false}`, field)
+    field.hiddenPositionsChanged = false
+    if (!field.customFieldGroupAssignmentHidden) {
+      vueInstance.$set(field, 'hiddenWhiteListedPositions', [])
+    }
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Field')
+
+    appStore.loading = false
+  }
+}
+const saveFieldChanges = async (fields) => {
+  appStore.loading = true
+  try {
+    // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+    // pull those needing to be saved out of list
+    let fieldsToSave = []
+    fields.forEach((f, idx) => {
+      let order = idx + 1
+      if (f.fieldOrder !== order) {
+        f.fieldOrder = order
+        fieldsToSave.push(f)
       }
     })
-  },
-  data() {
-    return {
-      snackbar: {},
-      componentKey: 0,
-      deleteError: false,
-      deleteHeader: null,
-      deleteText: null,
-      fieldsInUse: [],
-      positions: [],
-      positionsLoading: false,
-      resourceFieldChanged: false,
-      constants,
-      newGroup: {},
-      event: {},
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-      newField: {},
-      // selectedIndex is a dumb work around because `index` is not available in the `expanded-item` slot yet.
-      selectedIndex: null,
-      createNew: false,
-      newFieldType: 'native',
-      addField: false,
-      selectedGroupId: null,
-      availableCustomFields: [],
-      parent: {},
-      eventId: parseInt(this.$route.params.id),
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      companyId: this.$store.state.user.details.companyId,
-      parentObjects: [],
-      selectedAncillaryField: {},
-      ancillaryCustomFields: [],
-      headers: [
-        {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
-        {text: 'Name', value: 'groupName', show: true},
-        {text: null, value: 'icons', show: true}
-      ],
-      expanded: [],
-      eventResourceFields: [],
-      eventTypes: [],
-      cfgToDisplayOnSnippet: null,
-      cfToDisplayOnSnippet: null,
-      cfgToDelete: null,
-      cFieldToDelete: null,
-      WhiteListTypeEnum
+    // save them here
+    if (fieldsToSave.length > 0) {
+      await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
     }
-  },
-  watch: {
-    cfgToDisplayOnSnippet() {
-      if (this.cfgToDisplayOnSnippet === null){
-        this.event.snippetCustomField = null
-      }
-    }
-  },
-  computed: {
-    localCustomFieldGroups: {
-      get: function () {
-        return this.event?.customFieldGroups
-      },
-      set: function (val) {
-        val.forEach(v => {
-          v.groupOrder = v.newGroupOrder ?? v.groupOrder
-        })
-        return orderBy(val, v => v.groupOrder)
-      }
-    },
-    cfgToDeleteName() {
-      return this.cfgToDelete ? this.cfgToDelete.groupName : ''
-    },
-    cFieldToDeleteName() {
-      return this.cFieldToDelete ? this.cFieldToDelete.fieldName : ''
-    }
-  },
-  async created() {
-    this.getResourceFields()
-    this.getPositions()
-    await this.getEvent()
-  },
-  methods: {
-    nonAncillaryGfgFields(fields) {
-      return fields.filter(f => !f.ancillaryCustomFieldGroupAssignmentId)
-    },
-    async getResourceFields() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getEventResourceFields(this.eventId)
-        this.eventResourceFields = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getEvent() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.eventLoading = true;
-        const {data} = await getRequest(`/event/${this.eventId}`)
-        this.event = data
-        this.getDisplayOnSnippet()
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        this.eventLoading = false;
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getDisplayOnSnippet(){
-      for(let cfg of this.event.customFieldGroups){
-        const customFieldToDisplay = cfg.customFields.find(cf => cf.displayOnSnippet === true)
-        if(customFieldToDisplay) {
-          this.cfgToDisplayOnSnippet = cfg
-          this.cfToDisplayOnSnippet = customFieldToDisplay
-          break
-        }
-      }
+    snackbar('SUCCESS', 'Fields Updated')
 
-    },
-    startTimeReadOnlySelectedEventListener(e){
-      this.event.startTimeWhiteListedPositions = e;
-      this.event.startTimePositionsChanged = true;
-    },
-    startTimeReadOnlyAllowEventListener(e){
-      this.event.startTimeReadOnlyAllow = (e === 0);
-    },
-    startTimeReadOnlyCheckboxEventListener(e){
-      this.event.startTimeReadOnly = e;
-    },
-    startTimeHiddenSelectedEventListener(e){
-      this.event.startTimeHiddenWhiteListedPositions = e;
-      this.event.startTimeHiddenPositionsChanged = true;
-    },
-    startTimeHiddenAllowEventListener(e){
-      this.event.startTimeHiddenAllow = (e === 0);
-    },
-    startTimeHiddenCheckboxEventListener(e){
-      this.event.startTimeHidden = e;
-    },
-    endTimeReadOnlySelectedEventListener(e){
-      this.event.endTimeWhiteListedPositions = e;
-      this.event.endTimePositionsChanged = true;
-    },
-    endTimeReadOnlyAllowEventListener(e){
-      this.event.endTimeReadOnlyAllow = (e === 0);
-    },
-    endTimeReadOnlyCheckboxEventListener(e){
-      this.event.endTimeReadOnly = e;
-    },
-    endTimeHiddenSelectedEventListener(e){
-      this.event.endTimeHiddenWhiteListedPositions = e;
-      this.event.endTimeHiddenPositionsChanged = true;
-    },
-    endTimeHiddenAllowEventListener(e){
-      this.event.endTimeHiddenAllow = (e === 0);
-    },
-    endTimeHiddenCheckboxEventListener(e){
-      this.event.endTimeHidden = e;
-    },
-    resourceReadOnlySelectedEventListener(e){
-      this.event.resourceWhiteListedPositions = e;
-      this.event.resourcePositionsChanged = true;
-    },
-    resourceReadOnlyAllowEventListener(e){
-      this.event.resourceReadOnlyAllow = (e === 0);
-    },
-    resourceReadOnlyCheckboxEventListener(e){
-      this.event.resourceReadOnly = e;
-    },
-    resourceHiddenSelectedEventListener(e){
-      this.event.resourceHiddenWhiteListedPositions = e;
-      this.event.resourceHiddenPositionsChanged = true;
-    },
-    resourceHiddenAllowEventListener(e){
-      this.event.resourceHiddenAllow = (e === 0);
-    },
-    resourceHiddenCheckboxEventListener(e){
-      this.event.resourceHidden = e;
-    },
-    cfgReadOnlySelectedEventListener(e, cf){
-      cf.whiteListedPositions = e;
-      cf.positionsChanged = true;
-    },
-    cfgReadOnlyAllowEventListener(e, cf){
-      cf.customFieldGroupAssignmentReadOnlyAllow = (e == 0);
-      cf.positionsChanged = true;
-    },
-    cfgReadOnlyCheckboxEventListener(e, cf){
-      cf.customFieldGroupAssignmentReadOnly = e;
-      cf.positionsChanged = true;
-    },
-    cfgHiddenSelectedEventListener(e, cf){
-      cf.hiddenWhiteListedPositions = e;
-      cf.hiddenPositionsChanged = true;
-    },
-    cfgHiddenAllowEventListener(e, cf){
-      cf.customFieldGroupAssignmentHiddenAllow = (e == 0);
-      cf.hiddenPositionsChanged = true;
-    },
-    cfgHiddenCheckboxEventListener(e, cf){
-      cf.customFieldGroupAssignmentHidden = e;
-      cf.hiddenPositionsChanged = true;
-    },
-    selectAll(f, fieldName) {
-      return f[fieldName]?.length === this.positions?.length
-    },
-    selectSome(f, fieldName) {
-      return f[fieldName]?.length > 0 && !this.selectAll(f)
-    },
-    icon(f, fieldName) {
-      if (this.selectAll(f, fieldName)) {
-        return 'check_box'
-      }
-      if (this.selectSome(f, fieldName)) {
-        return 'indeterminate_check_box'
-      }
-      return 'check_box_outline_blank'
-    },
-    async saveChangesToDefaultFields() {
-      if (this.$refs.defaultFieldForm.validate()) {
-        //save the read only and resource custom fields
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await postRequest(`/event/${this.eventId}/saveChangesToDefaultFields`, this.event)
-          if (this.event.startTimePositionsChanged || (!this.event.startTimeReadOnly && this.event.startTimeWhiteListedPositions?.length > 0)) {
-            this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_START_TIME_READ_ONLY, (!this.event.startTimeReadOnly && this.event.startTimeWhiteListedPositions?.length > 0) ? [] : this.event.startTimeWhiteListedPositions)
-          }
-          if (this.event.startTimeHiddenPositionsChanged || (!this.event.startTimeHidden && this.event.startTimeHiddenWhiteListedPositions?.length > 0)) {
-            this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_START_TIME_HIDDEN, (!this.event.startTimeHidden && this.event.startTimeHiddenWhiteListedPositions?.length > 0) ? [] : this.event.startTimeHiddenWhiteListedPositions)
-          }
-          if (this.event.endTimePositionsChanged || (!this.event.endTimeReadOnly && this.event.endTimeWhiteListedPositions?.length > 0)) {
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating Fields')
 
-            for (var i = 0; i < this.event.endTimeWhiteListedPositions.length; i++) {
-              this.event.endTimeWhiteListedPositions[i].allowFlag = true;
-              //Do something
-            }
-
-            this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_END_TIME_READ_ONLY, (!this.event.endTimeReadOnly && this.event.endTimeWhiteListedPositions?.length > 0) ? [] : this.event.endTimeWhiteListedPositions)
-          }
-          if (this.event.endTimeHiddenPositionsChanged || (!this.event.endTimeHidden && this.event.endTimeHiddenWhiteListedPositions?.length > 0)) {
-            this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_END_TIME_HIDDEN, (!this.event.endTimeHidden && this.event.endTimeHiddenWhiteListedPositions?.length > 0) ? [] : this.event.endTimeHiddenWhiteListedPositions)
-          }
-          if (this.event.resourcePositionsChanged || (!this.event.resourceReadOnly && this.event.resourceWhiteListedPositions?.length > 0)) {
-            this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_RESOURCE_READ_ONLY, (!this.event.resourceReadOnly && this.event.resourceWhiteListedPositions?.length > 0) ? [] : this.event.resourceWhiteListedPositions)
-          }
-          if (this.event.resourceHiddenPositionsChanged || (!this.event.resourceHidden && this.event.resourceHiddenWhiteListedPositions?.length > 0)) {
-            this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_RESOURCE_HIDDEN, (!this.event.resourceHidden && this.event.resourceHiddenWhiteListedPositions?.length > 0) ? [] : this.event.resourceHiddenWhiteListedPositions)
-          }
-          this.snackbar = getSnackbar('SUCCESS', 'Event Changes Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    async saveWhiteListedPositions(whiteListTypeId, whiteListedPositions) {
-      try {
-        await putRequest(`/event/${this.eventId}/saveWhiteListPositions/${whiteListTypeId}`, whiteListedPositions)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveDetailView(cf) {
-      //because the the dumb dom i have to flip the detailView before I save it
-      let detailViewValue = !cf.detailView
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await putRequest(`/customFieldGroup/saveDetailView/${cf.customFieldGroupAssignmentId}?detailView=${detailViewValue}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Value Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveCfToDisplayOnSnippet(){
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await putRequest(`/customFieldGroup/saveDisplayOnSnippet/${this.cfToDisplayOnSnippet.customFieldGroupAssignmentId}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Custom Field to Display on Snippet Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Field to Display on Snippet')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveFieldGroup() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.newGroup.eventId = this.$route.params.id
-
-        const {data} = await postRequest(`/customFieldGroup/addEventCustomFieldGroup`, this.newGroup)
-        this.localCustomFieldGroups.push(data)
-        this.newGroup = {}
-        this.createNew = false
-        this.snackbar = getSnackbar('SUCCESS', 'Group Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Group')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteWithChecks(item, customFieldGroupId, customFieldGroupAssignmentId) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let url = customFieldGroupAssignmentId ? `/customFieldGroup/deleteFieldFromGroup/${customFieldGroupAssignmentId}` : `/customFieldGroup/${customFieldGroupId}`
-        await deleteRequest(url)
-        this.fieldsInUse = []
-        item.archived = true
-        this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.cfgToDelete = null
-      this.cFieldToDelete = null
-    },
-    async saveGroupName(group) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
-        this.snackbar = getSnackbar('SUCCESS', 'Group Name Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Change')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async moveFieldToOtherGroup(field, newGroup) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
-        this.snackbar = getSnackbar('SUCCESS', 'Field Moved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        //currently reloading the page because moving the field in the UI seems too hard (even though it isn't i just cant make myself do it right now)
-        window.location.reload()
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Moving Field')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async fetchAvailableCustomFields(objectTypeId, groupId) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        if (this.addField && this.newFieldType === 'native') {
-          const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
-            params: {
-              companyObjectTypeId: objectTypeId,
-              groupId,
-              eventId: this.eventId
-            }
-          })
-          this.availableCustomFields = data
-          this.parentObjects = []
-          this.ancillaryCustomFields = []
-        } else if (this.addField && this.newFieldType === 'ancillary') {
-          this.availableCustomFields = []
-          const {data} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, {params: {id: this.processStepId}})
-          this.selectedAncillaryField = {}
-          this.parentObjects = data
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async loadFieldsByParent() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        if (this.parent.isProcessStep) {
-          const {data} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
-          this.ancillaryCustomFields = data
-        } else if (this.parent.objectTypeId === 8) {
-          const {data, status} = await getRequest(`/customField/getByDataView/${this.parent.id}`)
-          this.ancillaryCustomFields = data
-          handleHidingGlobalLoader(this, status)
-        } else {
-          const {data} = await getRequest(`/customField/getByParentType/${this.parent.id}`)
-          this.ancillaryCustomFields = data
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveUseParentData(field) {
-      //because of the dim dam dumb dom i have to flip the boolean before I save it
-      field.useParentData = !field.useParentData
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await putRequest(`/customFieldGroup/saveUseParentData`, field)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveReadOnlyAndWhiteList(field) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        field.customFieldGroupAssignmentReadOnlyAllow = null != field.customFieldGroupAssignmentReadOnlyAllow ? field.customFieldGroupAssignmentReadOnlyAllow : true
-        field.whiteListedPositions = null != field.whiteListedPositions ? field.whiteListedPositions : []
-        await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
-        field.positionsChanged = false
-        if (!field.customFieldGroupAssignmentReadOnly) {
-          this.$set(field, 'whiteListedPositions', [])
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveHiddenAndWhiteList(field) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        field.customFieldGroupAssignmentHiddenAllow = null != field.customFieldGroupAssignmentHiddenAllow ? field.customFieldGroupAssignmentHiddenAllow : true
-        field.hiddenWhiteListedPositions = null != field.hiddenWhiteListedPositions ? field.hiddenWhiteListedPositions : []
-
-        await putRequest(`/customFieldGroup/saveHiddenAndWhiteList?savePositions=${field.hiddenPositionsChanged ?? false}`, field)
-        field.hiddenPositionsChanged = false
-        if (!field.customFieldGroupAssignmentHidden) {
-          this.$set(field, 'hiddenWhiteListedPositions', [])
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveFieldChanges(fields) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
-        // pull those needing to be saved out of list
-        let fieldsToSave = []
-        fields.forEach((f, idx) => {
-          let order = idx + 1
-          if (f.fieldOrder !== order) {
-            f.fieldOrder = order
-            fieldsToSave.push(f)
-          }
-        })
-        // save them here
-        if (fieldsToSave.length > 0) {
-          await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
-        }
-        this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-
-    },
-    async assignCustomField(cfg) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.addField = false
-        this.newField.customFieldGroupId = cfg.id
-        //this line makes pushing it to the list work
-        this.newField.archived = false
-
-        const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
-        cfg.customFields.push(data)
-        this.newField = {}
-        this.snackbar = getSnackbar('SUCCESS', 'Custom Field Assigned')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Assigning Custom Field')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async assignAncillaryCustomField(cfg) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const params = {
-          customFieldGroupId: cfg.id,
-          id: null,
-          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
-          dataViewFieldConfigId: this.selectedAncillaryField.dataViewChildFieldConfigId ? null : this.selectedAncillaryField.dataViewFieldConfigId,
-          dataViewChildFieldConfigId: this.selectedAncillaryField.dataViewChildFieldConfigId,
-          fieldOrder: 0
-        }
-        const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
-        cfg.customFields.push(data)
-        this.selectedAncillaryField = {}
-        this.addField = false
-        this.parent = {}
-        this.snackbar = getSnackbar('SUCCESS', 'Reference Field Assigned')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Assigning Reference Field')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    filterCustomFieldGroups() {
-      return this.localCustomFieldGroups?.filter(cfg => {
-        return !cfg.archived
-      })
-    },
-    async getEventTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getEventTypes()
-        this.eventTypes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveRowChanges(rows) {
-      if (rows?.length > 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
-          this.localCustomFieldGroups = orderBy(this.localCustomFieldGroups, 'groupOrder')
-          this.snackbar = getSnackbar('SUCCESS', 'Group Order Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          // this componentKey forces the data-table component to re-render
-          this.componentKey += 1
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Group Order')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    async getPositions() {
-      if (this.positions?.length === 0) {
-        try {
-          this.positionsLoading = true
-          const {data} = await getRequest(`/position/withParent`)
-          this.positions = data
-          this.positionsLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          this.positionsLoading = false
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    toggleHiddenSelectAllPositions(field, fieldName) {
-      this.$nextTick(() => {
-        if (this.selectAll(field, fieldName)) {
-          field[fieldName] = []
-          field.hiddenPositionsChanged = true
-        } else {
-          field[fieldName] = cloneDeep(this.positions)
-          field.hiddenPositionsChanged = true
-        }
-      })
-    },
-    toggleSelectAllPositions(item, wlpField) {
-      this.$nextTick(() => {
-        if (this.selectAll(item, wlpField)) {
-          item[wlpField] = []
-          item.positionsChanged = true
-        } else {
-          item[wlpField] = cloneDeep(this.positions)
-          item.positionsChanged = true
-        }
-      })
-    },
-    copyToClipBoard(textValue){
-      navigator.clipboard.writeText(textValue);
-      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
-      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    }
-
+    appStore.loading = false
   }
+
+}
+const assignCustomField = async (cfg) => {
+  appStore.loading = true
+  try {
+    addField.value = false
+    newField.value.customFieldGroupId = cfg.id
+    //this line makes pushing it to the list work
+    newField.value.archived = false
+
+    const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, newField.value)
+    cfg.customFields.push(data)
+    newField.value = {}
+    snackbar('SUCCESS', 'Custom Field Assigned')
+
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Assigning Custom Field')
+
+    appStore.loading = false
+  }
+}
+const assignAncillaryCustomField = async (cfg) => {
+  appStore.loading = true
+  try {
+    const params = {
+      customFieldGroupId: cfg.id,
+      id: null,
+      ancillaryCustomFieldGroupAssignmentId: selectedAncillaryField.value.customFieldGroupAssignmentId,
+      dataViewFieldConfigId: selectedAncillaryField.value.dataViewChildFieldConfigId ? null : selectedAncillaryField.value.dataViewFieldConfigId,
+      dataViewChildFieldConfigId: selectedAncillaryField.value.dataViewChildFieldConfigId,
+      fieldOrder: 0
+    }
+    const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
+    cfg.customFields.push(data)
+    selectedAncillaryField.value = {}
+    addField.value = false
+    parent.value = {}
+    snackbar('SUCCESS', 'Reference Field Assigned')
+
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Assigning Reference Field')
+
+    appStore.loading = false
+  }
+}
+const filterCustomFieldGroups = computed(() => {
+  return localCustomFieldGroups.value?.filter(cfg => {
+    return !cfg.archived
+  })
+})
+const getAllEventTypes = async () => {
+  appStore.loading = true
+  try {
+    const {data} = await getEventTypes()
+    eventTypes.value = data
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+    appStore.loading = false
+  }
+}
+const saveRowChanges = async (rows) => {
+  if (rows?.length > 0) {
+    appStore.loading = true
+    try {
+      await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
+      localCustomFieldGroups.value = orderBy(localCustomFieldGroups.value, 'groupOrder')
+      snackbar('SUCCESS', 'Group Order Saved')
+
+      // this componentKey forces the data-table component to re-render
+      componentKey.value += 1
+      appStore.loading = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Group Order')
+
+      appStore.loading = false
+    }
+  }
+}
+const getPositions = async () => {
+  if (positions.value?.length === 0) {
+    try {
+      positionsLoading.value = true
+      const {data} = await getRequest(`/position/withParent`)
+      positions.value = data
+      positionsLoading.value = false
+      appStore.loading = false
+    } catch (e) {
+      positionsLoading.value = false
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Positions')
+
+      appStore.loading = false
+    }
+  }
+}
+const toggleHiddenSelectAllPositions = (field, fieldName)  => {
+  vueInstance.$nextTick(() => {
+    if (selectAll(field, fieldName)) {
+      field[fieldName] = []
+      field.hiddenPositionsChanged = true
+    } else {
+      field[fieldName] = cloneDeep(positions.value)
+      field.hiddenPositionsChanged = true
+    }
+  })
+}
+const toggleSelectAllPositions = (item, wlpField) => {
+  vueInstance.$nextTick(() => {
+    if (selectAll(item, wlpField)) {
+      item[wlpField] = []
+      item.positionsChanged = true
+    } else {
+      item[wlpField] = cloneDeep(positions.value)
+      item.positionsChanged = true
+    }
+  })
+}
+const copyToClipBoard = (textValue) => {
+  navigator.clipboard.writeText(textValue);
+  snackbar('SUCCESS', 'Copied text to clipboard')
 
 }
 </script>
@@ -1256,14 +1256,32 @@ export default {
 
 .snippet-selector-grid {
   display: grid;
-  grid-template-columns: 2fr 3fr 3fr 2fr;
+  grid-template-columns: 2fr;
   column-gap: 2rem;
   align-items: baseline;
   padding: 1rem;
   margin-right: 1rem;
+
+  @media (min-width: 960px) {
+    grid-template-columns: 2fr 3fr 3fr 2fr;
+  }
 }
 .snippet-selector-background {
   background-color: var(--v-grey-lighten4);
 }
-
+.mobile-width {
+  width: calc(100vw - 100px);
+}
+</style>
+<style lang="scss">
+tr.mobile-tr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: thin solid rgba(0, 0, 0, 0.12);
+  width: 100%;
+  td {
+    border-bottom: none !important;
+  }
+}
 </style>

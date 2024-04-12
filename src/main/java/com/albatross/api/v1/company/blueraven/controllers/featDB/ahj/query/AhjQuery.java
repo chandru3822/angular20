@@ -84,7 +84,8 @@ public class AhjQuery {
   public final static String delete = """
     UPDATE brs.feat_db_ahj
           SET archived = TRUE,
-            date_modified = now()
+            date_modified = now(),
+            modified_by_id = :userId
           WHERE id = :id
     """;
 

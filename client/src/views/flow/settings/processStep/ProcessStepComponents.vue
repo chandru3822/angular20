@@ -39,14 +39,12 @@
           <v-card-actions>
             <v-spacer></v-spacer>
 
-            <v-btn
-              color="primary"
-              dark
-              class="white--text"
-              @click="deleteError = false"
-            >
-              OK
-            </v-btn>
+            <a-btn
+                color="primary"
+                class=""
+                @click="deleteError = false"
+                text="OK"
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -59,42 +57,41 @@
               <v-toolbar-title class="title-large">Process Step Status Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text color="primary"
-                       @click="[addNewProcessStepStatusType = !addNewProcessStepStatusType, expanded = [], getCompanyProcessStepStatusTypes()]"
-                       v-if="userCanAdd">
-                  <v-icon v-if="!addNewProcessStepStatusType">add</v-icon>
-                  <v-icon v-else-if="isMobile">close</v-icon>
-                  <span v-if="!isMobile">{{ addNewProcessStepStatusType ? 'Cancel' : 'Add Process Step Status Type' }}</span>
-                </v-btn>
-                <v-btn text color="primary" @click="expandPsst = !expandPsst">
-                  <v-icon v-if="!expandPsst">mdi-chevron-down</v-icon>
-                  <v-icon v-else>mdi-chevron-up</v-icon>
-                </v-btn>
+                <a-btn
+                    variant="text"
+                    color="primary"
+                    @click="[addNewProcessStepStatusType = !addNewProcessStepStatusType, expanded = [], getCompanyProcessStepStatusTypes()]"
+                    v-if="userCanAdd"
+                    :prepend-icon="!addNewProcessStepStatusType ? 'add' : 'close'"
+                    :text="$vuetify.breakpoint.smAndDown ? '' : addNewProcessStepStatusType ? 'Cancel' : 'Add Process Step Status Type'"
+                ></a-btn>
+                <a-btn
+                    variant="text"
+                    color="primary"
+                    @click="expandPsst = !expandPsst"
+                    :prepend-icon="!expandPsst ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+                ></a-btn>
               </v-toolbar-items>
             </v-toolbar>
             <div class="mb-4">
               <v-card flat class="square-card mb-3 pa-3" color="primary lighten-9" v-if="addNewProcessStepStatusType">
                 <h3>Assign a Status Type</h3>
-                <v-autocomplete label="Process Step Status Type"
+                <a-autocomplete label="Process Step Status Type"
                                 :items="availableCompanyProcessStepStatusTypes"
                                 v-model="newProcessStepStatusTypeId"
-                                item-text="processStepStatusType"
+                                item-title="processStepStatusType"
+                                :item-title="item => `${item.processStepStatusType} - ${item.rootProcessStepStatusType}`"
                                 item-value="id"
                                 attach
                                 :loading="companyStatusesLoading"
                                 autocomplete="off"
-                                @input="assignStatusTypeToProcessStep"
-                >
-                  <template slot="item" slot-scope="data">
-                    <!-- HTML that describes how select should render items when the select is open -->
-                    {{ data.item.processStepStatusType }} ({{ data.item.rootProcessStepStatusType }})
-                  </template>
-                </v-autocomplete>
+                                @input="assignStatusTypeToProcessStep">
+                </a-autocomplete>
               </v-card>
               <v-data-table
                 v-if="expandPsst"
                 :headers="processStepHeaders"
-                :items="filterAssignedProcessStepStatusTypes()"
+                :items="filteredAssignedProcessStepStatusTypes"
                 hide-default-footer
                 :items-per-page="-1"
                 disable-sort
@@ -110,19 +107,26 @@
 
                     <template #item.statusType = {item} class="text-left"><a href="/settings/processStepStatuses" >{{ item.processStepStatusType }}</a></template>
                     <template #item.category="{item}" class="text-left">{{ item.rootProcessStepStatusType }}</template>
-                    <template #item.allowNonAdminUse="{item}" class="text-left" v-if="allowNonAdminAdd">
+                    <template #item.allowNonAdminUse="{item}" class="text-left" v-if="nonAdminAdd">
                       <input type="checkbox" v-model="item.allowNonAdminUse"
                              @input="saveNonAdminUse($event, item)"
                              :disabled="!userCanEdit" :readonly="!userCanEdit" />
                     </template>
                     <template #item.icons="{item}" class="text-right">
                       <div class="flex-display">
-                        <v-btn v-if="userCanEdit" small text color="primary" @click="deleteProcessStepStatusType=item"><v-icon>delete</v-icon></v-btn>
+                        <a-btn
+                            v-if="userCanEdit"
+                            size="small"
+                            variant="text"
+                            color="primary"
+                            @click="deleteProcessStepStatusType=item"
+                            prepend-icon="delete"
+                        ></a-btn>
                       </div>
                     </template>
               </v-data-table>
             </div>
-            <ProcessStepWorkQueueTypes :process-step="processStep"></ProcessStepWorkQueueTypes>
+            <ProcessStepWorkQueueTypes v-if="!psLoading" :process-step="processStep"></ProcessStepWorkQueueTypes>
           </v-col>
         </v-row>
         <v-row>
@@ -131,26 +135,31 @@
               <v-toolbar-title class="title-large">Links</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text color="primary" @click="getLinksForProcessStep" v-if="userCanAdd">
-                  <v-icon v-if="!addNewLink">add</v-icon>
-                  <v-icon v-else-if="isMobile">close</v-icon>
-                  <span v-if="!isMobile">{{ addNewLink ? 'Cancel' : 'Add Link' }}</span>
-                </v-btn>
-                <v-btn text color="primary" @click="expandLinks = !expandLinks">
-                  <v-icon v-if="!expandLinks">mdi-chevron-down</v-icon>
-                  <v-icon v-else>mdi-chevron-up</v-icon>
-                </v-btn>
+                <a-btn
+                    variant="text"
+                    color="primary"
+                    @click="getLinksForProcessStep"
+                    v-if="userCanAdd"
+                    :prepend-icon="!addNewLink ? 'add' : 'close'"
+                    :text="$vuetify.breakpoint.smAndDown ? '' : addNewLink ? 'Cancel' : 'Add Link'"
+                ></a-btn>
+                <a-btn
+                    variant="text"
+                    color="primary"
+                    @click="expandLinks = !expandLinks"
+                    :prepend-icon="!expandLinks ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+                ></a-btn>
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="square-card pa-2" color="primary lighten-9" v-if="addNewLink">
-              <v-autocomplete attach v-if="addNewLink"
+              <a-autocomplete attach v-if="addNewLink"
                         v-model="newLink.linkId"
                         :items="availableLinks"
                         label="Select Link"
-                        item-text="link"
+                        item-title="link"
                         item-value="id"
                         @input="assignNewLink"
-              ></v-autocomplete>
+              ></a-autocomplete>
             </v-card>
             <v-card flat v-if="processStep.links && processStep.links.length > 0 && expandLinks">
               <draggable v-model="processStep.links" group="links"
@@ -158,7 +167,7 @@
                          id="link-draggable"
                          @change="saveLinkOrder(processStep.links)"
                          @start="drag=true" @end="drag=false">
-                <v-list class="grab" v-for="(a, index) in filterBy(processStep.links, false, 'archived')"
+                <v-list class="grab" v-for="(a, index) in processStep.links?.filter(l => !l.archived)"
                         :key="index">
                   <v-list-item dense :class="{'shaded-row': index % 2}">
                     <v-list-item-action>
@@ -167,7 +176,14 @@
                     <v-list-item-content>
                       {{ a.link }}
                     </v-list-item-content>
-                    <v-btn v-if="userCanEdit" small text color="primary" @click="deleteLink=a"><v-icon>delete</v-icon></v-btn>
+                    <a-btn
+                        v-if="userCanEdit"
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        @click="deleteLink=a"
+                        prepend-icon="delete"
+                    ></a-btn>
                   </v-list-item>
                 </v-list>
               </draggable>
@@ -185,7 +201,7 @@
             <v-row v-else>
               <v-card flat color="rowShadeCustom" class="square-card mt-2 col-12 col-md-4">
                 <v-card-text>
-                  <multi-select-group
+                  <MultiSelectGroup
                       v-if="!positionsLoading"
                       background-color="transparent"
                       :userCanEdit="userCanEdit"
@@ -193,9 +209,9 @@
                       :content="positions"
                       :dropdownEnabled="processStep.readonly"
                       :selectedContent="processStep.whiteListedPositions"
-                      :title="'Read Only'"
-                      :label="'Allowed Positions'"
-                      :alternateLabel = "'Denied Positions'"
+                      title="Read Only"
+                      label="Allowed Positions"
+                      alternateLabel="Denied Positions"
                       :allow="processStep.readonlyAllow"
                       :contentLoading="positionsLoading"
                       save-button
@@ -204,12 +220,12 @@
                       @allow-changed="startTimeReadOnlyAllowEventListener"
                       @checkbox-changed="startTimeReadOnlyCheckboxEventListener"
                       @save-multi-select="saveReadOnlyAndWhiteList"
-                  ></multi-select-group>
+                  ></MultiSelectGroup>
                 </v-card-text>
               </v-card>
               <v-card flat class="square-card mt-2 col-12 col-md-8 col-lg-6">
                 <v-card-text>
-                  <multi-select-group
+                  <MultiSelectGroup
                       v-if="!positionsLoading"
                       background-color="transparent"
                       :userCanEdit="userCanEdit"
@@ -243,15 +259,15 @@
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
+<script setup>
+import SpinnerInline from "@/components/SpinnerInline.vue";
+import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
+
 import draggable from 'vuedraggable'
 import {getAvailableForProcessStep} from '@/services/processStepStatusTypeService'
 import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
 import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
 import orderBy from "lodash.orderby"
-import cloneDeep from 'lodash.clonedeep'
 
 import {
   handleHidingGlobalLoader,
@@ -262,336 +278,305 @@ import {
   getSnackbar
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute} from "vue-router/composables";
+import {defineProps} from 'vue'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
-export default {
-  name: 'ProcessStepComponents',
-  mixins: [Vue2Filters.mixin],
-  components: {
-    ConfirmationDialog,
-    ProcessStepWorkQueueTypes,
-    ProcessStepCustomFieldGroups,
-    draggable,
-  },
-  props: {
-    nonAdminAdd: Boolean
-  },
-  data() {
-    return {
-      snackbar: {},
-      expandPsst: true,
-      expandLinks: true,
-      expanded: [],
-      deleteError: false,
-      cannotDeleteReasons: {},
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      addNewCustomFieldGroup: false,
-      changesMade: false,
-      addNewType: false,
-      newType: {},
-      addNewLink: false,
-      newLink: {},
-      availableLinks: [],
-      processStepId: this.$route.params.id,
-      companyId: this.$store.state.user.details.companyId,
-      processStep: {},
-      positions: [],
-      positionsLoading: false,
-      readOnlyPositionsChanged: false,
-      companyStatusesLoading: false,
-      availableCompanyProcessStepStatusTypes: [],
-      addNewProcessStepStatusType: false,
-      newProcessStepStatusTypeId: null,
-      checkedIds: [],
-      breadcrumbs: [
+const route = useRoute()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  nonAdminAdd: Boolean
+})
+
+const {nonAdminAdd} = props;
+
+
+      const nonAdminAddWhiteListedPositionsChanged = ref(false)
+      const psLoading = ref(true)
+      const expandPsst = ref(true)
+      const expandLinks = ref(true)
+      const expanded = ref([])
+      const deleteError = ref(false)
+      const cannotDeleteReasons = ref({})
+      const addNewCustomFieldGroup = ref(false)
+      const changesMade = ref(false)
+      const addNewType = ref(false)
+      const newType = ref({})
+      const addNewLink = ref(false)
+      const newLink = ref({})
+      const availableLinks = ref([])
+      const processStep = ref({})
+      const positions = ref([])
+      const positionsLoading = ref(false)
+      const readOnlyPositionsChanged = ref(false)
+      const companyStatusesLoading = ref(false)
+      const availableCompanyProcessStepStatusTypes = ref([])
+      const addNewProcessStepStatusType = ref(false)
+      const newProcessStepStatusTypeId = ref(null)
+      const checkedIds = ref([])
+      const deleteProcessStepStatusType = ref(null)
+      const deleteLink = ref(null)
+      const deleteAttachment = ref(null)
+      const breadcrumbs = ref([
         {
           text: 'Back',
           disabled: false,
           exact: true,
           to: `/settings/processSteps`
         },
-      ],
-      deleteProcessStepStatusType: null,
-      deleteLink: null,
-      deleteAttachment: null
-    }
-  },
-  computed: {
-    allowNonAdminAdd() {
-      return this.nonAdminAdd
-    },
-    processStepHeaders() {
-      let headers = [
-        {text: 'Status Type', value: 'statusType', show: true},
-        {text: 'Category', value: 'category', show: true},
-        {text: 'Allow Non-Admin Use', value: 'allowNonAdminUse', show: this.nonAdminAdd || false},
-        {text: '', value: 'icons', show: true, width: '100px'},
-      ]
-      return headers.filter(h => h.show)
-    },
-    showDeleteDialog(){
-      return Boolean(this.deleteProcessStepStatusType || this.deleteAttachment || this.deleteLink)
-    },
-    deleteDialogText(){
-      if(this.deleteLink){
-        return `this link: `
-      }
-      if(this.deleteAttachment){
-        return `this attachment: `
-      }
-      return ''
-    },
-    deleteDialogItemText(){
-      if(this.deleteProcessStepStatusType){
-        return this.deleteProcessStepStatusType.processStepStatusType
-      }
-      if(this.deleteLink){
-        return this.deleteLink.link
-      }
-      if(this.deleteAttachment){
-        return this.deleteAttachment.attachmentType
-      }
-      return ''
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-  },
-  async created() {
-    await this.getProcessStepDetails()
-    this.getPositions()
-  },
-  methods: {
-    selectAllReadOnly () {
-      return this.processStep.whiteListedPositions?.length === this.positions?.length
-    },
-    selectSomeReadOnly (f) {
-      return this.processStep.hiteListedPositions?.length > 0 && !this.selectAllReadOnly(f)
-    },
-    iconOwner () {
-      if (this.selectAllReadOnly()) {
-        return 'check_box'
-      }
-      if (this.selectSomeReadOnly()) {
-        return 'indeterminate_check_box'
-      }
-      return 'check_box_outline_blank'
-    },
-    toggleSelectAllPositionsOwner () {
-      this.$nextTick(() => {
-        if (this.selectAllReadOnly()) {
-          this.processStep.whiteListedPositions = []
-          this.readOnlyPositionsChanged = true
-        } else {
-          this.processStep.whiteListedPositions = cloneDeep(this.positions)
-          this.readOnlyPositionsChanged = true
-        }
-      })
-    },
-    async getPositions() {
-      if(this.positions?.length === 0) {
-        try {
-          this.positionsLoading = true
-          const {data, status} = await getRequest(`/position/withParent`)
-          this.positions = data
-          this.positionsLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          this.positionsLoading = false
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    async saveReadOnlyAndWhiteList () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await putRequest(`/processStep/saveReadOnlyAndWhiteList?savePositions=${this.readOnlyPositionsChanged ?? false}`, this.processStep)
-        this.readOnlyPositionsChanged = false
-        if(!this.processStep.readonly) {
-          this.processStep.whiteListedPositions = []
-        }
-        this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    nonAdminWBLPositionsSelectionChange(e){
-      this.processStep.nonAdminAddWhiteListedPositions = e
-      this.nonAdminAddWhiteListedPositionsChanged = true
-    },
-    toggleNonAdminAllowDenyList(e){
-      this.processStep.nonAdminAddAllow = (e === 0)
-    },
-    toggleAllowNonAdminCheckbox(e){
-      this.processStep.nonAdminAdd = e
-    },
-    async saveProcessStep() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await putRequest(`/processStep?savePositions=${this.nonAdminAddWhiteListedPositionsChanged ?? false}`, this.processStep)
-        this.editName = false
-        this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Process Step')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCompanyProcessStepStatusTypes() {
-      if (this.addNewProcessStepStatusType) {
-        this.companyStatusesLoading = true
-        try {
-          const {data} = await getAvailableForProcessStep(this.processStepId)
-          this.availableCompanyProcessStepStatusTypes = data
-          this.companyStatusesLoading = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Process Step Status Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.companyStatusesLoading = false
-        }
-      }
+      ])
 
-    },
-    async deleteStatusTypeFromStep(item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+const processStepId = computed(() => {
+  return route.params.id
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+
+
+const processStepHeaders = computed(() => {
+  let headers = [
+    {text: 'Status Type', value: 'statusType', show: true},
+    {text: 'Category', value: 'category', show: true},
+    {text: 'Allow Non-Admin Use', value: 'allowNonAdminUse', show: nonAdminAdd || false},
+    {text: '', value: 'icons', show: true, width: '100px'},
+  ]
+  return headers.filter(h => h.show)
+})
+const showDeleteDialog = computed(() => {
+  return Boolean(deleteProcessStepStatusType.value || deleteAttachment.value || deleteLink.value)
+})
+const deleteDialogText = computed(() => {
+  if(deleteLink.value){
+    return `this link: `
+  }
+  if(deleteAttachment.value){
+    return `this attachment: `
+  }
+  return ''
+})
+const deleteDialogItemText = computed(() => {
+  if(deleteProcessStepStatusType.value){
+    return deleteProcessStepStatusType.value.processStepStatusType
+  }
+  if(deleteLink.value){
+    return deleteLink.value.link
+  }
+  if(deleteAttachment.value){
+    return deleteAttachment.value.attachmentType
+  }
+  return ''
+})
+const filteredAssignedProcessStepStatusTypes = computed(() => {
+  return orderBy(processStep.value?.companyProcessStepStatusTypes?.filter(u => {
+    return !u.archived
+  }), [f => f.processStepStatusType])
+})
+
+onMounted(async () => {
+    await getProcessStepDetails()
+    getPositions()
+
+})
+
+
+    const getPositions = async () => {
+      if(positions.value?.length === 0) {
+        try {
+          positionsLoading.value = true
+          const {data, status} = await getRequest(`/position/withParent`)
+          positions.value = data
+          positionsLoading.value = false
+          handleHidingGlobalLoader(status)
+        } catch (e) {
+          positionsLoading.value = false
+          console.error('*** ERROR ***', e)
+          snackbar('ERROR', 'Error Retrieving Positions')
+          appStore.loading = false
+        }
+      }
+    }
+    const saveReadOnlyAndWhiteList = async  () => {
+      appStore.loading = true
+      try {
+        const {status} = await putRequest(`/processStep/saveReadOnlyAndWhiteList?savePositions=${readOnlyPositionsChanged.value ?? false}`, processStep.value)
+        readOnlyPositionsChanged.value = false
+        if(!processStep.value.readonly) {
+          processStep.value.whiteListedPositions = []
+        }
+        snackbar('SUCCESS', 'Saved Successfully')
+        handleHidingGlobalLoader(status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        appStore.loading = false
+      }
+    }
+    const nonAdminWBLPositionsSelectionChange = (e) => {
+      processStep.value.nonAdminAddWhiteListedPositions = e
+      nonAdminAddWhiteListedPositionsChanged.value = true
+    }
+    const toggleNonAdminAllowDenyList = (e) => {
+      processStep.value.nonAdminAddAllow = (e === 0)
+    }
+    const toggleAllowNonAdminCheckbox = (e) => {
+      processStep.value.nonAdminAdd = e
+    }
+    const saveProcessStep = async () => {
+      appStore.loading = true
+      try {
+        const {status} = await putRequest(`/processStep?savePositions=${nonAdminAddWhiteListedPositionsChanged.value ?? false}`, processStep.value)
+        snackbar('SUCCESS', 'Process Step Updated')
+        handleHidingGlobalLoader(status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'Error Updating Process Step')
+        appStore.loading = false
+      }
+    }
+    const getCompanyProcessStepStatusTypes = async () => {
+      if (addNewProcessStepStatusType.value) {
+        companyStatusesLoading.value = true
+        try {
+          const {data} = await getAvailableForProcessStep(processStepId.value)
+          availableCompanyProcessStepStatusTypes.value = data
+          companyStatusesLoading.value = false
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          snackbar('ERROR', 'Error Retrieving Process Step Status Types')
+          companyStatusesLoading.value = false
+        }
+      }
+    }
+    const deleteStatusTypeFromStep = async (item) => {
+      appStore.loading = true
       try {
         //have to close the work queue editor to for the component to refresh available values
-        this.addNewWorkQueueType = false
-        this.expanded = []
-        const {status} = await putRequest(`/processStep/status/removeStatus/${item.id}/fromStep/${this.processStepId}`)
+        addNewWorkQueueType.value = false
+        expanded.value = []
+        const {status} = await putRequest(`/processStep/status/removeStatus/${item.id}/fromStep/${processStepId.value}`)
         item.archived = true
-        this.snackbar = getSnackbar('SUCCESS', 'Status Type Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        snackbar('SUCCESS', 'Status Type Deleted')
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
 
         if (e.status === 400) {
           item.deleteConfirm = false
-          this.deleteError = true
-          this.cannotDeleteReasons = e.data
+          deleteError.value = true
+          cannotDeleteReasons.value = e.data
         }
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Status Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Deleting Status Type')
+        appStore.loading = false
       }
-    },
-    async saveNonAdminUse(e, item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const saveNonAdminUse = async (e, item) => {
+      appStore.loading = true
       try {
         let body = {
           allowNonAdminUse: e.target.checked || false
         }
         const {data, status} = await putRequest(`/processStep/status/${item.id}/updateAllowNonAdminUse`, body)
-        this.snackbar = getSnackbar('SUCCESS', 'Changes Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        snackbar('SUCCESS', 'Changes Saved')
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Saving')
+        appStore.loading = false
       }
-    },
-    async assignStatusTypeToProcessStep() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const assignStatusTypeToProcessStep = async () => {
+      appStore.loading = true
       try {
-        this.newType.processStepId = this.$route.params.id
-        const {data, status} = await postRequest(`/processStep/status/assignCompanyStatus/${this.newProcessStepStatusTypeId}/toProcessStep/${this.processStepId}`)
-        this.processStep.companyProcessStepStatusTypes.push(data)
+        newType.value.processStepId = processStepId
+        const {data, status} = await postRequest(`/processStep/status/assignCompanyStatus/${newProcessStepStatusTypeId.value}/toProcessStep/${processStepId.value}`)
+        processStep.value.companyProcessStepStatusTypes.push(data)
         // reset fields
-        this.addNewProcessStepStatusType = false
-        this.newProcessStepStatusTypeId = null
-        this.snackbar = getSnackbar('SUCCESS', 'Status Type Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        addNewProcessStepStatusType.value = false
+        newProcessStepStatusTypeId.value = null
+        snackbar('SUCCESS', 'Status Type Added')
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Status Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Adding Status Type')
+        appStore.loading = false
       }
-    },
-    async getProcessStepDetails() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getProcessStepDetails = async () => {
+      psLoading.value = true
+      appStore.loading = true
       try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequest(`/processStep/${this.processStepId}`)
-        this.processStep = data
-        handleHidingGlobalLoader(this, status)
+        appStore.loading = true
+        const {data, status} = await getRequest(`/processStep/${processStepId.value}`)
+        processStep.value = data
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.loading = false
+      } finally {
+        psLoading.value = false
       }
-    },
-    async getLinksForProcessStep() {
+    }
+    const getLinksForProcessStep = async () => {
       try {
-        this.addNewLink = !this.addNewLink
-        if (this.addNewLink) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data, status} = await getRequest(`/links/processStep/${this.$route.params.id}/available`)
-          this.availableLinks = data
-          handleHidingGlobalLoader(this, status)
+        addNewLink.value = !addNewLink.value
+        if (addNewLink.value) {
+          appStore.loading = true
+          const {data, status} = await getRequest(`/links/processStep/${processStepId.value}/available`)
+          availableLinks.value = data
+          handleHidingGlobalLoader(status)
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.loading = false
       }
-    },
-    async assignNewLink() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const assignNewLink = async () => {
+      appStore.loading = true
       try {
-        this.newLink.processStepId = this.$route.params.id
-        const {data, status} = await postRequest(`/links/processStep`, this.newLink)
-        this.processStep.links.push(data)
+        newLink.value.processStepId = processStepId.value
+        const {data, status} = await postRequest(`/links/processStep`, newLink.value)
+        processStep.value.links.push(data)
         // reset fields
-        this.addNewLink = false
-        this.newLink = {}
-        this.snackbar = getSnackbar('SUCCESS', 'Link Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        addNewLink.value = false
+        newLink.value = {}
+        snackbar('SUCCESS', 'Link Added')
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Link')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Adding Link')
+        appStore.loading = false
       }
-    },
-    async deleteLinkFromStep(id) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const deleteLinkFromStep = async (id) => {
+      appStore.loading = true
       try {
-        this.addNewLink = false
+        addNewLink.value = false
         const {status} = await deleteRequest(`/links/processStep/${id}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        snackbar('SUCCESS', 'Link Deleted')
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Deleting Link')
+        appStore.loading = false
       }
-    },
-    filterAssignedProcessStepStatusTypes() {
-      return orderBy(this.processStep?.companyProcessStepStatusTypes?.filter(u => {
-        return !u.archived
-      }), [f => f.processStepStatusType])
-    },
-    async saveLinkOrder(links) {
+    }
+
+    const saveLinkOrder = async (links) => {
       try {
         // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
         // pull those needing to be saved out of list
@@ -605,46 +590,42 @@ export default {
         })
         // save them here
         if (linksToSave.length > 0) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           const {status} = await putRequest(`/links/updateOrderInProcessStep`, linksToSave)
-          handleHidingGlobalLoader(this, status)
+          handleHidingGlobalLoader(status)
         }
-        this.snackbar = getSnackbar('SUCCESS', 'Links Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        snackbar('SUCCESS', 'Links Updated')
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Links')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Updating Links')
+        appStore.loading = false
       }
-    },
-    confirmDelete(){
-      if(this.deleteProcessStepStatusType){
-        this.deleteStatusTypeFromStep(this.deleteProcessStepStatusType)
-        this.deleteProcessStepStatusType = null
-      }else if(this.deleteLink){
-        this.deleteLink.archived = true
-        this.deleteLinkFromStep(this.deleteLink.id)
-        this.deleteLink = null
-      }else if(this.deleteAttachment){
-        this.deleteAttachment.archived = true
-        this.deleteTypeFromStep(this.deleteAttachment.id)
-        this.deleteAttachment = null
+    }
+    const confirmDelete = () => {
+      if(deleteProcessStepStatusType.value){
+        deleteStatusTypeFromStep(deleteProcessStepStatusType.value)
+        deleteProcessStepStatusType.value = null
+      }else if(deleteLink.value){
+        deleteLink.value.archived = true
+        deleteLinkFromStep(deleteLink.value.id)
+        deleteLink.value = null
+      }else if(deleteAttachment.value){
+        deleteAttachment.value.archived = true
+        //this function doesn't exist. i dont know what it was supposed to do
+        // deleteTypeFromStep(deleteAttachment.value.id)
+        deleteAttachment.value = null
       }
-    },
-    startTimeReadOnlySelectedEventListener(e){
-      this.processStep.whiteListedPositions = e;
-      this.readOnlyPositionsChanged = true;
-    },
-    startTimeReadOnlyAllowEventListener(e){
-      this.processStep.readonlyAllow = (e === 0);
-    },
-    startTimeReadOnlyCheckboxEventListener(e){
-      this.processStep.readonly = e;
-    },
-  }
-
-}
+    }
+    const startTimeReadOnlySelectedEventListener = (e) => {
+      processStep.value.whiteListedPositions = e;
+      readOnlyPositionsChanged.value = true;
+    }
+    const startTimeReadOnlyAllowEventListener = (e) => {
+      processStep.value.readonlyAllow = (e === 0);
+    }
+    const startTimeReadOnlyCheckboxEventListener = (e) => {
+      processStep.value.readonly = e;
+    }
 </script>
 
 <style scoped lang="scss">

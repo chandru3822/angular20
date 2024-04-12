@@ -33,13 +33,13 @@ public class NotificationApiController {
   private final NotificationService notificationService;
   private final PubSubService pubSubService;
 
-  @GetMapping
-  public Page<Notification> getUserNotificationsPageable(
-      @AuthenticationPrincipal UserAccountDetails details, Pageable pageable) {
-    return notificationService.getUserNotifications(details.getId(), pageable);
-  }
+//  @GetMapping
+//  public Page<Notification> getUserNotificationsPageable(
+//      @AuthenticationPrincipal UserAccountDetails details, Pageable pageable) {
+//    return notificationService.getUserNotifications(details.getId(), pageable);
+//  }
 
-  @GetMapping(value = "/")
+  @GetMapping
   public List<Notification>  getUserNotifications(
     @AuthenticationPrincipal UserAccountDetails details) {
     return notificationService.getUserNotifications(details.getId());

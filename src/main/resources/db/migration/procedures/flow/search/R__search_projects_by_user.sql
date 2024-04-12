@@ -4,14 +4,16 @@ drop function if exists flow.search_projects_by_user(p_searchterm character vary
                                                      p_offset bigint ,
                                                      p_company_project_status_type_id bigint ,
                                                      p_sort_column character varying ,
-                                                     p_sort_direction character varying );
+                                                     p_sort_direction character varying ,
+                                                     p_query_commissions boolean);
 create or replace function flow.search_projects_by_user(p_searchterm character varying, p_company_id bigint,
                                                          p_user_id bigint, p_is_parent boolean,
                                                          p_limit bigint DEFAULT NULL::bigint,
                                                          p_offset bigint DEFAULT NULL::bigint,
                                                          p_company_project_status_type_id bigint DEFAULT NULL::bigint,
                                                          p_sort_column character varying DEFAULT NULL::character varying,
-                                                         p_sort_direction character varying DEFAULT NULL::character varying)
+                                                         p_sort_direction character varying DEFAULT NULL::character varying,
+                                                         p_query_commissions boolean default false)
   returns TABLE
           (
             id                             bigint,
@@ -28,7 +30,10 @@ create or replace function flow.search_projects_by_user(p_searchterm character v
             longitude                      double precision,
             company_project_status_type_id bigint,
             project_status_type            character varying,
-            contact                        jsonb
+            contact                        jsonb,
+            commissions_outstanding        numeric,
+            root_project_status_type       character varying,
+            owner_name   character varying
           )
   language plpgsql
 as
@@ -41,6 +46,7 @@ DECLARE
   v_clean_address_search_term VARCHAR;
   v_company_ids               bigint[];
   v_position_ids              bigint[];
+  v_commission_project_status_ids bigint[];
 BEGIN
   v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.& ', '')));
   v_clean_phone_search_term = right(trim(translate(p_searchterm, '+-(). ', '')), 10);
@@ -54,6 +60,11 @@ BEGIN
     select array(select p_company_id)
     into v_company_ids;
   end if;
+
+  select array_agg(cpst.id)
+  into v_commission_project_status_ids
+  from flow.company_project_status_type cpst
+  where used_in_commissions = true;
 
   select array_agg(up.id)
   into v_position_ids
@@ -77,7 +88,16 @@ BEGIN
              limited_projects.longitude,
              limited_projects.company_project_status_type_id::bigint,
              limited_projects.project_status_type,
-             limited_projects.contact
+             limited_projects.contact,
+             case when limited_projects.company_project_status_type_id = any(v_commission_project_status_ids)
+                           and p_query_commissions is true
+                           and p_company_id = 3 then
+                    (select t.commissions_outstanding
+                     from brs.get_commissions_by_project_status(limited_projects.company_project_status_type_id::bigint,limited_projects.id::bigint) as t)
+              else null::numeric
+               end as commissions_oustanding,
+            limited_projects.root_project_status_type,
+            limited_projects.closer_name
       FROM (select *
             from (select p.id::bigint,
                          p.project_name,
@@ -96,16 +116,24 @@ BEGIN
                          (select row_to_json(contact1)
                           from (select c.id,
                                        c.phone,
-                                       c.mobile) contact1)::jsonb as contact
+                                       c.mobile) contact1)::jsonb as contact,
+                    pst.project_status_type  as root_project_status_type,
+                         case when c.company_id = 3 then
+                                  (select pd.closer_name from brs.project_details pd where pd.project_id = p.id) end as closer_name
                   from flow.project p
                          inner join flow.company_project_status_type cpst
                                     on cpst.id = p.company_project_status_type_id
+                         inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
                          inner join flow.contact c on p.contact_id = c.id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
-                    and (c.owner_position_ids && v_position_ids)
+                    and case when p_query_commissions is false then
+                               (c.owner_position_ids && v_position_ids)
+                             else
+                               (p.user_position_id  = any (v_position_ids))
+                    end
                     and
                         ((p.id::text like '%' || v_clean_name_search_term || '%')
                      or (p.project_name_search like '%' || v_clean_name_search_term || '%')
@@ -132,16 +160,24 @@ BEGIN
                          (select row_to_json(contact1)
                           from (select c.id,
                                        c.phone,
-                                       c.mobile) contact1)::jsonb as contact
+                                       c.mobile) contact1)::jsonb as contact,
+                         pst.project_status_type  as root_project_status_type,
+                         case when c.company_id = 3 then
+                                  (select pd.closer_name from brs.project_details pd where pd.project_id = p.id) end as closer_name
                   from flow.project p
                          inner join flow.company_project_status_type cpst
                                     on cpst.id = p.company_project_status_type_id
+                         inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
                          inner join flow.contact c on p.contact_id = c.id
                          left join flow.company_state cs on cs.id = p.company_state_id
                          left join flow.state s on s.id = cs.state_id
                   where c.company_id = any (v_company_ids)
                     and p.archived is not true
-                    and (c.owner_position_ids && v_position_ids)
+                    and case when p_query_commissions is false then
+                               (c.owner_position_ids && v_position_ids)
+                             else
+                               (p.user_position_id  = any (v_position_ids))
+                    end
                     and
                         ((c.contact_email_search like '%' || v_clean_email_search_term || '%')
                      or (c.contact_mobile_search like '%' || v_clean_phone_search_term || '%')
@@ -180,7 +216,16 @@ BEGIN
                 limited_projects.longitude,
                 limited_projects.company_project_status_type_id::bigint,
                 limited_projects.project_status_type,
-                limited_projects.contact
+                limited_projects.contact,
+             case when limited_projects.company_project_status_type_id = any(v_commission_project_status_ids)
+                           and p_query_commissions is true
+                           and p_company_id = 3 then
+                    (select t.commissions_outstanding
+                     from brs.get_commissions_by_project_status(limited_projects.company_project_status_type_id::bigint,limited_projects.id::bigint) as t)
+                  else null::numeric
+               end as commissions_oustanding,
+             limited_projects.root_project_status_type,
+             limited_projects.closer_name
          FROM (select p.id::bigint,
                       p.project_name,
                       p.contact_id::bigint,
@@ -198,16 +243,24 @@ BEGIN
                       (select row_to_json(contact1)
                        from (select c.id,
                                     c.phone,
-                                    c.mobile) contact1)::jsonb as contact
+                                    c.mobile) contact1)::jsonb as contact,
+                      pst.project_status_type  as root_project_status_type,
+                      case when c.company_id = 3 then
+                               (select pd.closer_name from brs.project_details pd where pd.project_id = p.id) end as closer_name
                from flow.project p
                       inner join flow.company_project_status_type cpst
                                  on cpst.id = p.company_project_status_type_id
+                      inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
                       inner join flow.contact c on p.contact_id = c.id
                       left join flow.company_state cs on cs.id = p.company_state_id
                       left join flow.state s on s.id = cs.state_id
                where c.company_id = any (v_company_ids)
                  and p.archived is not true
-                 and (c.owner_position_ids && v_position_ids)
+                 and case when p_query_commissions is false then
+                   (c.owner_position_ids && v_position_ids)
+                    else
+                      (p.user_position_id  = any (v_position_ids))
+                        end
                  and
                      case
                        when p_company_project_status_type_id is not null then

@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,8 +61,10 @@ public class BrsProcessStepActionFunctionService {
 
   private final StripeService stripeService;
 
+
   // @TODO: I would like this to have the usual @Value annotation to the marketo cron flag, but it doesn't work with the manual class instantiation used
   public Boolean marketoEnabled;
+  public Boolean ignoreAuroraErrors;
 
   private String formatErrorMessage(ProcessStepActionChildFunction func, String message) {
     final String originalFuncName = func.getFunctionName();
@@ -80,7 +83,9 @@ public class BrsProcessStepActionFunctionService {
       "IQ7A-72-2-US (240V)", "Enphase IQ7A Microinverters",
       "IQ8PLUS-72-2-US", "Enphase IQ8+ Microinverters",
       "IQ7X-96-2-US (240V)", "Enphase IQ7X Microinverters",
-      "IQ8A-72-2-US", "Enphase IQ8A Microinverters"
+      "IQ8A-72-2-US", "Enphase IQ8A Microinverters",
+      "IQ8M-72-M-US", "Enphase IQ8M Microinverters",
+      "IQ8X-80-M-US (240V)", "Enphase IQ8X Microinverters"
     );
     return inverterMap.getOrDefault(inverter, null);
   }
@@ -333,10 +338,16 @@ public class BrsProcessStepActionFunctionService {
 
       if (!arrays.isEmpty()) {
         //this is returning with extra quotes around the string ¯\_(ツ)_/¯
-        manufacturer = arrays.get(0).get("module").get("manufacturer").toString().replace("\"", "");
-        panelName = arrays.get(0).get("module").get("name").toString().replace("\"", "");
+        if(null != arrays.get(0).get("module").get("manufacturer")) {
+          manufacturer = arrays.get(0).get("module").get("manufacturer").toString().replace("\"", "");
+        }
+        if(null != arrays.get(0).get("module").get("name")) {
+          panelName = arrays.get(0).get("module").get("name").toString().replace("\"", "");
+        }
+        if(null != arrays.get(0).get("module").get("rating_stc")) {
+          panelWatts = Math.round(Float.parseFloat(arrays.get(0).get("module").get("rating_stc").toString()));
+        }
 
-        panelWatts = Math.round(Float.parseFloat(arrays.get(0).get("module").get("rating_stc").toString()));
         if (arrays.get(0).get("microinverter") != null) {
           inverter = getMappedAuroraInverter(arrays.get(0).get("microinverter").get("name").toString().replace("\"", ""));
         }
@@ -356,7 +367,7 @@ public class BrsProcessStepActionFunctionService {
       }
 
       // if we haven't found an inverter yet, check for sunpower. In that case, inverters are integrated on panel
-      if (inverter == null && manufacturer.toLowerCase().contains("sunpower")) {
+      if (inverter == null && null != manufacturer && manufacturer.toLowerCase().contains("sunpower")) {
         inverter = "Sunpower";
       }
 
@@ -399,9 +410,11 @@ public class BrsProcessStepActionFunctionService {
               params.put("intValue", lovId);
               sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
             } catch (EmptyResultDataAccessException e) {
-              throw new RuntimeException("Unable to find list item for given panel brand");
+              if(!ignoreAuroraErrors) {
+                throw new RuntimeException("Unable to find list item for given panel brand");
+              }
             }
-          } else {
+          } else if (!ignoreAuroraErrors ){
             throw new RuntimeException("Unable to find list item for given panel brand");
           }
         } else if (paramName.contains("Inverter Brand")) {
@@ -421,7 +434,9 @@ public class BrsProcessStepActionFunctionService {
               params.put("intValue", inverterLovId);
               sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
             } else {
-              throw new RuntimeException("Unable to find list item for given inverter brand");
+              if(!ignoreAuroraErrors) {
+                throw new RuntimeException("Unable to find list item for given inverter brand");
+              }
             }
           }
         } else if (paramName.contains("Panel Watts")) {
@@ -437,7 +452,9 @@ public class BrsProcessStepActionFunctionService {
         }
       }
     } catch (Exception e) {
-      throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+      if(!ignoreAuroraErrors) {
+        throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+      }
     }
   }
 

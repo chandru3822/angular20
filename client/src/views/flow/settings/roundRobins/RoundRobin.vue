@@ -7,10 +7,17 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit" @click="editRoundRobin = !editRoundRobin">
-          <v-icon v-if="!editRoundRobin">edit</v-icon>
-          <span v-else class="text-capitalize">Cancel</span>
-        </v-btn>
+        <a-btn
+            icon
+            color="primary"
+            v-if="userCanEdit"
+            :prepend-icon="editRoundRobin ? '' : 'edit'"
+            :text="editRoundRobin ? 'Cancel' : ''"
+            @click="editRoundRobin = !editRoundRobin"
+            :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+        >
+        </a-btn>
+
       </v-toolbar-items>
     </v-toolbar>
     <v-divider></v-divider>
@@ -34,48 +41,51 @@
       <v-row>
         <v-col cols="12" md="6" class="px-8">
 
-          <v-text-field text
+          <a-text-field
                         type="text"
                         label="Name"
                         v-model="roundRobin.roundRobinName">
-          </v-text-field>
+          </a-text-field>
 
           <div class="d-flex align-baseline">
-            <v-text-field text
+            <a-text-field
                           style="max-width: 200px"
                           type="text"
                           label="Distribution Time Frame"
                           v-model="roundRobin.distributionTimeFrameDays">
-            </v-text-field>
+            </a-text-field>
             <span class="body-medium">days</span>
           </div>
           <div class="d-flex align-baseline">
-            <v-text-field text
+            <a-text-field
                           style="max-width: 200px"
                           type="text"
                           label="Schedulable Future Days"
                           v-model="roundRobin.schedulableFutureDays">
-            </v-text-field>
+            </a-text-field>
             <span class="body-medium">days</span>
           </div>
-          <v-autocomplete v-model="roundRobin.companyTimezoneId"
+          <a-autocomplete v-model="roundRobin.companyTimezoneId"
                           :items="companyTimezones"
                           label="Time Zone"
                           style="width: 200px;"
-                          item-text="timezone"
+                          item-title="timezone"
                           item-value="id"
                           attach
-          ></v-autocomplete>
+          ></a-autocomplete>
 
           <div class="d-flex align-center mb-4">Uses Total Lead Allocation?
           <!--                <v-checkbox label="Uses Total Lead Allocation?" v-model="roundRobin.usesTotalLeadAllocation"></v-checkbox>-->
           <v-simple-checkbox class="pl-2" label="Uses Total Lead Allocation?" v-model="roundRobin.usesTotalLeadAllocation"></v-simple-checkbox>
           </div>
 
-          <v-btn color="primary" :disabled="!roundRobin.roundRobinName || !roundRobin.companyTimezoneId"
-                 class="white--text" @click="saveRoundRobinInfo()">
-            Save
-          </v-btn>
+          <a-btn
+              color="primary"
+              :disabled="!roundRobin.roundRobinName || !roundRobin.companyTimezoneId"
+              class=""
+              @click="saveRoundRobinInfo()"
+              text="Save"
+          ></a-btn>
 
         </v-col>
       </v-row>
@@ -98,97 +108,102 @@
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
-import constants from '@/helpers/constants'
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+const userStore = useUserStore()
+import {useRoute} from "vue-router/composables";
 
-export default {
-  name: 'RoundRobin',
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
-  data() {
-    return {
-      snackbar: {},
-      model: '',
-      tabs: [{
-        label: 'Schedule To',
-        path: `/settings/roundRobin/${this.$route.params.id}/scheduleTo`,
-        display: true
-      }, {
-        label: 'Schedule By',
-        path: `/settings/roundRobin/${this.$route.params.id}/scheduleBy`,
-        display: true
-      }, {
-        label: 'Postal Codes',
-        path: `/settings/roundRobin/${this.$route.params.id}/codes`,
-        display: true
-      }],
-      editRoundRobin: false,
-      constants,
-      companyTimezones: [],
-      roundRobin: {},
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
-      roundRobinId: this.$route.params.id,
-      dataLoading: true,
-      breadcrumbs: [
+const route = useRoute()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const roundRobinId = computed(() => {
+  return route.params.id
+})
+
+      const model = ref( '')
+      const editRoundRobin = ref( false)
+      const companyTimezones = ref( [])
+      const roundRobin = ref( {})
+      const dataLoading = ref( true)
+      const breadcrumbs = ref([
         {
           text: 'Back to Round Robins',
           disabled: false,
           exact: true,
           to: `/settings/roundRobins`
         },
-      ]
-    }
-  },
-  async created() {
-    this.getCompanyTimezones()
-    await this.getRoundRobinDetails()
-  },
-  methods: {
-    async saveRoundRobinInfo() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      ])
+      const tabs = ref([{
+        label: 'Schedule To',
+        path: `/settings/roundRobin/${roundRobinId.value}/scheduleTo`,
+        display: true
+      }, {
+        label: 'Schedule By',
+        path: `/settings/roundRobin/${roundRobinId.value}/scheduleBy`,
+        display: true
+      }, {
+        label: 'Postal Codes',
+        path: `/settings/roundRobin/${roundRobinId.value}/codes`,
+        display: true
+      }])
+
+
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT')
+})
+
+onMounted(async () => {
+  getCompanyTimezones()
+  await getRoundRobinDetails()
+})
+
+    const saveRoundRobinInfo = async() => {
+      appStore.loading = true
       try {
-        const {status} = await postRequest(`/roundRobin`, this.roundRobin)
-        this.editRoundRobin = false
-        this.snackbar = getSnackbar('SUCCESS', 'Round Robin Name Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        const {status} = await postRequest(`/roundRobin`, roundRobin.value)
+        editRoundRobin.value = false
+        snackbar('SUCCESS', 'Round Robin Name Saved')
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Round Robin Name')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Saving Round Robin Name')
+        appStore.loading = false
       }
-    },
-    async getCompanyTimezones() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getCompanyTimezones = async() => {
+      appStore.loading = true
       try {
         const {data, status} = await getRequestWithParams(`/timezone`)
-        this.companyTimezones = data
-        handleHidingGlobalLoader(this, status)
+        companyTimezones.value = data
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Retrieving Timezones')
+        appStore.loading = false
       }
-    },
-    async getRoundRobinDetails() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getRoundRobinDetails = async() => {
+      appStore.loading = true
       try {
-        const {data, status} = await getRequest(`/roundRobin/${this.roundRobinId}`)
-        this.roundRobin = data
-        this.dataLoading = false
-        handleHidingGlobalLoader(this, status)
+        const {data, status} = await getRequest(`/roundRobin/${roundRobinId.value}`)
+        roundRobin.value = data
+        dataLoading.value = false
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.loading = false
       }
-    },
-  }
-}
+    }
 </script>
 
 <style lang="scss" scoped>

@@ -222,6 +222,17 @@ public class BlueravenCustomFieldGroupService {
     return getCustomField(id);
   }
 
+  public void updateCustomFieldGroupAssignment(CustomField customField) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", customField.getCustomFieldGroupAssignmentId());
+    params.put("groupID", customField.getCustomFieldGroupId());
+    params.put("modifiedById", currentUser.trueUserId());
+
+    sqlCache.updateBySql(BlueravenCustomFieldGroupQuery.updateCustomFieldGroupAssignment, params);
+  }
+
   public CustomField getCustomField(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);

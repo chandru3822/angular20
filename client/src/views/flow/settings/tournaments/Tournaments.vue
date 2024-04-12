@@ -6,39 +6,47 @@
           <v-toolbar-title class="app-title">Tournaments</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="showPreviousYears = !showPreviousYears">
-              {{ showPreviousYears ? 'Hide Previous Years' : 'Show Previous Years' }}
-            </v-btn>
-            <v-btn text color="primary" @click="[addNew = !addNew, newTournament = { tournamentFormulaFields: [] }]" v-if="userCanAdd">
-              {{'Add New'}}
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                :text="showPreviousYears ? 'HIDE PREVIOUS YEARS' : 'SHOW PREVIOUS YEARS'"
+                @click="showPreviousYears = !showPreviousYears">
+            </a-btn>
+
+            <a-btn
+                variant="text"
+                color="primary"
+                v-if="userCanAdd"
+                text="ADD NEW"
+                @click="[addNew = !addNew, newTournament = { tournamentFormulaFields: [] }]">
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
           <v-card color="transparent" flat v-if="addNew" class="mb-2">
-            <v-text-field
+            <a-text-field
                 label="Tournament Name"
                 tabindex=1
                 v-model="newTournament.tournamentName"
-            ></v-text-field>
-            <v-autocomplete
+            ></a-text-field>
+            <a-autocomplete
               v-model="newTournament.tournamentOwnerTypeId"
               :items="ownerTypes"
               label="Owner Type"
               @change="getTournamentFormulas()"
-              item-text="ownerType"
+              item-title="ownerType"
               item-value="id"
               :attach="true"
-            ></v-autocomplete>
-            <v-autocomplete
+            ></a-autocomplete>
+            <a-autocomplete
               v-model="newTournament.tournamentFormulaId"
               :items="formulas"
               label="Scoring Formula"
-              item-text="formulaTitle"
+              item-title="formulaTitle"
               item-value="id"
               :attach="true"
               @change="getTournamentFormulaFields"
-            ></v-autocomplete>
+            ></a-autocomplete>
 
             <div v-if="newTournament.tournamentFormulaFields && newTournament.tournamentFormulaFields.length > 0"
                  v-for="tff in newTournament.tournamentFormulaFields">
@@ -62,14 +70,21 @@
               :format="'MMMM DD, YYYY'"
               label="End Date"
             />
-            <v-btn :disabled="!newTournament.tournamentName || !newTournament.startDate || !newTournament.endDate
+            <a-btn
+                color="primary"
+                :disabled="!newTournament.tournamentName || !newTournament.startDate || !newTournament.endDate
                    || (newTournament.startDate >= newTournament.endDate) || !newTournament.tournamentOwnerTypeId || !newTournament.tournamentFormulaId
                    || validateCustomFields()"
-                   color="primary"
-                   @click="addTournament">
-              Save
-            </v-btn>
-            <v-btn text color="primary" class="ml-2" @click="[newTournament = { tournamentFormulaFields: [] }, addNew = false]">Cancel</v-btn>
+                text="Save"
+                @click="addTournament">
+            </a-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                text="Cancel"
+                class="ml-2"
+                @click="[newTournament = { tournamentFormulaFields: [] }, addNew = false]">
+            </a-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -81,17 +96,43 @@
                 :loading="dataLoading"
                 class="elevation-1 round-robin-table table-striped"
             >
-              <template #item.tournamentName="{item}" class="text-left clickable" @click="goToTournament(item.id)">{{item.tournamentName}}</template>
-              <template #item.startDate="{item}" class="text-left clickable" @click="goToTournament(item.id)">{{item.startDate | formatDate('date', 'M/D/YYYY')}}</template>
-              <template #item.endDate="{item}" class="text-left clickable" @click="goToTournament(item.id)">{{item.endDate | formatDate('date', 'M/D/YYYY')}}</template>
-              <template #item.active="{item}" class="text-left clickable" @click="goToTournament(item.id)">
-                <input type="checkbox" v-model="item.active" readonly disabled>
+              <template #item.tournamentName="{item}" class="text-left clickable">
+                <router-link :to="`${goToTournament(item.id)}`" class="router-link-td elevation-0">
+                  {{item.tournamentName}}
+                </router-link>
+              </template>
+              <template #item.startDate="{item}" class="text-left clickable">
+                <router-link :to="`${goToTournament(item.id)}`" class="router-link-td elevation-0">
+                  {{item.startDate | formatDate('date', 'M/D/YYYY')}}
+                </router-link>
+              </template>
+              <template #item.endDate="{item}" class="text-left clickable">
+                <router-link :to="`${goToTournament(item.id)}`" class="router-link-td elevation-0">
+                  {{item.endDate | formatDate('date', 'M/D/YYYY')}}
+                </router-link>
+              </template>
+              <template #item.active="{item}" class="text-left clickable">
+                <router-link :to="`${goToTournament(item.id)}`" class="router-link-td elevation-0">
+                  <input type="checkbox" v-model="item.active" readonly disabled>
+                </router-link>
               </template>
               <template #item.icons="{item}" class="text-right">
-                <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="goToTournament(item.id)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn v-if="userCanDelete" small text color="primary" @click="tournamentToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <a-btn
+                    :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
+                    icon
+                    color="primary"
+                    prepend-icon="edit"
+                    @click="router.push(goToTournament(item.id))  ">
+                </a-btn>
+
+                <a-btn
+                    v-if="userCanDelete"
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    prepend-icon="delete"
+                    @click="tournamentToDelete=item">
+                </a-btn>
               </template>
 
             </v-data-table>
@@ -107,18 +148,24 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
+
   import moment from 'moment'
+
   import orderBy from 'lodash.orderby'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
-  import {computed, getCurrentInstance, onMounted, ref} from "vue";
-  import {useRouter} from "vue-router/composables";
+  import ConfirmationDialog from '@/components/ConfirmationDialog'
+  import {computed, getCurrentInstance, onMounted, ref} from 'vue'
+  import {useRouter} from 'vue-router/composables'
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
+  const userStore = useUserStore()
 
   const router = useRouter()
 
@@ -128,13 +175,8 @@
         newTournament= ref({
           tournamentFormulaFields: []
         }),
-        timezone=ref(store.state.user.details.timezone.value),
         dataLoading= ref(true),
-        userCanAdd=ref(store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADD')),
-        userCanEdit=ref(store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')),
-        userCanDelete=ref(store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')),
-        companyId=ref(store.state.user.details.companyId),
-        userId=ref(store.state.user.details.id),
+        userId=ref(userStore.details.id),
         tournaments=ref([]),
         currentYear=ref(moment().year()),
         ownerTypes=ref([]),
@@ -151,6 +193,26 @@
     const tournamentToDeleteName = computed(() => {
         return tournamentToDelete.value ? tournamentToDelete.value.tournamentName : ''
       })
+
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'ADD')
+  })
+
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+  })
+
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')
+  })
+
+  const timezone = computed(() => {
+    return userStore.timezone.value
+  })
+
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
 
     const validateCustomFields = () => {
         let invalid = false
@@ -171,101 +233,93 @@
         }), [ 'active', 'startDate', 'tournamentName'], ['desc','desc', 'asc'])
       },
       goToTournament = (id) => {
-        router.push({path: `/settings/tournaments/${id}/details`})
+        return `/settings/tournaments/${id}/details`
       },
       getTournamentFormulas = async() => {
     let snackbar
         newTournament.value.tournamentFormulaId = null
         newTournament.value.tournamentFormulaFields = []
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/tournament/formulas/${newTournament.value.tournamentOwnerTypeId}`, 'blueraven')
           formulas.value = data
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
-          snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.loading = false
         }
       },
         getTournamentFormulaFields = async() => {
           let snackbar
           newTournament.value.tournamentFormulaFields = []
-          store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           try {
             const {data, status} = await getRequest(`/tournament/formula/${newTournament.value.tournamentFormulaId}/fields`, 'blueraven')
             newTournament.value.tournamentFormulaFields = data
-            handleHidingGlobalLoader(vueInstance, status)
+            handleHidingGlobalLoader(status)
           } catch (e) {
             console.error('*** ERROR ***', e)
             dataLoading.value = false
-            snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-            store.commit(AppMutations.SHOW_SNACK, snackbar)
-            store.commit(AppMutations.SET_LOADING, false)
+            snackbar('ERROR', 'Error Retrieving Data')
+            appStore.loading = false
           }
         },
       getTournamentOwnerTypes= async() => {
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
           ownerTypes.value = data
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
-          let snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.loading = false
         }
       },
       getTournaments = async() => {
         dataLoading.value = true
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/tournament`, 'blueraven')
           tournaments.value = data
           dataLoading.value = false
-          handleHidingGlobalLoader(vueInstance, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
-          let snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.loading = false
         }
       },
       deleteTournament = async() => {
         const id = tournamentToDelete.value.id
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
-          const {status} = await deleteRequest(`/tournaments/${id}`, 'blueraven')
-          let snackbar = getSnackbar('SUCCESS', 'Tournament Deleted')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          handleHidingGlobalLoader(vueInstance, status)
+          const {status} = await deleteRequest(`/tournament/${id}`, 'blueraven')
+          snackbar('SUCCESS', 'Tournament Deleted')
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          let snackbar = getSnackbar('ERROR', 'Error Deleting Tournament')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Deleting Tournament')
+          appStore.loading = false
         }
         tournamentToDelete.value=null
       },
       addTournament= async() => {
         let snackbar
-        store.commit(AppMutations.SET_LOADING, true)
+        appStore.loading = true
         try {
           const {data, status} = await postRequest(`/tournament`, newTournament.value, 'blueraven')
           router.push({path: `/settings/tournaments/${data.id}/details`})
-          snackbar = getSnackbar('SUCCESS', 'Tournament Added')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          handleHidingGlobalLoader(vueInstance, status)
+          snackbar('SUCCESS', 'Tournament Added')
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar = getSnackbar('ERROR', 'Error Adding Tournament')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
-          store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Adding Tournament')
+          appStore.loading = false
         }
       }
 

@@ -108,6 +108,49 @@ public class ProposalToolQuery {
          """;
 
   //language=PostgreSQL
+  public static final String getKwhProposalValueForUtility = """
+    WITH version_values AS (
+          SELECT DISTINCT ON (vw.proposal_group_uuid, vw.custom_field_group_assignment_id)
+          vw.id,
+          vw.custom_field_group_assignment_id,
+          vw.proposal_group_uuid,
+          vw.proposal_version_id,
+          vw.value,
+          vw.field_id,
+          vw.field_code,
+          vw.modified_by_id,
+          vw.modified_by,
+          vw.date_modified
+          FROM brs.proposal_version_custom_field_value_vw vw
+          WHERE vw.proposal_version_id <= (select max(pv.version::numeric) from brs.proposal_version pv where company_id = 3)
+          AND vw.object_code = (SELECT object_code FROM brs.object_type WHERE object_type = 'Proposal Pricing')
+          AND vw.custom_field_group_assignment_id IN (85, 87) -- Utility Company & kWh Rate
+          AND vw.proposal_group_uuid NOT IN (
+            SELECT DISTINCT g.proposal_group_uuid
+            FROM brs.proposal_version_custom_field_group g
+            WHERE g.archived IS NOT NULL
+            AND g.proposal_version_id <= (
+            SELECT proposal_version_id
+            FROM brs.primary_company_proposal_version
+            WHERE company_id = 3
+            LIMIT 1)
+          )
+    )
+    SELECT
+    vv.value ->> 'value'
+    FROM version_values vv
+    LEFT JOIN brs.proposal_version_custom_field_group grp ON grp.proposal_group_uuid = vv.proposal_group_uuid
+    AND grp.proposal_version_id = (select max(pv.version::numeric) from brs.proposal_version pv where company_id = 3)
+    WHERE vv.custom_field_group_assignment_id = 87
+    AND vv.proposal_group_uuid IN (
+      SELECT proposal_group_uuid
+      FROM version_values
+      WHERE custom_field_group_assignment_id = 85
+      AND value ->> 'value' = :utilityCompany
+    )
+         """;
+
+  //language=PostgreSQL
   public static final String proposalVersionCustomFieldValuesByUUID = """
     with version_values as (
         select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
@@ -280,6 +323,27 @@ public class ProposalToolQuery {
         """;
 
   //language=PostgreSQL
+  public static final String findProposalVersionValues = """
+with a as (select (jsonb_path_query(get_proposal_version_value,
+                                    '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFieldId)',
+                                    jsonb_build_object('targetFieldId', :fieldId)) -> 'intValue')::int as int_value,
+                  get_proposal_version_value                                                           as row
+           from brs.get_proposal_version_value(:versionId, null::proposalfieldfilter[], :objectCode)),
+     t as (select (jsonb_path_query(row,
+                                    '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFieldId)',
+                                    jsonb_build_object('targetFieldId', :fieldId)) -> 'intValue')::int as       int_value,
+                  jsonb_path_exists(row,
+                                    '$.fields[*] ? (@.fieldId == $customFieldId && @.intValue == $intValue)',
+                                    jsonb_build_object('customFieldId', :customFieldId, 'intValue', :intValue)) is_match
+           from a
+           where jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $customFieldId)',
+                                   jsonb_build_object('customFieldId', :customFieldId)))
+select a.int_value
+from a
+where a.int_value not in (select t.int_value from t where t.is_match is false)
+  """;
+
+  //language=PostgreSQL
   public final static String findFilterableValues = """
       with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
                                                                                                          proposal_group_uuid,
@@ -323,6 +387,7 @@ public class ProposalToolQuery {
                                                                                                          field_id
                             from brs.proposal_version_custom_field_value_vw
                             where proposal_version_id <= :versionId
+                              and case when :objectCode is not null then object_code = :objectCode else 1 = 1 end
                               and proposal_group_uuid not in (select distinct proposal_group_uuid
                                                               from brs.proposal_version_custom_field_group
                                                               where archived is not null

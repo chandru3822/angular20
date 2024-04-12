@@ -138,16 +138,39 @@ $default-text: rgba(0,0,0,0.87);
   color: #9E9E9E !important;
 }
 /* theme the calendar */
-.fc-button-primary {
-  color: white;
+.fc-button-primary.fc-prev-button, .fc-button-primary.fc-customToday-button, .fc-button-primary.fc-next-button, .fc-button-primary.fc-button-active {
+  color: white !important;
   background-color: var(--v-primary-base) !important;
   border-color: var(--v-primary-base) !important;
 }
 
+.fc-button-primary{
+  color: var(--v-primary-base) !important;
+  background-color: white !important;
+}
+
 .fc-button-primary:hover {
-  color: white;
+  color: white !important;
   background-color: var(--v-primary-base) !important;
   border-color: var(--v-primary-base) !important;
+}
+
+.fc .fc-bg-event {
+  opacity: 100% !important;
+}
+.fc h2.fc-toolbar-title{
+  //headline-large
+  font-family: lato;
+  font-weight: 600;
+  font-size: 1.375rem;
+  line-height: 1.4;
+}
+
+//fix the alignment on the prev and next buttons
+div.fc-header-toolbar.fc-toolbar.fc-toolbar-ltr > div > div > {
+  button.fc-next-button.fc-button.fc-button-primary, button.fc-prev-button.fc-button.fc-button-primary{
+    padding-top:0;
+  }
 }
 
 /* theme the date time picker */
@@ -727,10 +750,8 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
     line-height: 1.5;
   }
 
-  .hide-xs {
-    display: none;
-  }
-
+  .hide-xs,
+  .hide-sm,
   .hide-column-xs {
     display: none;
   }
@@ -744,6 +765,69 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
     width: 50px !important;
     height: 20px !important;
   }
+}
+
+
+// Event Color Classes for Calendar Events (Scheduling Tool and Closer Availability)
+.event-tile-red {
+  border-left-color: #e6194b !important;
+}
+.event-tile-green {
+  border-left-color: #3cb44b !important;
+}
+.event-tile-yellow {
+  border-left-color: #ffe119 !important;
+}
+.event-tile-blue {
+  border-left-color: #4363d8 !important;
+}
+.event-tile-orange {
+  border-left-color: #f58231 !important;
+}
+.event-tile-purple {
+  border-left-color: #911eb4 !important;
+}
+.event-tile-cyan {
+  border-left-color: #46f0f0 !important;
+}
+.event-tile-magenta {
+  border-left-color: #f032e6 !important;
+}
+.event-tile-lime {
+  border-left-color: #bcf60c !important;
+}
+.event-tile-pink {
+  border-left-color: #FF7F9E !important;
+}
+.event-tile-teal {
+  border-left-color: #008080 !important;
+}
+.event-tile-lavender {
+  border-left-color: #dcbeff !important;
+}
+.event-tile-brown {
+  border-left-color: #9a6324 !important;
+}
+.event-tile-pale-yellow {
+  border-left-color: #fdf8a2 !important;
+}
+.event-tile-maroon {
+  border-left-color: #800000 !important;
+}
+.event-tile-mint {
+  border-left-color: #aaffc3 !important;
+}
+.event-tile-olive {
+  border-left-color: #808000 !important;
+}
+.event-tile-apricot {
+  border-left-color: #f6d5b1 !important;
+}
+.event-tile-navy {
+  border-left-color: #000075 !important;
+}
+.event-tile-dark-purple {
+  border-left-color: #42063e !important;
 }
 
 

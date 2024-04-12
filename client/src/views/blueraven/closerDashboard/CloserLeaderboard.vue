@@ -5,10 +5,12 @@
     <div class="ranking-tables-section-header">
       Leaderboard
       <div class="expand-section">
-        <v-btn text @click="showLeaderboard = !showLeaderboard">
-          <v-icon v-if="!showLeaderboard">mdi-chevron-down</v-icon>
-          <v-icon v-else>mdi-chevron-up</v-icon>
-        </v-btn>
+        <a-btn
+            variant="text"
+            @click="showLeaderboard = !showLeaderboard"
+            color="unset"
+            :prepend-icon="!showLeaderboard ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+        ></a-btn>
       </div>
     </div>
     <!-- BOOKING TABLES FIRST HEADER END -->
@@ -65,68 +67,65 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import constants from '@/helpers/constants'
-  import { handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
-  import { AppMutations } from '@/stores/AppStore'
+  import { handleHidingGlobalLoader, getRequest, getRequestWithParams } from '@/helpers/helpers'
   import SpinnerInline from '@/components/SpinnerInline'
   import DatetimePickerInput from "@/components/DatetimePickerInput";
+  import {getCurrentInstance, ref, computed, onMounted} from "vue";
 
-  export default {
-    name: 'closerLeaderboard',
-    components: {
-      SpinnerInline,
-      DatetimePickerInput
-    },
-    data () {
-      return {
-        snackbar: {},
-        constants,
-        currentUserId: this.$store.state.user.details.id,
-        currentUserOrgId: null,
-        bookingDate: null,
-        test1: null,
-        test2: null,
-        showLeaderboard: true,
-        bookingsLoading: false,
-        bookingData: [],
-        timezone: this.$store.state.user.details?.timezone?.value
-      }
-    },
-    computed: {
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import {useUserStore} from "@/stores/UserStorePinia.js";
 
-    },
-    methods: {
-      async loadBookingData () {
-        if(this.bookingDate != null) {
-          this.bookingsLoading = true
+  const userStore = useUserStore()
+  const appStore = useAppStore()
+
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+
+  const currentUserId = computed(() => {
+    return userStore.details.id
+  })
+  const timezone = computed(() => {
+    return userStore.details?.timezone?.value
+  })
+        const currentUserOrgId = ref(null)
+        const bookingDate = ref(null)
+        const test1 = ref(null)
+        const test2 = ref(null)
+        const showLeaderboard = ref(true)
+        const bookingsLoading = ref(false)
+        const bookingData = ref([])
+
+  onMounted(async () => {
+    const now = new Date();
+    //if it is monday, default to saturday
+    let dayOffset = now.getDay() === 1 ? 2 : 1
+    now.setDate(now.getDate() - dayOffset);
+    bookingDate.value = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
+    await loadBookingData()
+  })
+
+      const loadBookingData = async () => {
+        if(bookingDate.value != null) {
+          bookingsLoading.value = true
           try {
             const {data, status} = await getRequestWithParams('/closerDashboard/leaderboardBookings', { params: {
-                bookingDate: this.bookingDate
+                bookingDate: bookingDate.value
               }},'blueraven', [])
-            this.bookingData = data
+            bookingData.value = data
 
-            this.bookingsLoading = false
+            bookingsLoading.value = false
 
-            handleHidingGlobalLoader(this, status)
+            handleHidingGlobalLoader(vueInstance, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', `Error retrieving bookings.`)
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.bookingsLoading = false
+            snackbar('ERROR', `Error retrieving bookings.`)
+            bookingsLoading.value = false
           }
         }
-      },
-    },
-    async created () {
-      const now = new Date();
-      //if it is monday, default to saturday
-      let dayOffset = now.getDay() === 1 ? 2 : 1
-      now.setDate(now.getDate() - dayOffset);
-      this.bookingDate = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
-      await this.loadBookingData()
-    },
-  }
+      }
+
 </script>
 
 <style lang="scss" scoped>

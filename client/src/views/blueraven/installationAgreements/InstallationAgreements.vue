@@ -19,25 +19,23 @@
   </v-container>
 </template>
 
-<script>
-export default {
-  name: 'installationAgreements',
-  computed: {
-    displayedTabs() {
-      return this.tabs.filter(tab => tab.display)
-    }
-  },
-  data() {
-    return {
-      snackbar: {},
-      model: '',
-      tabs: [{
+<script setup>
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+
+    const tabs = computed(() => {
+      return [{
         label: 'Installation Agreement Request',
         path: '/installation-agreements/request',
-        display: this.$store.getters.userHasFeature('INSTALLATION_AGREEMENT')
+        display: userStore.userHasFeature('INSTALLATION_AGREEMENT')
       }]
-    }
-  },
-  methods: {}
-}
+    })
+    const displayedTabs = computed(() => {
+      return tabs.value?.filter(tab => tab.display)
+    })
+    const model = ref('')
 </script>

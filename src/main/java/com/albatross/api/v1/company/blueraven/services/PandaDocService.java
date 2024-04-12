@@ -5,6 +5,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.ProposalVersionService;
 import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
 import com.albatross.api.v1.company.blueraven.services.queries.ElectronicDocumentQuery;
 import com.albatross.api.v1.company.blueraven.services.queries.PandaDocQuery;
@@ -44,6 +45,8 @@ public class PandaDocService {
   @Autowired private SqlCache sqlCache;
 
   @Autowired private NamedParameterJdbcTemplate jdbc;
+
+  @Autowired private ProposalVersionService proposalVersionService;
 
   @Autowired private SecurityService securityService;
 
@@ -244,7 +247,7 @@ public class PandaDocService {
    * @throws Exception
    */
   public void validate(Long projectId, String financier, JSONObject tokens) throws Exception {
-    final Set<String> ALLOWED_FINANCIERS = new HashSet<>(Arrays.asList("cash", "loanpal", "goodleap", "sunlight", "sunpower",
+    final Set<String> ALLOWED_FINANCIERS = new HashSet<>(Arrays.asList("cash", "loanpal", "enfin", "goodleap", "sunlight", "sunpower",
                                                                                 "skeps", "dividend", "credit", "credit human"));
     if (installAgreementRepository.isCashProject(financier)) {
       validateCashProject(projectId, tokens);
@@ -968,6 +971,13 @@ public class PandaDocService {
           ZonedDateTime.now(ZoneId.of("US/Mountain"))
               .format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
       tokens.put("Date", today);
+
+      if (result.get("utility_company_name") != null) {
+        Optional<String> utilityKwh = proposalVersionService.getKwhProposalValueForUtility(result.get("utility_company_name").toString());
+        if (utilityKwh.isPresent()) {
+          tokens.put("Proposal.kWHRate", utilityKwh.get());
+        }
+      }
 
     } catch (EmptyResultDataAccessException e) {
       log.warn("PANDADOC Error getting proposal log values}", e);

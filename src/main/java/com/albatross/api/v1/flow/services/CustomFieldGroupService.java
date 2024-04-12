@@ -487,6 +487,26 @@ public class CustomFieldGroupService {
     return results;
   }
 
+    public List<CustomFieldValue> getCustomFieldsByCfgaIds(List<Long> cfgaIds) {
+        User user = securityService.getCurrentUser();
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("companyId", user.getCompanyId());
+        params.put("cfgaIds", cfgaIds);
+
+
+        List<CustomFieldValue> results =
+                sqlCache.queryBySql(
+                        CustomFieldGroupQuery.getCustomFieldsByCfgaIds,
+                        params,
+                        new CustomFieldValueService.CustomFieldValueMapper<>(CustomFieldValue.class, om));
+
+        for(CustomFieldValue field : results) {
+            customFieldValueService.handleCustomListValueForCfv(field, null, null, null, null);
+        }
+
+        return results;
+    }
+
   public void updateFieldShowOrRequire(CustomField customField) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

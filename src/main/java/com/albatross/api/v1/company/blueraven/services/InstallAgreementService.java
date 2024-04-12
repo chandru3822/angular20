@@ -4,9 +4,7 @@ import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
-import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
-import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
+import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.queries.InstallAgreementQuery;
 import com.albatross.api.v1.company.blueraven.services.queries.PandaDocQuery;
 import com.albatross.api.v1.flow.model.User;
@@ -22,14 +20,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URISyntaxException;
+import java.net.http.HttpTimeoutException;
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Service
@@ -39,6 +44,8 @@ public class InstallAgreementService {
   private final SqlCache sqlCache;
 
   private final SecurityService securityService;
+
+  private final EnFinService enFinService;
 
   private final SunlightService sunlightService;
 
@@ -53,6 +60,12 @@ public class InstallAgreementService {
 
   @Value(value = "${app.goodleap.newLoanUrl}")
   private String goodleapNewLoanUrl;
+
+  @Value("${app.srec.host}")
+  private String srecHost;
+
+  @Value("${app.srec.token}")
+  private String srecToken;
 
   public Page<InstallAgreementProject> getProjects(String query, Pageable pageable, Boolean showCancelled) {
     User user = securityService.getCurrentUser();
@@ -87,8 +100,16 @@ public class InstallAgreementService {
   }
 
   public String saveRequest(InstallAgreementRequest request) throws Exception {
+	  //@TODO: Holding off on SREC functionality until we get a production API key
+    // first create disclosure doc through SREC
+//    var srecSuccessful = sendDisclosureDoc(request.getProjectId(), request.getProposalNbr());
+//
+//    if (!srecSuccessful) {
+//      throw new RuntimeException("Unable to create disclosure document");
+//    }
+
     final String result = createRequest(request);
-    if (result == null || result.trim().equals("")) {
+    if (result == null || result.trim().isEmpty()) {
       request.setRequest_successful(true);
     } else {
       request.setRequest_successful(false);
@@ -98,6 +119,107 @@ public class InstallAgreementService {
     setRequestStatus(request, user.getId());
 
     return result;
+  }
+
+  private boolean sendDisclosureDoc(Long projectId, Long proposalNumber) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("proposalNumber", proposalNumber);
+
+    Srec srec = sqlCache.getBySql(InstallAgreementQuery.getSrec, params, Srec.class)
+                        .orElse(null);
+
+    // create disclosure doc only if all the following are met:
+    // - there is a proposal
+    // - a disclosure form wasn't already created
+    // - proposal is IL SREC
+    // - project is in Illinois
+    if (
+      srec == null ||
+      srec.getIlSrecDisclosureFormId() != null ||
+      srec.getSrecValue() == null ||
+      !Objects.equals(srec.getProjectStateAbbreviation(), "IL"))
+    {
+      return true;
+    }
+
+    boolean successfullySent = false;
+    boolean isFinanced = !srec.getLoanType().toLowerCase().contains("cash");
+
+    var body = new SrecDTO();
+    body.setFormName(srec.getProposalNumber() + " " + srec.getContactName() + " " + srec.getProjectId());
+    body.setCustomerName(srec.getProjectName());
+    body.setCustomerAddressEmail(srec.getContactEmail());
+    body.setCustomerAddressPhone(srec.getContactPhone());
+    body.setCustomerAddress1(srec.getProjectStreet1());
+    body.setCustomerAddressZip(srec.getProjectPostalCode());
+    body.setCustomerAddressCity(srec.getProjectCity());
+    body.setCustomerAddressState(srec.getProjectStateAbbreviation());
+
+    body.setElectricUtility(srec.getUtilityCompanyName());
+
+    //Naperville users qualify as municipal utility, which is what the external API accepts
+    if (body.getElectricUtility().equalsIgnoreCase("Naperville Electric Utility")) {
+      body.setElectricUtility("Municipal Utility");
+    }
+
+    body.setDepositOwed(srec.getTotalCost());
+    body.setReferenceNumber(srec.getProjectId().toString());
+
+	var systemSizeKw = new BigDecimal(srec.getSystemSize()).divide(new BigDecimal(1000));
+    var systemSizeAcKw = new BigDecimal(srec.getSystemSizeAc()).divide(new BigDecimal(1000));
+
+    body.setProjectSizeKwDc(systemSizeKw.toString());
+    body.setProjectSizeKwAc(systemSizeAcKw.toString());
+    body.setGrossElectricProduction(srec.getYearOneKwhOutput());
+
+	var srecValue = new BigDecimal(srec.getSrecValue().toString()).divide(new BigDecimal("0.9"), 2, RoundingMode.HALF_UP);
+
+    body.setExpectedRecValue(srecValue.toString());
+    body.setRecCustomerPayment(srec.getSrecValue().toString());
+
+    if (isFinanced) {
+      body.setFinalAmountOwed("0");
+      body.setFinalPaymentDue("N/A");
+      body.setInstallationOwed("0");
+      body.setInitialDepositOwed(srec.getTotalCost());
+    } else {
+      Long halfTotalCost = Long.parseLong(srec.getTotalCost()) / 2;
+
+      body.setFinalAmountOwed(halfTotalCost.toString());
+      body.setFinalPaymentDue("Upon Substantial Completion");
+      body.setInstallationOwed(halfTotalCost.toString());
+      body.setInitialDepositOwed("0");
+    }
+
+    try {
+      WebClient client = WebClient.create(srecHost);
+      ResponseEntity<String> res = client
+        .post()
+        .uri("/create_disclosure_dg/")
+        .header("Authorization", "Token " + srecToken)
+        .body(Mono.just(body), SrecDTO.class)
+        .retrieve()
+        .toEntity(String.class)
+        .timeout(Duration.ofSeconds(30))
+        .onErrorMap(TimeoutException.class, e -> new HttpTimeoutException("HIC (SREC): Timeout issue: " + e.getMessage()))
+        .block();
+
+      JSONObject resultBody = new JSONObject(res.getBody());
+      String formId = resultBody.getString("FormID");
+      params.put("formId", formId);
+      sqlCache.updateBySql(InstallAgreementQuery.setDisclosureId, params);
+
+      successfullySent = true;
+    }
+    catch (WebClientResponseException e) {
+      log.error("HIC (SREC): Error generating disclosure doc (" + projectId + ", " + proposalNumber + "): " + e.getMessage() + ": " + e.getResponseBodyAsString());
+    }
+    catch (Exception e) {
+      log.error("HIC (SREC) (" + projectId + ", " + proposalNumber + "): " + e.getMessage());
+    }
+
+    return successfullySent;
   }
 
   private String createRequest(InstallAgreementRequest request) throws Exception {
@@ -288,6 +410,7 @@ public class InstallAgreementService {
       sqlCache.getBySql(PandaDocQuery.getProjectDetails, params, PandaDocProjectDetails.class);
 
     if (deets.isPresent()) {
+      String goodleapUrl = null;
       PandaDocProjectDetails pd = deets.get();
       final String loanType = pd.getLoanType();
 
@@ -295,7 +418,10 @@ public class InstallAgreementService {
         throw new ApiException("Loan Type required and not found");
       }
 
-      if (loanType.toLowerCase().contains("sunlight")) {
+      if (loanType.toLowerCase().contains("enfin")) {
+        Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
+        return enFinService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr);
+      } else if (loanType.toLowerCase().contains("sunlight")) {
         Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
 
         try {
@@ -331,46 +457,16 @@ public class InstallAgreementService {
               "Unable to generate GoodLeap application due to existing Sunlight application.");
           }
         }
-        String bothStreets = "";
-        if (pd.getMailingStreet1() != null) {
-          bothStreets += pd.getMailingStreet1();
-        }
-        if (pd.getMailingStreet2() != null) {
-          bothStreets += " " + pd.getMailingStreet2();
-        }
-
-        bothStreets = bothStreets.trim();
-        String phoneNumber = "";
-        if (pd.getPhone() != null) {
-          phoneNumber = pd.getPhone().replaceAll("[^\\d]+", "");
-          if (phoneNumber.length() > 10 && phoneNumber.charAt(0) == '1') {
-            phoneNumber = phoneNumber.substring(1);
-          }
-        }
 
         try {
-          String financeOption = null != pd.getFinancialOption() ? pd.getFinancialOption() : getFinanceOption(pd.getLoanType(), pd.getLoanTerm(), pd.getInterestRate(), pd.getProposalLogHistoryId());
-          URIBuilder b = new URIBuilder(goodleapNewLoanUrl + financeOption + ".html");
-          b.addParameter("fname", s(pd.getCustomerFirstName()));
-          b.addParameter("lname", s(pd.getCustomerLastName()));
-          b.addParameter("street", bothStreets);
-          b.addParameter("city", s(pd.getCity()));
-          b.addParameter("state", s(pd.getMailingState()));
-          b.addParameter("zip", s(pd.getPostalCode()));
-          b.addParameter("email", s(pd.getCustomerEmail()));
-          b.addParameter("phone", phoneNumber);
-          b.addParameter("srfn", s(pd.getCloserFirstName()));
-          b.addParameter("srln", s(pd.getCloserLastName()));
-          b.addParameter("sre", s(pd.getCloserEmail()));
-          b.addParameter("cost", s(pd.getLoanAmount()));
-          b.addParameter("refnum", s(pd.getProjectId()));
-          return b.build().toString().replaceAll("\\+", "%20");
-        } catch (URISyntaxException e) {
-          log.error("IARQ: uri error={}", e.getMessage());
+          goodleapUrl = goodleapService.generateApplication(pd);
+        } catch (Exception e) {
+          log.error("IARQ: Error generating GoodLeap loan application for project ID " + pd.getProjectId() + " error={}", e.getMessage());
+          return goodleapNewLoanUrl;
         }
       }
       sunlightService.setCreditLastCheckedBy(projectId, "GoodLeap");
-      return goodleapNewLoanUrl;
+      return goodleapUrl == null ? goodleapNewLoanUrl : goodleapUrl;
     } else {
       throw new ApiException("Proposal Log not found");
     }
@@ -503,7 +599,9 @@ public class InstallAgreementService {
       inverterCustomGetting,
       panel,
       panelWattage,
-      storageBrand;
+      storageBrand,
+      numberOfBatteries,
+      allAncillaryCosts;
   }
 
   @Data

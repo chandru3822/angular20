@@ -298,6 +298,11 @@ public class ProposalVersionService {
     return query.stream().map(getMapper(objectMapper, ProposalCustomValuesRow.class)).filter(Objects::nonNull).toList();
   }
 
+  public Optional<String> getKwhProposalValueForUtility(String utilityCompany) {
+    Map<String, Object> params = Map.of("utilityCompany", utilityCompany);
+    return sqlCache.getBySql(ProposalToolQuery.getKwhProposalValueForUtility, params, new SingleColumnRowMapper<>(String.class));
+  }
+
   //  TODO: cacheable
   public List<Long> getProposalValuesFilterIds(@NonNull Long versionId, ProposalValueFilter filter) {
     try {
@@ -328,7 +333,7 @@ public class ProposalVersionService {
 
   public ProposalVersionHistoryChangeSet getChangeHistory(@NonNull Long versionId) {
 
-    ProposalVersion proposalVersion = getProposalVersion(versionId).orElseThrow(() -> new ApiException("Proposal Version doesn not exist"));
+    ProposalVersion proposalVersion = getProposalVersion(versionId).orElseThrow(() -> new ApiException("Proposal Version does not exist"));
 
     List<ProposalVersionHistory> history = sqlCache.queryBySql(ProposalToolQuery.findVersionHistoryByVersionId, Map.of("versionId", versionId), new ColumnMapRowMapper())
       .stream()
@@ -353,12 +358,13 @@ public class ProposalVersionService {
    * @param filterFieldValue
    * @return
    */
-  public List<Long> getProposalValueFilterIdsByCustomFieldAndValue(@NonNull Long versionId, @NonNull Long fieldId, Long filterFieldId, Object filterFieldValue) {
+  public List<Long> getProposalValueFilterIdsByCustomFieldAndValue(@NonNull Long versionId, @NonNull Long fieldId, Long filterFieldId, Object filterFieldValue, String objectCode) {
     Map<String, Object> params = new HashMap<>();
     params.put("versionId", versionId);
     params.put("fieldId", fieldId);
     params.put("filterFieldId", filterFieldId);
     params.put("filterFieldValue", filterFieldValue);
+    params.put("objectCode", objectCode);
 
     return sqlCache.queryBySql(ProposalToolQuery.findFilterableValuesByFieldIdAndValue, params, new SingleColumnRowMapper<>(Long.class));
   }

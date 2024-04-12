@@ -22,65 +22,69 @@
   </v-container>
 </template>
 
-<script>
-import Vue2Filters from 'vue2-filters'
+<script setup>
 import constants from '@/helpers/constants'
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
-export default {
-  name: 'ObjectType',
-  mixins: [Vue2Filters.mixin],
-  props: {
-    isProject: Boolean
-  },
-  computed: {
-    //this should not be so hard
-    activeTab: {
-      get: function() {
-        return this.$route?.path?.includes('/objectType') ? `/settings/objectType/${this.companyObjectTypeId}/attachmentTypes?objectType=${this.objectType}` : null
-      },
-      set: function(val) {
-        return val
-      }
-    },
-    tabs() {
-     return [
-        {
-          id: 1,
-          label: 'Custom Field Groups',
-          path: `/settings/objectType/${this.companyObjectTypeId}/customFieldGroups?objectType=${this.objectType}`,
-        },
-        {
-          id: 2,
-          label: 'Attachment Types',
-          path: `/settings/objectType/${this.companyObjectTypeId}/attachmentTypes?objectType=${this.objectType}`,
-        }
-      ]
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    }
-  },
-  watch: {
-    // whenever objectTypeId changes, this function will run
-    '$route.params.id': function () {
-      // reset the selected group when the object type changes
-      this.companyObjectTypeId = this.$route.params.id
-      this.objectType = this.$route.query.objectType
-    }
-  },
-  data () {
-    return {
-      snackbar: {},
-      constants,
-      companyObjectTypeId: this.$route.params.id,
-      objectType: this.$route.query.objectType
-    }
-  },
 
-  created () {},
-  methods: {}
-}
+import {ref, onMounted, getCurrentInstance, computed, defineProps, watch} from "vue";
+import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const route = useRoute()
+const router = useRouter()
+const vuetify = vueInstance.$vuetify
+const userStore = useUserStore()
+
+const props = defineProps({
+  isProject: Boolean
+})
+const activeTab = computed({
+  get() {
+    return route?.path?.includes('/objectType') ?       `/settings/objectType/${companyObjectTypeId}/attachmentTypes?objectType=${objectType}` : null
+  },
+  set(val) {
+    return val
+  }
+})
+const tabs = computed(() => {
+ return [
+    {
+      id: 1,
+      label: 'Custom Field Groups',
+      path: `/settings/objectType/${companyObjectTypeId.value}/customFieldGroups?objectType=${objectType.value}`,
+    },
+    {
+      id: 2,
+      label: 'Attachment Types',
+      path: `/settings/objectType/${companyObjectTypeId.value}/attachmentTypes?objectType=${objectType.value}`,
+    }
+  ]
+})
+
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+
+const companyObjectTypeId = computed(() => {
+  return route.params.id
+})
+
+const objectType = computed(() => {
+  return route.query.objectType
+})
+
+
+watch(() => companyObjectTypeId.value, () => {
+  // whenever objectTypeId changes, this function will run
+    // reset the selected group when the object type changes
+    objectType.value = route.query.objectType
+})
 </script>
+
 <style lang="scss">
 @media (max-width: 959px) {
   #object-settings-tabs > div > div.v-slide-group__wrapper > div {

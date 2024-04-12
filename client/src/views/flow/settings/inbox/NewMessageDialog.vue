@@ -13,14 +13,14 @@
       <br>
       <div class="flex-display" v-if="isInbox">
         <label class="mt-5 mr-2">To:</label>
-        <v-autocomplete
+        <a-autocomplete
           v-model="selectedProjectIds"
           :items="sortedProjects"
           :search-input.sync="projectQuery"
           multiple
           cache-items
           clearable
-          item-text="firstName"
+          item-title="firstName"
           item-value="id"
           :disabled="selectedUserIds.length > 0"
           label="Enter project ID"
@@ -42,10 +42,7 @@
               </v-list-item-content>
             </v-list-item>
           </template>
-          <template
-            slot="selection"
-            slot-scope="{ item, index }"
-          >
+          <template  v-slot:selection="{item, index}">
             <v-chip small v-if="selectedProjectIds.length < 3">
               <span>{{ item.projectName }}</span>
             </v-chip>
@@ -53,17 +50,17 @@
               v-if="index === 1 && selectedProjectIds.length >= 3"
             >{{ selectedProjectIds.length }} selected&nbsp;&nbsp;</span>
           </template>
-        </v-autocomplete>
+        </a-autocomplete>
       </div>
 
       <div class="select-user-div">
         <label v-if="!isInbox" class="mt-5 mr-2">To:</label>
-        <v-autocomplete
+        <a-autocomplete
           v-model="selectedUserIds"
           :items="sortedUsers"
           multiple
           :disabled="selectedProjectIds.length > 0 && isInbox"
-          item-text="name"
+          item-title="name"
           item-value="userId"
           :label="selectedUserIds.length > 0 ? '' : 'Select users'"
           class="pa-0 mt-4 select-users"
@@ -84,10 +81,7 @@
             </v-list-item-content>
           </v-list-item>
         </template>
-        <template
-          slot="selection"
-          slot-scope="{ item, index }"
-        >
+        <template  v-slot:selection="{item, index}">
           <v-chip small v-if="selectedUserIds.length < 2">
             <span>{{ item.name }}</span>
           </v-chip>
@@ -95,25 +89,30 @@
             v-if="index === 1 && selectedUserIds.length >= 2"
           >{{ selectedUserIds.length }} selected</span>
         </template>
-        </v-autocomplete>
+        </a-autocomplete>
         <router-link  class="pt-5 pl-5"
                       :class="selectedUserIds.length > 1 ? 'disabled-open-conversation' : 'open-conversation-link'"
                       v-if="selectedUserIds.length > 0"
-                      :to="`/user/${this.selectedUserIds}/details`"
+                      :to="`/user/${selectedUserIds}/details`"
                       target="_blank">
           Open conversation<v-icon small>mdi-open-in-new</v-icon>
         </router-link>
       </div>
 
       <div class="flex-display">
-        <v-textarea class="message-text-area" hide-details
+        <a-textarea class="message-text-area" hide-details
                     placeholder="Enter message here"
                     auto-grow
-                    outlined
+                    variant="outlined"
                     rows="4"
                     v-model="message">
-        </v-textarea>
-        <v-btn icon color="primary" class="white--text templateButton template-button-height">
+        </a-textarea>
+        <a-btn
+          variant="text"
+          icon
+          color="primary"
+          class="white--text templateButton template-button-height"
+        >
           <v-tooltip bottom small>
             <template v-slot:activator="{on, attrs}">
               <v-icon class="pr-2" @click="" v-bind="attrs" v-on="on">
@@ -122,7 +121,7 @@
             </template>
             <span class="albatross-body-3">Templates</span>
           </v-tooltip>
-        </v-btn>
+        </a-btn>
 
         <v-menu v-model="menuOpen" top left offset-y activator=".templateButton" :close-on-content-click="false">
           <v-card class="template-dialog" width="295px">
@@ -130,11 +129,11 @@
               <span class="albatross-header-4-new">Add Template</span>
             </v-card-title>
             <v-card-text>
-              <v-select label="Template"
+              <a-select label="Template"
                         class="template-selector pt-1"
                         v-model="selectedTemplate"
                         :items="selectableTemplates"
-                        item-text="title"
+                        item-title="title"
                         item-value="id"
                         return-object
                         ref="templateSelect"
@@ -147,7 +146,7 @@
                     <span class="template-message">{{ data.item.message }}</span>
                   </div>
                 </template>
-              </v-select>
+              </a-select>
             </v-card-text>
           </v-card>
         </v-menu>
@@ -167,25 +166,22 @@
         <v-spacer/>
         <v-card-actions class="pb-0 px-0 pt-6">
           <v-spacer/>
-          <v-btn
-            color="primary"
-            :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0)
-                          || (message.length == 0 && uploadedFiles.length == 0)"
-            @click="[assignAndSend = false, sendMessage()]"
-            class="send-button"
-            text
-          >
-            Send and don't assign
-          </v-btn>
+          <a-btn
+              color="primary"
+              :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0) || (message.length == 0 && uploadedFiles.length == 0)"
+              @click="[assignAndSend = false, sendMessage()]"
+              class="send-button"
+              variant="text"
+              text="Send and don't assign"
+          ></a-btn>
 
-          <v-btn
-            color="primary"
-            class="white--text send-button"
-            :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0)
-                          || (message.length == 0 && uploadedFiles.length == 0)"
-            @click="[assignAndSend = true, sendMessage()]">
-            Send
-          </v-btn>
+          <a-btn
+              color="primary"
+              class="send-button"
+              :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0) || (message.length == 0 && uploadedFiles.length == 0)"
+              @click="[assignAndSend = true, sendMessage()]"
+              text="Send"
+          ></a-btn>
         </v-card-actions>
       </div>
     </v-card>
@@ -193,342 +189,347 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import { AppMutations } from '@/stores/AppStore'
 import {getRequest, getRequestWithParams, putRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 
-export default {
-  name: "NewMessageDialog",
-  props: {
-    showNewMessageDialog: Boolean,
-    ownerUserId: Number,
-    isInbox: Boolean
-  },
-  data () {
-    return {
-      selectedProjectIds: [],
-      availableProjects: [],
-      availableUsers: [],
-      uploadedFiles: [],
-      message: '',
-      templateTeams: [],
-      selectedTemplate: null,
-      selectableTemplates: [],
-      selectedUserIds: [],
-      projectQuery: null,
-      teamsAssociatedToUser: [],
-      attachmentUrl: '',
-      sendTextUrl: '',
-      lastSentUrl: '',
-      createNotificationUrl: '',
-      inboxUrl: '',
-      addTeamUrl: '',
-      assignAndSend: false,
-      menuOpen: false,
-      messageSuccess: false
-    }
-  },
-  created() {
-    this.getUsers();
-    this.fetchTeamsForUser()
-  },
-  computed: {
-    attachmentsText() {
-      if (this.uploadedFiles.length == 1) {
-        return this.uploadedFiles[0][0].name
-      }
-      else if (this.uploadedFiles.length > 1) {
-        return this.uploadedFiles.length + ' files'
-      }
-    },
-    sortedProjects() {
-      const selectedProjects = this.availableProjects.filter(project => this.selectedProjectIds.includes(project.id));
-      const unselectedProjects = this.availableProjects.filter(project => !this.selectedProjectIds.includes(project.id));
-      return selectedProjects.concat(unselectedProjects);
-    },
-    sortedUsers() {
-      const selectedUsers = this.availableUsers.filter(user => this.selectedUserIds.includes(user.userId));
-      const unselectedUsers = this.availableUsers.filter(user => !this.selectedUserIds.includes(user.userId));
-      return selectedUsers.concat(unselectedUsers);
-    }
-  },
-  watch: {
-    projectQuery (val) {
-      if(!val) {
-        return
-      }
-      this.selectedUserIds = []
-      if (val.length > 3) {
-        this.getProjectDebounced(val)
-      }
-    }
-  },
-  methods: {
-    handleTemplateSelection() {
-      this.message += this.selectedTemplate.message
-      this.menuOpen = false
-      this.selectedTemplate = null
-      this.$refs.templateSelect.reset();
-    },
-    exitDialogue(){
-      this.selectedProjectIds = []
-      this.availableProjects = []
-      this.uploadedFiles = []
-      this.message = ''
-      this.selectedUserIds = []
-      this.projectQuery = null
-      let currentUserValues = this.availableUsers.filter(value => value.userId && value.userId === this.ownerUserId)
-      if (currentUserValues.length > 0) {
-        this.selectedUserIds = [this.ownerUserId]
-      }
+import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
+import {useUserStore} from "@/stores/UserStorePinia.js";
+import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
-      this.$emit('update:showNewMessageDialog', false)
-    },
-    getProjectDebounced(val) {
-      clearTimeout(this._searchTimerId)
-      this._searchTimerId = setTimeout(() => {
-        this.getProjects(val)
-      }, 500) /* 500ms throttle */
-    },
-    async sendMessage() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      if (this.selectedProjectIds.length > 0) {
-        for (let selectedProjectId of this.selectedProjectIds) {
-          this.attachmentUrl = `/project/` + selectedProjectId + `/attachment`
-          this.sendTextUrl = `/communication/sendTextsForProject/` + selectedProjectId
-          this.lastSentUrl = `/messaging/setLastSent/project/` + selectedProjectId
-          this.createNotificationUrl = `/messaging/createNotification/project/` + selectedProjectId
-          this.inboxUrl = `/inbox/inboxConversation/project/` + selectedProjectId
-          this.addTeamUrl = `/messaging/addTeam/project/` + selectedProjectId
-          if (this.assignAndSend) {
-            await this.sendMessageAndAssign();
-          }
-          else {
-            await this.onMessageWasSent();
-          }
-        }
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const route = useRoute()
+const router = useRouter()
+const vuetify = vueInstance.$vuetify
+
+const userStore = useUserStore()
+const emit = defineEmits(['update:showNewMessageDialog'])
+
+const props = defineProps({
+  showNewMessageDialog: Boolean,
+  ownerUserId: Number,
+  isInbox: Boolean
+})
+
+const selectedProjectIds = ref([])
+const availableProjects = ref([])
+const availableUsers = ref([])
+const uploadedFiles = ref([])
+const message = ref('')
+const templateTeams = ref([])
+const selectedTemplate = ref(null)
+const selectableTemplates = ref([])
+const selectedUserIds = ref([])
+const projectQuery = ref(null)
+const teamsAssociatedToUser = ref([])
+const attachmentUrl = ref('')
+const sendTextUrl = ref('')
+const lastSentUrl = ref('')
+const createNotificationUrl = ref('')
+const inboxUrl = ref('')
+const addTeamUrl = ref('')
+const assignAndSend = ref(false)
+const menuOpen = ref(false)
+const messageSuccess = ref(false)
+const conversationIsLoading = ref(false)
+
+onMounted(() => {
+  getUsers();
+  fetchTeamsForUser();
+})
+const attachmentsText = computed(() => {
+  if (uploadedFiles.value.length == 1) {
+    return uploadedFiles.value[0][0].name
+  }
+  else if (uploadedFiles.value.length > 1) {
+    return uploadedFiles.value.length + ' files'
+  }
+})
+const sortedProjects = computed(() => {
+  const selectedProjects = availableProjects.value.filter(project => selectedProjectIds.value.includes(project.id));
+  const unselectedProjects = availableProjects.value.filter(project => !selectedProjectIds.value.includes(project.id));
+  return selectedProjects.concat(unselectedProjects);
+})
+const sortedUsers = computed(() => {
+  const selectedUsers = availableUsers.value.filter(user => selectedUserIds.value.includes(user.userId));
+  const unselectedUsers = availableUsers.value.filter(user => !selectedUserIds.value.includes(user.userId));
+  return selectedUsers.concat(unselectedUsers);
+})
+
+watch(projectQuery,(val) => {
+  if(!val) {
+    return
+  }
+  selectedUserIds.value = []
+  if (val.length > 3) {
+    getProjectDebounced(val)
+  }
+})
+const handleTemplateSelection = () => {
+  message.value += selectedTemplate.value.message
+  menuOpen.value = false
+  selectedTemplate.value = null
+  vueInstance.$refs.templateSelect.reset();
+}
+const exitDialogue = () => {
+  selectedProjectIds.value = []
+  availableProjects.value = []
+  uploadedFiles.value = []
+  message.value = ''
+  selectedUserIds.value = []
+  projectQuery.value = null
+  let currentUserValues = availableUsers.value.filter(value => value.userId && value.userId === props.ownerUserId)
+  if (currentUserValues.length > 0) {
+    selectedUserIds.value = [props.ownerUserId]
+  }
+
+  emit('update:showNewMessageDialog', false)
+}
+const getProjectDebounced = (val) => {
+  clearTimeout(_searchTimerId.value)
+  _searchTimerId.value = setTimeout(() => {
+    getProjects(val)
+  }, 500) /* 500ms throttle */
+}
+const sendMessage = async () => {
+  appStore.loading = true
+  if (selectedProjectIds.value.length > 0) {
+    for (let selectedProjectId of selectedProjectIds.value) {
+      attachmentUrl.value = `/project/` + selectedProjectId + `/attachment`
+      sendTextUrl.value = `/communication/sendTextsForProject/` + selectedProjectId
+      lastSentUrl.value = `/messaging/setLastSent/project/` + selectedProjectId
+      createNotificationUrl.value = `/messaging/createNotification/project/` + selectedProjectId
+      inboxUrl.value = `/inbox/inboxConversation/project/` + selectedProjectId
+      addTeamUrl.value = `/messaging/addTeam/project/` + selectedProjectId
+      if (assignAndSend.value) {
+        await sendMessageAndAssign();
       }
       else {
-        // Send the message for each selected User
-        for (let currentUserId of this.selectedUserIds) {
-          this.attachmentUrl =  `/user/` + currentUserId + `/attachment`
-          this.sendTextUrl = `/communication/sendTextsForUser/` + currentUserId
-          this.lastSentUrl = `/messaging/setLastSent/user/` + currentUserId
-          this.createNotificationUrl = `/messaging/createNotification/user/` + currentUserId
-          this.inboxUrl = `/inbox/inboxConversation/user/` + currentUserId
-          this.addTeamUrl = `/messaging/addTeam/user/` + currentUserId
-          if (this.assignAndSend) {
-            await this.sendMessageAndAssign();
-          }
-          else {
-            await this.onMessageWasSent()
-          }
-
-          if (!this.messageSuccess) {
-            return;
-          }
-        }
+        await onMessageWasSent();
+      }
+    }
+  }
+  else {
+    // Send the message for each selected User
+    for (let currentUserId of selectedUserIds.value) {
+      attachment.value =  `/user/` + currentUserId + `/attachment`
+      sendText.value = `/communication/sendTextsForUser/` + currentUserId
+      lastSent.value = `/messaging/setLastSent/user/` + currentUserId
+      createNotification.value = `/messaging/createNotification/user/` + currentUserId
+      inbox.value = `/inbox/inboxConversation/user/` + currentUserId
+      addTeam.value = `/messaging/addTeam/user/` + currentUserId
+      if (assignAndSend.value) {
+        await sendMessageAndAssign();
+      }
+      else {
+        await onMessageWasSent()
       }
 
-      if (this.messageSuccess) {
-        this.exitDialogue()
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        if (this.assignAndSend) {
-          this.snackbar = getSnackbar('SUCCESS', 'Message sent and conversation assigned')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          if (this.isInbox && !this.$route.path.includes(this.inboxUrl)) {
-            await this.$router.push({ path: this.inboxUrl })
-          }
-        }
-        else {
-          this.snackbar = getSnackbar('SUCCESS', 'Message sent')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      }
-    },
-    async onMessageWasSent() {
-      if (this.message && this.message.length > 1599) {
-        let textOverflowLength = this.message.length - 1599;
-        this.snackbar = getSnackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.messageSuccess = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      if (!messageSuccess.value) {
         return;
       }
+    }
+  }
 
-      // called when the user sends a message
-      let params
-      let smsTeamId = this.teamsAssociatedToUser.length > 0 ? this.teamsAssociatedToUser[0].id : null
-      if (!smsTeamId) {
-        this.snackbar = getSnackbar('ERROR', 'Error: No SMS Team found')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        return
+  if (messageSuccess.value) {
+    exitDialogue()
+    appStore.loading = false
+    if (assignAndSend.value) {
+      snackbar('SUCCESS', 'Message sent and conversation assigned')
+      if (props.isInbox && !route.path.includes(inboxUrl.value)) {
+        await router.push({ path: inboxUrl.value })
       }
+    }
+    else {
+      snackbar('SUCCESS', 'Message sent')
+      appStore.loading = false
 
-      this.messageSuccess = true
+    }
+  }
+}
+const onMessageWasSent = async () => {
+  if (message.value && message.value.length > 1599) {
+    let textOverflowLength = message.value.length - 1599;
+    snackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
 
-      try {
-        if (this.uploadedFiles && this.uploadedFiles.length > 0) {
-          for (let currFile of this.uploadedFiles){
-            let mediaUrls = []
-            let formData = new FormData()
-            formData.append('file', currFile[0])
-            formData.append('attachmentTypeId', 3)
+    messageSuccess.value = false
+    appStore.loading = false
+    return;
+  }
 
-            if (this.selectedUserIds.length > 0) {
-              formData.append('displayName', currFile[0].name.substr(0, currFile[0].name.lastIndexOf('.')))
-            }
+  // called when the user sends a message
+  let params
+  let smsTeamId = teamsAssociatedToUser.value.length > 0 ? teamsAssociatedToUser.value[0].id : null
+  if (!smsTeamId) {
+    snackbar('ERROR', 'Error: No SMS Team found')
 
-            const resp = await postRequest(this.attachmentUrl, formData)
-            const { status } = resp
+    appStore.loading = false
+    return
+  }
 
-            if (status === 200) {
-              mediaUrls.push(resp.data.url)
-            }
+  messageSuccess.value = true
 
-            params = {
-              userIDs: null,
-              message: currFile[0].name,
-              mediaURLs: mediaUrls,
-              smsTeamId: smsTeamId
-            }
+  try {
+    if (uploadedFiles.value && uploadedFiles.value.length > 0) {
+      for (let currFile of uploadedFiles.value){
+        let mediaUrls = []
+        let formData = new FormData()
+        formData.append('file', currFile[0])
+        formData.append('attachmentTypeId', 3)
 
-            await postRequest(this.sendTextUrl, params)
-          }
+        if (selectedUserIds.value.length > 0) {
+          formData.append('displayName', currFile[0].name.substr(0, currFile[0].name.lastIndexOf('.')))
         }
 
-        if (this.message) {
-          params = {
-            userIDs: null,
-            message: this.message,
-            smsTeamId: smsTeamId
-          }
-          await postRequest(this.sendTextUrl, params)
+        const resp = await postRequest(attachmentUrl.value, formData)
+        const { status } = resp
+
+        if (status === 200) {
+          mediaUrls.push(resp.data.url)
         }
 
-        await putRequest(this.lastSentUrl)
-        await postRequest(this.createNotificationUrl)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.messageSuccess = false
-        let message = e?.message ? 'Error Sending Message: ' + e.message :
-          e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
-        this.snackbar = getSnackbar('ERROR', message)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        return;
-      }
-    },
-    sendMessageAndAssign: async function () {
-      let smsTeamId = this.teamsAssociatedToUser.length > 0 ? this.teamsAssociatedToUser[0].id : null
-      if (!smsTeamId) {
-        this.snackbar = getSnackbar('ERROR', 'Error: No SMS Team found')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        return
-      }
-
-      let params = {
-        id: smsTeamId,
-        users: [{
-          smsTeamId: smsTeamId,
-          userId: this.$store.state.user.details.id
-        }]
-      }
-
-      await postRequest(this.addTeamUrl, params)
-
-      await this.onMessageWasSent()
-    },
-    async getProjects(val) {
-      if (val == null) {
-        this.selectedProjectIds = []
-        this.availableProjects = []
-        return;
-      }
-
-      try {
-        const {data} = await getRequestWithParams(`/messaging/availableProjects`, {
-          params: {
-            query: val,
-          }
-        })
-        this.availableProjects = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving projects')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getUsers() {
-      try {
-        const { data } = await getRequest(`/messaging/availableUsers`)
-        this.availableUsers = data
-
-        if (this.availableUsers) {
-          let currentUserValues = this.availableUsers.filter(value => value.userId && value.userId === this.ownerUserId)
-          if (currentUserValues.length > 0) {
-            this.selectedUserIds = [this.ownerUserId]
-          }
-        }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving users and positions')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async fetchTeamsForUser() {
-      try {
-        this.conversationIsLoading = true
-        const { data, status } = await getRequest(`/smsTeam/getTeamsForUser`)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        this.teamsAssociatedToUser = data
-        if (this.teamsAssociatedToUser && this.teamsAssociatedToUser.length > 0) {
-          for (let team of this.teamsAssociatedToUser){
-            this.templateTeams.push(team.id);
-          }
-        }
-        handleHidingGlobalLoader(this, status)
-        await this.getSmsTeamTemplates();
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.conversationIsLoading = false
-      }
-    },
-    async getSmsTeamTemplates() {
-      try {
-        this.selectedTemplate = null
-        if (!this.teamsAssociatedToUser || this.teamsAssociatedToUser.length < 1) {
-          return
+        params = {
+          userIDs: null,
+          message: currFile[0].name,
+          mediaURLs: mediaUrls,
+          smsTeamId: smsTeamId
         }
 
-        const { data } = await getRequest(`/messaging/templates/` + this.templateTeams)
-        this.selectableTemplates = data
-      } catch (e) {
-        // console.log('ccc')
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving templates')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        await postRequest(sendTextUrl.value, params)
       }
-    },
-    uploadTextAttachment: async function (file) {
-      try {
-        if (!file){
-          return
-        }
+    }
 
-        this.uploadedFiles.push(file);
-      } catch(e) {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    if (message.value) {
+      params = {
+        userIDs: null,
+        message: message.value,
+        smsTeamId: smsTeamId
       }
-    },
+      await postRequest(sendTextUrl.value, params)
+    }
+
+    await putRequest(lastSentUrl.value)
+    await postRequest(createNotificationUrl.value)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    messageSuccess.value = false
+    let message = e?.message ? 'Error Sending Message: ' + e.message :
+      e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
+    snackbar('ERROR', message)
+
+    appStore.loading = false
+    return;
+  }
+}
+const sendMessageAndAssign = async () => {
+  let smsTeamId = teamsAssociatedToUser.value.length > 0 ? teamsAssociatedToUser.value[0].id : null
+  if (!smsTeamId) {
+    snackbar('ERROR', 'Error: No SMS Team found')
+
+    appStore.loading = false
+    return
+  }
+
+  let params = {
+    id: smsTeamId,
+    users: [{
+      smsTeamId: smsTeamId,
+      userId: userStore.details.id
+    }]
+  }
+
+  await postRequest(addTeamUrl.value, params)
+
+  await onMessageWasSent()
+}
+const getProjects = async (val) => {
+  if (val == null) {
+    selectedProjectIds.value = []
+    availableProjects.value = []
+    return;
+  }
+
+  try {
+    const {data} = await getRequestWithParams(`/messaging/availableProjects`, {
+      params: {
+        query: val,
+      }
+    })
+    availableProjects.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving projects')
+
+  }
+}
+const getUsers = async () => {
+  try {
+    const { data } = await getRequest(`/messaging/availableUsers`)
+    availableUsers.value = data
+
+    if (availableUsers.value) {
+      let currentUserValues = availableUsers.value.filter(value => value.userId && value.userId === props.ownerUserId)
+      if (currentUserValues.length > 0) {
+        selectedUserIds.value = [props.ownerUserId]
+      }
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving users and positions')
+
+  }
+}
+const fetchTeamsForUser = async () => {
+  try {
+    conversationIsLoading.value = true
+    const { data, status } = await getRequest(`/smsTeam/getTeamsForUser`)
+    appStore.loading = false
+    teamsAssociatedToUser.value = data
+    if (teamsAssociatedToUser.value && teamsAssociatedToUser.value.length > 0) {
+      for (let team of teamsAssociatedToUser.value){
+        templateTeams.value.push(team.id);
+      }
+    }
+    handleHidingGlobalLoader(status)
+    await getSmsTeamTemplates();
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error fetching SMS Teams')
+
+    conversationIsLoading.value = false
+  }
+}
+const getSmsTeamTemplates = async () => {
+  try {
+    selectedTemplate.value = null
+    if (!teamsAssociatedToUser.value || teamsAssociatedToUser.value.length < 1) {
+      return
+    }
+
+    const { data } = await getRequest(`/messaging/templates/` + templateTeams.value)
+    selectableTemplates.value = data
+  } catch (e) {
+    // console.log('ccc')
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving templates')
+
+  }
+}
+const uploadTextAttachment = async (file) => {
+  try {
+    if (!file){
+      return
+    }
+    uploadedFiles.value.push(file);
+  } catch(e) {
+    appStore.loading = false
+    logError(e)
+    snackbar('ERROR', 'Error Uploading File')
+
   }
 }
 </script>

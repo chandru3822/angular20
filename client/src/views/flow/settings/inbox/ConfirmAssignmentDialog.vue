@@ -15,65 +15,57 @@
       We assign users to conversations when they wish to send SMS to the customer. You are a part of more than 1 team, which team do you want to be added to this conversation?
     </v-card-text>
 
-    <v-select v-model="selectedSmsTeam"
+    <a-select v-model="selectedSmsTeam"
               :items="teamsAssociatedToUser"
-              item-text="teamName"
+              item-title="teamName"
               label="Team"
-              class="team-select pa-0 mt-4"
+              custom-classes="team-select pa-0 mt-4"
               return-object
-    ><template #item="{item}">
-                  <span>
-                    {{item.teamName}}
-                  </span>
-    </template>
-    </v-select>
+    >
+    </a-select>
     <v-card-actions class="pt-1 pb-0 px-0">
       <v-spacer/>
-      <v-btn
+      <a-btn
           class="text-capitalize"
           @click="exitDialogue"
-          text color="primary"
-      >
-        Cancel
-      </v-btn>
-
-      <v-btn
+          variant="text"
           color="primary"
-          class="text-capitalize white--text"
+          text="Cancel"
+      ></a-btn>
+
+      <a-btn
+          color="primary"
+          class="text-capitalize"
           :disabled="!selectedSmsTeam"
-          @click="joinConversation">
-        Join
-      </v-btn>
+          @click="joinConversation"
+          text="Join"
+      ></a-btn>
     </v-card-actions>
   </v-card>
   </v-dialog>
 </template>
 
-<script>
-export default {
-  name: "ConfirmAssignmentDialog",
-  props: {
-    showJoinConversationDialog: Boolean,
-    teamsAssociatedToUser: Array,
-  },
-  data () {
-    return {
-      selectedSmsTeam:''
-    }
-  },
-  methods: {
-    joinConversation(){
-      this.$emit('joinConversation', this.selectedSmsTeam)
-      this.selectedSmsTeam = ''
-      this.exitDialogue()
+<script setup>
+import {ref, defineProps} from "vue";
 
-    },
 
-    exitDialogue(){
-      this.$emit('update:showJoinConversationDialog', false)
-    }
-  }
+const props = defineProps({
+  showJoinConversationDialog: Boolean,
+  teamsAssociatedToUser: Array,
+})
+
+const selectedSmsTeam = ref('')
+const emit = defineEmits(['joinConversation', 'update:showJoinConversationDialog'])
+const joinConversation = () => {
+  emit('joinConversation', selectedSmsTeam.value)
+  selectedSmsTeam.value = ''
+  exitDialogue()
 }
+
+const exitDialogue = () => {
+  emit('update:showJoinConversationDialog', false)
+}
+
 </script>
 
 <style lang="scss" scoped>

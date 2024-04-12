@@ -66,11 +66,12 @@ public class WorkQueueTypeService {
 
   public Optional<WorkQueueType> getType(Long id) {
     User user = securityService.getCurrentUser();
+    var wqt = WorkQueueTypeQuery.getType;
+
     Optional<WorkQueueType> type = sqlCache.getBySql(
-      WorkQueueTypeQuery.getType,
+        wqt,
         Map.of("id", id),
         new WorkQueueTypeMapper<>(WorkQueueType.class, om));
-
     if(!type.get().getHiddenAllow() && (type.get().getHiddenWhiteListedPositions() == null || type.get().getHiddenWhiteListedPositions().size() == 0)){
       type.get().setHidden(false);
     }
@@ -202,6 +203,7 @@ public class WorkQueueTypeService {
         null != type.getInverseExpectation() ? type.getInverseExpectation() : false);
     params.put("expectedTarget", type.getExpectedTarget());
     params.put("schedule", null != type.getSchedule() ? type.getSchedule().toString() : null);
+    params.put("defaultColumnDisplay", null != type.getDefaultColumnDisplay() ? type.getDefaultColumnDisplay().toString() : null);
     sqlCache.updateBySql(WorkQueueTypeQuery.updateType, params);
 
     return getType(type.getId());
@@ -573,6 +575,12 @@ public class WorkQueueTypeService {
           List.class,
           "schedule",
           new JsonCollectionDeserializer(wrkQueueTypeScheduleRef, objectMapper));
+
+      TypeReference<List<WorkQueueTypeDefaultColumns>> wrkQueueTypeDefaultColumnRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class,
+        "defaultColumnDisplay",
+        new JsonCollectionDeserializer(wrkQueueTypeDefaultColumnRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> whiteListedPositionsRef = new TypeReference<>() {};
       bw.registerCustomEditor(

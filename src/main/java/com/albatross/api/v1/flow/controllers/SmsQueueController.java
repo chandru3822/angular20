@@ -25,12 +25,6 @@ public class SmsQueueController {
     return smsService.getSmsQueue(pageable, objectTypeId, messageRead);
   }
 
-  //not currently used - taking out for now
-//  @GetMapping(value = "/exportQueue")
-//  public List<SMSQueueExportItem> exportQueue() {
-//    return smsService.exportSmsQueue();
-//  }
-
   @GetMapping(value = "/messages/project/{projectId}")
   public List<SMSQueueItem> getProjectMessages(@PathVariable Long projectId) {
     return smsService.getSmsByProjectId(projectId);

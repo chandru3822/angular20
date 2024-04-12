@@ -19,6 +19,39 @@ public class ProposalQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getProjectById = """
+    select pd.project_id,
+           pd.project_name,
+           pd.project_street1 as street1,
+           pd.project_city as city,
+           pd.project_state_abbreviation as state,
+           pd.project_postal_code as postal_code,
+           pd.contact_mobile_phone as mobile,
+           pd.closer_appointment_start
+    from brs.project_details pd
+    where pd.archived is false
+      and pd.project_id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String getDesignedByAuroraValue = """
+    select boolean_value
+    from flow.project_process_step_custom_field_value ppscfv
+    inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+    where ppscfv.custom_field_group_assignment_id = 26962 --designed by aurora
+      and ppscfv.project_process_step_id = (
+          select ppscfv.project_process_step_id
+            from flow.project_process_step_custom_field_value ppscfv
+            inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+            where ppscfv.custom_field_group_assignment_id = 22560 -- aurora design id
+            and pps.project_id = :projectId
+            and ppscfv.text_value = :firstDesignId
+            order by pps.date_created
+            limit 1
+        )
+    """;
+
+  //language=PostgreSQL
   public final static String getProjectsCount = """
           select count(distinct pps.project_id)
           from flow.project_process_step pps
@@ -44,6 +77,8 @@ public class ProposalQuery {
            pps.date_modified,
            ppscfv.timestamp_value                                                 as proposal_due_date,
            ppscfv2.text_value as design_name,
+           ppscfv4.text_value as design_id,
+           coalesce(ppscfv3.boolean_value, false) as designed_by_aurora_ai,
            coalesce((select array_to_json(array_agg(rows))
                      from (select p.id,
                                   p.proposal_nbr                                as "proposalNbr",
@@ -87,10 +122,16 @@ public class ProposalQuery {
              inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
              left join flow.project_process_step_custom_field_value ppscfv
                        on ppscfv.project_process_step_id = pps.id
-                           and ppscfv.custom_field_group_assignment_id = 22678
+                           and ppscfv.custom_field_group_assignment_id = 22678 --proposal due date
              left join flow.project_process_step_custom_field_value ppscfv2
                                 on ppscfv2.project_process_step_id = pps.id
-                                    and ppscfv2.custom_field_group_assignment_id = 26300
+                                    and ppscfv2.custom_field_group_assignment_id = 26300 --design name
+             left join flow.project_process_step_custom_field_value ppscfv3
+                       on ppscfv3.project_process_step_id = pps.id
+                           and ppscfv3.custom_field_group_assignment_id = 26962 --designed by aurora ai
+             left join flow.project_process_step_custom_field_value ppscfv4
+                       on ppscfv4.project_process_step_id = pps.id
+                           and ppscfv4.custom_field_group_assignment_id = 22560 --design id
     where pps.process_step_id = 3507 --create proposal design
       and p.id = :projectId
       and p.archived is false
@@ -105,12 +146,15 @@ public class ProposalQuery {
            pps.id                                                                 as project_process_step_id,
            pps.process_step_id,
            ps.process_step_name,
+           pps.company_process_step_status_type_id,
            cpsst.process_step_status_type_id,
            cpsst.process_step_status_type                                         as company_process_step_status_type,
            pps.date_created,
            pps.date_modified,
            ppscfv.timestamp_value                                                 as due_date,
            ppscfv1.text_value                                                     as comments,
+           ppscfv4.text_value as design_id,
+           coalesce(ppscfv3.boolean_value, false) as designed_by_aurora_ai,
            coalesce((select array_to_json(array_agg(rows))
                      from (select p.id,
                                   p.proposal_nbr                                as "proposalNbr",
@@ -155,6 +199,12 @@ public class ProposalQuery {
              left join flow.project_process_step_custom_field_value ppscfv1
                        on ppscfv1.project_process_step_id = pps.id
                          and ppscfv1.custom_field_group_assignment_id = 23623
+             left join flow.project_process_step_custom_field_value ppscfv3
+                                    on ppscfv3.project_process_step_id = pps.id
+                                        and ppscfv3.custom_field_group_assignment_id = 26962 --designed by aurora ai
+              left join flow.project_process_step_custom_field_value ppscfv4
+                       on ppscfv4.project_process_step_id = pps.id
+                           and ppscfv4.custom_field_group_assignment_id = 22560 --design id
     where pps.process_step_id in (3507, 3546)
       and pps.project_id = :projectId
       and cpsst.process_step_status_type_id = 1
@@ -562,6 +612,17 @@ where p.id = :proposalId
         and ((vw.end_date is null and vw.start_date <= now()) or now() between vw.start_date and vw.end_date)
         and vw.has_access is true
       limit 1
+    """;
+
+  public static final String filterCommissionStrategiesByUser = """
+select unnest(int_array_value) as id
+from flow.user_custom_field_value ucfv
+         inner join flow.custom_field_group_assignment cfga on ucfv.custom_field_group_assignment_id = cfga.id
+         inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+         inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id
+where cfga.custom_field_id = 12855
+  and cot.object_type_id = 3 --user
+  and ucfv.user_id = :userId
     """;
 
   public static final String filterProposalDealerOrgs = """

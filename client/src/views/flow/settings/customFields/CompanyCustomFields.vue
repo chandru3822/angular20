@@ -5,18 +5,12 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import CustomFields from "@/views/flow/settings/customFields/CustomFields.vue"
-  export default {
-    name: 'CompanyCustomFields',
-    components: {
-      CustomFields,
-    },
-    data() {
-      return {
-        snackbar: {},
-        apiPath: this.$store.state.user.details.apiPath,
-      }
-    }
-  }
+  import { ref } from 'vue'
+  import {useUserStore} from "@/stores/UserStorePinia.js";
+
+  const userStore = useUserStore()
+  const apiPath = ref(userStore.details.apiPath)
+
 </script>

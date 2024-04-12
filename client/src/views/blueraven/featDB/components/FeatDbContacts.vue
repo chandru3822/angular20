@@ -6,317 +6,341 @@
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit" @click.stop="handleAddBtnClick(!addMode && !editMode)">
-        <v-icon v-show="!addMode && !editMode" class="white--text">add</v-icon>
-        <v-icon v-show="addMode || editMode" class="white--text">remove</v-icon>
-      </v-btn>
-      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="showExpanded">
-        <v-icon class="white--text clickable">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
-      </v-btn>
+      <a-btn
+          icon
+          color="#ddd"
+          html-style="border-radius: 3px"
+          v-if="userCanEdit"
+          @click.native.stop="handleAddBtnClick(!addMode && !editMode)"
+          :prepend-icon="!addMode && !editMode ? 'add' : 'remove'"
+      ></a-btn>
+      <a-btn
+          icon
+          color="#ddd"
+          html-style="border-radius: 3px"
+          v-if="showExpanded"
+          :prepend-icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+      ></a-btn>
     </v-toolbar>
     <v-card-text v-if="expanded">
-    <v-form v-show="addMode || editMode"
-            ref="contactForm" class="pa-3">
-      <v-text-field v-model="contact.name" required filled
-                    :label="contactTypeId === 7 ? 'Store Name' : 'Name'"
-      ></v-text-field>
-      <v-text-field v-model="contact.title" filled
-                    :label="contactTypeId === 7 ? 'Store Number' : 'Title'"
-      ></v-text-field>
-      <v-text-field v-model="contact.phoneNumber" label="Phone" filled></v-text-field>
-      <v-text-field v-model="contact.email" label="Email" type="email" filled></v-text-field>
-      <v-text-field v-model="contact.hours" label="Hours" filled></v-text-field>
-      <v-textarea label="Address" auto-grow filled
-                  v-model="contact.address">
-      </v-textarea>
-      <v-textarea label="Notes" auto-grow filled
-                  v-model="contact.notes">
-      </v-textarea>
-      <div class="contact-btns">
-        <v-btn color="primary" text @click="hideCtrls"
-           class="cancel-link">Cancel</v-btn>
-        <v-btn v-show="editMode" dark v-if="userCanEdit"
-               @click="deleteContact" class="error">
-          Delete
-        </v-btn>
-        <v-btn @click="saveContact" color="primary" class="white--text"
-               :disabled="contact.name === ''">
-          {{ addMode ? 'Add' : 'Update' }}
-        </v-btn>
+      <v-form v-show="addMode || editMode"
+              ref="contactForm" class="pa-3">
+        <a-text-field v-model="selectedContact.name" required filled
+                      :label="contactTypeId === 7 ? 'Store Name' : 'Name'"
+        ></a-text-field>
+        <a-text-field v-model="selectedContact.title" filled
+                      :label="contactTypeId === 7 ? 'Store Number' : 'Title'"
+        ></a-text-field>
+        <a-text-field v-model="selectedContact.phoneNumber" label="Phone" filled></a-text-field>
+        <a-text-field v-model="selectedContact.email" label="Email" type="email" filled></a-text-field>
+        <a-text-field v-model="selectedContact.hours" label="Hours" filled></a-text-field>
+        <a-textarea label="Address" auto-grow
+                    variant="filled"
+                    v-model="selectedContact.address">
+        </a-textarea>
+        <a-textarea label="Notes" auto-grow
+                    variant="filled"
+                    v-model="selectedContact.notes">
+        </a-textarea>
+        <div class="contact-btns">
+          <a-btn
+              color="primary"
+              variant="text"
+              @click="hideCtrls"
+              class="cancel-link"
+              text="Cancel"
+          ></a-btn>
+          <a-btn
+              v-show="editMode"
+              v-if="userCanEdit"
+              @click="deleteContact"
+              class="error"
+              color="unset"
+              text="Delete"
+          ></a-btn>
+          <a-btn
+              @click="saveContact"
+              color="primary"
+              :disabled="selectedContact.name === ''"
+              :text="addMode ? 'Add' : 'Update'"
+          ></a-btn>
+        </div>
+      </v-form>
+      <div v-for="(contact, index) in contacts" :key="contact.id"
+           v-show="contacts.length > 0" class="px-3">
+        <dl class="horizontal-dl"
+            :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
+          <dt v-if="contact.name" class="font-weight-bold">Name</dt>
+          <dd v-if="contact.name">{{contact.name}}</dd>
+          <dt v-if="contact.title" class="font-weight-bold">Title</dt>
+          <dd v-if="contact.title">{{contact.title}}</dd>
+          <dt v-if="contact.phoneNumber" class="font-weight-bold">Phone</dt>
+          <dd v-if="contact.phoneNumber">{{contact.phoneNumber}}</dd>
+          <dt v-if="contact.email" class="font-weight-bold">Email</dt>
+          <dd v-if="contact.email">{{contact.email}}</dd>
+          <dt v-if="contact.hours" class="font-weight-bold">Hours</dt>
+          <dd v-if="contact.hours">{{contact.hours}}</dd>
+          <dt v-if="contact.address" class="font-weight-bold">Address</dt>
+          <dd v-if="contact.address">{{contact.address}}</dd>
+          <dt v-if="contact.notes"></dt>
+          <dd v-if="contact.notes" class="pa-2" style="background-color: #eee">{{contact.notes}}</dd>
+          <dt></dt>
+          <dd>
+            <a-btn
+                size="small"
+                color="primary"
+                v-if="userCanEdit && !(addMode || editMode)"
+                @click="editContact(contact)"
+                class="pa-0 mx-0 mt-2 text-capitalize"
+                text="Edit"
+            ></a-btn>
+          </dd>
+        </dl>
+        <v-spacer v-if="index !== contacts.length - 1"
+                  class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
       </div>
-    </v-form>
-    <div v-for="(contact, index) in contacts" :key="contact.id"
-         v-show="contacts.length > 0" class="px-3">
-      <dl class="horizontal-dl"
-          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
-        <dt v-if="contact.name" class="font-weight-bold">Name</dt>
-        <dd v-if="contact.name">{{contact.name}}</dd>
-        <dt v-if="contact.title" class="font-weight-bold">Title</dt>
-        <dd v-if="contact.title">{{contact.title}}</dd>
-        <dt v-if="contact.phoneNumber" class="font-weight-bold">Phone</dt>
-        <dd v-if="contact.phoneNumber">{{contact.phoneNumber}}</dd>
-        <dt v-if="contact.email" class="font-weight-bold">Email</dt>
-        <dd v-if="contact.email">{{contact.email}}</dd>
-        <dt v-if="contact.hours" class="font-weight-bold">Hours</dt>
-        <dd v-if="contact.hours">{{contact.hours}}</dd>
-        <dt v-if="contact.address" class="font-weight-bold">Address</dt>
-        <dd v-if="contact.address">{{contact.address}}</dd>
-        <dt v-if="contact.notes"></dt>
-        <dd v-if="contact.notes" class="pa-2" style="background-color: #eee">{{contact.notes}}</dd>
-        <dt></dt>
-        <dd>
-          <v-btn small color="primary" v-if="userCanEdit && !(addMode || editMode)"
-                 @click="editContact(contact)"
-                 class="pa-0 mx-0 mt-2 text-capitalize white--text">Edit</v-btn>
-        </dd>
-      </dl>
-      <v-spacer v-if="index !== contacts.length - 1"
-                class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
-    </div>
-    <div class="py-3 px-5 empty-list" v-show="contacts.length < 1"
-         :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
-      {{ contactTypeId === 7 ? 'No locations found' : 'No contacts found' }}
-    </div>
+      <div class="py-3 px-5 empty-list" v-show="contacts.length < 1"
+           :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
+        {{ contactTypeId === 7 ? 'No locations found' : 'No contacts found' }}
+      </div>
     </v-card-text>
   </v-card>
 </template>
 
-<script>
-  import cloneDeep from 'lodash.clonedeep'
+<script setup>
+import cloneDeep from 'lodash.clonedeep'
 
-  import { AppMutations } from '@/stores/AppStore'
-  import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-  import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
+import { putRequest, postRequest,  } from '@/helpers/helpers'
+import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants"
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  export default {
-    name: "FeatDbContact",
 
-    props: {
-      title: {
-        type: String
-      },
-      contactTypeId: {
-        type: Number
-      },
-      itemId: {
-        type: Number
-      },
-      userCanEdit: {
-        type: Boolean
-      },
-      itemType: {
-        type: String
-      },
-      ahjId: {
-        type: Number
-      },
-      contacts: {
-        type: Array,
-        default: () => []
-      },
-      isNested: {
-        type: Boolean,
-        default: false
-      },
-      showExpanded: {
-        type: Boolean,
-        default: false
-      },
-      expandedAll: CollapseExpandEnum
-    },
-    data () {
-      return {
-        snackbar: {},
-        contact: {
-          id: null,
-          address: null,
-          contactTypeId: null,
-          email: null,
-          hours: null,
-          name: null,
-          notes: null,
-          phoneNumber: null,
-          title: null
-        },
-        addMode: false,
-        editMode: false,
-        contactsCopy: this.contacts,
-        expanded: true
-      }
-    },
-    watch: {
-      expandedAll(){
-        if(this.expandedAll === CollapseExpandEnum.EXPANDED && this.expanded !== true) {
-          this.expanded = true
-        } else if(this.expandedAll === CollapseExpandEnum.COLLAPSED && this.expanded === true){
-          this.expanded = false
-        }
-      }
-    },
-    methods: {
-      handleAddBtnClick(add) {
-        //without this method it would only show the "add" section if you clicked right on the icon and not if you were inside the button but outside the icon. was causing issues
-        if(add) {
-          this.addContact()
-        } else {
-          this.hideCtrls()
-        }
-      },
-      hideCtrls() {
-        this.$refs.contactForm.reset()
-        this.addMode = false
-        this.editMode = false
-      },
-      addContact() {
-        if(!this.expanded){
-          this.toggleCollapseExpand()
-        }
-        this.editMode = false
-        this.addMode = true
-      },
-      editContact(contact) {
-        this.addMode = false
-        this.editMode = true
-        this.contact = Object.assign({}, contact)
-      },
-      async saveContact() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        this.contact.contactTypeId = this.contactTypeId
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-        if (this.addMode) {
-          try {
-            let res = null
+const props = defineProps({
+  title: {
+    type: String
+  },
+  contactTypeId: {
+    type: Number
+  },
+  itemId: {
+    type: Number
+  },
+  userCanEdit: {
+    type: Boolean
+  },
+  itemType: {
+    type: String
+  },
+  ahjId: {
+    type: Number
+  },
+  contacts: {
+    type: Array,
+    default: () => []
+  },
+  isNested: {
+    type: Boolean,
+    default: false
+  },
+  showExpanded: {
+    type: Boolean,
+    default: false
+  },
+  expandedAll: CollapseExpandEnum
+})
 
-            //changed to not require updates when a new feat_db gets added
-            if (['permit', 'inspection', 'design'].includes(this.itemType)) {
-              res = await postRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts`, this.contact, 'blueraven')
-            } else {
-              res = await postRequest(`/featDb/${this.itemType}/${this.itemId}/contacts`, this.contact, 'blueraven')
-            }
+const { title, contactTypeId, itemId, userCanEdit, itemType, ahjId, contacts, isNested, showExpanded, expandedAll } = toRefs(props)
 
-            this.contactsCopy.push(cloneDeep(res.data))
-            this.snackbar = getSnackbar('SUCCESS', 'Contact added')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$refs.contactForm.reset()
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error adding contact')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-          this.addMode = false
-        } else {
-          try {
-            let res = null
-            //changed to not require updates when a new feat_db gets added
-            if (['permit', 'inspection', 'design'].includes(this.itemType)) {
-              res = await putRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
-            } else {
-              res = await putRequest(`/featDb/${this.itemType}/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
-            }
+const selectedContact = ref({id: null,address: null,contactTypeId: null,email: null,hours: null,name: null,notes: null,phoneNumber: null,title: null})
+const addMode = ref(false)
+const editMode = ref(false)
+const contactsCopy = ref(contacts.value)
+const expanded = ref(true)
+const contactForm = ref(null)
 
-            let updatedContactIndex = this.contactsCopy.findIndex(i => i.id === res.data.id)
-            this.contactsCopy[updatedContactIndex].name = res.data.name
-            this.contactsCopy[updatedContactIndex].title = res.data.title
-            this.contactsCopy[updatedContactIndex].phoneNumber = res.data.phoneNumber
-            this.contactsCopy[updatedContactIndex].email = res.data.email
-            this.contactsCopy[updatedContactIndex].hours = res.data.hours
-            this.contactsCopy[updatedContactIndex].address = res.data.address
-            this.contactsCopy[updatedContactIndex].notes = res.data.notes
-            this.snackbar = getSnackbar('SUCCESS', 'Contact updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$refs.contactForm.reset()
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error adding contact')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-          this.editMode = false
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      },
-      async deleteContact() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+const emit = defineEmits(['toggle-collapse-expand'])
 
-        try {
-          //changed to not require updates when a new feat_db gets added
-          if (['permit', 'inspection', 'design'].includes(this.itemType)) {
-            await putRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}/archive`, null, 'blueraven')
-          } else {
-            await putRequest(`/featDb/${this.itemType}/contacts/${this.contact.id}/archive`, null, 'blueraven')
-          }
 
-          let deletedContactIndex = this.contactsCopy.findIndex(i => i.id === this.contact.id)
-          this.contactsCopy.splice(deletedContactIndex, 1)
-          this.snackbar = getSnackbar('SUCCESS', 'Contact deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error deleting contact')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-        this.editMode = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      },
-      toggleCollapseExpand(){
-        if(this.expanded && (this.addMode || this.editMode)){
-          this.hideCtrls()
-        }
-        this.expanded = !this.expanded
-        this.$emit('toggle-collapse-expand', this.expanded)
-      }
-    }
+watch(expandedAll, () => {
+  if(expandedAll.value === CollapseExpandEnum.EXPANDED && expanded.value !== true) {
+    expanded.value = true
+  } else if(expandedAll.value === CollapseExpandEnum.COLLAPSED && expanded.value === true){
+    expanded.value = false
   }
+})
+
+const handleAddBtnClick = (add)  => {
+  //without this method it would only show the "add" section if you clicked right on the icon and not if you were inside the button but outside the icon. was causing issues
+  if(add) {
+    addContact()
+  } else {
+    hideCtrls()
+  }
+}
+const hideCtrls = ()  => {
+  contactForm.value.reset()
+  addMode.value = false
+  editMode.value = false
+}
+const addContact = ()  => {
+  if(!expanded.value){
+    toggleCollapseExpand()
+  }
+  editMode.value = false
+  addMode.value = true
+}
+const editContact = (contact)  => {
+  addMode.value = false
+  editMode.value = true
+  selectedContact.value = Object.assign({}, contact)
+}
+const saveContact = async() => {
+  appStore.loading = true
+  selectedContact.value.contactTypeId = contactTypeId.value
+
+  if (addMode.value) {
+    try {
+      let res = null
+
+      //changed to not require updates when a new feat_db gets added
+      if (['permit', 'inspection', 'design'].includes(itemType.value)) {
+        res = await postRequest(`/featDb/ahj/${ahjId.value}/${itemType.value}/${itemId.value}/contacts`, selectedContact.value, 'blueraven')
+      } else {
+        res = await postRequest(`/featDb/${itemType.value}/${itemId.value}/contacts`, selectedContact.value, 'blueraven')
+      }
+
+      contactsCopy.value.push(cloneDeep(res.data))
+      snackbar('SUCCESS', 'Contact added')
+
+      contactForm.value.reset()
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error adding contact')
+
+    }
+    addMode.value = false
+  } else {
+    try {
+      let res = null
+      //changed to not require updates when a new feat_db gets added
+      if (['permit', 'inspection', 'design'].includes(itemType.value)) {
+        res = await putRequest(`/featDb/ahj/${ahjId.value}/${itemType.value}/${itemId.value}/contacts/${selectedContact.value.id}`, selectedContact.value, 'blueraven')
+      } else {
+        res = await putRequest(`/featDb/${itemType.value}/${itemId.value}/contacts/${selectedContact.value.id}`, selectedContact.value, 'blueraven')
+      }
+
+      let updatedContactIndex = contactsCopy.value.findIndex(i => i.id === res.data.id)
+      contactsCopy.value[updatedContactIndex].name = res.data.name
+      contactsCopy.value[updatedContactIndex].title = res.data.title
+      contactsCopy.value[updatedContactIndex].phoneNumber = res.data.phoneNumber
+      contactsCopy.value[updatedContactIndex].email = res.data.email
+      contactsCopy.value[updatedContactIndex].hours = res.data.hours
+      contactsCopy.value[updatedContactIndex].address = res.data.address
+      contactsCopy.value[updatedContactIndex].notes = res.data.notes
+      snackbar('SUCCESS', 'Contact updated')
+
+      contactForm.value.reset()
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error adding contact')
+
+    }
+    editMode.value = false
+  }
+  appStore.loading = false
+}
+const deleteContact = async() => {
+  appStore.loading = true
+
+  try {
+    //changed to not require updates when a new feat_db gets added
+    if (['permit', 'inspection', 'design'].includes(itemType.value)) {
+      await putRequest(`/featDb/ahj/${ahjId.value}/${itemType.value}/${itemId.value}/contacts/${selectedContact.value.id}/archive`, null, 'blueraven')
+    } else {
+      await putRequest(`/featDb/${itemType.value}/contacts/${selectedContact.value.id}/archive`, null, 'blueraven')
+    }
+
+    let deletedContactIndex = contactsCopy.value.findIndex(i => i.id === selectedContact.value.id)
+    contactsCopy.value.splice(deletedContactIndex, 1)
+    snackbar('SUCCESS', 'Contact deleted')
+
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error deleting contact')
+
+  }
+  editMode.value = false
+  appStore.loading = false
+}
+const toggleCollapseExpand = () => {
+  if(expanded.value && (addMode.value || editMode.value)){
+    hideCtrls()
+  }
+  expanded.value = !expanded.value
+  emit('toggle-collapse-expand', expanded.value)
+}
 </script>
 
 <style scoped lang="scss">
-  .cancel-link {
-    text-decoration: none;
+.cancel-link {
+  text-decoration: none;
+}
+.cancel-link:hover {
+  text-decoration: underline;
+}
+.v-card__title,
+.v-toolbar__title {
+  font-size: 1em !important;
+}
+.v-text-field,
+.v-input ::v-deep label {
+  font-size: 0.95em !important;
+}
+.v-list-item__action {
+  margin: 0 !important;
+  max-width: 24px;
+}
+.contact-btns {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  button {
+    margin: 0 0 0 7px;
   }
-  .cancel-link:hover {
-    text-decoration: underline;
-  }
-  .v-card__title,
-  .v-toolbar__title {
-    font-size: 1em !important;
-  }
-  .v-text-field,
-  .v-input ::v-deep label {
-    font-size: 0.95em !important;
-  }
-  .v-list-item__action {
-    margin: 0 !important;
-    max-width: 24px;
-  }
-  .contact-btns {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-end;
-    align-items: center;
-    button {
-      margin: 0 0 0 7px;
-    }
-  }
-  .empty-list {
-    text-align: left;
-    font-size: 0.95em;
-  }
-  .nested-list {
-    font-size: 0.85em !important;
-  }
-  /*Definition list styles*/
-  .horizontal-dl {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
-    width: 100%;
-  }
-  .horizontal-dl dt {
-    text-align: right;
-    width: 30%;
-  }
-  .horizontal-dl dd {
-    width: 65%;
-    text-align: left !important;
-  }
-  /*End definition list styles*/
+}
+.empty-list {
+  text-align: left;
+  font-size: 0.95em;
+}
+.nested-list {
+  font-size: 0.85em !important;
+}
+/*Definition list styles*/
+.horizontal-dl {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  width: 100%;
+}
+.horizontal-dl dt {
+  text-align: right;
+  width: 30%;
+}
+.horizontal-dl dd {
+  width: 65%;
+  text-align: left !important;
+}
+/*End definition list styles*/
 </style>

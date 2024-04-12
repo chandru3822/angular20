@@ -3,7 +3,9 @@
     <ConfirmationDialog :openDialog="deleteError" @cancel="deleteError = false" hideConfirm>
       <template v-slot:title><span class="error-text">Error Deleting Work Queue Type</span></template>
       <div v-if="cannotDeleteReasons && cannotDeleteReasons.length > 0" class="mb-5">
-        <div class="mb-3">* This work queue type is being used by Process Steps or Process Step Events.  You must remove those before deleting this work queue type.</div>
+        <div class="mb-3">* This work queue type is being used by Process Steps or Process Step Events. You must remove
+          those before deleting this work queue type.
+        </div>
         <div v-for="a in cannotDeleteReasons" :key="a.id" class="ml-5">
           <strong>{{ a.processStepName }}</strong>
         </div>
@@ -13,60 +15,68 @@
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar toolbar-z-index-override">
-          <v-autocomplete
-            v-model="selectedWorkQueueCategoryId"
-            :items="filteredCategories"
-            label="Work Queue Category"
-            item-text="workQueueCategory"
-            item-value="id"
-            @input="filterCategories()"
-            attach
-          ></v-autocomplete>
+          <a-autocomplete
+              v-model="selectedWorkQueueCategoryId"
+              :items="filteredCategories"
+              label="Work Queue Category"
+              item-title="workQueueCategory"
+              item-value="id"
+              @input="filterCategories()"
+              attach
+          ></a-autocomplete>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newType = {}]" v-if="userCanAdd">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <a-btn variant="text" :hide-text-on-mobile="true" :text="addNew ? 'Cancel' : 'Add New'"
+                             class="mx-2"
+                             custom-classes=""
+                             :prepend-icon="addNew ? 'close' : 'add'"
+                             @click="[addNew = !addNew, newType = {}]" v-if="userCanAdd">
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
           <div v-if="addNew">
-            <v-text-field v-model="newType.workQueueType"
+            <a-text-field v-model="newType.workQueueType"
                           placeholder="Enter a type"
                           label="Work Queue Type">
-            </v-text-field>
-            <v-autocomplete
-              v-model="newType.workQueueCategoryId"
-              :items="workQueueCategories"
-              label="Work Queue Category"
-              item-text="workQueueCategory"
-              item-value="id"
-              attach
-            ></v-autocomplete>
+            </a-text-field>
+            <a-autocomplete
+                v-model="newType.workQueueCategoryId"
+                :items="workQueueCategories"
+                label="Work Queue Category"
+                item-title="workQueueCategory"
+                item-value="id"
+                attach
+            ></a-autocomplete>
             <div>
               <label>Use Event Data:</label>
               <input type="checkbox" class="ml-3" v-model="newType.useEventData">
               <span class="no-change-text">* This value cannot be changed after creation.</span>
             </div>
-            <v-btn color="primary" class="mt-2" :disabled="!newType.workQueueType || !newType.workQueueCategoryId" @click="addNewType">Save</v-btn>
+            <a-btn
+                color="primary"
+                class="mt-2"
+                :disabled="!newType.workQueueType || !newType.workQueueCategoryId"
+                @click="addNewType"
+                text="Save"
+            ></a-btn>
           </div>
-          <v-text-field
-            v-model="search"
-            prepend-inner-icon="search"
-            label="Search"
-            single-line
-            hide-details
-          ></v-text-field>
+          <a-text-field
+              v-model="search"
+              prepend-inner-icon="search"
+              label="Search"
+              single-line
+              hide-details
+          ></a-text-field>
           <v-data-table
-            :headers="headers"
-            :items="filterWorkQueueTypes()"
-            :fixed-header="true"
-            :items-per-page="50"
-            :search="search"
-            :sort-desc="[false]"
-            :sort-by="['workQueueCategoryDisplayOrder','displayOrder']"
-            class="elevation-1 mt-1"
+              :headers="headers"
+              :items="filteredWorkQueueTypes"
+              :fixed-header="true"
+              :items-per-page="50"
+              :search="search"
+              :sort-desc="[false]"
+              :sort-by="['workQueueCategoryDisplayOrder','displayOrder']"
+              class="elevation-1 mt-1"
           >
             <template #no-data>
               <span class="default-text-color">No available fields</span>
@@ -80,27 +90,51 @@
 
               <tr class="clickable" :class="{'shaded-row': workQueueTypes.indexOf(item) % 2}">
                 <td style="width: 50px" @click="goToDetails(item)">
-                  <v-btn v-if="(userCanEdit || userIsAdmin) && selectedWorkQueueCategoryId !== -1" text color="primary" icon small class="handle">
-                    <v-icon>drag_handle</v-icon>
-                  </v-btn>
+                  <a-btn
+                      v-if="(userCanEdit || userIsAdmin) && selectedWorkQueueCategoryId !== -1"
+                      variant="text"
+                      color="primary"
+                      icon
+                      size="small"
+                      class="handle"
+                      prepend-icon="drag_handle"
+                  ></a-btn>
                 </td>
                 <td class="text-left" @click="goToDetails(item)">
-                  {{item.workQueueType}}
+                  <router-link :to="`/settings/workQueue/type/${item.id}`" class="router-link-td">
+                    {{ item.workQueueType }}
+                  </router-link>
                 </td>
                 <td class="text-left" @click="goToDetails(item)">
-                  {{item.workQueueCategory}}
+                  <router-link :to="`/settings/workQueue/type/${item.id}`" class="router-link-td">
+                    {{ item.workQueueCategory }}
+                  </router-link>
                 </td>
                 <td class="text-left" @click="goToDetails(item)">
-                  <input type="checkbox" disabled v-model="item.useEventData">
+                  <router-link :to="`/settings/workQueue/type/${item.id}`" class="router-link-td">
+                    <input type="checkbox" disabled v-model="item.useEventData">
+                  </router-link>
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
-                    <v-btn class="clickable" small text color="primary" v-if="userCanEdit || userIsAdmin">
-                      <v-icon @click="goToDetails(item)">edit</v-icon>
-                    </v-btn>
-                    <v-btn class="clickable" small text color="primary" v-if="userCanDelete">
-                      <v-icon @click="workQueueToDelete=item">delete</v-icon>
-                    </v-btn>
+                    <a-btn
+                        @click="goToDetails(item)"
+                        class="clickable"
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        v-if="userCanEdit || userIsAdmin"
+                        prepend-icon="edit"
+                    ></a-btn>
+                    <a-btn
+                        class="clickable"
+                        @click="workQueueToDelete=item"
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        v-if="userCanDelete"
+                        prepend-icon="delete"
+                    ></a-btn>
                   </div>
                 </td>
               </tr>
@@ -110,204 +144,183 @@
         </v-container>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-dialog="!!workQueueToDelete" @confirm="deleteType(workQueueToDelete)" @close-dialog="workQueueToDelete=null">
-      Are you sure you want to delete this work queue type: <strong>{{workQueueToDeleteType}}</strong>
+    <ConfirmationDialog :open-dialog="!!workQueueToDelete" @confirm="deleteType(workQueueToDelete)"
+                        @close-dialog="workQueueToDelete=null">
+      Are you sure you want to delete this work queue type: <strong>{{ workQueueToDeleteType }}</strong>
 
     </ConfirmationDialog>
   </v-container>
 </template>
 
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import orderBy from 'lodash.orderby'
-  import cloneDeep from 'lodash.clonedeep'
-  import {getWorkQueueTypes, getWorkQueueCategories} from '@/services/workQueueService'
+<script setup>
 
-  import { handleHidingGlobalLoader, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import Sortable from "sortablejs";
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
+import orderBy from 'lodash.orderby'
+import cloneDeep from 'lodash.clonedeep'
+import {getWorkQueueTypes, getWorkQueueCategories} from '@/services/workQueueService'
 
-  export default {
-    name: 'WorkQueueTypes',
-    components: {ConfirmationDialog},
-    mixins: [Vue2Filters.mixin],
 
-    mounted() {
-      let table = document.querySelector('tbody')
-      const _self = this
-      Sortable.create(table, {
-        handle: '.handle',
-        onEnd({ newIndex, oldIndex }) {
-          const rowSelected = _self.workQueueTypes.splice(oldIndex, 1)[0]
-          _self.workQueueTypes.splice(newIndex, 0, rowSelected)
-          let rowsClone = cloneDeep(_self.workQueueTypes)
+import {handleHidingGlobalLoader, putRequest, postRequest, defineSortableTable} from '@/helpers/helpers'
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import {getCurrentInstance, onMounted, computed, ref} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRouter} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const router = useRouter()
+const snackbar = vueInstance.$snackbar
 
-          let rowsToSave = []
-          rowsClone.forEach((r, idx) => {
-            //check if the row needs to be saved before updating display order
-            //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-            let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-            //update display order
-            r.displayOrder = idx
-            //save only rows that changed
-            if(save) {
-              _self.workQueueTypes[idx].newDisplayOrder = idx
-              rowsToSave.push(r)
-            }
-          })
-          _self.saveRowChanges(rowsToSave)
-        }
-      })
-    },
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        deleteError: false,
-        cannotDeleteReasons: {},
-        search: '',
-        masterWorkQueueTypes: [],
-        workQueueTypes: [],
-        workQueueCategories: [],
-        filteredCategories: [],
-        addNew: false,
-        newType: {},
-        selectedWorkQueueTypeId: null,
-        selectedWorkQueueCategoryId: -1,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
-        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN'),
-        expanded: [],
-        headers: [
-          { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
-          { text: 'Type', value: 'workQueueType', show: true },
-          { text: 'Category', value: 'workQueueCategory', show: true },
-          { text: 'Uses Event Data', value: 'useEventData', show: true },
-          { text: null, value: 'icons', show: true, width: 150 }
-        ],
-        workQueueToDelete:null
-      }
-    },
-    computed: {
-      workQueueToDeleteType(){
-        return this.workQueueToDelete ? this.workQueueToDelete.workQueueType : ''
-      }
-    },
-    methods: {
-      async getWorkQueueTypes() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getWorkQueueTypes()
-          this.workQueueTypes = data
-          //make copy so filtering works later
-          this.masterWorkQueueTypes = cloneDeep(this.workQueueTypes)
+const deleteError = ref(false)
+const cannotDeleteReasons = ref({})
+const search = ref('')
+const masterWorkQueueTypes = ref([])
+const workQueueTypes = ref([])
+const workQueueCategories = ref([])
+const filteredCategories = ref([])
+const addNew = ref(false)
+const newType = ref({})
+const selectedWorkQueueTypeId = ref(null)
+const selectedWorkQueueCategoryId = ref(-1)
+const expanded = ref([])
+const workQueueToDelete = ref(null)
+const headers = ref([
+  {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
+  {text: 'Type', value: 'workQueueType', show: true},
+  {text: 'Category', value: 'workQueueCategory', show: true},
+  {text: 'Uses Event Data', value: 'useEventData', show: true},
+  {text: null, value: 'icons', show: true, width: 150}
+])
 
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getWorkQueueCategories() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getWorkQueueCategories()
-          this.workQueueCategories = orderBy(data, [wt => wt.workQueueCategory.toLowerCase()])
-          this.filteredCategories = cloneDeep(this.workQueueCategories)
-          this.filteredCategories.unshift({id: -1, workQueueCategory: 'All'})
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterCategories() {
-        this.workQueueTypes = this.selectedWorkQueueCategoryId === -1 ? this.masterWorkQueueTypes : this.masterWorkQueueTypes.filter(wqt => wqt.workQueueCategoryId === this.selectedWorkQueueCategoryId)
-      },
-      async deleteType(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await putRequest(`/workQueueType/delete/${item.id}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Work Queue Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          item.archived = true
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const userCanDelete = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+})
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const userId = computed(() => {
+  return userStore.details.id
+})
 
-          if (e.status === 400) {
-            item.deleteConfirm = false
-            this.deleteError = true
-            this.cannotDeleteReasons = e.data
-          }
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Work Queue Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async addNewType() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/workQueueType/type`, this.newType)
+const workQueueToDeleteType = computed(() => {
+  return workQueueToDelete.value ? workQueueToDelete.value.workQueueType : ''
+})
 
-          this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+const filteredWorkQueueTypes = computed(() => {
+  return workQueueTypes.value.filter(wqt => {
+    return !wqt.archived
+  })
+})
 
-          // add it to the master list too
-          this.masterWorkQueueTypes.push(data)
-          this.workQueueTypes.push(data)
+onMounted(async () => {
+  getAllWorkQueueCategories()
+  await getAllWorkQueueTypes()
 
-          // reset the new process fields
-          this.addNew = false
-          this.newType = {}
+  defineSortableTable('tbody', workQueueTypes, 'displayOrder', saveRowChanges)
+})
 
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Work Queue Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterWorkQueueTypes () {
-        return this.workQueueTypes.filter(wqt => { return !wqt.archived})
-      },
-      async saveRowChanges (rows) {
-        if(rows?.length > 0) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {status} = await putRequest(`/workQueueType/order`, rows)
-            this.snackbar = getSnackbar('SUCCESS', 'Order Updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Saving Order Changes')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      goToDetails (item) {
-        this.$router.push({name: 'workQueueType', params: {id: item.id}})
-      }
-    },
-    async created() {
-      this.getWorkQueueTypes()
-      this.getWorkQueueCategories()
-    },
 
+const getAllWorkQueueTypes = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getWorkQueueTypes()
+    workQueueTypes.value = data
+    //make copy so filtering works later
+    masterWorkQueueTypes.value = cloneDeep(workQueueTypes.value)
+
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Work Queue Types')
+    appStore.loading = false
   }
+}
+const getAllWorkQueueCategories = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getWorkQueueCategories()
+    workQueueCategories.value = orderBy(data, [wt => wt.workQueueCategory.toLowerCase()])
+    filteredCategories.value = cloneDeep(workQueueCategories.value)
+    filteredCategories.value.unshift({id: -1, workQueueCategory: 'All'})
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Work Queue Types')
+    appStore.loading = false
+  }
+}
+const filterCategories = () => {
+  workQueueTypes.value = selectedWorkQueueCategoryId.value === -1 ? masterWorkQueueTypes.value : masterWorkQueueTypes.value.filter(wqt => wqt.workQueueCategoryId === selectedWorkQueueCategoryId.value)
+}
+const deleteType = async (item) => {
+  appStore.loading = true
+  try {
+    const {status} = await putRequest(`/workQueueType/delete/${item.id}`)
+    snackbar('SUCCESS', 'Successfully Deleted Work Queue Type')
+    item.archived = true
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+
+    if (e.status === 400) {
+      item.deleteConfirm = false
+      deleteError.value = true
+      cannotDeleteReasons.value = e.data
+    }
+    snackbar('ERROR', 'Error Deleting Work Queue Type')
+    appStore.loading = false
+  }
+}
+const addNewType = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await postRequest(`/workQueueType/type`, newType.value)
+
+    snackbar('SUCCESS', 'Work Queue Type Added')
+
+    // add it to the master list too
+    masterWorkQueueTypes.value.push(data)
+    workQueueTypes.value.push(data)
+
+    // reset the new process fields
+    addNew.value = false
+    newType.value = {}
+
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Work Queue Type')
+    appStore.loading = false
+  }
+}
+const saveRowChanges = async (rows) => {
+  if (rows?.length > 0) {
+    appStore.loading = true
+    try {
+      const {status} = await putRequest(`/workQueueType/order`, rows)
+      snackbar('SUCCESS', 'Order Updated')
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Order Changes')
+      appStore.loading = false
+    }
+  }
+}
+const goToDetails = (item) => {
+  router.push({name: 'workQueueType', params: {id: item.id}})
+}
 </script>
 
 <style lang="scss">

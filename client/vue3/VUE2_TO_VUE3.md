@@ -32,6 +32,7 @@
 import { getCurrentInstance, ref } from 'vue'
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
 ```
 </td>
 </tr>
@@ -46,7 +47,8 @@ const store = vueInstance.$store
 <td>
 
 ```
-userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
+(old) userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
+(new) userCanEdit: this.userStore.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
 ```
 </td>
 </tr>
@@ -59,7 +61,76 @@ userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
 <td>
 
 ```
-const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+(old) const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+(new) const userCanAdd = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+```
+</td>
+</tr>
+</table>
+
+### Filters
+<table>
+<tr>
+<th>Vue2</th>
+</tr>
+<tr>
+<td>
+
+```
+{{ myDateValue | formatDate('date', 'MM/DD/YYYY')}}
+
+OR
+
+this.$filters(myDateValue, 'date', 'MM/DD/YYYY')
+```
+</td>
+</tr>
+</table>
+<table>
+<tr>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+const filters = vueInstance.$filters
+filters.formatDate(myDateValue, 'date', 'MM/DD/YYYY')
+```
+</td>
+</tr>
+</table>
+
+
+### Mixins
+Note: Composition API doesn't have mixins
+<table>
+<tr>
+<th>Vue2</th>
+</tr>
+<tr>
+<td>
+
+```
+<template v-for="(item, index) in filterBy(items, true, 'show')">
+mixins: [Vue2Filters.mixin],
+```
+</td>
+</tr>
+</table>
+<table>
+<tr>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+<template v-for="(item, index) in filteredItems">
+import { computed } from 'vue'
+const filteredItems = computed(() => {
+  return items.value.filter(i => i.show)
+})
 ```
 </td>
 </tr>
@@ -189,6 +260,33 @@ const canAdd = computed(() => {
 </tr>
 </table>
 
+### Sortable
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+let _self = this
+...use _self in the function like:
+_self.workQueueTypes.splice(newIndex, 0, rowSelected)
+_self.saveRowChanges(rowsToSave)
+```
+</td>
+<td>
+
+```
+...no need for scope/_self
+workQueueTypes.value.splice(newIndex, 0, rowSelected)
+saveRowChanges(rowsToSave)
+```
+</td>
+</tr>
+</table>
+
 ### Using Vue Router
 <table>
 <tr>
@@ -252,9 +350,107 @@ props: {
 <td>
 
 ```
+import {defineProps} from 'vue'
 const props = defineProps({
   pageName: String
 })
+```
+</td>
+</tr>
+</table>
+
+
+### Basic Method
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+async doStuff(myProps) {}
+```
+</td>
+<td>
+
+```
+const doStuff = async (myProps) => {})
+```
+</td>
+</tr>
+</table>
+
+
+### Snackbar
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+snackbar: {}, <-- in the data
+this.snackbar = getSnackbar('ERROR', 'Error Loading Announcements')
+this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+```
+</td>
+<td>
+
+```
+const snackbar = vueInstance.$snackbar
+snackbar('SUCCESS', 'Announcement Saved')
+```
+</td>
+</tr>
+</table>
+
+### Global Loader
+Note: Global Loader handling is to prevent a loader from screenA still being present on screenB if the user navigates before screenA is done loading. Not to be confused with SET_LOADING = false
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+handleHidingGlobalLoader(this, status)
+```
+</td>
+<td>
+
+```
+handleHidingGlobalLoader(vueInstance, status)
+```
+</td>
+</tr>
+</table>
+
+### Form Validation
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+<v-form ref="resetPassword" ...
+this.$refs.resetPassword.validate()
+```
+</td>
+<td>
+
+```
+<v-form ref="resetPassword" ...
+const resetPassword = ref(null)
+resetPassword.value.validate()
 ```
 </td>
 </tr>
@@ -270,14 +466,14 @@ const props = defineProps({
 <td>
 
 ```
-this.$emit('clearSearch')
+this.$emit('clearSearch', param)
 ```
 </td>
 <td>
 
 ```
 const emit = defineEmits(['clearSearch'])
-emit('clearSearch')
+emit('clearSearch', param)
 ```
 </td>
 </tr>
@@ -297,6 +493,13 @@ watch: {
   options () {
     //do stuff
   }
+  
+  OR, when the watched prop is like:
+  
+watch: {
+  '$route.params.id': function () {
+    //do stuff
+  }  
 }
 ```
 </td>
@@ -307,12 +510,19 @@ import { watch } from 'vue'
 watch(options, () => {
   //do stuff
 })
+
+OR, when the watched prop is like:
+  
+watch(() => vueInstance.$route.params.id, () => {
+  //do stuff
+}  
 ```
 </td>
 </tr>
 </table>
 
 ### Before Route Leave
+Note: Same behavior for Before Route Update
 <table>
 <tr>
 <th>Vue2</th>
@@ -363,6 +573,32 @@ onBeforeRouteLeave(async (to, from, next) => {
 ```
 WIP:
 need to solve when we come to it
+```
+</td>
+</tr>
+</table>
+
+### Before Destroy
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+beforeDestroy() {
+  //do stuff
+}
+```
+</td>
+<td>
+
+```
+onBeforeUnmount(() => {
+  //doStuff
+})
 ```
 </td>
 </tr>

@@ -47,42 +47,16 @@
 
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
-import {
-  handleHidingGlobalLoader,
-  postRequest,
-  getSnackbar,
-  getRequestWithParams,
-  getMonthDateRange
-} from '@/helpers/helpers'
+<script setup>
 import DatetimePickerInput from "@/components/DatetimePickerInput"
-import constants from "@/helpers/constants"
-import {Actions} from "@/store"
 import SpinnerInline from "@/components/SpinnerInline.vue";
+import { toRefs } from 'vue'
 
-export default {
-  name: 'BudgetReportTable',
-  components: {
-    SpinnerInline,
-    DatetimePickerInput
-  },
-  props: {
+const props = defineProps({
     budget: Object
-  },
-  data() {
-    return {
-      snackbar: {},
+})
+const { budget } = toRefs(props)
 
-    }
-  },
-  created() {
-
-  },
-  methods: {
-
-  }
-}
 </script>
 
 <style scoped lang="scss">

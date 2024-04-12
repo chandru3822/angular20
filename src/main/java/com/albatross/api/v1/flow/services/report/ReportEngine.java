@@ -3295,13 +3295,11 @@ public class ReportEngine {
 
     StringBuilder query = new StringBuilder();
 
-    long ahjCount = fields.stream().filter(f -> Objects.equals(f.getCustomFieldSqlKey(), "customFieldSql.brs.ahjList")).count();
-    ahjCount += requirements.stream().filter(r -> Objects.equals(r.getCustomFieldSqlKey(), "customFieldSql.brs.ahjList")).count();
+    String sqlQuery = sqlCacheRO.queryForObjectBySql(CustomFieldQuery.getCustomFieldSql, Collections.emptyMap(), String.class);
+    query.append(String.format(" with \"customFieldSql.brs.ahjList\" as (%s), ", sqlQuery));
+    query.append("\"customFieldSql.brs.utilityCompanyList\" as (select a.id, a.name::text from brs.feat_db_utility a where archived is not true) ");
 
-    if (ahjCount > 0) {
-      String sqlQuery = sqlCacheRO.queryForObjectBySql(CustomFieldQuery.getCustomFieldSql, Collections.emptyMap(), String.class);
-      query.append(String.format(" with \"customFieldSql.brs.ahjList\" as (%s)", sqlQuery));
-    }
+
 
     query.append(" select");
 
@@ -3324,9 +3322,8 @@ public class ReportEngine {
     query.append(" from brs.project_details");
     query.append(" inner join flow.project on flow.project.id = brs.project_details.project_id");
 
-    if (ahjCount > 0) {
-      query.append(" left join \"customFieldSql.brs.ahjList\" on \"customFieldSql.brs.ahjList\".id = brs.project_details.ahj");
-    }
+    query.append(" left join \"customFieldSql.brs.ahjList\" on \"customFieldSql.brs.ahjList\".id = brs.project_details.ahj");
+    query.append(" left join \"customFieldSql.brs.utilityCompanyList\" on \"customFieldSql.brs.utilityCompanyList\".id = brs.project_details.utility_company");
 
     query.append(" where");
 

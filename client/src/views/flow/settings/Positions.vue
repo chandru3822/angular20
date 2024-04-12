@@ -6,24 +6,28 @@
           <v-toolbar-title class="app-title">Positions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/settings/position" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon>add</v-icon>
-              Add Position
-            </v-btn>
+            <a-btn
+              variant="text"
+              to="/settings/position"
+              color="primary"
+              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              prepend-icon="add"
+              text="ADD POSITION"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <div class="pa-4">
-          <v-text-field
+          <a-text-field
             v-model="search"
             prepend-inner-icon="search"
             label="Search"
             single-line
             hide-details
-          ></v-text-field>
+          ></a-text-field>
         </div>
         <v-data-table
             :headers="headers"
-            :items="filterPositions()"
+            :items="filterPositions"
             :fixed-header="true"
             :search="search"
             disable-sort
@@ -43,16 +47,33 @@
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left" @click="clickRow(item.id)">
-                {{item.position}}
+                <router-link :to="`/settings/position/${item.id}`" class="router-link-td">
+                  {{item.position}}
+                </router-link>
               </td>
               <td class="text-left" @click="clickRow(item.id)">
-                {{item.orgType}}
+                <router-link :to="`/settings/position/${item.id}`" class="router-link-td">
+                  {{item.orgType}}
+                </router-link>
               </td>
               <td class="px-0">
-                <v-btn small fab text color="primary" class="d-inline-block" @click="clickRow(item.id)">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-                <v-btn :disabled="!userCanDelete" small text color="primary" @click="positionToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <a-btn
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  @click="clickRow(item.id)"
+                  prepend-icon="edit"
+                  custom-classes="pa-0"
+                />
+                <a-btn
+                  size="small"
+                  :disabled="!userCanDelete"
+                  variant="text"
+                  color="primary"
+                  @click="positionToDelete=item"
+                  prepend-icon="delete"
+                  custom-classes="pa-0"
+                />
               </td>
             </tr>
           </template>
@@ -65,80 +86,94 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
   import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  export default {
-    name: 'Positions',
-    components: {ConfirmationDialog},
-    data() {
-      return {
-        delay: 500,
-        addNew: false,
-        snackbar: {},
-        positions: [],
-        descending: true,
-        dataLoading: true,
-        search: '',
-        headers: [
-          {text: 'Position Name', value: 'position', show: true},
-          {text: 'Org Type', value: 'orgType', show: true},
-          {text: '', value: 'icons', show: false, width: '100px'},
-        ],
-        positionToDelete: null,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
-      }
-    },
-    computed:{
-      positionToDeleteName(){
-        return this.positionToDelete ? this.positionToDelete.position : ''
-      }
-    },
-    created () {
-      this.getPositions()
-    },
-    methods: {
-      clickRow(id) {
-        this.$router.push({name: 'position', params: {id: id}})
-      },
-      async getPositions() {
-        try {
-          const {data, status} = await getRequest(`/position`)
-          this.positions = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deletePosition() {
-        const p = this.positionToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/position/${p.id}`)
-          p.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Position Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Position')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterPositions () {
-        return this.positions.filter(p => { return !p.archived})
-      },
+
+
+  import {getCurrentInstance, onMounted, ref, computed} from "vue";
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import {useRouter} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
+
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+  const userStore = useUserStore()
+  const vuetify = vueInstance.$vuetify
+  const router = useRouter()
+
+
+  const delay = ref(500)
+  const addNew = ref(false)
+  const positions = ref([])
+  const descending = ref(true)
+  const dataLoading = ref(true)
+  const search = ref('')
+  const positionToDelete = ref(null)
+  const headers = ref([
+    {text: 'Position Name', value: 'position', show: true},
+    {text: 'Org Type', value: 'orgType', show: true},
+    {text: '', value: 'icons', show: false, width: '100px'},
+  ])
+  const positionToDeleteName = computed(() =>{
+    return positionToDelete.value ? positionToDelete.value.position : ''
+  })
+
+  const functionId = computed(() => {
+    return route.params.id
+  })
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+  })
+
+  const filterPositions = computed(() =>{
+    return positions.value?.filter(p => { return !p.archived})
+  })
+
+  onMounted(() => {
+    getPositions()
+  })
+  const clickRow = (id) => {
+    router.push({name: 'position', params: {id: id}})
+  }
+  const getPositions = async () => {
+    try {
+      const {data, status} = await getRequest(`/position`)
+      positions.value = data
+      dataLoading.value = false
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Positions')
+
+      appStore.loading = false
     }
   }
+  const deletePosition = async () => {
+    const p = positionToDelete.value
+    appStore.loading = true
+    try {
+      const {status} = await deleteRequest(`/position/${p.id}`)
+      p.archived = true
+      snackbar('SUCCESS', 'Position Deleted')
+
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting Position')
+      appStore.loading = false
+    }
+  }
+
 </script>
 
 <style lang="scss">

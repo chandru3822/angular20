@@ -22,16 +22,20 @@
             <span class="default-text-color">No available object types</span>
           </template>
 
-          <template #item.objectTye="{ item }">
-              <span class="text-left">{{ item.objectType }}</span>
+          <template #item.objectType="{ item }">
+              <span class="text-left">
+                <router-link :to="`/settings/companyObjectTypes/${item.id}`" class="router-link-td elevation-0 square-card">{{ item.objectType }}</router-link>
+              </span>
           </template>
-              <template #item.icons="{item}">
-                <div style="display: flex; justify-content: flex-end">
-                  <v-btn small :large="$vuetify.breakpoint.smAndDown" icon color="primary" @click="goToDetails(item)">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                </div>
-              </template>
+          <template #item.icons="{item}">
+            <div style="display: flex; justify-content: flex-end">
+              <a-btn size="small" variant="text"
+                               :large="vuetify.breakpoint.smAndDown"
+                               icon color="primary" @click="goToDetails(item)"
+                               prepend-icon="edit"
+              />
+            </div>
+          </template>
         </v-data-table>
       </v-col>
 
@@ -39,45 +43,43 @@
   </v-container>
 </template>
 
-<script>
-import constants from '@/helpers/constants'
-import {getRequest, getSnackbar, logError} from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
+<script setup>
+import {getRequest, logError} from '@/helpers/helpers'
 
-export default {
-  name: 'CompanyObjectTypes',
-  data () {
-    return {
-      snackbar: {},
-      constants,
-      companyObjectTypes: [],
-      apiPath: this.$store.state.user.details.apiPath,
-      headers: [
-        {text: 'Object Type', value: 'objectType'},
-        {text: '', value: 'icons', show: true},
-      ],
-    }
-  },
+import {getCurrentInstance, onMounted, ref} from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRouter} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+const store = vueInstance.$store
+const userStore = useUserStore()
+const router = useRouter()
 
-  created () {
-    if(null != this.apiPath) {
-      this.getCompanyObjectTypes()
-    }
-  },
-  methods: {
-    async getCompanyObjectTypes() {
-      try {
-        const {data} = await getRequest(`/objectType/getCompanyObjectTypes`, 'blueraven')
-        this.companyObjectTypes = data
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching object types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    goToDetails (item) {
-      this.$router.push({name: 'companyObjectTypes', params: {id: item.id}})
-    }
+const companyObjectTypes = ref([])
+const apiPath = ref(userStore.details.apiPath)
+const headers = ref([
+  {text: 'Object Type', value: 'objectType'},
+  {text: '', value: 'icons', show: true},
+])
+
+onMounted(() => {
+  if(null != apiPath.value) {
+    getCompanyObjectTypes()
   }
+})
+const getCompanyObjectTypes = async () => {
+  try {
+    const {data} = await getRequest(`/objectType/getCompanyObjectTypes`, 'blueraven')
+    companyObjectTypes.value = data
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching object types')
+  }
+}
+const goToDetails = (item) => {
+  router.push({name: 'companyObjectTypes', params: {id: item.id}})
 }
 </script>

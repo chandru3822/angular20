@@ -2,9 +2,7 @@
   <v-dialog v-model="dialog" width="500">
     <v-card>
       <v-card-title class="card-title">
-        <slot name="title">
-          Confirm
-        </slot>
+        <slot name="title"> Confirm </slot>
       </v-card-title>
 
       <v-card-text class="pt-4">
@@ -13,65 +11,63 @@
 
       <v-card-actions>
         <slot name="actions" v-bind:cancel="cancel" v-bind:ok="ok">
-          <v-btn
-            text
+          <a-btn
+            variant="text"
             @click="cancel(false)"
             class="text-capitalize"
-          >
-            {{ cancelButtonText }}
-          </v-btn>
+            color="unset"
+            :text="cancelButtonText"
+          ></a-btn>
           <v-spacer />
-          <v-btn
+          <a-btn
             color="primary"
             @click="ok(true)"
             class="text-capitalize"
-            dark
-          >
-            {{ okButtonText }}
-          </v-btn>
+            :text="okButtonText"
+          ></a-btn>
         </slot>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
-<script>
-export default {
-  props: {
-    cancelButtonText: {
-      type: String,
-      default: 'No'
-    },
-    okButtonText: {
-      type: String,
-      default: 'Yes'
-    }
+<script setup>
+import { toRefs, ref, defineExpose } from 'vue'
+
+const props = defineProps({
+  cancelButtonText: {
+    type: String,
+    default: 'No'
   },
-  data() {
-    return {
-      dialog: false,
-      resolve: null,
-      reject: null
-    }
-  },
-  methods: {
-    open() {
-      this.dialog = true
-      return new Promise((resolve, reject) => {
-        this.resolve = resolve
-        this.reject = reject
-      })
-    },
-    ok(value = true) {
-      this.resolve({ ok: true, value })
-      this.dialog = false
-    },
-    cancel(value = false) {
-      this.resolve({ ok: false, value })
-      this.dialog = false
-    }
+  okButtonText: {
+    type: String,
+    default: 'Yes'
   }
+})
+const { cancelButtonText, okButtonText } = toRefs(props)
+
+const dialog = ref(false)
+const resolve = ref(null)
+const reject = ref(null)
+
+const open = () => {
+  dialog.value = true
+  return new Promise((res, rej) => {
+    resolve.value = res
+    reject.value = rej
+  })
 }
+const ok = (value = true) => {
+  resolve.value({ ok: true, value })
+  dialog.value = false
+}
+const cancel = (value = false) => {
+  resolve.value({ ok: false, value })
+  dialog.value = false
+}
+
+defineExpose({ open })
 </script>
+
 <style lang="scss" scoped>
 .card-title {
   word-break: initial;

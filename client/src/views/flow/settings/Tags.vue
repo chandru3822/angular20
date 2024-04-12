@@ -6,22 +6,23 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="title-large">Tags</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary"
-                   @click="[addNew = !addNew, newTag = { bgColor: '#878787', fontColor: '#1F3C73'}]"
-                   v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
-            </v-btn>
+            <a-btn variant="text" color="primary"
+               @click="[addNew = !addNew, newTag = { bgColor: '#878787', fontColor: '#1F3C73'}]"
+               v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+               :hide-text-on-mobile="constants.IS_MOBILE"
+               :prepend-icon="constants.IS_MOBILE ? 'add' : ''"
+               :text="addNew ? 'CANCEL' : 'ADD NEW'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
           <v-card v-if="addNew" flat color="transparent">
-            <v-text-field v-model="newTag.tagName"
+            <a-text-field v-model="newTag.tagName"
                           counter
                           :maxlength="tagMaxChars"
                           placeholder="Enter a tag name"
                           label="Tag Name">
-            </v-text-field>
+            </a-text-field>
             <v-row>
               <v-col cols="6">
                 <div>
@@ -48,22 +49,21 @@
                 </div>
               </v-col>
             </v-row>
-            <v-btn color="primary" class="mt-4" :disabled="!newTag.tagName || !newTag.fontColor || !newTag.bgColor"
-                   @click="saveTag(newTag, true)">Save
-            </v-btn>
+            <a-btn color="primary" class="mt-4" :disabled="!newTag.tagName || !newTag.fontColor || !newTag.bgColor"
+                   @click="saveTag(newTag, true)" text="SAVE"/>
           </v-card>
           <div v-else>
-            <v-list v-for="(a, index) in filterBy(tags, false, 'archived')"
+            <v-list v-for="(a, index) in filteredTags"
                     :key="index" class="pa-0">
-              <v-list-item :class="{'shaded-row': index % 2, 'mobile': $vuetify.breakpoint.smAndDown}">
+              <v-list-item :class="{'shaded-row': index % 2, 'mobile': vuetify.breakpoint.smAndDown}">
                 <v-list-item-content class="text-left">
                   <div v-if="selectedTagId === a.id">
-                    <v-text-field class="one-hunned"
+                    <a-text-field class="one-hunned"
                                   label="Tag Name"
                                   counter
                                   :maxlength="25"
                                   v-model="a.tagName">
-                    </v-text-field>
+                    </a-text-field>
                     <v-row>
                       <v-col cols="6">
                         <div>
@@ -97,40 +97,36 @@
                 </v-list-item-content>
                 <div>
                 <span class="clickable"
-                                    v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                  <v-btn text small color="primary" :disabled="!a.tagName || !a.fontColor || !a.bgColor"
-                         v-if="selectedTagId === a.id" @click="saveTag(a, false)">
-                    <v-icon>save</v-icon>
-                  </v-btn>
-                  <v-btn v-else text small color="primary" @click="selectedTagId = a.id">
-                  <v-icon>edit</v-icon>
-                    </v-btn>
+                                    v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                  <a-btn variant="text" size="small" color="primary"
+                   :disabled="!a.tagName || !a.fontColor || !a.bgColor"
+                   v-if="selectedTagId === a.id" @click="saveTag(a, false)" prepend-icon="save"/>
+                  <a-btn v-else variant="text" size="small" color="primary" @click="selectedTagId = a.id" prepend-icon="edit"/>
                 </span>
-                <v-btn small text color="primary" v-if="selectedTagId === a.id" @click="selectedTagId = null">
-                  <v-icon>close</v-icon>
-                </v-btn>
-                <v-btn small text color="primary"
-                       v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                       @click="tagToDelete=a">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <a-btn
+                  size="small" variant="text" color="primary"
+                  v-if="selectedTagId === a.id"
+                  @click="selectedTagId = null"
+                  prepend-icon="close"
+                />
+                <a-btn size="small" variant="text" color="primary"
+                       v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                       @click="tagToDelete=a" prepend-icon="delete"/>
                 <v-tooltip
                   content-class="full-opacity-tooltip"
                   :max-width="300"
                   top
                 >
                   <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                      text small
+                    <a-btn
+                      variant="text"
+                      size="small"
                       color="primary"
                       class="d-inline-block"
                       v-bind="attrs"
-                      v-on="on"
-                    >
-                      <v-icon color="primary" v-on="on">
-                        mdi-information
-                      </v-icon>
-                    </v-btn>
+                      :activation-handler="on"
+                      prepend-icon="mdi-information"
+                    />
                   </template>
                   <span>Tag ID: {{ a.id }}</span>
                 </v-tooltip>
@@ -149,113 +145,112 @@
 </template>
 
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
+<script setup>
+
 import orderBy from 'lodash.orderby'
 
 import {
   handleHidingGlobalLoader,
   getRequest,
   deleteRequest,
-  putRequest,
-  getSnackbar
+  putRequest
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-export default {
-  name: 'Tags',
-  components: {ConfirmationDialog},
-  mixins: [Vue2Filters.mixin],
+import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
-  data() {
-    return {
-      snackbar: {},
-      constants,
-      tags: [],
-      addNew: false,
-      tagMaxChars: 30,
-      newTag: {},
-      colorOptions: {
-        canvasHeight: 75,
-        width: 200,
-        mode: 'hexa',
-        hideModeSwitch: true
-      },
-      selectedTagId: null,
-      userId: this.$store.state.user.details.id,
-      companyId: this.$store.state.user.details.companyId,
-      tagToDelete: null
-    }
-  },
-  computed: {
-    tagToDeleteValue() {
-      return this.tagToDelete ? this.tagToDelete.tagName : ''
-    }
-  },
-  methods: {
-    async getTags() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        //for now this is just hardcoded to show project tags
-        const {data, status} = await getRequest(`/tag/byType/1`)
-        this.tags = orderBy(data, [a => a.tagName.toLowerCase()])
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteTag() {
-      const tag = this.tagToDelete
-      const typeId = this.tagToDelete.id
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await deleteRequest(`/tag/${typeId}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Tag Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        tag.archived = true
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Tag')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.tagToDelete = null
-    },
-    async saveTag(tag, isNew) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        //yes this is hardcoded. im just trying to prep for future requests
-        tag.tagTypeId = 1
-        const {data, status} = await putRequest(`/tag`, tag)
-        if (isNew) {
-          this.addNew = false
-          this.newTag = {}
-          this.tags.push(data)
-          this.tags = orderBy(this.tags, [a => a.tagName.toLowerCase()])
-        } else {
-          this.selectedTagId = null
-        }
-        this.snackbar = getSnackbar('SUCCESS', 'Tag Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Tag')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    }
-  },
-  async created() {
-    this.getTags()
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+const store = vueInstance.$store
+const userStore = useUserStore()
+
+const tags = ref([])
+const addNew = ref(false)
+const tagMaxChars = ref(30)
+const newTag = ref({})
+const selectedTagId = ref(null)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
+const tagToDelete = ref(null)
+const colorOptions = ref({
+  canvasHeight: 75,
+  width: 200,
+  mode: 'hexa',
+  hideModeSwitch: true
+})
+
+
+const tagToDeleteValue = computed(() => {
+  return tagToDelete.value ? tagToDelete.value.tagName : ''
+})
+const getTags = async () => {
+  appStore.loading = true
+  try {
+    //for now this is just hardcoded to show project tags
+    const {data, status} = await getRequest(`/tag/byType/1`)
+    tags.value = orderBy(data, [a => a.tagName.toLowerCase()])
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
+    appStore.loading = false
   }
 }
+const deleteTag = async () => {
+  const tag = tagToDelete.value
+  const typeId = tagToDelete.value.id
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/tag/${typeId}`)
+    snackbar('SUCCESS', 'Tag Deleted')
+
+    tag.archived = true
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Tag')
+
+    appStore.loading = false
+  }
+  tagToDelete.value = null
+}
+const saveTag = async (tag, isNew) => {
+  appStore.loading = true
+  try {
+    //yes this is hardcoded. im just trying to prep for future requests
+    tag.tagTypeId = 1
+    const {data, status} = await putRequest(`/tag`, tag)
+    if (isNew) {
+      addNew.value = false
+      newTag.value = {}
+      tags.value.push(data)
+      tags.value = orderBy(tags.value, [a => a.tagName.toLowerCase()])
+    } else {
+      selectedTagId.value = null
+    }
+    snackbar('SUCCESS', 'Tag Saved')
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Tag')
+    appStore.loading = false
+  }
+}
+onMounted(()=> {
+  getTags()
+})
+
+const filteredTags = computed(() => {
+  return tags.value.filter((t) => t.archived === false)
+})
+
 </script>
 <style scoped lang="scss">
 .mobile {

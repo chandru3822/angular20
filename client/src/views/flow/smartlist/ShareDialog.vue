@@ -17,10 +17,10 @@
             cols="8"
             class="py-0"
           >
-            <v-autocomplete
+            <a-autocomplete
               :items="filteredSharables"
               label="Add Users and Organizations"
-              :item-text="(i) => (i.isUser) ? `${i.name} - ${i.position}` : i.name"
+              :item-title="(i) => (i.isUser) ? `${i.name} - ${i.position}` : i.name"
               return-object
               @input="updateNewAccess"
             />
@@ -30,10 +30,10 @@
             cols="4"
             class="py-0"
           >
-            <v-autocomplete
+            <a-autocomplete
               v-model="newAccess.accessControlId"
               :items="accessLevels"
-              :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
+              :item-title="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
               item-value="accessControlId"
             />
           </v-col>
@@ -104,10 +104,10 @@
                 align-self="center"
                 class="py-0"
               >
-                <v-select
+                <a-select
                   v-model="accessLevel.accessControlId"
                   :items="accessLevels"
-                  :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
+                  :item-title="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
                   item-value="accessControlId"
                   @input="[accessLevel.updated = true, accessLevel.deleted = false]"
                 >
@@ -120,7 +120,7 @@
                       Transfer Ownership
                     </v-list-item>
                   </template>
-                </v-select>
+                </a-select>
               </v-col>
 
               <v-col
@@ -138,21 +138,19 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn
-          @click.native="emit('dialog-closed')"
-          text
-          color="primary"
-          class="text-capitalize mr-2 mb-2"
-        >
-          Cancel
-        </v-btn>
-        <v-btn
-          color="primary"
-          class="white--text elevation-2 text-capitalize mr-2 mb-2"
-          @click="updateAccess"
-        >
-          Save
-        </v-btn>
+        <a-btn
+            @click.native="emit('dialog-closed')"
+            variant="text"
+            color="primary"
+            class="text-capitalize mr-2 mb-2"
+            text="Cancel"
+        ></a-btn>
+        <a-btn
+            color="primary"
+            class="elevation-2 text-capitalize mr-2 mb-2"
+            @click="updateAccess"
+            text="Save"
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -174,21 +172,19 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn
-          @click.native="openOwnershipDialog = false"
-          text
-          color="primary"
-          class="text-capitalize mr-2 mb-2"
-        >
-          Cancel
-        </v-btn>
-        <v-btn
-          color="primary"
-          class="white--text elevation-2 text-capitalize mr-2 mb-2"
-          @click="updateOwner"
-        >
-          Transfer
-        </v-btn>
+        <a-btn
+            @click.native="openOwnershipDialog = false"
+            variant="text"
+            color="primary"
+            class="text-capitalize mr-2 mb-2"
+            text="Cancel"
+        ></a-btn>
+        <a-btn
+            color="primary"
+            class="elevation-2 text-capitalize mr-2 mb-2"
+            @click="updateOwner"
+            text="Transfer"
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -199,10 +195,13 @@
 
 import { getRequest, handleHidingGlobalLoader, logError, postRequest, putRequest, UUID } from '@/helpers/helpers'
 import { getCurrentInstance, ref, computed } from 'vue'
-import { AppMutations } from '@/stores/AppStore'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
+const appStore = useAppStore()
 const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
@@ -222,9 +221,9 @@ const emit = defineEmits([
   'updated-owner'
 ])
 
-const hasManageAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
-const isSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
-const isSystemAdmin = store.getters.isFullAdmin
+const hasManageAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
+const isSmartlistAdmin = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+const isSystemAdmin = userStore.isSystemAdmin
 
 //a list of user positions and orgs the smartlist can be shared with
 const sharables = ref([])
@@ -240,7 +239,7 @@ const openOwnershipDialog = ref(false)
 const newOwner = ref({})
 
 const isOwner = computed(() => {
-  return props.smartlist?.ownerId === store.state.user.details.id
+  return props.smartlist?.ownerId === userStore.details.id
 })
 
 const canMakePublic = computed(() => {
@@ -326,7 +325,7 @@ const updateAccess = async () => {
 
   if (Object.keys(payload).length > 0) {
     try {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       await postRequest(`/smartlist/${props.smartlist.id}/access`, {...payload, smartlistId: props.smartlist.id})
 
       if (payload.updatePublic && payload.public) {
@@ -359,7 +358,7 @@ const confirmOwnershipChange = async (accessLevel) => {
 
 const updateOwner = async () => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     await putRequest(`/smartlist/${props.smartlist.id}/owner`, newOwner.value)
     snackbar('SUCCESS', `Ownership successfully transferred`)
     emit('dialog-closed')

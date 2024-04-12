@@ -2,54 +2,62 @@
   <v-container class="pa-0">
     <v-card flat color="white" class="px-3 mt-3 square-card">
       <div class="pay-header">
-        <v-select v-model="status"
-                  class="status-select pt-3 pl-1"
+        <a-select v-model="status"
+                  custom-classes="status-select pt-3 pl-1"
                   :items="statuses"
                   no-data-text="No Status Available"
                   label="Status: "
-                  item-text="text"
+                  item-title="text"
                   item-value="value"
                   v-bind:class="status"
                   @change="fetchPayments()"
-        ></v-select>
+        ></a-select>
         <v-spacer></v-spacer>
         <div v-if="status === 'approval'" class="pl-4">Payment Amount Total: <b>{{
             paymentSum || 0 | currency('$', 2)
           }}</b></div>
         <div v-if="showApproval" class="approvalDiv default-text-color">
-<!--          not sure why they need to see this. it just shows them their own name -->
-<!--          <label><b>Approved By:</b></label>-->
-<!--          {{ userName }}-->
-<!--          <br/>-->
-          <v-btn color="primary" dark @click="approveDialog = true" class="ml-3">Approve and Create Batch</v-btn>
+          <!--          not sure why they need to see this, it just shows them their own name -->
+          <!--          <label><b>Approved By:</b></label>-->
+          <!--          {{ userName }}-->
+          <!--          <br/>-->
+          <a-btn
+              color="primary"
+              @click="approveDialog = true"
+              class="ml-3"
+              text="Approve and Create Batch"
+          ></a-btn>
         </div>
 
         <v-spacer></v-spacer>
-        <v-btn color="primary" class="white--text" @click="exportPayments">Export</v-btn>
+        <a-btn
+            color="primary"
+            @click="exportPayments"
+            text="Export"
+        ></a-btn>
       </div>
       <div>
-        <v-text-field
-          prepend-inner-icon="search"
-          text
-          label="Search payments..."
-          v-model="searchQuery"
-          @input="debounceFilterPayments"
-        ></v-text-field>
+        <a-text-field
+            prepend-inner-icon="search"
+            label="Search payments..."
+            v-model="searchQuery"
+            @input="debounceFilterPayments"
+        ></a-text-field>
       </div>
     </v-card>
 
     <v-col cols="12" class="px-0 pt-0">
       <v-data-table
-        :headers="visibleHeaders"
-        :items="filteredPayments"
-        :search="paymentsSearch"
-        :options="pagination"
-        :footer-props="footerProps"
-        :items-per-page="itemsPerPage"
-        :show-select="showSelect"
-        fixed-header
-        dense
-        class="elevation-1 pay-table"
+          :headers="visibleHeaders"
+          :items="filteredPayments"
+          :search="paymentsSearch"
+          :options="pagination"
+          :footer-props="footerProps"
+          :items-per-page="itemsPerPage"
+          :show-select="showSelect"
+          fixed-header
+          dense
+          class="elevation-1 pay-table"
       >
 
         <template #no-data>
@@ -67,9 +75,9 @@
 
         <template #body="{ items }">
           <tr
-            v-for="(it, index) in items"
-            :key="it.id"
-            :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
+              v-for="(it, index) in items"
+              :key="it.id"
+              :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
           >
             <td v-if="status === 'approval'" class="flex-display justify-center">
               <v-checkbox color="primary" :readonly="!userCanEdit"
@@ -80,7 +88,7 @@
               {{ it.projectName ? it.projectName : '' }}</a></td>
             <td class="text-left" v-else>{{ it.projectName ? it.projectName : '' }}</td>
             <td class="text-left">
-              <router-link :to="`/project/${it.projectId}/status`">{{ it.projectId }}</router-link>
+              <router-link :to="`/project/${it.projectId}/${defaultProjectPage}`">{{ it.projectId }}</router-link>
             </td>
             <td class="text-left">{{ it.substantialCompletionDate | formatDate('date') }}</td>
             <td class="text-left">{{ it.financier ? it.financier : '' }}</td>
@@ -108,54 +116,61 @@
           <v-card-text>
             <v-row>
               <v-col>
-                <v-text-field label="Project Name"
+                <a-text-field label="Project Name"
                               v-model="newPayItem.projectName"
                               disabled
-                ></v-text-field>
-                <v-text-field label="Project ID"
+                ></a-text-field>
+                <a-text-field label="Project ID"
                               v-model="newPayItem.projectId"
                               disabled
-                ></v-text-field>
-                <v-text-field label="Substantial Completion"
+                ></a-text-field>
+                <a-text-field label="Substantial Completion"
                               v-model="newPayItem.sc"
                               disabled
-                ></v-text-field>
-                <v-text-field label="Financier"
+                ></a-text-field>
+                <a-text-field label="Financier"
                               v-model="newPayItem.financier"
                               disabled
-                ></v-text-field>
-                <v-text-field label="Product"
+                ></a-text-field>
+                <a-text-field label="Product"
                               v-model="newPayItem.product"
                               disabled
-                ></v-text-field>
+                ></a-text-field>
               </v-col>
               <v-col>
-                <v-text-field label="Total Promotion Amount"
+                <a-text-field label="Total Promotion Amount"
                               v-model="newPayItem.totalPromotionAmount"
-                ></v-text-field>
-                <v-text-field label="# of Promotion Payments"
+                ></a-text-field>
+                <a-text-field label="# of Promotion Payments"
                               v-model="newPayItem.numberOfPromotionPayments"
-                ></v-text-field>
-                <v-text-field label="$ / Promotion Payment"
+                ></a-text-field>
+                <a-text-field label="$ / Promotion Payment"
                               v-model="perPromotionPayment"
                               disabled>
-                </v-text-field>
-                <v-text-field label="Verified By"
+                </a-text-field>
+                <a-text-field label="Verified By"
                               v-model="newPayItem.createdBy"
                               disabled
-                ></v-text-field>
+                ></a-text-field>
               </v-col>
             </v-row>
           </v-card-text>
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="primary" text @click="close">Cancel</v-btn>
-            <v-btn color="primary" raised
-                   :disabled="submittingPay"
-                   @click="submitPay" class="white--text">
-              Submit
-            </v-btn>
+            <a-btn
+                color="primary"
+                variant="text"
+                @click="close"
+                text="Cancel"
+            ></a-btn>
+            <a-btn
+                color="primary"
+                raised
+                :disabled="submittingPay"
+                @click="submitPay"
+                text="Submit"
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -174,335 +189,318 @@
                         @confirm="confirmPassword()"
     >
       <template v-slot:title>Please confirm payment approval</template>
-      <v-text-field class="passwordTextfield"
+      <a-text-field class="passwordTextfield"
                     label="Please confirm your password:"
                     v-model="passwordInput"
                     type="password"
-      ></v-text-field>
+      ></a-text-field>
       <template v-slot:no>cancel</template>
       <template v-slot:yes>confirm</template>
     </ConfirmationDialog>
   </v-container>
 </template>
 
-<script>
-import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+<script setup>
+import {handleHidingGlobalLoader, getRequest, postRequest, getProjectPath,} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import {AppMutations} from '@/stores/AppStore'
+
 import {saveAs} from 'file-saver'
 import moment from "moment";
 import debounce from "lodash.debounce";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-export default {
-  name: 'Payments',
-  components: {ConfirmationDialog},
-  data() {
-    return {
-      snackbar: {},
-      footerProps: {
-        'items-per-page-options': [25, 50, 100, 500],
-        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-      },
-      payments: [],
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'EDIT'),
-      headers: [
-        {text: 'Project Name', value: 'projectName', show: true},
-        {text: 'Project ID', value: 'projectId', show: true},
-        {text: 'Substantial Completion', value: 'substantialCompletionDate', show: true},
-        {text: 'Financier', value: 'financier', show: true},
-        {text: 'Product', value: 'product', show: true},
-        {text: 'Total Promotion Amount', value: 'totalPromotionAmount', show: true},
-        {text: '# Payments', value: 'numberOfPromotionPayments', show: false},
-        {text: 'Payment Amount', value: 'paymentAmount', show: false},
-        {text: 'Next Payment #', value: 'nextScheduledPayment', show: false},
-        {text: 'Total Paid', value: 'totalPaid', show: false},
-        {text: 'Last Payment Date', value: 'lastPaymentDate', show: false},
-        {text: 'Balance Owed', value: 'balanceOwed', show: false},
-        {text: '', show: false}
-      ],
-      statuses: [
-        {
-          text: 'New Pending',
-          value: 'pending'
-        },
-        {
-          text: 'Needs Approval',
-          value: 'approval'
-        },
-        {
-          text: 'Invalid',
-          value: 'invalid'
-        }
-      ],
-      status: 'approval',
-      newPayItem: {
-        projectName: '',
-        projectId: 0,
-        sc: '',
-        financier: '',
-        product: '',
-        totalPromotionAmount: 0,
-        numberOfPromotionPayments: 0,
-        paymentAmount: 0,
-        nextScheduledPayment: 1,
-        verifiedBy: '',
-        createdByUserId: '',
-        paymentStartDate: '',
-        selected: false,
-      },
-      paymentsSearch: '',
-      submittingPay: false,
-      pagination: {},
-      selectAll: false,
-      showSelect: false,
-      itemsPerPage: 50,
-      userName: '',
-      approveDialog: false,
-      passwordDialog: false,
-      newPayDialog: false,
-      passwordInput: '',
-      searchQuery: '',
-      filteredPayments: []
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 500],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const payments = ref([])
+const headers = ref([
+  {text: 'Project Name', value: 'projectName', show: true},
+  {text: 'Project ID', value: 'projectId', show: true},
+  {text: 'Substantial Completion', value: 'substantialCompletionDate', show: true},
+  {text: 'Financier', value: 'financier', show: true},
+  {text: 'Product', value: 'product', show: true},
+  {text: 'Total Promotion Amount', value: 'totalPromotionAmount', show: true},
+  {text: '# Payments', value: 'numberOfPromotionPayments', show: false},
+  {text: 'Payment Amount', value: 'paymentAmount', show: false},
+  {text: 'Next Payment #', value: 'nextScheduledPayment', show: false},
+  {text: 'Total Paid', value: 'totalPaid', show: false},
+  {text: 'Last Payment Date', value: 'lastPaymentDate', show: false},
+  {text: 'Balance Owed', value: 'balanceOwed', show: false},
+  {text: '', show: false}
+])
+const statuses = ref([
+  {text: 'New Pending',value: 'pending'},
+  {text: 'Needs Approval',value: 'approval'},
+  {text: 'Invalid',value: 'invalid'}
+])
+const status = ref('approval')
+const newPayItem = ref({projectName: '',projectId: 0,sc: '',financier: '',product: '',totalPromotionAmount: 0,numberOfPromotionPayments: 0,paymentAmount: 0,nextScheduledPayment: 1,verifiedBy: '',createdByUserId: '',paymentStartDate: '',selected: false,})
+const paymentsSearch = ref('')
+const submittingPay = ref(false)
+const pagination = ref({})
+const selectAll = ref(false)
+const showSelect = ref(false)
+const itemsPerPage = ref(50)
+const userName = ref('')
+const approveDialog = ref(false)
+const passwordDialog = ref(false)
+const newPayDialog = ref(false)
+const passwordInput = ref('')
+const searchQuery = ref('')
+const filteredPayments = ref([])
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('REBATES', 'EDIT')
+})
+const visibleHeaders = computed(() => {
+  return headers.value.filter(header => header.show === true)
+})
+const perPromotionPayment = computed(() => {
+  return newPayItem.value.numberOfPromotionPayments == 0 ? 0 : (newPayItem.value.totalPromotionAmount / newPayItem.value.numberOfPromotionPayments).toFixed(2);
+})
+const showApproval = computed(() => {
+  return payments.value.filter(p => p.selected === true).length > 0
+})
+const paymentIdsToApprove = computed(() => {
+  return payments.value.filter(p => p.selected === true).map(p => p.paymentId)
+})
+const paymentSum = computed(() => {
+  let sum = 0;
+  let selectedPayments = filteredPayments.value.filter(p => p.selected === true);
+  if (selectedPayments.length > 0) {
+    selectedPayments.forEach(p => sum += p.paymentAmount)
+  } else {
+    filteredPayments.value.forEach(p => sum += p.paymentAmount)
+  }
+
+  return sum;
+})
+
+onMounted(() => {
+  appStore.loading = true
+  Promise.all([
+    fetchPayments()
+  ]).then(() => appStore.loading = false)
+})
+
+const fetchPayments = async() => {
+  appStore.loading = true
+  try {
+    if (status.value === 'approval') {
+      const {data, status} = await getRequest('/rebate/needsApproval', 'blueraven')
+      showSelect.value = true;
+      // # Of Payments
+      headers.value[6].show = true;
+      //Payment Amount
+      headers.value[7].show = true;
+      // Next Payment #
+      headers.value[8].show = true;
+      // Total Paid
+      headers.value[9].show = true;
+      // Last Payment Date
+      headers.value[10].show = true;
+      // Balance Owed
+      headers.value[11].show = true;
+      //empty header
+      headers.value[12].show=false
+
+      payments.value = data;
+      filteredPayments.value = data;
+
+      let userData = await getRequest('/user/current')
+      userName.value = userData.data.fullName;
+      handleHidingGlobalLoader( status)
+    } else if (status.value === 'pending') {
+      const {data, status} = await getRequest('/rebate/pending', 'blueraven')
+      payments.value = data;
+      filteredPayments.value = data;
+
+      showSelect.value = false;
+      // # Of Payments
+      headers.value[6].show = false;
+      //Payment Amount
+      headers.value[7].show = false;
+      // Total Paid
+      headers.value[8].show = false;
+      // Last Payment Date
+      headers.value[9].show = false;
+      // Balance Owed
+      headers.value[10].show = false;
+      //empty header
+      headers.value[11].show = userCanEdit.value;
+
+      handleHidingGlobalLoader( status)
+    } else if (status.value === 'invalid') {
+      const {data, status} = await getRequest('/rebate/unbalancedPayments', 'blueraven')
+      payments.value = data;
+      filteredPayments.value = data;
+
+      showSelect.value = false;
+      // # Of Payments
+      headers.value[6].show = false;
+      //Payment Amount
+      headers.value[7].show = false;
+      // Total Paid
+      headers.value[8].show = false;
+      // Last Payment Date
+      headers.value[9].show = false;
+      // Balance Owed
+      headers.value[10].show = false;
+      // Balance Owed
+      headers.value[10].show = true;
+      //empty header
+      headers.value[11].show = false;
+      handleHidingGlobalLoader( status)
     }
-  },
-  computed: {
-    visibleHeaders() {
-      return this.headers.filter(header => header.show === true)
-    },
-    perPromotionPayment() {
-      return this.newPayItem.numberOfPromotionPayments == 0 ? 0 : (this.newPayItem.totalPromotionAmount / this.newPayItem.numberOfPromotionPayments).toFixed(2);
-    },
-    showApproval() {
-      return this.payments.filter(p => p.selected === true).length > 0
-    },
-    paymentIdsToApprove() {
-      return this.payments.filter(p => p.selected === true).map(p => p.paymentId)
-    },
-    paymentSum() {
-      let sum = 0;
-      let selectedPayments = this.filteredPayments.filter(p => p.selected === true);
-      if (selectedPayments.length > 0) {
-        selectedPayments.forEach(p => sum += p.paymentAmount)
-      } else {
-        this.filteredPayments.forEach(p => sum += p.paymentAmount)
-      }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving rebate payments')
 
-      return sum;
+  }
+}
+
+const debounceFilterPayments = debounce((query) => {
+  filteredPayments.value = payments.value.filter(pay => {
+    return (pay['projectName'].toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        pay['projectId'].toString().toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        pay['product'].toString().toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
+  })
+
+  if (itemsPerPage.value > filteredPayments.value.length) {
+    itemsPerPage.value = filteredPayments.value.length;
+  }
+}, 500)
+const exportPayments = async() => {
+  appStore.loading = true
+  try {
+    let filename = '';
+    let csvData = 'Project Name,Project ID,Substantial Completion,Financier,Product,Total Promotion Amount, Next Payment #';
+    if (status.value === 'approval') {
+      filename = 'Needs Approval Payments.csv';
+      csvData += ',# of Payments,$ / Promotion Payment,' +
+          'Total Paid,Last Payment Date,Balance Owed';
+    } else if (status.value === 'invalid') {
+      filename = 'Invalid Payments.csv';
+      csvData += ',Balance Owed';
+    } else if (status.value === 'pending') {
+      filename = 'New Pending Payments.csv';
     }
-  },
-  watch: {},
-  created() {
-    this.$store.commit(AppMutations.SET_LOADING, true)
-    Promise.all([
-      this.fetchPayments()
-    ]).then(() => this.$store.commit(AppMutations.SET_LOADING, false))
-  },
-  methods: {
-    async fetchPayments() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        if (this.status === 'approval') {
-          const {data, status} = await getRequest('/rebate/needsApproval', 'blueraven')
-          this.showSelect = true;
-          // # Of Payments
-          this.headers[6].show = true;
-          //Payment Amount
-          this.headers[7].show = true;
-          // Next Payment #
-          this.headers[8].show = true;
-          // Total Paid
-          this.headers[9].show = true;
-          // Last Payment Date
-          this.headers[10].show = true;
-          // Balance Owed
-          this.headers[11].show = true;
-          //empty header
-          this.headers[12].show=false
 
-          this.payments = data;
-          this.filteredPayments = data;
+    csvData += '\n';
 
-          let userData = await getRequest('/user/current')
-          this.userName = userData.data.fullName;
-          handleHidingGlobalLoader(this, status)
-        } else if (this.status === 'pending') {
-          const {data, status} = await getRequest('/rebate/pending', 'blueraven')
-          this.payments = data;
-          this.filteredPayments = data;
+    filteredPayments.value.forEach(p => {
+      csvData += '"' + p.projectName + '",' + p.projectId + ',' +
+          (p.substantialCompletionDate != null ? moment(p.substantialCompletionDate).format('MM/DD/YYYY') : '') +
+          ',"' + p.financier + '","' + p.product + '","' + p.totalPromotionAmount + '",' + p.nextScheduledPayment;
 
-          this.showSelect = false;
-          // # Of Payments
-          this.headers[6].show = false;
-          //Payment Amount
-          this.headers[7].show = false;
-          // Total Paid
-          this.headers[8].show = false;
-          // Last Payment Date
-          this.headers[9].show = false;
-          // Balance Owed
-          this.headers[10].show = false;
-          //empty header
-          this.headers[11].show = this.userCanEdit;
-
-          handleHidingGlobalLoader(this, status)
-        } else if (this.status === 'invalid') {
-          const {data, status} = await getRequest('/rebate/unbalancedPayments', 'blueraven')
-          this.payments = data;
-          this.filteredPayments = data;
-
-          this.showSelect = false;
-          // # Of Payments
-          this.headers[6].show = false;
-          //Payment Amount
-          this.headers[7].show = false;
-          // Total Paid
-          this.headers[8].show = false;
-          // Last Payment Date
-          this.headers[9].show = false;
-          // Balance Owed
-          this.headers[10].show = false;
-          // Balance Owed
-          this.headers[10].show = true;
-          //empty header
-          this.headers[11].show = false;
-          handleHidingGlobalLoader(this, status)
-        }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving rebate payments')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    debounceFilterPayments: debounce(function () {
-      this.filteredPayments = this.payments.filter(pay => {
-        return (pay['projectName'].toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          pay['projectId'].toString().toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          pay['product'].toString().toLowerCase().includes(this.searchQuery.toLowerCase())
-        )
-      })
-
-      if (this.itemsPerPage > this.filteredPayments.length) {
-        this.itemsPerPage = this.filteredPayments.length;
-      }
-    }, 500),
-    async exportPayments() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let filename = '';
-        let csvData = 'Project Name,Project ID,Substantial Completion,Financier,Product,Total Promotion Amount, Next Payment #';
-        if (this.status === 'approval') {
-          filename = 'Needs Approval Payments.csv';
-          csvData += ',# of Payments,$ / Promotion Payment,' +
-            'Total Paid,Last Payment Date,Balance Owed';
-        } else if (this.status === 'invalid') {
-          filename = 'Invalid Payments.csv';
-          csvData += ',Balance Owed';
-        } else if (this.status === 'pending') {
-          filename = 'New Pending Payments.csv';
-        }
-
-        csvData += '\n';
-
-        this.filteredPayments.forEach(p => {
-          csvData += '"' + p.projectName + '",' + p.projectId + ',' +
-            (p.substantialCompletionDate != null ? moment(p.substantialCompletionDate).format('MM/DD/YYYY') : '') +
-            ',"' + p.financier + '","' + p.product + '","' + p.totalPromotionAmount + '",' + p.nextScheduledPayment;
-
-          if (this.status === 'approval') {
-            csvData += ',' + p.numberOfPromotionPayments + ',' + p.paymentAmount + ',' + p.totalPaid + ',' +
-              (p.lastPaymentDate != null ? moment(p.lastPaymentDate).format('MM/DD/YYYY') : '');
-          }
-
-          if (this.status === 'approval' || this.status === 'invalid') {
-            csvData += ',' + p.balanceOwed;
-          }
-
-          csvData += '\n';
-        })
-
-        let blob = new Blob([csvData], {
-          type: 'text/csv;charset=utf-8'
-        });
-
-        saveAs(blob, filename);
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Exporting Proposal Logs')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    enterPayment(item) {
-      if (item.substantialCompletionDate != null) {
-        item.sc = moment(item.substantialCompletionDate).format('MM/DD/YYYY')
+      if (status.value === 'approval') {
+        csvData += ',' + p.numberOfPromotionPayments + ',' + p.paymentAmount + ',' + p.totalPaid + ',' +
+            (p.lastPaymentDate != null ? moment(p.lastPaymentDate).format('MM/DD/YYYY') : '');
       }
 
-      this.newPayItem = Object.assign({}, item)
-      this.newPayDialog = true
-    },
-    close() {
-      this.newPayDialog = false
-      this.newPayItem = {}
-    },
-    async submitPay() {
-      this.submittingPay = true
-      try {
-        const {status} = await postRequest('/rebate/recurringPayment', this.newPayItem, 'blueraven')
-        this.snackbar = getSnackbar('SUCCESS', 'Recurring Payment Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-        await this.fetchPayments();
-        this.submittingPay = false
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Failed to save Recurring Payment')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      if (status.value === 'approval' || status.value === 'invalid') {
+        csvData += ',' + p.balanceOwed;
       }
-      this.newPayDialog = false;
-    },
-    changeSort(column) {
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending
-      } else {
-        this.pagination.sortBy = column
-        this.pagination.descending = false
-      }
-    },
-    goToDetails(item) {
-      this.$router.push({name: 'rebateDetails', params: {id: item.projectId}})
-    },
-    toggleSelectAll() {
-      this.filteredPayments.forEach(p => {
-        p.selected = this.selectAll
-      })
-    },
-    async confirmPassword() {
-      try {
-        const params = {password: this.passwordInput}
-        const resp = await postRequest('/user/validate', params)
-        const {status} = resp
 
-        if (status === 200) {
-          let param = {paymentIds: this.paymentIdsToApprove}
-          await postRequest('/rebate/approve', param, 'blueraven')
-          window.location.reload()
-          this.snackbar = getSnackbar('SUCCESS', 'Payment approved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-        this.passwordDialog = false;
-        this.passwordInput = '';
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Failed to approve payment')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.passwordDialog = false;
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
+      csvData += '\n';
+    })
+
+    let blob = new Blob([csvData], {
+      type: 'text/csv;charset=utf-8'
+    });
+
+    saveAs(blob, filename);
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Exporting Proposal Logs')
+
+    appStore.loading = false
+  }
+}
+const enterPayment = (item) => {
+  if (item.substantialCompletionDate != null) {
+    item.sc = moment(item.substantialCompletionDate).format('MM/DD/YYYY')
+  }
+
+  newPayItem.value = Object.assign({}, item)
+  newPayDialog.value = true
+}
+const close = () => {
+  newPayDialog.value = false
+  newPayItem.value = {}
+}
+const submitPay = async() => {
+  submittingPay.value = true
+  try {
+    const {status} = await postRequest('/rebate/recurringPayment', newPayItem.value, 'blueraven')
+    snackbar('SUCCESS', 'Recurring Payment Saved')
+
+    handleHidingGlobalLoader( status)
+    await fetchPayments();
+    submittingPay.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Failed to save Recurring Payment')
+
+    appStore.loading = false
+  }
+  newPayDialog.value = false;
+}
+const changeSort = (column) => {
+  if (pagination.value.sortBy === column) {
+    pagination.value.descending = !pagination.value.descending
+  } else {
+    pagination.value.sortBy = column
+    pagination.value.descending = false
+  }
+}
+const goToDetails = (item) => {
+  router.push({name: 'rebateDetails', params: {id: item.projectId}})
+}
+const toggleSelectAll = () => {
+  filteredPayments.value.forEach(p => {
+    p.selected = selectAll.value
+  })
+}
+const confirmPassword = async() => {
+  try {
+    const params = {password: passwordInput.value}
+    const resp = await postRequest('/user/validate', params)
+    const {status} = resp
+
+    if (status === 200) {
+      let param = {paymentIds: paymentIdsToApprove.value}
+      await postRequest('/rebate/approve', param, 'blueraven')
+      window.location.reload()
+      snackbar('SUCCESS', 'Payment approved')
+
     }
+    passwordDialog.value = false;
+    passwordInput.value = '';
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Failed to approve payment')
+
+    passwordDialog.value = false;
+    appStore.loading = false
   }
 }
 </script>

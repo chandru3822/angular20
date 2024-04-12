@@ -1,7 +1,10 @@
-import store from '@/store'
+import { pinia } from '@/store'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+
+const userStore = useUserStore(pinia)
 
 const settingsBeforeEnter = (to, from, next) => {
-  if (!store.getters.userHasFeature('SETTINGS') && !store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')) {
+  if (!userStore.userHasFeature('SETTINGS') && !userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')) {
     next({name: 'AccessDenied'})
   } else {
     next()

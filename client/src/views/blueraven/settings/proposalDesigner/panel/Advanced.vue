@@ -1,33 +1,31 @@
 <template>
   <v-card flat>
     <v-card-title>Advanced</v-card-title>
-    <v-text-field outlined dense
-                  v-model="expression"
-                  label="Visibility"
-                  hint="This expression must evaluate to a boolean"
-                  @change="handleChange"
-                  clearable
+    <a-text-field
+      density="compact"
+      variant="outlined"
+      v-model="expression"
+      label="Visibility"
+      hint="This expression must evaluate to a boolean"
+      @change="handleChange"
+      clearable
     >
       <template v-slot:append-outer>
-        <v-dialog
-          v-model="dialog"
-          width="500"
-        >
-          <template v-slot:activator="{ on:dialogOn, attrs }">
-
+        <v-dialog v-model="dialog" width="500">
+          <template v-slot:activator="{ on: dialogOn, attrs }">
             <v-fade-transition leave-absolute>
-              <v-btn icon v-on="dialogOn">
-                <v-tooltip
-                  bottom
-                >
-                  <template v-slot:activator="{ on }">
-                    <v-icon v-on="on" v-bind="attrs">
-                      mdi-help-circle-outline
-                    </v-icon>
-                  </template>
-                  Available variables
-                </v-tooltip>
-              </v-btn>
+              <a-btn icon :activation-handler="dialogOn">
+                <template #default>
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-icon v-on="on" v-bind="attrs">
+                        mdi-help-circle-outline
+                      </v-icon>
+                    </template>
+                    Available variables
+                  </v-tooltip>
+                </template>
+              </a-btn>
             </v-fade-transition>
           </template>
 
@@ -44,55 +42,48 @@
               </ul>
             </v-card-text>
 
-            <v-divider/>
+            <v-divider />
 
             <v-card-actions>
-              <v-spacer/>
-              <v-btn
+              <v-spacer />
+              <a-btn
                 color="primary"
-                text
+                variant="text"
                 @click="dialog = false"
-              >
-                Done
-              </v-btn>
+                text="Done"
+              ></a-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
       </template>
-    </v-text-field>
+    </a-text-field>
   </v-card>
 </template>
-<script>
+<script setup>
+import { toRefs, ref, watch } from 'vue'
+import useProposalStore from '../store.js'
+import { storeToRefs } from 'pinia'
 
-import {mapState} from "vuex";
+const store = useProposalStore()
 
-export default {
-  props: {
-    visibility: {
-      type: String
-    }
-  },
-  data() {
-    return {
-      expression: undefined,
-      dialog: false,
-    }
-  },
-  computed: {
-    ...mapState({
-      tags: (state) => state.proposal.tags
-    })
-  },
-  watch: {
-    visibility: function (arg) {
-      console.log("wtf")
-      this.expression = arg
-    }
-  },
-  methods: {
-    handleChange() {
-      this.$emit('input', this.expression)
-    }
+const props = defineProps({
+  visibility: {
+    type: String
   }
+})
+const emit = defineEmits(['input'])
+
+const { visibility } = toRefs(props)
+const expression = ref(undefined)
+const dialog = ref(false)
+
+const { tags } = storeToRefs(store)
+
+watch(visibility, async (arg) => {
+  expression.value = arg
+})
+
+const handleChange = () => {
+  emit('input', expression)
 }
 </script>

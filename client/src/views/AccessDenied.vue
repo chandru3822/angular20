@@ -11,7 +11,7 @@
               You do not have access to this page. Please contact an administrator if you feel you have reached this page in error.
             </v-card-text>
             <v-card-actions class="justify-center">
-              <v-btn color="primary" to="/">Go to Home</v-btn>
+              <a-btn to="/" text="Go to Home"></a-btn>
             </v-card-actions>
           </v-card>
         </v-col>
@@ -20,8 +20,6 @@
   </v-main>
 </template>
 
-<script>
-export default {
-  name: 'ServerError',
-}
+<script setup>
+
 </script>

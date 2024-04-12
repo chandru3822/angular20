@@ -132,8 +132,13 @@ public class EventController {
 
   @PostMapping(value = "/status/assignCompanyStatus/{companyStatusTypeId}/toEvent/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<EventCompanyEventStatusType> assignStatusToEvent(@PathVariable Long companyStatusTypeId,
-                                                                   @PathVariable Long eventId) {
-    return eventService.assignStatusToEvent(companyStatusTypeId, eventId);
+                                                                   @PathVariable Long eventId, @RequestParam(required = true) Boolean editableInSchedule) {
+    return eventService.assignStatusToEvent(companyStatusTypeId, eventId, editableInSchedule);
+  }
+
+  @PostMapping(value = "status/updateEditableInSchedule/{companyStatusTypeId}/forEvent/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateEditableInScheduleForEvent(@PathVariable Long companyStatusTypeId, @PathVariable Long eventId, @RequestParam(required = true) Boolean editableInSchedule){
+      eventService.updateEditableInScheduleForEventStatusType(companyStatusTypeId, eventId, editableInSchedule);
   }
 
   @GetMapping(value = "/status/company/availableForEvent/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

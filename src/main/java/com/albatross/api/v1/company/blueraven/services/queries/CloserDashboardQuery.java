@@ -199,13 +199,13 @@ public class CloserDashboardQuery {
     """;
 
   //language=PostgreSQL
-  public final static String getCloserTableScoresOffice = """
-    select * from brs.get_office_fdc_rank(:selectedOrgId, :timeInterval)
+  public final static String getCloserRankings = """
+    select * from brs.get_closer_rep_rankings(:timeInterval::bigint, :selectedOrgId::bigint)
     """;
 
   //language=PostgreSQL
-  public final static String getCloserTableScoresRep = """
-    select * from brs.get_office_rep_rankings(:timeInterval)
+  public final static String getCloserOrgRankings = """
+    select * from brs.get_closer_org_rankings(:timeInterval)
     """;
 
   //language=PostgreSQL

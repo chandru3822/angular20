@@ -3,48 +3,52 @@
     <v-row>
       <v-col cols="12" class="pt-0" v-if="!poolLoading">
         <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="title-large">{{pool.customName || pool.poolType + ' Pool'}}</v-toolbar-title>
+          <v-toolbar-title class="title-large">{{ pool.customName || pool.poolType + ' Pool' }}</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="editPool = !editPool">
-            <v-icon v-if="!editPool">edit</v-icon>
-            <v-icon v-else>close</v-icon>
-          </v-btn>
+          <a-btn
+              icon
+              color="primary"
+              @click="editPool = !editPool"
+              :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+              :prepend-icon="editPool ? 'close' : 'edit'"
+          />
+
         </v-toolbar>
         <div>
-          <v-text-field
-            v-if="editPool"
-            label="Custom Pool Name"
-            hint="(optional)"
-            persistent-hint
-            v-model="pool.customName"
-          ></v-text-field>
+          <a-text-field
+              v-if="editPool"
+              label="Custom Pool Name"
+              hint="(optional)"
+              persistent-hint
+              v-model="pool.customName"
+          ></a-text-field>
           <div>
             <DatetimePickerInput
-              v-model="pool.startDate"
-              :readonly="!editPool"
-              :disabled="!editPool"
-              :timezone="this.timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="Start Date"
+                v-model="pool.startDate"
+                :readonly="!editPool"
+                :disabled="!editPool"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                label="Start Date"
             />
             <DatetimePickerInput
-              v-model="pool.endDate"
-              :readonly="!editPool"
-              :disabled="!editPool"
-              :timezone="this.timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="End Date"
+                v-model="pool.endDate"
+                :readonly="!editPool"
+                :disabled="!editPool"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                label="End Date"
             />
           </div>
-          <v-btn color="primary"
-                 v-if="editPool"
-                 class="white--text"
-                 :disabled="!pool.startDate || !pool.endDate || pool.startDate > pool.endDate"
-                 @click="savePoolDates()">
-            Save
-          </v-btn>
+
+          <a-btn
+              v-if="editPool"
+              color="primary"
+              :disabled="!pool.startDate || !pool.endDate || pool.startDate > pool.endDate"
+              @click="savePoolDates()"
+              text="Save"/>
         </div>
         <div v-if="poolTypeId === 3">
           <v-divider class="mt-2"></v-divider>
@@ -53,13 +57,29 @@
             <v-toolbar-title class="title-large text-wrap">Winner Background Image</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit && !savingImage && !pool.backgroundAttachmentPresignedUrl"
-                     @click="addImage = !addImage">
-                <v-icon v-if="addImage">remove</v-icon>
-                <v-icon v-else>add</v-icon>
-              </v-btn>
-              <v-btn v-else-if="userCanEdit" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="deleteWinnerBackgroundDialog = true"><v-icon>delete</v-icon></v-btn>
-              <ConfirmationDialog :open-dialog="deleteWinnerBackgroundDialog" @confirm="deleteAttachment(pool.backgroundAttachmentId)" @close-dialog="deleteWinnerBackgroundDialog = false">Are you sure you want to delete the Winner Background Image?</ConfirmationDialog>
+              <a-btn
+                  v-if="userCanEdit && !savingImage && !pool.backgroundAttachmentPresignedUrl"
+                  :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                  icon
+                  color="primary"
+                  :prepend-icon="addImage ? 'remove' : 'add'"
+                  @click="addImage = !addImage">
+              </a-btn>
+
+              <a-btn
+                  v-else-if="userCanEdit"
+                  :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                  icon
+                  color="primary"
+                  prepend-icon="delete"
+                  @click="deleteWinnerBackgroundDialog = true">
+              </a-btn>
+
+              <ConfirmationDialog :open-dialog="deleteWinnerBackgroundDialog"
+                                  @confirm="deleteAttachment(pool.backgroundAttachmentId)"
+                                  @close-dialog="deleteWinnerBackgroundDialog = false">Are you sure you want to delete
+                the Winner Background Image?
+              </ConfirmationDialog>
             </v-toolbar-items>
           </v-toolbar>
           <label></label>
@@ -67,12 +87,12 @@
           <div class="mt-2" v-if="addImage">
             <form enctype="multipart/form-data" novalidate>
               <input
-                type="file"
-                :accept="acceptedFileTypes"
-                class="file-input clickable"
-                :disabled="savingImage"
-                @change="uploadFile($event.target.files, attachmentTypeId, pool.id, 2097152)"
-                name="avatar"
+                  type="file"
+                  :accept="acceptedFileTypes"
+                  class="file-input clickable"
+                  :disabled="savingImage"
+                  @change="uploadFile($event.target.files, attachmentTypeId, pool.id, 2097152)"
+                  name="avatar"
               >
               <br/><span>* Due to render times associated with this file it cannot exceed 2MB</span>
             </form>
@@ -90,36 +110,48 @@
           <v-toolbar flat class="wqt-header-bar">
             <v-toolbar-title class="title-large">Positions</v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="addPosition = !addPosition">
-              <v-icon>add</v-icon>
-            </v-btn>
+            <a-btn
+                :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                icon
+                color="primary"
+                prepend-icon="add"
+                @click="[addPosition = !addPosition, getPositions()]">
+            </a-btn>
+
           </v-toolbar>
           <v-card flat v-if="addPosition">
-            <v-autocomplete
-              v-model="positionId"
-              :items="positions"
-              label="Positions"
-              item-text="position"
-              item-value="id"
-            ></v-autocomplete>
+            <a-autocomplete
+                v-model="positionId"
+                :items="positions"
+                :loading="positionsLoading"
+                label="Positions"
+                item-title="position"
+                item-value="id"
+            ></a-autocomplete>
 
-            <v-btn color="primary" :disabled="!positionId"
-                   @click="addPositionToPool">
-              Save
-            </v-btn>
-            <v-btn text color="primary" @click="[addPosition = !addPosition, positionId = null]">
-              Cancel
-            </v-btn>
+            <a-btn
+                color="primary"
+                text="Save"
+                :disabled="!positionId"
+                @click="addPositionToPool">
+            </a-btn>
+
+            <a-btn
+                color="primary"
+                variant="text"
+                text="Cancel"
+                @click="[addPosition = !addPosition, positionId = null]">
+            </a-btn>
           </v-card>
 
           <v-data-table
-            :headers="positionHeaders"
-            :items="filterPositions()"
-            :fixed-header="true"
-            :items-per-page="-1"
-            :mobile-breakpoint="0"
-            hide-default-footer
-            class="elevation-1 org-type-table"
+              :headers="positionHeaders"
+              :items="filteredPositions"
+              :fixed-header="true"
+              :items-per-page="-1"
+              :mobile-breakpoint="0"
+              hide-default-footer
+              class="elevation-1 org-type-table"
           >
             <template #no-data>
               <span class="default-text-color">No positions assigned</span>
@@ -133,7 +165,13 @@
               <tr class="text-left" :class="{'shaded-row': pool.positions.indexOf(item) % 2}">
                 <td class="text-left">{{ item.position }}</td>
                 <td class="text-right">
-                  <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="positionToDelete=item"><v-icon>delete</v-icon></v-btn>
+                  <a-btn
+                      :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                      icon
+                      color="primary"
+                      prepend-icon="delete"
+                      @click="positionToDelete=item">
+                  </a-btn>
                 </td>
               </tr>
             </template>
@@ -145,44 +183,151 @@
           <v-toolbar flat class="wqt-header-bar">
             <v-toolbar-title class="title-large">Users</v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="addUser = !addUser">
-              <v-icon>add</v-icon>
-            </v-btn>
+            <a-btn
+                :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                icon
+                color="primary"
+                v-if="!pool.liveTournament && filteredUsers?.length > 0"
+                prepend-icon="delete"
+                @click="deleteUsers = true">
+            </a-btn>
+            <ConfirmationDialog :open-dialog="deleteUsers" @confirm="deleteUsersFromPool" @close-dialog="deleteUsers=false">
+              Are you sure you want to delete all the users from this Tournament Pool?
+            </ConfirmationDialog>
+            <a-btn
+                :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                icon
+                color="primary"
+                prepend-icon="mdi-playlist-plus"
+                @click="addCustomUsers = !addCustomUsers">
+            </a-btn>
+            <a-btn
+                :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                icon
+                color="primary"
+                prepend-icon="add"
+                @click="[addUser = !addUser, getUsers()]">
+            </a-btn>
           </v-toolbar>
-          <v-card flat v-if="addUser">
-            <v-autocomplete
-              v-model="userId"
-              :items="users"
-              label="Users"
-              item-text="fullName"
-              item-value="id"
-              attach
-            ></v-autocomplete>
-
-            <v-btn color="primary" :disabled="!userId"
-                   @click="addUserToPool">
-              Save
-            </v-btn>
-            <v-btn text color="primary" @click="[addUser = !addUser, userId = null]">
-              Cancel
-            </v-btn>
+          <v-card class="pa-4" color="secondary" v-if="addCustomUsers && filteredUsers.length > 0">
+            This feature is only available when no users have been added to the pool.
           </v-card>
-          <v-text-field
-            v-model="userSearch"
-            prepend-inner-icon="search"
-            label="Search"
-            class="mb-2"
-            single-line
-            hide-details
-          ></v-text-field>
+          <v-card class="pa-4" color="secondary" v-else-if="addCustomUsers">
+            <h3>Add Custom User Set</h3>
+            <ul>
+              <li>This is used to add all users that meet a pre-defined set of criteria. </li>
+              <li>At least one field in each section is required. </li>
+              <li>All fields are inclusive, meaning that any results matching the value you provide will be included. </li>
+            </ul>
+
+            <div class="px-3 pt-3">
+              <DatetimePickerInput
+                  v-model="customStartDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :format="'MM/DD/YYYY'"
+                  label="Position Start Min Date"
+              />
+              <DatetimePickerInput
+                  v-model="customEndDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :format="'MM/DD/YYYY'"
+                  label="Position Start Max Date"
+              />
+
+              <a-btn :variant="customInclusive ? 'outlined' : 'text'"
+                  color="primary"
+                  @click="customInclusive = true">
+                AND
+              </a-btn>
+              <a-btn :variant="customInclusive ? 'text' : 'outlined'"
+                     class="ml-3"
+                  color="primary"
+                  @click="customInclusive = false">
+                OR
+              </a-btn>
+
+              <a-text-field
+                  class="mt-3"
+                  type="number"
+                  label="Lifetime FDC Count Min"
+                  v-model.number="customFdcMin"/>
+              <a-text-field
+                  type="number"
+                  label="Lifetime FDC Count Max"
+                  v-model.number="customFdcMax"/>
+
+            <v-card outlined class="pa-3 mt-4" v-if="customStartDate > customEndDate">
+              <v-card-text class="error--text">
+                Min Date must be before Max Date
+              </v-card-text>
+            </v-card>
+            <v-card outlined class="pa-3 mt-4" v-else-if="(customStartDate || customEndDate) &&
+              (customFdcMin || customFdcMin === 0 || customFdcMax)">
+              Saving with the current settings will add: <br><br>
+              All closers with
+              {{ startDatePortion }} <br>
+              <strong>{{customInclusive ? 'AND' : 'OR'}}</strong> <br>
+              {{ fdcPortion }}
+
+            <div class="mt-6">
+              <a-btn variant="outlined"
+                  class="mr-2"
+                  @click="resetCustom()"
+                  text="Cancel"
+              />
+              <a-btn
+                  color="primary white--text"
+                  @click="saveCustomUsers()"
+                  text="Confirm"
+              />
+            </div>
+            </v-card>
+
+            </div>
+          </v-card>
+          <v-card flat v-if="addUser">
+            <a-autocomplete
+                v-model="userId"
+                :items="users"
+                label="Users"
+                :loading="usersLoading"
+                item-title="fullName"
+                item-value="id"
+                attach
+            ></a-autocomplete>
+
+            <a-btn
+                color="primary"
+                text="Save"
+                :disabled="!userId"
+                @click="addUserToPool">
+            </a-btn>
+
+            <a-btn
+                color="primary"
+                text="Cancel"
+                variant="text"
+                @click="[addUser = !addUser, userId = null]">
+            </a-btn>
+          </v-card>
+          <a-text-field
+              v-model="userSearch"
+              prepend-inner-icon="search"
+              label="Search"
+              class="mb-2"
+              single-line
+              hide-details
+          ></a-text-field>
           <v-data-table id="tournament-pool-table"
-            :headers="userHeaders"
-            :items="filterUsers()"
-            :fixed-header="true"
-            :search="userSearch"
-            :items-per-page="100"
-            :mobile-breakpoint="0"
-            class="elevation-1 org-type-table"
+                        :headers="userHeaders"
+                        :items="filteredUsers"
+                        :fixed-header="true"
+                        :search="userSearch"
+                        :items-per-page="100"
+                        :mobile-breakpoint="0"
+                        class="elevation-1 org-type-table"
           >
             <template #no-data>
               <span class="default-text-color">No users assigned</span>
@@ -196,7 +341,13 @@
               <tr class="text-left" :class="{'shaded-row': pool.users.indexOf(item) % 2}">
                 <td class="text-left">{{ item.fullName }}</td>
                 <td class="text-right">
-                  <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="userToDelete=item"><v-icon>delete</v-icon></v-btn>
+                  <a-btn
+                      :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                      icon
+                      color="primary"
+                      prepend-icon="delete"
+                      @click="userToDelete=item">
+                  </a-btn>
                 </td>
               </tr>
             </template>
@@ -207,320 +358,420 @@
 
     </v-row>
     <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromPool" @close-dialog="userToDelete=null">
-      Are you sure you want to delete this user: <strong>{{userToDeleteName}}</strong>?
+      Are you sure you want to delete this user: <strong>{{ userToDeleteName }}</strong>?
     </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="!!positionToDelete" @confirm="deletePositionFromPool" @close-dialog="positionToDelete=null">
+    <ConfirmationDialog :open-dialog="!!positionToDelete" @confirm="deletePositionFromPool"
+                        @close-dialog="positionToDelete=null">
       Are you sure you want to delete this position?
     </ConfirmationDialog>
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import { Actions } from '@/store'
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import constants from '@/helpers/constants'
-  import {
-    handleHidingGlobalLoader,
-    getRequest,
-    deleteRequest,
-    putRequest,
-    postRequest,
-    getSnackbar
-  } from '@/helpers/helpers'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
+<script setup>
 
-  export default {
-    name: 'PoolAdmin',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      ConfirmationDialog,
-      DatetimePickerInput
-    },
-    data() {
-      return {
-        constants,
-        snackbar: {},
-        positionToDelete: null,
-        edit: false,
-        pool: {},
-        userSearch: '',
-        addImage: false,
-        savingImage: false,
-        acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
-        //todo: 915 = tournament pool image
-        attachmentTypeId: 915,
-        editPool: false,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
-        poolLoading: true,
-        addPosition: false,
-        positionId: null,
-        positions: [],
-        addUser: false,
-        userId: null,
-        users: [],
-        timezone: this.$store.state.user.details.timezone.value,
-        tournamentId: this.$route.params.id,
-        poolTypeId: parseInt(this.$route.params.poolTypeId),
-        positionHeaders: [
-          {text: 'Position', value: 'position', show: true},
-          {text: null, value: 'icons', show: true}
-        ],
-        userHeaders: [
-          {text: 'User', value: 'fullName', show: true},
-          {text: null, value: 'icons', show: true}
-        ],
-        deleteWinnerBackgroundDialog: false,
-        userToDelete: null
-      }
-    },
-    async created() {
-      this.getTournamentPool()
-      this.getPositions()
-      this.getUsers()
-    },
-    watch: {
-      // whenever pool type id changes, this function will run
-      '$route.params.poolTypeId': function () {
-        // reset the selected group when the object type changes
-        this.poolTypeId = parseInt(this.$route.params.poolTypeId)
-        this.pool = {}
-        this.getTournamentPool()
-      }
-    },
-    computed: {
-      userToDeleteName(){
-        return this.userToDelete ? this.userToDelete.fullName : ''
-      }
-    },
-    methods: {
-      async savePoolDates() {
-        try {
-          const {status} = await putRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}`, this.pool, 'blueraven')
-          this.editPool = false
-          this.snackbar = getSnackbar('SUCCESS', 'Pool Changes Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Pool')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getPositions() {
-        try {
-          const {data, status} = await getRequest(`/position`)
-          this.positions = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getUsers() {
-        try {
-          const {data, status} = await getRequest(`/user/active`)
-          this.users = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getTournamentPool() {
-        this.poolLoading = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
-          this.pool = data
-          this.poolLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Tournament')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async addPositionToPool() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/addPosition/${this.positionId}`, {}, 'blueraven')
-          this.pool.positions.push(data)
-          this.positionId = null
-          this.addPosition = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Position')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deletePositionFromPool() {
-        const position = this.positionToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/deletePosition/${position.id}`, 'blueraven')
-          position.archived = true
-          handleHidingGlobalLoader(this, status)
-          this.positionToDelete=null
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Position')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.positionToDelete=null
-        }
-      },
-      filterPositions () {
-        return this.pool?.positions?.filter(p => { return !p.archived})
-      },
-      async addUserToPool() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/addUser/${this.userId}`, {}, 'blueraven')
-          this.pool.users.push(data)
-          this.userId = null
-          this.addUser = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteUserFromPool() {
-        const user = this.userToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/deleteUser/${user.id}`, 'blueraven')
-          user.archived = true
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting User')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.userToDelete=null
-      },
-      filterUsers () {
-        return this.pool?.users?.filter(p => { return !p.archived})
-      },
-      async uploadFile (files, attachmentTypeId, sourceId, sizeLimit) {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          let file = files[0]
-          await this.$store.dispatch(Actions.FILE_UPLOAD, {
-            file: file,
-            sizeLimit,
-            attachmentTypeId,
-            sourceId,
-            displayName: file.name.substr(0, file.name.lastIndexOf('.')),
-            callback: async (img, error) => {
-              if(error?.error) {
-                this.snackbar = getSnackbar('ERROR', error.errorMsg)
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.$store.commit(AppMutations.SET_LOADING, false)
-              } else {
-                this.pool.backgroundAttachmentPresignedUrl = img.presignedUrl
-                this.pool.backgroundAttachmentId = img.id
-                this.addImage = false
-                this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.$store.commit(AppMutations.SET_LOADING, false)
-              }
-            }
-          })
-        } catch(e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteAttachment (id) {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          await this.$store.dispatch(Actions.FILE_DELETE, {
-            id,
-            callback: async () => {
-              this.pool.backgroundAttachmentId = null
-              this.pool.backgroundAttachmentPresignedUrl = null
-              // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
-              this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
-            }
-          })
-        } catch(e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.deleteWinnerBackgroundDialog = false
-      },
-    },
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import constants from '@/helpers/constants'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  deleteRequest,
+  putRequest,
+  postRequest,
+  getSnackbar
+} from '@/helpers/helpers'
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import {getCurrentInstance, watch, computed, ref, onMounted} from 'vue'
+import {useRoute} from "vue-router/composables";
+import {useUserStore} from '@/stores/UserStorePinia.js'
 
+import { useFileStore } from '@/stores/FileStore.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const fileStore = useFileStore()
+const route = useRoute()
+const userStore = useUserStore()
+const filters = vueInstance.$filters
+
+const positionToDelete = ref(null)
+const edit = ref(false)
+const pool = ref({})
+const userSearch = ref('')
+const addImage = ref(false)
+const savingImage = ref(false)
+const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY)
+const attachmentTypeId = ref(915)
+const editPool = ref(false)
+const poolLoading = ref(true)
+const addPosition = ref(false)
+const positionId = ref(null)
+const positions = ref([])
+const positionsLoading = ref(true)
+const addUser = ref(false)
+const addCustomUsers = ref(false)
+const deleteUsers = ref(false)
+const userId = ref(null)
+const users = ref([])
+const usersLoading = ref(true)
+const customStartDate = ref(null)
+const customEndDate = ref(null)
+const customFdcMin = ref(null)
+const customFdcMax = ref(null)
+const customInclusive = ref(true)
+const deleteWinnerBackgroundDialog = ref(false)
+const userToDelete = ref(null)
+const positionHeaders = ref([
+  {text: 'Position', value: 'position', show: true},
+  {text: null, value: 'icons', show: true}
+])
+const userHeaders = ref([
+  {text: 'User', value: 'fullName', show: true},
+  {text: null, value: 'icons', show: true}
+])
+
+onMounted(() => {
+  getTournamentPool()
+})
+
+const tournamentId = computed(() => {
+  return route.params.id
+})
+
+const startDatePortion = computed(() => {
+  let msg = ''
+  if (customStartDate.value != null && customEndDate.value != null) {
+    msg = `a start date between  ${filters.formatDate(customStartDate.value, 'date', 'MM/DD/YYYY')} and ${filters.formatDate(customEndDate.value, 'date', 'MM/DD/YYYY')}`
+  } else if (customStartDate.value != null) {
+    msg = `a start date on or after ${filters.formatDate(customStartDate.value, 'date', 'MM/DD/YYYY')}`
+  } else if (customEndDate.value != null) {
+    msg = `a start date on or before ${filters.formatDate(customEndDate.value, 'date', 'MM/DD/YYYY')}`
   }
+  return msg
+})
+
+const fdcPortion = computed(() => {
+  let msg = ''
+  if ((customFdcMin.value || customFdcMin.value === 0) && customFdcMax.value) {
+    msg = `A lifetime FDC count between ${customFdcMin.value} and ${customFdcMax.value}`
+  } else if (customFdcMin.value || customFdcMin.value === 0) {
+    msg = `A lifetime FDC count greater than or equal to ${customFdcMin.value}`
+  } else if (customFdcMax.value) {
+    msg = `A lifetime FDC count less than or equal to ${customFdcMax.value}`
+  }
+  return msg
+})
+
+const poolTypeId = computed(() => {
+  return parseInt(route.params.poolTypeId)
+})
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+})
+
+const timezone = computed(() => {
+  return userStore.timezone.value
+})
+
+const userToDeleteName = computed(() => {
+  return userToDelete.value ? userToDelete.value.fullName : ''
+})
+
+const filteredPositions = computed(() => {
+  return pool.value?.positions?.filter(p => {
+    return !p.archived
+  })
+})
+
+const filteredUsers = computed(() => {
+  return pool.value?.users?.filter(p => {
+    return !p.archived
+  })
+})
+
+
+watch(() => poolTypeId.value, () => {
+  pool.value = {}
+  getTournamentPool()
+})
+
+
+const savePoolDates = async () => {
+  try {
+    const {status} = await putRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}`, pool.value, 'blueraven')
+    editPool.value = false
+    snackbar('SUCCESS', 'Pool Changes Saved')
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating Pool')
+    appStore.loading = false
+  }
+}
+const getPositions = async () => {
+  if(positions.value?.length === 0 && addPosition.value) {
+    try {
+      positionsLoading.value = true
+      const {data, status} = await getRequest(`/position`)
+      positions.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Positions')
+      appStore.loading = false
+    } finally {
+      positionsLoading.value = false
+    }
+  }
+}
+const deleteUsersFromPool = async () => {
+  try {
+    appStore.loading = true
+    await deleteRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/deleteUsers`, 'blueraven')
+    pool.value.users = []
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Users')
+  } finally {
+    appStore.loading = false
+  }
+}
+const getUsers = async () => {
+  if(users.value?.length === 0 && addUser.value) {
+    try {
+      usersLoading.value = true
+      const {data, status} = await getRequest(`/user/active`)
+      users.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Users')
+      appStore.loading = false
+    } finally {
+      usersLoading.value = false
+    }
+  }
+}
+const getTournamentPool = async () => {
+  poolLoading.value = true
+  appStore.loading = true
+  try {
+    const {
+      data,
+      status
+    } = await getRequest(`/tournament/${tournamentId.value}/pool/byType/${poolTypeId.value}`, 'blueraven')
+    pool.value = data
+    poolLoading.value = false
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Tournament')
+    appStore.loading = false
+  }
+}
+const addPositionToPool = async () => {
+  appStore.loading = true
+  try {
+    const {
+      data,
+      status
+    } = await postRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/addPosition/${positionId.value}`, {}, 'blueraven')
+    pool.value.positions.push(data)
+    positionId.value = null
+    addPosition.value = false
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Position')
+    appStore.loading = false
+  }
+}
+const deletePositionFromPool = async () => {
+  const position = positionToDelete.value
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/deletePosition/${position.id}`, 'blueraven')
+    position.archived = true
+    handleHidingGlobalLoader(status)
+    positionToDelete.value = null
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Position')
+    appStore.loading = false
+    positionToDelete.value = null
+  }
+}
+
+const resetCustom = () => {
+  customInclusive.value = true
+  customStartDate.value = null
+  customEndDate.value = null
+  customFdcMin.value = null
+  customFdcMax.value = null
+  addCustomUsers.value = false
+}
+
+const saveCustomUsers = async () => {
+  appStore.loading = true
+  try {
+    let params = {
+      minFdc: customFdcMin.value,
+      maxFdc: customFdcMax.value,
+      minDate: customStartDate.value,
+      maxDate: customEndDate.value,
+      inclusive: customInclusive.value
+    }
+    const {
+      data,
+      status
+    } = await postRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/addCustomUsers`, params, 'blueraven')
+    pool.value.users = data
+    resetCustom()
+    snackbar('SUCCESS', 'Successfully added matching users.')
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let msg = e?.data?.detail || 'Error Adding Users'
+    snackbar('ERROR', msg)
+    appStore.loading = false
+  }
+}
+
+const addUserToPool = async () => {
+  appStore.loading = true
+  try {
+    const {
+      data,
+      status
+    } = await postRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/addUser/${userId.value}`, {}, 'blueraven')
+    pool.value.users.push(data)
+    userId.value = null
+    addUser.value = false
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let msg = e?.data?.detail || 'Error Adding User'
+    snackbar('ERROR', msg)
+    appStore.loading = false
+  }
+}
+const deleteUserFromPool = async () => {
+  const user = userToDelete.value
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/deleteUser/${user.id}`, 'blueraven')
+    user.archived = true
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting User')
+    appStore.loading = false
+  }
+  userToDelete.value = null
+}
+
+const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
+  try {
+    appStore.loading = true
+    let file = files[0]
+    await fileStore.uploadFile({
+      file: file,
+      sizeLimit,
+      attachmentTypeId,
+      sourceId,
+      displayName: file.name.substr(0, file.name.lastIndexOf('.')),
+      callback: async (img, error) => {
+        if (error?.error) {
+          snackbar('ERROR', error.errorMsg)
+          appStore.loading = false
+        } else {
+          pool.value.backgroundAttachmentPresignedUrl = img.presignedUrl
+          pool.value.backgroundAttachmentId = img.id
+          addImage.value = false
+          snackbar('SUCCESS', 'Image Uploaded')
+          appStore.loading = false
+        }
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Uploading File')
+    appStore.loading = false
+  }
+}
+const deleteAttachment = async (id) => {
+  try {
+    appStore.loading = true
+    await fileStore.deleteFile({
+      id,
+      callback: async () => {
+        pool.value.backgroundAttachmentId = null
+        pool.value.backgroundAttachmentPresignedUrl = null
+        // store.commit(UserMutations.SET_USER_IMAGE, {})
+        snackbar('SUCCESS', 'Image Deleted')
+        appStore.loading = false
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting File')
+    appStore.loading = false
+  }
+  deleteWinnerBackgroundDialog.value = false
+}
 </script>
 
 <style lang="scss">
-  #pool-container .v-data-table__wrapper {
-    max-height: calc(100vh - 650px);
-    min-height: 300px;
-  }
+#pool-container .v-data-table__wrapper {
+  max-height: calc(100vh - 650px);
+  min-height: 300px;
+}
 
-  @media (max-width: 770px) {
-    #tournament-pool-table {
+@media (max-width: 770px) {
+  #tournament-pool-table {
+    padding-bottom: 12px;
+
+    div.v-data-footer {
+      display: inline-block;
+      width: 100%;
       padding-bottom: 12px;
-      div.v-data-footer {
-        display: inline-block;
-        width: 100%;
-        padding-bottom: 12px;
 
-        div.v-data-footer__select {
-          justify-content: center;
-        }
+      div.v-data-footer__select {
+        justify-content: center;
+      }
 
-        div.v-data-footer__pagination {
-
-        }
-
-        div.v-data-footer__icons-before {
-          display: inline;
-          margin-left: calc(50% - 36px);
-
-
-        }
-
-        div.v-data-footer__icons-after {
-          display: inline;
-        }
+      div.v-data-footer__pagination {
 
       }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: calc(50% - 36px);
+
+
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
     }
   }
+}
 
 </style>
 
 <style scoped lang="scss">
 
-  .tournament-logo {
-    margin-top: 15px;
-    max-width: 400px;
-    height: auto;
-    @media (max-width: 500px){
-      max-width: 100%;
-    }
+.tournament-logo {
+  margin-top: 15px;
+  max-width: 400px;
+  height: auto;
+  @media (max-width: 500px) {
+    max-width: 100%;
   }
+}
 </style>

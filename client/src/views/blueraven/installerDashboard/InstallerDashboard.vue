@@ -2,11 +2,11 @@
   <v-container class="app-container">
     <v-dialog v-model="showModal" max-width="1600">
       <ProductionStatsDrilldown
-                      :start-date="startDate"
-                      :end-date="endDate"
-                      :title="drilldownTitle"
-                      :drilldown-data="drilldownData"
-                      @prodStatsDrilldownDialogClosed="showModal = false"
+        :start-date="startDate"
+        :end-date="endDate"
+        :title="drilldownTitle"
+        :drilldown-data="drilldownData"
+        @prodStatsDrilldownDialogClosed="showModal = false"
       ></ProductionStatsDrilldown>
     </v-dialog>
 
@@ -20,13 +20,13 @@
           <v-divider class="mt-3"/>
           <v-row class="px-4">
             <v-col cols="3" md="2">
-              <v-autocomplete v-model="selectedRegionalManagers"
+              <a-autocomplete v-model="selectedRegionalManagers"
                               :items="regionalManagers"
                               label="Regional Installation Manager"
                               multiple
                               clearable
                               return-object
-                              item-text="fullName"
+                              item-title="fullName"
                               @change="getInstallationCrew()"
                               @click:clear="selectedInstallationCrews = []">
                 <v-list-item
@@ -51,48 +51,45 @@
                   {{ selectedRegionalManagers.length }} selected
                 </span>
                 </template>
-              </v-autocomplete>
+              </a-autocomplete>
             </v-col>
             <v-col cols="3" md="2">
-              <v-autocomplete v-model="selectedInstallationCrews"
+              <a-autocomplete v-model="selectedInstallationCrews"
                               :items="installationCrew"
                               label="Installation Crews"
                               multiple
                               clearable
                               return-object
-                              item-text="fullName">
-                <v-list-item
-                  slot="prepend-item"
-                  ripple
-                  @click="toggleSelectAllCrews()"
-                >
-                  <v-list-item-action>
-                    <v-icon>{{ iconCrews }}</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-title>Select All</v-list-item-title>
-                </v-list-item>
-                <v-divider
-                  slot="prepend-item"
-                  class="mt-2"
-                ></v-divider>
-                <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
-                >
-                <span v-if="index === 0" class="primary--text text-caption">
-                  {{ selectedInstallationCrews.length }} selected
-                </span>
+                              item-title="fullName">
+                <template  v-slot:prepend-item>
+                  <v-list-item
+                    ripple
+                    @click="toggleSelectAllCrews()"
+                  >
+                    <v-list-item-action>
+                      <v-icon>{{ iconCrews }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item>
+                  <v-divider
+                    class="mt-2"
+                  ></v-divider>
                 </template>
-              </v-autocomplete>
+                <template  v-slot:selection="{item, index}">
+                  <span v-if="index === 0" class="primary--text text-caption">
+                    {{ selectedInstallationCrews.length }} selected
+                  </span>
+                </template>
+              </a-autocomplete>
             </v-col>
             <v-col cols="3" md="2">
-              <v-select attach class="date-range-dropdown" py-2
+              <a-select attach custom-classes="date-range-dropdown  py-2"
                         v-model="selectedDateRange"
                         :items="dateRanges"
                         label="Date Range"
                         @change="setDateRange()"
                         hide-details
-              ></v-select>
+              ></a-select>
             </v-col>
             <v-col cols="3" md="2">
               <DatetimePickerInput :custom-class="'date-range-date'"  py-2
@@ -119,9 +116,12 @@
               ></DatetimePickerInput>
             </v-col>
             <v-col cols="3" md="2">
-              <v-btn color="primary" class="white--text"
-                     :disabled="selectedInstallationCrews.length < 1"
-                     @click="getDashboardValues()">Go</v-btn>
+              <a-btn
+                color="primary"
+                :disabled="selectedInstallationCrews.length < 1"
+                @click="getDashboardValues()"
+                text="Go"
+              ></a-btn>
             </v-col>
           </v-row>
           <v-row>
@@ -133,10 +133,10 @@
             <v-card tile v-for="stat in dashValues" class="ma-3 flex-display card-main"
                     width="200" height="100" >
               <div class="card-accent" :style="{'background-color': 'white'}"></div>
-                <v-card-text class="pt-1 stats-tile" @click="drilldownTitle = stat.name; drilldownData= stat.drilldownData; showModal = true">
-                  <div class="text-left default-text-color">{{stat.name}}</div>
-                  <div class="card-count">{{stat.value}}</div>
-                </v-card-text>
+              <v-card-text class="pt-1 stats-tile" @click="drilldownTitle = stat.name; drilldownData= stat.drilldownData; showModal = true">
+                <div class="text-left default-text-color">{{stat.name}}</div>
+                <div class="card-count">{{stat.value}}</div>
+              </v-card-text>
             </v-card>
           </v-row>
           <v-row>
@@ -167,13 +167,13 @@
           <v-toolbar-title class="app-title">Key Performance Metrics</v-toolbar-title>
         </v-toolbar>
         <v-col cols="3" md="2">
-          <v-select attach class="date-range-dropdown" py-2
+          <a-select attach custom-classes="date-range-dropdown py-2"
                     v-model="metricsSelectedDateRange"
                     :items="dateRanges"
                     label="Date Range"
                     @change="setMetricsDateRange()"
                     hide-details
-          ></v-select>
+          ></a-select>
         </v-col>
         <v-col cols="3" md="2">
           <DatetimePickerInput :custom-class="'date-range-date'"  py-2
@@ -200,13 +200,12 @@
           ></DatetimePickerInput>
         </v-col>
         <v-col cols="3" md="2">
-            <v-btn
-              color="primary"
-              class="white--text mr-2 mb-3"
-              @click="getPerformanceMetrics"
-            >
-              Go
-            </v-btn>
+          <a-btn
+            color="primary"
+            class="mr-2 mb-3"
+            @click="getPerformanceMetrics"
+            text="Go"
+          ></a-btn>
         </v-col>
       </v-row>
     </template>
@@ -222,13 +221,13 @@
           <v-row class="px-4">
             <v-row>
               <v-col cols="5" md="2">
-                <v-autocomplete v-model="selectedRegionalManagers" class="zzzz"
+                <a-autocomplete v-model="selectedRegionalManagers" class="zzzz"
                                 :items="regionalManagers"
                                 label="Regional Installation Manager"
                                 multiple
                                 clearable
                                 return-object
-                                item-text="fullName"
+                                item-title="fullName"
                                 @change="getInstallationCrew()"
                                 @click:clear="selectedInstallationCrews = []">
                   <v-list-item
@@ -253,30 +252,30 @@
                     {{ selectedRegionalManagers.length }} selected
                   </span>
                   </template>
-                </v-autocomplete>
+                </a-autocomplete>
               </v-col>
               <v-col cols="5" md="2">
-                <v-autocomplete v-model="selectedInstallationCrews"
+                <a-autocomplete v-model="selectedInstallationCrews"
                                 :items="installationCrew"
                                 label="Installation Crews"
                                 multiple
                                 clearable
                                 return-object
-                                item-text="fullName">
-                  <v-list-item
-                    slot="prepend-item"
-                    ripple
-                    @click="toggleSelectAllCrews()"
-                  >
-                    <v-list-item-action>
-                      <v-icon>{{ iconCrews }}</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-title>Select All</v-list-item-title>
-                  </v-list-item>
-                  <v-divider
-                    slot="prepend-item"
-                    class="mt-2"
-                  ></v-divider>
+                                item-title="fullName">
+                  <template  v-slot:prepend-item>
+                    <v-list-item
+                      ripple
+                      @click="toggleSelectAllCrews()"
+                    >
+                      <v-list-item-action>
+                        <v-icon>{{ iconCrews }}</v-icon>
+                      </v-list-item-action>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item>
+                    <v-divider
+                      class="mt-2"
+                    ></v-divider>
+                  </template>
                   <template
                     slot="selection"
                     slot-scope="{ item, index }"
@@ -285,19 +284,19 @@
                     {{ selectedInstallationCrews.length }} selected
                   </span>
                   </template>
-                </v-autocomplete>
+                </a-autocomplete>
               </v-col>
             </v-row>
 
             <v-row>
               <v-col cols="5" md="2">
-                <v-select attach class="date-range-dropdown" py-2
+                <a-select attach custom-classes="date-range-dropdown py-2"
                           v-model="selectedDateRange"
                           :items="dateRanges"
                           label="Date Range"
                           @change="setDateRange()"
                           hide-details
-                ></v-select>
+                ></a-select>
               </v-col>
             </v-row>
             <v-row>
@@ -327,9 +326,12 @@
               </v-col>
             </v-row>
             <v-col cols="5" md="2">
-              <v-btn color="primary" class="white--text"
-                     :disabled="selectedInstallationCrews.length < 1"
-                     @click="getDashboardValues()">Go</v-btn>
+              <a-btn
+                color="primary"
+                :disabled="selectedInstallationCrews.length < 1"
+                @click="getDashboardValues()"
+                text="Go"
+              ></a-btn>
             </v-col>
           </v-row>
           <v-row>
@@ -377,13 +379,13 @@
       </v-row>
       <v-row>
         <v-col cols="5" md="2">
-          <v-select attach class="date-range-dropdown" py-2
+          <a-select attach custom-classes="date-range-dropdown  py-2"
                     v-model="metricsSelectedDateRange"
                     :items="dateRanges"
                     label="Date Range"
                     @change="setMetricsDateRange()"
                     hide-details
-          ></v-select>
+          ></a-select>
         </v-col>
       </v-row>
       <v-row>
@@ -413,13 +415,12 @@
         </v-col>
       </v-row>
       <v-col cols="5" md="2">
-        <v-btn
+        <a-btn
           color="primary"
-          class="white--text mr-2 mb-3"
+          class="mr-2 mb-3"
           @click="getPerformanceMetrics"
-        >
-          Go
-        </v-btn>
+          text="Go"
+        ></a-btn>
       </v-col>
     </template>
 
@@ -457,351 +458,348 @@
 </template>
 
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
 
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
-  import moment from "moment";
-  import constants from '@/helpers/constants'
-  import ProductionStatsDrilldown from "./ProductionStatsDrilldown"
-  import cloneDeep from "lodash.clonedeep";
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import {handleHidingGlobalLoader, getRequest, getRequestWithParams, } from '@/helpers/helpers'
+import moment from "moment";
+import constants from '@/helpers/constants'
+import ProductionStatsDrilldown from "./ProductionStatsDrilldown"
+import cloneDeep from "lodash.clonedeep";
 
-  export default {
-    name: 'InstallerDashboard',
-    components: {
-      DatetimePickerInput,
-      ProductionStatsDrilldown
-    },
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        model: {},
-        workQueues: [],
-        regionalManagers: [],
-        installationCrew: [],
-        expanded: [],
-        selectedUserPosition: {},
-        selectedRegionalManagers: [],
-        selectedInstallationCrews: [],
-        selectedDateRange: 'Current Week',
-        metricsSelectedDateRange: 'Current Period',
-        startDate: moment().format('YYYY-MM-DD'),
-        endDate: moment().format('YYYY-MM-DD'),
-        metricsStartDate: moment().format('YYYY-MM-DD'),
-        metricsEndDate: moment().format('YYYY-MM-DD'),
-        weekNum: 1,
-        currentPeriod: Math.floor(moment().isoWeek() / 4),
-        timezone: 'US/Mountain',
-        dateRanges: ['Yesterday', 'Today', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Year', 'All Time'],
-        workQueueOwners: [],
-        dashValues: [],
-        performanceMetrics: [],
-        drilldownTitle: '',
-        drilldownData: [],
-        headers: [
-          { text: 'Rank', value: 'rnk', width: 80, show: true },
-          { text: 'Crew', value: 'crewname', width: 80, show: true },
-          { text: 'Substantial Completions kW', value: 'substantialcompletions', width: 80, show: true },
-          { text: 'Inspection Pass Rate', value: 'inspectionapproval', width: 80, show: true },
-          { text: 'Score (kw x Pass rate)', value: 'score', width: 80, show: true },
-        ],
-        showModal: false
+
+import {ref, onMounted, computed, watch, getCurrentInstance} from "vue";
+import {useAppStore} from "@/stores/AppStorePinia.js";
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const router = vueInstance.$router
+const route = vueInstance.$route
+const vuetify = vueInstance.$vuetify
+
+const model = ref({})
+const workQueues = ref([])
+const regionalManagers = ref([])
+const installationCrew = ref([])
+const expanded = ref([])
+const selectedUserPosition = ref({})
+const selectedRegionalManagers = ref([])
+const selectedInstallationCrews = ref([])
+const selectedDateRange = ref('Current Week')
+const metricsSelectedDateRange = ref('Current Period')
+const startDate = ref(moment().format('YYYY-MM-DD'))
+const endDate = ref(moment().format('YYYY-MM-DD'))
+const metricsStartDate = ref(moment().format('YYYY-MM-DD'))
+const metricsEndDate = ref(moment().format('YYYY-MM-DD'))
+const weekNum = ref(1)
+const currentPeriod = ref(Math.floor(moment().isoWeek() / 4))
+const timezone = ref('US/Mountain')
+const dateRanges = ref(['Yesterday', 'Today', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Year', 'All Time'])
+const workQueueOwners = ref([])
+const dashValues = ref([])
+const performanceMetrics = ref([])
+const drilldownTitle = ref('')
+const drilldownData = ref([])
+const isLoading = ref(false)
+const headers = ref([
+  { text: 'Rank', value: 'rnk', width: 80, show: true },
+  { text: 'Crew', value: 'crewname', width: 80, show: true },
+  { text: 'Substantial Completions kW', value: 'substantialcompletions', width: 80, show: true },
+  { text: 'Inspection Pass Rate', value: 'inspectionapproval', width: 80, show: true },
+  { text: 'Score (kw x Pass rate)', value: 'score', width: 80, show: true },
+])
+const showModal = ref(false)
+
+const appStore = useAppStore()
+
+const selectAllManagers = computed(() => {
+  return regionalManagers.value.length === selectedRegionalManagers.value.length
+})
+const selectSomeManagers = computed(() => {
+  return selectedRegionalManagers.value.length > 0 && !selectAllManagers.value
+})
+const iconManagers = computed(() => {
+  if (regionalManagers.value.length === selectedRegionalManagers.value.length) {
+    return 'check_box'
+  }
+  if (selectSomeManagers.value) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+})
+const selectAllCrews = computed(() => {
+  return installationCrew.value.length === selectedInstallationCrews.value.length
+})
+const selectSomeCrews = computed(() => {
+  return selectedInstallationCrews.value.length > 0 && !selectAllCrews.value
+})
+const iconCrews = computed(() => {
+  if (installationCrew.value.length === selectedInstallationCrews.value.length) {
+    return 'check_box'
+  }
+  if (selectSomeCrews.value) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+})
+const additionalStartWeek = computed(() => {
+  if (currentPeriod.value > 9) {
+    return 1;
+  }
+  return 0;
+})
+const additionalEndWeek = computed(() => {
+  if (currentPeriod.value === 9 || currentPeriod.value === 12) {
+    return 1;
+  }
+  return 0;
+})
+const additionalStartWeekLastPeriod = computed(() => {
+  if (currentPeriod.value > 10) {
+    return 1;
+  }
+  return 0;
+})
+const additionalEndWeekLastPeriod = computed(() => {
+  if (currentPeriod.value === 10 || currentPeriod.value === 1) {
+    return 1;
+  }
+  return 0;
+})
+const momentStartOfPeriod = computed(() => {
+  return moment().startOf('isoWeek').isoWeek((currentPeriod.value) * 4 - 1 + additionalStartWeek.value)
+})
+const startOfPeriod = computed(() => {
+  return moment().startOf('isoWeek').isoWeek((currentPeriod.value) * 4 - 1 + additionalStartWeek.value).format('YYYY-MM-DD')
+})
+const endOfPeriod = computed(() => {
+  return moment(momentStartOfPeriod.value).clone().add(3 + additionalEndWeek.value, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+})
+const startOfWeek = computed(() => {
+  return moment().startOf('W').format('YYYY-MM-DD')
+})
+const endOfWeek = computed(() => {
+  return moment().endOf('W').format('YYYY-MM-DD')
+})
+const installationCrewIds = computed(() => {
+  return selectedInstallationCrews.value?.length > 0 ? selectedInstallationCrews.value.map(u => u.positionId) : [];
+})
+
+onMounted(() => {
+  setDateRange()
+  setMetricsDateRange()
+  getRegionalManagers()
+})
+
+  const toggleSelectAllManagers = () => {
+    vueInstance.$nextTick(() => {
+      if (selectAllManagers.value) {
+        selectedRegionalManagers.value = []
+      } else {
+        selectedRegionalManagers.value = cloneDeep(regionalManagers.value)
+        getInstallationCrew();
       }
-    },
-    computed: {
-      selectAllManagers () {
-        return this.regionalManagers.length === this.selectedRegionalManagers.length
-      },
-      selectSomeManagers () {
-        return this.selectedRegionalManagers.length > 0 && !this.selectAllManagers
-      },
-      iconManagers () {
-        if (this.regionalManagers.length === this.selectedRegionalManagers.length) {
-          return 'check_box'
-        }
-        if (this.selectSomeManagers) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      selectAllCrews () {
-        return this.installationCrew.length === this.selectedInstallationCrews.length
-      },
-      selectSomeCrews () {
-        return this.selectedInstallationCrews.length > 0 && !this.selectAllCrews
-      },
-      iconCrews () {
-        if (this.installationCrew.length === this.selectedInstallationCrews.length) {
-          return 'check_box'
-        }
-        if (this.selectSomeCrews) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      additionalStartWeek () {
-        if (this.currentPeriod > 9) {
-          return 1;
-        }
-        return 0;
-      },
-      additionalEndWeek () {
-        if (this.currentPeriod === 9 || this.currentPeriod === 12) {
-          return 1;
-        }
-        return 0;
-      },
-      additionalStartWeekLastPeriod () {
-        if (this.currentPeriod > 10) {
-          return 1;
-        }
-        return 0;
-      },
-      additionalEndWeekLastPeriod () {
-        if (this.currentPeriod === 10 || this.currentPeriod === 1) {
-          return 1;
-        }
-        return 0;
-      },
-      momentStartOfPeriod () {
-        return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 1 + this.additionalStartWeek)
-      },
-      startOfPeriod () {
-        return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 1 + this.additionalStartWeek).format('YYYY-MM-DD')
-      },
-      endOfPeriod () {
-        return moment(this.momentStartOfPeriod).clone().add(3 + this.additionalEndWeek, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
-      },
-      startOfWeek () {
-        return moment().startOf('W').format('YYYY-MM-DD')
-      },
-      endOfWeek () {
-        return moment().endOf('W').format('YYYY-MM-DD')
-      },
-      installationCrewIds() {
-        return this.selectedInstallationCrews?.length > 0 ? this.selectedInstallationCrews.map(u => u.positionId) : [];
+    })
+  }
+  const toggleSelectAllCrews = () => {
+    vueInstance.$nextTick(() => {
+      if (selectAllCrews.value) {
+        selectedInstallationCrews.value = []
+      } else {
+        selectedInstallationCrews.value = cloneDeep(installationCrew.value)
       }
-    },
-    async created() {
-      this.setDateRange()
-      this.setMetricsDateRange()
-      this.getRegionalManagers()
-    },
-    methods: {
-      toggleSelectAllManagers () {
-        this.$nextTick(() => {
-          if (this.selectAllManagers) {
-            this.selectedRegionalManagers = []
-          } else {
-            this.selectedRegionalManagers = cloneDeep(this.regionalManagers)
-            this.getInstallationCrew();
-          }
-        })
-      },
-      toggleSelectAllCrews () {
-        this.$nextTick(() => {
-          if (this.selectAllCrews) {
-            this.selectedInstallationCrews = []
-          } else {
-            this.selectedInstallationCrews = cloneDeep(this.installationCrew)
-          }
-        })
-      },
-      async getRegionalManagers() {
-        try {
-          const {data} = await getRequest(`/installerDashboard/regionalManagers`)
-          this.regionalManagers = data
-          // If the logged in user is in this list, select them by default
-          this.selectedRegionalManagers = this.regionalManagers.filter(u => u.userId);
-          await this.getInstallationCrew()
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving Regional Managers')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async getInstallationCrew() {
-        try {
-          let regionalManagersIds = this.selectedRegionalManagers?.length > 0 ? this.selectedRegionalManagers.map(u => u.positionId) : [];
-          if (regionalManagersIds.length < 1) {
-            return;
-          }
-
-          const {data} = await getRequest(`/installerDashboard/installationCrew/`+ regionalManagersIds)
-          this.installationCrew = data
-          this.toggleSelectAllCrews();
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving Installation Crew')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async getDashboardValues() {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const params = {
-            startDate: this.startDate,
-            endDate: this.endDate
-          }
-
-          const {data, status} = await getRequestWithParams('/installerDashboard/dashboardValues/' + this.installationCrewIds, {params})
-          this.dashValues = data
-
-          this.getWipValues();
-          this.isLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving data')
-          this.isLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getWipValues() {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data, status} = await getRequest('/installerDashboard/wipValues/' + this.installationCrewIds)
-          this.workQueues = data
-
-          this.isLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving WIP data')
-          this.isLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getPerformanceMetrics() {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-
-          const params = {
-            startDate: this.metricsStartDate,
-            endDate: this.metricsEndDate
-          }
-
-          const {data, status} = await getRequestWithParams('/installerDashboard/performanceMetrics', {params}, null, [])
-          this.performanceMetrics = data
-          this.isLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving data')
-          this.isLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      setDateRange () {
-        switch (this.selectedDateRange) {
-          case 'Yesterday':
-            this.startDate = moment().startOf('day').add(-1, 'days').format('YYYY-MM-DD')
-            this.endDate = moment().endOf('day').add(-1, 'days').format('YYYY-MM-DD')
-            break
-          case 'Today':
-            this.startDate = moment().startOf('day').format('YYYY-MM-DD')
-            this.endDate = moment().endOf('day').format('YYYY-MM-DD')
-            break
-          case 'Current Week':
-            this.startDate = this.startOfWeek
-            this.endDate = this.endOfWeek
-            break
-          case 'Current Period':
-            this.startDate = this.startOfPeriod
-            this.endDate = this.endOfPeriod
-            break
-          case 'Last Week':
-            this.startDate = moment().subtract(1, 'week').startOf('week').add(1, 'day').format('YYYY-MM-DD')
-            this.endDate = moment().subtract(1, 'week').endOf('week').add(1, 'day').format('YYYY-MM-DD')
-            break
-          case 'Last Period':
-            this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 1 + this.additionalStartWeekLastPeriod)
-            this.startDate = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 1 + this.additionalStartWeekLastPeriod).format('YYYY-MM-DD')
-            this.endDate = moment(this.momentStartOfLastPeriod).clone().add(3 + this.additionalEndWeekLastPeriod, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
-            break
-          case 'Custom':
-            this.startDate = moment(this.startDate).format('YYYY-MM-DD')
-            this.endDate = moment(this.startDate).format('YYYY-MM-DD')
-            break
-          case 'This Month':
-            this.startDate = moment().startOf('month').format('YYYY-MM-DD')
-            this.endDate = moment().endOf('month').format('YYYY-MM-DD')
-            break
-          case 'This Year':
-            this.startDate = moment().startOf('year').format('YYYY-MM-DD')
-            this.endDate = moment().format('YYYY-MM-DD')
-            break;
-          case 'All Time':
-            this.startDate = moment('2000-01-01').format('YYYY-MM-DD')
-            this.endDate = moment().format('YYYY-MM-DD')
-            break
-          default:
-            this.startDate = this.startOfWeek
-            this.endDate = this.endOfWeek
-            break
-        }
-      },
-      setMetricsDateRange () {
-        switch (this.metricsSelectedDateRange) {
-          case 'Yesterday':
-            this.metricsStartDate = moment().startOf('day').add(-1, 'days').format('YYYY-MM-DD')
-            this.metricsEndDate = moment().endOf('day').add(-1, 'days').format('YYYY-MM-DD')
-            break
-          case 'Today':
-            this.metricsStartDate = moment().startOf('day').format('YYYY-MM-DD')
-            this.metricsEndDate = moment().endOf('day').format('YYYY-MM-DD')
-            break
-          case 'Current Week':
-            this.metricsStartDate = this.startOfWeek
-            this.metricsEndDate = this.endOfWeek
-            break
-          case 'Current Period':
-            this.metricsStartDate = this.startOfPeriod
-            this.metricsEndDate = this.endOfPeriod
-            break
-          case 'Last Week':
-            this.metricsStartDate = moment().subtract(1, 'week').startOf('week').add(1, 'day').format('YYYY-MM-DD')
-            this.metricsEndDate = moment().subtract(1, 'week').endOf('week').add(1, 'day').format('YYYY-MM-DD')
-            break
-          case 'Last Period':
-            this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 1 + this.additionalStartWeekLastPeriod)
-            this.metricsStartDate = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 1 + this.additionalStartWeekLastPeriod).format('YYYY-MM-DD')
-            this.metricsEndDate = moment(this.momentStartOfLastPeriod).clone().add(3 + this.additionalEndWeekLastPeriod, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
-            break
-          case 'Custom':
-            this.metricsStartDate = moment(this.startDate).format('YYYY-MM-DD')
-            this.metricsEndDate = moment(this.startDate).format('YYYY-MM-DD')
-            break
-          case 'This Month':
-            this.metricsStartDate = moment().startOf('month').format('YYYY-MM-DD')
-            this.metricsEndDate = moment().endOf('month').format('YYYY-MM-DD')
-            break
-          case 'This Year':
-            this.metricsStartDate = moment().startOf('year').format('YYYY-MM-DD')
-            this.metricsEndDate = moment().format('YYYY-MM-DD')
-            break;
-          case 'All Time':
-            this.metricsStartDate = moment('2000-01-01').format('YYYY-MM-DD')
-            this.metricsEndDate = moment().format('YYYY-MM-DD')
-            break
-          default:
-            this.metricsStartDate = this.startOfWeek
-            this.metricsEndDate = this.endOfWeek
-            break
-        }
-      },
-      setDateRangeCustom (isMetricDateRange) {
-        if (isMetricDateRange) {
-          this.metricsSelectedDateRange = 'Custom'
-        }
-        else {
-          this.selectedDateRange = 'Custom'
-        }
+    })
+  }
+  const getRegionalManagers = async () => {
+    try {
+      const {data} = await getRequest(`/installerDashboard/regionalManagers`)
+      regionalManagers.value = data
+      // If the logged in user is in this list, select them by default
+      selectedRegionalManagers.value = regionalManagers.value.filter(u => u.userId);
+      await getInstallationCrew()
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error retrieving Regional Managers')
+    }
+  }
+  const getInstallationCrew = async () => {
+    try {
+      let regionalManagersIds = selectedRegionalManagers.value?.length > 0 ? selectedRegionalManagers.value.map(u => u.positionId) : [];
+      if (regionalManagersIds.length < 1) {
+        return;
       }
-    },
 
+      const {data} = await getRequest(`/installerDashboard/installationCrew/`+ regionalManagersIds)
+      installationCrew.value = data
+      toggleSelectAllCrews();
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error retrieving Installation Crew')
+
+    }
+  }
+  const getDashboardValues = async () => {
+    try {
+      appStore.loading = true
+      const params = {
+        startDate: startDate.value,
+        endDate: endDate.value
+      }
+
+      const {data, status} = await getRequestWithParams('/installerDashboard/dashboardValues/' + installationCrewIds.value, {params})
+      dashValues.value = data
+
+      await getWipValues();
+      isLoading.value = false
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error retrieving data')
+      isLoading.value = false
+      appStore.loading = false
+    }
+  }
+  const getWipValues = async () => {
+    try {
+      appStore.loading = true
+      const {data, status} = await getRequest('/installerDashboard/wipValues/' + installationCrewIds.value)
+      workQueues.value = data
+
+      isLoading.value = false
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error retrieving WIP data')
+      isLoading.value = false
+      appStore.loading = false
+    }
+  }
+  const getPerformanceMetrics = async () => {
+    try {
+      appStore.loading = true
+
+      const params = {
+        startDate: metricsStartDate.value,
+        endDate: metricsEndDate.value
+      }
+
+      const {data, status} = await getRequestWithParams('/installerDashboard/performanceMetrics', {params}, null, [])
+      performanceMetrics.value = data
+      isLoading.value = false
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error retrieving data')
+      isLoading.value = false
+      appStore.loading = false
+    }
+  }
+  const setDateRange = () => {
+    switch (selectedDateRange.value) {
+      case 'Yesterday':
+        startDate.value = moment().startOf('day').add(-1, 'days').format('YYYY-MM-DD')
+        endDate.value = moment().endOf('day').add(-1, 'days').format('YYYY-MM-DD')
+        break
+      case 'Today':
+        startDate.value = moment().startOf('day').format('YYYY-MM-DD')
+        endDate.value = moment().endOf('day').format('YYYY-MM-DD')
+        break
+      case 'Current Week':
+        startDate.value = startOfWeek.value
+        endDate.value = endOfWeek.value
+        break
+      case 'Current Period':
+        startDate.value = startOfPeriod.value
+        endDate.value = endOfPeriod.value
+        break
+      case 'Last Week':
+        startDate.value = moment().subtract(1, 'week').startOf('week').add(1, 'day').format('YYYY-MM-DD')
+        endDate.value = moment().subtract(1, 'week').endOf('week').add(1, 'day').format('YYYY-MM-DD')
+        break
+      case 'Last Period':
+        momentStartOfLastPeriod.value = moment().clone().startOf('isoWeek').isoWeek((currentPeriod.value - 1) * 4 - 1 + additionalStartWeekLastPeriod.value)
+        startDate.value = moment().clone().startOf('isoWeek').isoWeek((currentPeriod.value - 1) * 4 - 1 + additionalStartWeekLastPeriod.value).format('YYYY-MM-DD')
+        endDate.value = moment(momentStartOfLastPeriod.value).clone().add(3 + additionalEndWeekLastPeriod.value, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+        break
+      case 'Custom':
+        startDate.value = moment(startDate.value).format('YYYY-MM-DD')
+        endDate.value = moment(startDate.value).format('YYYY-MM-DD')
+        break
+      case 'This Month':
+        startDate.value = moment().startOf('month').format('YYYY-MM-DD')
+        endDate.value = moment().endOf('month').format('YYYY-MM-DD')
+        break
+      case 'This Year':
+        startDate.value = moment().startOf('year').format('YYYY-MM-DD')
+        endDate.value = moment().format('YYYY-MM-DD')
+        break;
+      case 'All Time':
+        startDate.value = moment('2000-01-01').format('YYYY-MM-DD')
+        endDate.value = moment().format('YYYY-MM-DD')
+        break
+      default:
+        startDate.value = startOfWeek.value
+        endDate.value = endOfWeek.value
+        break
+    }
+  }
+  const setMetricsDateRange = () => {
+    switch (metricsSelectedDateRange.value) {
+      case 'Yesterday':
+        metricsStartDate.value = moment().startOf('day').add(-1, 'days').format('YYYY-MM-DD')
+        metricsEndDate.value = moment().endOf('day').add(-1, 'days').format('YYYY-MM-DD')
+        break
+      case 'Today':
+        metricsStartDate.value = moment().startOf('day').format('YYYY-MM-DD')
+        metricsEndDate.value = moment().endOf('day').format('YYYY-MM-DD')
+        break
+      case 'Current Week':
+        metricsStartDate.value = startOfWeek.value
+        metricsEndDate.value = endOfWeek.value
+        break
+      case 'Current Period':
+        metricsStartDate.value = startOfPeriod.value
+        metricsEndDate.value = endOfPeriod.value
+        break
+      case 'Last Week':
+        metricsStartDate.value = moment().subtract(1, 'week').startOf('week').add(1, 'day').format('YYYY-MM-DD')
+        metricsEndDate.value = moment().subtract(1, 'week').endOf('week').add(1, 'day').format('YYYY-MM-DD')
+        break
+      case 'Last Period':
+        momentStartOfLastPeriod.value = moment().clone().startOf('isoWeek').isoWeek((currentPeriod.value - 1) * 4 - 1 + additionalStartWeekLastPeriod.value)
+        metricsStartDate.value = moment().clone().startOf('isoWeek').isoWeek((currentPeriod.value - 1) * 4 - 1 + additionalStartWeekLastPeriod.value).format('YYYY-MM-DD')
+        metricsEndDate.value = moment(momentStartOfLastPeriod.value).clone().add(3 + additionalEndWeekLastPeriod.value, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+        break
+      case 'Custom':
+        metricsStartDate.value = moment(startDate.value).format('YYYY-MM-DD')
+        metricsEndDate.value = moment(startDate.value).format('YYYY-MM-DD')
+        break
+      case 'This Month':
+        metricsStartDate.value = moment().startOf('month').format('YYYY-MM-DD')
+        metricsEndDate.value = moment().endOf('month').format('YYYY-MM-DD')
+        break
+      case 'This Year':
+        metricsStartDate.value = moment().startOf('year').format('YYYY-MM-DD')
+        metricsEndDate.value = moment().format('YYYY-MM-DD')
+        break;
+      case 'All Time':
+        metricsStartDate.value = moment('2000-01-01').format('YYYY-MM-DD')
+        metricsEndDate.value = moment().format('YYYY-MM-DD')
+        break
+      default:
+        metricsStartDate.value = startOfWeek.value
+        metricsEndDate.value = endOfWeek.value
+        break
+    }
+  }
+  const setDateRangeCustom = (isMetricDateRange) => {
+    if (isMetricDateRange) {
+      metricsSelectedDateRange.value = 'Custom'
+    }
+    else {
+      selectedDateRange.value = 'Custom'
+    }
   }
 </script>
 

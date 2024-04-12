@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Project {
 
-  Double latitude, longitude;
+  Double latitude, longitude, commissionsOutstanding;
   private Long id,
       processId,
       companyId,
@@ -45,7 +45,8 @@ public class Project {
       companyName,
       companyProjectStatusTypeColor,
       email,
-      rootProjectStatusType;
+      rootProjectStatusType,
+      ownerName;
   private String dateCreated;
   private Owner owner;
   private Contact contact;

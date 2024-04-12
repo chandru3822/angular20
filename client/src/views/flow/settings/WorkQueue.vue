@@ -22,18 +22,14 @@
   </v-container>
 </template>
 
-<script>
-import Vue2Filters from 'vue2-filters'
+<script setup>
 import constants from '@/helpers/constants'
 
-export default {
-  name: 'WorkQueueAdmin',
-  mixins: [Vue2Filters.mixin],
-  data() {
-    return {
-      constants,
-      userCanAccessCategories: this.$store.getters.userHasFeature('SETTINGS')
-    }
-  }
-}
+import { getCurrentInstance, ref } from 'vue'
+import { useUserStore } from '@/stores/UserStorePinia.js'
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const userCanAccessCategories = ref(userStore.userHasFeature('SETTINGS'))
+
 </script>

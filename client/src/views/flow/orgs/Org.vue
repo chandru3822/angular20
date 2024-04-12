@@ -12,50 +12,50 @@
     <confirmation-dialog :open-dialog="showEditModal" @close-dialog="showEditModal = false" @confirm="validateForm">
       <template v-slot:title>Organization Overview</template>
       <v-form ref="orgEditForm">
-        <v-text-field
-          v-model="tempOrg.orgName"
-          :readonly="!userCanEdit"
-          :disabled="!userCanEdit"
-          label="Organization Name"
-        ></v-text-field>
-        <v-select attach v-model="tempOrg.orgTypeId"
+        <a-text-field
+            v-model="tempOrg.orgName"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
+            label="Organization Name"
+        ></a-text-field>
+        <a-select v-model="tempOrg.orgTypeId"
                   :items="orgTypes"
                   label="Organization Type"
                   :rules="requiredRules"
                   :readonly="!userCanEdit"
                   :disabled="!userCanEdit"
-                  item-text="orgType"
+                  item-title="orgType"
                   item-value="id"
-                  @input="getOrgsByType(tempOrg.orgTypeId)"
-        ></v-select>
-        <v-autocomplete attach v-model="tempOrg.parentOrgId"
+                  @input="getAllOrgsByType(tempOrg.orgTypeId)"
+        ></a-select>
+        <a-autocomplete attach v-model="tempOrg.parentOrgId"
                         :items="parents"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         label="Parent Organization"
-                        item-text="orgName"
+                        item-title="orgName"
                         item-value="id"
-        ></v-autocomplete>
-        <v-autocomplete attach v-model="tempOrg.companyStateId"
-                  :items="states"
-                  :readonly="!userCanEdit"
-                  :disabled="!userCanEdit"
-                  label="State"
-                  clearable
-                  item-text="state"
-                  item-value="id"
-        ></v-autocomplete>
-        <v-autocomplete v-model="tempOrg.companyTimezoneId"
+        ></a-autocomplete>
+        <a-autocomplete attach v-model="tempOrg.companyStateId"
+                        :items="states"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        label="State"
+                        clearable
+                        item-title="state"
+                        item-value="id"
+        ></a-autocomplete>
+        <a-autocomplete v-model="tempOrg.companyTimezoneId"
                         :items="companyTimezones"
                         label="Time Zone"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         hide-details
                         clearable
-                        item-text="timezone"
+                        item-title="timezone"
                         item-value="id"
                         attach
-        ></v-autocomplete>
+        ></a-autocomplete>
         <h6 class="mt-1 red-text" v-if="tempOrg.schedulable && !tempOrg.companyTimezoneId">* Required when
           Schedulable
           Organization</h6>
@@ -69,7 +69,7 @@
           <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2"
                  v-model="tempOrg.schedulable">
         </div>
-        <div class="mb-3" v-if="$store.getters.isParent(parentId)">
+        <div class="mb-3" v-if="userStore.isParent">
           <label>Make available in children:</label>
           <input type="checkbox" :readonly="!userCanEdit" :disabled="!userCanEdit"
                  class="ml-3" v-model="tempOrg.availableToChildren">
@@ -81,12 +81,18 @@
     <ThreeColumnLayout :header-text="org.orgName"
                        :auto-overflow-left="false">
       <template v-slot:back-btn>
-        <v-btn fab text small color="primary" class="mr-2" @click="goToPath('/orgs')">
-          <v-icon>mdi-view-list</v-icon>
-        </v-btn>
+        <a-btn
+            icon
+            variant="text"
+            size="small"
+            color="primary"
+            class="mr-2"
+            @click="goToPath('/orgs')"
+            prepend-icon="mdi-view-list"
+        ></a-btn>
       </template>
       <template v-slot:left-column>
-        <div v-if="!$store.state.project.leftSideSplit && org && org.id"
+        <div v-if="!projectStore.leftSideSplit && org && org.id"
              class="px-2 height-one-hunned overflow-y-auto">
           <PageOverview v-if="org && org.id"
                         page-name="Organization"
@@ -107,34 +113,42 @@
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0">
-                <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
-                <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
-              </v-btn>
+              <a-btn
+                  variant="text"
+                  color="primary"
+                  @click="setSplitColumnValue()"
+                  class="px-0"
+                  :prepend-icon="!projectStore.manualColumnSplit ? 'mdi-format-columns' : 'mdi-format-align-justify'"
+              ></a-btn>
               <div>
-                <v-btn color="primary"
-                       class="white--text mt-3"
-                       v-if="userCanEdit"
-                       :loading="fieldsLoading"
-                       :disabled="fieldsSaving"
-                       @click="saveOrg()">
-                  Save Fields
-                </v-btn>
+                <a-btn
+                    color="primary"
+                    class="mt-3"
+                    v-if="userCanEdit"
+                    :loading="fieldsLoading"
+                    :disabled="fieldsSaving"
+                    @click="saveOrg()"
+                    text="Save Fields"
+                ></a-btn>
               </div>
             </v-toolbar-items>
           </v-toolbar>
           <div v-if="org && org.id && !fieldsLoading" class="org-fields-container">
             <div class="px-4">
-              <v-btn @click="[showChildOrgs = !showChildOrgs, showUsersAssignedToOrg = false]" :text="showChildOrgs"
-                     color="primary" small>
-                {{ showChildOrgs ? 'Hide' : 'Show' }} Child Organizations
-              </v-btn>
+              <a-btn
+                  @click="[showChildOrgs = !showChildOrgs, showUsersAssignedToOrg = false]"
+                  :text="showChildOrgs ? 'Hide Child Organizations' : 'Show Child Organizations'"
+                  color="primary"
+                  small
+              > </a-btn>
               <br/>
-              <v-btn @click="[showUsersAssignedToOrg = !showUsersAssignedToOrg, showChildOrgs = false]"
-                     :text="showUsersAssignedToOrg" color="primary" small
-                     class="mt-3">
-                {{ showUsersAssignedToOrg ? 'Hide' : 'Show' }} Assigned Users
-              </v-btn>
+              <a-btn
+                  @click="[showUsersAssignedToOrg = !showUsersAssignedToOrg, showChildOrgs = false]"
+                  color="primary"
+                  small
+                  class="mt-3"
+                  :text="showUsersAssignedToOrg ? 'Hide Assigned Users' : 'Show Assigned Users'"
+              ></a-btn>
             </div>
             <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar px-4" dense
                        v-if="showUsersAssignedToOrg">
@@ -146,14 +160,14 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-data-table
-              v-if="showUsersAssignedToOrg"
-              :headers="headers"
-              :items="usersInOrg"
-              :fixed-header="true"
-              :items-per-page="-1"
-              :mobile-breakpoint="0"
-              hide-default-footer
-              class="elevation-1  square-card mx-4"
+                v-if="showUsersAssignedToOrg"
+                :headers="headers"
+                :items="usersInOrg"
+                :fixed-header="true"
+                :items-per-page="-1"
+                :mobile-breakpoint="0"
+                hide-default-footer
+                class="elevation-1  square-card mx-4"
             >
               <template #no-data>
                 <span class="default-text-color">No users found</span>
@@ -168,9 +182,14 @@
                   <td class="text-left">{{ user.fullName }}</td>
                   <td class="text-left">{{ user.position }}</td>
                   <td class="text-right">
-                    <v-btn small text class="anchor" @click="goToPath(`/user/${user.id}/details`, true)">
-                      <v-icon>mdi-open-in-new</v-icon>
-                    </v-btn>
+                    <a-btn
+                        size="small"
+                        variant="text"
+                        class="anchor"
+                        @click="goToPath(`/user/${user.id}/details`, true)"
+                        color="unset"
+                        prepend-icon="mdi-open-in-new"
+                    ></a-btn>
 
                   </td>
                 </tr>
@@ -186,14 +205,14 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-data-table
-              :headers="childHeaders"
-              :items="org.childOrgs"
-              :fixed-header="true"
-              :items-per-page="-1"
-              :mobile-breakpoint="0"
-              hide-default-footer
-              class="elevation-1 square-card mx-4"
-              v-if="showChildOrgs"
+                :headers="childHeaders"
+                :items="org.childOrgs"
+                :fixed-header="true"
+                :items-per-page="-1"
+                :mobile-breakpoint="0"
+                hide-default-footer
+                class="elevation-1 square-card mx-4"
+                v-if="showChildOrgs"
             >
               <template #no-data>
                 <span class="default-text-color">No child orgs found</span>
@@ -212,9 +231,14 @@
                                 v-model="item.activeFlag"/>
                   </td>
                   <td class="text-right">
-                    <v-btn small text class="anchor" @click="goToPath(`/org/${item.id}`, true)">
-                      <v-icon>mdi-open-in-new</v-icon>
-                    </v-btn>
+                    <a-btn
+                        size="small"
+                        variant="text"
+                        class="anchor"
+                        @click="goToPath(`/org/${item.id}`, true)"
+                        color="unset"
+                        prepend-icon="mdi-open-in-new"
+                    ></a-btn>
 
                   </td>
                 </tr>
@@ -226,9 +250,9 @@
               <v-col cols="12" class="text-left py-0 px-0">
                 <v-form ref="orgForm">
                   <v-col
-                    class="pt-0"
-                    v-for="(cfg, index) in customFieldGroups"
-                    :key="index"
+                      class="pt-0"
+                      v-for="(cfg, index) in customFieldGroups"
+                      :key="index"
                   >
                     <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
                       <v-toolbar-title>
@@ -241,7 +265,7 @@
 
                     <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
                       <v-row>
-                        <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                        <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                           <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                                             :key="idx"
                                             :required="cf.required"
@@ -250,7 +274,7 @@
                                             :field="cf"
                                             :show-field-name="false"></CustomValueInput>
                         </v-col>
-                        <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                        <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
                           <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
                                             :key="idx"
                                             :required="cf.required"
@@ -285,8 +309,8 @@
   </div>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
 import {getCompanyStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {
@@ -295,7 +319,7 @@ import {
   putRequest,
   postRequest,
   getRequestWithParams,
-  getSnackbar, logError
+  logError
 } from '@/helpers/helpers'
 import {getOrgTypes, getOrgsByType} from '@/services/orgService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
@@ -306,299 +330,307 @@ import SpinnerInline from '@/components/SpinnerInline'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import cloneDeep from 'lodash.clonedeep'
 import Style from "@/views/blueraven/settings/proposalDesigner/panel/Style";
-import {ProjectMutations} from "@/stores/ProjectStore";
 import PageOverview from "../PageOverview";
+import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 
-export default {
-  name: 'Org',
-  components: {
-    PageOverview,
-    ConfirmationDialog,
-    Style,
-    SpinnerInline,
-    ThreeColumnLayout,
-    ProjectActivity,
-    CustomValueInput,
-  },
-  data() {
-    return {
-      snackbar: {},
-      org: {},
-      tempOrg: {},
-      showEditModal: false,
-      customFieldGroups: [],
-      usersInOrg: [],
-      cloneDeep,
-      headers: [
-        {text: 'User', value: 'user', show: true},
-        {text: 'Position', value: 'position', show: true},
-        {text: null, value: 'icons', show: true, sortable: false}
-      ],
-      childHeaders: [
-        {text: 'Organization', value: 'orgName', show: true},
-        {text: 'Type', value: 'orgType', show: true},
-        {text: 'Active?', value: 'activeFlag', show: true},
-        {text: null, value: 'icons', show: true, sortable: false}
-      ],
-      orgTypes: [],
-      unsavedFieldsModal: false,
-      toPath: null,
-      navigationOverride: false,
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-      parents: [],
-      dirtyCfvs: [],
-      companyTimezones: [],
-      states: [],
-      fieldsSaving: false,
-      showChildOrgs: false,
-      showUsersAssignedToOrg: false,
-      fieldsLoading: true,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'EDIT'),
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'ADMIN'),
-      orgId: parseInt(this.$route.params.id),
-      companyId: this.$store.state.user.details.companyId,
-      parentId: this.$store.state.user.details.parentCompanyId,
-    }
-  },
-  computed: {
-    overviewDetails() {
-      if (this.org) {
-        return [
-          {
-            label: 'Status',
-            type: constants.OVERVIEW_FIELD_TYPES.STATUS,
-            value: this.org.activeFlag ? 'Active' : 'Inactive',
-            active: this.org.activeFlag
-          },
-          {
-            label: 'Type',
-            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
-            value: this.org.orgType
-          },
-          {
-            label: 'Parent',
-            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
-            value: this.org.parentOrgName,
-            clickable: true
-          },
-          {
-            label: 'State',
-            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
-            value: this.org.state
-          },
-          {
-            label: 'Timezone',
-            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
-            value: this.org.timezone
-          },
-          {
-            label: 'Show in Scheduling Tool',
-            type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
-            value: this.org.schedulable ? 'Yes' : 'No'
-          }
-        ];
-      }
-      return []
-    }
-  },
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { onBeforeRouteLeave } from 'vue-router/composables'
 
-  async created() {
-    let requests = [
-      this.getCustomFieldGroups(),
-      this.getCompanyTimezones(),
-      this.getOrgTypes(),
-      this.getOrg(),
-      this.getCompanyStates(),
-      this.getUsersInOrg()
-    ]
-    await Promise.all(requests).then(async () => {
-      this.fieldsLoading = false
-      if (this.org.parentOrgTypeId) {
-        this.getOrgsByType(this.org.parentOrgTypeId)
-      }
-    })
-  },
-  beforeRouteLeave(to, from, next) {
-    // called when the route that renders this component is about to
-    // be navigated away from.
-    // has access to `this` component instance.
-    if (this.navigationOverride || (this.dirtyCfvs.length === 0 && !this.dirtySystemFields)) {
-      //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
-      next()
-    } else {
-      this.toPath = to.path
-      this.unsavedFieldsModal = true
-    }
-  },
-  methods: {
-    setSplitColumnValue() {
-      //flip the flag
-      this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)
-    },
-    getCustomFieldValuesToDisplay(values, columnNum) {
-      if (this.$store.state.project.manualColumnSplit) {
-        return values.filter(function (element, index, values) {
-          return (index % 2 === (columnNum === 1 ? 0 : 1));
-        });
-      } else {
-        return values
-      }
-    },
-    goToPath(path, targetBlank) {
-      if (targetBlank) {
-        let routerData = this.$router.resolve({path})
-        window.open(routerData.href, '_blank')
-      } else {
-        this.$router.push(path)
-      }
-    },
-    async validateForm() {
-      if (this.$refs.orgEditForm.validate()) {
-        await this.saveOrgSystemFields()
-        this.showEditModal = false
-      }
-    },
-    saveOrgSystemFields: async function () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await putRequest(`/org`, this.tempOrg)
-        this.org = data
-        this.showEditModal = false
-        this.snackbar = getSnackbar('SUCCESS', 'Organization Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveOrg() {
-      if (this.$refs.orgForm.validate()) {
-        this.fieldsSaving = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        // this.org.customFieldGroups = this.customFieldGroups
-        try {
-          // update dirty field values
-          const {data} = await postRequest(`/customFieldValues/org/${this.orgId}`, this.dirtyCfvs)
-          this.dirtyCfvs = []
-          this.customFieldGroups = data
-          this.snackbar = getSnackbar('SUCCESS', 'Organization Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.fieldsSaving = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          let msg = this.org.id ? 'Error Saving Organization' : 'Error Adding Organization'
-          this.snackbar = getSnackbar('ERROR', msg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.fieldsSaving = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      } else {
-        this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    populateDirtyCfvs(field) {
-      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-      if (!match) {
-        this.dirtyCfvs.push(field)
-      }
-    },
-    async getCustomFieldGroups() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequestWithParams(`/customFieldValues/org/${this.orgId}`)
-        this.customFieldGroups = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCompanyTimezones() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequestWithParams(`/timezone`)
-        this.companyTimezones = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getOrg() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/org/${this.orgId}`)
-        this.org = data
+const appStore = useAppStore()
+const projectStore = useProjectStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Organization')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+const org = ref({})
+const tempOrg = ref({})
+const showEditModal = ref(false)
+const customFieldGroups = ref([])
+const usersInOrg = ref([])
+const headers = ref([
+  {text: 'User', value: 'user', show: true},
+  {text: 'Position', value: 'position', show: true},
+  {text: null, value: 'icons', show: true, sortable: false}
+])
+const childHeaders = ref([
+  {text: 'Organization', value: 'orgName', show: true},
+  {text: 'Type', value: 'orgType', show: true},
+  {text: 'Active?', value: 'activeFlag', show: true},
+  {text: null, value: 'icons', show: true, sortable: false}
+])
+const orgTypes = ref([])
+const unsavedFieldsModal = ref(false)
+const toPath = ref(null)
+const navigationOverride = ref(false)
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const parents = ref([])
+const dirtySystemFields = ref(false)
+const dirtyCfvs = ref([])
+const companyTimezones = ref([])
+const states = ref([])
+const fieldsSaving = ref(false)
+const orgEditForm = ref(null)
+const orgForm = ref(null)
+const showChildOrgs = ref(false)
+const showUsersAssignedToOrg = ref(false)
+const fieldsLoading = ref(true)
+
+const orgId = computed(() => {
+  return parseInt(route.params.id)
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ORGS', 'EDIT')
+})
+const userIsAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('ORGS', 'ADMIN')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const overviewDetails = computed(() => {
+  if (org.value) {
+    return [
+      {
+        label: 'Status',
+        type: constants.OVERVIEW_FIELD_TYPES.STATUS,
+        value: org.value.activeFlag ? 'Active' : 'Inactive',
+        active: org.value.activeFlag
+      },
+      {
+        label: 'Type',
+        type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+        value: org.value.orgType
+      },
+      {
+        label: 'Parent',
+        type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+        value: org.value.parentOrgName,
+        clickable: true
+      },
+      {
+        label: 'State',
+        type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+        value: org.value.state
+      },
+      {
+        label: 'Timezone',
+        type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+        value: org.value.timezone
+      },
+      {
+        label: 'Show in Scheduling Tool',
+        type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+        value: org.value.schedulable ? 'Yes' : 'No'
       }
-    },
-    async getOrgTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getOrgTypes()
-        this.orgTypes = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getOrgsByType(orgTypeId) {
-      try {
-        const {data, status} = await getOrgsByType(orgTypeId)
-        this.parents = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Parent Orgs')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getUsersInOrg() {
-      try {
-        const {data, status} = await getRequest(`/org/${this.orgId}/users`)
-        this.usersInOrg = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users In Org')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getCompanyStates() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getCompanyStates()
-        this.states = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getReadOnly: function (field) {
-      return getCustomFieldReadOnly(this.$store, field) || !this.userCanEdit
+    ];
+  }
+  return []
+})
+
+onMounted(async () => {
+  let requests = [
+    getCustomFieldGroups(),
+    getCompanyTimezones(),
+    getAllOrgTypes(),
+    getOrg(),
+    getAllCompanyStates(),
+    getUsersInOrg()
+  ]
+  await Promise.all(requests).then(async () => {
+    fieldsLoading.value = false
+    if (org.value.parentOrgTypeId) {
+      getOrgsByType(org.value.parentOrgTypeId)
     }
+  })
+})
+onBeforeRouteLeave(async (to, from, next) => {
+  // called when the route that renders this component is about to
+  // be navigated away from.
+  // has access to `this` component instance.
+  if (navigationOverride.value || (dirtyCfvs.value.length === 0 && !dirtySystemFields.value)) {
+    //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+    to.params.useSavedFilters = "true"
+    console.log('randalogger',to.params.useSavedFilters)
+    next()
+  } else {
+    toPath.value = to.path
+    unsavedFieldsModal.value = true
+  }
+})
+
+const setSplitColumnValue = () => {
+  //flip the flag
+  projectStore.manualColumnSplit != projectStore.manualColumnSplit
+}
+const getCustomFieldValuesToDisplay = (values, columnNum) => {
+  if (projectStore.manualColumnSplit) {
+    return values.filter(function (element, index, values) {
+      return (index % 2 === (columnNum === 1 ? 0 : 1));
+    });
+  } else {
+    return values
   }
 }
+const goToPath = (path, targetBlank) => {
+  if (targetBlank) {
+    let routerData = router.resolve({path})
+    window.open(routerData.href, '_blank')
+  } else {
+    router.push(path)
+  }
+}
+const validateForm = async() => {
+  if (orgEditForm.value.validate()) {
+    await saveOrgSystemFields()
+    showEditModal.value = false
+  }
+}
+const saveOrgSystemFields = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await putRequest(`/org`, tempOrg.value)
+    org.value = data
+    showEditModal.value = false
+    snackbar('SUCCESS', 'Organization Updated')
+
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error Saving Fields')
+
+    appStore.loading = false
+  }
+}
+const saveOrg = async() => {
+  if (orgForm.value.validate()) {
+    fieldsSaving.value = true
+    appStore.loading = true
+    // org.value.customFieldGroups = customFieldGroups.value
+    try {
+      // update dirty field values
+      const {data} = await postRequest(`/customFieldValues/org/${orgId.value}`, dirtyCfvs.value)
+      dirtyCfvs.value = []
+      customFieldGroups.value = data
+      snackbar('SUCCESS', 'Organization Saved')
+
+      fieldsSaving.value = false
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      let msg = org.value.id ? 'Error Saving Organization' : 'Error Adding Organization'
+      snackbar('ERROR', msg)
+
+      fieldsSaving.value = false
+      appStore.loading = false
+    }
+  } else {
+    snackbar('ERROR', 'Missing Required Fields')
+
+  }
+}
+const populateDirtyCfvs = (field) => {
+  let match = dirtyCfvs.value.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+  if (!match) {
+    dirtyCfvs.value.push(field)
+  }
+}
+const getCustomFieldGroups = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequestWithParams(`/customFieldValues/org/${orgId.value}`)
+    customFieldGroups.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Custom Fields')
+
+    appStore.loading = false
+  }
+}
+const getCompanyTimezones = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequestWithParams(`/timezone`)
+    companyTimezones.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Timezones')
+
+    appStore.loading = false
+  }
+}
+const getOrg = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/org/${orgId.value}`)
+    org.value = data
+
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Organization')
+
+    appStore.loading = false
+  }
+}
+const getAllOrgTypes = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getOrgTypes()
+    orgTypes.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Org Types')
+
+    appStore.loading = false
+  }
+}
+const getAllOrgsByType = async(orgTypeId) => {
+  try {
+    const {data, status} = await getOrgsByType(orgTypeId)
+    parents.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Parent Orgs')
+
+    appStore.loading = false
+  }
+}
+const getUsersInOrg = async() => {
+  try {
+    const {data, status} = await getRequest(`/org/${orgId.value}/users`)
+    usersInOrg.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Users In Org')
+
+  }
+}
+const getAllCompanyStates = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getCompanyStates()
+    states.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving States')
+
+    appStore.loading = false
+  }
+}
+const getReadOnly = (field) => {
+  return getCustomFieldReadOnly(field) || !userCanEdit.value
+}
+
 </script>
 
 <style lang="scss">

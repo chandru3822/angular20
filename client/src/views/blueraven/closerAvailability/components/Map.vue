@@ -26,71 +26,56 @@
   </MglMap>
 </template>
 
-<script>
+<script setup>
 import 'mapbox-gl/dist/mapbox-gl.css'
 import '@7oaksgroup/v-mapbox/dist/v-mapbox.css'
 import Mapbox from 'mapbox-gl'
 import {MglMap, MglMarker, MglNavigationControl, MglPopup} from '@7oaksgroup/v-mapbox'
 import constants from '@/helpers/constants'
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 
-export default {
-  name: 'ScheduleMap',
-  components: {
-    MglMap,
-    MglPopup,
-    MglMarker,
-    MglNavigationControl,
-  },
-  props: {
-    latitude: {type: Number},
-    longitude: {type: Number},
-    zoom: {type: Number},
-    markers: {type: Array},
-    mapResources: {type: Array},
-  },
-  watch: {
-    'latitude': function () {
-      // reset the selected group when the object type changes
-      this.changeMapLocation()
-    }
-  },
-  data() {
-    return {
-      snackbar: {},
-      defaultZoom: 2.0,
-      // they do these coordinates backwards to comply with geoJSON whatever that is.
-      //center of the USA
-      defaultCenter: [-98.5795, 39.8283],
-      map: {
-        accessToken: constants.MAPBOX_ACCESS_TOKEN,
-        style: constants.MAPBOX_STYLE
-      }
-    }
-  },
-  created() {
-    this.mapbox = Mapbox
-  },
-  methods: {
-    async changeMapLocation() {
+const props = defineProps({
+  latitude: {type: Number},
+  longitude: {type: Number},
+  zoom: {type: Number},
+  markers: {type: Array},
+  mapResources: {type: Array},
+})
+const { latitude, longitude, zoom, markers, mapResources } = toRefs(props)
+const asyncActions = ref({})
+
+watch(latitude, async() => {
+  await changeMapLocation()
+})
+
+const mapbox = ref(null)
+const defaultZoom = ref(2.0)
+const defaultCenter = ref([-98.5795, 39.8283])
+const map = ref({accessToken: constants.MAPBOX_ACCESS_TOKEN,style: constants.MAPBOX_STYLE})
+
+onMounted(() => {
+    mapbox.value = Mapbox
+})
+
+
+    const changeMapLocation = async() => {
       // Here we catching 'load' map event
-      await this.asyncActions.flyTo({
-        center: [this.longitude, this.latitude],
-        zoom: this.zoom,
+      await asyncActions.value.flyTo({
+        center: [longitude.value, latitude.value],
+        zoom: zoom.value,
         speed: 2
       });
 
-    },
-    async onMapLoad(event) {
+    }
+    const onMapLoad = async(event) => {
       // Here we catching 'load' map event
-      this.asyncActions = event.component.actions
-      let center = this.latitude && this.longitude ? [this.longitude, this.latitude] : this.defaultCenter
-      let zoom = this.zoom ?? this.defaultZoom
-      await this.asyncActions.flyTo({
+      asyncActions.value = event.component.actions
+      let center = latitude.value && longitude.value ? [longitude.value, latitude.value] : defaultCenter.value
+      let zoom = zoom.value ?? defaultZoom.value
+      await asyncActions.value.flyTo({
         center,
         zoom: zoom,
         speed: 2
       });
     }
-  }
-}
 </script>

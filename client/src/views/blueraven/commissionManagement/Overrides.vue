@@ -7,9 +7,13 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text color="primary" @click="goToDetails({})" v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')" >
-          <v-icon>add</v-icon>
-        </v-btn>
+        <a-btn
+            variant="text"
+            color="primary"
+            @click="goToDetails({})"
+            v-if="userStore.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')"
+            prepend-icon="add"
+        ></a-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-divider></v-divider>
@@ -17,13 +21,13 @@
       <v-col class="pt-0">
         <v-card>
           <v-card-title class="pt-0">
-            <v-text-field
-              v-model="search"
-              prepend-inner-icon="search"
-              label="Search"
-              single-line
-              hide-details
-            ></v-text-field>
+            <a-text-field
+                v-model="search"
+                prepend-inner-icon="search"
+                label="Search"
+                single-line
+                hide-details
+            ></a-text-field>
           </v-card-title>
           <v-divider></v-divider>
           <v-data-table
@@ -46,11 +50,11 @@
 
             <template #item="{ item, index }">
               <tr class="clickable" @click="goToDetails(item)" :class="{'shaded-row': index % 2}">
-                <td class="text-left">{{item.name}}</td>
-                <td class="text-left">{{item.description}}</td>
-                <td class="text-left">{{item.status}}</td>
-                <td class="text-left">{{item.total}}</td>
-                <td class="text-left">{{item.activeAssignedUsers}}</td>
+                <td class="text-left">{{ item.name }}</td>
+                <td class="text-left">{{ item.description }}</td>
+                <td class="text-left">{{ item.status }}</td>
+                <td class="text-left">{{ item.total }}</td>
+                <td class="text-left">{{ item.activeAssignedUsers }}</td>
               </tr>
             </template>
           </v-data-table>
@@ -61,59 +65,60 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
 
-  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
+import { getRequest } from '@/helpers/helpers'
+import {getCurrentInstance, computed, ref, onMounted, watch} from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import {useAppStore} from '@/stores/AppStorePinia.js'
+import {useBrsStore} from '@/stores/BrsStorePinia.js'
+import { storeToRefs } from 'pinia'
 
-  export default {
-    name: 'Overrides',
+const brsStore = useBrsStore()
+const { commissionPositionId } = storeToRefs(brsStore)
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-    created() {
-      this.getOverridePlans()
-    },
-    watch: {
-      '$store.state.brs.commissionPositionId': function () {
-        this.positionId = this.$store.state.brs.commissionPositionId
-        this.getOverridePlans()
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        dataLoading: true,
-        search: '',
-        positionId: this.$store.state.brs.commissionPositionId,
-        headers: [
-          {text: 'Name', value: 'name', show: true},
-          {text: 'Description', value: 'description', show: true},
-          {text: 'Status', value: 'status', show: true},
-          {text: 'Total', value: 'total', show: true},
-          {text: 'Active Assigned Users', value: 'activeAssignedUsers', show: true},
-        ],
-        overridePlans: []
-      }
-    },
-    methods: {
-      async getOverridePlans () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/commissionManagement/overrides/plans/${this.positionId}`, 'blueraven', [])
-          this.overridePlans = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Override Plans')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      goToDetails (item) {
-        this.$router.push({name: 'override', params: {id: item.id}})
-      }
-    }
+onMounted(() => {
+  getOverridePlans()
+})
+
+watch(commissionPositionId, () => {
+  getOverridePlans()
+})
+
+const dataLoading = ref(true)
+const search = ref('')
+const headers = ref([
+  {text: 'Name', value: 'name', show: true},
+  {text: 'Description', value: 'description', show: true},
+  {text: 'Status', value: 'status', show: true},
+  {text: 'Total', value: 'total', show: true},
+  {text: 'Active Assigned Users', value: 'activeAssignedUsers', show: true}
+])
+const overridePlans = ref([])
+
+const getOverridePlans = async () => {
+  try {
+    dataLoading.value = true
+    const {data, status} = await getRequest(`/commissionManagement/overrides/plans/${commissionPositionId.value}`, 'blueraven', [])
+    overridePlans.value = data || []
+    dataLoading.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Override Plans')
+    dataLoading.value = false
   }
+}
+const goToDetails = async (item) => {
+  await router.push({name: 'override', params: {id: item.id}})
+}
 </script>
 
 <style lang="scss">

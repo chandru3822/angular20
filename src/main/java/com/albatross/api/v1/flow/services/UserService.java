@@ -168,6 +168,7 @@ public class UserService {
     params.put("username", user.getUsername());
     params.put("companyId", currentUser.getCompanyId());
     params.put("homePageCompanyFeatureId", user.getHomePageCompanyFeatureId());
+    params.put("defaultProjectPage", user.getDefaultProjectPage());
 
     Long id;
 
@@ -679,6 +680,14 @@ public class UserService {
     return sqlCache
       .queryForObjectOptionalBySql(UserQuery.getSmsAccess, params, Boolean.class)
       .orElse(false);
+  }
+
+  public List<BasicNotificationUser> getNotificationEnabledUsers(String query, Pageable pageable){
+    Map<String, Object> params = new HashMap<>();
+    params.put("query", query);
+    params.put("offset", pageable.getOffset());
+    params.put("limit", pageable.getPageSize());
+    return sqlCache.queryBySql(UserQuery.getNotificationEnabledUsers, params, new BeanPropertyRowMapper<>(BasicNotificationUser.class));
   }
 
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {

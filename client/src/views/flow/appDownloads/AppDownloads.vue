@@ -5,41 +5,45 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-menu v-if="isAdmin"
-            v-model="buildMenu"
-            bottom
-            offset-y
-            min-width="350"
-            :close-on-content-click="false"
+                v-model="buildMenu"
+                bottom
+                offset-y
+                min-width="350"
+                :close-on-content-click="false"
         >
           <template #activator="{on}">
-            <v-btn v-on="on" text color="primary">
-              Build App
-            </v-btn>
+            <a-btn
+                :activation-handler="on"
+                variant="text"
+                color="primary"
+                text="Build App"
+            ></a-btn>
           </template>
 
           <v-card class="pa-5">
             <!--    cant change this part cuz the steps used are different depending on if the user is an admin or not -->
-            <v-autocomplete v-model="newBuild.branch"
+            <a-autocomplete v-model="newBuild.branch"
                             :items="branches"
                             label="Branch"
                             placeholder="Select one..."
             />
-            <v-autocomplete v-model="newBuild.dataSource"
+            <a-autocomplete v-model="newBuild.dataSource"
                             :items="dataSources"
                             label="Pointed At Data Source"
                             placeholder="Select one..."
             />
-            <v-text-field v-model="newBuild.version"
+            <a-text-field v-model="newBuild.version"
                           persistent-hint
                           hint="example 2.0.1"
                           placeholder="Version..."/>
 
-            <v-btn class="mt-3"
+            <a-btn
+                class="mt-3"
                 :disabled="!newBuild.branch || !newBuild.dataSource || !newBuild.version"
                 @click="testBuild"
-            >
-              Start Build
-            </v-btn>
+                color="unset"
+                text="Start Build"
+            ></a-btn>
           </v-card>
         </v-menu>
       </v-toolbar-items>
@@ -55,67 +59,70 @@
   </v-container>
 </template>
 
-<script>
-import Vue2Filters from "vue2-filters";
+<script setup>
 import constants from '@/helpers/constants'
 import AppList from '@/views/flow/appDownloads/AppList'
-import {getSnackbar, handleHidingGlobalLoader, putRequest, postRequest } from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
+import { handleHidingGlobalLoader, putRequest, postRequest } from "@/helpers/helpers";
 
-export default {
-  name: 'AppDownloads',
-  mixins: [Vue2Filters.mixin],
-  components: {
-    AppList
-  },
-  data() {
-    return {
-      snackbar: {},
-      newBuild: {
-      },
-      constants,
-      buildMenu: false,
-      apps: [],
-      is7oaksAdmin: this.$store.getters.isFullAdmin,
-      isAdmin: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'ADMIN'),
-      branches: ['stage', 'uat', 'master'],
-      dataSources: ['stage', 'uat', 'prod', 'flux'],
-      headers: [
-        {text: 'Filename', value: 'filename', show: true},
-        {text: 'Version', value: 'version', show: true},
-        {text: 'Created', value: 'dateCreated', show: true},
-        {text: '', value: 'icons', show: true},
-      ],
+
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const newBuild = ref({})
+const buildMenu = ref(false)
+const apps = ref([])
+const branches = ref(['stage', 'uat', 'master'])
+const dataSources = ref(['stage', 'uat', 'prod', 'flux'])
+const headers = ref([
+  {text: 'Filename', value: 'filename', show: true},
+  {text: 'Version', value: 'version', show: true},
+  {text: 'Created', value: 'dateCreated', show: true},
+  {text: '', value: 'icons', show: true},
+])
+onMounted(() => {
+  if(is7oaksAdmin.value) {
+    branches.value.push('develop')
+  }
+})
+
+const is7oaksAdmin = computed(() => {
+  return userStore.isSystemAdmin
+})
+const isAdmin = computed(() => {
+  return userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'ADMIN')
+})
+
+const setVersionNumber = (version) => {
+  newBuild.value.version = version || '0.0.0'
+}
+const testBuild = async() => {
+  try {
+    let params = {
+      version: newBuild.value.version,
+      branch: newBuild.value.branch,
+      dataSource: newBuild.value.dataSource
     }
-  },
-  created() {
-    if(this.is7oaksAdmin) {
-      this.branches.push('develop')
-    }
-  },
-  methods: {
-    setVersionNumber (version) {
-      this.newBuild.version = version || '0.0.0'
-    },
-    async testBuild() {
-      try {
-        let params = {
-          version: this.newBuild.version,
-          branch: this.newBuild.branch,
-          dataSource: this.newBuild.dataSource
-        }
-        const {status} = await postRequest(`/bitrise/build`, params, 'blueraven')
-        this.snackbar = getSnackbar('SUCCESS', 'Build Succeeded')
-        this.buildMenu = false
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Building App')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    }
+    const {status} = await postRequest(`/bitrise/build`, params, 'blueraven')
+    snackbar('SUCCESS', 'Build Succeeded')
+    buildMenu.value = false
+
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Building App')
+
+    appStore.loading = false
   }
 }
+
 </script>

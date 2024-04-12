@@ -66,15 +66,6 @@ public class ProjectStatusService {
             Map.of("companyId", companyId),
             ProjectStatusType.class);
 
-    //this is slow, and we usually don't need it.  only load if necessary. note: mobile uses these so had to be handle with optional param so they wouldnt have to do new build
-    if(null == excludeAttachments || !excludeAttachments) {
-      for (ProjectStatusType c : results) {
-        //set the icon for the status
-        Attachment a = attachmentService.getOneBySourceIdAndType(c.getId(), 463L);
-        c.setIcon(null != a && null != a.getId() ? a : new Attachment());
-      }
-    }
-
     return results;
   }
 
@@ -82,11 +73,6 @@ public class ProjectStatusService {
     Optional<ProjectStatusType> result =
         sqlCache.getBySql(
           ProjectStatusQuery.getOneCompanyStatus, Map.of("id", id), ProjectStatusType.class);
-
-    if (result.isPresent()) {
-      Attachment a = attachmentService.getOneBySourceIdAndType(result.get().getId(), 463L);
-      result.get().setIcon(null != a && null != a.getId() ? a : new Attachment());
-    }
 
     return result;
   }

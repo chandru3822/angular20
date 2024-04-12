@@ -6,31 +6,30 @@
           <v-toolbar-title class="app-title">States</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanAdd" @click="[addNew = !addNew, selectedState = {}]">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <a-btn variant="text" color="primary" v-if="userCanAdd" @click="[addNew = !addNew, selectedState = {}]"
+                             :hide-text-on-mobile="constants.IS_MOBILE"
+                             :prepend-icon="constants.IS_MOBILE ? 'add' : ''" :text="addNew ? 'CANCEL' : 'ADD NEW'"
+            />
+
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add State to Company</h3>
           <div class="mb-3">
-            <v-autocomplete
+            <a-autocomplete
                 v-model="selectedState"
                 :items="states"
                 label="Select a state to use"
-                item-text="state"
+                item-title="state"
                 item-value="id"
                 return-object
                 attach
-            ></v-autocomplete>
+            ></a-autocomplete>
           </div>
-          <v-btn :disabled="!selectedState"
+          <a-btn :disabled="!selectedState || !selectedState.id"
                  color="primary" class="white--text mr-2"
-                 @click="saveCompanyState(selectedState, true)">
-            Save
-          </v-btn>
-          <v-btn text color="primary" @click="[addNew = !addNew, selectedState = {}]">Cancel</v-btn>
+                 @click="saveCompanyState(selectedState, true)" text="SAVE"/>
+          <a-btn variant="text" color="primary" @click="[addNew = !addNew, selectedState = {}]" text="CANCEL"/>
         </v-card>
         <v-data-table
             id="states-settings-table"
@@ -55,31 +54,32 @@
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': filterStates.indexOf(item) % 2}">
               <h3>Edit State</h3>
               <div class="mb-3">
-                <v-text-field text v-model="item.mapLatitude"
+                <a-text-field  v-model="item.mapLatitude"
                               label="Map Latitude" />
-                <v-text-field text v-model="item.mapLongitude"
+                <a-text-field  v-model="item.mapLongitude"
                               label="Map Longitude" />
-                <v-text-field text v-model="item.mapZoom"
+                <a-text-field  v-model="item.mapZoom"
                               label="Map Zoom" />
                 <label>Active:</label>
                 <input class="ml-3" type="checkbox" v-model="item.active">
               </div>
-              <v-btn :disabled="!item.mapLatitude || !item.mapLongitude || !item.mapZoom"
+              <a-btn :disabled="!item.mapLatitude || !item.mapLongitude || !item.mapZoom"
                      color="primary" class="white--text mr-2"
-                     @click="saveCompanyState(item, false)">
-                Save
-              </v-btn>
+                     @click="saveCompanyState(item, false)" text="SAVE"/>
             </td>
           </template>
           <template #item.active="{ item }">
             <input type="checkbox" v-model="item.active" disabled readonly>
           </template>
           <template #item.icons="{ item}">
-            <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]">
-              <v-icon>edit</v-icon>
-            </v-btn>
-            <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit && expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-            <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanDelete" @click="stateToDelete=item"><v-icon>delete</v-icon></v-btn>
+            <a-btn size="small" icon variant="text" :large="vuetify.breakpoint.smAndDown" color="primary"
+                             v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]"
+                             prepend-icon="edit"/>
+            <a-btn size="small" icon :large="vuetify.breakpoint.smAndDown" color="primary"
+                             v-if="userCanEdit && expanded.includes(item)"
+                             @click="expanded = []" text="CANCEL"/>
+            <a-btn size="small" icon variant="text" :large="vuetify.breakpoint.smAndDown" color="primary"
+                             v-if="userCanDelete" @click="stateToDelete=item" prepend-icon="delete"/>
           </template>
 
         </v-data-table>
@@ -91,129 +91,128 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-
+<script setup>
   import {getAvailableStates} from '@/services/stateService'
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby";
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  export default {
-    name: 'CompanyStates',
-    components: {ConfirmationDialog},
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        addNew: false,
-        levels: [],
-        companyStates: [],
-        selectedState: {},
-        states: [],
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
-        selectedCompanyStateId: null,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        headers: [
-          { text: 'State', value: 'state', show: true },
-          { text: 'Abbreviation', value: 'abbreviation', show: true },
-          { text: 'Active', value: 'active', show: true },
-          { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        expanded: [],
-        stateToDelete: null
-      }
-    },
-    computed:{
-      stateToDeleteName() {
-        return this.stateToDelete ? this.stateToDelete.state : ''
-      },
-      filterStates () {
-        return orderBy(this.companyStates.filter(cs => { return !cs.archived}), [cs => cs.state.toLowerCase()])
-      },
-    },
-    async created () {
-      this.getCompanyStates()
-      this.getStates()
-    },
-    methods: {
-      async saveCompanyState(ol, isNew) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            ...ol
-          }
-          params.stateId = ol.id
-          params.id = isNew ? null : params.id
-          const {data, status} = await putRequest(`/state/saveCompanyState`, params)
-          if(isNew){
-            this.companyStates.push(data)
-            this.addNew = false
-            this.selectedState = {}
-            this.snackbar = getSnackbar('SUCCESS', 'State Added')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            this.expanded = []
-            this.snackbar = getSnackbar('SUCCESS', 'State Updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding State' : 'Error Updating State')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getCompanyStates() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/state/company`)
-          this.companyStates = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Company States')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getStates() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getAvailableStates()
-          this.states = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading States')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteCompanyState() {
-        const companyState = this.stateToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/state/companyState/${companyState.id}`)
-          companyState.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'State Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting State')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.stateToDelete = null
-      },
+  import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
+  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const vuetify = vueInstance.$vuetify
+  const store = vueInstance.$store
+  const userStore = useUserStore()
+  const appStore = useAppStore()
+
+  const addNew = ref(false)
+  const levels = ref([])
+  const companyStates = ref([])
+  const selectedState = ref({})
+  const states = ref([])
+  const selectedCompanyStateId = ref(null)
+  const headers = ref([
+    { text: 'State', value: 'state', show: true },
+    { text: 'Abbreviation', value: 'abbreviation', show: true },
+    { text: 'Active', value: 'active', show: true },
+    { text: null, value: 'icons', show: true, sortable: false }
+  ])
+  const expanded = ref([])
+  const stateToDelete = ref(null)
+  const stateToDeleteName = computed(() => {
+    return stateToDelete.value ? stateToDelete.value.state : ''
+  })
+  const filterStates = computed(() => {
+    return orderBy(companyStates.value.filter(cs => { return !cs.archived}), [cs => cs.state.toLowerCase()])
+  })
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+  })
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
+  const userId = computed(() => {
+    return userStore.details.id
+  })
+
+  onMounted(async () =>{
+    getCompanyStates()
+    await getStates()
+  })
+  const saveCompanyState = async (ol, isNew) => {
+    appStore.loading = true
+    try {
+      let params = {
+        ...ol
+      }
+      params.stateId = ol.id
+      params.id = isNew ? null : params.id
+      const {data, status} = await putRequest(`/state/saveCompanyState`, params)
+      if(isNew){
+        companyStates.value.push(data)
+        addNew.value = false
+        selectedState.value = {}
+        snackbar('SUCCESS', 'State Added')
+      } else {
+        expanded.value = []
+        snackbar('SUCCESS', 'State Updated')
+      }
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', isNew ? 'Error Adding State' : 'Error Updating State')
+      appStore.loading = false
     }
+  }
+  const getCompanyStates = async () => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/state/company`)
+      companyStates.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Company States')
+      appStore.loading = false
+    }
+  }
+  const getStates = async () => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getAvailableStates()
+      states.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading States')
+      appStore.loading = false
+    }
+  }
+  const deleteCompanyState = async () => {
+    const companyState = stateToDelete.value
+    appStore.loading = true
+    try {
+      const {status} = await deleteRequest(`/state/companyState/${companyState.id}`)
+      companyState.archived = true
+      snackbar('SUCCESS', 'State Deleted')
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting State')
+      appStore.loading = false
+    }
+    stateToDelete.value = null
   }
 </script>
 <style scoped lang="scss">

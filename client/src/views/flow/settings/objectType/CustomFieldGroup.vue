@@ -23,15 +23,14 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <v-btn
+          <a-btn
             color="primary"
-            text
+            variant="text"
             dark
             class="white--text"
             @click="deleteError = false"
-          >
-            OK
-          </v-btn>
+            text="OK"
+          />
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -63,25 +62,28 @@
           <v-toolbar-title class="title-large">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
-              <v-icon v-if="$vuetify.breakpoint.smAndDown">{{ addNew ? 'close' : 'add' }}</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <a-btn variant="text"
+                             color="primary"
+                             @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd"
+                             :prepend-icon="addNew ? 'close' : 'add'"
+                             hide-text-on-mobile
+                             :text="addNew ? 'CANCEL' : 'ADD NEW'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
-          <v-text-field v-if="addNew"
+          <a-text-field v-if="addNew"
               v-model="newGroup.groupName"
               placeholder="Enter new group name"
-              append-outer-icon="save"
+              append-icon="save"
               @click:append-outer="addCustomFieldGroup"
               label="Custom Field Group">
-          </v-text-field>
+          </a-text-field>
 
           <v-data-table
               id="cfg-table"
               :headers="headers"
-              :items="filterCustomFieldGroups()"
+              :items="filterCustomFieldGroups"
               :items-per-page="-1"
               single-expand
               :sort-by="['companyObjectTypeTabDisplayOrder', 'groupOrder']"
@@ -100,32 +102,33 @@
             </template>
 
             <template #item="{ header, item, index }">
-              <tr  :class="{'shaded-row': customFieldGroups.indexOf(item) % 2, 'mobile-tr': $vuetify.breakpoint.xsOnly}">
+              <tr  :class="{'shaded-row': customFieldGroups.indexOf(item) % 2, 'mobile-tr': vuetify.breakpoint.xsOnly}">
                 <td style="width: 50px">
-                  <v-btn text icon small color="primary" class="handle" v-if="userCanEdit">
-                    <v-icon>drag_handle</v-icon>
-                  </v-btn>
+                  <a-btn variant="text" icon size="small"
+                                   color="primary" class="handle" v-if="userCanEdit"
+                                   prepend-icon="drag_handle"
+                  />
                 </td>
-                <td class="text-left" :class="{'mb-4': $vuetify.breakpoint.xsOnly && item.edit}">
-                  <v-text-field text
-                                :label="$vuetify.breakpoint.xsOnly ? 'Name': ''"
+                <td class="text-left" :class="{'mb-4': vuetify.breakpoint.xsOnly && item.edit}">
+                  <a-text-field
+                                :label="vuetify.breakpoint.xsOnly ? 'Name': ''"
                                 v-if="item.edit"
                                 v-model="item.groupName">
-                  </v-text-field>
+                  </a-text-field>
                   <span v-else>
                     <span v-if="isMobile" class="label-medium">Name: </span>
                     {{item.groupName}}
                   </span>
                 </td>
-                <td class="text-left" :class="{'mb-4': $vuetify.breakpoint.xsOnly && item.edit && isProject}">
-                  <v-select attach v-if="item.edit && isProject"
+                <td class="text-left" :class="{'mb-4': vuetify.breakpoint.xsOnly && item.edit && isProject}">
+                  <a-select attach v-if="item.edit && isProject"
                             v-model="item.companyObjectTypeTabId"
                             :items="objectTypeTabs"
                             label="Tab"
-                            item-text="tabName"
+                            item-title="tabName"
                             item-value="id"
                             autocomplete="off">
-                  </v-select>
+                  </a-select>
                   <span v-if="!item.edit && isProject">
                      <span v-if="isMobile" class="label-medium">Tab: </span>
                     {{item.tabName || 'n/a'}}
@@ -135,42 +138,50 @@
                   <div class="item-icons">
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
-                        <v-btn small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
-                               v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                        <a-btn variant="text" size="small"
+                                         icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                                         :activation-handler="on"
+                                         prepend-icon="mdi-information"
+                        />
                       </template>
                       <span>Custom Field Group Id: {{item.id}}</span>
                       <div class="text-center">(click to copy)</div>
                     </v-tooltip>
                     <div v-if="userCanEdit" class="flex-display">
-                      <v-btn small text color="primary"
-                             @click="item.edit = !item.edit">
-                        <v-icon v-if="item.edit">remove</v-icon>
-                        <v-icon v-else>edit</v-icon>
-                      </v-btn>
-                      <v-btn small text color="primary"
-                             v-if="item.edit"
-                             @click="[saveGroup(item), item.edit = false]">
-                        <v-icon>save</v-icon>
-                      </v-btn>
+                      <a-btn size="small" variant="text" color="primary"
+                                       @click="item.edit = !item.edit"
+                                       :prepend-icon="item.edit ? 'remove' : 'edit'"
+                      />
+                      <a-btn size="small" variant="text" color="primary"
+                                       v-if="item.edit"
+                                       @click="[saveGroup(item), item.edit = false]"
+                                       prepend-icon="save"
+                      />
                     </div>
-                    <v-btn small text color="primary"
+                    <a-btn size="small" variant="text" color="primary"
                            v-if="userCanAdd"
-                           @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded = [item], selectedIndex = index]">
-                      <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
-                      <v-icon v-else>add</v-icon>
-                    </v-btn>
-                    <v-btn small text color="primary" @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
-                      <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
-                      <v-icon v-else>expand_more</v-icon>
-                    </v-btn>
-                    <v-btn v-if="userCanEdit" small text color="primary" @click="cfgToDelete=item"><v-icon>delete</v-icon></v-btn>
-                    <span v-if="item.showGroupId" class="text-left flex-align-items-center">id: {{ item.id }}</span>
+                           @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded = [item], selectedIndex = index]"
+                           :prepend-icon="addField && expanded.includes(item) ? 'remove' : 'add'"
+                    />
+                    <a-btn size="small" variant="text"
+                                     color="primary"
+                                     @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]"
+                                     :prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
+                    />
+                    <a-btn
+                      v-if="userCanEdit"
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="cfgToDelete=item"
+                      prepend-icon="delete"
+                    />
                   </div>
                 </td>
               </tr>
             </template>
             <template #expanded-item="{ headers, item, index }">
-              <td :colspan="headers.length" class="pb-2" :class="{'shaded-row': selectedIndex % 2, 'mobile-width': $vuetify.breakpoint.smAndDown}">
+              <td :colspan="headers.length" class="pb-2" :class="{'shaded-row': selectedIndex % 2, 'mobile-width': vuetify.breakpoint.smAndDown}">
                 <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                   <h3 class="text-left">Add New Field</h3>
                   <v-radio-group v-if="isProject" v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
@@ -179,54 +190,42 @@
                     <v-radio label="Reference Field: from Process Step"
                              value="ancillary"></v-radio>
                   </v-radio-group>
-                  <v-autocomplete v-if="newFieldType === 'native' || !isProject"
+                  <a-autocomplete v-if="newFieldType === 'native' || !isProject"
                                   v-model="newField"
                                   :items="availableCustomFields"
                                   label="New Custom Field"
-                                  item-text="fieldName"
+                                  item-title="fieldName"
                                   return-object
                                   autocomplete="off"
-                                  @input="assignCustomField(item)"
-                  >
-                    <template slot='item' slot-scope='{ item }'>
-                      {{ item.fieldName }}
-                    </template>
-                  </v-autocomplete>
-                  <v-autocomplete v-if="newFieldType === 'ancillary' && isProject"
+                                  @input="assignCustomField(item)">
+                  </a-autocomplete>
+                  <a-autocomplete v-if="newFieldType === 'ancillary' && isProject"
                                   v-model="parent"
                                   :items="parentObjects"
                                   label="Parent Object"
-                                  item-text="name"
+                                  item-title="name"
                                   return-object
                                   autocomplete="off"
-                                  @input="loadFieldsByParent"
-                  >
-                    <template slot='item' slot-scope='{ item }'>
-                      {{ item.name }}
-                    </template>
-                  </v-autocomplete>
-                  <v-autocomplete v-if="newFieldType === 'ancillary' && isProject"
+                                  @input="loadFieldsByParent">
+                  </a-autocomplete>
+                  <a-autocomplete v-if="newFieldType === 'ancillary' && isProject"
                                   v-model="selectedAncillaryField"
                                   :items="ancillaryCustomFields"
                                   label="Custom Field"
-                                  item-text="fieldName"
+                                  item-title="fieldName"
                                   return-object
                                   autocomplete="off"
-                                  @input="assignAncillaryCustomField(item)"
-                  >
-                    <template slot='item' slot-scope='{ item }'>
-                      {{ item.fieldName }}
-                    </template>
-                  </v-autocomplete>
+                                  @input="assignAncillaryCustomField(item)">
+                  </a-autocomplete>
                 </v-col>
                 <v-col  cols="12"  class="px-3 py-0 justify" >
 <!--                  <h3 class="text-left">Assigned Custom Fields</h3>-->
                   <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
                              :disabled="!userCanEdit"
                              group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
-                    <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
+                    <v-list v-for="(cf, index) in filterCustomFields(item)"
                             :key="index" class="pa-0" :class="{ 'shaded-row': selectedIndex % 2 }">
-                      <v-list-item class="grab pr-1" :class="{'mobile-tr': $vuetify.breakpoint.xsOnly}">
+                      <v-list-item class="grab pr-1" :class="{'mobile-tr': vuetify.breakpoint.xsOnly}">
                         <v-list-item-action v-if="userCanEdit">
                           <v-icon color="primary">drag_handle</v-icon>
                         </v-list-item-action>
@@ -263,11 +262,12 @@
                                       <br/>
                                       <div class="d-flex">
                                       <v-spacer v-if="isMobile"/>
-                                      <v-btn color="primary" dark class="d-inline-block white--text"
-                                             @click="saveReadOnlyAndWhiteList(cf)">
-                                        <v-icon :class="{'mr-2': $vuetify.breakpoint.lgAndUp}">save</v-icon>
-                                        <span v-if="$vuetify.breakpoint.mdAndUp">Save Read Only</span>
-                                      </v-btn>
+                                      <a-btn color="primary"
+                                                       dark class="d-inline-block white--text"
+                                                       @click="saveReadOnlyAndWhiteList(cf)"
+                                                       prepend-icon="save"
+                                                       text="SAVE READ ONLY"
+                                      />
                                       </div>
                                     </v-card-text>
                                   </v-card>
@@ -295,11 +295,12 @@
                                       <br/>
                                       <div class="d-flex">
                                         <v-spacer v-if="isMobile"/>
-                                      <v-btn color="primary" dark class="white--text d-inline-block"
-                                             @click="saveHiddenAndWhiteList(cf)">
-                                        <v-icon :class="{'mr-2':!isMobile}">save</v-icon>
-                                        <span v-if="$vuetify.breakpoint.mdAndUp">Save Hidden</span>
-                                      </v-btn>
+                                      <a-btn color="primary"
+                                                       dark class="white--text d-inline-block"
+                                                       @click="saveHiddenAndWhiteList(cf)"
+                                                       prepend-icon="save"
+                                                       :text="vuetify.breakpoint.mdAndUp ? 'Save Hidden' : ''"
+                                      />
                                       </div>
                                     </v-card-text>
                                   </v-card>
@@ -334,11 +335,11 @@
                                       <br/>
                                       <div class="d-flex">
                                         <v-spacer v-if="isMobile"/>
-                                      <v-btn color="primary" dark class="white--text d-inline-block"
-                                             @click="saveHiddenAndWhiteList(cf)">
-                                        <v-icon :class="{'mr-2':!isMobile}">save</v-icon>
-                                        <span v-if="$vuetify.breakpoint.mdAndUp">Save Hidden</span>
-                                      </v-btn>
+                                      <a-btn color="primary" dark class="white--text d-inline-block"
+                                                       @click="saveHiddenAndWhiteList(cf)"
+                                                       prepend-icon="save"
+                                                       :text="vuetify.breakpoint.mdAndUp ? 'Save Hidden' : ''"
+                                      />
                                       </div>
                                     </v-card-text>
                                   </v-card>
@@ -368,33 +369,43 @@
                         <div>
                         <v-tooltip left>
                           <template v-slot:activator="{ on, attrs }">
-                            <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)" v-bind="attrs"
-                                   v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                            <a-btn variant="text" icon
+                                             color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)"
+                                             v-bind="attrs" :activation-handler="on"
+                                             prepend-icon="mdi-information"/>
                           </template>
                           <span>Custom Field Group Assignment Id: {{cf.customFieldGroupAssignmentId}}</span>
                           <div class="text-center">(click to copy)</div>
                         </v-tooltip>
-                        <v-menu offset-y v-if="!cf.ancillaryCustomFieldGroupAssignmentId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                        <v-menu offset-y v-if="!cf.ancillaryCustomFieldGroupAssignmentId && userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                           <template v-slot:activator="{ on }">
-                            <v-btn text small color="primary" v-on="on">
-                              <v-icon>mdi-cursor-move</v-icon>
-                            </v-btn>
+                            <a-btn variant="text" size="small"
+                                             color="primary" :activation-handler="on"
+                                             prepend-icon="mdi-cursor-move"
+                            />
                           </template>
                             <v-list>
                               <v-list-item
-                                v-for="(cfg, index) in filterBy(customFieldGroups, (g) => { return g.id !== cf.customFieldGroupId })"
+                                v-for="(cfg, index) in customFieldGroups.filter((g) => { return g.id !== cf.customFieldGroupId })"
                                 :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
                                 <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
                               </v-list-item>
                             </v-list>
 
                         </v-menu>
-                        <v-btn text small color="primary" v-else></v-btn>
-                        <v-btn text color="primary" small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit), getPositions(), resetCurrentField()]">
-                          <v-icon v-if="cf.edit">close</v-icon>
-                          <v-icon v-else>edit</v-icon>
-                        </v-btn>
-                        <v-btn v-if="userCanEdit" text small color="primary" @click="[cFieldToDelete=cf, cfgToDelete=item]"><v-icon>delete</v-icon></v-btn>
+                        <a-btn variant="text" size="small"
+                                         color="primary" v-else
+                        />
+                        <a-btn variant="text" color="primary"
+                                         size="small" v-if="userCanEdit"
+                                         @click="[$set(cf, 'edit', !cf.edit), getPositions(), resetCurrentField()]"
+                                         :prepend-icon="cf.edit ? 'close' : 'edit'"
+                        />
+                        <a-btn v-if="userCanEdit"
+                                         variant="text" size="small"
+                                         color="primary" @click="[cFieldToDelete=cf, cfgToDelete=item]"
+                                         prepend-icon="delete"
+                        />
                         </div>
                       </v-list-item>
                     </v-list>
@@ -424,467 +435,461 @@
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
+<script setup>
+
 import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
-import Sortable from 'sortablejs'
 
-import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getRequestWithParams, defineSortableTable } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
+import { useUserStore } from '@/stores/UserStorePinia.js'
 
-export default {
-  name: 'CustomFieldGroup',
-  mixins: [Vue2Filters.mixin],
-  components: {
-    MultiSelectGroup,
-    ConfirmationDialog,
-    draggable,
-  },
-  props: {
-    isProject: Boolean
-  },
-  data () {
-    return {
-      snackbar: {},
-      constants,
-      addNew: false,
-      ownerPositionsChanged: false,
-      objectType: {},
-      objectTypeLoading: false,
-      ownerWhiteListedPositions: [],
-      deleteError: false,
-      deleteHeader: null,
-      deleteText: null,
-      fieldsInUse: [],
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      positions: [],
-      positionsLoading: false,
-      newFieldType: 'native',
-      selectedIndex: null,
-      fieldOrderChanged: false,
-      groupOrderChanged: false,
-      whiteListedPositions: [],
-      whiteListedPositionsChanged: null,
-      customFieldGroupAssignmentReadOnly: null,
-      customFieldGroupAssignmentReadOnlyAllow: null,
-      newGroup: {
-        groupName: null
-      },
-      //ugh! is this a good idea? projects is a custom view that calls this but orgs/users/contacts do too and i dont want to add a view for each of those
-      typeId: this.$route.params.id ?? this.$route.query.companyObjectTypeId,
-      addField: false,
-      newField: {},
-      customFieldGroups: [],
-      availableCustomFields: [],
-      companyId: this.$store.state.user.details.companyId,
-      //if you set this to a value it doesn't update when the route param changes
-      // objectTypeId: this.$route.params.id
-      headers: [
-        { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
-        { text: 'Name', value: 'groupName', show: true },
-        { text: 'Tab', value: 'tabName', show: true },
-        { text: null, value: 'icons', show: true, sortable: false }
-      ],
-      expanded: [],
-      parent: {},
-      parentObjects: [],
-      selectedAncillaryField: {},
-      ancillaryCustomFields: [],
-      objectTypeTabs: [],
-      cfgToDelete: null,
-      cFieldToDelete: null
-    }
-  },
-  computed: {
-    cfgToDeleteName(){
-      return this.cfgToDelete ? this.cfgToDelete.groupName : ''
-    },
-    cFieldToDeleteName(){
-      return this.cFieldToDelete ? this.cFieldToDelete.fieldName : ''
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-  },
-  mounted() {
-    let table = document.querySelector('tbody')
-    const _self = this
-    Sortable.create(table, {
-      handle: '.handle',
-      onEnd({ newIndex, oldIndex }) {
-        const rowSelected = _self.customFieldGroups.splice(oldIndex, 1)[0]
-        _self.customFieldGroups.splice(newIndex, 0, rowSelected)
-        let fieldGroupsClone = cloneDeep(_self.customFieldGroups)
-        fieldGroupsClone.forEach((g, idx) => {
-          g.groupOrder = idx
-        })
-        _self.saveGroupChanges(fieldGroupsClone)
-      }
-    })
-  },
-  watch: {
-    // whenever objectTypeId changes, this function will run
-    '$route.params.id': function () {
-      // reset the selected group when the object type changes
-      this.typeId = this.$route.params.id ?? this.$route.query.companyObjectTypeid
-      this.availableCustomFields = []
-      this.getCustomFieldGroups()
-    }
-  },
-  created () {
-    this.getCustomFieldGroups()
-    this.getObjectTypeTabs()
-    this.getPositions()
-    if(parseInt(this.$route.params.id) === 2) {
-      this.getObjectTypeDetails()
-    }
-  },
-  methods: {
-    selectAll (f) {
-      return f.whiteListedPositions?.length === this.positions?.length
-    },
-    selectSome (f) {
-      return f.whiteListedPositions?.length > 0 && !this.selectAll(f)
-    },
-    icon (f) {
-      if (this.selectAll(f)) {
-        return 'check_box'
-      }
-      if (this.selectSome(f)) {
-        return 'indeterminate_check_box'
-      }
-      return 'check_box_outline_blank'
-    },
-    selectAllOwner () {
-      return this.ownerWhiteListedPositions?.length === this.positions?.length
-    },
-    selectSomeOwner (f) {
-      return this.ownerWhiteListedPositions?.length > 0 && !this.selectAllOwner(f)
-    },
-    iconOwner () {
-      if (this.selectAllOwner()) {
-        return 'check_box'
-      }
-      if (this.selectSomeOwner()) {
-        return 'indeterminate_check_box'
-      }
-      return 'check_box_outline_blank'
-    },
-    async getObjectTypeTabs() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+
+import {ref, onMounted, getCurrentInstance, computed, defineProps, watch} from "vue";
+import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const route = useRoute()
+const router = useRouter()
+const vuetify = vueInstance.$vuetify
+const userStore = useUserStore()
+
+const props = defineProps({
+  isProject: Boolean
+})
+const addNew = ref(false)
+const ownerPositionsChanged = ref(false)
+const objectType = ref({})
+const objectTypeLoading = ref(false)
+const ownerWhiteListedPositions = ref([])
+const deleteError = ref(false)
+const deleteHeader = ref(null)
+const deleteText = ref(null)
+const fieldsInUse = ref([])
+const positions = ref([])
+const positionsLoading = ref(false)
+const newFieldType = ref('native')
+const selectedIndex = ref(null)
+const fieldOrderChanged = ref(false)
+const groupOrderChanged = ref(false)
+const whiteListedPositions = ref([])
+const whiteListedPositionsChanged = ref(null)
+const customFieldGroupAssignmentReadOnly = ref(null)
+const customFieldGroupAssignmentReadOnlyAllow = ref(null)
+const newGroup = ref({
+  groupName: null
+})
+//ugh! is this a good idea? projects is a custom view that calls this but orgs/users/contacts do too and i dont want to add a view for each of those
+const typeId = computed(() => {
+  return route.params.id ?? route.query.companyObjectTypeId
+})
+
+const addField = ref(false)
+const newField = ref({})
+const customFieldGroups = ref([])
+const availableCustomFields = ref([])
+//if you set this to a value it doesn't update when the route param changes
+// objectTypeId: route.params.id
+const headers = ref([
+  { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
+  { text: 'Name', value: 'groupName', show: true },
+  { text: 'Tab', value: 'tabName', show: true },
+  { text: null, value: 'icons', show: true, sortable: false }
+])
+const expanded = ref([])
+const parent = ref({})
+const parentObjects = ref([])
+const selectedAncillaryField = ref({})
+const ancillaryCustomFields = ref([])
+const objectTypeTabs = ref([])
+const cfgToDelete = ref(null)
+const cFieldToDelete = ref(null)
+
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const companyId = computed(() => {
+  return store.details.companyId
+})
+const cfgToDeleteName = computed(()=> {
+  return cfgToDelete.value ? cfgToDelete.value.groupName : ''
+})
+const cFieldToDeleteName = computed(()=> {
+  return cFieldToDelete.value ? cFieldToDelete.value.fieldName : ''
+})
+const isMobile = computed(()=> {
+  return vuetify.breakpoint.smAndDown
+})
+const filterCustomFields = (cuf) => {
+  return cuf?.customFields?.filter((c) => c.archived === false)
+}
+onMounted(() => {
+  defineSortableTable('tbody', customFieldGroups, 'groupOrder', saveGroupChanges)
+
+  getCustomFieldGroups()
+  getObjectTypeTabs()
+  getPositions()
+  if(parseInt(route.params.id) === 2) {
+    getObjectTypeDetails()
+  }
+})
+
+
+watch(() => typeId.value, () => {
+  // whenever objectTypeId changes, this function will run
+  // reset the selected group when the object type changes
+  availableCustomFields.value = []
+  getCustomFieldGroups()
+})
+
+const selectAll = (f) => {
+  return f.whiteListedPositions?.length === positions.value?.length
+}
+const selectSome = (f) => {
+  return f.whiteListedPositions?.length > 0 && !selectAll(f)
+}
+const icon = (f) => {
+  if (selectAll(f)) {
+    return 'check_box'
+  }
+  if (selectSome(f)) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+}
+const selectAllOwner = () => {
+  return ownerWhiteListedPositions.value?.length === positions.value?.length
+}
+const selectSomeOwner = (f) => {
+  return ownerWhiteListedPositions.value?.length > 0 && !selectAllOwner(f)
+}
+const iconOwner = () => {
+  if (selectAllOwner()) {
+    return 'check_box'
+  }
+  if (selectSomeOwner()) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+}
+    const getObjectTypeTabs = async () => {
+      appStore.loading = true
       try {
         //currently we only do this for projects.. will have to change if we allow custom tabs for other object types
         const {data, status} = await getRequest(`/objectTypeTab/project`)
-        this.objectTypeTabs = data
+        objectTypeTabs.value = data
 
-        handleHidingGlobalLoader(this, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Tabs')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Retrieving Tabs')
+
+        appStore.loading = false
       }
-    },
-    async getCustomFieldGroups () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getCustomFieldGroups = async  () => {
+      appStore.loading = true
       try {
         const {data, status} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
           params: {
-            companyObjectTypeId: this.typeId
+            companyObjectTypeId: typeId.value
           }
         })
-        this.customFieldGroups = cloneDeep(data)
-        handleHidingGlobalLoader(this, status)
+        customFieldGroups.value = cloneDeep(data)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.loading = false
       }
-    },
-    async fetchAvailableCustomFields (groupId) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const fetchAvailableCustomFields = async  (groupId) => {
+      appStore.loading = true
       try {
-        if(this.addField && this.newFieldType === 'native') {
+        if(addField.value && newFieldType.value === 'native') {
           const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
             params: {
-              companyObjectTypeId: this.typeId,
+              companyObjectTypeId: typeId.value,
               groupId
             }
           })
-          this.availableCustomFields = data
-        } else if (this.addField && this.newFieldType === 'ancillary') {
+          availableCustomFields.value = data
+        } else if (addField.value && newFieldType.value === 'ancillary') {
           //this is really dumb code i dont have the energy to fix. fyi
-          let url = this.isProject ? `/processStep/getParentObjectsForProject` : `/processStep/getParentObjects`
+          let url = isProject.value ? `/processStep/getParentObjectsForProject` : `/processStep/getParentObjects`
           const {data} = await getRequest(url)
-          this.selectedAncillaryField = {}
-          this.parentObjects = data
-          this.availableCustomFields = []
+          selectedAncillaryField.value = {}
+          parentObjects.value = data
+          availableCustomFields.value = []
         }
-        handleHidingGlobalLoader(this, status)
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Retrieving Data')
+
+        appStore.loading = false
       }
-    },
-    async addCustomFieldGroup () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.newGroup.companyObjectTypeId = this.$route.params.id ?? this.$route.query.companyObjectTypeId
-        const {data, status} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup)
-        this.newGroup = {}
-        this.addNew = false
-        // add the new type to the list
-        this.customFieldGroups.push(data)
-        this.snackbar = getSnackbar('SUCCESS', 'Group Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Custom Field Group')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+    }
+    const addCustomFieldGroup = async  () => {
+      if(newGroup.value?.groupName) {
+        appStore.loading = true
+        try {
+          newGroup.value.companyObjectTypeId = route.params.id ?? route.query.companyObjectTypeId
+          const {data, status} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, newGroup.value)
+          newGroup.value = {}
+          addNew.value = false
+          // add the new type to the list
+          customFieldGroups.value.push(data)
+          snackbar('SUCCESS', 'Group Added')
+
+          handleHidingGlobalLoader(status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          snackbar('ERROR', 'Error Adding Custom Field Group')
+
+          appStore.loading = false
+        }
       }
-    },
-    async assignCustomField (item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const assignCustomField = async  (item) => {
+      appStore.loading = true
       try {
-        this.addField = false
-        this.newField.customFieldGroupId = item.id
-        const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
+        addField.value = false
+        newField.value.customFieldGroupId = item.id
+        const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, newField.value)
         item.customFields.push(data)
-        this.newField = {}
-        this.selectedAncillaryField = {}
-        this.parent = {}
-        this.addField = false
-        this.snackbar = getSnackbar
-        this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        newField.value = {}
+        selectedAncillaryField.value = {}
+        parent.value = {}
+        addField.value = false
+        snackbar
+        snackbar('SUCCESS', 'Field Added to Group')
+
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Field to Group')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Adding Field to Group')
+
+        appStore.loading = false
       }
-    },
-    async moveFieldToOtherGroup (field, newGroup) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const moveFieldToOtherGroup = async  (field, newGroup) => {
+      appStore.loading = true
       try {
         await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
-        this.snackbar = getSnackbar('SUCCESS', 'Field Moved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        snackbar('SUCCESS', 'Field Moved')
+
         //currently reloading the page because moving the field in the UI seems too hard (even though it isn't i just cant make myself do it right now)
         window.location.reload()
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Moving Field')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Moving Field')
+
+        appStore.loading = false
       }
-    },
-    async assignAncillaryCustomField (item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const assignAncillaryCustomField = async  (item) => {
+      appStore.loading = true
       try {
         const params = {
           customFieldGroupId: item.id,
           id: null,
-          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
-          dataViewFieldConfigId: this.selectedAncillaryField.dataViewChildFieldConfigId ? null : this.selectedAncillaryField.dataViewFieldConfigId,
-          dataViewChildFieldConfigId: this.selectedAncillaryField.dataViewChildFieldConfigId,
+          ancillaryCustomFieldGroupAssignmentId: selectedAncillaryField.value.customFieldGroupAssignmentId,
+          dataViewFieldConfigId: selectedAncillaryField.value.dataViewChildFieldConfigId ? null : selectedAncillaryField.value.dataViewFieldConfigId,
+          dataViewChildFieldConfigId: selectedAncillaryField.value.dataViewChildFieldConfigId,
         }
         const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
         item.customFields.push(data)
-        this.newField = {}
-        this.selectedAncillaryField = {}
-        this.parent = {}
-        this.addField = false
-        this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        newField.value = {}
+        selectedAncillaryField.value = {}
+        parent.value = {}
+        addField.value = false
+        snackbar('SUCCESS', 'Field Added to Group')
+
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Field to Group')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Adding Field to Group')
+
+        appStore.loading = false
       }
-    },
-    async saveGroupChanges (groups) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const saveGroupChanges = async  (groups) => {
+      appStore.loading = true
       try {
         const {status} = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups)
-        this.snackbar = getSnackbar('SUCCESS', 'Groups Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        snackbar('SUCCESS', 'Groups Updated')
+
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Group Changes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Saving Group Changes')
+
+        appStore.loading = false
       }
-    },
-    async saveGroup (group) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const saveGroup = async  (group) => {
+      appStore.loading = true
       try {
         const {data, status} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
         group.tabName = data.tabName
         group.companyObjectTypeTabDisplayOrder = data.companyObjectTypeTabDisplayOrder
-        this.snackbar = getSnackbar('SUCCESS', 'Custom Field Group Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        snackbar('SUCCESS', 'Custom Field Group Updated')
+
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Change')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Saving Change')
+
+        appStore.loading = false
       }
-    },
-    async deleteWithChecks(item, customFieldGroupId, customFieldGroupAssignmentId) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const deleteWithChecks = async (item, customFieldGroupId, customFieldGroupAssignmentId) => {
+      appStore.loading = true
       try {
         let params = {
           customFieldGroupId, customFieldGroupAssignmentId
         }
         const {data, status} = await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params, null, [])
         if (data?.length > 0) {
-          this.deleteError = true
+          deleteError.value = true
           item.deleteConfirm = false
-          this.fieldsInUse = data
+          fieldsInUse.value = data
           let errorMsg = 'Group Cannot Be Deleted'
-          this.deleteHeader = 'Error Deleting Custom Field Group'
-          this.deleteText = 'You cannot delete a group that has a field in use by other groups or requirements.'
+          deleteHeader.value = 'Error Deleting Custom Field Group'
+          deleteText.value = 'You cannot delete a group that has a field in use by other groups or requirements.'
           if(null !== customFieldGroupAssignmentId) {
             errorMsg = 'Field Cannot Be Deleted'
-            this.deleteHeader = 'Error Deleting Custom Field from Group'
-            this.deleteText = 'You cannot delete a field from a group that is in use by other groups or requirements.'
+            deleteHeader.value = 'Error Deleting Custom Field from Group'
+            deleteText.value = 'You cannot delete a field from a group that is in use by other groups or requirements.'
           }
-          this.snackbar = getSnackbar('ERROR', errorMsg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          snackbar('ERROR', errorMsg)
+
+          handleHidingGlobalLoader(status)
         } else {
-          this.fieldsInUse = []
+          fieldsInUse.value = []
           item.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('SUCCESS', 'Item Deleted')
+
+          appStore.loading = false
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Deleting')
+
+        appStore.loading = false
       }
-      this.cfgToDelete = null
-      this.cFieldToDelete = null
-    },
-    resetCurrentField(){
-      this.whiteListedPositionsChanged = null;
-      this.whiteListedPositions = null;
-      this.customFieldGroupAssignmentReadOnlyAllow = null;
-      this.customFieldGroupAssignmentReadOnly = null;
-      this.hiddenWhiteListedPositionsChanged = null;
-      this.hiddenWhiteListedPositions = null;
-      this.hiddenwhiteListedPositions = null;
-      this.customFieldGroupAssignmentHiddenAllow = null;
-      this.customFieldGroupAssignmentHidden = null;
-    },
-    async saveReadOnlyAndWhiteList (field) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      cfgToDelete.value = null
+      cFieldToDelete.value = null
+    }
+    const resetCurrentField = () => {
+      whiteListedPositionsChanged.value = null;
+      whiteListedPositions.value = null;
+      customFieldGroupAssignmentReadOnlyAllow.value = null;
+      customFieldGroupAssignmentReadOnly.value = null;
+      hiddenWhiteListedPositionsChanged.value = null;
+      hiddenWhiteListedPositions.value = null;
+      customFieldGroupAssignmentHiddenAllow.value = null;
+      customFieldGroupAssignmentHidden.value = null;
+    }
+    const saveReadOnlyAndWhiteList = async  (field) => {
+      appStore.loading = true
       try {
-        if(this.whiteListedPositionsChanged != null) {
-          field.positionsChanged = this.whiteListedPositionsChanged;
+        if(whiteListedPositionsChanged.value != null) {
+          field.positionsChanged = whiteListedPositionsChanged.value;
         }
-        if(this.whiteListedPositions != null) {
-          field.whiteListedPositions = this.whiteListedPositions;
+        if(whiteListedPositions.value != null) {
+          field.whiteListedPositions = whiteListedPositions.value;
         }
-        if(this.customFieldGroupAssignmentReadOnlyAllow != null){
-          field.customFieldGroupAssignmentReadOnlyAllow = this.customFieldGroupAssignmentReadOnlyAllow;
+        if(customFieldGroupAssignmentReadOnlyAllow.value != null){
+          field.customFieldGroupAssignmentReadOnlyAllow = customFieldGroupAssignmentReadOnlyAllow.value;
         }
-        if(this.customFieldGroupAssignmentReadOnly != null){
-          field.customFieldGroupAssignmentReadOnly= this.customFieldGroupAssignmentReadOnly;
+        if(customFieldGroupAssignmentReadOnly.value != null){
+          field.customFieldGroupAssignmentReadOnly= customFieldGroupAssignmentReadOnly.value;
         }
         const {status} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
         field.positionsChanged = false
         if(!field.customFieldGroupAssignmentReadOnly) {
-          this.$set(field, 'whiteListedPositions', [])
+          vueInstance.$set(field, 'whiteListedPositions', [])
         }
-        this.snackbar = getSnackbar('SUCCESS', 'Field Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        snackbar('SUCCESS', 'Field Updated')
+
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
-    },
-    async saveHiddenAndWhiteList(field) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const saveHiddenAndWhiteList = async (field) => {
+      appStore.loading = true
       try {
-        if(this.hiddenWhiteListedPositionsChanged != null) {
-          field.hiddenPositionsChanged = this.hiddenWhiteListedPositionsChanged;
+        if(hiddenWhiteListedPositionsChanged.value != null) {
+          field.hiddenPositionsChanged = hiddenWhiteListedPositionsChanged.value;
         }
-        if(this.hiddenWhiteListedPositions != null) {
-          field.hiddenWhiteListedPositions = this.hiddenWhiteListedPositions;
+        if(hiddenWhiteListedPositions.value != null) {
+          field.hiddenWhiteListedPositions = hiddenWhiteListedPositions.value;
         }
-        if(this.customFieldGroupAssignmentHiddenAllow != null){
-          field.customFieldGroupAssignmentHiddenAllow = this.customFieldGroupAssignmentHiddenAllow;
+        if(customFieldGroupAssignmentHiddenAllow.value != null){
+          field.customFieldGroupAssignmentHiddenAllow = customFieldGroupAssignmentHiddenAllow.value;
         }
-        if(this.customFieldGroupAssignmentHidden != null){
-          field.customFieldGroupAssignmentHidden= this.customFieldGroupAssignmentHidden;
+        if(customFieldGroupAssignmentHidden.value != null){
+          field.customFieldGroupAssignmentHidden= customFieldGroupAssignmentHidden.value;
         }
         const {status} = await putRequest(`/customFieldGroup/saveHiddenAndWhiteList?savePositions=${field.hiddenPositionsChanged ?? false}`, field)
         field.hiddenPositionsChanged = false
         if (!field.customFieldGroupAssignmentHidden) {
-          this.$set(field, 'hiddenWhiteListedPositions', [])
+          vueInstance.$set(field, 'hiddenWhiteListedPositions', [])
         }
-        handleHidingGlobalLoader(this, status)
-        this.snackbar = getSnackbar('SUCCESS', 'Field Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(status)
+        snackbar('SUCCESS', 'Field Updated')
+
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Saving Field')
+
+        appStore.loading = false
       }
-    },
-    async getObjectTypeDetails () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getObjectTypeDetails = async  () => {
+      appStore.loading = true
       try {
-        this.objectTypeLoading = true
-        const {data, status} = await getRequest(`/objectType/getByType/${this.typeId}`)
-        this.objectType = data
-        this.objectTypeLoading = false
-        handleHidingGlobalLoader(this, status)
+        objectTypeLoading.value = true
+        const {data, status} = await getRequest(`/objectType/getByType/${typeId.value}`)
+        objectType.value = data
+        objectTypeLoading.value = false
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Retrieving Details')
+        appStore.loading = false
       }
-    },
-    async saveOwnerReadOnlyAndWhiteList () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const saveOwnerReadOnlyAndWhiteList = async  () => {
+      appStore.loading = true
       try {
-        const {status} = await putRequest(`/objectType/saveOwnerReadOnlyAndWhiteList?savePositions=${this.ownerReadOnlyPositionsChanged ?? false}`, this.objectType)
-        this.ownerReadOnlyPositionsChanged = false
-        if(!this.objectType.ownerReadOnly) {
-          this.ownerReadOnlyWhiteListedPositions = []
+        const {status} = await putRequest(`/objectType/saveOwnerReadOnlyAndWhiteList?savePositions=${ownerReadOnlyPositionsChanged.value ?? false}`, objectType.value)
+        ownerReadOnlyPositionsChanged.value = false
+        if(!objectType.value.ownerReadOnly) {
+          ownerReadOnlyWhiteListedPositions.value = []
         }
-        this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
+        snackbar('SUCCESS', 'Saved Successfully')
+
+        handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
-    },
-    async saveFieldChanges (fields) {
+    }
+    const saveFieldChanges = async  (fields) => {
       try {
         // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
         // pull those needing to be saved out of list
@@ -898,24 +903,24 @@ export default {
         })
         // save them here
         if(fieldsToSave.length > 0) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           const {status} = await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
-          this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          snackbar('SUCCESS', 'Fields Updated')
+
+          handleHidingGlobalLoader(status)
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Updating Fields')
+
+        appStore.loading = false
       }
 
-    },
-    filterCustomFieldGroups () {
-      return this.customFieldGroups.filter(cfgt => { return !cfgt.archived})
-    },
-    async updateShowOrRequire(cf) {
+    }
+    const filterCustomFieldGroups = computed(() => {
+      return customFieldGroups.value.filter(cfgt => { return !cfgt.archived})
+    })
+    const updateShowOrRequire = async (cf) => {
       try {
         const objectType = {
           customFieldGroupAssignmentId: cf.customFieldGroupAssignmentId,
@@ -925,123 +930,120 @@ export default {
           required: cf.required || false
         }
         const {status} = await putRequest(`/customFieldGroup/updateFieldShowOrRequire`, objectType)
-        this.snackbar = getSnackbar('SUCCESS', 'Updated Field')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async loadFieldsByParent() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        if (this.parent.isProcessStep) {
-          const {data, status} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
-          this.ancillaryCustomFields = data
-          handleHidingGlobalLoader(this, status)
-        } else if (this.parent.objectTypeId === 8) {
-          const {data, status} = await getRequest(`/customField/getByDataView/${this.parent.id}`)
-          this.ancillaryCustomFields = data
-          handleHidingGlobalLoader(this, status)
-        }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+        snackbar('SUCCESS', 'Updated Field')
 
-    async getPositions() {
-      if(this.positions?.length === 0) {
+        handleHidingGlobalLoader(status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'Error Saving Data')
+
+        appStore.loading = false
+      }
+    }
+    const loadFieldsByParent = async () => {
+      appStore.loading = true
+      try {
+        if (parent.value.isProcessStep) {
+          const {data, status} = await getRequest(`/customField/getByParentProcessStep/${parent.value.id}`)
+          ancillaryCustomFields.value = data
+          handleHidingGlobalLoader(status)
+        } else if (parent.value.objectTypeId === 8) {
+          const {data, status} = await getRequest(`/customField/getByDataView/${parent.value.id}`)
+          ancillaryCustomFields.value = data
+          handleHidingGlobalLoader(status)
+        }
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'Error Retrieving Data')
+
+        appStore.loading = false
+      }
+    }
+
+    const getPositions = async () => {
+      if(positions.value?.length === 0) {
         try {
-          this.positionsLoading = true
+          positionsLoading.value = true
           const {data, status} = await getRequest(`/position/withParent`)
-          this.positions = data
-          this.positionsLoading = false
-          handleHidingGlobalLoader(this, status)
+          positions.value = data
+          positionsLoading.value = false
+          handleHidingGlobalLoader(status)
         } catch (e) {
-          this.positionsLoading = false
+          positionsLoading.value = false
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Positions')
+
+          appStore.loading = false
         }
       }
-    },
-    toggleSelectAllPositions (field) {
-      this.$nextTick(() => {
-        if (this.selectAll(field)) {
+    }
+    const toggleSelectAllPositions = (field) => {
+      vueInstance.$nextTick(() => {
+        if (selectAll(field)) {
           field.whiteListedPositions = []
           field.positionsChanged = true
         } else {
-          field.whiteListedPositions = cloneDeep(this.positions)
+          field.whiteListedPositions = cloneDeep(positions.value)
           field.positionsChanged = true
         }
       })
-    },
-    toggleHiddenSelectAllPositions(field) {
-      this.$nextTick(() => {
-        if (this.selectAll(field)) {
+    }
+    const toggleHiddenSelectAllPositions = (field) => {
+      vueInstance.$nextTick(() => {
+        if (selectAll(field)) {
           field.hiddenWhiteListedPositions = []
           field.hiddenPositionsChanged = true
         } else {
-          field.hiddenWhiteListedPositions = cloneDeep(this.positions)
+          field.hiddenWhiteListedPositions = cloneDeep(positions.value)
           field.hiddenPositionsChanged = true
         }
       })
-    },
-    toggleSelectAllPositionsOwner () {
-      this.$nextTick(() => {
-        if (this.selectAllOwner()) {
-          this.ownerWhiteListedPositions = []
-          this.ownerPositionsChanged = true
+    }
+    const toggleSelectAllPositionsOwner =  () => {
+      vueInstance.$nextTick(() => {
+        if (selectAllOwner()) {
+          ownerWhiteListedPositions.value = []
+          ownerPositionsChanged.value = true
         } else {
-          this.ownerWhiteListedPositions = cloneDeep(this.positions)
-          this.ownerPositionsChanged = true
+          ownerWhiteListedPositions.value = cloneDeep(positions.value)
+          ownerPositionsChanged.value = true
         }
       })
-    },
-    copyToClipBoard(textValue){
+    }
+    const copyToClipBoard = (textValue)=> {
         navigator.clipboard.writeText(textValue);
-        this.snackbar = getSnackbar('SUCCESS', 'Copied id to clipboard')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    },
-    objectTypeReadOnlySelectedEventListener(e){
-      this.objectType.ownerReadOnlyWhiteListedPositions = e;
-      this.ownerReadOnlyPositionsChanged = true;
-    },
-    objectTypeReadOnlyAllowEventListener(e){
-      this.objectType.ownerReadOnlyAllow = (e === 0);
-    },
-    objectTypeReadOnlyCheckboxEventListener(e){
-      this.objectType.ownerReadOnly = e;
-    },
-    cfgaReadOnlySelectedEventListener(e){
-      this.whiteListedPositions = e;
-      this.whiteListedPositionsChanged = true;
-    },
-    cfgaReadOnlyAllowEventListener(e){
-      this.customFieldGroupAssignmentReadOnlyAllow = (e === 0);
-    },
-    cfgaReadOnlyCheckboxEventListener(e){
-      this.customFieldGroupAssignmentReadOnly = e;
-    },
-    cfgaHiddenSelectedEventListener(e){
-      this.hiddenWhiteListedPositions = e;
-      this.hiddenWhiteListedPositionsChanged = true;
-    },
-    cfgaHiddenAllowEventListener(e){
-      this.customFieldGroupAssignmentHiddenAllow = (e === 0);
-    },
-    cfgaHiddenCheckboxEventListener(e){
-      this.customFieldGroupAssignmentHidden = e;
-    },
-  }
-}
+        snackbar('SUCCESS', 'Copied id to clipboard')
+    }
+    const objectTypeReadOnlySelectedEventListener = (e) => {
+      objectType.value.ownerReadOnlyWhiteListedPositions = e;
+      ownerReadOnlyPositionsChanged.value = true;
+    }
+    const objectTypeReadOnlyAllowEventListener = (e) => {
+      objectType.value.ownerReadOnlyAllow = (e === 0);
+    }
+    const objectTypeReadOnlyCheckboxEventListener = (e) => {
+      objectType.value.ownerReadOnly = e;
+    }
+    const cfgaReadOnlySelectedEventListener = (e) => {
+      whiteListedPositions.value = e;
+      whiteListedPositionsChanged.value = true;
+    }
+    const cfgaReadOnlyAllowEventListener = (e) => {
+      customFieldGroupAssignmentReadOnlyAllow.value = (e === 0);
+    }
+    const cfgaReadOnlyCheckboxEventListener = (e) => {
+      customFieldGroupAssignmentReadOnly.value = e;
+    }
+    const cfgaHiddenSelectedEventListener = (e) => {
+      hiddenWhiteListedPositions.value = e;
+      hiddenWhiteListedPositionsChanged.value = true;
+    }
+    const cfgaHiddenAllowEventListener = (e) => {
+      customFieldGroupAssignmentHiddenAllow.value = (e === 0);
+    }
+    const cfgaHiddenCheckboxEventListener = (e) => {
+      customFieldGroupAssignmentHidden.value = e;
+    }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

@@ -16,29 +16,33 @@
         {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text color="primary" v-if="tournamentOver" @click="showWinners = !showWinners">
-            <v-icon>mdi-party-popper</v-icon>
-          </v-btn>
+          <a-btn
+              variant="text"
+              color="primary"
+              v-if="tournamentOver"
+              @click="showWinners = !showWinners"
+              prepend-icon="mdi-party-popper"
+          ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
-      <v-text-field
-        v-model="search"
-        class="mb-2 px-4 py-2"
-        prepend-inner-icon="search"
-        label="Search"
-        single-line
-        hide-details
-      ></v-text-field>
+      <a-text-field
+          v-model="search"
+          class="mb-2 px-4 py-2"
+          prepend-inner-icon="search"
+          label="Search"
+          single-line
+          hide-details
+      ></a-text-field>
       <v-divider></v-divider>
       <v-data-table
-        :headers="headers"
-        :items="poolUsers"
-        :search="search"
-        :fixed-header="true"
-        :items-per-page="100"
-        :footer-props="footerProps"
-        disable-sort
-        class="elevation-1 square-card"
+          :headers="headers"
+          :items="poolUsers"
+          :search="search"
+          :fixed-header="true"
+          :items-per-page="100"
+          :footer-props="footerProps"
+          disable-sort
+          class="elevation-1 square-card"
       >
         <template #no-data>
           <span class="default-text-color">No available users</span>
@@ -65,9 +69,14 @@
               <span v-else>{{item.score}}</span>
             </td>
             <td class="text-right">
-              <v-btn text small color="primary" class="clickable" @click="[showModal = true, showScoreUser = item]">
-                <v-icon>mdi-format-list-bulleted</v-icon>
-              </v-btn>
+              <a-btn
+                  variant="text"
+                  size="small"
+                  color="primary"
+                  class="clickable"
+                  @click="[showModal = true, showScoreUser = item]"
+                  prepend-icon="mdi-format-list-bulleted"
+              ></a-btn>
             </td>
           </tr>
         </template>
@@ -84,152 +93,155 @@
         <div class="congrats-header mb-3">
           Congratulations to our Winner{{winners.length > 1 ? 's' : ''}}!
         </div>
-        <div v-for="w in this.winners" class="congrats-winner">
+        <div v-for="w in winners" class="congrats-winner">
           {{w.fullName}}
         </div>
       </v-card>
-      <v-btn x-small fab @click="showWinners = !showWinners" class="show-score-button">
-        <v-icon color="primary">mdi-format-list-bulleted-square</v-icon>
-      </v-btn>
+      <a-btn
+          size="x-small"
+          fab
+          @click="showWinners = !showWinners"
+          class="show-score-button"
+          prepend-icon="mdi-format-list-bulleted-square"
+      ></a-btn>
     </v-card>
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {getRequest, logError, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import moment from 'moment'
-  import ScoreDrilldown from "./component/ScoreDrilldown"
+<script setup>
 
-  export default {
-    name: 'Winners',
-    components: {
-      ScoreDrilldown
-    },
-    data() {
-      return {
-        constants,
-        snackbar: {},
-        search: '',
-        footerProps: {
-          'items-per-page-options': [25, 50, 100],
-        },
-        showScoreUser: {},
-        showModal: false,
-        poolTypeId: 3,
-        poolLoading: false,
-        tournamentId: this.$route.params.id,
-        pool: {},
-        poolUsers: [],
-        tournamentOver: false,
-        winners: [],
-        showWinners: false,
-        headers: [
-          {text: 'User', value: 'fullName', show: true},
-          {text: 'Score', value: 'score', show: true},
-          {text: '', value: 'details', show: true},
-        ],
-      }
-    },
-    async created() {
-      this.getPool()
-      this.getPoolUsers()
-    },
-    methods: {
-      isWinner(poolUser) {
-        if (this.tournamentOver) {
-          let topScore = this.poolUsers[0]?.score || 0
-          return (poolUser.score || 0) === topScore
-        }
-      },
-      async getPool() {
-        this.poolLoading = true
-        try {
-          const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
-          this.pool = data
-          this.tournamentOver = moment() > moment(this.pool.endDate).endOf('day')
-          if(this.tournamentOver) {
-            this.showWinners = true
-          }
-          this.poolLoading = false
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching pool details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async getPoolUsers() {
-        try {
-          const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/usersByType/${this.poolTypeId}`, 'blueraven')
-          this.poolUsers = data
-          this.poolUsers.forEach(u => {
-            if (this.isWinner(u)) {
-              this.winners.push(u)
-            }
-          })
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching pool user details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-    }
+import {getRequest, logError, } from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import moment from 'moment'
+import ScoreDrilldown from "./component/ScoreDrilldown"
+
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const search = ref('')
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100],})
+const showScoreUser = ref({})
+const showModal = ref(false)
+const poolTypeId = ref(3)
+const poolLoading = ref(false)
+const tournamentId = ref(route.params.id)
+const pool = ref({})
+const poolUsers = ref([])
+const tournamentOver = ref(false)
+const winners = ref([])
+const showWinners = ref(false)
+const headers = ref([
+  {text: 'User', value: 'fullName', show: true},
+  {text: 'Score', value: 'score', show: true},
+  {text: '', value: 'details', show: true},
+])
+onMounted(() => {
+  getPool()
+  getPoolUsers()
+})
+
+const isWinner = (poolUser) => {
+  if (tournamentOver.value) {
+    let topScore = poolUsers.value[0]?.score || 0
+    return (poolUser.score || 0) === topScore
   }
+}
+const getPool = async() => {
+  poolLoading.value = true
+  try {
+    const {data} = await getRequest(`/tournament/${tournamentId.value}/pool/byType/${poolTypeId.value}`, 'blueraven')
+    pool.value = data
+    tournamentOver.value = moment() > moment(pool.value.endDate).endOf('day')
+    if(tournamentOver.value) {
+      showWinners.value = true
+    }
+    poolLoading.value = false
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching pool details')
+
+  }
+}
+const getPoolUsers = async() => {
+  try {
+    const {data} = await getRequest(`/tournament/${tournamentId.value}/pool/usersByType/${poolTypeId.value}`, 'blueraven')
+    poolUsers.value = data
+    poolUsers.value.forEach(u => {
+      if (isWinner(u)) {
+        winners.value.push(u)
+      }
+    })
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching pool user details')
+
+  }
+}
 </script>
 
 <style lang="scss">
-  #winners-pool-container .v-data-table__wrapper {
-    max-height: calc(100vh - 375px);
-    min-height: 300px;
-  }
+#winners-pool-container .v-data-table__wrapper {
+  max-height: calc(100vh - 375px);
+  min-height: 300px;
+}
 
-  .tourney-winning-row {
-    background-color: #FFD700 !important;
-  }
+.tourney-winning-row {
+  background-color: #FFD700 !important;
+}
 </style>
 
 <style lang="scss" scoped>
-  #winners-pool-container {
-    padding: 0;
-    height: calc(100vh - 110px);
-  }
+#winners-pool-container {
+  padding: 0;
+  height: calc(100vh - 110px);
+}
 
-  .padded-pool {
-    padding: 50px !important;
-  }
+.padded-pool {
+  padding: 50px !important;
+}
 
-  .congrats-card {
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    min-height: 300px;
-    height: calc(100vh - 104px);
-    display: flex;
-    position: relative;
-    align-items: center;
-    justify-content: center;
-  }
+.congrats-card {
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  min-height: 300px;
+  height: calc(100vh - 104px);
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+}
 
-  .congrats-inner-container {
-    min-height: 200px;
-  }
+.congrats-inner-container {
+  min-height: 200px;
+}
 
-  .congrats-header {
-    font-family: "Congrats", sans-serif;
-    font-size: 50px;
-  }
+.congrats-header {
+  font-family: "Congrats", sans-serif;
+  font-size: 50px;
+}
 
-  .congrats-winner {
-    font-size: 30px;
-  }
+.congrats-winner {
+  font-size: 30px;
+}
 
-  .show-score-button {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-  }
+.show-score-button {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
 
 </style>
 

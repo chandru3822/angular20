@@ -3,22 +3,16 @@
   <CustomField v-else :api-path="apiPath"></CustomField>
 </template>
 
-<script>
+<script setup>
   import CustomField from "@/views/flow/settings/customFields/CustomField.vue"
-  export default {
-    name: 'CompanyCustomField',
-    components: {
-      CustomField,
-    },
-    data() {
-      return {
-        apiPath: this.$store.state.user.details.apiPath,
-      }
-    },
-    async created() {},
-    methods: {
-    }
-  }
+  import { ref, getCurrentInstance} from 'vue'
+  import {useUserStore} from "@/stores/UserStorePinia.js";
+
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const userStore = useUserStore()
+  const apiPath = ref(userStore.details.apiPath)
+
 </script>
 
 <style lang="scss">

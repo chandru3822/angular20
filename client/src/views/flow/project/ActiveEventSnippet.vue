@@ -1,43 +1,36 @@
 <template>
-<v-row>
-  <v-col cols="12" class="pa-0">
-    <div v-for="e in events"
-    >
-      <EventButton
-          :event="e"
-          :project-id="projectId"
-      />
-    </div>
-  </v-col>
-</v-row>
+  <v-row>
+    <v-col cols="12" class="pa-0">
+      <div v-for="e in events"
+      >
+        <EventButton
+            :event="e"
+            :project-id="projectId"
+        />
+      </div>
+    </v-col>
+  </v-row>
 </template>
 
-<script>
+<script setup>
 import {getStatusClass} from '@/services/processStepStatusTypeService'
 import EventButton from "@/views/flow/project/EventButton";
+import { toRefs } from 'vue'
+import {useRoute, useRouter} from "vue-router/composables";
 
-export default {
-  name: 'ActiveEventSnippet',
-  props: {
-    projectId: Number,
-    events: Array
-  },
+const router = useRouter()
 
-  computed: {},
-  data () {
-    return {
-      getStatusClass
-    }
-  },
-  methods: {
-    goToPath(path) {
-      this.$router.push(path)
-    },
-  },
-  components: {
-    EventButton
-  }
+const props = defineProps({
+  projectId: Number,
+  events: Array
+})
+
+const { projectId, events } = toRefs(props)
+
+const goToPath = (path) => {
+  router.push(path)
 }
+
 </script>
 
 
