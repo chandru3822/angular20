@@ -253,7 +253,7 @@
   import {getCurrentInstance, toRefs, ref, computed, onMounted} from "vue";
 
   import {useRoute, useRouter} from "vue-router/composables";
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   import {useUserStore} from "@/stores/UserStore.js";
 
   const userStore = useUserStore()

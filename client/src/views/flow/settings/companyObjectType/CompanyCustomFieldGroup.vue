@@ -467,7 +467,7 @@ import cloneDeep from 'lodash.clonedeep'
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import {useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
@@ -645,13 +645,11 @@ const saveConditionalField = async (cf) => {
     }
 
     const {status} = await putRequest(`/customFieldGroup/updateConditionalId`, cf, 'blueraven')
-    snackbar('SUCCESS', 'Updated Field')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+	appStore.showSnack('SUCCESS', 'Updated Field')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Data')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+	appStore.showSnack('ERROR', 'Error Saving Data')
     appStore.loading = false
   }
 }

@@ -50,7 +50,7 @@ import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, onMounted, ref} from 'vue'
 
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy

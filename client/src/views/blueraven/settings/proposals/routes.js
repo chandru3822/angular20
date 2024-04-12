@@ -1,4 +1,4 @@
-import { pinia } from '@/store'
+import pinia from '@/store'
 import { useUserStore } from '@/stores/UserStore.js'
 
 const userStore = useUserStore(pinia)

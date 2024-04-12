@@ -19,7 +19,7 @@ import {handleHidingGlobalLoader, getRequest, } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useRoute} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()

@@ -12,7 +12,7 @@ import Incentive from "@/views/blueraven/closerDashboard/Incentive";
 import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
 import {MilestoneEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import {getCurrentInstance, ref, computed, onMounted} from "vue";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import {useUserStore} from "@/stores/UserStore.js";
 
 const userStore = useUserStore()

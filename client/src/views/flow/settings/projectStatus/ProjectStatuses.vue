@@ -175,7 +175,7 @@ import {getCompanyProjectStatusTypes, getProjectStatusTypes} from '@/services/pr
 import {handleHidingGlobalLoader, deleteRequest, putRequest, defineSortableTable} from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted, onUpdated} from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const userStore = useUserStore()

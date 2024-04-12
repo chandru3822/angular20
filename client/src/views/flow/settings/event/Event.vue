@@ -63,14 +63,12 @@
 
 <script setup>
 
-import {AppMutations} from "@/stores/AppStore";
-
 import {getRequest, putRequest} from "@/helpers/helpers";
 import {useRoute} from "vue-router/composables"
 
 import {ref, computed, onMounted, getCurrentInstance} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

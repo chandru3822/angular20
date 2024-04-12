@@ -495,7 +495,7 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
-import {useAppStore} from '@/stores/AppStorePinia.js'
+import {useAppStore} from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 

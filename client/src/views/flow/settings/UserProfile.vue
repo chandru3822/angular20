@@ -234,7 +234,7 @@ import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 import {useRouter} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
@@ -439,8 +439,8 @@ const getProjectPages = async () => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Project Pages')
-    store.commit(AppMutations.SET_LOADING, false)
+	appStore.showSnack('ERROR', 'Error Retrieving Project Pages')
+	appStore.loading = false
   }
 }
 const getUser = async (userIsAlbatross) => {

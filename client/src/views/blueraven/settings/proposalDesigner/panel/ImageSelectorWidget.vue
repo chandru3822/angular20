@@ -95,7 +95,7 @@ import {
 import ImgProxy from '@/components/ImgProxy'
 import { getCurrentInstance, ref } from 'vue'
 import { useFileStore } from '@/stores/FileStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const fileStore = useFileStore()
 const appStore = useAppStore()

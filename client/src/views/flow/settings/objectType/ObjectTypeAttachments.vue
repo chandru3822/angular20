@@ -93,15 +93,14 @@
 </template>
 
 <script setup>
-import {AppMutations} from "@/stores/AppStore";
-import {handleHidingGlobalLoader, deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
+import {handleHidingGlobalLoader, deleteRequest, getRequest, postRequest, putRequest} from "@/helpers/helpers";
 import orderBy from 'lodash.orderby'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import { useUserStore } from '@/stores/UserStore.js'
-import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
+import {ref, onMounted, getCurrentInstance, computed, defineProps} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy

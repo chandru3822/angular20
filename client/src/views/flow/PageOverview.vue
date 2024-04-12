@@ -171,7 +171,7 @@ import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 import {getCurrentInstance, onMounted, ref, defineProps} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useProjectStore } from '@/stores/ProjectStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy

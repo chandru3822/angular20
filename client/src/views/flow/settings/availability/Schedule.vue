@@ -358,7 +358,7 @@
 
   import {getCurrentInstance, onMounted, ref, toRefs, computed, watch, defineProps} from "vue";
   import { useUserStore } from '@/stores/UserStore.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy

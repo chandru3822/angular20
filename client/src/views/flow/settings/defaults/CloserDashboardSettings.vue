@@ -59,10 +59,9 @@
 */
 import {computed, getCurrentInstance, onMounted, ref} from "vue";
 import constants from "@/helpers/constants";
-import {AppMutations} from "@/stores/AppStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 import { useFileStore } from '@/stores/FileStore.js'
 
@@ -139,23 +138,20 @@ const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit
       displayName: file.name.substr(0, file.name.lastIndexOf('.')),
       callback: async (img, error) => {
         if (error?.error) {
-          snackbar = snackbar('ERROR', error.errorMsg)
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
+		  appStore.showSnack('ERROR', error.errorMsg)
           appStore.loading = false
         } else {
           ImageTypeEnum.value[imageType.key].image = img
           ImageTypeEnum.value[imageType.key].add = false
           ImageTypeEnum.value[imageType.key].saving = false
-          snackbar = snackbar('SUCCESS', 'Image Uploaded')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
+		  appStore.showSnack('SUCCESS', 'Image Uploaded')
           appStore.loading = false
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar = snackbar('ERROR', 'Error Uploading File')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+	appStore.showSnack('ERROR', 'Error Uploading File')
     appStore.loading = false
   }
 }
@@ -169,16 +165,14 @@ const deleteAttachment = async() => {
       id: imageToDelete?.value?.image?.id,
       callback: async () => {
         ImageTypeEnum.value[key].image = {}
-        snackbar = snackbar('SUCCESS', 'Image Deleted')
-        store.commit(AppMutations.SHOW_SNACK, snackbar)
+		  appStore.showSnack('SUCCESS', 'Image Deleted')
         appStore.loading = false
         imageToDelete.value = null
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar = snackbar('ERROR', 'Error Deleting File')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+	  appStore.showSnack('ERROR', 'Error Deleting File')
     appStore.loading = false
     imageToDelete.value = null
   }

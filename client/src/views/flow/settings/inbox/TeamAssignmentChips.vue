@@ -153,7 +153,7 @@ import AddTeamDropdown from "@/views/flow/settings/inbox/AddTeamDropdown";
 import {ref, computed, onMounted, getCurrentInstance, watch, defineProps} from "vue";
 import {useUserStore} from "@/stores/UserStore.js";
 import {useRouter, useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy

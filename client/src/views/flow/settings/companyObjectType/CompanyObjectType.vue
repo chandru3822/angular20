@@ -37,17 +37,15 @@
 </template>
 
 <script setup>
-import constants from '@/helpers/constants'
 import CompanyCustomFieldGroup from './CompanyCustomFieldGroup'
-import {AppMutations} from "@/stores/AppStore";
-import {getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers";
+import {getRequest, getRequestWithParams, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers";
 import cloneDeep from "lodash.clonedeep";
 
 
-import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy

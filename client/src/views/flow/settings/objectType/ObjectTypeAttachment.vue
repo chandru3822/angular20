@@ -198,7 +198,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from "@/stores/AppStore";
 import draggable from 'vuedraggable'
 import {
   handleHidingGlobalLoader,
@@ -208,14 +207,13 @@ import {
   putRequest,
   getRequestWithParams
 } from "@/helpers/helpers";
-import constants from "@/helpers/constants";
 import orderBy from 'lodash.orderby'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { useUserStore } from '@/stores/UserStore.js'
 
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy

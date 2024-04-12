@@ -148,13 +148,12 @@ import {
   postRequestWithRequestParams,
   handleHidingGlobalLoader
 } from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
 import constants from "@/helpers/constants";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue"
 import {useUserStore} from "@/stores/UserStore.js"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy

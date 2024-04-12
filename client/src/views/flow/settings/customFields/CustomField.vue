@@ -280,23 +280,20 @@
 </template>
 
 <script setup>
-import {AppMutations} from "@/stores/AppStore";
 import orderBy from "lodash.orderby";
 import draggable from "vuedraggable";
 import debounce from "lodash.debounce";
 import {
   getRequest,
   getRequestWithParams,
-  getSnackbar,
   handleHidingGlobalLoader,
   postRequest
 } from "@/helpers/helpers";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { useUserStore } from '@/stores/UserStore.js'
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar

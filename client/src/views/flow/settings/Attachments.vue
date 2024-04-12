@@ -129,7 +129,7 @@
   import constants from '@/helpers/constants'
   import ConfirmationDialog from '@/components/ConfirmationDialog'
   import { useUserStore } from '@/stores/UserStore.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   import {useRouter} from "vue-router/composables"
 
   const vueInstance = getCurrentInstance().proxy

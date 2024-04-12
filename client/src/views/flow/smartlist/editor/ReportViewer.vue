@@ -49,7 +49,7 @@ import isEqual from 'lodash.isequal'
 import axios from 'axios'
 import constants from '@/helpers/constants'
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

@@ -49,7 +49,7 @@ import {getRequest, logError} from '@/helpers/helpers'
 import {getCurrentInstance, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import {useRouter} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar

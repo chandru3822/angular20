@@ -981,7 +981,7 @@ import ActionChildSms from "@/views/flow/settings/processStep/ActionChildSms";
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables";
-import {useAppStore} from '@/stores/AppStorePinia.js'
+import {useAppStore} from '@/stores/AppStore.js'
 
 const route = useRoute()
 const userStore = useUserStore()

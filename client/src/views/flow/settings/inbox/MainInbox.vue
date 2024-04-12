@@ -245,7 +245,6 @@
 </template>
 
 <script setup>
-import { AppMutations } from '@/stores/AppStore'
 import {getRequest, handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import moment from 'moment'
@@ -261,7 +260,7 @@ import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
 import {useUserStore} from "@/stores/UserStore.js";
 import { useNotificationStore } from '@/stores/NotificationStore.js'
 import {useRouter, useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy

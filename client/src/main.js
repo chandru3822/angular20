@@ -4,7 +4,7 @@ import Chat from 'vue-beautiful-chat'
 import Vue2Filters from 'vue2-filters'
 import App from '@/App.vue'
 import router from '@/router'
-import store, { pinia } from '@/store'
+import pinia from '@/store'
 import axios from 'axios'
 import { SnackbarPlugin } from '@/plugins/SnackbarPlugin'
 import moment from 'moment-timezone'
@@ -14,7 +14,6 @@ import AlbatrossTextarea from '@/components/customVuetify/AlbatrossTextarea.vue'
 import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 import AlbatrossSelect from '@/components/customVuetify/AlbatrossSelect.vue'
 import AlbatrossAutocomplete from '@/components/customVuetify/AlbatrossAutocomplete.vue'
-
 
 import '@/styles/main.scss'
 import { requestInterceptor, responseInterceptor  } from '@/helpers/interceptors'
@@ -113,7 +112,6 @@ Vue.use(Chat)
 
 new Vue({
   router,
-  store,
   vuetify: Vuetify,
   pinia,
   render: (h) => h(App)

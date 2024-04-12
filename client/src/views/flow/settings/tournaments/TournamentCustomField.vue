@@ -98,7 +98,7 @@
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue"
 import constants from "@/helpers/constants"
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy

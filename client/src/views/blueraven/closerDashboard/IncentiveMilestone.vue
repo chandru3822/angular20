@@ -24,15 +24,14 @@
 <script setup>
 import {DashboardTypeEnum, incentive_constants} from "@/views/blueraven/closerDashboard/incentive_constants";
 import {MilestoneEnum, QuarterEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
-import {AppMutations} from "@/stores/AppStore";
-import {getRequestWithParams, getSnackbar} from "@/helpers/helpers";
+import {getRequestWithParams} from "@/helpers/helpers";
 import cloneDeep from "lodash.clonedeep";
 import TrophyDynamic from "@/assets/blueraven/trophy-dynamic";
 import moment from "moment";
 import SetterMilestoneDrilldown from "@/views/blueraven/setterDashboard/SetterMilestoneDrilldown";
 import CloserMilestoneDrilldown from "@/views/blueraven/closerDashboard/CloserMilestoneDrilldown";
 import {getCurrentInstance, watch, toRefs, ref, computed, onMounted} from "vue";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import {useUserStore} from "@/stores/UserStore.js";
 
 const userStore = useUserStore()
