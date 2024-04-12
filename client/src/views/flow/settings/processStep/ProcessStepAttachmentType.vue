@@ -233,7 +233,7 @@ import draggable from 'vuedraggable'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"

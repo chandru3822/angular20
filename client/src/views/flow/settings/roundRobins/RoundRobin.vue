@@ -116,7 +116,7 @@ import {useUserStore} from '@/stores/UserStore.js'
 const userStore = useUserStore()
 import {useRoute} from "vue-router/composables";
 
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const route = useRoute()

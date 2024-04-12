@@ -41,7 +41,7 @@ import constants from '@/helpers/constants'
 import {handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import {getCurrentInstance, onMounted, ref} from 'vue'
 
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy

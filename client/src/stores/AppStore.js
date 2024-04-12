@@ -1,63 +1,55 @@
-import theme from '@/helpers/defaultTheme'
-import { shadeColorByPercent } from '@/helpers/helpers'
-// import colors from 'vuetify/lib/util/colors'
+import { defineStore } from 'pinia'
+import theme from '@/helpers/defaultTheme.js'
+import { getSnackbar, shadeColorByPercent } from '@/helpers/helpers'
+import cloneDeep from 'lodash.clonedeep'
 
-export const AppMutations = {
-  INIT: 'storeInt',
-  SET_LOADING: 'SET_LOADING',
-  // SET_SELECTED_PROCESS_STEP_NAME: 'SET_SELECTED_PROCESS_STEP_NAME',
-  SHOW_SNACK: 'SHOW_SNACK',
-  // SET_ANNOUNCEMENTS: 'SET_ANNOUNCEMENTS',
-  // SET_REDIRECT_URL: 'SET_REDIRECT_URL',
-  // SET_SPINNER_URL: 'SET_SPINNER_URL',
-  // SET_PRIMARY_BASE_COLOR: 'SET_PRIMARY_BASE_COLOR',
-  // SET_BANNER_COLOR: 'SET_BANNER_COLOR',
-  // SET_INITIAL_THEME: 'SET_INITIAL_THEME',
+const defaultState = {
+	loading: false,
+	selectedProcessStepName: null,
+	availableUpdate: false,
+	redirectUrl: null,
+	spinnerUrl: null,
+	announcements: [],
+	theme: cloneDeep(theme.LIGHT),
+	snack: {
+		show: false
+	}
 }
 
-export const AppStore = {
-  state: {
-    loading: false,
-    selectedProcessStepName: null,
-    availableUpdate: false,
-    redirectUrl: null,
-    spinnerUrl: null,
-    announcements: [],
-    theme: theme.LIGHT
-  },
-  mutations: {
-    // [AppMutations.SET_LOADING]: (state, loading) => (state.loading = loading),
-    // [AppMutations.SET_SELECTED_PROCESS_STEP_NAME]: (state, selectedProcessStepName) => (state.selectedProcessStepName = selectedProcessStepName),
-    // [AppMutations.SHOW_SNACK]: (state, snack) => (state.snack = snack),
-    // [AppMutations.SET_ANNOUNCEMENTS]: (state, announcements) => (state.announcements = announcements),
-    // [AppMutations.SET_REDIRECT_URL]: (state, url) => (state.redirectUrl = url),
-    // [AppMutations.SET_SPINNER_URL]: (state, url) => (state.spinnerUrl = url),
-    // [AppMutations.SET_INITIAL_THEME]: (state) => {
-    //   if(state.theme === undefined) {
-    //     state.theme = { ...theme.LIGHT }
-    //   }
-    // },
-    // [AppMutations.SET_PRIMARY_BASE_COLOR]: (state, color) => {
-    //
-    //   //vuetify's color generator does weird stuff. like if maroon is the base color then lighten-5 is orange. but this code seems to make appropriate colors.
-    //   //if adding a new color here like `lighten2` ensure you also add it in the defaultTheme.js
-    //   if(color && color !== '') {
-    //     state.theme.primary = {
-    //       base: color,
-    //       lighten3: shadeColorByPercent(color, .3),
-    //       lighten5: shadeColorByPercent(color, .5),
-    //       lighten9: shadeColorByPercent(color, .9),
-    //     }
-    //   } else {
-    //     //vuex has issues if you try and set state.theme.primary = theme.LIGHT.primary (i tried using Vue.set and state.theme = { ...state.theme, primaryBlah }
-    //     state.theme.primary = {
-    //       base: theme.LIGHT.primary.base,
-    //       lighten3: theme.LIGHT.primary.lighten3,
-    //       lighten5: theme.LIGHT.primary.lighten5,
-    //       lighten9: theme.LIGHT.primary.lighten9,
-    //     }
-    //   }
-    // },
-    // [AppMutations.SET_BANNER_COLOR]: (state, color) => (state.theme.banner = color && color !== '' ? color : theme.LIGHT.banner)
-  }
-}
+export const useAppStore = defineStore('app', {
+	persist: true,
+	state: () => ({...defaultState}),
+	getters: {},
+	actions: {
+		showSnackDeprecated(snack) {
+			this.snack = {...snack, show: true}
+		},
+		setPrimaryBaseColor(color) {
+			//vuetify's color generator does weird stuff. like if maroon is the base color then lighten-5 is orange. but this code seems to make appropriate colors.
+			//if adding a new color here like `lighten2` ensure you also add it in the defaultTheme.js
+			if (color && color !== '') {
+				this.theme.primary = {
+					base: color,
+					lighten3: shadeColorByPercent(color, .3),
+					lighten5: shadeColorByPercent(color, .5),
+					lighten9: shadeColorByPercent(color, .9)
+				}
+			} else {
+				//vuex has issues if you try and set state.theme.primary = theme.LIGHT.primary (i tried using Vue.set and state.theme = { ...state.theme, primaryBlah }
+				this.theme.primary = {
+					base: theme.LIGHT.primary.base,
+					lighten3: theme.LIGHT.primary.lighten3,
+					lighten5: theme.LIGHT.primary.lighten5,
+					lighten9: theme.LIGHT.primary.lighten9
+				}
+			}
+		},
+		setBannerColor(color) {
+			this.theme.banner = (color && color !== '') ? color : theme.LIGHT.banner
+		},
+		showSnack(type, msg, displayAsHtml = false) {
+			const snack = getSnackbar(type, msg, displayAsHtml)
+			this.snack = {...snack, show: true}
+		}
+	}
+})

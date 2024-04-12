@@ -94,7 +94,7 @@ import {DateTime} from "luxon";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()

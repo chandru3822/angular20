@@ -181,7 +181,7 @@ import {
   onBeforeUnmount,
   provide
 } from 'vue'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import useProposalStore from './store.js'
 import { storeToRefs } from 'pinia'
 

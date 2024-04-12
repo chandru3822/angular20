@@ -206,9 +206,8 @@
 </template>
 <script setup>
 import {Fragment} from 'vue-frag'
-import {deleteRequestWithPayload, getRequestWithParams, getSnackbar, postRequest} from '@/helpers/helpers'
+import {deleteRequestWithPayload, getRequestWithParams, postRequest} from '@/helpers/helpers'
 import NewProposalValueDialog from './NewProposalValueDialog.vue'
-import {AppMutations} from '@/stores/AppStore'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ProposalVersionHistory from "@/views/blueraven/settings/proposals/ProposalVersionHistory.vue";
 import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
@@ -216,7 +215,7 @@ import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixin
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()

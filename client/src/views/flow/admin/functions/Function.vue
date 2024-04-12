@@ -231,7 +231,7 @@
 import {handleHidingGlobalLoader, getRequest, postRequest, putRequest} from '@/helpers/helpers'
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
 
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import {useRouter, useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy

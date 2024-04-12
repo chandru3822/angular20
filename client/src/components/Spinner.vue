@@ -19,7 +19,7 @@
 
 <script setup>
 import { toRefs, computed } from 'vue'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 

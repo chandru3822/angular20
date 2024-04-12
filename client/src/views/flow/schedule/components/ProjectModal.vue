@@ -8,8 +8,7 @@
 *
 */
 import {getCurrentInstance, computed, onMounted, ref, watch} from "vue";
-import {AppMutations} from "@/stores/AppStore.js";
-import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
+import {getRequest, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/eventStatusTypeService.js";
@@ -17,7 +16,7 @@ import { getEventDefaultFieldReadOnly } from '@/services/customFieldService.js'
 
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 const appStore = useAppStore()
@@ -115,8 +114,7 @@ onMounted(async () => {
 		const {data} = await getRequest(`/projectProcessStep/${ppsId.value}/event/${ppsEventId.value}`)
 		event.value = data
 	} catch (e) {
-		let snackbar = getSnackbar('ERROR', 'Failed to fetch event details')
-		store.commit(AppMutations.SHOW_SNACK, snackbar)
+		appStore.showSnack('ERROR', 'Failed to fetch event details')
 	}
 })
 
@@ -220,8 +218,7 @@ const scheduleProject = async(forceSave) => {
     handleHidingGlobalLoader(vueInstance, status)
     fieldsSaving.value = false
     emit('updateEvents')
-    let snackbar = getSnackbar('SUCCESS', 'Job Scheduled')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+	appStore.showSnack('SUCCESS', 'Job Scheduled')
   } catch (e) {
     if(e.status === 409){
       conflictingEvents.value = e.data;
@@ -244,10 +241,10 @@ const cancelProjectProcessStepEvent = async() => {
     const {status} = await postRequest(`/projectProcessStep/${props.project.projectProcessStepId}/event/${props.project.projectProcessStepEventId}/status`, props.project.cancelledCompanyStatusType)
     props.project.eventStatusTypeId = props.project?.cancelledCompanyStatusType?.id
     handleHidingGlobalLoader(vueInstance, status)
-    snackbar('SUCCESS', 'Successfully Unscheduled Event')
+	appStore.showSnack('SUCCESS', 'Successfully Unscheduled Event')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Unscheduling Event')
+	appStore.showSnack('ERROR', 'Error Unscheduling Event')
     appStore.loading = false
   }
 }

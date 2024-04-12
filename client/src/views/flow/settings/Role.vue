@@ -66,7 +66,7 @@
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
   import {useRouter} from "vue-router/composables"
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar

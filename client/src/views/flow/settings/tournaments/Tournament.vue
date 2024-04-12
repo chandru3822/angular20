@@ -30,7 +30,7 @@ import {
 } from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useRoute} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy

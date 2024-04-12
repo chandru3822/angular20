@@ -50,7 +50,7 @@
 import constants from '@/helpers/constants'
 import axios from 'axios'
 import {getCurrentInstance, onMounted, ref} from 'vue'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

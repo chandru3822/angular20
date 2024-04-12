@@ -130,7 +130,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import {computed, getCurrentInstance, ref, onMounted} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import {useRouter} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy

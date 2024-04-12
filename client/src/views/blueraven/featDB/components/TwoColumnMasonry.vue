@@ -22,7 +22,7 @@ import FeatDbCustomFieldGroup from "@/views/blueraven/featDB/components/FeatDbCu
 import { getCurrentInstance, computed, ref, toRefs, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()

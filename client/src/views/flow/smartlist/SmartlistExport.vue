@@ -11,13 +11,11 @@
 </template>
 
 <script setup>
-import { AppMutations } from '@/stores/AppStore'
-import { getRequestWithParams, getSnackbar, logError } from '@/helpers/helpers'
+import { getRequestWithParams, logError } from '@/helpers/helpers'
 import { DateTime } from 'luxon'
 import { saveAs } from 'file-saver'
-import { getCurrentInstance } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const props = defineProps({
   smartlist: {
@@ -38,8 +36,6 @@ const props = defineProps({
 
 const emit = defineEmits(['exported'])
 
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
 
@@ -56,7 +52,7 @@ let exportSmartlist = async () => {
     emit('exported')
   } catch (e) {
     logError(e)
-    store.commit(AppMutations.SHOW_SNACK, getSnackbar('ERROR', e.data.message))
+    appStore.showSnack('ERROR', e.data.message)
   } finally {
     appStore.loading = false
   }

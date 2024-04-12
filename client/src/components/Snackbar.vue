@@ -28,7 +28,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const snackbar = ref({})

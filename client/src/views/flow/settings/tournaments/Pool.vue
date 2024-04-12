@@ -385,7 +385,7 @@ import {useRoute} from "vue-router/composables";
 import {useUserStore} from '@/stores/UserStore.js'
 
 import { useFileStore } from '@/stores/FileStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy

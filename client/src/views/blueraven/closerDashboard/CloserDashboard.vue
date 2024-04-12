@@ -291,10 +291,8 @@
 
 <script setup>
 import moment from 'moment'
-import constants from '@/helpers/constants'
 import {getCloserRepRankings} from "@/services/dashboardService";
-import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
+import {handleHidingGlobalLoader, getRequest, getRequestWithParams} from '@/helpers/helpers'
 import SpinnerInline from '@/components/SpinnerInline'
 import {getCurrentInstance, ref, computed, onMounted} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'

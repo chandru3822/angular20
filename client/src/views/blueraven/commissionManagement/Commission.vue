@@ -700,10 +700,10 @@ import {
 } from '@/helpers/helpers';
 import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/ProjectAssignmentModal";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { useBrsStore } from '@/stores/BrsStorePinia.js'
+import { useBrsStore } from '@/stores/BrsStore.js'
 import {getCurrentInstance, computed, ref, onMounted, watch} from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
-import {useAppStore} from '@/stores/AppStorePinia.js'
+import {useAppStore} from '@/stores/AppStore.js'
 import {useRoute, useRouter} from "vue-router/composables"
 import debounce from "lodash.debounce"
 import { storeToRefs } from 'pinia'

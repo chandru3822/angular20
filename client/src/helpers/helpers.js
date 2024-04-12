@@ -1,10 +1,9 @@
 import axios from 'axios'
 import constants from './constants'
-import { AppMutations } from '@/stores/AppStore'
 import moment from 'moment'
 import Sortable from "sortablejs";
 import cloneDeep from "lodash.clonedeep";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import { useUserStore } from "@/stores/UserStore.js";
 
 export function getSnackbar(type, text, displayMsgAsHtml) {
@@ -119,6 +118,7 @@ export function getFileIcon(file) {
 }
 
 export async function followLink(instance, url, params) {
+  const appStore = useAppStore()
   let adjustedUrl = getUrlForLink(url, params)
 
   if(adjustedUrl.includes('CFGA_ID_')) {
@@ -129,8 +129,7 @@ export async function followLink(instance, url, params) {
 
     const {data, status} = await getRequestWithParams(`/links/buildUrl`, { params: urlParams })
     if(data === 'ERROR') {
-      let snackbar = getSnackbar('ERROR', 'Error Generating Link. Please contact an administrator.')
-      instance.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+      appStore.showSnack('ERROR', 'Error Generating Link. Please contact an administrator.')
     } else {
       adjustedUrl = data
       //the date stringify guarantees a new tab opens every time
@@ -198,7 +197,6 @@ export function handleHidingGlobalLoader(status) {
   //if a request is cancelled we should not turn off the spinner because the route changed and may have already turned the spinner back on
   //if the status is null it means that the request was cancelled (otherwise it will have a success or error status)
   if (status != null) {
-    // instance.$store.commit(AppMutations.SET_LOADING, false)
     const appStore = useAppStore()
     appStore.loading = false
   }

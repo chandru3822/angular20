@@ -53,12 +53,10 @@
 import {incentive_constants} from './incentive_constants'
 import {MilestoneEnum, QuarterEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import IncentiveMilestone from "@/views/blueraven/closerDashboard/IncentiveMilestone";
-import {AppMutations} from "@/stores/AppStore";
-import {getSnackbar} from "@/helpers/helpers";
 import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 /**
  * counts: {q1:Number, q2:Number, q3:Number, q4:Number}

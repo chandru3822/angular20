@@ -798,8 +798,7 @@ import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
 import moment from 'moment'
 import constants from '@/helpers/constants'
-import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getProjectPath} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
+import {handleHidingGlobalLoader, getRequest, postRequest, getProjectPath} from '@/helpers/helpers'
 import SpinnerInline from '@/components/SpinnerInline'
 import { saveAs } from 'file-saver'
 import {
@@ -813,7 +812,7 @@ import {
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()

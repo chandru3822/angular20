@@ -96,8 +96,8 @@ import {
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
-import { useBrsStore } from '@/stores/BrsStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
+import { useBrsStore } from '@/stores/BrsStore.js'
 import { storeToRefs } from 'pinia'
 
 const brsStore = useBrsStore()

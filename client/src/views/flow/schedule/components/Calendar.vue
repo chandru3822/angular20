@@ -282,7 +282,6 @@
 import moment from 'moment'
 import cloneDeep from 'lodash.clonedeep'
 import {getSchedulingOrgTypes} from '@/services/orgService'
-import {AppMutations} from '@/stores/AppStore'
 
 import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getEventColorClass} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
@@ -293,7 +292,7 @@ import interaction from "@fullcalendar/interaction";
 import {computed, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue";
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 
@@ -536,8 +535,8 @@ const countSelected = computed(() => {
         calendarApi.setOption('timeZone', scheduleTimezone)
         //and show a snackbar if the timezones don't match
         if(userTimezone !== scheduleTimezone) {
-          let snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          const snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
+		  appStore.snack = {...snackbar, show: true}
         }
       })
       watch(userTimezone, (newVal) => {

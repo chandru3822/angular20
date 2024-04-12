@@ -46,15 +46,13 @@
 </template>
 
 <script setup>
-import constants from '@/helpers/constants'
-import {AppMutations} from "@/stores/AppStore";
-import {getRequest, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers";
+import {getRequest, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers";
 
 
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy

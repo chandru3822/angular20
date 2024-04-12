@@ -177,7 +177,7 @@ import isEqual from 'lodash.isequal'
 
 import { useUserStore } from '@/stores/UserStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import {useRouter, useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
