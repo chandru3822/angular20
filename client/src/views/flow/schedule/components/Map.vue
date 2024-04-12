@@ -75,8 +75,8 @@
       <slot name="searchMenu"/>
     </div>
     <!--    this marker is for the event we came from using 'open scheduler'-->
-    <MglMarker v-if="currentProjectMarker.pinned"
-               :key="currentProjectMarker.projectProcessStepEventId+ `${markerCount}`"
+    <MglMarker v-if="currentProjectMarker?.pinned"
+               :key="'ce' + currentProjectMarker.projectProcessStepEventId+ `${markerCount}`"
                :coordinates="currentProjectMarker.coordinates"
 
                @click="selectAddressForDriveTime(currentProjectMarker)"
@@ -87,7 +87,7 @@
     </MglMarker>
     <!-- these markers come from the project search  -->
     <MglMarker v-for="m in markers" v-if="m.coordinates"
-               :key="m.projectProcessStepEventId + `${markerCount}`"
+               :key="'ps' + m.projectProcessStepEventId + `${markerCount}`"
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">
@@ -96,8 +96,8 @@
       </MglPopup>
     </MglMarker>
     <!-- these markers come from the calendar  -->
-    <MglMarker v-for="m in mapResources" v-if="m.coordinates"
-               :key="m.projectProcessStepEventId + `${markerCount}`"
+    <MglMarker v-for="m in mapResources" v-if="m.coordinates && m.projectProcessStepEventId"
+               :key="'cal' + m.id + m.projectProcessStepEventId + `${markerCount}`"
                :coordinates="m.coordinates"
                @click="selectAddressForDriveTime(m)"
                :color="m.color || defaultEmptyColor">

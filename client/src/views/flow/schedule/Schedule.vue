@@ -142,7 +142,6 @@
   })
 
     onMounted(() => {
-      loadTimezone()
       fetchActiveStatesByHierarchy()
       fetchStatusTypes()
       fetchEventStatusTypes()
@@ -164,16 +163,6 @@
   const updateEvents = () => {
     calendarRef.value.updateEvents()
   }
-  const loadTimezone = () => {
-        if(store.state.schedule.timezone?.value === null) {
-          timezone.value = userStore.timezone
-          updateTimezone()
-        }
-        else {
-          timezone.value = store.state.schedule.timezone
-        }
-      }
-  const updateTimezone = () => scheduleStore.timezone = timezone.value
 
       const showHideMap = (show)=> {
         if(show !== showMap.value) {

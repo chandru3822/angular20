@@ -314,6 +314,7 @@ const getCompanies = async () => {
     //this handles if the color is null too
     appStore.setPrimaryBaseColor(selectedCompany.value?.primaryColor)
     appStore.setBannerColor(selectedCompany.value?.bannerColor)
+	vueInstance.$vuetify.theme.themes.light = appStore.theme
 
   } catch (e) {
     console.error('*** ERROR ***', e)

@@ -310,14 +310,14 @@ const filters = vueInstance.$filters
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
 
-    const props = defineProps({
-      mapOpen:Boolean,
-      mapResources: {type: Array},
-      callback: Function,
-      dateCallback: Function,
-      states: {type: Array},
-      preselectedEvent: {type:Object, required: false}
-    })
+const props = defineProps({
+  mapOpen:Boolean,
+  mapResources: {type: Array},
+  callback: Function,
+  dateCallback: Function,
+  states: {type: Array},
+  preselectedEvent: {type:Object, required: false}
+})
 
 const scheduleTimezone = computed(() => {
   return store.state.schedule.timezone?.value
@@ -341,9 +341,8 @@ const calendarOptions = ref({
     (info, successCallback, failureCallback) => goGetEventsNow(info, successCallback, failureCallback)
   ],
   eventClick: (eventClickInfo) => handleEventClick(eventClickInfo),
-  datesSet: (dateInfo) => updatePins(dateInfo),
+  datesSet: (dateInfo) => updateCalDates(dateInfo),
   navLinks: true,
-  navLinkDayClick: "resourceTimeline",
   slotLabelDidMount:function ({el, date, view, level}) {
     //this is a workaround because the day headers on the week view take you to the wrong view,
     // and they don't trigger navLinkDayClick
@@ -396,10 +395,7 @@ const calendarOptions = ref({
 })
 const calendarLoading = ref(false)
 const includeCancelled = ref(false)
-const calendarInitialRender = ref(true)
 const calendarApi = ref(null)
-const calendarStart = ref(null)
-const calendarView = ref(null)
 const calendarStartTime = ref(null)
 const calendarEndTime = ref(null)
 const maxSelectionAllowed = ref(10)
@@ -430,8 +426,6 @@ const positionsLoading =  ref(true)
 const mapPinnedResources = ref([])
 const mapResourceEvents =  ref([])
 const checkedResources =  ref([])
-const daySelector =  ref(false)
-const dayOptions =  ref([])
 const timezones = ref([
   { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
   { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
@@ -518,9 +512,7 @@ const sortedUsers = computed(() => {
   const usUsers = users.value.filter(user => !selectedUsers.value.includes(user));
   return sUsers.concat(usUsers)
 })
-// const firstDayOption = computed(() => {
-//   return moment.utc(calendarStartTime.value).format('dddd MMM Do, YYYY')
-// })
+
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
 })
@@ -531,8 +523,6 @@ const countSelected = computed(() => {
 
     onMounted (async () => {
       calendarApi.value = refs.eventCalendar.getApi()
-      calendarStart.value = calendarApi.value.getDate()
-      setCalendarStartAndEndTimes()
       await getSchedulingOrgs()
       await getSchedulingUsers()
       await fetchSchedulingOrgTypes()
@@ -557,97 +547,69 @@ const countSelected = computed(() => {
         changeTimezone(userTimezone.value)
       })
 
-      // whenever selectedUsers or selectedOrgs changes, concat them both into resources
-    watch(selectedUsers, (newValue, oldValue) => {
-        calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
-      if(oldValue.length > newValue.length) {
-        //if we're removing users
-        const removedUsers = oldValue.filter(oldUser => newValue.indexOf(oldUser) < 0)
-        handlePinsOnSelectedResourceChange(removedUsers)
-      }
-      handleResourceColors()
-      })
-      watch(selectedOrgs, (newValue, oldValue) => {
-        calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
-        if(oldValue.length > newValue.length) {
-          //if we're removing users
-          const removedOrgs = oldValue.filter(oldOrg => newValue.indexOf(oldOrg) < 0)
-          handlePinsOnSelectedResourceChange(removedOrgs)
-        }
-        handleResourceColors()
-        refs.orgSelector.setSearch('')//prevents weird scroll bug
-      })
-      watch(calendarStartTime, (newStartTime, oldStartTime) => {
-        if(newStartTime !== oldStartTime) {
-          getDayOptions()
-        }
-      })
-      watch(calendarEndTime, (newEndTime, oldEndTime) => {
-        if(newEndTime !== oldEndTime) {
-          getDayOptions()
-        }
-      })
+// whenever selectedUsers or selectedOrgs changes, concat them both into resources
+watch(selectedUsers, (newValue, oldValue) => {
+  calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
+  if(oldValue.length > newValue.length) {
+    //if we're removing users
+    const removedUsers = oldValue.filter(oldUser => newValue.indexOf(oldUser) < 0)
+    handlePinsOnSelectedResourceChange(removedUsers)
+  }
+  handleResourceColors()
+})
+watch(selectedOrgs, (newValue, oldValue) => {
+  calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
+  if(oldValue.length > newValue.length) {
+    //if we're removing users
+    const removedOrgs = oldValue.filter(oldOrg => newValue.indexOf(oldOrg) < 0)
+    handlePinsOnSelectedResourceChange(removedOrgs)
+  }
+  handleResourceColors()
+  // refs.orgSelector.setSearch('')//prevents weird scroll bug
+})
 
-      const reloadCalendar = () =>{
-        let calendarApi = refs.eventCalendar.getApi()
-        calendarApi.refetchEvents()
-      }
-      const isResourceOnMap = (resource) => {
-        return mapPinnedResources.value?.findIndex(rId => resource.id === rId) >=0
-      }
-      const isAssignedResource = (resource) => {
-        let result = false
-        const selectedResourceId = store.state.schedule.selectedResourceId
-        if(!selectedResourceId || selectedResourceId < 0){
-          return false
-        }
-        if(resource.extendedProps.orgId === selectedResourceId) {
-          result = true
-        } else {
-          const positions = resource.extendedProps.userPositions?.filter(p => p.id === selectedResourceId)
-          result = positions?.length > 0
-        }
-        return result
-      }
+const reloadCalendar = () =>{
+  let calendarApi = refs.eventCalendar.getApi()
+  calendarApi.refetchEvents()
+}
+const isResourceOnMap = (resource) => {
+  return mapPinnedResources.value?.findIndex(rId => resource.id === rId) >=0
+}
+const isAssignedResource = (resource) => {
+  let result = false
+  const selectedResourceId = store.state.schedule.selectedResourceId
+  if(!selectedResourceId || selectedResourceId < 0){
+    return false
+  }
+  if(resource.extendedProps.orgId === selectedResourceId) {
+    result = true
+  } else {
+    const positions = resource.extendedProps.userPositions?.filter(p => p.id === selectedResourceId)
+    result = positions?.length > 0
+  }
+  return result
+}
 
-      const handleResourceColors = () => {
-        calendarOptions.value.resources.forEach((r, index) => {
-          r.eventBackgroundColor = '#FFFFFF'
-          r.eventBorderColor = '#919191'
-          r.eventColorClass = getEventColorClass(index)
+const handleResourceColors = () => {
+  calendarOptions.value.resources.forEach((r, index) => {
+    r.eventBackgroundColor = '#FFFFFF'
+    r.eventBorderColor = '#919191'
+    r.eventColorClass = getEventColorClass(index)
 
-          //the event will come get this later
-          if(index <= 19) {
-            // use one of the first 20 pre-defined colors
-            r.color = constants.COLOR_LIST[index]
-          } else {
-            //generate a random color
-            let hexColorCode = '';
-            while (hexColorCode.length < 6) {
-              hexColorCode += (Math.random()).toString(16).substr(-6).substr(-1)
-            }
-            r.color = '#'+hexColorCode
-          }
-        })
+    //the event will come get this later
+    if(index <= 19) {
+      // use one of the first 20 pre-defined colors
+      r.color = constants.COLOR_LIST[index]
+    } else {
+      //generate a random color
+      let hexColorCode = '';
+      while (hexColorCode.length < 6) {
+        hexColorCode += (Math.random()).toString(16).substr(-6).substr(-1)
       }
-      const getDayOptions = () => {
-        let options = []
-        const startDate = calendarApi.value?.view.activeStart
-        const endDate = calendarApi.value?.view.activeEnd
-
-        if(startDate && endDate) {
-          let i = startDate
-          while (moment(endDate).isAfter(i)) {
-            let dayOption = {
-              rawDate: i,
-              formattedDate: moment.utc(i).format('dddd MMM Do, YYYY')
-            }
-            options.push(dayOption)
-            i = moment(i).add(1, 'days')
-          }
-        }
-        dayOptions.value = options
-      }
+      r.color = '#'+hexColorCode
+    }
+  })
+}
 
 
       //filter functions
@@ -839,88 +801,88 @@ const countSelected = computed(() => {
         }
       }
 
-      const closeResource = (resource) => {
-        //todo: are there any cases where a user resource and an org resource could end up with the same id??
-        let index = selectedUsers.value.findIndex(r =>
-          r.id === resource.id
-        )
-        if(index >= 0){
-          selectedUsers.value.splice(index, 1)
-        } else {
-          index = selectedOrgs.value.findIndex(r => r.id === resource.id)
-          selectedOrgs.value.splice(index,1)
-        }
-        if(isResourceOnMap(resource)){
-          toggleMapPinForResource(resource)
-        }
-        calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
-      }
-      const toggleScheduleResource = (resource) =>{
-        if(!isAssignedResource(resource)){
-          emit('scheduleResource', resource)
-        } else {
-          emit('unscheduleResource')
-        }
-      }
+const closeResource = (resource) => {
+  //todo: are there any cases where a user resource and an org resource could end up with the same id??
+  let index = selectedUsers.value.findIndex(r =>
+      r.id === resource.id
+  )
+  if(index >= 0){
+    selectedUsers.value.splice(index, 1)
+  } else {
+    index = selectedOrgs.value.findIndex(r => r.id === resource.id)
+    selectedOrgs.value.splice(index,1)
+  }
+  if(isResourceOnMap(resource)){
+    toggleMapPinForResource(resource)
+  }
+  calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
+}
+const toggleScheduleResource = (resource) =>{
+  if(!isAssignedResource(resource)){
+    emit('scheduleResource', resource)
+  } else {
+    emit('unscheduleResource')
+  }
+}
 
-      //map functions
-      const toggleMapPinForResource = (resource) => {
-        handlePopulatingMapPins(!isResourceOnMap(resource), resource, true)
-      }
+//map functions
+const toggleMapPinForResource = (resource) => {
+  handlePopulatingMapPins(!isResourceOnMap(resource), resource, true)
+}
 
-      const handlePinsOnSelectedResourceChange = (removedResource) => {
-        for(let resource of removedResource) {
-          if (isResourceOnMap(resource)) {
-            toggleMapPinForResource(resource)
-          }
-        }
-      }
+const handlePinsOnSelectedResourceChange = (removedResource) => {
+  for(let resource of removedResource) {
+    if (isResourceOnMap(resource)) {
+      toggleMapPinForResource(resource)
+    }
+  }
+}
 
-      const handlePinsOnDayChange = () => {
-        mapResourceEvents.value = []
-        checkedResources.value.forEach((r, idx) => {
-          handlePopulatingMapPins(true, r, false, idx === checkedResources.value.length - 1)
-        })
-      }
-      const handlePopulatingMapPins = (addPin, resource, doCallback) => {
-        if(addPin) {
-          let calendarApi = refs.eventCalendar.getApi()
+const handlePinsOnDayChange = () => {
+  mapResourceEvents.value = []
+  checkedResources.value.forEach((r, idx) => {
+    handlePopulatingMapPins(true, r, false, idx === checkedResources.value.length - 1)
+  })
+}
+const handlePopulatingMapPins = (addPin, resource, doCallback) => {
+  if(addPin) {
+    let calendarApi = refs.eventCalendar.getApi()
 
-          let resourceEvents = calendarApi.getEvents().filter(e => {
-            return e.display !== 'inverse-background' && e.display !== 'background' && e._def.resourceIds.indexOf(resource.id) >= 0
+    let resourceEvents = calendarApi.getEvents().filter(e => {
+      return e.display !== 'inverse-background' && e.display !== 'background' && e._def.resourceIds.indexOf(resource.id) >= 0
 
-          })
-          resourceEvents.forEach(re => {
-            let eventObj = {
-              id: resource.id,
-              projectName: re.extendedProps.projectName,
-              processStepName: re.extendedProps.processStepName,
-              city: re.extendedProps.city,
-              projectId: re.extendedProps.projectId,
-              projectProcessStepId: re.extendedProps.projectProcessStepId,
-              projectProcessStepEventId: re.extendedProps.projectProcessStepEventId,
-              stateAbbreviation: re.extendedProps.stateAbbreviation,
-              postalCode: re.extendedProps.postalCode,
-              street1: re.extendedProps.street1,
-              color: resource.extendedProps.color,
-              coordinates: [ re.extendedProps.longitude, re.extendedProps.latitude],
-              start: re.startStr,
-              end: re.endStr
-            }
-            mapResourceEvents.value.push(eventObj)
-          })
-          mapPinnedResources.value.push(resource.id)
-        } else {
-          mapResourceEvents.value = mapResourceEvents.value.filter(r => {
-            return r.id !== resource?.id
-          })
-          mapPinnedResources.value = mapPinnedResources.value.filter(rId => resource?.id !== rId)
-        }
-        if(doCallback) {
-          props.callback(mapResourceEvents.value, addPin)
-        }
-        let calendarApi = refs.eventCalendar.getApi()
+    })
+    resourceEvents.forEach(re => {
+      let eventObj = {
+        id: resource.id,
+        projectName: re.extendedProps.projectName,
+        processStepName: re.extendedProps.processStepName,
+        city: re.extendedProps.city,
+        projectId: re.extendedProps.projectId,
+        projectProcessStepId: re.extendedProps.projectProcessStepId,
+        projectProcessStepEventId: re.extendedProps.projectProcessStepEventId,
+        stateAbbreviation: re.extendedProps.stateAbbreviation,
+        postalCode: re.extendedProps.postalCode,
+        street1: re.extendedProps.street1,
+        color: resource.extendedProps.color,
+        coordinates: [ re.extendedProps.longitude, re.extendedProps.latitude],
+        start: re.startStr,
+        end: re.endStr
       }
+      mapResourceEvents.value.push(eventObj)
+    })
+    mapPinnedResources.value.push(resource.id)
+  } else {
+    mapResourceEvents.value = mapResourceEvents.value.filter(r => {
+      return r.id !== resource?.id
+    })
+    mapPinnedResources.value = mapPinnedResources.value.filter(rId => resource?.id !== rId)
+  }
+  if(doCallback) {
+    props.callback(mapResourceEvents.value, addPin)
+  }
+  let calendarApi = refs.eventCalendar.getApi()
+}
 
 
       //calendar event functions
@@ -935,66 +897,67 @@ const countSelected = computed(() => {
           }
           const {data} = await postRequest(`/schedule/availability`, params)
 
-          data?.forEach(d => {
-            if (d.allDay) {
-              d.start = moment.utc(d.start).format('YYYY-MM-DD')
-              d.end = moment.utc(d.end).format('YYYY-MM-DD')
-            }
-            //todo: should probably find where this is coming from on the back end and fix it there
-            if(d.rendering){
-              d.display = d.rendering
-            }
+    data?.forEach(d => {
+      if (d.allDay) {
+        d.start = moment.utc(d.start).format('YYYY-MM-DD')
+        d.end = moment.utc(d.end).format('YYYY-MM-DD')
+      }
+      //todo: should probably find where this is coming from on the back end and fix it there
+      if(d.rendering){
+        d.display = d.rendering
+      }
 
-            d.groupId = Number(`${d.systemListTypeId}${d.resourceId}`)
-            d.resourceId = Number(`${d.systemListTypeId}${d.resourceId}`)
-            d.backgroundColor = 'rgba(0,0,0,.25)'
-            d.classNames = 'pl-2'
+      d.groupId = Number(`${d.systemListTypeId}${d.resourceId}`)
+      d.resourceId = Number(`${d.systemListTypeId}${d.resourceId}`)
+      d.backgroundColor = 'rgba(0,0,0,.12)'
+      d.classNames = 'pl-2'
 
 
 
-            if(!d.isSlotTime && d.display === 'inverse-background') {
-              // d.backgroundColor= 'rgba(255,255,255,0)'
-              //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
-              //do start time
-              if(d.daylightSavings && !moment(d.start).isDST()) {
-                d.start = moment.utc(d.start).add(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
-              } else if (!d.daylightSavings && moment(d.start).isDST()) {
-                //else if the day was NOT saved during DST, but now IS DST, then add an hour
-                d.start = moment.utc(d.start).subtract(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
-              }
-              //do end time
-              if(d.daylightSavings && !moment(d.end).isDST()) {
-                d.end = moment.utc(d.end).add(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
-              } else if (!d.daylightSavings && moment(d.end).isDST()) {
-                //else if the day was NOT saved during DST, but now IS DST, then add an hour
-                d.end = moment.utc(d.end).subtract(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
-              }
-            }
+      if(!d.isSlotTime && d.display === 'inverse-background') {
+        // d.backgroundColor= 'rgba(255,255,255,0)'
+        //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
+        //do start time
+        if(d.daylightSavings && !moment(d.start).isDST()) {
+          d.start = moment.utc(d.start).add(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
+        } else if (!d.daylightSavings && moment(d.start).isDST()) {
+          //else if the day was NOT saved during DST, but now IS DST, then add an hour
+          d.start = moment.utc(d.start).subtract(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
+        }
+        //do end time
+        if(d.daylightSavings && !moment(d.end).isDST()) {
+          d.end = moment.utc(d.end).add(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
+        } else if (!d.daylightSavings && moment(d.end).isDST()) {
+          //else if the day was NOT saved during DST, but now IS DST, then add an hour
+          d.end = moment.utc(d.end).subtract(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
+        }
+      }
 
-            if(d.display === 'background' || d.display === 'auto'){
-              d.display = 'auto'
-              d.title = d.title + ': ' + getFormattedDate(d.start, 'hh:mm') + '-' + getFormattedDate(d.end)
-              d.textColor='rgba(0,0,0,0.87)'
-            }
-          })
+      if(d.display === 'background' || d.display === 'auto'){
+        d.display = 'auto'
+        d.title = d.title + ': ' + getFormattedDate(d.start, 'hh:mm') + '-' + getFormattedDate(d.end)
+        d.textColor='rgba(0,0,0,0.87)'
+        d.backgroundColor='var(--v-grey-lighten1)'
+      }
+    })
 
-          //we do this for every resource, regardless of if they already have an availability or not
-          // if they already have one it still works as it should and doesn't block out the time, but if they
-          // dont already have one then this will block/grey out the day so it doesn't look like they are available
-          calendarOptions.value.resources.forEach(r => {
-            data.push({
-              start: moment.utc(info.start).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
-              end: moment.utc(info.start).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
-              title: '',
-              display: 'inverse-background',
-              allDay: false,
-              //these values have already been pre-appended with the 1 or 2
-              groupId: r.id,
-              resourceId: r.id,
-              backgroundColor: 'rgba(0,0,0,.25)'
-            })
-          })
-          return data;
+    //we do this for every resource, regardless of if they already have an availability or not
+    // if they already have one it still works as it should and doesn't block out the time, but if they
+    // dont already have one then this will block/grey out the day so it doesn't look like they are available
+    calendarOptions.value.resources.forEach(r => {
+      data.push({
+        start: moment.utc(info.start).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
+        end: moment.utc(info.start).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
+        title: '',
+        display: 'inverse-background',
+        allDay: false,
+        //these values have already been pre-appended with the 1 or 2
+        groupId: r.id,
+        resourceId: r.id,
+        backgroundColor: 'rgba(0,0,0,.12)'
+      })
+    })
+    return data;
 
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1002,13 +965,27 @@ const countSelected = computed(() => {
           appStore.loading = false
         }
       }
+const updateCalDates = async(info) => {
+  let start = info.start
+  let end = info.end
+  let diff = moment(end).diff(start, 'days')
+  if(diff > 7){
+    //for some reason when you click the date header in the week view, it sometimes tries to navigate to the month view; this prevents that
+    //it seems like it should be forcing it to navigate to the current date, but for some reason, it navigates to the date that was clicked...if it ain't broke...
+    let calendarApi = refs.eventCalendar.getApi()
+    calendarApi.changeView('resourceTimelineDay', new Date)
+  }
+  calendarStartTime.value = info.start
+  calendarEndTime.value = info.end
+  await updatePins(info)
+}
 const updatePins = async(info) => {
   let filteredResources = mapResourceEvents.value?.filter( e => isValidEventDate(Date.parse(e.start), Date.parse(e.end), Date.parse(info.start), Date.parse(info.end)))
   props.callback(filteredResources, true)
 }
 
 const isValidEventDate = (eventStart, eventEnd, currentStart, currentEnd) => {
-  return !(eventEnd < currentStart || eventStart > currentEnd)
+  return !(eventEnd <= currentStart || eventStart >= currentEnd)
 }
 const goGetEventsNow = async (info, successCallback, failureCallback) => {
   mapResourceEvents.value = []
@@ -1030,21 +1007,23 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
       data.forEach(d => {
         d.id = d.eventId
         // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-        // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
+        // if resource is a user show on calendar using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
         d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
         d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
         d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${getFormattedDate(d.start)} - ${getFormattedDate(d.end)}`
         let matchingResource = calendarOptions.value.resources.find(r => r.id === d.resourceId)
         if(d.eventStatusTypeId === 3) {
-          d.colorForBorder = '#919191'
-          d.textColor = '#919191'
+          d.colorForBorder = 'var(--v-grey-darken2)'
+          d.textColor = 'var(--v-grey-darken2)'
         } else {
           d.colorForBorder = matchingResource?.color
           d.textColor = 'var(--v-primary-base)'
           d.classNames=['event-tile', matchingResource?.eventColorClass]
         }
-        if(isResourceOnMap(matchingResource)) {
+
+        if(isResourceOnMap(matchingResource) && d.projectProcessStepEventId && isValidEventDate(Date.parse(d.start), Date.parse(d.end), Date.parse(calendarStartTime.value), Date.parse(calendarEndTime.value))) {
           let eventObj = {
+            key:matchingResource.id + d.projectId + d.projectProcessStepId + d.projectProcessStepEventId,
             id: matchingResource.id,
             projectName: d.projectName,
             processStepName: d.processStepName,
@@ -1082,44 +1061,29 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
   }
   successCallback([])
 }
-      const updateEvents = () => {
-        calendarApi.value.refetchEvents()
-      }
+const updateEvents = () => {
+  calendarApi.value.refetchEvents()
+}
 
-      defineExpose({
-        updateEvents
-      })
+defineExpose({
+  updateEvents
+})
 
-      const handleEventClick = (info) => {
-        if(info.event.title && info.event.display === 'auto') {
-          let props = info.event.extendedProps
-          //open event clicks in new window every time so they dont have to keep reloading the calendar
-          let routerData = router.resolve({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}/event/${props.projectProcessStepEventId}`})
-          window.open(routerData.href, '_blank')
-        }
-      }
+const handleEventClick = (info) => {
+  if(info.event.title && info.event.display === 'auto' && info.event.extendedProps?.projectProcessStepId) {
+    let props = info.event.extendedProps
+    //open event clicks in new window every time so they dont have to keep reloading the calendar
+    let routerData = router.resolve({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}/event/${props.projectProcessStepEventId}`})
+    window.open(routerData.href, '_blank')
+  }
+}
 
       const changeTimezone = async (tz) => scheduleStore.timezone = tz
 
-      const getFormattedDate = (date) => {
-        //used for formatting the start/end for the hoverTitle
-        return filters.formatDate(date, 'timestamp', 'h:mm a')
-      }
-      const setCalendarStartAndEndTimes = () => {
-        calendarStart.value = calendarApi.value.getDate()
-        calendarView.value = calendarApi.value.view?.type
-        if(calendarView.value === 'resourceTimelineDay') {
-          calendarStartTime.value = moment(calendarStart.value).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
-          calendarEndTime.value = moment(calendarStart.value).add(1, 'd').startOf('d').subtract(1, 's').utc().format('YYYY-MM-DD HH:mm:ss')
-        } else {
-          //moment starts on sunday, isoWeek starts on monday
-          calendarStartTime.value = moment(calendarStart.value).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
-          calendarEndTime.value = moment(calendarStart.value).endOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
-        }
-		scheduleStore.startTime = calendarStartTime.value
-		scheduleStore.endTime = calendarEndTime.value
-        props.dateCallback(calendarStartTime.value, calendarEndTime.value)
-      }
+const getFormattedDate = (date) => {
+  //used for formatting the start/end for the hoverTitle
+  return filters.formatDate(date, 'timestamp', 'h:mm a')
+}
 
 //this snackbar is different from others so we built it here
 const createSnackbar = (text) => {
@@ -1160,7 +1124,7 @@ const createSnackbar = (text) => {
 //add space for scrollbar so it doesn't block times
 #event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th:nth-child(1) > div > div > table > thead > tr > th,
 #event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th > div > div > div > table > tbody > tr.fc-timeline-header-row.fc-timeline-header-row-chrono > th {
-padding-bottom: 8px;
+  padding-bottom: 8px;
 }
 
 .background-event {
@@ -1176,67 +1140,51 @@ padding-bottom: 8px;
 }
 
 
-  #calendar-container .fc-timeline-event {
-    /*height: inherit;*/
-    border-radius: 5px;
-    padding-left: 7px;
-  }
+#calendar-container .fc-timeline-event {
+  /*height: inherit;*/
+  border-radius: 5px;
+  padding-left: 7px;
+}
 
-  #calendar-container .cancelled-event-switch label {
-    font-size: 12px;
-  }
+#calendar-container .cancelled-event-switch label {
+  font-size: 12px;
+}
 
-  #calendar-container .cancelled-event-switch .v-input--selection-controls__input {
-    transform: scale(0.775);
-    transform-origin: center;
-  }
+#calendar-container .cancelled-event-switch .v-input--selection-controls__input {
+  transform: scale(0.775);
+  transform-origin: center;
+}
 
 
-  //#calendar-container .fc-event.event-tile:hover {
-  //  color: inherit !important;
-  //  max-width: unset;
-  //  width: fit-content;
-  //  -webkit-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-  //  -moz-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-  //  box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-  //  z-index: 5;
-  //
-  //  span {
-  //    max-width: unset;
-  //    width: fit-content;
-  //    padding-right: 4px;
-  //  }
-  //}
+#calendar-container .fc-rows tr,
+#calendar-container .fc-rows tr .fc-widget-content div{
+  padding: 5px 0 !important;
 
-  #calendar-container .fc-rows tr,
-  #calendar-container .fc-rows tr .fc-widget-content div{
-    padding: 5px 0 !important;
+}
 
-  }
+#calendar-container .fc-rows tr,
+#calendar-container .fc-rows tr .fc-widget-content{
+  height: auto !important;
+}
 
-  #calendar-container .fc-rows tr,
-  #calendar-container .fc-rows tr .fc-widget-content{
-    height: auto !important;
-  }
+#calendar-container .fc-cell-content {
+  padding-top: 0;
+  padding-bottom: 0;
+}
 
-  #calendar-container .fc-cell-content {
-    padding-top: 0;
-    padding-bottom: 0;
-  }
+#calendar-container > div.calendar-resize-container > div > div.fc-view-container > div > table > tbody > tr > td.fc-time-area.fc-widget-content > div > div > div > div.fc-content > div > table > tbody > tr > td > div > div.fc-bgevent-container > div {
+  color: white !important;
+  font-size: 0.875rem !important;
+}
 
-  #calendar-container > div.calendar-resize-container > div > div.fc-view-container > div > table > tbody > tr > td.fc-time-area.fc-widget-content > div > div > div > div.fc-content > div > table > tbody > tr > td > div > div.fc-bgevent-container > div {
-    color: white !important;
-    font-size: 0.875rem !important;
-  }
-
-  .event-style{
-    background-image: linear-gradient(to right, purple 20px, rgba(0,0,0,0) 20px) !important;
-  }
+.event-style{
+  background-image: linear-gradient(to right, purple 20px, rgba(0,0,0,0) 20px) !important;
+}
 
 #event-calendar {
   position: relative;
   z-index: 0;
-//  this keeps the calendar from being in front of the filter dropdowns.
+  //  this keeps the calendar from being in front of the filter dropdowns.
 }
 
 #event-calendar > div.fc-view-harness.fc-view-harness-active > div > table > thead > tr > th > div > div > div > table > tbody > tr > th.fc-slot > div > a.fc-timeline-slot-cushion{
@@ -1264,14 +1212,14 @@ padding-bottom: 8px;
   @media(max-width: 960px) {
     max-width: 30%;
   }
-  }
+}
 .v-tooltip__content {
   background-color: white;
   color: var(--v-grey-darken4);
   outline-color: black;
 }
 .v-tooltip__content.menuable__content__active {
-opacity: 1;
+  opacity: 1;
   filter:  drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
 }
 
@@ -1296,7 +1244,7 @@ opacity: 1;
     max-height:50%;
     overflow-y: scroll;
   }
-  }
+}
 .calendar-resize-container {
   /* without this when you resize the screen the calendar goes whackadoodle */
   //flex: 1 1 auto;
@@ -1342,4 +1290,3 @@ opacity: 1;
 }
 
 </style>
-

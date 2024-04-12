@@ -31,6 +31,7 @@ import { useUserStore } from '@/stores/UserStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import theme from '@/helpers/defaultTheme.js'
 import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
+import cloneDeep from 'lodash.clonedeep'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -75,8 +76,8 @@ watch(revokeAccessEvents, async () => {
 
 onMounted(() => {
   //set the theme which will use the default until one load from company
-  appStore.theme = theme.LIGHT
-  vueInstance.$vuetify.theme.themes.light = theme.LIGHT
+  appStore.theme = cloneDeep(theme.LIGHT)
+  vueInstance.$vuetify.theme.themes.light = cloneDeep(theme.LIGHT)
 })
 </script>
 
