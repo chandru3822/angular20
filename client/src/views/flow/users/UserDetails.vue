@@ -269,7 +269,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import PageOverview from '../PageOverview'
 import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
-import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStore.js'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'

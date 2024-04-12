@@ -50,7 +50,7 @@ import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSn
 import SpinnerInline from '@/components/SpinnerInline'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
-import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStore.js'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'

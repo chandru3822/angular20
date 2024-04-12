@@ -398,13 +398,12 @@ import constants from '@/helpers/constants'
 import moment from 'moment-timezone'
 import {DateTime} from 'luxon'
 import SpinnerInline from '@/components/SpinnerInline'
-import {ProjectMutations} from "@/stores/ProjectStore";
 import {getStatusClass} from '@/services/eventStatusTypeService'
 import Vue2Filters from 'vue2-filters'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import ActionButton from "./ActionButton";
-import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStore.js'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'

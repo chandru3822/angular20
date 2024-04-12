@@ -19,7 +19,7 @@
 */
 
 import {getCurrentInstance, computed, defineProps, defineEmits} from 'vue'
-import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStore.js'
 
 
 const vueInstance = getCurrentInstance().proxy

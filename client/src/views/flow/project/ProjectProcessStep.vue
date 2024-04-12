@@ -341,7 +341,7 @@ import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepSta
 import SpinnerInline from '@/components/SpinnerInline'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import ConfirmationDialog from "../../../components/ConfirmationDialog.vue";
-import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStore.js'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'

@@ -331,7 +331,7 @@ import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import cloneDeep from 'lodash.clonedeep'
 import Style from "@/views/blueraven/settings/proposalDesigner/panel/Style";
 import PageOverview from "../PageOverview";
-import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStore.js'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
