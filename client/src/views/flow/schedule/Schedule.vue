@@ -11,16 +11,16 @@
   >
     <template v-slot:main-column>
       <a-btn id="map-btn" v-if="!showMap" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
-    <Calendar :map-resources="mapResources"
-              ref="calendarRef"
-              :map-open="showMap"
-              :preselected-event="selectedProject"
-              :states="states"
-              :callback="resourceMapCallback"
-              :date-callback="dateCallback"
-              @scheduleResource="scheduleResourceToCurrentProject"
-              @unscheduleResource="unscheduleResourceFromCurrentProject"
-    />
+      <Calendar :map-resources="mapResources"
+                ref="calendarRef"
+                :map-open="showMap"
+                :preselected-event="selectedProject"
+                :states="states"
+                :callback="resourceMapCallback"
+                :date-callback="dateCallback"
+                @scheduleResource="scheduleResourceToCurrentProject"
+                @unscheduleResource="unscheduleResourceFromCurrentProject"
+      />
       <ProjectModal
           v-if="selectedProject.projectId"
           :project="selectedProject"
@@ -59,289 +59,287 @@
 </template>
 
 <script setup>
-  import {AppMutations} from '@/stores/AppStore'
-  import { postRequest, getSnackbar } from '@/helpers/helpers'
-  import {getActiveStatesByHierarchy} from '@/services/stateService'
-  import Map from './components/Map'
-  import Calendar from './components/Calendar'
-  import {getEventTypes} from '@/services/scheduleService'
-  import { getStatusTypes } from '@/services/processStepStatusTypeService'
-  import constants from "@/helpers/constants";
-  import { getEventStatusTypes } from "@/services/eventStatusTypeService";
-  import ThreeColumnLayout from "@/views/ThreeColumnLayout.vue";
-  import ThreeColumnLayoutMobile from "@/views/ThreeColumnLayoutMobile.vue";
-  import ProjectSearchDialog from "@/views/flow/schedule/components/ProjectSearchDialog.vue";
-  import ProjectModal from "@/views/flow/schedule/components/ProjectModal.vue";
-  import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
+import {AppMutations} from '@/stores/AppStore'
+import { postRequest, getSnackbar } from '@/helpers/helpers'
+import {getActiveStatesByHierarchy} from '@/services/stateService'
+import Map from './components/Map'
+import Calendar from './components/Calendar'
+import {getEventTypes} from '@/services/scheduleService'
+import { getStatusTypes } from '@/services/processStepStatusTypeService'
+import constants from "@/helpers/constants";
+import { getEventStatusTypes } from "@/services/eventStatusTypeService";
+import ThreeColumnLayout from "@/views/ThreeColumnLayout.vue";
+import ThreeColumnLayoutMobile from "@/views/ThreeColumnLayoutMobile.vue";
+import ProjectSearchDialog from "@/views/flow/schedule/components/ProjectSearchDialog.vue";
+import ProjectModal from "@/views/flow/schedule/components/ProjectModal.vue";
+import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 
-  import {useUserStore} from '@/stores/UserStorePinia.js'
-  import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
-  import { useAppStore } from '@/stores/AppStorePinia.js'
-  import { useScheduleStore } from '@/stores/ScheduleStore.js'
+import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
-  const appStore = useAppStore()
-  const route = useRoute()
-  const router = useRouter()
-  const userStore = useUserStore()
-  const scheduleStore = useScheduleStore()
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const scheduleStore = useScheduleStore()
 
-  const vueInstance = getCurrentInstance().proxy
-  const store = vueInstance.$store
-  const vuetify = vueInstance.$vuetify
-  const calendarRef = ref(null);
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const vuetify = vueInstance.$vuetify
+const calendarRef = ref(null);
 
-  const snackbar = ref({})
-  const saveInvalid = ref(true)
-  const startTime = ref(null)
-  const endTime = ref(null)
-  const mapResources = ref([])
-  const projectMapMarkers = ref([])
-  const state = ref({})
-  const mapZoom = ref(null)
-  const latitude = ref(null)
-  const longitude = ref(null)
-  const states = ref([])
-  const eventStatusTypes = ref([])
-  const processStepStatusTypes = ref([])
-  const eventTypes = ref([])
-  //used for multi select
-  const selectedEventTypes = ref([])
-  //used for single select
-  const selectedProject = ref({})
-  //used for search
-  const searchMenuOpen = ref(false)
-  const search = ref(null)
-  // const fieldsSaving = ref(false)
-  const projects = ref([])
-  const options = ref({
-    itemsPerPage: 100
-  })
-  const footerProps = ref({
-    'items-per-page-options': [25, 50, 100],
-    'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-  })
-  const calendarResourceToSchedule =ref({})
-  const mapChild =ref()
+const snackbar = ref({})
+const saveInvalid = ref(true)
+const startTime = ref(null)
+const endTime = ref(null)
+const mapResources = ref([])
+const projectMapMarkers = ref([])
+const state = ref({})
+const mapZoom = ref(null)
+const latitude = ref(null)
+const longitude = ref(null)
+const states = ref([])
+const eventStatusTypes = ref([])
+const processStepStatusTypes = ref([])
+const eventTypes = ref([])
+//used for multi select
+const selectedEventTypes = ref([])
+//used for single select
+const selectedProject = ref({})
+//used for search
+const searchMenuOpen = ref(false)
+const search = ref(null)
+// const fieldsSaving = ref(false)
+const projects = ref([])
+const options = ref({
+  itemsPerPage: 100
+})
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const calendarResourceToSchedule =ref({})
+const mapChild =ref()
 
-  const activeComp = computed(() => {
-    return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
-  })
-  const showMap = computed(() => {
-    return store.state.schedule.showMap
-  })
+const activeComp = computed(() => {
+  return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
+})
+const showMap = computed(() => {
+  return store.state.schedule.showMap
+})
 
-  const userCanEdit = computed(() => {
-    return userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
-  })
-  const timezone = computed(() => {
-    return store.state.schedule.timezone?.value === null ? userStore.timezone : userStore.timezone
-  })
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
+})
+const timezone = computed(() => {
+  return store.state.schedule.timezone?.value === null ? userStore.timezone : userStore.timezone
+})
 
-  watch(selectedProject, () => {
-        validateSaveEvent()
-  })
+watch(selectedProject, () => {
+  validateSaveEvent()
+})
 
-    onMounted(() => {
-      fetchActiveStatesByHierarchy()
-      fetchStatusTypes()
-      fetchEventStatusTypes()
-      fetchEventTypes()
-      if(route.query && route.query.projectProcessStepEventId) {
-        //projectId, eventId, processStepStatusTypeId
-        getSingleProject(null, null, null,null, parseInt(route.query.projectProcessStepEventId), true)
-
-      }
-    })
-  watch(() => store.state.schedule.timezone.value, (value, oldValue) => {
-    timezone.value = store.state.schedule.timezone
-  })
-  const openSearchModal = () => {
-    searchMenuOpen.value = !searchMenuOpen.value
-    mapChild.value.closeMenu()
+onMounted(() => {
+  fetchActiveStatesByHierarchy()
+  fetchStatusTypes()
+  fetchEventStatusTypes()
+  fetchEventTypes()
+  if(route.query && route.query.projectProcessStepEventId) {
+    //projectId, eventId, processStepStatusTypeId
+    getSingleProject(null, null, null,null, parseInt(route.query.projectProcessStepEventId), true)
 
   }
-  const updateEvents = () => {
-    calendarRef.value.updateEvents()
+})
+
+const openSearchModal = () => {
+  searchMenuOpen.value = !searchMenuOpen.value
+  mapChild.value.closeMenu()
+
+}
+const updateEvents = () => {
+  calendarRef.value.updateEvents()
+}
+
+const showHideMap = (show)=> {
+  if(show !== showMap.value) {
+    scheduleStore.showMap = !scheduleStore.showMap
   }
+}
+const validateSaveEvent =  () => {
+  if(!selectedProject.value || !selectedProject.value.start || !selectedProject.value.end
+      || !selectedProject.value.resource || !selectedProject.value.resource.id || (selectedProject.value.start >= selectedProject.value.end) ||
+      //if all 3 fields are read only, dont let them save
+      (selectedProject.value.startFieldReadOnly && selectedProject.value.endFieldReadOnly && selectedProject.value.resourceFieldReadOnly)) {
+    saveInvalid.value = true
+  } else {
+    saveInvalid.value = false
+  }
+}
+const resourceMapCallback =  (newValue, addPin) => {
+  mapResources.value = newValue
+  if(newValue.length > 0 && addPin){
+    //only show the map if we're adding a pin, not when removing a pin
+    showHideMap(true)
+    let zoomObj = newValue[newValue.length-1] //choose the most recently added one?
+    zoomToMap({latitude: zoomObj.coordinates[1], longitude: zoomObj.coordinates[0]})
+  }
+}
+const projectMapMarkersCallback = (newValue)=> {
+  projectMapMarkers.value = newValue
+  showHideMap(true)
+  // for now only doing this if 1 project is pinned until further definition from ashi
+  if(newValue.length === 1){
+    zoomToMap(newValue[0], 8)
+  }
+}
+const toggleSelectedProjectMapPin = (onload)=> {
+  selectedProject.value.pinned = !selectedProject.value.pinned
+  if(selectedProject.value.pinned && !onload){
+    //if pinning b/c we're loading the page with a selected project, we don't want to show the map if it's hidden
+    showHideMap(true)
+    zoomToMap({latitude: selectedProject.value.latitude, longitude: selectedProject.value.longitude})
+  } else if(selectedProject.value.pinned && showMap.value === true){
+    //if we're loading the page with a selected project and the map is already open, zoom into the project pin
+    zoomToMap({latitude: selectedProject.value.latitude, longitude: selectedProject.value.longitude})
+  }
+}
+const dateCallback =  (start, end) => {
+  startTime.value = start
+  endTime.value = end
+}
 
-      const showHideMap = (show)=> {
-        if(show !== showMap.value) {
-			scheduleStore.showMap = !scheduleStore.showMap
-        }
-      }
-      const validateSaveEvent =  () => {
-        if(!selectedProject.value || !selectedProject.value.start || !selectedProject.value.end
-          || !selectedProject.value.resource || !selectedProject.value.resource.id || (selectedProject.value.start >= selectedProject.value.end) ||
-          //if all 3 fields are read only, dont let them save
-          (selectedProject.value.startFieldReadOnly && selectedProject.value.endFieldReadOnly && selectedProject.value.resourceFieldReadOnly)) {
-          saveInvalid.value = true
-        } else {
-          saveInvalid.value = false
-        }
-      }
-      const resourceMapCallback =  (newValue, addPin) => {
-        mapResources.value = newValue
-        if(newValue.length > 0 && addPin){
-          //only show the map if we're adding a pin, not when removing a pin
-          showHideMap(true)
-          let zoomObj = newValue[newValue.length-1] //choose the most recently added one?
-          zoomToMap({latitude: zoomObj.coordinates[1], longitude: zoomObj.coordinates[0]})
-        }
-      }
-      const projectMapMarkersCallback = (newValue)=> {
-        projectMapMarkers.value = newValue
-        showHideMap(true)
-        // for now only doing this if 1 project is pinned until further definition from ashi
-        if(newValue.length === 1){
-          zoomToMap(newValue[0], 8)
-        }
-      }
-      const toggleSelectedProjectMapPin = (onload)=> {
-        selectedProject.value.pinned = !selectedProject.value.pinned
-        if(selectedProject.value.pinned && !onload){
-          //if pinning b/c we're loading the page with a selected project, we don't want to show the map if it's hidden
-          showHideMap(true)
-          zoomToMap({latitude: selectedProject.value.latitude, longitude: selectedProject.value.longitude})
-        } else if(selectedProject.value.pinned && showMap.value === true){
-          //if we're loading the page with a selected project and the map is already open, zoom into the project pin
-          zoomToMap({latitude: selectedProject.value.latitude, longitude: selectedProject.value.longitude})
-        }
-      }
-      const dateCallback =  (start, end) => {
-        startTime.value = start
-        endTime.value = end
-      }
+const scheduleResourceToCurrentProject = (resource)=> {
+  calendarResourceToSchedule.value = resource
+  let snackbar = createSnackbar('Resource assigned')
+  store.commit(AppMutations.SHOW_SNACK, snackbar)
+}
+const unscheduleResourceFromCurrentProject = ()=> {
+  calendarResourceToSchedule.value = {}
+  let snackbar = createSnackbar('Resource unassigned')
+  store.commit(AppMutations.SHOW_SNACK, snackbar)
+}
 
-      const scheduleResourceToCurrentProject = (resource)=> {
-        calendarResourceToSchedule.value = resource
-        let snackbar = createSnackbar('Resource assigned')
-        store.commit(AppMutations.SHOW_SNACK, snackbar)
-      }
-      const unscheduleResourceFromCurrentProject = ()=> {
-        calendarResourceToSchedule.value = {}
-        let snackbar = createSnackbar('Resource unassigned')
-        store.commit(AppMutations.SHOW_SNACK, snackbar)
-      }
+//this snackbar is different from others so we built it here
+const createSnackbar = (text) => {
+  return {
+    y: 'bottom',
+    x: null,
+    mode: '',
+    timeout: 5000,
+    text: text,
+    color: 'grey darken-3',
+    fontClass: 'secondary--text',
+    enabled: true
+  }
+}
 
-  //this snackbar is different from others so we built it here
-  const createSnackbar = (text) => {
-    return {
-      y: 'bottom',
-      x: null,
-      mode: '',
-      timeout: 5000,
-      text: text,
-      color: 'grey darken-3',
-      fontClass: 'secondary--text',
-      enabled: true
+const getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId, onLoad) => {
+  try {
+    let params = {
+      projectId,
+      eventId,
+      processStepStatusTypeId,
+      projectProcessStepEventId,
+      eventStatusTypeId
     }
+
+    //"getProject" is a bad term for this endpoint. it really returns a specific event with some project details
+    const {data} = await postRequest(`/schedule/getProject`, params, null, [])
+    let project = data[0]
+    project.coordinates = [ project.longitude, project.latitude ]
+    project.pinned = false
+    selectedProject.value = project
+    if(onLoad === true){
+      toggleSelectedProjectMapPin(onLoad)
+    }
+    scheduleStore.resourceId = project.selectedResourceId
+    selectedProject.value.resource = { id: selectedProject.value.resourceId, name: selectedProject.value.resourceName }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar.value = getSnackbar('ERROR', 'Error Loading Project Details')
+    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
   }
+}
 
-      const getSingleProject = async(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId, onLoad) => {
-        try {
-          let params = {
-            projectId,
-            eventId,
-            processStepStatusTypeId,
-            projectProcessStepEventId,
-            eventStatusTypeId
-          }
+const fetchActiveStatesByHierarchy = async() =>  {
+  try {
+    const {data} = await getActiveStatesByHierarchy()
+    states.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar.value = getSnackbar('ERROR', 'Error Retrieving States')
+    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const fetchEventTypes = async() =>  {
+  try {
+    // 'event types' is just schedulable process steps
+    const {data} = await getEventTypes()
+    eventTypes.value = data
+    if(eventTypes.value?.length > 0) {
+      selectedEventTypes.value = selectedEventTypes.value.filter(set => {
+        return eventTypes.value.some(et => et.id === set.id)
+      })
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Event Types')
+    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const fetchEventStatusTypes = async() => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data} = await getEventStatusTypes()
+    eventStatusTypes.value = data
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Data')
+    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const fetchStatusTypes = async() =>  {
+  try {
+    //the old way
+    // const {data} = await getCompanyStatusTypes()
+    // //only show active and complete
+    // processStepStatusTypes.value = data.filter(d => d.processStepStatusTypeId !== 3)
 
-          //"getProject" is a bad term for this endpoint. it really returns a specific event with some project details
-          const {data} = await postRequest(`/schedule/getProject`, params, null, [])
-          let project = data[0]
-          project.coordinates = [ project.longitude, project.latitude ]
-          project.pinned = false
-            selectedProject.value = project
-          if(onLoad === true){
-            toggleSelectedProjectMapPin(onLoad)
-          }
-		  scheduleStore.resourceId = project.selectedResourceId
-          selectedProject.value.resource = { id: selectedProject.value.resourceId, name: selectedProject.value.resourceName }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Loading Project Details')
-          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-        }
-      }
+    //the new way - use root statuses
+    const {data} = await getStatusTypes()
+    //only show active and complete
+    processStepStatusTypes.value = data?.filter(d => d.id !== 3)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Status Types')
+    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
 
-      const fetchActiveStatesByHierarchy = async() =>  {
-        try {
-          const {data} = await getActiveStatesByHierarchy()
-          states.value = data
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving States')
-          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-          store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-      const fetchEventTypes = async() =>  {
-        try {
-          // 'event types' is just schedulable process steps
-          const {data} = await getEventTypes()
-          eventTypes.value = data
-          if(eventTypes.value?.length > 0) {
-            selectedEventTypes.value = selectedEventTypes.value.filter(set => {
-              return eventTypes.value.some(et => et.id === set.id)
-            })
-          }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Event Types')
-          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-          store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-      const fetchEventStatusTypes = async() => {
-        store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getEventStatusTypes()
-          eventStatusTypes.value = data
-          store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Data')
-          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-          store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-      const fetchStatusTypes = async() =>  {
-        try {
-          //the old way
-          // const {data} = await getCompanyStatusTypes()
-          // //only show active and complete
-          // processStepStatusTypes.value = data.filter(d => d.processStepStatusTypeId !== 3)
+const resetMapZoom = ()=> {
+  zoomToMap(
+      {
+        longitude: null,
+        latitude: null,
+      },
+      2
+  )
+}
 
-          //the new way - use root statuses
-          const {data} = await getStatusTypes()
-          //only show active and complete
-          processStepStatusTypes.value = data?.filter(d => d.id !== 3)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          snackbar.value = getSnackbar('ERROR', 'Error Retrieving Status Types')
-          store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-          store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-
-      const resetMapZoom = ()=> {
-        zoomToMap(
-            {
-              longitude: null,
-              latitude: null,
-            },
-            2
-        )
-      }
-
-      const zoomToMap = (item, zoomOverride) => {
-        if(item){
-          mapZoom.value = zoomOverride ? zoomOverride : 6
-          longitude.value = item.mapLongitude | item.longitude
-          latitude.value = item.mapLatitude | item.latitude
-        }
-      }
+const zoomToMap = (item, zoomOverride) => {
+  if(item){
+    mapZoom.value = zoomOverride ? zoomOverride : 6
+    longitude.value = item.mapLongitude | item.longitude
+    latitude.value = item.mapLatitude | item.latitude
+  }
+}
 
 
 
@@ -353,104 +351,104 @@
   @media(max-width: 960px) {
     overflow-x: clip;
   }
-  }
-  #schedule-container .v-data-table__wrapper {
-    height: calc(40vh - 118px);
-    //this is smaller because it is the inner wrapper of the table
-    min-height: 211px;
-  }
+}
+#schedule-container .v-data-table__wrapper {
+  height: calc(40vh - 118px);
+  //this is smaller because it is the inner wrapper of the table
+  min-height: 211px;
+}
 
-  #schedule-container .v-data-footer__pagination {
-    display: none !important;
-  }
+#schedule-container .v-data-footer__pagination {
+  display: none !important;
+}
 
-  #schedule-container .v-data-table td {
-    height: 30px;
-  }
+#schedule-container .v-data-table td {
+  height: 30px;
+}
 
-  #map-btn.absolute-right {
-    position: absolute;
-    z-index: 5;
-    right: 24px;
-    border-radius: 4px;
-    height: 46px;
-    width: 46px;
-  }
+#map-btn.absolute-right {
+  position: absolute;
+  z-index: 5;
+  right: 24px;
+  border-radius: 4px;
+  height: 46px;
+  width: 46px;
+}
 
-  #schedule-project-toolbar .v-toolbar__content {
-    padding: 4px 0 !important;
-  }
+#schedule-project-toolbar .v-toolbar__content {
+  padding: 4px 0 !important;
+}
 
-  .map-field-input {
-    border-bottom: solid 1px rgba(0, 0, 0, 0.42);
-  }
+.map-field-input {
+  border-bottom: solid 1px rgba(0, 0, 0, 0.42);
+}
 
-  #search-menu-btn.rounded-tile-btn {
-    background-color: white;
-    border-radius: 4px;
-  }
+#search-menu-btn.rounded-tile-btn {
+  background-color: white;
+  border-radius: 4px;
+}
 
-  .project-search-card{
-    position: relative;
-    top:36px;
-    right:34px;
-  }
+.project-search-card{
+  position: relative;
+  top:36px;
+  right:34px;
+}
 </style>
 
 <style lang="scss" scoped>
-  .map-row {
-    height: 100%;
-    min-height: 300px;
-    max-width: 100%;
-  }
+.map-row {
+  height: 100%;
+  min-height: 300px;
+  max-width: 100%;
+}
 
-  .schedule-row {
-    height: calc(40% - 10px);
-    min-height: 300px;
-  }
+.schedule-row {
+  height: calc(40% - 10px);
+  min-height: 300px;
+}
 
-  .schedule-row-filter-container {
-    height: 100%;
-    position: relative;
-  }
+.schedule-row-filter-container {
+  height: 100%;
+  position: relative;
+}
 
-  .filter-text-card {
-    padding-top: 0 !important;
-    display: flex;
-    flex-direction: column;
-    height: calc(100% - 90px);
-  }
+.filter-text-card {
+  padding-top: 0 !important;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 90px);
+}
 
-  .schedule-row-go-button {
-    position: absolute;
-    bottom: 10px;
-  }
+.schedule-row-go-button {
+  position: absolute;
+  bottom: 10px;
+}
 
-  .map-field-label {
-    font-size: 12px;
-    color: var(--v-primary-base);
-  }
+.map-field-label {
+  font-size: 12px;
+  color: var(--v-primary-base);
+}
 
-  .list-container {
-    position: relative;
-    background-color: white;
-  }
+.list-container {
+  position: relative;
+  background-color: white;
+}
 
-  #list-loader {
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    background-color: var(--v-secondary-base);
-    opacity: .5;
-  }
+#list-loader {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  background-color: var(--v-secondary-base);
+  opacity: .5;
+}
 </style>
 
