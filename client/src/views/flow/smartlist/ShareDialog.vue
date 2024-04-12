@@ -342,7 +342,7 @@ const updateAccess = async () => {
       logError(err)
       appStore.showSnack('ERROR', 'Error while sharing Smartlist')
     } finally {
-      handleHidingGlobalLoader(vueInstance, true)
+       handleHidingGlobalLoader( true)
     }
   } else {
     appStore.showSnack('SUCCESS', `Access updated`)
@@ -372,7 +372,7 @@ const updateOwner = async () => {
     logError(err)
     appStore.showSnack('ERROR', 'Error while transferring ownership')
   } finally {
-    handleHidingGlobalLoader(vueInstance, true)
+     handleHidingGlobalLoader( true)
   }
 }
 

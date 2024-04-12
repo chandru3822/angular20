@@ -437,7 +437,7 @@ const getProjectPages = async () => {
     })
 
     projectPages.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
 	appStore.showSnack('ERROR', 'Error Retrieving Project Pages')

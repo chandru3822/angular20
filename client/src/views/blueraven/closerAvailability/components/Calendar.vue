@@ -147,7 +147,7 @@ const getRoundRobins = async() => {
     const {data, status} = await getRequest(`/roundRobin/forUser`)
     roundRobins.value = data
     roundRobinsLoading.value = false
-    handleHidingGlobalLoader(vueInstance, status)
+     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Retrieving Round Robins')
@@ -178,7 +178,7 @@ const getRoundRobinUsers = async() => {
       const {data, status} = await postRequest(`/roundRobin/usersByDownline`, params, null, [])
       roundRobinUsers.value = data
       usersLoading.value = false
-      handleHidingGlobalLoader(vueInstance, status)
+       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       appStore.showSnack('ERROR', 'Error Retrieving Users')

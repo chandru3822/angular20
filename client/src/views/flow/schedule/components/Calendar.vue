@@ -669,7 +669,7 @@ const handleResourceColors = () => {
           selectedOrgs.value = selectedOrgs.value.filter(so => {
             return orgs.value.some(o => o.id === so.id)
           })
-          handleHidingGlobalLoader(vueInstance, status)
+           handleHidingGlobalLoader( status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           appStore.showSnack('ERROR', 'Error Retrieving Orgs')
@@ -690,7 +690,7 @@ const handleResourceColors = () => {
           }
 
           orgTypesLoading.value = false
-          handleHidingGlobalLoader(vueInstance, status)
+           handleHidingGlobalLoader( status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           appStore.showSnack('ERROR', 'Error Retrieving Org Types')
@@ -709,7 +709,7 @@ const handleResourceColors = () => {
             }
           }
           positionsLoading.value = false
-          handleHidingGlobalLoader(vueInstance, status)
+           handleHidingGlobalLoader( status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           appStore.showSnack('ERROR', 'Error Retrieving Positions')
@@ -736,7 +736,7 @@ const handleResourceColors = () => {
           selectedUsers.value = selectedUsers.value.filter(su => {
             return users.value.some(u => u.id === su.id)
           })
-          handleHidingGlobalLoader(vueInstance, status)
+           handleHidingGlobalLoader( status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           appStore.showSnack('ERROR', 'Error Retrieving Users')

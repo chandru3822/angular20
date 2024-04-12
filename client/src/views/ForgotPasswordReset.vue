@@ -113,7 +113,7 @@
           user.value = data
           requestValidating.value = false
           requestValid.value = user.value?.id
-          handleHidingGlobalLoader( vueInstance, status)
+          handleHidingGlobalLoader( status)
         } catch (e) {
           requestValidating.value = false
           requestValid.value = false

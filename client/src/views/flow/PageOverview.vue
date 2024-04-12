@@ -178,7 +178,6 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
 const projectStore = useProjectStore()
-const router = vueInstance.$router
 
 const filters = vueInstance.$filters
 

@@ -256,7 +256,7 @@ const getPositions = async () => {
       const {data, status} = await getRequest(`/position/withParent`)
       positions.value = data
       positionsLoading.value = false
-      handleHidingGlobalLoader(vueInstance, status)
+       handleHidingGlobalLoader( status)
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
@@ -274,7 +274,7 @@ const saveHiddenAndWhiteList = async () => {
       event.value.hiddenWhiteListedPositions = []
     }
     appStore.showSnack('SUCCESS', 'Saved Successfully')
-    handleHidingGlobalLoader(vueInstance, status)
+     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
 	  appStore.showSnack('ERROR', 'Error Saving Event Access Control')

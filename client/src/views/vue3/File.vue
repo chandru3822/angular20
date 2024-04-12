@@ -54,10 +54,6 @@ import {getCurrentInstance, onMounted, ref} from 'vue'
 
 import {getSnackbar, handleHidingGlobalLoader} from "@/helpers/helpers.js";
 
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const router = vueInstance.$router
-
 const optionsValue = ref(null)
 const compositionValue = ref(null)
 const inputField = ref(null)

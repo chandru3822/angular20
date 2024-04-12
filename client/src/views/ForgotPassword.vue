@@ -40,13 +40,14 @@
 import constants from '@/helpers/constants'
 import {handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
 import {getCurrentInstance, onMounted, ref} from 'vue'
+import {useRouter} from "vue-router/composables";
 
 import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const router = vueInstance.$router
+const router = useRouter()
 
 
 const email = ref(null)

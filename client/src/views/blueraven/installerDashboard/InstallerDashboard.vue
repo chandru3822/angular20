@@ -472,10 +472,6 @@ import {ref, onMounted, computed, watch, getCurrentInstance} from "vue";
 import {useAppStore} from "@/stores/AppStore.js";
 
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
- const router = vueInstance.$router
-const route = vueInstance.$route
-const vuetify = vueInstance.$vuetify
 
 const model = ref({})
 const workQueues = ref([])

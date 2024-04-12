@@ -53,11 +53,6 @@ import {getCurrentInstance, onMounted, ref} from 'vue'
 import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const router = vueInstance.$router
-
-
 const dialog = ref(false)
 const errors = ref([])
 const dataLoading = ref(true)

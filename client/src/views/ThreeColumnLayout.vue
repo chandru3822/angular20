@@ -111,37 +111,6 @@ const userId = computed(() => {
   return parseInt(route.params.userId) || 0
 })
 
-// todo: note, i checked the code and these two values aren't being used...unless i am blind!
-// const leftWidth = computed(() => {
-//   if (!props.leftHidden) {
-//     return {
-//       'hidden': props.leftHidden,
-//       'collapsed': projectStore.leftSideSplit,
-//       'narrow': props.leftSmall
-//     }
-//   }
-// })
-//
-// const rightWidth = computed(() => {
-//   if (!props.rightHidden) {
-//     return {
-//       'hidden': props.rightHidden,
-//       'collapsed': projectStore.rightSideSplit && props.showRightCollapseBtn,
-//     }
-//   }
-// })
-
-// todo: i am almost certain that this code is never getting hit, taking out for now
-// watch(() => vueInstance.$route.params.projectId, () => {
-//   // whenever userImage changes, this function will run
-//   projectId.value = parseInt(vueInstance.$route.params.projectId) | null
-//   console.log('this happened', projectId.value)
-//   getProject()
-// })
-// watch(() => vueInstance.$route.params.userId, () => {
-//   userId.value = parseInt(vueInstance.$route.params.userId) | null
-// })
-
 onMounted(() => {
   //have to reset this on creation in case there is already a state then they go to the project url directly
   projectStore.resetProjectState()

@@ -35,11 +35,6 @@ import {getCurrentInstance, onMounted, defineProps, ref, computed} from 'vue'
 import constants from '@/helpers/constants'
 
 // reminder that v-model is sugar syntax for :value="value" @input="v => $emit('input', v)"
-
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const router = vueInstance.$router
-
 const basicRequiredRule = ref(constants.BASIC_REQUIRED_RULE)
 
 const props = defineProps({

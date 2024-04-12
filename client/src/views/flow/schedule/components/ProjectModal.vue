@@ -145,7 +145,7 @@ const getResources = async(item) => {
     }
     const {data, status} = await postRequest(`/schedule/projectResources`, params, null, [])
     item.resources = data || []
-    handleHidingGlobalLoader(vueInstance, status)
+     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Retrieving Resources')
@@ -213,7 +213,7 @@ const scheduleProject = async(forceSave) => {
     props.project.saveVersion++
     // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
     // this.$refs.calendar.getEvents(false, true) todo: figure out what this should change to
-    handleHidingGlobalLoader(vueInstance, status)
+     handleHidingGlobalLoader( status)
     fieldsSaving.value = false
     emit('updateEvents')
 	appStore.showSnack('SUCCESS', 'Job Scheduled')
@@ -238,7 +238,7 @@ const cancelProjectProcessStepEvent = async() => {
   try {
     const {status} = await postRequest(`/projectProcessStep/${props.project.projectProcessStepId}/event/${props.project.projectProcessStepEventId}/status`, props.project.cancelledCompanyStatusType)
     props.project.eventStatusTypeId = props.project?.cancelledCompanyStatusType?.id
-    handleHidingGlobalLoader(vueInstance, status)
+     handleHidingGlobalLoader( status)
 	appStore.showSnack('SUCCESS', 'Successfully Unscheduled Event')
   } catch (e) {
     console.error('*** ERROR ***', e)

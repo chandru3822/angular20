@@ -299,6 +299,7 @@ import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
 import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
+import {useRouter, useRoute} from "vue-router/composables"
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
@@ -308,7 +309,8 @@ const UPDATE_TYPE = Object.freeze({
 })
 
 const vueInstance = getCurrentInstance().proxy
-const router = vueInstance.$router
+const router = useRouter()
+const route = useRoute()
 
 const store = vueInstance.$store
 const userStore = useUserStore()
@@ -341,7 +343,7 @@ const sourceRequirements = ref([])
 
 const reportTypes = ref([])
 const availableFields = ref([])
-const isEditing = ref(typeof vueInstance.$route.params.reportId !== 'undefined')
+const isEditing = ref(typeof route.params.reportId !== 'undefined')
 const prevObjectTypeId = ref([])
 /**
  * If editing a report, show only types available to that group
@@ -409,8 +411,8 @@ const canDelete = computed(() => {
   return false
 })
 
-watch(() => vueInstance.$route.params?.reportId, async () => {
-  if (vueInstance.$route.params?.reportId) {
+watch(() => route.params?.reportId, async () => {
+  if (route.params?.reportId) {
     isEditing.value = true
     refreshReport()
   }
@@ -431,7 +433,7 @@ const refreshReport = async (forceUpdate = false) => {
 
 const getReport = async () => {
   try {
-    const {data} = await getRequest(`/smartlist/${vueInstance.$route.params?.reportId}?accessControl=true`)
+    const {data} = await getRequest(`/smartlist/${route.params?.reportId}?accessControl=true`)
     report.value = cloneDeep(data)
     sourceReport.value = cloneDeep(data)
   } catch (e) {
