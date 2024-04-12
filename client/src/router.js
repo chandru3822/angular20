@@ -348,13 +348,13 @@ const router = new Router({
               path: 'dashboard',
               name: 'closerDashboard',
               meta: {title: 'Albatross - Closer Dashboard'},
-              component: () => import ( './views/blueraven/closerDashboard/CloserDashboard.vue')
+              component: () => import ( './views/blueraven/closerDashboard/CloserRanking.vue')
             }, {
               path: 'funnel',
               alias: '/closerDashboard',
               name: 'closerFunnel',
               meta: {title: 'Albatross - Closer Dashboard'},
-              component: () => import ( './views/blueraven/closerDashboard/CloserFunnel.vue')
+              component: () => import ( './views/blueraven/closerDashboard/CloserFunnelRework.vue')
             }, {
               path: 'incentive',
               name: 'closerIncentive',

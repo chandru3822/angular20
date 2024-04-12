@@ -19,12 +19,13 @@
 </template>
 
 <script setup>
-import {useRouter} from "vue-router/composables";
+import {useRouter, useRoute} from "vue-router/composables";
+import { computed } from 'vue'
 
 const router = useRouter()
+const route = useRoute()
 
-const snackbar = ref({})
-const tabs = ref([
+const tabs = [
   {
     id: 1,
     label: 'Funnel',
@@ -50,20 +51,21 @@ const tabs = ref([
     label: 'Residuals',
     path: `/closer/residuals`,
   }
-])
+]
+
+const activeTab = computed(() => {
+  return $route?.path?.includes('/event') ? `/settings/processStep/${$route.params.id}/events` : null
+  // get: function() {
+  //   return this.$route?.path?.includes('/event') ? `/settings/processStep/${this.$route.params.id}/events` : null
+  // },
+  // set: function(val) {
+  //   return val
+  // }
+})
 
 const goToRoute = (name) => {
   router.push({name})
 }
-
-const activeTab = computed({
-  get: function() {
-    return this.$route?.path?.includes('/event') ? `/settings/processStep/${this.$route.params.id}/events` : null
-  },
-  set: function(val) {
-    return val
-  }
-})
 </script>
 
 <style lang="scss" scoped>
