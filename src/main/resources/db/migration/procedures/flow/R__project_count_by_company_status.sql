@@ -27,7 +27,7 @@ BEGIN
             and cp.company_id = p_company_id
           where cpst.company_id = p_company_id
             and cpst.archived is false
-          group by cpst.id, cpst.project_status_type
+          group by cpst.id, cpst.project_status_type,cpst.display_order
           order by cpst.display_order) as limited_projects;
 END;
 $function$

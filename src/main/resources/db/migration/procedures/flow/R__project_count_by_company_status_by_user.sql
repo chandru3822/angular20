@@ -27,7 +27,13 @@ BEGIN
     when p_is_down_line is true then RETURN QUERY
       SELECT limited_projects.company_project_status_type_id::bigint,
              limited_projects.company_project_status,
-             limited_projects.project_status_count::bigint,
+             case when limited_projects.company_project_status_type_id::bigint in (65,66,64,63) then
+                    (select count(1)
+                     from flow.project p
+                     inner join flow.user_position u on u.id = p.user_position_id
+                     where p.company_project_status_type_id = limited_projects.company_project_status_type_id::bigint and
+                          u.user_id =  p_user_id)
+               else limited_projects.project_status_count::bigint  end as project_status_count,
              limited_projects.icon_tag,
              limited_projects.commissions
       FROM (with project_ids as (with positions as (select up.org_id as parent_org_id, up.user_id as user_id
@@ -114,7 +120,13 @@ BEGIN
     else RETURN QUERY
       SELECT limited_projects.company_project_status_type_id,
              limited_projects.company_project_status,
-             limited_projects.project_status_count,
+             case when limited_projects.company_project_status_type_id::bigint in (65,66,64,63) then
+                    (select count(1)
+                     from flow.project p
+                            inner join flow.user_position u on u.id = p.user_position_id
+                     where p.company_project_status_type_id = limited_projects.company_project_status_type_id::bigint and
+                       u.user_id =  p_user_id)
+                  else limited_projects.project_status_count::bigint  end as project_status_count,
              limited_projects.icon_tag,
              limited_projects.commissions
       FROM (with user_position_ids as (select array_agg(up.id) as user_position_ids
