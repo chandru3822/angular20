@@ -6,38 +6,39 @@
           <v-toolbar-title class="app-title">Budget Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[createNew = !createNew, newBudgetType = {}]">
-              <v-icon v-if="!createNew">add</v-icon>
-              <v-icon v-else>close</v-icon>
-              <span v-if="!isMobile">
-                {{createNew ? 'cancel' : 'Add Budget Type'}}
-              </span>
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                @click="[createNew = !createNew, newBudgetType = {}]"
+                :prepend-icon="!createNew ? 'add' : 'close'"
+                :text="createNew ? 'cancel' : 'Add Budget Template'"
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
         <v-card flat v-if="createNew" class="pa-4">
           <h3>New Budget Type</h3>
-          <v-text-field text
+          <a-text-field
                         type="text"
                         label="Budget Type"
                         v-model="newBudgetType.name">
-          </v-text-field>
-          <v-btn color="primary" dark class="white--text"
-                 :disabled="!newBudgetType.name"
-                 @click="saveBudgetType(newBudgetType, true)">
-            Save
-          </v-btn>
+          </a-text-field>
+          <a-btn
+              color="primary"
+              :disabled="!newBudgetType.name"
+              @click="saveBudgetType(newBudgetType, true)"
+              text="Save"
+          ></a-btn>
         </v-card>
         <v-divider v-if="createNew" ></v-divider>
         <v-data-table
-          :headers="headers"
-          :items="filterBudgetTypes()"
-          :items-per-page="-1"
-          :loading="dataLoading"
-          :mobile-breakpoint="0"
-          class="elevation-1 fix-column-width-bug square-card"
-          :footer-props="footerProps"
+            :headers="headers"
+            :items="filteredBudgetTypes"
+            :items-per-page="-1"
+            :loading="dataLoading"
+            :mobile-breakpoint="0"
+            class="elevation-1 fix-column-width-bug square-card"
+            :footer-props="footerProps"
         >
           <template #no-data>
             <span class="default-text-color">No Budget Types</span>
@@ -50,30 +51,49 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">
-                <v-text-field text
+                <a-text-field
                               type="text"
                               v-if="index === editIndex"
                               label="Budget Type"
                               v-model="item.name">
-                </v-text-field>
+                </a-text-field>
                 <div v-else>
                   {{ item.name }}
                 </div>
               </td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn small text color="primary" @click="editIndex = index" v-if="index !== editIndex">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                  <v-btn small text color="primary" @click="saveBudgetType(item, false)" v-if="index === editIndex">
-                    <v-icon>save</v-icon>
-                  </v-btn>
-                  <v-btn small text color="primary" @click="editIndex = null" v-if="index === editIndex">
-                    cancel
-                  </v-btn>
-                  <v-btn small text color="primary"  @click="[deleteConfirm=true, itemToDelete = item]">
-                    <v-icon>delete</v-icon>
-                  </v-btn>
+                  <a-btn
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="editIndex = index"
+                      v-if="index !== editIndex"
+                      prepend-icon="edit"
+                  ></a-btn>
+                  <a-btn
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="saveBudgetType(item, false)"
+                      v-if="index === editIndex"
+                      prepend-icon="save"
+                  ></a-btn>
+                  <a-btn
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="editIndex = null"
+                      v-if="index === editIndex"
+                      text="cancel"
+                  ></a-btn>
+                  <a-btn
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="[deleteConfirm=true, itemToDelete = item]"
+                      prepend-icon="delete"
+                  ></a-btn>
                 </div>
               </td>
             </tr>
@@ -90,100 +110,103 @@
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+<script setup>
+
+import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import constants from "@/helpers/constants.js";
 
-export default {
-  name: 'ExpenseBudgetTypes',
-  components: {ConfirmationDialog},
-  computed: {
-    itemToDeleteName() {
-      return this.itemToDelete ? this.itemToDelete.name : ''
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    }
-  },
-  data() {
-    return {
-      snackbar: {},
-      createNew: false,
-      dataLoading: true,
-      newBudgetType: {},
-      editIndex: null,
-      budgetTypes: [],
-      headers: [
-        {text: 'Type', value: 'name', show: true},
-        {text: null, value: 'icons', show: true}
-      ],
-      footerProps: {
-        'items-per-page-options': [25, 50, 100, 500],
-        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-      },
-      deleteConfirm: false,
-      itemToDelete: null
-    }
-  },
-  created() {
-    this.getBudgetTypes()
-  },
-  methods: {
-    filterBudgetTypes() {
-      return this.budgetTypes.filter(bt => !bt.archived)
-    },
-    async getBudgetTypes() {
-      this.dataLoading = true
-      try {
-        const {data, status} = await getRequest(`/expenseBudgets/budgetTypes`, 'blueraven')
-        this.budgetTypes = data
-        this.dataLoading = false
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async deleteBudgetType(item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await deleteRequest(`/expenseBudgets/budgetType/${item.id}`, 'blueraven')
-        item.archived = true
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Budget Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.closeDeleteDialog()
-    },
-    async saveBudgetType(item, isNew) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await postRequest(`/expenseBudgets/budgetType`, item, 'blueraven')
-        if(isNew) {
-          this.budgetTypes.push(data)
-          this.newBudgetType = {}
-          this.createNew = false
-        } else {
-          this.editIndex = null
-        }
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Budget Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    closeDeleteDialog() {
-      this.deleteConfirm = false
-      this.itemToDelete = null
-    }
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+
+const createNew = ref(false)
+const dataLoading = ref(true)
+const newBudgetType = ref({})
+const editIndex = ref(null)
+const budgetTypes = ref([])
+const headers = ref([
+  {text: 'Type', value: 'name', show: true},
+  {text: null, value: 'icons', show: true}
+])
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 500],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const deleteConfirm = ref(false)
+const itemToDelete = ref(null)
+
+const itemToDeleteName = computed(() => {
+  return itemToDelete.value ? itemToDelete.value.name : ''
+})
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+const filteredBudgetTypes = computed(() => {
+  return budgetTypes.value.filter(bt => !bt.archived)
+})
+onMounted(() => {
+  getBudgetTypes()
+})
+
+const getBudgetTypes = async() => {
+  dataLoading.value = true
+  try {
+    const {data, status} = await getRequest(`/expenseBudgets/budgetTypes`, 'blueraven')
+    budgetTypes.value = data
+    dataLoading.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+
   }
+}
+const deleteBudgetType = async(item) => {
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/expenseBudgets/budgetType/${item.id}`, 'blueraven')
+    item.archived = true
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Budget Type')
+
+    appStore.loading = false
+  }
+  closeDeleteDialog()
+}
+const saveBudgetType = async(item, isNew) => {
+  appStore.loading = true
+  try {
+    const {data, status} = await postRequest(`/expenseBudgets/budgetType`, item, 'blueraven')
+    if(isNew) {
+      budgetTypes.value.push(data)
+      newBudgetType.value = {}
+      createNew.value = false
+    } else {
+      editIndex.value = null
+    }
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Budget Type')
+
+    appStore.loading = false
+  }
+}
+const closeDeleteDialog = () => {
+  deleteConfirm.value = false
+  itemToDelete.value = null
 }
 </script>
 

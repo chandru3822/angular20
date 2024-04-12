@@ -4,57 +4,57 @@
       <v-col cols="12">
         <v-card flat class="mt-2">
           <div>
-            <v-text-field
-              :readonly="!edit"
-              :disabled="!edit"
-              label="Tournament Name"
-              tabindex=1
-              v-model="tournament.tournamentName"
-            ></v-text-field>
-            <v-autocomplete
-              readonly
-              disabled
-              v-model="tournament.tournamentOwnerTypeId"
-              :items="ownerTypes"
-              label="Owner Type"
-              item-text="ownerType"
-              item-value="id"
-              attach
-            ></v-autocomplete>
+            <a-text-field
+                :readonly="!edit"
+                :disabled="!edit"
+                label="Tournament Name"
+                tabindex=1
+                v-model="tournament.tournamentName"
+            ></a-text-field>
+            <a-autocomplete
+                readonly
+                disabled
+                v-model="tournament.tournamentOwnerTypeId"
+                :items="ownerTypes"
+                label="Owner Type"
+                item-title="ownerType"
+                item-value="id"
+                attach
+            ></a-autocomplete>
             <DatetimePickerInput
-              v-model="tournament.startDate"
-              :readonly="!edit"
-              :disabled="!edit"
-              :timezone="this.timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="Tournament Start Date"
+                v-model="tournament.startDate"
+                :readonly="!edit"
+                :disabled="!edit"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                label="Tournament Start Date"
             />
             <DatetimePickerInput
-              v-model="tournament.endDate"
-              :readonly="!edit"
-              :disabled="!edit"
-              :timezone="this.timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="Tournament End Date"
+                v-model="tournament.endDate"
+                :readonly="!edit"
+                :disabled="!edit"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                label="Tournament End Date"
             />
-            <v-autocomplete
-              readonly
-              disabled
-              v-model="tournament.tournamentFormulaId"
-              :items="formulas"
-              label="Scoring Formula"
-              item-text="formulaTitle"
-              item-value="id"
-              attach
-            ></v-autocomplete>
+            <a-autocomplete
+                readonly
+                disabled
+                v-model="tournament.tournamentFormulaId"
+                :items="formulas"
+                label="Scoring Formula"
+                item-title="formulaTitle"
+                item-value="id"
+                attach
+            ></a-autocomplete>
             <div v-if="tournament.tournamentFormulaFields && tournament.tournamentFormulaFields.length > 0"
                  v-for="tff in tournament.tournamentFormulaFields">
               <TournamentCustomField
-                :callback="(item) => populateDirtyCfvs(item)"
-                :readonly="!edit"
-                :field="tff">
+                  :callback="(item) => populateDirtyCfvs(item)"
+                  :readonly="!edit"
+                  :field="tff">
               </TournamentCustomField>
 
             </div>
@@ -67,20 +67,29 @@
                      v-model="tournament.active"
               />
             </div>
-            <v-btn color="primary"
-                   class="white--text mb-4"
-                   v-if="!edit"
-                   @click="edit = !edit">
-              Edit Details
-            </v-btn>
-            <div v-if="edit" class="mb-4">
-              <v-btn
+            <a-btn
+                class="mb-4"
                 color="primary"
-                :disabled="!tournament.tournamentName || !tournament.startDate || !tournament.endDate || (tournament.startDate >= tournament.endDate) || !tournament.tournamentOwnerTypeId || !tournament.tournamentFormulaId
+                text="Edit Details"
+                v-if="!edit"
+                @click="edit = !edit">
+            </a-btn>
+
+            <div v-if="edit" class="mb-4">
+              <a-btn
+                  color="primary"
+                  text="Save"
+                  :disabled="!tournament.tournamentName || !tournament.startDate || !tournament.endDate || (tournament.startDate >= tournament.endDate) || !tournament.tournamentOwnerTypeId || !tournament.tournamentFormulaId
                           || validateCustomFields()"
-                @click="updateTournament">Save
-              </v-btn>
-              <v-btn text color="primary" class="ml-2" @click="edit = false">Cancel</v-btn>
+                  @click="updateTournament">
+              </a-btn>
+              <a-btn
+                  variant="text"
+                  color="primary"
+                  class="ml-2"
+                  text="Cancel"
+                  @click="edit = false">
+              </a-btn>
             </div>
 
             <!--            tournament image -->
@@ -89,15 +98,24 @@
               <v-toolbar-title class="title-large text-wrap">Tournament Background Image</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit && !savingImage && !tournament.backgroundAttachmentPresignedUrl"
-                       @click="addImage = !addImage">
-                  <v-icon v-if="addImage">remove</v-icon>
-                  <v-icon v-else>add</v-icon>
-                </v-btn>
-                <v-btn v-else-if="userCanEdit" icon :large="$vuetify.breakpoint.smAndDown" color="primary" class="mr-2"
-                       @click="deleteAttachment(tournament.backgroundAttachmentId)">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <a-btn
+                    :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                    v-if="userCanEdit && !savingImage && !tournament.backgroundAttachmentPresignedUrl"
+                    icon
+                    color="primary"
+                    :prepend-icon="addImage ? 'remove' : 'add'"
+                    @click="addImage = !addImage">
+                </a-btn>
+
+                <a-btn
+                    v-else-if="userCanEdit"
+                    :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                    icon
+                    class="mr-2"
+                    color="primary"
+                    prepend-icon="delete"
+                    @click="deleteAttachment(tournament.backgroundAttachmentId)">
+                </a-btn>
               </v-toolbar-items>
             </v-toolbar>
             <label></label>
@@ -105,12 +123,12 @@
             <div class="mt-2" v-if="addImage">
               <form enctype="multipart/form-data" novalidate>
                 <input
-                  type="file"
-                  :accept="acceptedFileTypes"
-                  class="file-input clickable"
-                  :disabled="savingImage"
-                  @change="uploadFile($event.target.files, attachmentTypeId, tournament.id, 1048576)"
-                  name="avatar"
+                    type="file"
+                    :accept="acceptedFileTypes"
+                    class="file-input clickable"
+                    :disabled="savingImage"
+                    @change="uploadFile($event.target.files, attachmentTypeId, tournament.id, 1048576)"
+                    name="avatar"
                 >
                 <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
               </form>
@@ -129,197 +147,191 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {Actions} from '@/store'
-  import constants from '@/helpers/constants'
-  import Vue2Filters from 'vue2-filters'
-  import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
-  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {
-    handleHidingGlobalLoader,
-    getRequest,
-    putRequest,
-    getSnackbar
-  } from '@/helpers/helpers'
+<script setup>
+import constants from '@/helpers/constants'
+import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  putRequest
+} from '@/helpers/helpers'
+import {getCurrentInstance, computed, ref, onMounted} from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute} from 'vue-router/composables'
+import { useFileStore } from '@/stores/FileStore.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  export default {
-    name: 'TournamentDetails',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      DatetimePickerInput,
-      TournamentCustomField
-    },
-    data() {
-      return {
-        constants,
-        addImage: false,
-        savingImage: false,
-        acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
-        //todo: 914 = tournament image
-        attachmentTypeId: 914,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
-        snackbar: {},
-        edit: false,
-        tournament: {},
-        timezone: this.$store.state.user.details.timezone.value,
-        ownerTypes: [],
-        dirtyCfvs: [],
-        formulas: [],
-        tournamentId: parseInt(this.$route.params.id),
-        userId: this.$store.state.user.details.id
+const appStore = useAppStore()
+const userStore = useUserStore()
+const route = useRoute()
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const fileStore = useFileStore()
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+})
+
+const timezone = computed(() => {
+  return userStore.timezone.value
+})
+const tournamentId = computed(() => {
+  return route.params.id
+})
+
+const addImage = ref(false)
+const savingImage = ref(false)
+const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY)
+const attachmentTypeId = ref(914)
+const edit = ref(false)
+const tournament = ref({})
+const ownerTypes = ref([])
+const dirtyCfvs = ref([])
+const formulas = ref([])
+
+onMounted(async () => {
+  getTournamentOwnerTypes()
+  await getTournament()
+  getTournamentFormulas()
+})
+
+const validateCustomFields = () => {
+  let invalid = false
+  if (tournament.value.tournamentFormulaFields?.length > 0) {
+    //if the tournament has custom fields then none of them can be null
+    tournament.value.tournamentFormulaFields.forEach(tff => {
+      //datatype 3 = booleans can be null if they dont have a value
+      if ((tff.fieldValue === null || tff.fieldValue === '') && tff.dataTypeId !== 3) {
+        invalid = true
       }
-    },
-    computed: {},
-    async created() {
-      this.getTournamentOwnerTypes()
-      await this.getTournament()
-      this.getTournamentFormulas()
-    },
-    methods: {
-      validateCustomFields() {
-        let invalid = false
-        if(this.tournament.tournamentFormulaFields?.length > 0) {
-          //if the tournament has custom fields then none of them can be null
-          this.tournament.tournamentFormulaFields.forEach(tff => {
-            //datatype 3 = booleans can be null if they dont have a value
-            if((tff.fieldValue === null || tff.fieldValue === '') && tff.dataTypeId !== 3) {
-              invalid = true
-            }
-          })
-        }
-        return invalid
-      },
-      async getTournamentOwnerTypes() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
-          this.ownerTypes = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.dataLoading = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getTournamentFormulas() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/tournament/formulas/${this.tournament.tournamentOwnerTypeId}`, 'blueraven')
-          this.formulas = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.dataLoading = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getTournament() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/tournament/${this.tournamentId}`, 'blueraven')
-          this.tournament = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Tournament')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async updateTournament() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          //they cannot archive a field from here so when we send these up we will only update/insert those that changed
-          this.tournament.tournamentFormulaFields = this.dirtyCfvs
-          const {data, status} = await putRequest(`/tournament`, this.tournament, 'blueraven')
-          this.tournament = data
-          this.dirtyCfvs = []
-          this.edit = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Tournament')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async uploadFile(files, attachmentTypeId, sourceId, sizeLimit) {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          let file = files[0]
-          await this.$store.dispatch(Actions.FILE_UPLOAD, {
-            file: file,
-            sizeLimit,
-            attachmentTypeId,
-            sourceId,
-            displayName: file.name.substr(0, file.name.lastIndexOf('.')),
-            callback: async (img, error) => {
-              if (error?.error) {
-                this.snackbar = getSnackbar('ERROR', error.errorMsg)
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.$store.commit(AppMutations.SET_LOADING, false)
-              } else {
-                this.tournament.backgroundAttachmentPresignedUrl = img.presignedUrl
-                this.tournament.backgroundAttachmentId = img.id
-                this.addImage = false
-                this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.$store.commit(AppMutations.SET_LOADING, false)
-              }
-            }
-          })
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteAttachment(id) {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          await this.$store.dispatch(Actions.FILE_DELETE, {
-            id,
-            callback: async () => {
-              this.tournament.backgroundAttachmentId = null
-              this.tournament.backgroundAttachmentPresignedUrl = null
-              // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
-              this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
-            }
-          })
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      populateDirtyCfvs(field) {
-        let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id))
-        if (!match) {
-          this.dirtyCfvs.push(field)
-        }
-      }
-    }
+    })
   }
+  return invalid
+}
+const getTournamentOwnerTypes = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
+    ownerTypes.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    dataLoading.value = false
+    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
+  }
+}
+const getTournamentFormulas = async () => {
+  appStore.loading = true
+  try {
+    const {
+      data,
+      status
+    } = await getRequest(`/tournament/formulas/${tournament.value.tournamentOwnerTypeId}`, 'blueraven')
+    formulas.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    dataLoading.value = false
+    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
+  }
+}
+const getTournament = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/tournament/${tournamentId.value}`, 'blueraven')
+    tournament.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Tournament')
+    appStore.loading = false
+  }
+}
+const updateTournament = async () => {
+  appStore.loading = true
+  try {
+    //they cannot archive a field from here so when we send these up we will only update/insert those that changed
+    tournament.value.tournamentFormulaFields = dirtyCfvs.value
+    const {data, status} = await putRequest(`/tournament`, tournament.value, 'blueraven')
+    tournament.value = data
+    dirtyCfvs.value = []
+    edit.value = false
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Tournament')
+    appStore.loading = false
+  }
+}
+const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
+  try {
+    appStore.loading = true
+    let file = files[0]
+    await fileStore.uploadFile({
+      file: file,
+      sizeLimit,
+      attachmentTypeId,
+      sourceId,
+      displayName: file.name.substr(0, file.name.lastIndexOf('.')),
+      callback: async (img, error) => {
+        if (error?.error) {
+          snackbar('ERROR', error.errorMsg)
+          appStore.loading = false
+        } else {
+          tournament.value.backgroundAttachmentPresignedUrl = img.presignedUrl
+          tournament.value.backgroundAttachmentId = img.id
+          addImage.value = false
+          snackbar('SUCCESS', 'Image Uploaded')
+          appStore.loading = false
+        }
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Uploading File')
+    appStore.loading = false
+  }
+}
+const deleteAttachment = async (id) => {
+  try {
+    appStore.loading = true
+    await fileStore.deleteFile({
+      id,
+      callback: async () => {
+        tournament.value.backgroundAttachmentId = null
+        tournament.value.backgroundAttachmentPresignedUrl = null
+        snackbar('SUCCESS', 'Image Deleted')
+        appStore.loading = false
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting File')
+    appStore.loading = false
+  }
+}
+const populateDirtyCfvs = (field) => {
+  let match = dirtyCfvs.value.find(f => (null !== f.id && f.id === field.id))
+  if (!match) {
+    dirtyCfvs.value.push(field)
+  }
+}
 </script>
 
 <style scoped lang="scss">
 
-  .tournament-logo {
-    margin-top: 15px;
-    max-width: 400px;
-    height: auto;
-    @media (max-width: 500px){
-      max-width: 100%;
-    }
+.tournament-logo {
+  margin-top: 15px;
+  max-width: 400px;
+  height: auto;
+  @media (max-width: 500px) {
+    max-width: 100%;
   }
+}
 
 </style>

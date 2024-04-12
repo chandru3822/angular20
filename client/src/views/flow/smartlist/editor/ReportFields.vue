@@ -4,43 +4,43 @@
     v-if="canEdit"
     class="flex-shrink-1 flex-grow-0"
   >
-    <v-autocomplete
+    <a-autocomplete
       v-show="!showPsEventField"
       v-model="newValue"
       :items="calculatedAvailableFields"
-      item-text="calculatedName"
+      item-title="calculatedName"
       return-object
       placeholder="Add Column"
       :loading="loading"
-      solo
-      hide-details="true"
+      variant="solo"
+      hide-details
       class="field-selector pa-4"
       @change="afterFieldSelected"
     />
 
-    <v-autocomplete
+    <a-autocomplete
       v-show="showPsEventField"
       ref="psEventField"
       :items="calculatedAvailablePsEvents"
       v-model="newPsEvent"
-      item-text="name"
+      item-title="name"
       return-object
       placeholder="Type or Select Name"
-      solo
-      hide-details="true"
+      variant="solo"
+      hide-details
       class="pa-2"
       @change="add"
     >
       <template #append>
-        <v-btn
-          icon
-          @click.stop="reset()"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
+        <a-btn
+            icon
+            @click.stop="reset()"
+            color="unset"
+            prepend-icon="mdi-close"
+        ></a-btn>
       </template>
 
-    </v-autocomplete>
+    </a-autocomplete>
   </v-col>
 
   <v-col class="flex-grow-1 flex-shrink-0 overflow-auto">
@@ -66,12 +66,12 @@
             </v-list-item-content>
 
             <v-list-item-action v-if="canEdit">
-              <v-btn
-                icon
-                @click.stop="remove(index)"
-              >
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
+              <a-btn
+                  icon
+                  @click.stop="remove(index)"
+                  color="unset"
+                  prepend-icon="mdi-close"
+              ></a-btn>
             </v-list-item-action>
           </v-list-item>
         </v-card>
@@ -83,12 +83,12 @@
     v-if="canEdit"
     class="btn-remove-container flex-shrink-1 flex-grow-0 text-right py-4 pr-4"
   >
-    <v-btn
-      text
-      @click="showDeleteDialog = true"
-    >
-      Remove All Columns
-    </v-btn>
+    <a-btn
+        variant="text"
+        @click="showDeleteDialog = true"
+        color="unset"
+        text="Remove All Columns"
+    ></a-btn>
   </v-col>
 
   <v-dialog
@@ -104,19 +104,18 @@
       </v-card-text>
 
       <v-card-actions class="justify-end">
-        <v-btn
-          text
-          @click="showDeleteDialog = false"
-        >
-          Cancel
-        </v-btn>
+        <a-btn
+            variant="text"
+            @click="showDeleteDialog = false"
+            color="unset"
+            text="Cancel"
+        ></a-btn>
 
-        <v-btn
-          color="primary"
-          @click="[showDeleteDialog = false, emit('cleared')]"
-        >
-          Save
-        </v-btn>
+        <a-btn
+            color="primary"
+            @click="[showDeleteDialog = false, emit('cleared')]"
+            text="Save"
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

@@ -6,13 +6,15 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Topic Hashtags</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary"
-                   @click="[addNew = !addNew, newTag = {}]"
-                   v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else-if="!addNew"><v-icon>mdi-plus</v-icon>Add Topic</span>
-              <span v-else>Cancel</span>
-            </v-btn>
+            <a-btn
+              variant="text"
+              color="primary"
+              @click="[addNew = !addNew, newTag = {}]"
+              v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              :hide-text-on-mobile="constants.IS_MOBILE"
+              :text="!addNew ? 'Add Topic' : 'Cancel'"
+              :prepend-icon="addNew ? '' : 'add'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -20,7 +22,7 @@
             <v-form ref="hashtagForm">
               <div class="flex-display">
                 <v-icon size="14" class="mr-2">mdi-pound</v-icon>
-                <v-text-field v-model="newTag.hashtag"
+                <a-text-field v-model="newTag.hashtag"
                               counter
                               required
                               :rules="hashtagRules"
@@ -28,27 +30,35 @@
                               placeholder="Hashtag"
                               @input="validateNew"
                               label="Add Topic Hashtag">
-                </v-text-field>
+                </a-text-field>
               </div>
-              <v-btn text color="primary" class="mt-4"
-                     @click="[addNew = !addNew, newTag = {}]">
-                <span>Cancel</span>
-              </v-btn>
-              <v-btn color="primary" class="mt-4" :disabled="!newTag.hashtag || !formValid"
-                     @click="saveTag(newTag, true)">Save
-              </v-btn>
+              <a-btn
+                variant="text"
+                color="primary"
+                class="mt-4"
+                @click="[addNew = !addNew, newTag = {}]"
+                text="Cancel"
+              />
+
+              <a-btn
+                color="primary"
+                class="mt-4"
+                :disabled="!newTag.hashtag || !formValid"
+                @click="saveTag(newTag, true)"
+                text="Save"
+              />
             </v-form>
           </v-card>
           <v-card class="square-card">
             <v-card-title class="pt-0">
-              <v-text-field
+              <a-text-field
                   v-model="search"
                   prepend-inner-icon="search"
                   label="Search"
                   single-line
                   hide-details
                   clearable
-              ></v-text-field>
+              ></a-text-field>
             </v-card-title>
             <v-data-table
               :headers="headers"
@@ -74,7 +84,7 @@
                     <div class="flex-display">
                       <v-icon size="14" class="mr-2">mdi-pound</v-icon>
                       <v-form :ref="`editForm${item.id}`" v-if="selectedTagId === item.id">
-                        <v-text-field
+                        <a-text-field
                           class="one-hunned"
                           label="Hashtag"
                           counter
@@ -82,7 +92,7 @@
                           :rules="hashtagRules"
                           :maxlength="tagMaxChars"
                           v-model="item.hashtag">
-                        </v-text-field>
+                        </a-text-field>
                       </v-form>
                       <div v-else>
                         {{ item.hashtag }}
@@ -93,38 +103,54 @@
                     {{ item.hashtagType }}
                   </td>
                   <td class="text-right">
-                    <v-btn text color="primary" v-if="selectedTagId === item.id" :disabled="!item.hashtag"
-                           @click="tagToSave=item; showSaveDialog = true">
-                      <v-icon>save</v-icon>
-                    </v-btn>
-                    <v-icon v-else-if="item.hashtagTypeId !== 1" color="primary" @click="selectedTagId = item.id">
-                      edit
-                    </v-icon>
-                    <v-btn text color="primary" v-if="selectedTagId === item.id" @click="selectedTagId = null">
-                      <v-icon>close</v-icon>
-                    </v-btn>
-                    <v-btn small text color="primary"
-                           v-if="item.hashtagTypeId !== 1 && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                           @click="tagToDelete=item">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
+                    <a-btn
+                      variant="text"
+                      color="primary"
+                      v-if="selectedTagId === item.id"
+                      :disabled="!item.hashtag"
+                      @click="tagToSave=item; showSaveDialog = true"
+                      prepend-icon="save"
+                    />
+                    <albatross-button
+                      variant="text"
+                      color="primary"
+                      v-else-if="item.hashtagTypeId !== 1"
+                      @click="selectedTagId = item.id"
+                      prepend-icon="edit"
+                      class="pr-2"
+                    />
+                    <a-btn
+                      variant="text"
+                      color="primary"
+                      v-if="selectedTagId === item.id"
+                      @click="selectedTagId = null"
+                      prepend-icon="close"
+                    />
+
+                    <a-btn
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      v-if="item.hashtagTypeId !== 1 && userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                      @click="tagToDelete=item"
+                      prepend-icon="delete"
+                    />
+
                     <v-tooltip
                       content-class="full-opacity-tooltip"
                       :max-width="300"
                       top
                     >
                       <template v-slot:activator="{ on, attrs }">
-                        <v-btn
-                          text small
+                        <a-btn
+                          variant="text"
+                          size="small"
                           color="primary"
                           class="d-inline-block"
                           v-bind="attrs"
-                          v-on="on"
-                        >
-                          <v-icon color="primary" v-on="on">
-                            mdi-information
-                          </v-icon>
-                        </v-btn>
+                          :activation-handler="on"
+                          prepend-icon="mdi-information"
+                        />
                       </template>
                       <span>Hashtag ID: {{ item.id }}</span>
                     </v-tooltip>
@@ -150,9 +176,7 @@
 </template>
 
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
+<script setup>
 import orderBy from 'lodash.orderby'
 import { getHashtags } from "@/services/activityService"
 import {
@@ -161,128 +185,125 @@ import {
   deleteRequest,
   putRequest,
   postRequest,
-  getSnackbar
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-export default {
-  name: 'Tags',
-  components: {ConfirmationDialog},
-  mixins: [Vue2Filters.mixin],
 
-  data() {
-    return {
-      snackbar: {},
-      constants,
-      tags: [],
-      addNew: false,
-      showSaveDialog: false,
-      tagMaxChars: 255,
-      newTag: {},
-      selectedTagId: null,
-      userId: this.$store.state.user.details.id,
-      companyId: this.$store.state.user.details.companyId,
-      tagToDelete: null,
-      tagToSave: null,
-      headers: [
-        {text: 'Hashtag', value: 'hashtag', show: true},
-        {text: 'Type', value: 'hashtagType', show: true},
-        {text: '', value: 'icons', show: true},
-      ],
-      hashtagRules: [
-        v => !!v || 'Field is required',
-        v => /^[a-z\-]+$/.test(v) || 'Hashtag must only contain lowercase letters and hyphens',
-        v => /^[a-z].*$/.test(v) || 'Hashtag must start with a lowercase letter',
-        v => /.*[^-]$/.test(v) || 'Hashtag must end with a lowercase letter',
-        v => /^(?!.*--).*$/.test(v) || 'Hashtag cannot have 2 consecutive hyphens',
+import { computed, getCurrentInstance, ref, onMounted } from "vue";
+import { useUserStore } from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-      ],
-      formValid: false,
-      search: '',
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const store = vueInstance.$store
+const userStore = useUserStore()
+const appStore = useAppStore()
+
+const tags = ref([])
+const addNew = ref(false)
+const showSaveDialog = ref(false)
+const tagMaxChars = ref(255)
+const newTag = ref({})
+const selectedTagId = ref(null)
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
+const tagToDelete = ref(null)
+const tagToSave = ref(null)
+
+const headers = ref([
+  {text: 'Hashtag', value: 'hashtag', show: true},
+  {text: 'Type', value: 'hashtagType', show: true},
+  {text: '', value: 'icons', show: true},
+])
+
+const hashtagRules = ref([
+  v => !!v || 'Field is required',
+  v => /^[a-z\-]+$/.test(v) || 'Hashtag must only contain lowercase letters and hyphens',
+  v => /^[a-z].*$/.test(v) || 'Hashtag must start with a lowercase letter',
+  v => /.*[^-]$/.test(v) || 'Hashtag must end with a lowercase letter',
+  v => /^(?!.*--).*$/.test(v) || 'Hashtag cannot have 2 consecutive hyphens',
+])
+
+const formValid = ref(false)
+const search = ref('')
+
+const tagToDeleteValue = computed(() => {
+  return tagToDelete.value ? tagToDelete.value.hashtag : ''
+})
+
+const filteredHashtags = computed(() => {
+  return tags.value.filter(t => !t.archived)
+})
+
+const validateNew = () => {
+  formValid.value = vueInstance.$refs.hashtagForm.validate()
+}
+const validateExisting = async (item) => {
+    let ref = vueInstance.$refs[`editForm${item.id}`]
+    if (ref && ref.validate()) {
+      await saveTag(item, false)
     }
-  },
-  computed: {
-    tagToDeleteValue() {
-      return this.tagToDelete ? this.tagToDelete.hashtag : ''
-    },
-    filteredHashtags() {
-      return this.tags.filter(t => !t.archived)
-    },
-  },
-  methods: {
-    validateNew() {
-      this.formValid = this.$refs.hashtagForm.validate()
-    },
-    async validateExisting(item) {
-      let ref = this.$refs[`editForm${item.id}`]
-      if (ref && ref.validate()) {
-        await this.saveTag(item, false)
-      }
-    },
-    async getTags() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getHashtags()
-        this.tags = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteTag() {
-      const tag = this.tagToDelete
-      const hashtagId = this.tagToDelete.id
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await deleteRequest(`/hashtag/${hashtagId}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Hashtag Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        tag.archived = true
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Tag')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.tagToDelete = null
-    },
-    async saveTag(hashtag, isNew) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        //yes this is hardcoded. im just trying to prep for future requests
-        hashtag.hashtagTypeId = 2  //2 = Notes, this is the only type they can add for now
-        const {data, status} = await putRequest(`/hashtag`, hashtag, null)
-        if (isNew) {
-          this.addNew = false
-          this.newTag = {}
-          this.tags.push(data)
-          this.tags = orderBy(this.tags, [a => a.hashtag.toLowerCase()])
-        } else {
-          this.selectedTagId = null
-        }
-        this.snackbar = getSnackbar('SUCCESS', 'Hashtag Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Hashtag')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    closeSaveDialog() {
-      this.showSaveDialog = false;
-      this.tagToSave = null;
-    },
-  },
-  async created() {
-    this.getTags()
+}
+const getTags = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getHashtags()
+    tags.value = data
+    handleHidingGlobalLoader(status)
+  } catch (pe) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
   }
 }
+
+const deleteTag = async () =>{
+  const tag = tagToDelete.value
+  const hashtagId = tagToDelete.value.id
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/hashtag/${hashtagId}`)
+    snackbar('SUCCESS', 'Hashtag Deleted')
+    tag.archived = true
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Tag')
+    appStore.loading = false
+  }
+  tagToDelete.value = null
+}
+const saveTag = async (hashtag, isNew) => {
+  appStore.loading = true
+  try {
+    //yes this is hardcoded. im just trying to prep for future requests
+    hashtag.hashtagTypeId = 2  //2 = Notes, this is the only type they can add for now
+    const {data, status} = await putRequest(`/hashtag`, hashtag, null)
+    if (isNew) {
+      addNew.value = false
+      newTag.value = {}
+      tags.value.push(data)
+      tags.value = orderBy(tags.value, [a => a.hashtag.toLowerCase()])
+    } else {
+      selectedTagId.value = null
+    }
+    snackbar('SUCCESS', 'Hashtag Saved')
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Hashtag')
+    appStore.loading = false
+  }
+}
+const closeSaveDialog = () => {
+  showSaveDialog.value = false;
+  tagToSave.value = null;
+}
+
+onMounted(() => {
+  getTags()
+})
+
 </script>
 

@@ -33,32 +33,33 @@
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': details.companyFunctionParams.indexOf(item) % 2}">
 <!--              they should not be able to edit system value types-->
-<!--              <v-select attach v-if="item.parameterTypeId === 1"-->
+<!--              <a-select attach v-if="item.parameterTypeId === 1"-->
 <!--                          v-model="item.systemValueId"-->
 <!--                          :items="systemValues"-->
 <!--                          label="System Value"-->
-<!--                          item-text="systemValue"-->
+<!--                          item-title="systemValue"-->
 <!--                          item-value="id"></v-select>-->
               <div v-if="item.parameterTypeId === 3">
-                <v-select attach v-model="item.processStepId"
+                <a-select attach v-model="item.processStepId"
                           :items="parentObjects"
                           label="Parent Object"
-                          item-text="processStepName"
+                          item-title="processStepName"
                           item-value="id"
                           @input="loadFieldsByParent(item.processStepId, item.dataTypeId)"
-                ></v-select>
-                <v-select attach v-if="item.processStepId"
+                ></a-select>
+                <a-select attach v-if="item.processStepId"
                           v-model="item.customFieldGroupAssignmentId"
                           :items="availableCustomFields"
                           label="Custom Field"
-                          item-text="fieldName"
+                          item-title="fieldName"
                           item-value="customFieldGroupAssignmentId"
-                ></v-select>
+                ></a-select>
               </div>
-              <v-btn @click="saveParam(item)">
-                <v-icon>save</v-icon>
-                Save
-              </v-btn>
+              <a-btn
+                @click="saveParam(item)"
+                prepend-icon="save"
+                text="Save">
+              </a-btn>
             </td>
           </template>
 
@@ -91,10 +92,19 @@
               </td>
               <!-- icon column -->
               <td>
-                <v-btn text color="primary" v-if="userCanEdit && item.parameterTypeId === 3 && !expanded.includes(item)" @click="handleExpand(item, true)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn text v-if="item.parameterTypeId === 3 && expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
+                <a-btn
+                  variant="text"
+                  color="primary"
+                  v-if="userCanEdit && item.parameterTypeId === 3 && !expanded.includes(item)"
+                  @click="handleExpand(item, true)"
+                  prepend-icon="edit"
+                />
+                <a-btn
+                  variant="text"
+                  v-if="item.parameterTypeId === 3 && expanded.includes(item)"
+                  @click="handleExpand(item, false)"
+                  text="cancel"
+                />
               </td>
             </tr>
           </template>
@@ -116,126 +126,129 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import { handleHidingGlobalLoader, getRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+<script setup>
+  import { handleHidingGlobalLoader, getRequest, postRequest } from '@/helpers/helpers'
 
 
-  export default {
-    name: 'ProcessSteps',
-    mixins: [Vue2Filters.mixin],
+  import {getCurrentInstance, computed, onMounted, ref} from "vue";
+  import { useUserStore } from '@/stores/UserStore.js'
+  import {useRoute} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
 
-    data () {
-      return {
-        headers: [
-          { text: 'Parameter Name', value: 'parameterName', show: true },
-          { text: 'Type', value: 'customTypeColumn', show: true },
-          { text: 'Value', value: 'customValueColumn', show: true},
-          { text: null, value: 'icons', show: true }
-        ],
-        breadcrumbs: [
-          {
-            text: 'Back',
-            disabled: false,
-            exact: true,
-            to: `/settings/functions`
-          },
-        ],
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        companyId: this.$store.state.user.details.companyId,
-        functionId: this.$route.params.id,
-        userId: this.$store.state.user.details.id,
-        systemValues: [],
-        details: {},
-        snackbar: {},
-        parentObjects: [],
-        availableCustomFields: [],
-        selectedField: {},
-        expanded: [],
-      }
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+  const userStore = useUserStore()
+  const appStore = useAppStore()
+  const route = useRoute()
+
+  const headers = ref([
+    { text: 'Parameter Name', value: 'parameterName', show: true },
+    { text: 'Type', value: 'customTypeColumn', show: true },
+    { text: 'Value', value: 'customValueColumn', show: true},
+    { text: null, value: 'icons', show: true }
+  ])
+
+  const breadcrumbs = ref([
+    {
+      text: 'Back',
+      disabled: false,
+      exact: true,
+      to: `/settings/functions`
     },
-    computed: {
-    },
-    methods: {
-      async getFunctionDetails () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/function/${this.functionId}`)
-          this.details = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+  ])
+  const systemValues = ref([])
+  const details = ref({})
+  const parentObjects = ref([])
+  const availableCustomFields = ref([])
+  const selectedField = ref({})
+  const expanded = ref([])
 
-      async loadParentObjects () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/processStep/getParentObjects`)
-          this.parentObjects = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async loadFieldsByParent(id, dataTypeId) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/customField/getByParentProcessStep/${id}`)
-          this.availableCustomFields = data.filter(d => {
-            return d.dataTypeId === dataTypeId
-          })
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async handleExpand (item, expand) {
-        if(expand) {
-          this.expanded = [item]
-          if(item.processStepId) {
-            this.loadFieldsByParent(item.processStepId)
-          }
-        } else {
-          this.expanded = []
-        }
-      },
-      async saveParam (item) {
+  const functionId = computed(() => {
+    return route.params.id
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
+  const userId = computed(() => {
+    return userStore.details.id
+  })
 
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data, status} = await postRequest(`/function/${this.functionId}/param`, item)
-          if(item.parameterTypeId === 3) {
-            item.fieldName = data.fieldName
-            item.processStepName = data.processStepName
-          }
-          this.expanded = []
-          handleHidingGlobalLoader(this, status)
-          this.snackbar = getSnackbar('SUCCESS', 'Parameter Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } catch (e) {
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Parameter')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-
-      }
-    },
-    async created () {
-      this.getFunctionDetails()
-      this.loadParentObjects()
+  const getFunctionDetails = async () => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/function/${functionId.value}`)
+      details.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.loading = false
     }
   }
+
+  const loadParentObjects = async () => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/processStep/getParentObjects`)
+      parentObjects.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.loading = false
+    }
+  }
+  const loadFieldsByParent = async (id, dataTypeId) => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/customField/getByParentProcessStep/${id}`)
+      availableCustomFields.value = data.filter(d => {
+        return d.dataTypeId === dataTypeId
+      })
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.loading = false
+    }
+  }
+  const handleExpand = async (item, expand) => {
+    if(expand) {
+      expanded.value = [item]
+      if(item.processStepId) {
+        loadFieldsByParent(item.processStepId)
+      }
+    } else {
+      expanded.value = []
+    }
+  }
+  const saveParam = async (item) => {
+
+    try {
+      appStore.loading = true
+      const {data, status} = await postRequest(`/function/${functionId.value}/param`, item)
+      if(item.parameterTypeId === 3) {
+        item.fieldName = data.fieldName
+        item.processStepName = data.processStepName
+      }
+      expanded.value = []
+      handleHidingGlobalLoader(status)
+      snackbar('SUCCESS', 'Parameter Updated')
+
+    } catch (e) {
+      appStore.loading = false
+      snackbar('ERROR', 'Error Saving Parameter')
+    }
+
+  }
+
+  onMounted(() => {
+    getFunctionDetails()
+    loadParentObjects()
+  })
+
 </script>
 
 <style scoped lang="scss">

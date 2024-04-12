@@ -4,6 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPool;
+import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPoolCustomUserRequest;
 import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPoolPosition;
 import com.albatross.api.v1.company.blueraven.models.tournament.TournamentPoolUser;
 import com.albatross.api.v1.company.blueraven.services.tournament.queries.TournamentPoolQuery;
@@ -14,8 +15,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -103,14 +107,43 @@ public class TournamentPoolService {
     return result;
   }
 
-  public Optional<TournamentPoolUser> addUserToPool(Long poolId, Long userId) {
+  public List<TournamentPoolUser> addCustomUsers(Long poolId, TournamentPoolCustomUserRequest req) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("poolId", poolId);
-    params.put("userId", userId);
+    params.put("minDate", req.getMinDate());
+    params.put("maxDate", req.getMaxDate());
+    params.put("minFdc", req.getMinFdc());
+    params.put("maxFdc", req.getMaxFdc());
+    params.put("inclusive", req.getInclusive());
     params.put("createdById", user.trueUserId());
-    Long id = sqlCache.updateBySqlReturningId(TournamentPoolQuery.addUser, params, "id").longValue();
-    return getPoolUser(id);
+    sqlCache.queryBySql(TournamentPoolQuery.addCustomUsers, params, String.class);
+
+    List<TournamentPoolUser> results = sqlCache.queryBySql(TournamentPoolQuery.getAllUsersInPool, params, TournamentPoolUser.class);
+    return results;
+  }
+
+  public Optional<TournamentPoolUser> addUserToPool(Long poolId, Long userId) {
+    try {
+      User user = securityService.getCurrentUser();
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("poolId", poolId);
+      params.put("userId", userId);
+      params.put("createdById", user.trueUserId());
+      Long id = sqlCache.updateBySqlReturningId(TournamentPoolQuery.addUser, params, "id").longValue();
+      return getPoolUser(id);
+    } catch (DuplicateKeyException e) {
+      String msg = "The selected user has already been added to this pool.";
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, msg);
+    }
+  }
+
+  public void deleteAllUsersFromPool(Long poolId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("poolId", poolId);
+    params.put("userId", user.trueUserId());
+    sqlCache.updateBySql(TournamentPoolQuery.deleteAllUsers, params);
   }
 
   public void deleteUserFromPool(Long tournamentPoolUserId) {

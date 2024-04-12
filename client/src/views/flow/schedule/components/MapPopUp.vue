@@ -8,7 +8,6 @@
 *
 */
 import {getCurrentInstance} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -43,7 +42,7 @@ const openProjectEvent = (project) => {
       <div v-else-if="marker.start" class="body-large pb-2">{{marker.start | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{marker.end | formatDate('timestamp','MMM DD YYYY, h:mm a')}}</div>
       <div v-else class="grey--text body-large pb-2">Unscheduled</div>
       <div>
-        <AlbatrossButton id="mapPopupBtn" variant="outlined" color="primary" html-style="width:100%" class="body-medium" @click="openProjectEvent(marker)">Open Project</AlbatrossButton>
+        <a-btn id="mapPopupBtn" variant="outlined" color="primary" html-style="width:100%" class="body-medium" @click="openProjectEvent(marker)">Open Project</a-btn>
       </div>
     </v-card>
 </template>

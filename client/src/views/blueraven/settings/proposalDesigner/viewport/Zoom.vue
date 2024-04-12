@@ -11,19 +11,18 @@
     />
   </div>
 </template>
-<script>
-export default {
-  name: 'ZoomControl',
-  props: ['value'],
-  methods: {
-    handleChange(e) {
-      this.$emit('input', e)
-    },
-  },
-}
+<script setup>
+const emit = defineEmits(['input'])
+const props = defineProps({
+  value: {
+    type: Object
+  }
+})
+
+const handleChange = (e) => emit('input', e)
 </script>
 <style lang="scss" scoped>
-.zoom-control{
+.zoom-control {
   user-select: none;
 }
 </style>

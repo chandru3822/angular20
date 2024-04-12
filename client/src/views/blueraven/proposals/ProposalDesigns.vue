@@ -8,150 +8,273 @@
         </div>
         <div class="project-subtitle">
           Project ID:
-          <router-link :to="`/project/${project.projectId}/${projectPath}`">{{ project.projectId }}</router-link>
-          <br/>
-          Address: {{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}
-          <br/>
+          <router-link
+            :to="`/project/${project.projectId}/${defaultProjectPage}`"
+          >
+            {{ project.projectId }}
+          </router-link>
+          <br />
+          Address: {{ project.street1 }} - {{ project.city }},
+          {{ project.state }} {{ project.postalCode }}
+          <br />
           <span v-if="project.mobile">
             Phone: {{ formatPhoneNumber(project.mobile) }}
           </span>
         </div>
       </v-col>
     </v-row>
-    <v-divider/>
+    <v-divider />
     <v-toolbar flat color="transparent">
-      <v-toolbar-title class="proposal-designs-title">Designs and Proposals</v-toolbar-title>
+      <v-toolbar-title class="proposal-designs-title">
+        Designs and Proposals
+      </v-toolbar-title>
     </v-toolbar>
     <v-row class="mx-2" v-if="projectLoaded">
-      <v-card v-for="(d, idx) in designs"
-              :key="idx"
-              width="355"
-              :height="cardHeight"
-              class="pa-4 proposal-card">
-
+      <v-card
+        v-for="(d, idx) in designs"
+        :key="idx"
+        width="355"
+        :height="cardHeight"
+        class="pa-4 proposal-card"
+      >
         <div class="d-flex">
-          <v-text-field v-model="d.tempDesignName"
-                        label="Design Name"
-                        :readonly="!d.edit"
-                        :disabled="!d.edit"
-            ></v-text-field>
+          <a-text-field
+            v-model="d.tempDesignName"
+            label="Design Name"
+            :readonly="!d.edit"
+            :disabled="!d.edit"
+          ></a-text-field>
           <div class="d-flex mt-4">
-            <v-btn x-small text color="primary" v-if="!d.edit" @click="d.edit = true"><v-icon>edit</v-icon></v-btn>
-            <v-btn x-small text color="primary" v-if="d.edit" @click="[d.tempDesignName = d.designName, d.edit = false]"><v-icon>close</v-icon></v-btn>
-            <v-btn x-small text color="primary" v-if="d.edit" @click="saveDesignField(d)"><v-icon>save</v-icon></v-btn>
+            <a-btn
+              size="x-small"
+              variant="text"
+              color="primary"
+              v-if="!d.edit"
+              @click="d.edit = true"
+              prepend-icon="edit"
+            ></a-btn>
+            <a-btn
+              size="x-small"
+              variant="text"
+              color="primary"
+              v-if="d.edit"
+              @click=";[(d.tempDesignName = d.designName), (d.edit = false)]"
+              prepend-icon="close"
+            ></a-btn>
+            <a-btn
+              size="x-small"
+              variant="text"
+              color="primary"
+              v-if="d.edit"
+              @click="saveDesignField(d)"
+              prepend-icon="save"
+            ></a-btn>
           </div>
         </div>
-        <div v-if="d.attachments.length > 0" style="position: relative;" class="design-image">
+        <div
+          v-if="d.attachments.length > 0"
+          style="position: relative"
+          class="design-image"
+        >
           <img-proxy
             name="designImg"
             class="design-image"
             :quality="80"
-            :uuid="d.attachments[d.imageIndex].uuid"/>
+            :uuid="d.attachments[d.imageIndex].uuid"
+          />
 
-          <div class="design-image image-selection-container"
-               :style="{'justify-content': d.imageIndex === 0 ? 'end' : d.imageIndex !== 0 ? 'space-between' : ''}">
-            <v-btn x-small v-if="d.imageIndex !== 0"
-                   @click="d.imageIndex--"
-                   color="black" fab class="image-selection-icon">
-              <v-icon color="white">mdi-chevron-left</v-icon>
-            </v-btn>
-            <v-btn x-small v-if="d.imageIndex !== d.attachments.length - 1"
-                   @click="d.imageIndex++"
-                   color="black" fab class="image-selection-icon">
-              <v-icon color="white">mdi-chevron-right</v-icon>
-            </v-btn>
+          <div
+            class="design-image image-selection-container"
+            :style="{
+              'justify-content':
+                d.imageIndex === 0
+                  ? 'end'
+                  : d.imageIndex !== 0
+                  ? 'space-between'
+                  : ''
+            }"
+          >
+            <a-btn
+              size="x-small"
+              v-if="d.imageIndex !== 0"
+              @click="d.imageIndex--"
+              color="black"
+              fab
+              class="image-selection-icon"
+              prepend-icon="mdi-chevron-left"
+            ></a-btn>
+            <a-btn
+              size="x-small"
+              v-if="d.imageIndex !== d.attachments.length - 1"
+              @click="d.imageIndex++"
+              color="black"
+              fab
+              class="image-selection-icon"
+              prepend-icon="mdi-chevron-right"
+            ></a-btn>
           </div>
         </div>
         <div v-else class="design-image no-image-placeholder">
           <v-icon size="50">mdi-home</v-icon>
         </div>
         <div class="mt-3 design-small-gray">
-          Created: {{ d.dateCreated | formatDate('timestamp', 'MMM D, YYYY') }} <br>
+          Created: {{ d.dateCreated | formatDate('timestamp', 'MMM D, YYYY') }}
+          <br />
           Designed by:
           <span v-if="d.designedByAuroraAi">Aurora AI</span>
           <span v-else>Proposals Team</span>
         </div>
         <div class="design-small-gray" v-if="project.projectId">
           <router-link
-            :to="{ name : 'projectProcessStep', params: {projectId: project.projectId, processStepId: d.projectProcessStepId}}"
-            target="_blank">
+            :to="{
+              name: 'projectProcessStep',
+              params: {
+                projectId: project.projectId,
+                processStepId: d.projectProcessStepId
+              }
+            }"
+            target="_blank"
+          >
             Open Process Step
           </router-link>
           <v-icon small class="anchor">mdi-open-in-new</v-icon>
         </div>
-        <v-btn color="primary"
-               dark
-               class="mt-4 one-hunned text-capitalize font-weight-bold"
-               v-if="canEdit"
-               @click="addProposal(d)">
-          Create new proposal
-        </v-btn>
+        <a-btn
+          color="primary"
+          class="mt-4 one-hunned text-capitalize font-weight-bold"
+          v-if="canEdit"
+          @click="addProposal(d)"
+          text="Create new proposal"
+        ></a-btn>
         <v-list v-if="d.proposals.length > 0">
           <v-list-item
-            v-for="(proposal, index) in d.proposals.slice((d.offset * numberToDisplay),(numberToDisplay + (d.offset * numberToDisplay)))"
+            v-for="(proposal, index) in d.proposals.slice(
+              d.offset * numberToDisplay,
+              numberToDisplay + d.offset * numberToDisplay
+            )"
             :key="index"
             two-line
             class="proposal-container"
-            @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
+          >
             <v-list-item-content>
-              <v-list-item-title class="proposal-title d-flex justify-space-between align-center">
+              <v-list-item-title
+                class="proposal-title d-flex justify-space-between align-center"
+              >
                 <span class="d-inline-flex">
-                  <span>{{ proposal.displayName }}</span>
-                  <v-icon v-if="proposal.locked" class="pl-1" small>mdi-lock</v-icon>
+                  <span>
+                    <router-link
+                      :to="`/proposal/${proposal.id}`"
+                      class="router-link-td elevation-0 square-card"
+                    >
+                      {{ proposal.displayName }}
+                    </router-link>
+                  </span>
+                  <router-link
+                    :to="`/proposal/${proposal.id}`"
+                    class="router-link-td elevation-0 square-card"
+                  >
+                    <v-icon v-if="proposal.locked" class="pl-1" small
+                      >mdi-lock</v-icon
+                    >
+                  </router-link>
                 </span>
                 <span class="design-small-gray">
-                  {{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}
+                  <router-link
+                    :to="`/proposal/${proposal.id}`"
+                    class="router-link-td elevation-0 square-card"
+                  >
+                    {{
+                      proposal.dateCreated | formatDate('date', 'MMM D, YYYY')
+                    }}
+                  </router-link>
                 </span>
               </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
         </v-list>
         <div class="mt-6 ml-4" v-else>No Proposals Available</div>
-        <div class="slice-selectors" v-if="d.proposals.length > numberToDisplay">
-          <v-icon dense
-                  class="pr-1 pb-3"
-                  :disabled="d.offset === 0"
-                  @click="d.offset--">mdi-chevron-left
+        <div
+          class="slice-selectors"
+          v-if="d.proposals.length > numberToDisplay"
+        >
+          <v-icon
+            dense
+            class="pr-1 pb-3"
+            :disabled="d.offset === 0"
+            @click="d.offset--"
+          >
+            mdi-chevron-left
           </v-icon>
-          <v-icon dense
-                  class="pl-1 pb-3"
-                  :disabled="disableAddSlice(d.proposals.length, d.offset)"
-                  @click="d.offset++">mdi-chevron-right
+          <v-icon
+            dense
+            class="pl-1 pb-3"
+            :disabled="disableAddSlice(d.proposals.length, d.offset)"
+            @click="d.offset++"
+          >
+            mdi-chevron-right
           </v-icon>
         </div>
       </v-card>
       <v-card
         width="355"
-        v-if="!hasActiveAiDesign && (activeDesign.companyProcessStepStatusTypeId == null || activeDesign.companyProcessStepStatusTypeId !== pendingAuroraAdjustmentsStatusId)"
+        v-if="
+          !hasActiveAiDesign &&
+          (activeDesign.companyProcessStepStatusTypeId == null ||
+            activeDesign.companyProcessStepStatusTypeId !==
+              pendingAuroraAdjustmentsStatusId)
+        "
         :height="cardHeight"
         class="proposal-card request-new"
-        :class="{'disable-new': lockNewRequests || hasActiveDesign || !requestSuccessful}">
-
+        :class="{
+          'disable-new':
+            lockNewRequests || hasActiveDesign || !requestSuccessful
+        }"
+      >
         <div v-if="canEdit">
-          <v-btn text
-                 :disabled="lockNewRequests || hasActiveDesign || !requestSuccessful"
-                 color="primary"
-                 @click="handleNewRequest">
-            <v-icon :size="60">add</v-icon>
-          </v-btn>
-          <div class="mt-5 primary--text"
-               :class="{'grey--text text--darken-1': lockNewRequests || hasActiveDesign || !requestSuccessful}">
-            Request New Design <br>
+          <a-btn
+            variant="text"
+            :disabled="lockNewRequests || hasActiveDesign || !requestSuccessful"
+            color="primary"
+            @click="handleNewRequest"
+          >
+            <template #default>
+              <v-icon :size="60">add</v-icon>
+            </template>
+          </a-btn>
+          <div
+            class="mt-5 primary--text"
+            :class="{
+              'grey--text text--darken-1':
+                lockNewRequests || hasActiveDesign || !requestSuccessful
+            }"
+          >
+            Request New Design <br />
             Thru Proposals Team
           </div>
         </div>
-        <div class="request-new-details grey--text text--darken-2" v-if="hasActiveDesign">
+        <div
+          class="request-new-details grey--text text--darken-2"
+          v-if="hasActiveDesign"
+        >
           <div>
             <router-link
-              :to="{ name : 'projectProcessStep', params: {projectId: project.projectId, processStepId: activeDesign.projectProcessStepId}}"
-              target="_blank">
+              :to="{
+                name: 'projectProcessStep',
+                params: {
+                  projectId: project.projectId,
+                  processStepId: activeDesign.projectProcessStepId
+                }
+              }"
+              target="_blank"
+            >
               Open Process Step
             </router-link>
             <v-icon small class="anchor">mdi-open-in-new</v-icon>
           </div>
 
-          Current Step: {{ activeDesign.processStepName }} <br/>
-          Last Requested: {{ activeDesign.dateCreated | formatDate('date') }} <br/>
+          Current Step: {{ activeDesign.processStepName }} <br />
+          Last Requested: {{ activeDesign.dateCreated | formatDate('date') }}
+          <br />
           Current Status: {{ activeDesign.companyProcessStepStatusType }}
           <div v-if="activeDesign.comments">
             Comments: {{ activeDesign.comments }}
@@ -159,38 +282,44 @@
         </div>
       </v-card>
       <v-card
-          v-if="!hasActiveDesign && (closerApptRequirementsMet || designs.length > 0 || hasActiveAiDesign)"
-          color="transparent"
-          width="355"
-          :height="cardHeight"
-          class="proposal-card request-new ai-design-request">
-
-        <div v-if="canEdit && closerApptRequirementsMet && !activeDesign.projectId && designs.length === 0">
-          <v-btn text
-                 color="primary"
-                 @click="handleAIRequest(false)">
+        v-if="
+          !hasActiveDesign &&
+          (closerApptRequirementsMet || designs.length > 0 || hasActiveAiDesign)
+        "
+        color="transparent"
+        width="355"
+        :height="cardHeight"
+        class="proposal-card request-new ai-design-request"
+      >
+        <div
+          v-if="
+            canEdit &&
+            closerApptRequirementsMet &&
+            !activeDesign.projectId &&
+            designs.length === 0
+          "
+        >
+          <v-btn text color="primary" @click="handleAIRequest(false)">
             <v-icon :size="60">add</v-icon>
           </v-btn>
-          <div class="mt-5 primary--text">
-            Request AI Design
-          </div>
+          <div class="mt-5 primary--text">Request AI Design</div>
         </div>
         <div v-if="canEdit && designs.length > 0 && !activeDesign.projectId">
-          <v-btn text
-                 color="primary"
-                 @click="handleAIRequest(true)">
+          <v-btn text color="primary" @click="handleAIRequest(true)">
             <v-icon :size="60">add</v-icon>
           </v-btn>
-          <div class="mt-5 primary--text">
-            Create my own design in Aurora
-          </div>
+          <div class="mt-5 primary--text">Create my own design in Aurora</div>
         </div>
-        <v-card-text v-else-if="canEdit && activeDesign.companyProcessStepStatusTypeId != null && activeDesign.companyProcessStepStatusTypeId === pendingAuroraAdjustmentsStatusId">
-          <div class="mb-10">
-            Immediate Design Pending Aurora Adjustments
-          </div>
-          <v-btn outlined color="primary"
-              @click="syncAuroraDesignDetails()">
+        <v-card-text
+          v-else-if="
+            canEdit &&
+            activeDesign.companyProcessStepStatusTypeId != null &&
+            activeDesign.companyProcessStepStatusTypeId ===
+              pendingAuroraAdjustmentsStatusId
+          "
+        >
+          <div class="mb-10">Immediate Design Pending Aurora Adjustments</div>
+          <v-btn outlined color="primary" @click="syncAuroraDesignDetails()">
             Sync Design
           </v-btn>
         </v-card-text>
@@ -201,12 +330,15 @@
         <v-card-title>Request New Design</v-card-title>
         <v-card-text class="default-text-color">
           Describe your request (Required)
-          <v-textarea required
-                      auto-grow
-                      outlined
-                      counter="250"
-                      color="#808588"
-                      v-model="newDesignRequest.description"/>
+          <a-textarea
+            required
+            auto-grow
+            variant="outlined"
+            counter
+            :maxlength="250"
+            color="#808588"
+            v-model="newDesignRequest.description"
+          />
 
           <v-file-input
             dense
@@ -229,24 +361,24 @@
             label="Attach supporting files"
             @change="uploadFiles"
           />
-
         </v-card-text>
 
         <v-card-actions>
-          <v-spacer/>
-          <v-btn text
-                 color="primary"
-                 class="text-capitalize"
-                 @click="showNewDesignRequestForm = false">
-            Cancel
-          </v-btn>
-          <v-btn
+          <v-spacer />
+          <a-btn
+            variant="text"
             color="primary"
-            class="white--text text-capitalize font-weight-bold"
+            class="text-capitalize"
+            @click="showNewDesignRequestForm = false"
+            text="Cancel"
+          ></a-btn>
+          <a-btn
+            color="primary"
+            class="text-capitalize font-weight-bold"
             :disabled="!newDesignRequest.description"
-            @click="requestNewDesign()">
-            Request
-          </v-btn>
+            @click="requestNewDesign()"
+            text="Request"
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -256,28 +388,33 @@
         <v-card-title>Create New AI Design</v-card-title>
         <v-card-text class="default-text-color">
           <v-form ref="aiForm">
-            <CustomValueInput v-for="(cf, idx) in aiRequestFields"
-                            :key="idx"
-                            :show-field-name="false"
-                            :required="true"
-                            custom-class="albatross-body-2"
-                            :field="cf"></CustomValueInput>
+            <CustomValueInput
+              v-for="(cf, idx) in aiRequestFields"
+              :key="idx"
+              :show-field-name="false"
+              :required="true"
+              custom-class="albatross-body-2"
+              :field="cf"
+            ></CustomValueInput>
           </v-form>
         </v-card-text>
 
         <v-card-actions>
-          <v-spacer/>
-          <v-btn text
-                 color="primary"
-                 class="text-capitalize"
-                 @click="showAIDesignRequestForm = false">
+          <v-spacer />
+          <v-btn
+            text
+            color="primary"
+            class="text-capitalize"
+            @click="showAIDesignRequestForm = false"
+          >
             Cancel
           </v-btn>
           <v-btn
-              color="primary"
-              :loading="savingNewAiDesign"
-              class="white--text text-capitalize font-weight-bold"
-              @click="validateAIRequest()">
+            color="primary"
+            :loading="savingNewAiDesign"
+            class="white--text text-capitalize font-weight-bold"
+            @click="validateAIRequest()"
+          >
             Save
           </v-btn>
         </v-card-actions>
@@ -289,40 +426,45 @@
         <v-card-title class="text-capitalize">
           Unapproved Zip Code
         </v-card-title>
-        <v-card-subtitle>This home lies outside of approved zones. Zip code needs to be approved before requesting a new
-          design.
+        <v-card-subtitle
+          >This home lies outside of approved zones. Zip code needs to be
+          approved before requesting a new design.
         </v-card-subtitle>
         <v-card-text>
           Additional comments (optional)
-          <v-textarea required
-                      auto-grow
-                      outlined
-                      counter="250"
-                      color="#808588"
-                      v-model="newDesignRequest.description"/>
+          <a-textarea
+            required
+            auto-grow
+            variant="outlined"
+            counter
+            :maxlength="250"
+            color="#808588"
+            v-model="newDesignRequest.description"
+          />
         </v-card-text>
 
         <v-card-actions>
-          <v-spacer/>
-          <v-btn text
-                 class="text-capitalize"
-                 @click="showNewPostalCodeRequestForm = false">
-            Cancel
-          </v-btn>
-          <v-btn
+          <v-spacer />
+          <a-btn
+            variant="text"
+            class="text-capitalize"
+            @click="showNewPostalCodeRequestForm = false"
+            color="unset"
+            text="Cancel"
+          ></a-btn>
+          <a-btn
             color="primary"
-            class="white--text text-capitalize font-weight-bold"
-            @click="requestPostalCodeApproval(newDesignRequest.description)">
-            Request Approval
-          </v-btn>
+            class="text-capitalize font-weight-bold"
+            @click="requestPostalCodeApproval(newDesignRequest.description)"
+            text="Request Approval"
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
   </v-container>
 </template>
 
-<script>
-
+<script setup>
 import {
   formatPhoneNumber,
   getRequest,
@@ -330,15 +472,25 @@ import {
   getProjectPath,
   handleHidingGlobalLoader,
   logError,
-  postRequest,
-  postRequestWithRequestParams
+  postRequest
 } from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
+
 import moment from 'moment'
-import DatetimePickerInput from '@/components/DatetimePickerInput'
 import constants from '@/helpers/constants'
 import ImgProxy from '@/components/ImgProxy'
-import CustomValueInput from "@/views/flow/components/CustomValueInput.vue";
+import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useRoute, useRouter } from 'vue-router/composables'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
 
 const dateSortFn = (prop = 'dateCreated') => {
   return (a, b) => {
@@ -354,327 +506,388 @@ const dateSortFn = (prop = 'dateCreated') => {
     return 0
   }
 }
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
+const designs = ref([])
+const cardHeight = ref(600)
+const minDate = ref(moment().format('YYYY-MM-DDTHH:mm:ssZ'))
+const offset = ref(0)
+const numberToDisplay = ref(3)
+const newDesignRequest = ref({})
+const acceptedFileTypes = ref(constants.STANDARD_IMAGES_AND_DOCS)
+const showNewDesignRequestForm = ref(false)
+const showNewPostalCodeRequestForm = ref(false)
+const lockNewRequests = ref(false)
+const project = ref({})
+const activeDesign = ref({})
+const requestSuccessful = ref(false)
+const projectLoaded = ref(false)
+const aiDesignRequest = ref({})
+const aiRequestFields = ref([])
+const useExistingDesign = ref(false)
+const showAIDesignRequestForm = ref(false)
+const savingNewAiDesign = ref(false)
+const pendingAuroraAdjustmentsStatusId = ref(1649)
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const aiForm = ref(null)
 
-export default {
-  name: 'ProposalDesigns',
-  components: {
-    CustomValueInput,
-    DatetimePickerInput,
-    ImgProxy
-  },
-  data() {
-    return {
-      designs: [],
-      projectLoaded: false,
-      cardHeight: 600,
-      minDate: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
-      offset: 0,
-      numberToDisplay: 3,
-      newDesignRequest: {},
-      aiDesignRequest: {},
-      aiRequestFields: [],
-      useExistingDesign: false,
-      acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
-      showNewDesignRequestForm: false,
-      showAIDesignRequestForm: false,
-      savingNewAiDesign: false,
-      showNewPostalCodeRequestForm: false,
-      lockNewRequests: false,
-      project: {},
-      activeDesign: {},
-      pendingAuroraAdjustmentsStatusId: 1649,
-      requestSuccessful: false,
-      projectId: this.$route.params.projectId,
-      timezone: this.$store.state.user.details.timezone?.value,
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-      formatPhoneNumber,
-      projectPath: '',
-    }
-  },
-  async created() {
-    this.getProposalProject()
-    this.projectPath = getProjectPath(this).pathSuffix
-    await this.pageLoadOrRefresh()
-  },
-  computed: {
-    canEdit() {
-      const hasAdmin = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
-      const hasEdit = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'EDIT')
-      return hasAdmin || hasEdit
-    },
-    closerApptRequirementsMet () {
-      return this.project.closerAppointmentStart != null && moment(this.project.closerAppointmentStart).isBetween(moment(), moment().add(30, 'm'))
-    },
-    hasActiveDesign() {
-      return this.activeDesign?.projectId && (this.activeDesign.companyProcessStepStatusTypeId == null || this.activeDesign.companyProcessStepStatusTypeId !== this.pendingAuroraAdjustmentsStatusId)
-    },
-    hasActiveAiDesign() {
-      return this.activeDesign.companyProcessStepStatusTypeId === this.pendingAuroraAdjustmentsStatusId
-    },
-    firstDesignId() {
-      return this.designs?.find(d => d.designId != null)?.designId
-    }
-  },
-  methods: {
-    async pageLoadOrRefresh () {
-      let requests = [
-        this.getCompletedProposalDesigns(),
-        this.getActiveDesign()
-      ]
-      await Promise.all(requests)
-    },
-    async validateAIRequest () {
-      let valid = this.$refs.aiForm.validate()
-      if (valid) {
-        if(this.useExistingDesign) {
-          await this.createAiFromExisting()
-        } else {
-          await this.requestAIDesign()
+onMounted(async () => {
+  defaultProjectPage.value = getProjectPath(vueInstance).pathSuffix
+  await getProposalProject()
+  await pageLoadOrRefresh()
+})
 
-        }
-      }
-    },
-    async createAiFromExisting() {
-      try {
-        this.savingNewAiDesign = true
-        // get the aurora project id for the first design we return from our side
-        const {data, status} = await postRequest(`/proposal/projects/${this.projectId}/ai/design/${this.firstDesignId}/duplicate`, this.aiRequestFields, 'blueraven')
+const projectId = computed(() => {
+  return route.params.projectId
+})
+const closerApptRequirementsMet = computed(() => {
+  return (
+    project.value.closerAppointmentStart != null &&
+    moment(project.value.closerAppointmentStart).isBetween(
+      moment(),
+      moment().add(30, 'm')
+    )
+  )
+})
+const canEdit = computed(() => {
+  const hasAdmin = userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
+  const hasEdit = userStore.userHasFeatureAccessLevel('PROPOSALS', 'EDIT')
+  return hasAdmin || hasEdit
+})
+const hasActiveDesign = computed(() => {
+  return (
+    activeDesign.value?.projectId &&
+    (activeDesign.value?.companyProcessStepStatusTypeId == null ||
+      activeDesign.value?.companyProcessStepStatusTypeId !==
+        pendingAuroraAdjustmentsStatusId.value)
+  )
+})
+const hasActiveAiDesign = computed(() => {
+  return (
+    activeDesign.value?.companyProcessStepStatusTypeId ===
+    pendingAuroraAdjustmentsStatusId.value
+  )
+})
+const firstDesignId = computed(() => {
+  return designs.value?.find((d) => d.designId != null)?.designId
+})
 
-        if(null != data?.design?.id) {
-            //open the new design in sales mode
-            let url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
-            window.open(url, '_blank')
-
-            //reload the active design
-            await this.getActiveDesign()
-        } else {
-          this.$snackbar('ERROR', 'Failed to find Aurora Project')
-        }
-      } catch (e) {
-        logError(e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        this.$snackbar('ERROR', e?.data?.message || 'There was an error requesting a new design')
-      } finally {
-        this.showAIDesignRequestForm = false
-        this.savingNewAiDesign = false
-      }
-    },
-    async handleAIRequest(useExisting) {
-      //utility company (23802), estimated annual consumption (22573), design name (26300)
-      this.useExistingDesign = useExisting
-      let encodedIds = encodeURI([23802, 22573, 26300])
-      let params = { cfgaIds: encodedIds}
-      const { data } = await getRequestWithParams(`/customFieldGroup/getCustomFieldsByCfgaIds`, {
-        params
-      })
-      this.aiRequestFields = data
-
-      this.showAIDesignRequestForm = true
-    },
-    async handleNewRequest() {
-      this.lockNewRequests = true
-      const {data} = await getRequest(`/proposal/projects/${this.projectId}/postalCode`, 'blueraven')
-
-      if (data?.approved) {
-        this.showNewDesignRequestForm = true
-      } else {
-        this.showNewPostalCodeRequestForm = true
-      }
-
-      this.lockNewRequests = false
-
-    },
-    async requestAIDesign() {
-      try {
-        this.savingNewAiDesign = true
-        const { data } = await postRequest(`/proposal/projects/${this.projectId}/ai`, this.aiRequestFields, 'blueraven')
-        if(data?.design?.id && data?.design?.project_id) {
-          let url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
-          window.open(url, '_blank')
-        }
-        await this.getActiveDesign()
-      } catch (e) {
-        logError(e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        this.$snackbar('ERROR', e?.data?.message || 'There was an error requesting a new design')
-      } finally {
-        this.showAIDesignRequestForm = false
-        this.savingNewAiDesign = false
-      }
-    },
-    async syncAuroraDesignDetails() {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
-        const {data, status} = await postRequest(`/projectProcessStep/${this.activeDesign.projectProcessStepId}/action/10293`, {})
-        if (status === 204 || status === 200) {
-          //sync updates the pps status to complete and grabs assets from Aurora and uploads them to our side
-          // let designId = "ba92c16d-b674-464d-a220-3dd0a0b4daf8" <--use to test a design that for sure has the right asset you need
-          await postRequest(`/proposal/pps/${this.activeDesign.projectProcessStepId}/design/${this.activeDesign.designId}/sync`, {}, 'blueraven')
-
-          //reload the required data for the screen
-          await this.pageLoadOrRefresh()
-          handleHidingGlobalLoader(this, status)
-        } else {
-          this.$snackbar('ERROR', `Aurora design incomplete. Please navigate back to Aurora and finish your design changes before syncing.`, false)
-          handleHidingGlobalLoader(this, status)
-        }
-      } catch (e) {
-        this.$snackbar('ERROR', `Aurora design incomplete. Please navigate back to Aurora and finish your design changes before syncing.`, false)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async requestNewDesign() {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const formData = new FormData()
-        formData.append('description', this.newDesignRequest.description)
-        // formData.append('dueDate', this.newDesignRequest.dueDate)
-
-        this.newDesignRequest?.attachments?.forEach(a => {
-          formData.append('attachments', a)
-        })
-
-        this.newDesignRequest?.utilityBillAttachments?.forEach(a => {
-          formData.append('utilityBillAttachments', a)
-        })
-
-        const {
-          data,
-          status
-        } = await postRequest(`/proposal/projects/${this.projectId}/designs`, formData, 'blueraven')
-        //this endpoint returns all the designs because adding a new one could possibly remove (cancel) an existing one
-        this.designs = data
-        await this.getActiveDesign()
-        this.newDesignRequest = {}
-        this.showNewDesignRequestForm = false
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        this.$snackbar('ERROR', e?.data?.message || 'There was an error requesting a new design')
-      }
-    },
-    async requestPostalCodeApproval(comments) {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
-        const {
-          data,
-          status
-        } = await postRequest(`/proposal/projects/${this.projectId}/postalCode`, {comments}, 'blueraven')
-        this.activeDesign = data
-        this.newDesignRequest = {}
-        this.showNewPostalCodeRequestForm = false
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        this.$snackbar('ERROR', e?.data?.message || 'There was an error requesting a new design')
-      }
-    },
-    disableAddSlice(proposalCount, offset) {
-      let pageCount = (Math.floor(proposalCount / this.numberToDisplay))
-      let dividesEqually = proposalCount % this.numberToDisplay === 0
-      if (dividesEqually && pageCount !== 0) {
-        pageCount--
-      }
-      return pageCount === offset
-    },
-    async getProposalProject() {
-      this.projectLoaded = false
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequest(`/proposal/projects/${this.projectId}`, 'blueraven')
-        this.project = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } finally {
-        this.projectLoaded = true
-      }
-    },
-    async saveDesignField(design) {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        let values = [
-            {
-              textValue: design.tempDesignName,
-              customFieldGroupAssignmentId: 26300
-            }
-          ]
-        const {data, status} = await postRequest(`/customFieldValues/project/${design.projectId}/processStep/${design.projectProcessStepId}`, values)
-        design.edit = false
-        design.designName = design.tempDesignName
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCompletedProposalDesigns() {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequest(`/proposal/projects/${this.projectId}/designs`, 'blueraven', [])
-        const designs = data
-          ?.map((d) => {
-            d?.proposals.sort(dateSortFn())
-            return d
-          })
-          ?.sort(dateSortFn('dateModified'))
-
-        designs.forEach(d => {
-          d.tempDesignName = d.designName
-          d.edit = false
-        })
-
-        this.designs = designs
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getActiveDesign() {
-      try {
-        this.requestSuccessful = false
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
-        const {
-          data,
-          status
-        } = await getRequest(`/proposal/projects/${this.projectId}/designs/active`, 'blueraven', [])
-        this.activeDesign = data
-        this.requestSuccessful = true
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        this.requestSuccessful = false
-        logError(e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async addProposal(design) {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await postRequest(`/proposal`, {
-          projectProcessStepId: design.projectProcessStepId
-        }, 'blueraven')
-        this.$router.push({name: 'proposal', params: {proposalId: data.id}})
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        logError(e)
-        this.$snackbar('ERROR', `An error occurred while creating proposal: <strong>${e?.data?.message}</strong>`, true)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    uploadFiles: function (files) {
-      this.newDesignRequest.attachments = files
-    },
-    //cuz i am dumb and can't figure out how to pass in "files"
-    uploadUtilityBillFiles: function (files) {
-      this.newDesignRequest.utilityBillAttachments = files
+const pageLoadOrRefresh = async () => {
+  const requests = [getCompletedProposalDesigns(), getActiveDesign()]
+  await Promise.all(requests)
+}
+const validateAIRequest = async () => {
+  const valid = aiForm.value.validate()
+  if (valid) {
+    if (useExistingDesign.value) {
+      await createAiFromExisting()
+    } else {
+      await requestAIDesign()
     }
   }
+}
+const createAiFromExisting = async () => {
+  try {
+    savingNewAiDesign.value = true
+    // handle the duplication on the backend so mobile can do it too
+    const { data, status } = await postRequest(
+      `/proposal/projects/${projectId.value}/ai/design/${firstDesignId.value}/duplicate`,
+      aiRequestFields.value,
+      'blueraven'
+    )
+
+    if (null != data?.design?.id) {
+      //open the new design in sales mode
+      const url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
+      window.open(url, '_blank')
+
+      //reload the active design
+      await getActiveDesign()
+    } else {
+      snackbar('ERROR', 'Failed to find Aurora Project')
+    }
+  } catch (e) {
+    logError(e)
+    appStore.loading = false
+    snackbar(
+      'ERROR',
+      e?.data?.message || 'There was an error requesting a new design'
+    )
+  } finally {
+    showAIDesignRequestForm.value = false
+    savingNewAiDesign.value = false
+  }
+}
+
+const handleAIRequest = async (useExisting) => {
+  //utility company (23802), estimated annual consumption (22573), design name (26300)
+  useExistingDesign.value = useExisting
+  const encodedIds = encodeURI([23802, 22573, 26300])
+  const params = { cfgaIds: encodedIds }
+  const { data } = await getRequestWithParams(
+    `/customFieldGroup/getCustomFieldsByCfgaIds`,
+    {
+      params
+    }
+  )
+  aiRequestFields.value = data
+  showAIDesignRequestForm.value = true
+}
+
+const handleNewRequest = async () => {
+  lockNewRequests.value = true
+  const { data } = await getRequest(
+    `/proposal/projects/${projectId.value}/postalCode`,
+    'blueraven'
+  )
+
+  if (data?.approved) {
+    showNewDesignRequestForm.value = true
+  } else {
+    showNewPostalCodeRequestForm.value = true
+  }
+
+  lockNewRequests.value = false
+}
+
+const requestAIDesign = async () => {
+  try {
+    savingNewAiDesign.value = true
+    const { data } = await postRequest(
+      `/proposal/projects/${projectId.value}/ai`,
+      aiRequestFields.value,
+      'blueraven'
+    )
+    if (data?.design?.id && data?.design?.project_id) {
+      const url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
+      window.open(url, '_blank')
+    }
+    await getActiveDesign()
+  } catch (e) {
+    logError(e)
+    appStore.loading = false
+    snackbar(
+      'ERROR',
+      e?.data?.message || 'There was an error requesting a new design'
+    )
+  } finally {
+    showAIDesignRequestForm.value = false
+    savingNewAiDesign.value = false
+  }
+}
+
+const syncAuroraDesignDetails = async () => {
+  try {
+    appStore.loading = true
+
+    const { data, status } = await postRequest(
+      `/projectProcessStep/${activeDesign.value.projectProcessStepId}/action/10293`,
+      {}
+    )
+    if (status === 204 || status === 200) {
+      //sync updates the pps status to complete and grabs assets from Aurora and uploads them to our side
+      // let designId = "ba92c16d-b674-464d-a220-3dd0a0b4daf8" <--use to test a design that for sure has the right asset you need
+      await postRequest(
+        `/proposal/pps/${activeDesign.value.projectProcessStepId}/design/${activeDesign.value?.designId}/sync`,
+        {},
+        'blueraven'
+      )
+
+      //reload the required data for the screen
+      await pageLoadOrRefresh()
+      handleHidingGlobalLoader(status)
+    } else {
+      snackbar(
+        'ERROR',
+        `Aurora design incomplete. Please navigate back to Aurora and finish your design changes before syncing.`
+      )
+      handleHidingGlobalLoader(status)
+    }
+  } catch (e) {
+    appStore.loading = false
+    snackbar(
+      'ERROR',
+      `Aurora design incomplete. Please navigate back to Aurora and finish your design changes before syncing.`
+    )
+  }
+}
+
+const requestNewDesign = async () => {
+  try {
+    appStore.loading = true
+    const formData = new FormData()
+    formData.append('description', newDesignRequest.value.description)
+    // formData.append('dueDate', newDesignRequest.value.dueDate)
+
+    newDesignRequest.value?.attachments?.forEach((a) => {
+      formData.append('attachments', a)
+    })
+
+    newDesignRequest.value?.utilityBillAttachments?.forEach((a) => {
+      formData.append('utilityBillAttachments', a)
+    })
+
+    const { data, status } = await postRequest(
+      `/proposal/projects/${projectId.value}/designs`,
+      formData,
+      'blueraven'
+    )
+    //this endpoint returns all the designs because adding a new one could possibly remove (cancel) an existing one
+    designs.value = data
+    await getActiveDesign()
+    newDesignRequest.value = {}
+    showNewDesignRequestForm.value = false
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    logError(e)
+    appStore.loading = false
+    snackbar(
+      'ERROR',
+      e?.data?.message || 'There was an error requesting a new design'
+    )
+  }
+}
+
+const requestPostalCodeApproval = async (comments) => {
+  try {
+    appStore.loading = true
+
+    const { data, status } = await postRequest(
+      `/proposal/projects/${projectId.value}/postalCode`,
+      { comments },
+      'blueraven'
+    )
+    activeDesign.value = data
+    newDesignRequest.value = {}
+    showNewPostalCodeRequestForm.value = false
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    appStore.loading = false
+    snackbar(
+      'ERROR',
+      e?.data?.message || 'There was an error requesting a new design'
+    )
+  }
+}
+const disableAddSlice = (proposalCount, offset) => {
+  let pageCount = Math.floor(proposalCount / numberToDisplay.value)
+  let dividesEqually = proposalCount % numberToDisplay.value === 0
+  if (dividesEqually && pageCount !== 0) {
+    pageCount--
+  }
+  return pageCount === offset
+}
+const getProposalProject = async () => {
+  projectLoaded.value = false
+  try {
+    appStore.loading = true
+    const { data, status } = await getRequest(
+      `/proposal/projects/${projectId.value}`,
+      'blueraven'
+    )
+    project.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    logError(e)
+    appStore.loading = false
+  } finally {
+    projectLoaded.value = true
+  }
+}
+const saveDesignField = async (design) => {
+  try {
+    appStore.loading = true
+    const values = [
+      {
+        textValue: design.tempDesignName,
+        customFieldGroupAssignmentId: 26300
+      }
+    ]
+    const { data, status } = await postRequest(
+      `/customFieldValues/project/${design.projectId}/processStep/${design.projectProcessStepId}`,
+      values
+    )
+    design.edit = false
+    design.designName = design.tempDesignName
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    logError(e)
+    appStore.loading = false
+  }
+}
+const getCompletedProposalDesigns = async () => {
+  try {
+    appStore.loading = true
+    const { data, status } = await getRequest(
+      `/proposal/projects/${projectId.value}/designs`,
+      'blueraven',
+      []
+    )
+    const temppDesigns = data
+      ?.map((d) => {
+        d?.proposals.sort(dateSortFn())
+        return d
+      })
+      ?.sort(dateSortFn('dateModified'))
+
+    temppDesigns.forEach((d) => {
+      d.tempDesignName = d.designName
+      d.edit = false
+    })
+
+    designs.value = temppDesigns
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    logError(e)
+    appStore.loading = false
+  }
+}
+const getActiveDesign = async () => {
+  try {
+    requestSuccessful.value = false
+    appStore.loading = true
+
+    const { data, status } = await getRequest(
+      `/proposal/projects/${projectId.value}/designs/active`,
+      'blueraven',
+      []
+    )
+    activeDesign.value = data
+    requestSuccessful.value = true
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    requestSuccessful.value = false
+    logError(e)
+    appStore.loading = false
+  }
+}
+const addProposal = async (design) => {
+  try {
+    appStore.loading = true
+    const { data, status } = await postRequest(
+      `/proposal`,
+      {
+        projectProcessStepId: design.projectProcessStepId
+      },
+      'blueraven'
+    )
+    router.push({ name: 'proposal', params: { proposalId: data.id } })
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    logError(e)
+    snackbar(
+      'ERROR',
+      `An error occurred while creating proposal: <strong>${e?.data?.message}</strong>`,
+      true
+    )
+    appStore.loading = false
+  }
+}
+const uploadFiles = (files) => {
+  newDesignRequest.value.attachments = files
+}
+//cuz i am dumb and can't figure out how to pass in "files"
+const uploadUtilityBillFiles = (files) => {
+  newDesignRequest.value.utilityBillAttachments = files
 }
 </script>
 
@@ -705,7 +918,7 @@ export default {
 }
 
 .image-selection-icon {
-  opacity: .6;
+  opacity: 0.6;
 }
 
 .image-selection-container {

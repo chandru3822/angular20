@@ -1,262 +1,297 @@
 <template>
-<v-menu
-  v-model="menu"
-  :close-on-content-click="false"
-  transition="scale-transition"
-  offset-y
-  :content-class="contentClass"
-  max-width="290px"
-  min-width="290px"
->
-  <template #activator="{on}">
-    <v-text-field
-      :class="[customClass, {'no-icon-click': !allowNow}]"
-      :value="value | formatDate(type, format, type === 'time' ? 'HH:mm' : null)"
-      :label="label"
-      :placeholder="placeholder"
-      :rules="getRequiredRule()"
-      :prepend-icon="hidePrependIcon ? '' : 'event'"
-      :append-icon="showAppendIcon ? 'event' : ''"
-      readonly
-      color="primary"
-      class="datetime-picker-input"
-      clear-icon="mdi-close-circle"
-      :clearable="!readonly"
-      :disabled="readonly"
-      v-on="!readonly && on"
-      @click:clear="clearInput"
-      @click:append="setNow"
-      @click:prepend="setNow"
-      :hide-details="hideDetails"
-      :dense="dense"
-      :outlined="outlined"
-    />
-  </template>
-  <v-date-picker
-    v-if="showDate"
-    v-model="date"
-    class="qa-date-picker"
-    :min="minDate"
-    :max="maxDate"
-    @click:date="saveDate()"
+  <v-menu
+      v-model="menu"
+      :close-on-content-click="false"
+      transition="scale-transition"
+      offset-y
+      :content-class="contentClass"
+      max-width="290px"
+      min-width="290px"
   >
-    <v-spacer></v-spacer>
-    <v-btn text color="primary" @click="cancel()">Cancel</v-btn>
-    <v-btn text color="primary" @click="saveDate()">OK</v-btn>
-  </v-date-picker>
+    <template #activator="{on}">
+      <a-text-field
+          :class="[customClass, {'no-icon-click': !allowNow}]"
+          :value="value | formatDate(type, format, type === 'time' ? 'HH:mm' : null)"
+          :label="label"
+          :placeholder="placeholder"
+          :rules="getRequiredRule()"
+          :prepend-icon="hidePrependIcon ? '' : 'event'"
+          :append-inner-icon="showAppendIcon ? 'event' : ''"
+          readonly
+          color="primary"
+          class="datetime-picker-input"
+          clear-icon="mdi-close-circle"
+          :clearable="!readonly"
+          :disabled="readonly"
+          v-on="!readonly && on"
+          @click:clear="clearInput"
+          @click:append="setNow"
+          @click:prepend="setNow"
+          :hide-details="hideDetails"
+          :density="dense ? 'compact' : 'default'"
+          :variant="outlined ? 'outlined' : variant || 'plain'"
+      />
+    </template>
+    <v-date-picker
+        v-if="showDate"
+        v-model="dateRef"
+        class="qa-date-picker"
+        :min="minDate"
+        :max="maxDate"
+        @click:date="saveDate()"
+    >
+      <v-spacer></v-spacer>
+      <a-btn
+          variant="text"
+          color="primary"
+          @click="cancel()"
+          text="Cancel"
+      ></a-btn>
+      <a-btn
+          variant="text"
+          color="primary"
+          @click="saveDate()"
+          text="OK"
+      ></a-btn>
+    </v-date-picker>
 
-  <v-time-picker
-    v-model="localTime"
-    v-if="showTime"
-    class="qa-time-picker"
-    :allowed-minutes="allowedMinutes !== undefined ? allowedMinutes : m => m % minuteIncrement === 0"
-    :ampm-in-title="true"
-  >
-    <v-spacer></v-spacer>
-    <v-btn text color="primary" class="qa-date-cancel" @click="cancel()">Cancel</v-btn>
-    <v-btn text color="primary" class="qa-date-ok" @click="saveTime()">OK</v-btn>
-  </v-time-picker>
-</v-menu>
+    <v-time-picker
+        v-model="localTime"
+        v-if="showTime"
+        class="qa-time-picker"
+        :allowed-minutes="props.allowedMinutes !== undefined ? props.allowedMinutes : m => m % minuteIncrement === 0"
+        :ampm-in-title="true"
+    >
+      <v-spacer></v-spacer>
+      <a-btn
+          variant="text"
+          color="primary"
+          class="qa-date-cancel"
+          @click="cancel()"
+          text="Cancel"
+      ></a-btn>
+      <a-btn
+          variant="text"
+          color="primary"
+          class="qa-date-ok"
+          @click="saveTime()"
+          text="OK"
+      ></a-btn>
+    </v-time-picker>
+  </v-menu>
 </template>
-<script>
+<script setup>
 
 import {DateTime} from 'luxon'
 import moment from 'moment'
 import constants from '@/helpers/constants'
 
-export default {
-  name: 'DatetimePickerInput',
-  props: {
-    value: String,
-    timezone: String,
-    type: String,
-    label: String,
-    placeholder: String,
-    format: String,
-    inputFormat: String,
-    minDate: String,
-    maxDate: String,
-    hidePrependIcon: Boolean,
-    hideDetails: Boolean,
-    dense: String,
-    outlined: String,
-    customClass: String,
-    customContentClass: String,
-    //if this is empty it uses the company minute increment setting, if that is null then it shows all minutes
-    allowedMinutes: Function,
-    showAppendIcon: Boolean,
-    changeCallback: Function,
-    allowNow: Boolean,
-    required: {
-      type: Boolean,
-      default: false
-    },
-    readonly: {
-      type: Boolean,
-      default: false
-    },
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const emit = defineEmits(['input'])
+
+const props = defineProps({
+  value: String,
+  timezone: String,
+  type: String,
+  label: String,
+  placeholder: String,
+  format: String,
+  inputFormat: String,
+  minDate: String,
+  maxDate: String,
+  hidePrependIcon: Boolean,
+  hideDetails: Boolean,
+  dense: String,
+  variant: String, //eventually this should only be using variant but i am only working on v-text-fields for now
+  outlined: String,
+  customClass: String,
+  customContentClass: String,
+  //if this is empty it uses the company minute increment setting, if that is null then it shows all minutes
+  allowedMinutes: Function,
+  showAppendIcon: Boolean,
+  changeCallback: Function,
+  allowNow: Boolean,
+  required: {
+    type: Boolean,
+    default: false
   },
-  data () {
-    return {
-      date: null,
-      utcDate: null,
-      time: null,
-      menu: false,
-      //if the company has set a default minute increment, use that. otherwise use 1
-      minuteIncrement: this.$store.state.user.details.minuteIncrement || 1,
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-      showDate: false,
-      showTime: false,
-      //i'm not sure what the default here will be for normal timestamps. i'm guessing 'YYYY-MM-DD HH:mm:ss' but feel free to change it if that is not the case
-      defaultTimeFormat: 'YYYY-MM-DD HH:mm:ss'
+  readonly: {
+    type: Boolean,
+    default: false
+  },
+})
+const { value: propsValue, timezone, type, label, placeholder, format, inputFormat, minDate, maxDate,
+  hidePrependIcon, hideDetails, dense, outlined, customClass, customContentClass, showAppendIcon, allowNow, required, readonly } = toRefs(props)
+
+const dateToUse = ref(null)
+const dateRef = ref(null)
+const utcDate = ref(null)
+const time = ref(null)
+const menu = ref(false)
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const showDate = ref(false)
+const showTime = ref(false)
+//i'm not sure what the default here will be for normal timestamps. i'm guessing 'YYYY-MM-DD HH:mm:ss' but feel free to change it if that is not the case
+const defaultTimeFormat = ref('YYYY-MM-DD HH:mm:ss')
+
+onMounted(() => {
+  init()
+})
+watch(propsValue, async() => {
+  if(null == propsValue.value) {
+    //re-init if the field ever gets nulled out
+    init()
+  }
+})
+
+//if the company has set a default minute increment, use that. otherwise use 1
+const minuteIncrement = computed(() => {
+  return userStore.details.minuteIncrement || 1
+})
+
+const contentClass = computed(() => {
+  return 'qa-date-menu ' + customContentClass.value
+})
+
+const localTime = computed({
+  get() {
+    return propsValue.value
+        ? moment.utc(propsValue.value, (inputFormat.value ?? defaultTimeFormat.value)).tz(timezone.value).format('HH:mm')
+        : moment().startOf('hour').format('HH:mm')
+  },
+  set(date) {
+    return setFunction(date)
+  }
+})
+
+const getRequiredRule = () => {
+  if(required.value) {
+    return requiredRules.value
+  }
+}
+const setFunction = (date) => {
+  //date in this context = the current time in non-utc time
+  //we have to combine the selected date with the current time in non-utc in case they have selected date with a different daylight savings time than "NOW"
+  let combined = dateRef.value + ' ' + date
+  time.value = moment.tz(combined, 'yyyy-MM-DD HH:mm', timezone.value).utc().format('HH:mm')
+
+  // time.value = moment.tz(date, 'HH:mm', timezone).utc().format('HH:mm')
+  // ^^ this is the old way, in case i broke something
+
+  // this date will be used in case the time selected pushes the utc date to the next day
+  utcDate.value = moment(dateRef.value + ' ' + date).utc().format('yyyy-MM-DD')
+
+  return date
+}
+const changeHandler =  () => {
+  //@humes hopefully this doesn't break anything. if no changeCallback is passed in it shouldn't do anything
+  if(props.changeCallback) {
+    props.changeCallback()
+  }
+}
+const saveDate =  () => {
+
+  if (type.value === 'date') {
+    DateTime.local()
+    emit('input', DateTime.fromFormat(dateRef.value, 'yyyy-MM-dd').toISODate())
+    menu.value = false
+  } else {
+    //the localDate setter was doing exactly what was needed to the date but we need to convert time.value to the "timezone"
+    //value before sending everything to the setFunction because this is what the date picker does
+    setFunction(moment.utc(time.value, 'HH:mm').tz(timezone.value).format('HH:mm'))
+    // setFunction(moment.utc(dateRef.value))
+    showDate.value = false
+    showTime.value = true
+  }
+  changeHandler()
+}
+const saveTime =  () => {
+  if (type.value === 'timestamp') {
+    // if(!utcDate.value) {
+    //   let test = moment
+    //   let dateTime = DateTime
+    //   utcDate.value = moment(date.value + ' ' + time.value).format('yyyy-MM-DD')
+    // }
+    const date = DateTime.fromFormat(utcDate.value, 'yyyy-MM-dd', {zone: 'utc'})
+    // const date = utcDate.value ? DateTime.fromFormat(utcDate.value, 'yyyy-MM-dd', {zone: 'utc'})
+    // : DateTime.fromFormat(date.value, 'yyyy-MM-dd', {zone: 'utc'})
+    let timeHere = DateTime.fromISO(time.value, {zone: 'utc'})
+
+    const datetime = timeHere.set({
+      year: date.year,
+      month: date.month,
+      day: date.day
+    })
+    emit('input', datetime.toISO())
+    showDate.value = true
+    showTime.value = false
+  } else {
+    emit('input', DateTime.fromISO(time.value, {zone: 'utc'}).toISOTime())
+  }
+  menu.value = false
+  changeHandler()
+}
+const cancel =  () => {
+  menu.value = false
+  init()
+  changeHandler()
+}
+const init =  (overrideWithNow) => {
+  let value
+  if(!overrideWithNow) {
+    value = DateTime.fromISO(propsValue.value, { zone: 'utc'})
+  }
+
+  // if (['timestamp', 'time'].includes(type.value)) {
+  //   value = value.setZone(timezone)
+  // }
+
+  const now = DateTime.local()
+  dateToUse.value = !overrideWithNow && (value.isValid) ? value : now
+  dateRef.value = dateToUse.value.toFormat('yyyy-MM-dd')
+  if(overrideWithNow) {
+    time.value = dateToUse.value.toFormat('HH:mm')
+    setFunction(time.value)
+    saveDate()
+    if(type.value === 'timestamp') {
+      saveTime()
     }
-  },
-  created() {
-    this.init()
-  },
-  watch: {
-    '$props.value': function () {
-      if(null == this.$props.value) {
-        //re-init if the field ever gets nulled out
-        this.init()
-      }
-    }
-  },
-  computed: {
-    contentClass() {
-      return 'qa-date-menu ' + this.$props.customContentClass
-    },
-    localTime: {
-      get: function() {
-        return this.$props.value
-          ? moment.utc(this.$props.value, (this.inputFormat ?? this.defaultTimeFormat)).tz(this.timezone).format('HH:mm')
-          : moment().startOf('hour').format('HH:mm')
-      },
-      set: function (date) {
-        return this.setFunction(date)
-      }
-    }
-  },
-  methods: {
-    getRequiredRule() {
-      if(this.required) {
-        return this.requiredRules
-      }
-    },
-    setFunction(date) {
-      //date in this context = the current time in non-utc time
-      //we have to combine the selected date with the current time in non-utc in case they have selected date with a different daylight savings time than "NOW"
-      let combined = this.date + ' ' + date
-      this.time = moment.tz(combined, 'yyyy-MM-DD HH:mm', this.timezone).utc().format('HH:mm')
+  } else if(propsValue.value == null) {
+    //if not previous value, set the time to the beginning of the current hour and do the setFunction thing that i dont even remember what it does now
+    time.value = dateToUse.value.startOf('hour').toFormat('HH:mm')
+    setFunction(time.value)
+  } else {
+    //if previous value, use that and dont do the setFunction thing
+    time.value = dateToUse.value.toFormat('HH:mm')
+  }
 
-      // this.time = moment.tz(date, 'HH:mm', this.timezone).utc().format('HH:mm')
-      // ^^ this is the old way, in case i broke something
-
-      // this date will be used in case the time selected pushes the utc date to the next day
-      this.utcDate = moment(this.date + ' ' + date).utc().format('yyyy-MM-DD')
-
-      return date
-    },
-    changeHandler () {
-      //@humes hopefully this doesn't break anything. if no changeCallback is passed in it shouldn't do anything
-      if(this.changeCallback) {
-        this.changeCallback()
-      }
-    },
-    saveDate () {
-
-      if (this.type === 'date') {
-        DateTime.local()
-        this.$emit('input', DateTime.fromFormat(this.date, 'yyyy-MM-dd').toISODate())
-        this.menu = false
-      } else {
-        //the localDate setter was doing exactly what was needed to the date but we need to convert this.time to the "this.timezone"
-        //value before sending everything to the setFunction because this is what the date picker does
-        this.setFunction(moment.utc(this.time, 'HH:mm').tz(this.timezone).format('HH:mm'))
-        // this.setFunction(moment.utc(this.date))
-        this.showDate = false
-        this.showTime = true
-      }
-      this.changeHandler()
-    },
-    saveTime () {
-      if (this.type === 'timestamp') {
-        // if(!this.utcDate) {
-        //   let test = moment
-        //   let dateTime = DateTime
-        //   this.utcDate = moment(this.date + ' ' + this.time).format('yyyy-MM-DD')
-        // }
-        const date = DateTime.fromFormat(this.utcDate, 'yyyy-MM-dd', {zone: 'utc'})
-        // const date = this.utcDate ? DateTime.fromFormat(this.utcDate, 'yyyy-MM-dd', {zone: 'utc'})
-          // : DateTime.fromFormat(this.date, 'yyyy-MM-dd', {zone: 'utc'})
-        let time = DateTime.fromISO(this.time, {zone: 'utc'})
-
-        const datetime = time.set({
-          year: date.year,
-          month: date.month,
-          day: date.day
-        })
-        this.$emit('input', datetime.toISO())
-        this.showDate = true
-        this.showTime = false
-      } else {
-        this.$emit('input', DateTime.fromISO(this.time, {zone: 'utc'}).toISOTime())
-      }
-      this.menu = false
-      this.changeHandler()
-    },
-    cancel () {
-      this.menu = false
-      this.init()
-      this.changeHandler()
-    },
-    init (overrideWithNow) {
-      let value
-      if(!overrideWithNow) {
-        // let value = DateTime.fromFormat(this.$props.value, 'HH:mm')
-        value = DateTime.fromISO(this.$props.value, { zone: 'utc'})
-      }
-
-      // if (['timestamp', 'time'].includes(this.type)) {
-      //   value = value.setZone(this.timezone)
-      // }
-
-      const now = DateTime.local()
-      this.dateToUse = !overrideWithNow && (value.isValid) ? value : now
-      this.date = this.dateToUse.toFormat('yyyy-MM-dd')
-      if(overrideWithNow) {
-        this.time = this.dateToUse.toFormat('HH:mm')
-        this.setFunction(this.time)
-        this.saveDate()
-        if(this.type === 'timestamp') {
-          this.saveTime()
-        }
-      } else if(this.$props.value == null) {
-        //if not previous value, set the time to the beginning of the current hour and do the setFunction thing that i dont even remember what it does now
-        this.time = this.dateToUse.startOf('hour').toFormat('HH:mm')
-        this.setFunction(this.time)
-      } else {
-        //if previous value, use that and dont do the setFunction thing
-        this.time = this.dateToUse.toFormat('HH:mm')
-      }
-
-      if (['timestamp', 'date'].includes(this.type)) {
-        this.showDate = true
-        this.showTime = false
-      } else {
-        this.showDate = false
-        this.showTime = true
-      }
-    },
-    clearInput () {
-        this.$emit('input', null)
-        this.changeHandler()
-    },
-    setNow() {
-      if(this.allowNow) {
-        this.init(true)
-      }
-    }
+  if (['timestamp', 'date'].includes(type.value)) {
+    showDate.value = true
+    showTime.value = false
+  } else {
+    showDate.value = false
+    showTime.value = true
+  }
+}
+const clearInput =  () => {
+  emit('input', null)
+  changeHandler()
+}
+const setNow = () => {
+  if(allowNow.value) {
+    init(true)
   }
 }
 </script>

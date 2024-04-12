@@ -4,152 +4,172 @@
       <v-toolbar-title class="title-large">Proposal Versions</v-toolbar-title>
       <v-spacer />
       <v-toolbar-items>
-        <v-btn class="toolbar-btn-text" text color="primary" :to="{'name' : 'proposalDesigner'}">
-          <span>Designer</span>
-        </v-btn>
-        <v-btn class="toolbar-btn-icon" icon large color="primary" :to="{'name' : 'proposalDesigner'}">
-          <v-icon>edit</v-icon>
-        </v-btn>
+        <a-btn
+          class="toolbar-btn-text"
+          variant="text"
+          color="primary"
+          :to="{ name: 'proposalDesigner' }"
+          text="Designer"
+        ></a-btn>
+        <a-btn
+          class="toolbar-btn-icon"
+          icon
+          size="large"
+          color="primary"
+          :to="{ name: 'proposalDesigner' }"
+          prepend-icon="edit"
+        ></a-btn>
       </v-toolbar-items>
       <v-toolbar-items v-if="canCreateVersion">
-        <v-btn class="toolbar-btn-text" text color="primary" @click="create">Create New Version</v-btn>
-        <v-btn class="toolbar-btn-icon" icon large color="primary" @click="create"><v-icon>mdi-plus</v-icon></v-btn>
+        <a-btn
+          class="toolbar-btn-text"
+          variant="text"
+          color="primary"
+          @click="create"
+          text="Create New Version"
+        ></a-btn>
+        <a-btn
+          class="toolbar-btn-icon"
+          icon
+          size="large"
+          color="primary"
+          @click="create"
+          prepend-icon="mdi-plus"
+        ></a-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-divider />
     <v-container>
-      <div v-if="!loading && !versions.length">
-        No proposals available.
-      </div>
+      <div v-if="!loading && !versions.length">No proposals available.</div>
       <v-card v-if="versions.length" class="square-card">
-        <v-data-table id="proposal-version-table"
-            :headers="headers"
-                      :items="versions"
-                      :options.sync="options"
-                      :server-items-length="totalVersions"
-                      :footer-props="footerProps"
-                      class="elevation-1"
-                      @click:row="handleClick">
-          <template #item.version="{item}">Version {{ item.version }}</template>
+        <v-data-table
+          id="proposal-version-table"
+          :headers="headers"
+          :items="versions"
+          :options.sync="options"
+          :server-items-length="totalVersions"
+          :footer-props="footerProps"
+          class="elevation-1"
+          @click:row="handleClick"
+        >
+          <template #item.version="{ item }"
+            >Version {{ item.version }}</template
+          >
           <template #item.status="{ item }">
-            <v-chip class="ma-2"
-                    label
-                    color="grey lighten-2"
-                    v-if="item.status">
+            <v-chip
+              class="ma-2"
+              label
+              color="grey lighten-2"
+              v-if="item.status"
+            >
               {{ item.status | capitalize }}
             </v-chip>
-            <v-chip class="ma-2 default-text-color"
-                    label
-                    color="primary lighten-9"
-                    v-if="item.primaryVersion">
+            <v-chip
+              class="ma-2 default-text-color"
+              label
+              color="primary lighten-9"
+              v-if="item.primaryVersion"
+            >
               Current
             </v-chip>
-
           </template>
           <template #item.dateModified="{ item }">
-            <span> {{ item.dateModified | timestamp }}</span>
+            <span> {{ item.dateModified | formatDate('timestamp') }}</span>
           </template>
-          <template #item.actions="{item}">
-            <v-btn
-                class="ma-2"
-                text
-                icon
-                color="primary"
-                @click.stop="showHistory(item.version)"
-            >
-              <v-icon>mdi-history</v-icon>
-            </v-btn>
+          <template #item.actions="{ item }">
+            <a-btn
+              class="ma-2"
+              variant="text"
+              icon
+              color="primary"
+              @click.navive.stop="showHistory(item.version)"
+              prepend-icon="mdi-history"
+            ></a-btn>
           </template>
         </v-data-table>
 
-        <proposal-version-history :visible.sync="history.show" :version="history.version"/>
-
+        <proposal-version-history
+          :visible.sync="history.show"
+          :version="history.version"
+        />
       </v-card>
     </v-container>
   </v-container>
-
 </template>
-<script>
+<script setup>
 import { getRequestWithParams, postRequest } from '@/helpers/helpers'
-import store from '@/store'
-import ProposalVersionHistory from "@/views/blueraven/settings/proposals/ProposalVersionHistory.vue";
-import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
+import ProposalVersionHistory from '@/views/blueraven/settings/proposals/ProposalVersionHistory.vue'
 
-export default {
-  name: 'ProposalSettings',
-  components: {ProposalVersionHistory},
-  mixins: [ProposalSettingsMixins],
-  data() {
-    return {
-      loading: true,
-      history: {
-        show: false,
-        version: undefined
-      },
-      options: {
-        sortBy: ['version'],
-        sortDesc: [true]
-      },
-      headers: [
-        { text: '', value: 'status', sortable: false },
-        { text: 'Version', value: 'version', sortable: false },
-        { text: 'Modified on', value: 'dateModified', sortable: false },
-        { text: 'Modified by', value: 'modifiedBy', sortable: false },
-        { text: 'Description', value: 'notes', sortable: false },
-        { text: '', value: 'actions', sortable: false }
-      ],
-      footerProps: {
-        'items-per-page-options': [5, 10, 20, 50, 100],
-      },
-      totalVersions: -1,
-      versions: []
-    }
-  },
-  created() {
-    this.getProposalFields()
-  },
-  computed: {
-    canCreateVersion() {
-      if (!store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')) {
-        return false
-      }
-      return !this.loading && !this.versions.some(v => v.status === 'DRAFT')
-    }
-  },
-  watch: {
-    options: {
-      handler() {
-        this.getProposalFields()
-      },
-      deep: true
-    }
-  },
-  methods: {
-    async create() {
-      const { data } = await postRequest('/proposal/versions', {}, 'blueraven')
-      this.versions.push({ ...data })
-      await this.$router.push({ name: 'proposalDetail', params: { id: data.id } })
-    },
-    handleClick(item) {
-      this.$router.push({ name: 'proposalDetail', params: { id: item.id } })
-    },
-    async getProposalFields() {
-      const { itemsPerPage, page } = this.options
-      this.loading = true
-      const { data } = await getRequestWithParams(`/proposal/versions?size=${itemsPerPage}&page=${page - 1}`, {}, 'blueraven')
-      this.totalVersions = data.totalElements ?? -1
-      this.versions = [...data.content]
-      this.loading = false
-    },
-    showHistory(versionId){
-      this.history.version = versionId
-      this.history.show = true
-    }
+import { computed, ref, onMounted, watch } from 'vue'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useRouter } from 'vue-router/composables'
+
+const router = useRouter()
+const userStore = useUserStore()
+
+const loading = ref(true)
+const history = ref({ show: false, version: undefined })
+const options = ref({ sortBy: ['version'], sortDesc: [true] })
+const headers = ref([
+  { text: '', value: 'status', sortable: false },
+  { text: 'Version', value: 'version', sortable: false },
+  { text: 'Modified on', value: 'dateModified', sortable: false },
+  { text: 'Modified by', value: 'modifiedBy', sortable: false },
+  { text: 'Description', value: 'notes', sortable: false },
+  { text: '', value: 'actions', sortable: false }
+])
+const footerProps = ref({
+  'items-per-page-options': [5, 10, 20, 50, 100]
+})
+const totalVersions = ref(-1)
+const versions = ref([])
+
+onMounted(() => {
+  getProposalFields()
+})
+
+const canCreateVersion = computed(() => {
+  if (!userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')) {
+    return false
   }
+  return !loading.value && !versions.value.some((v) => v.status === 'DRAFT')
+})
+
+watch(
+  options,
+  (newVal) => {
+    getProposalFields()
+  },
+  { deep: true }
+)
+
+const create = async () => {
+  const { data } = await postRequest('/proposal/versions', {}, 'blueraven')
+  versions.value.push({ ...data })
+  await router.push({ name: 'proposalDetail', params: { id: data.id } })
+}
+const handleClick = (item) => {
+  router.push({ name: 'proposalDetail', params: { id: item.id } })
+}
+const getProposalFields = async () => {
+  const { itemsPerPage, page } = options.value
+  loading.value = true
+  const { data } = await getRequestWithParams(
+    `/proposal/versions?size=${itemsPerPage}&page=${page - 1}`,
+    {},
+    'blueraven'
+  )
+  totalVersions.value = data.totalElements ?? -1
+  versions.value = [...data.content]
+  loading.value = false
+}
+const showHistory = (versionId) => {
+  history.value.version = versionId
+  history.value.show = true
 }
 </script>
 <style scoped lang="scss">
-@import "@/styles/main.scss";
+@import '@/styles/main.scss';
 
 ::v-deep {
   .v-data-table__wrapper {
@@ -167,7 +187,8 @@ tr:nth-of-type(even) {
   @media (max-width: 960px) {
     display: none;
   }
-}.toolbar-btn-icon {
+}
+.toolbar-btn-icon {
   @media (min-width: 961px) {
     display: none;
   }

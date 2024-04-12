@@ -3,19 +3,24 @@
     <slot>Missing Children</slot>
   </div>
 </template>
-<script>
-import { mapState } from 'vuex'
+<script setup>
+import { computed } from 'vue'
+import useProposalStore from '../store.js'
+import { storeToRefs } from 'pinia'
 
-export default {
-  name: 'Container',
-  props: ['blockStyle', 'themeKey'],
-  computed: {
-    styles() {
-      return { ...(this.theme[this.themeKey] ?? {}), ...this.blockStyle }
-    },
-    ...mapState({
-      theme: (state) => state.proposal.theme,
-    })
+const store = useProposalStore()
+const { theme } = storeToRefs(store)
+
+const props = defineProps({
+  themeKey: {
+    type: String
   },
-}
+  blockStyle: {
+    type: Object
+  }
+})
+
+const styles = computed(() => {
+  return { ...(theme.value[props.themeKey] ?? {}), ...props.blockStyle }
+})
 </script>

@@ -1,12 +1,12 @@
 <template>
   <v-dialog
-    class="confirmation-dialog"
-    v-model="show"
-    :retain-focus="retainFocus"
-    :width="width || 500"
-    @click:outside="no"
-    id = "dialogBox"
-    ref="dialogBox"
+      class="confirmation-dialog"
+      v-model="show"
+      :retain-focus="retainFocus"
+      :width="width || 500"
+      @click:outside="no"
+      id = "dialogBox"
+      ref="dialogBox"
   >
     <v-card>
       <v-card-title
@@ -22,76 +22,85 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn
-          @click.native="no"
-            text
+        <a-btn
+            @click.native="no"
+            variant="text"
+            id="qa-confirmation-dialog-no"
             color="primary"
             class="text-capitalize mr-2 mb-2"
         >
-          <slot name="no">Cancel</slot>
-        </v-btn>
-        <v-btn
+          <template #default>
+            <slot name="no">Cancel</slot>
+          </template>
+        </a-btn>
+        <a-btn
             v-if="!hideConfirm"
             color="primary"
-            class="white--text elevation-2 text-capitalize mr-2 mb-2"
+            class="elevation-2 text-capitalize mr-2 mb-2"
             :disabled="disableConfirm"
+            id="qa-confirmation-dialog-yes"
             :class="confirmClass"
-            @click="yes">
-          <slot name="yes">Delete</slot>
-        </v-btn>
+            @click="yes"
+        >
+          <template #default>
+            <slot name="yes">Delete</slot>
+          </template>
+        </a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
-<script>
+<script setup>
 /**
  * The confirmation dialog that should be used throughout the application
  * @author jkburnett
  */
-export default {
-  name: "ConfirmationDialog",
-  props: {
-    openDialog: Boolean, //used by parent to open the dialog
-    hideTitle:Boolean, //set true if dialog should not have a title
-    retainFocus:Boolean, //sets retain-focus on v-dialog component
-    itemToDelete: Object, // @deprecated
-    disableConfirm: Boolean, //allows parent to perform validation before allowing user to confirm
-    hideConfirm: Boolean, // hides confirmation btn when only 'close' or 'cancel' is needed
-    confirmClass: String, //allows parent to control appearance of confirmation btn
-    width: Number, //width of the dialog
-    parentClose: Boolean, //set to true when validation needed before closing a dialog on confirm
-    primaryHeader: Boolean, //if set to true, header will have primary color background and white text instead of vice versa
-  },
-  data() {
-    return {
-    }
-  },
-  computed: {
-    show: {
-      get () {
-        return this.openDialog
-      },
-      set (value) {
-        // this.$emit('close-dialog', value)
-      }
-    }
-  },
-  created(){},
-  methods: {
-    yes(){
-      this.$emit('confirm')
-      if(!this.parentClose) {
-        this.$emit('close-dialog', false)
-      }
-      this.show=false
-    },
-    no() {
-      this.$emit('cancel')
-      this.$emit('close-dialog', false)
-      this.show=false
-    }
+
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  openDialog: Boolean, //used by parent to open the dialog
+  hideTitle:Boolean, //set true if dialog should not have a title
+  retainFocus:Boolean, //sets retain-focus on v-dialog component
+  itemToDelete: Object, // @deprecated
+  disableConfirm: Boolean, //allows parent to perform validation before allowing user to confirm
+  hideConfirm: Boolean, // hides confirmation btn when only 'close' or 'cancel' is needed
+  confirmClass: String, //allows parent to control appearance of confirmation btn
+  width: Number, //width of the dialog
+  parentClose: Boolean, //set to true when validation needed before closing a dialog on confirm
+  primaryHeader: Boolean, //if set to true, header will have primary color background and white text instead of vice versa
+})
+const { openDialog, hideTitle, retainFocus, itemToDelete, disableConfirm, hideConfirm,
+  confirmClass, width, parentClose, primaryHeader } = toRefs(props)
+
+const emit = defineEmits(['cancel', 'close-dialog', 'confirm'])
+
+const show = computed(() => {
+  return openDialog.value
+})
+
+const yes = () => {
+  emit('confirm')
+  if(!parentClose.value) {
+    emit('close-dialog', false)
   }
+}
+
+const no = ()  => {
+  emit('cancel')
+  emit('close-dialog', false)
 }
 </script>
 

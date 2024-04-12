@@ -418,9 +418,6 @@ public class BlueravenProposalService {
 
     List<ProposalStepCustomFieldValue> proposalDesignStepValues = getProjectProcessStepValues(proposal.getProjectProcessStepId());
 
-    //initially filter out any fields that don't match their visibility property
-    filterCustomFieldsByVisibility(proposal, proposalDesignStepValues);
-
     // then populate the list of values
     blueravenCustomFieldGroupService.handleCustomListOfValue(
       proposal.getCustomFieldGroups(), 3L, proposal.getProjectId());

@@ -55,8 +55,10 @@ import {MilestoneEnum, QuarterEnum} from "@/views/blueraven/closerDashboard/Mile
 import IncentiveMilestone from "@/views/blueraven/closerDashboard/IncentiveMilestone";
 import {AppMutations} from "@/stores/AppStore";
 import {getSnackbar} from "@/helpers/helpers";
-import {Actions} from "@/store";
 import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
+import { useUserStore } from '@/stores/UserStore.js'
+import { useFileStore } from '@/stores/FileStore.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 /**
  * counts: {q1:Number, q2:Number, q3:Number, q4:Number}
@@ -85,20 +87,23 @@ const props = defineProps({
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
+const fileStore = useFileStore()
+const appStore = useAppStore()
+const snackbar = vueInstance.$snackbar
 
 const percentAchieved = ref(0),
     progressBarIsFull=ref(false),
     headerImage=ref({}),
-    snackbar=ref({}),
     headerImageTypeId=ref(991),
     backgroundImage=ref({}),
     backgroundImageTypeId=ref(992),
-    companyId = store.state.user.details.companyId,
     backgroundImageLoaded=ref(false)
 
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
 const windowInnerWidth = computed(() => { return window.innerWidth})
-
-
 
 const milestoneLevel = (quarterCount) => {
   switch(true) {
@@ -131,26 +136,25 @@ const loadImages = async () => {
 }
 const loadImage= async (typeId, imageType) => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
-    await store.dispatch(Actions.FILE_GET_ONE,{
+    appStore.loading = true
+    await fileStore.getOne({
       attachmentTypeId: typeId,
-      sourceId: companyId,
+      sourceId: companyId.value,
       callback: async (img) => {
         imageType.image = img
         if(typeId === backgroundImageTypeId.value){
           backgroundImageLoaded.value = true
         }
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
       }
     })
   } catch(e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', `Error Loading ${imageType}`)
+    snackbar('ERROR', `Error Loading ${imageType}`)
     if(typeId === backgroundImageTypeId.value){
       backgroundImageLoaded.value = true
     }
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 onMounted(async () => {

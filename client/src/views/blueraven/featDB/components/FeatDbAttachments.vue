@@ -11,42 +11,46 @@
               <div class="expansion-panel-header-open" v-if="open"
                    key="0">
                 <input
-                  :id="`fileInput${type.attachmentTypeId}`"
-                  type="file"
-                  multiple
-                  :accept="acceptedFileTypes"
-                  @change='uploadDocument($event.target.files, type.attachmentTypeId)'
-                  style="display: none"
-                  @click.stop=""
-                  ref='fileInput'
+                    :id="`fileInput${type.attachmentTypeId}`"
+                    type="file"
+                    multiple
+                    :accept="acceptedFileTypes"
+                    @change='uploadDocument($event.target.files, type.attachmentTypeId)'
+                    style="display: none"
+                    @click.stop=""
+                    ref='fileInput'
                 >
-                <v-btn @click.native.stop="selectFile(type.attachmentTypeId)"
-                       @dragenter="dragTypeId=type.attachmentTypeId"
-                       @dragleave="dragTypeId=null"
-                       @dragend="dragTypeId=null"
-                       v-if="userCanEdit"
-                       :class="{'file-hover': dragTypeId === type.attachmentTypeId}"
-                       @drop.prevent="addDragDocument($event, type.attachmentTypeId)"
-                       @dragover.prevent="dragTypeId=type.attachmentTypeId"
-                       elevation="0" text color="primary" class="expansion-panel-btn upload-button">
-                  Upload
-                </v-btn>
+                <a-btn
+                    @click.native.stop="selectFile(type.attachmentTypeId)"
+                    @dragenter="dragTypeId=type.attachmentTypeId"
+                    @dragleave="dragTypeId=null"
+                    @dragend="dragTypeId=null"
+                    v-if="userCanEdit"
+                    :class="{'file-hover': dragTypeId === type.attachmentTypeId}"
+                    @drop.prevent="addDragDocument($event, type.attachmentTypeId)"
+                    @dragover.prevent="dragTypeId=type.attachmentTypeId"
+                    :elevation="0"
+                    variant="text"
+                    color="primary"
+                    class="expansion-panel-btn upload-button"
+                    text="Upload"
+                ></a-btn>
               </div>
               <span
-                v-else
-                key="1"
+                  v-else
+                  key="1"
               ></span>
             </v-row>
           </template>
         </v-expansion-panel-header>
         <v-expansion-panel-content>
           <AttachmentsTable
-            :display-type="type"
-            :attachments="attachments"
-            :show-non-primary-docs="true"
-            :allow-edit="false"
-            :allow-upload="userCanEdit"
-            :delete-callback="deleteCallback"
+              :display-type="type"
+              :attachments="attachments"
+              :show-non-primary-docs="true"
+              :allow-edit="false"
+              :allow-upload="userCanEdit"
+              :delete-callback="deleteCallback"
           ></AttachmentsTable>
         </v-expansion-panel-content>
       </v-expansion-panel>
@@ -54,125 +58,118 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import {
-  getSnackbar
+
 } from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
-import {Actions} from "@/store";
+
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable.vue";
 import constants from "@/helpers/constants";
+import { getCurrentInstance, computed, ref, toRefs, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
-export default {
-  name: "FeatDbAttachments",
-  components: {
-    AttachmentsTable
-  },
-  data() {
-    return {
-      dragTypeId: null,
-      error: {},
-      maxFiles: 1,
-      renderTicker: 0,
-      acceptedFileTypes: constants.STANDARD_IMAGES_AND_DOCS,
-      companyId: this.$store.state.user.details.companyId,
-      headers: [
-        {text: null, value: 'fileIcon', show: true},
-        {text: null, value: 'filename', show: true},
-        {text: null, value: 'icons', show: true},
-      ],
-      showNonPrimaryDocs: false,
-    }
-  },
-  props: {
-    attachmentTypes: Array,
-    attachments: Array,
-    sourceId: Number,
-    userCanEdit: Boolean,
-    objectTypeId: Number,
-    userId: Number,
-    contactId: Number,
-    orgId: Number,
-  },
-  watch: {
-    attachments() {
-      // console.log(this.attachments)
-    }
-  },
-  created() {},
-  computed: {},
-  methods: {
-    getTypeCount: function (typeId) {
-      try {
-        return this.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived)?.length || 0
-      } catch {
-        return 0
-      }
-    },
-    getNonPrimaryCount: function (typeId) {
-      try {
-        return this.attachments?.filter(a => a.attachmentTypeId === typeId && !a.archived && !a.main).length || 0
-      } catch {
-        return 0
-      }
-    },
-    addDragDocument: async function (e, attachmentTypeId) {
-      let files = e.dataTransfer.files
-      await this.uploadDocument(files, attachmentTypeId)
-    },
-    selectFile: function (typeId) {
-      document.getElementById(`fileInput${typeId}`)?.click();
-    },
-    uploadDocument: async function (files, attachmentTypeId) {
-      if (files?.length > this.maxFiles) {
-        this.snackbar = getSnackbar('ERROR', `Cannot upload more than ${this.maxFiles} files at one time. Please try again and select fewer files.`)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } else if (files?.length > 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
 
-        try {
-          let file = files[0]
-          await this.$store.dispatch(Actions.FILE_UPLOAD, {
-            file: file,
-            attachmentTypeId: attachmentTypeId,
-            sourceId: this.sourceId,
-            displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
-            deleteFirst: false,
-            callback: async (document) => {
-              this.attachments.push(document)
-              this.snackbar = getSnackbar('SUCCESS', 'Successfully uploaded document')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            }
-          })
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error uploading document')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async uploadCallback(newAttachment, error) {
-      if (error) {
-        this.error = error
-        this.snackbar = getSnackbar('ERROR', error.message)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } else {
-        let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
-        newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
-        //adding this "copy" so that if they edit a name then click cancel we dont update the ui with their change
-        newAttachment.editableNameCopy = newAttachment.editableName
-        this.snackbar = getSnackbar('SUCCESS', 'Document Uploaded')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.attachments = [...this.attachments, newAttachment]
-      }
-      this.$store.commit(AppMutations.SET_LOADING, false)
-    },
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const fileStore = useFileStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-    deleteCallback(id) {
-      this.attachments = this.attachments.filter(a => a.id !== id)
-    }
+const dragTypeId = ref(null)
+const error = ref({})
+const maxFiles = ref(1)
+const renderTicker = ref(0)
+const acceptedFileTypes = ref(constants.STANDARD_IMAGES_AND_DOCS)
+const headers = ref([
+  {text: null, value: 'fileIcon', show: true},
+  {text: null, value: 'filename', show: true},
+  {text: null, value: 'icons', show: true},
+])
+const showNonPrimaryDocs = ref(false)
+
+const props = defineProps({
+  attachmentTypes: Array,
+  attachments: Array,
+  sourceId: Number,
+  userCanEdit: Boolean,
+  objectTypeId: Number,
+  userId: Number,
+  contactId: Number,
+  orgId: Number,
+})
+
+const { attachmentTypes, sourceId, userCanEdit, objectTypeId, userId, contactId, orgId } = toRefs(props)
+
+const getTypeCount = (typeId) => {
+  try {
+    return props.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived)?.length || 0
+  } catch {
+    return 0
   }
+}
+const getNonPrimaryCount = (typeId) => {
+  try {
+    return props.attachments?.filter(a => a.attachmentTypeId === typeId && !a.archived && !a.main).length || 0
+  } catch {
+    return 0
+  }
+}
+const addDragDocument = async (e, attachmentTypeId) => {
+  let files = e.dataTransfer.files
+  await uploadDocument(files, attachmentTypeId)
+}
+const selectFile = function (typeId) {
+  document.getElementById(`fileInput${typeId}`)?.click();
+}
+const uploadDocument = async (files, attachmentTypeId) => {
+  if (files?.length > maxFiles.value) {
+    snackbar('ERROR', `Cannot upload more than ${maxFiles.value} files at one time. Please try again and select fewer files.`)
+  } else if (files?.length > 0) {
+    appStore.loading = true
+
+    try {
+      let file = files[0]
+      await fileStore.uploadFile({
+        file: file,
+        attachmentTypeId: attachmentTypeId,
+        sourceId: sourceId.value,
+        displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
+        deleteFirst: false,
+        callback: async (document) => {
+          props.attachments.push(document)
+          snackbar('SUCCESS', 'Successfully uploaded document')
+        }
+      })
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error uploading document')
+    }
+    appStore.loading = false
+  }
+}
+const uploadCallback = async(newAttachment, error) => {
+  if (error) {
+    error.value = error
+    snackbar('ERROR', error.message)
+  } else {
+    let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
+    newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
+    //adding this "copy" so that if they edit a name then click cancel we dont update the ui with their change
+    newAttachment.editableNameCopy = newAttachment.editableName
+    snackbar('SUCCESS', 'Document Uploaded')
+    props.attachments = [...props.attachments, newAttachment]
+  }
+  appStore.loading = false
+}
+
+const deleteCallback = (id) => {
+  props.attachments = props.attachments.filter(a => a.id !== id)
 }
 </script>
 
@@ -200,9 +197,5 @@ export default {
 
 .file-hover {
   background: #EEF0F4 !important;
-}
-
-.theme--light.v-btn.v-btn--disabled.v-btn--has-bg {
-  background-color: transparent !important;
 }
 </style>

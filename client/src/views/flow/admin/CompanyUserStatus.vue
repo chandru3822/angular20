@@ -31,24 +31,23 @@
                 <label>Has Access:</label>
                 <input class="ml-3" type="checkbox" v-model="item.hasAccess">
               </div>
-              <v-btn color="primary" class="white--text mr-2"
+              <a-btn class="mr-2" text="Save"
                      @click="saveCompanyUserStatusType(item)">
-                Save
-              </v-btn>
+              </a-btn>
             </td>
           </template>
 
           <template #item="{ item }">
-            <tr  class="text-left" :class="{'shaded-row': statusTypes.indexOf(item) % 2}">
+            <tr class="text-left" :class="{'shaded-row': statusTypes.indexOf(item) % 2}">
               <td class="text-left">{{ item.userStatusType }}</td>
               <td>
                 <input type="checkbox" v-model="item.hasAccess" disabled readonly>
               </td>
-              <td>
-                <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
+              <td class="text-right">
+                <a-btn variant="text" size="small" v-if="!expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                </a-btn>
+                <a-btn size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></a-btn>
               </td>
             </tr>
           </template>
@@ -60,62 +59,57 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, putRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import {getUserStatusTypes} from '@/services/userService'
+<script setup>
+import {handleHidingGlobalLoader, putRequest} from '@/helpers/helpers'
+import {getUserStatusTypes} from '@/services/userService'
+import {getCurrentInstance, onMounted, ref} from 'vue'
 
-  export default {
-    name: 'CompanyUserStatus',
+import { useUserStore } from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        statusTypes: [],
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        headers: [
-          { text: 'User Status Type', value: 'userStatusType', show: true },
-          { text: 'Has Access', value: 'hasAccess', show: true },
-          { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        expanded: []
-      }
-    },
-    async created () {
-      this.getCompanyUserStatusTypes()
-    },
-    methods: {
-      async getCompanyUserStatusTypes() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getUserStatusTypes()
-          this.statusTypes = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Company User Status Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveCompanyUserStatusType(type) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await putRequest(`/user/statusType`, type)
-          this.expanded = []
-          this.snackbar = getSnackbar('SUCCESS', 'User Status Type Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating User Status')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-    }
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const snackbar = vueInstance.$snackbar
+
+const statusTypes = ref([])
+const userId = ref(userStore.details.id)
+const companyId = ref(userStore.details.companyId)
+const expanded = ref([])
+const headers = ref([
+  {text: 'User Status Type', value: 'userStatusType', show: true},
+  {text: 'Has Access', value: 'hasAccess', show: true},
+  {text: null, value: 'icons', show: true, sortable: false}
+])
+
+onMounted(() => {
+  getCompanyUserStatusTypes()
+})
+
+const getCompanyUserStatusTypes = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getUserStatusTypes()
+    statusTypes.value = data
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Company User Status Types')
+    appStore.loading = false
   }
+}
+const saveCompanyUserStatusType = async (type) => {
+  appStore.loading = true
+  try {
+    const {status} = await putRequest(`/user/statusType`, type)
+    expanded.value = []
+    snackbar('SUCCESS', 'User Status Type Updated')
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating User Status')
+    appStore.loading = false
+  }
+}
 </script>

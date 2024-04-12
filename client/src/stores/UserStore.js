@@ -1,89 +1,77 @@
-import {postRequest} from "@/helpers/helpers"
-import moment from "moment-timezone";
-import { ScheduleMutations, ScheduleStore } from '@/stores/ScheduleStore.js'
+import { defineStore } from 'pinia'
+import moment from 'moment-timezone'
+import { postRequest } from '@/helpers/helpers.js'
 
-export const UserActions = {
-  LOGIN_SUCCESS: 'loginSuccess',
-  CHANGE_CONTEXT: 'changeContext',
-  LOGOUT: 'logout',
-  CHANGE_TIMEZONE: 'changeTimezone',
+const defaultState = {
+  authorized: false,
+  jwt: null,
+  loginError: '',
+  details: null,
+  userImage: {},
+  companies: [],
+  settingsMenuCollapsed: false
 }
 
-export const UserMutations = {
-  SET_JWT: 'setJwt',
-  AUTH_STATUS: 'authStatus',
-  LOGIN_ERROR: 'setLoginError',
-  INIT: 'storeInt',
-  SET_DETAILS: 'setDetails',
-  SET_DEFAULT_PROJECT_PAGE: 'setDefaultProjectPage',
-  SET_USER_IMAGE: 'setUserImage',
-  SET_COMPANIES: 'setCompanies',
-  RESET_STATE: 'resetState',
-  SETTINGS_MENU_COLLAPSE:'settingsMenuCollapse'
-}
+export const useUserStore = defineStore('user', {
+  persist: true,
+  state: () => ({...defaultState}),
+  getters: {
+    isSystemAdmin() {
+      return this.details.highestCompanyId === 1
+    },
+    //Keeping this for compatability with the move from vuex. But, pretty sure this functionality is superfluous
+    isCompanyRoot() {
+      return this.details.companyId === 1
+    },
+    isParent() {
+      // is albatross or parentId is null (no longer checking for parentId is null due to single context)
+      return this.details.parentCompanyId === 1
+    },
+    userHasAnyFeature() {
+      // this function returns true if the user has any access level for any feature -
+      // or if the user is a system admin
+      return this.isSystemAdmin || this.details.featureAccess?.length > 0
+    },
+    timezone() {
+      if (!this.details?.timezone) {
+        this.guessTimeZone()
+      }
 
-export const UserStore = {
-  state: {
-    authorized: false,
-    jwt: null,
-    loginError: null,
-    details: null,
-    settingsMenuCollapsed: false
-  },
-  mutations: {
-    [UserMutations.SET_JWT]: (state, jwt) => (state.jwt = jwt),
-    [UserMutations.AUTH_STATUS]: (state, status) => (state.authorized = status),
-    [UserMutations.LOGIN_ERROR]: (state, err) => (state.loginError = err),
-    [UserMutations.SET_DETAILS]: (state, details) => (state.details = details),
-    [UserMutations.SET_DEFAULT_PROJECT_PAGE]: (state, defaultProjectPage) => (state.details.defaultProjectPage = defaultProjectPage),
-    [UserMutations.SET_USER_IMAGE]: (state, image) => (state.userImage = image),
-    [UserMutations.SET_COMPANIES]: (state, companies) => (state.companies = companies),
-    [UserMutations.SETTINGS_MENU_COLLAPSE]: (state) => (state.settingsMenuCollapsed = !state.settingsMenuCollapsed),
-    [UserMutations.RESET_STATE]: (state) => (Object.assign(state, {
-      authorized: false,
-      jwt: null,
-      loginError: null,
-      details: {},
-      userImage: {},
-      companies: [],
-      settingsMenuCollapsed: false
-    })),
+      return this.details.timezone
+    }
   },
   actions: {
-    [UserActions.CHANGE_TIMEZONE]: async ({ commit, state }, timezone) => {
-      state.details.timezone = timezone
-      //todo: date/time inputs don't update when the zone is changed. should we refresh?
-      commit(UserMutations.SET_DETAILS, state.details)
-		commit(ScheduleMutations.SET_TIMEZONE_SCHEDULE, state.details.timezone)
-    },
-    [UserActions.LOGIN_SUCCESS]: async ({ commit, getters }, details) => {
-      commit(UserMutations.LOGIN_ERROR, '')
+    guessTimeZone() {
       //pls fix the undefined timezone issue!
-      if(!details.timezone) {
-        details.timezone = {
+      if(!this.details?.timezone) {
+        this.details.timezone = {
           friendlyValue: moment.tz.guess(),
           value: moment.tz.guess()
         }
       }
-      commit(UserMutations.SET_DETAILS, details)
-		commit(ScheduleMutations.SET_TIMEZONE_SCHEDULE, details.timezone)
+    },
+    async login(details) {
+      this.loginError = ''
 
-      if (getters.userHasAnyFeature) {
-        commit(UserMutations.AUTH_STATUS, true)
+      this.details = details
+
+      if(!this.details?.timezone) {
+        this.guessTimeZone()
+      }
+
+      if (this.userHasAnyFeature) {
+        this.authorized = true
       } else {
-        commit(
-          UserMutations.LOGIN_ERROR,
-          'You do not have permission to access this app.'
-        )
+        this.loginError = 'You do not have permission to access this app.'
       }
     },
-    [UserActions.CHANGE_CONTEXT]: async ({ commit }, params) => {
-      //change context
+    logout() {
+      this.$patch(defaultState)
+    },
+    async changeContext(params) {
       const {data} = await postRequest(`/user/changeContext/${params.companyId}`)
 
-      //update vuex store - user details
-      await commit(UserMutations.SET_DETAILS, data)
-		commit(ScheduleMutations.SET_TIMEZONE_SCHEDULE, data.timezone)
+      this.details = data
 
       //refresh entire app and go to users home page if they have one
       if(data.homePagePath) {
@@ -92,58 +80,33 @@ export const UserStore = {
         window.location.href = '/'
       }
     },
-    [UserActions.LOGOUT]: ({ commit }) => {
-      localStorage.removeItem('store')
-      commit(UserMutations.RESET_STATE)
-    }
-  },
-  getters: {
-    userHasAnyFeature: state => {
-      // this function returns true if the user has any access level for any feature -
-      // or if the user is a system admin
-      return UserStore.getters.isSystemAdmin(state.details.highestCompanyId) || state.details.featureAccess?.length > 0
-    },
-    userHasFeature: (state, getters) => featureCode => {
+    // Maybe these shouldn't actually be an action since it's kind of a getter?
+    // Technically you can't pass getters params unless you use `storeToRefs` which
+    // has other issues
+    userHasFeature(featureCode) {
       // this function returns true if the user has any access level (edit, view, etc)
       // or if the user is a system admin (send 'SYSTEM' as the feature code if you only care it is a system admin)
-      return getters.isSystemAdmin(state.details.highestCompanyId) || (state.details.featureAccess?.length > 0 && state.details.featureAccess.some(fa => fa.featureCode === featureCode))
+      return this.isSystemAdmin || this.details.featureAccess?.some(fa => fa.featureCode === featureCode)
     },
-    isFullAdmin: state => {
-      // 1 is the master company id
-      return state.details.highestCompanyId === 1
-    },
-    isParent: () => parentId => {
-      // is albatross or parentId is null (no longer checking for parentId is null due to single context)
-      return parentId === 1
-    },
-    isCompanyRoot: () => companyId => {
-      return companyId === 1
-    },
-    isSystemAdmin: () => highestCompanyId => {
-      return highestCompanyId === 1
-    },
-    userHasFeatureAccessLevel: (state, getters) => (featureCode, accessCode) => {
+    userHasFeatureAccessLevel(featureCode, accessCode) {
       // this function only returns true if the user a specific access level to a specific feature (or is a system admin)
+      if (this.isSystemAdmin) {
+        return true
+      }
+
       let hasFeatureAccessLevel = false
-      if(state.details.featureAccess?.length > 0 ) {
-        let featureMatch = state.details.featureAccess.find(fa => fa.featureCode === featureCode && fa.accessCode === accessCode)
+      if(this.details.featureAccess?.length > 0 ) {
+        let featureMatch = this.details.featureAccess.find(fa => fa.featureCode === featureCode && fa.accessCode === accessCode)
         hasFeatureAccessLevel = featureMatch !== null && featureMatch !== undefined
       }
-      return getters.isSystemAdmin(state.details.highestCompanyId) || hasFeatureAccessLevel
+      return hasFeatureAccessLevel
     },
-    userHasPosition: (state, getters) => positionId => {
-      // this function returns true if the any of the user's positions match the id sent in
-      // or if the user is a system admin??? maybe take this out later?
-      return getters.isSystemAdmin(state.details.highestCompanyId) || state.details.userPositions?.some(p => p.positionId === positionId)
-    },
-    userHasAnyPosition: (state, getters) => positionIds => {
+    userHasAnyPosition(positionIds) {
       // this function returns true if the any of the user's positions match any of the ids sent in
-      return getters.isSystemAdmin(state.details.highestCompanyId) || state.details.userPositions?.some(p => {
+      return this.isSystemAdmin || this.details.userPositions?.some(p => {
         return positionIds.includes(p.positionId)
       })
-    },
-    getUserPositionIds: (state) => {
-      return state.details.userPositions.map(a => a.positionId);
     }
   }
-}
+})
+

@@ -6,7 +6,7 @@
 
       <dt class="left-align">Project ID:</dt>
       <dd>
-        <router-link :to="`/project/${rebateDetails.project_id}/${defaultProjectPagePath}`">{{rebateDetails.project_id}}</router-link>
+        <router-link :to="`/project/${rebateDetails.project_id}/${defaultProjectPage}`">{{rebateDetails.project_id}}</router-link>
         <br/>
       </dd>
       <dt class="left-align">Customer Address:</dt>
@@ -20,64 +20,84 @@
       <dt class="left-align">Mailing Address:</dt>
       <!-- if all mailing address fields are null then show the add button -->
       <dd v-if="!editMailing && rebateDetails.mailing_street1 == null && rebateDetails.mailing_city == null && rebateDetails.mailing_state == null && rebateDetails.mailing_postal_code == null">
-        <v-btn text color="primary" small v-if="userCanEdit"  @click="editMailing = true" class="mt-n1 px-1">
-          <v-icon>add</v-icon>
-          Add
-        </v-btn>
+        <a-btn
+            variant="text"
+            color="primary"
+            size="small"
+            v-if="userCanEdit"
+            @click="editMailing = true"
+            class="mt-n1 px-1"
+            prepend-icon="add"
+            text="Add"
+        ></a-btn>
       </dd>
 
       <!-- if edit mode enabled then show inputs -->
       <dd v-if="editMailing" class="edit-mail-div">
         <div class="addr-inputs">
-          <v-text-field text
+          <a-text-field
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         type="text"
                         label="Street 1:"
                         v-model="rebateDetails.mailing_street1">
-          </v-text-field>
-          <v-text-field text
+          </a-text-field>
+          <a-text-field
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         type="text"
                         label="Street 2:"
                         v-model="rebateDetails.mailing_street2">
-          </v-text-field>
-          <v-text-field text
+          </a-text-field>
+          <a-text-field
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         type="text"
                         label="City:"
                         v-model="rebateDetails.mailing_city">
-          </v-text-field>
-          <v-autocomplete attach v-model="rebateDetails.mailing_state_id"
-                    :readonly="!userCanEdit"
-                    :disabled="!userCanEdit"
-                    :items="states"
-                    label="State"
-                    item-text="state"
-                    item-value="id"
-          ></v-autocomplete>
-          <v-text-field text
+          </a-text-field>
+          <a-autocomplete attach v-model="rebateDetails.mailing_state_id"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          :items="states"
+                          label="State"
+                          item-title="state"
+                          item-value="id"
+          ></a-autocomplete>
+          <a-text-field
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         type="text"
                         label="Postal Code:"
                         v-model="rebateDetails.mailing_postal_code">
-          </v-text-field>
+          </a-text-field>
           <div class="d-flex justify-end">
-            <v-btn class="my-2" text color="primary" small @click="cancelMailingEdit()">
-            Cancel
-          </v-btn>
-            <v-btn class="my-2" text color="error" small @click="saveMailingAddress(true)"
-                   v-if="mailingDetails.mailingStreet1 != null && userCanEdit">
-              Remove
-            </v-btn>
-            <v-btn class="my-2 ml-2" color="primary" small @click="saveMailingAddress(false)"
-                   v-if="userCanEdit"
-                   :disabled="!rebateDetails.mailing_street1 || !rebateDetails.mailing_city || !rebateDetails.mailing_state_id || !rebateDetails.mailing_postal_code">
-              Save
-            </v-btn>
+            <a-btn
+                class="my-2"
+                variant="text"
+                color="primary"
+                size="small"
+                @click="cancelMailingEdit()"
+                text="Cancel"
+            ></a-btn>
+            <a-btn
+                class="my-2"
+                variant="text"
+                color="error"
+                size="small"
+                @click="saveMailingAddress(true)"
+                v-if="mailingDetails.mailingStreet1 != null && userCanEdit"
+                text="Remove"
+            ></a-btn>
+            <a-btn
+                class="my-2 ml-2"
+                color="primary"
+                size="small"
+                @click="saveMailingAddress(false)"
+                v-if="userCanEdit"
+                :disabled="!rebateDetails.mailing_street1 || !rebateDetails.mailing_city || !rebateDetails.mailing_state_id || !rebateDetails.mailing_postal_code"
+                text="Save"
+            ></a-btn>
           </div>
         </div>
       </dd>
@@ -132,10 +152,10 @@
             </v-icon>
           </div>
           <div v-if="editTotalPromotionAmount" class="flex-display" style="width: 100px">
-            <v-text-field style="width: 80px" type="number" v-model="rebateDetails.total_promotion_amount">
-            </v-text-field>
+            <a-text-field style="width: 80px" type="number" v-model="rebateDetails.total_promotion_amount">
+            </a-text-field>
             <v-icon color="primary" @click="updateTotalPromotionAmount()">
-                save
+              save
             </v-icon>
           </div>
         </td>
@@ -155,12 +175,12 @@
       <v-row>
         <v-col>
           <v-data-table
-            :headers="headers"
-            :items="rebateDetails.payment_history"
-            :fixed-header="true"
-            :items-per-page="-1"
-            disable-sort
-            class="elevation-1"
+              :headers="headers"
+              :items="rebateDetails.payment_history"
+              :fixed-header="true"
+              :items-per-page="-1"
+              disable-sort
+              class="elevation-1"
           >
             <template #no-data>
               <span class="default-text-color">No available payment history</span>
@@ -176,9 +196,9 @@
                 <td class="text-left">{{item.batch_id}}</td>
                 <td class="text-left">{{item.batch_date | formatDate('date')}}</td>
                 <td class="text-left">
-                  <v-text-field type="number" v-model="item.payment_amount"
+                  <a-text-field type="number" v-model="item.payment_amount"
                                 @change="getTotals()" :disabled="canEditPayment(item)">
-                  </v-text-field>
+                  </a-text-field>
                 </td>
                 <td class="text-left">{{item.name}}</td>
                 <td class="text-left">{{item.check_number}}</td>
@@ -190,10 +210,15 @@
                   <a v-if="item.payment_state_id === 3 && userCanEdit" class="primary--text" @click="openVoidDialog(item)">Void</a>
                   <a v-if="item.payment_state_id === 5 && userCanEdit" class="primary--text" @click="openUnvoidDialog(item)">Unvoid</a>
                 </td>
-                  <td>
-                      <v-btn v-if="item.payment_state_id != 3 && item.payment_state_id != 2 && $store.getters.userHasFeatureAccessLevel('REBATES', 'DELETE')"
-                          @click="openDeleteDialog(item)" text color="primary"><v-icon>delete</v-icon></v-btn>
-                  </td>
+                <td>
+                  <a-btn
+                      v-if="item.payment_state_id !== 3 && item.payment_state_id !== 2 && userStore.userHasFeatureAccessLevel('REBATES', 'DELETE')"
+                      @click="openDeleteDialog(item)"
+                      variant="text"
+                      color="primary"
+                      prepend-icon="delete"
+                  ></a-btn>
+                </td>
               </tr>
             </template>
           </v-data-table>
@@ -209,8 +234,8 @@
                               @close-dialog="cancelNotesDialog"
                               :disable-confirm="!userCanEdit">
             <template v-slot:title>Notes</template>
-            <v-text-field v-model="notesItem.void_note" outlined auto-grow rows="5">
-            </v-text-field>
+            <a-textarea v-model="notesItem.void_note" density="compact" variant="outlined" auto-grow rows="5">
+            </a-textarea>
             <template v-slot:no>cancel</template>
             <template v-slot:yes>save</template>
           </ConfirmationDialog>
@@ -222,8 +247,8 @@
           >
             <template v-slot:title>Confirm</template>
             Are you sure you want to void this payment?
-            <v-text-field v-model="notesItem.void_note" outlined auto-grow>
-            </v-text-field>
+            <a-textarea v-model="notesItem.void_note" variant="outlined" auto-grow>
+            </a-textarea>
             <template v-slot:no>cancel</template>
             <template v-slot:yes>void</template>
           </ConfirmationDialog>
@@ -244,28 +269,28 @@
       <v-row>
         <v-col>
           <div>
-          <tr>
-            <td class="left-align">
-              <v-icon color="primary" v-if="userCanAdd" :disabled="rebateDetails.sumOfNonCanceledPayments >= rebateDetails.total_promotion_amount"
-                      @click="addNewRow()">
-                add
-              </v-icon>
-            </td>
-            <td></td>
-            <td></td>
-            <td class="text-center font-weight-bold" :class="{'error-message': rebateDetails.sumOfNonCanceledPayments > rebateDetails.total_promotion_amount}">
-              {{rebateDetails.sumOfNonCanceledPayments || 0 | currency('$', 2)  }} <br>
-              <span class="error-message" v-if="remainingBalance < 0">({{remainingBalance || 0 | currency('$', 2) }})<br></span>
-              (Non-Canceled)
-            </td>
-            <td>
-              <v-icon v-if="userCanEdit" color="primary" :disabled="rebateDetails.sumOfNonCanceledPayments > rebateDetails.total_promotion_amount"
-                      @click="savePaymentHistoryChanges()">
-                save
-              </v-icon>
-            </td>
-            <td></td>
-          </tr>
+            <tr>
+              <td class="left-align">
+                <v-icon color="primary" v-if="userCanAdd" :disabled="rebateDetails.sumOfNonCanceledPayments >= rebateDetails.total_promotion_amount"
+                        @click="addNewRow()">
+                  add
+                </v-icon>
+              </td>
+              <td></td>
+              <td></td>
+              <td class="text-center font-weight-bold" :class="{'error-message': rebateDetails.sumOfNonCanceledPayments > rebateDetails.total_promotion_amount}">
+                {{rebateDetails.sumOfNonCanceledPayments || 0 | currency('$', 2)  }} <br>
+                <span class="error-message" v-if="remainingBalance < 0">({{remainingBalance || 0 | currency('$', 2) }})<br></span>
+                (Non-Canceled)
+              </td>
+              <td>
+                <v-icon v-if="userCanEdit" color="primary" :disabled="rebateDetails.sumOfNonCanceledPayments > rebateDetails.total_promotion_amount"
+                        @click="savePaymentHistoryChanges()">
+                  save
+                </v-icon>
+              </td>
+              <td></td>
+            </tr>
           </div>
         </v-col>
       </v-row>
@@ -273,443 +298,450 @@
 
   </div>
 </template>
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getProjectPath} from '@/helpers/helpers'
-  import moment from "moment";
-  import {getCompanyStates} from '@/services/stateService'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
+<script setup>
 
-  export default {
-    name: 'RebateDetails',
-    components: {ConfirmationDialog},
-    computed: {
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        model: '',
-        projectIdIn: parseInt(this.$route.params.id),
-        headers: [
-          { text: 'Payment Number', value: 'payment_nbr', show: true },
-          { text: 'Batch ID', value: 'batch_id', show: true },
-          { text: 'Batch Date', value: 'batch_date', show: true },
-          { text: 'Amount', value: 'payment_amount', show: true },
-          { text: 'Status', value: 'name', show: true },
-          { text: 'Check Number', value: 'check_number', show: true },
-          { text: 'Notes', value: 'void_note', show: true },
-          { text: '', value: 'status', show: true },
-          { text: '', value: 'delete', show: true }
-        ],
-        rebateDetails: {},
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'EDIT'),
-        mailingDetails: {
-            mailingStreet1: null,
-            mailingStreet2: null,
-            mailingCity: null,
-            mailingStateAbbr: null,
-            mailingStateId: null,
-            mailingPostalCode: null
-        },
-        states: [],
-        editMailing: false,
-        notesDialog: false,
-        voidDialog: false,
-        unvoidDialog: false,
-        deleteConfirm: false,
-        notesItem: {
-            void_note: ''
-        },
-        voidConfirmMsg: '',
-        notesValue: '',
-        editTotalPromotionAmount: false,
-        sumOfNonCanceledPayments: 0,
-        maxPaymentNumber: 0,
-        maxPayment: 0,
-        remainingBalance: 0,
-        defaultProjectPagePath: getProjectPath(this).pathSuffix,
-      }
-    },
-    created () {
-      this.fetchPayments();
-    },
-    methods: {
-      async fetchPayments() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await this.getStates();
-          const {data, status} = await getRequest(`/rebate/details/` + this.projectIdIn, 'blueraven')
-          this.rebateDetails = data[0];
-          this.rebateDetails.sc = moment(this.rebateDetails.substantialcompletiondate).format('MM/DD/YYYY')
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  deleteRequest,
+  putRequest,
+  postRequest,
+  getProjectPath,
+} from '@/helpers/helpers'
+import moment from "moment";
+import {getCompanyStates} from '@/services/stateService'
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-          let payment_amount = 0;
-          if (this.rebateDetails.numberofpromotionpayments > 0) {
-            payment_amount = parseFloat(this.rebateDetails.total_promotion_amount) / parseFloat(this.rebateDetails.numberofpromotionpayments)
-          }
-          this.rebateDetails.payment_amount = payment_amount;
-          this.mailingDetails = {
-              mailingStreet1: this.rebateDetails.mailing_street1,
-              mailingStreet2: this.rebateDetails.mailing_street2,
-              mailingCity: this.rebateDetails.mailing_city,
-              mailingStateAbbr: this.rebateDetails.mailing_state_abbr,
-              mailingStateId: this.rebateDetails.mailing_state_id,
-              mailingPostalCode: this.rebateDetails.mailing_postal_code
-          }
 
-          this.maxPayment = this.rebateDetails.payment_history.reduce((a,b) => Number(a.payment_nbr) > Number(b.payment_nbr) ? a : b)
-          this.maxPaymentNumber = this.maxPayment && this.maxPayment.payment_nbr ? this.maxPayment.payment_nbr + 1 : 1
-          this.getTotals();
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving rebate details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      canEditPayment(p) {
-        let disabled = false
-        if (p.payment_state_id === 3 || p.payment_state_id === 5) {
-          //if processed or voided don't allow editing
-          disabled = true
-        }
-        return disabled || !this.userCanEdit
-      },
-      async saveMailingAddress(removeAddress) {
-        if (removeAddress) {
-          this.editMailing = false
-          //reset original and copy back to null
-          this.rebateDetails.mailing_street1 = null
-          this.rebateDetails.mailing_street2 = null
-          this.rebateDetails.mailing_city = null
-          this.rebateDetails.mailing_state_id = null
-          this.rebateDetails.mailing_state_abbr = null
-          this.rebateDetails.mailing_postal_code = null
-          this.mailingDetails = {
-            mailingStreet1: null,
-            mailingStreet2: null,
-            mailingCity: null,
-            mailingStateAbbr: null,
-            mailingStateId: null,
-            mailingPostalCode: null
-          }
-        }
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-        let contact = {
-          id: this.rebateDetails.contact_id,
-          mailingStreet1: this.rebateDetails.mailing_street1,
-          mailingStreet2: this.rebateDetails.mailing_street2,
-          mailingCity: this.rebateDetails.mailing_city,
-          companyStateId: this.rebateDetails.mailing_state_id,
-          mailingPostalCode: this.rebateDetails.mailing_postal_code,
-        }
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('REBATES', 'ADD')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('REBATES', 'EDIT')
+})
+const displayedTabs = computed(() => {
+  return tabs.value.filter(tab => tab.display)
+})
 
-        this.mailingDetails = {
-          mailingStreet1: this.rebateDetails.mailing_street1,
-          mailingStreet2: this.rebateDetails.mailing_street2,
-          mailingCity: this.rebateDetails.mailing_city,
-          mailingStateAbbr: this.states.filter(state => state.id === this.rebateDetails.mailing_state_id)[0].abbreviation,
-          mailingStateId: this.rebateDetails.mailing_state_id,
-          mailingPostalCode: this.rebateDetails.mailing_postal_code
-        }
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
+const model = ref('')
+const projectIdIn = ref(parseInt(route.params.id))
+const headers = ref([
+  { text: 'Payment Number', value: 'payment_nbr', show: true },
+  { text: 'Batch ID', value: 'batch_id', show: true },
+  { text: 'Batch Date', value: 'batch_date', show: true },
+  { text: 'Amount', value: 'payment_amount', show: true },
+  { text: 'Status', value: 'name', show: true },
+  { text: 'Check Number', value: 'check_number', show: true },
+  { text: 'Notes', value: 'void_note', show: true },
+  { text: '', value: 'status', show: true },
+  { text: '', value: 'delete', show: true }
+])
+const rebateDetails = ref({})
+const mailingDetails = ref({mailingStreet1: null,mailingStreet2: null,mailingCity: null,mailingStateAbbr: null,mailingStateId: null,mailingPostalCode: null})
+const states = ref([])
+const editMailing = ref(false)
+const notesDialog = ref(false)
+const voidDialog = ref(false)
+const unvoidDialog = ref(false)
+const deleteConfirm = ref(false)
+const deleteItem = ref({})
+const notesItem = ref({void_note: ''
+})
+const voidConfirmMsg = ref('')
+const notesValue = ref('')
+const editTotalPromotionAmount = ref(false)
+const sumOfNonCanceledPayments = ref(0)
+const maxPaymentNumber = ref(0)
+const maxPayment = ref(0)
+const remainingBalance = ref(0)
 
-        try {
-          await putRequest(`/contact/updateMailingAddress`, contact)
-          this.snackbar = getSnackbar('SUCCESS', 'Mailing address saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.editMailing = false;
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error saving mailing address')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      cancelMailingEdit () {
-        //reset the values back to the copied ones
-        this.rebateDetails.mailing_street1= this.mailingDetails.mailingStreet1
-        this.rebateDetails.mailing_street2 = this.mailingDetails.mailingStreet2
-        this.rebateDetails.mailing_city = this.mailingDetails.mailingCity
-        this.rebateDetails.mailing_state_abbr = this.mailingDetails.mailingStateAbbr
-        this.rebateDetails.mailing_state_id = this.mailingDetails.mailingStateId
-        this.rebateDetails.mailing_postal_code = this.mailingDetails.mailingPostalCode
-        this.editMailing = false;
-      },
-      openNotesDialog(item) {
-          this.notesDialog = true
-          this.notesValue = item.void_note
-          this.notesItem = item
-      },
-      openVoidDialog(item) {
-          this.notesValue = item.void_note
-          this.notesItem = item
-          this.voidDialog = true;
-      },
-      openUnvoidDialog(item) {
-        this.notesItem = item
-        this.unvoidDialog = true;
-      },
-      openDeleteDialog(item) {
-        this.deleteItem = item;
-        this.deleteConfirm = true;
-      },
-      cancelNotesDialog(){
-        this.notesDialog = false
-        this.notesItem.void_note = this.notesValue
-        this.notesValue = ''
-      },
-      cancelVoidDialog() {
-        this.voidDialog = false
-        this.notesItem.void_note = this.notesValue
-        this.notesValue = ''
-      },
-      cancelUnvoidDialog() {
-        this.unvoidDialog = false
-      },
-      async updateTotalPromotionAmount() {
-        this.editTotalPromotionAmount = false
+onMounted(() => {
+  fetchPayments();
+})
 
-        const params = {
-          totalPromotionAmount: this.rebateDetails.total_promotion_amount,
-          projectId: this.rebateDetails.project_id
-        }
-        try {
-          await postRequest(`/rebate/updateTotalPromotionAmount`, params, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Total Promotion Amount saved!')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.editMailing = false;
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error saving Total Promotion Amount')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      addNewRow() {
-        this.rebateDetails.payment_history.push({
-          id: null,
-          payment_amount: 0,
-          payment_nbr: this.maxPaymentNumber,
-          originalPaymentStateId: 1,
-          payment_state_id: 1,
-          name: 'Needs approval'
-        })
-        this.getTotals()
-        this.maxPaymentNumber++
-      },
-      async deletePayment() {
-        // If row already existed
-        if (this.deleteItem.id) {
-          try {
-            await deleteRequest('/rebate/deletePayment/' + this.deleteItem.id, 'blueraven')
-            this.rebateDetails.payment_history = this.rebateDetails.payment_history.filter(ph => ph.payment_nbr !== this.deleteItem.payment_nbr)
-            this.editMailing = false;
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error deleting payment')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-        } else {
-          this.rebateDetails.payment_history = this.rebateDetails.payment_history.filter(ph => ph.payment_nbr !== this.deleteItem.payment_nbr)
-        }
+const fetchPayments = async() => {
+  appStore.loading = true
+  try {
+    await getStates();
+    const {data, status} = await getRequest(`/rebate/details/` + projectIdIn.value, 'blueraven')
+    rebateDetails.value = data[0];
+    rebateDetails.value.sc = moment(rebateDetails.value.substantialcompletiondate).format('MM/DD/YYYY')
 
-        this.getTotals()
-          this.deleteConfirm = false
-      },
-      async savePaymentHistoryChanges() {
-        for (const ph of this.rebateDetails.payment_history) {
-          try {
-            if (ph.id) {
-              let params = {
-                paymentId: ph.id,
-                paymentAmount: ph.payment_amount,
-                paymentStateId: ph.payment_state_id
-              }
-              await postRequest(`/rebate/updatePayment`, params, 'blueraven')
-            } else {
-              let params = {
-                projectId: this.rebateDetails.project_id,
-                paymentAmount: ph.payment_amount
-              }
-              await postRequest(`/rebate/addExtraPayment`, params, 'blueraven')
-            }
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error saving payments')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-        }
+    let payment_amount = 0;
+    if (rebateDetails.value.numberofpromotionpayments > 0) {
+      payment_amount = parseFloat(rebateDetails.value.total_promotion_amount) / parseFloat(rebateDetails.value.numberofpromotionpayments)
+    }
+    rebateDetails.value.payment_amount = payment_amount;
+    mailingDetails.value = {
+      mailingStreet1: rebateDetails.value.mailing_street1,
+      mailingStreet2: rebateDetails.value.mailing_street2,
+      mailingCity: rebateDetails.value.mailing_city,
+      mailingStateAbbr: rebateDetails.value.mailing_state_abbr,
+      mailingStateId: rebateDetails.value.mailing_state_id,
+      mailingPostalCode: rebateDetails.value.mailing_postal_code
+    }
 
-        this.getTotals()
-      },
-      getTotals() {
-        this.sumOfNonCanceledPayments = 0;
-        this.rebateDetails.payment_history.forEach(ph => {
-          if (ph.payment_state_id !== 4 && ph.payment_state_id !== 5) {
-            this.sumOfNonCanceledPayments += parseFloat(ph.payment_amount)
-          }
-        })
-        this.remainingBalance = this.sumOfNonCanceledPayments - parseFloat(this.rebateDetails.total_promotion_amount)
-      },
-      async updatePaymentNote() {
-        try {
-          let params = {
-            paymentId: this.notesItem.id,
-            voidNote: this.notesItem.void_note
-          }
+    maxPayment.value = rebateDetails.value.payment_history.reduce((a,b) => Number(a.payment_nbr) > Number(b.payment_nbr) ? a : b)
+    maxPaymentNumber.value = maxPayment.value && maxPayment.value.payment_nbr ? maxPayment.value.payment_nbr + 1 : 1
+    getTotals();
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving rebate details')
 
-          await postRequest(`/rebate/updateNote`, params, 'blueraven')
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error saving payment note')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-
-        this.notesDialog = false
-      },
-      async voidPayment() {
-        const item = this.notesItem
-        try {
-          let params = {
-            paymentId: item.id,
-            voidNote: item.void_note
-          }
-
-          await postRequest(`/rebate/voidPayment`, params, 'blueraven')
-          item.void_note = '';
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error voiding payment')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-
-        this.voidDialog = false;
-        await this.fetchPayments();
-      },
-      async unvoidPayment() {
-        const item = this.notesItem
-        try {
-          let params = {
-            paymentId: item.id
-          }
-
-          await postRequest(`/rebate/unvoidPayment`, params, 'blueraven')
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error unvoiding payment')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-
-        this.unvoidDialog = false;
-        await this.fetchPayments();
-      },
-      async getStates () {
-          try {
-            const {data, status} = await getCompanyStates()
-            this.states = data
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-      }
+    appStore.loading = false
+  }
+}
+const canEditPayment = (p) => {
+  let disabled = false
+  if (p.payment_state_id === 3 || p.payment_state_id === 5) {
+    //if processed or voided don't allow editing
+    disabled = true
+  }
+  return disabled || !userCanEdit.value
+}
+const saveMailingAddress = async(removeAddress) => {
+  if (removeAddress) {
+    editMailing.value = false
+    //reset original and copy back to null
+    rebateDetails.value.mailing_street1 = null
+    rebateDetails.value.mailing_street2 = null
+    rebateDetails.value.mailing_city = null
+    rebateDetails.value.mailing_state_id = null
+    rebateDetails.value.mailing_state_abbr = null
+    rebateDetails.value.mailing_postal_code = null
+    mailingDetails.value = {
+      mailingStreet1: null,
+      mailingStreet2: null,
+      mailingCity: null,
+      mailingStateAbbr: null,
+      mailingStateId: null,
+      mailingPostalCode: null
     }
   }
+
+  let contact = {
+    id: rebateDetails.value.contact_id,
+    mailingStreet1: rebateDetails.value.mailing_street1,
+    mailingStreet2: rebateDetails.value.mailing_street2,
+    mailingCity: rebateDetails.value.mailing_city,
+    companyStateId: rebateDetails.value.mailing_state_id,
+    mailingPostalCode: rebateDetails.value.mailing_postal_code,
+  }
+
+  mailingDetails.value = {
+    mailingStreet1: rebateDetails.value.mailing_street1,
+    mailingStreet2: rebateDetails.value.mailing_street2,
+    mailingCity: rebateDetails.value.mailing_city,
+    mailingStateAbbr: states.value.filter(state => state.id === rebateDetails.value.mailing_state_id)[0].abbreviation,
+    mailingStateId: rebateDetails.value.mailing_state_id,
+    mailingPostalCode: rebateDetails.value.mailing_postal_code
+  }
+
+  try {
+    await putRequest(`/contact/updateMailingAddress`, contact)
+    snackbar('SUCCESS', 'Mailing address saved')
+
+    editMailing.value = false;
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error saving mailing address')
+
+  }
+}
+const cancelMailingEdit =  () => {
+  //reset the values back to the copied ones
+  rebateDetails.value.mailing_street1= mailingDetails.value.mailingStreet1
+  rebateDetails.value.mailing_street2 = mailingDetails.value.mailingStreet2
+  rebateDetails.value.mailing_city = mailingDetails.value.mailingCity
+  rebateDetails.value.mailing_state_abbr = mailingDetails.value.mailingStateAbbr
+  rebateDetails.value.mailing_state_id = mailingDetails.value.mailingStateId
+  rebateDetails.value.mailing_postal_code = mailingDetails.value.mailingPostalCode
+  editMailing.value = false;
+}
+const openNotesDialog = (item) => {
+  notesDialog.value = true
+  notesValue.value = item.void_note
+  notesItem.value = item
+}
+const openVoidDialog = (item) => {
+  notesValue.value = item.void_note
+  notesItem.value = item
+  voidDialog.value = true;
+}
+const openUnvoidDialog = (item) => {
+  notesItem.value = item
+  unvoidDialog.value = true;
+}
+const openDeleteDialog = (item) => {
+  deleteItem.value = item;
+  deleteConfirm.value = true;
+}
+const cancelNotesDialog = ()=> {
+  notesDialog.value = false
+  notesItem.value.void_note = notesValue.value
+  notesValue.value = ''
+}
+const cancelVoidDialog = () => {
+  voidDialog.value = false
+  notesItem.value.void_note = notesValue.value
+  notesValue.value = ''
+}
+const cancelUnvoidDialog = () => {
+  unvoidDialog.value = false
+}
+const updateTotalPromotionAmount = async() => {
+  editTotalPromotionAmount.value = false
+
+  const params = {
+    totalPromotionAmount: rebateDetails.value.total_promotion_amount,
+    projectId: rebateDetails.value.project_id
+  }
+  try {
+    await postRequest(`/rebate/updateTotalPromotionAmount`, params, 'blueraven')
+    snackbar('SUCCESS', 'Total Promotion Amount saved!')
+
+    editMailing.value = false;
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error saving Total Promotion Amount')
+
+  }
+}
+const addNewRow = () => {
+  rebateDetails.value.payment_history.push({
+    id: null,
+    payment_amount: 0,
+    payment_nbr: maxPaymentNumber.value,
+    originalPaymentStateId: 1,
+    payment_state_id: 1,
+    name: 'Needs approval'
+  })
+  getTotals()
+  maxPaymentNumber.value++
+}
+const deletePayment = async() => {
+  // If row already existed
+  if (deleteItem.value.id) {
+    try {
+      await deleteRequest('/rebate/deletePayment/' + deleteItem.value.id, 'blueraven')
+      rebateDetails.value.payment_history = rebateDetails.value.payment_history.filter(ph => ph.payment_nbr !== deleteItem.value.payment_nbr)
+      editMailing.value = false;
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error deleting payment')
+
+    }
+  } else {
+    rebateDetails.value.payment_history = rebateDetails.value.payment_history.filter(ph => ph.payment_nbr !== deleteItem.value.payment_nbr)
+  }
+
+  getTotals()
+  deleteConfirm.value = false
+}
+const savePaymentHistoryChanges = async() => {
+  for (const ph of rebateDetails.value.payment_history) {
+    try {
+      if (ph.id) {
+        let params = {
+          paymentId: ph.id,
+          paymentAmount: ph.payment_amount,
+          paymentStateId: ph.payment_state_id
+        }
+        await postRequest(`/rebate/updatePayment`, params, 'blueraven')
+      } else {
+        let params = {
+          projectId: rebateDetails.value.project_id,
+          paymentAmount: ph.payment_amount
+        }
+        await postRequest(`/rebate/addExtraPayment`, params, 'blueraven')
+      }
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error saving payments')
+
+    }
+  }
+
+  getTotals()
+}
+const getTotals = () => {
+  sumOfNonCanceledPayments.value = 0;
+  rebateDetails.value.payment_history.forEach(ph => {
+    if (ph.payment_state_id !== 4 && ph.payment_state_id !== 5) {
+      sumOfNonCanceledPayments.value += parseFloat(ph.payment_amount)
+    }
+  })
+  remainingBalance.value = sumOfNonCanceledPayments.value - parseFloat(rebateDetails.value.total_promotion_amount)
+}
+const updatePaymentNote = async() => {
+  try {
+    let params = {
+      paymentId: notesItem.value.id,
+      voidNote: notesItem.value.void_note
+    }
+
+    await postRequest(`/rebate/updateNote`, params, 'blueraven')
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error saving payment note')
+
+  }
+
+  notesDialog.value = false
+}
+const voidPayment = async() => {
+  const item = notesItem.value
+  try {
+    let params = {
+      paymentId: item.id,
+      voidNote: item.void_note
+    }
+
+    await postRequest(`/rebate/voidPayment`, params, 'blueraven')
+    item.void_note = '';
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error voiding payment')
+
+  }
+
+  voidDialog.value = false;
+  await fetchPayments();
+}
+const unvoidPayment = async() => {
+  const item = notesItem.value
+  try {
+    let params = {
+      paymentId: item.id
+    }
+
+    await postRequest(`/rebate/unvoidPayment`, params, 'blueraven')
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error unvoiding payment')
+
+  }
+
+  unvoidDialog.value = false;
+  await fetchPayments();
+}
+const getStates = async () => {
+  try {
+    const {data, status} = await getCompanyStates()
+    states.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving States')
+
+    appStore.loading = false
+  }
+}
 </script>
 
 <style lang="scss" scoped>
-  @media (min-width: 768px) {
+@media (min-width: 768px) {
 
-    dt {
-      float: left; width: 100px;
-      font-size: 14px;
-    }
-
-    dd {
-      margin-left: 100px;
-      text-align: left;
-      font-size: 14px;
-    }
-
-    dl {
-      display: block;
-      margin-block-start: 1em;
-      margin-block-end: 1em;
-      margin-inline-start: 0px;
-      margin-inline-end: 0px;
-    }
-
-    .dl-horizontal dt {
-      width: 150px;
-      font-weight: bold;
-      line-height: 1.42857143;
-    }
-
-    .dl-horizontal dd {
-      margin-left: 165px;
-      line-height: 1.42857143;
-      display: block;
-      margin-inline-start: 40px;
-    }
+  dt {
+    float: left; width: 100px;
+    font-size: 14px;
   }
 
-  .auto-width {
-    width: auto !important;
+  dd {
+    margin-left: 100px;
+    text-align: left;
+    font-size: 14px;
   }
 
-  .left-align {
-    text-align: left !important;
+  dl {
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
   }
 
-  .addr-inputs {
-    margin-left: 110px;
-  }
-
-  .edit-mail-div {
-    width: 350px;
-    padding-top: 0px !important;
-    margin-top: 0px !important;
-  }
-
-  .rebate-table {
-    width: 100%;
-    max-width: 100%;
-    margin-bottom: 20px;
-  }
-
-  .rebate-table > thead > tr > th {
-    vertical-align: bottom;
-    border-bottom: 2px solid #ddd;
-  }
-
-  .rebate-table > tbody > tr > td {
-    padding: 5px;
+  .dl-horizontal dt {
+    width: 150px;
+    font-weight: bold;
     line-height: 1.42857143;
-    vertical-align: top;
-    /* border-top: 1px solid #ddd; */
   }
 
-  .rebate-table > tr {
-    display: table-row;
-    vertical-align: inherit;
-    border-color: inherit;
+  .dl-horizontal dd {
+    margin-left: 165px;
+    line-height: 1.42857143;
+    display: block;
+    margin-inline-start: 40px;
   }
+}
 
-  td {
-    width: 200px;
-    font-size: 14px;
-  }
+.auto-width {
+  width: auto !important;
+}
 
-  th {
-    font-size: 14px;
-  }
+.left-align {
+  text-align: left !important;
+}
 
-  .error-message {
-    color: var(--v-error-base);
-    font-weight: 600;
-  }
+.addr-inputs {
+  margin-left: 110px;
+}
+
+.edit-mail-div {
+  width: 350px;
+  padding-top: 0px !important;
+  margin-top: 0px !important;
+}
+
+.rebate-table {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 20px;
+}
+
+.rebate-table > thead > tr > th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #ddd;
+}
+
+.rebate-table > tbody > tr > td {
+  padding: 5px;
+  line-height: 1.42857143;
+  vertical-align: top;
+  /* border-top: 1px solid #ddd; */
+}
+
+.rebate-table > tr {
+  display: table-row;
+  vertical-align: inherit;
+  border-color: inherit;
+}
+
+td {
+  width: 200px;
+  font-size: 14px;
+}
+
+th {
+  font-size: 14px;
+}
+
+.error-message {
+  color: var(--v-error-base);
+  font-weight: 600;
+}
 </style>

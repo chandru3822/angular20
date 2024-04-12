@@ -6,23 +6,34 @@
           <v-toolbar-title class="title-large">Tabs</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newTab ={}]" v-if="userCanAdd">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                @click="[addNew = !addNew, newTab ={}]"
+                v-if="userCanAdd"
+                :prepend-icon="addNew ? 'close' : 'add'"
+                :text="addNew ? 'Cancel' : 'Add New'"
+            ></a-btn>
+
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
           <div v-if="addNew" class="mb-2">
-            <v-text-field v-model="newTab.tabName"
+            <a-text-field v-model="newTab.tabName"
                           placeholder=" "
                           label="Tab Label">
-            </v-text-field>
-            <v-btn :disabled="!newTab.tabName" color="primary" @click="saveTab(newTab)">Save</v-btn>
+            </a-text-field>
+            <a-btn
+                :disabled="!newTab.tabName"
+                color="primary"
+                @click="saveTab(newTab)"
+                text="Save"
+            ></a-btn>
+
           </div>
           <v-data-table
               :headers="headers"
-              :items="filterTabs()"
+              :items="filteredTabs"
               :items-per-page="-1"
               :sort-desc="[false]"
               :sort-by="['displayOrder']"
@@ -43,21 +54,52 @@
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': tabs.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <v-btn text v-if="userCanEdit" icon small color="primary" class="handle">
-                    <v-icon>drag_handle</v-icon>
-                  </v-btn>
+                  <a-btn
+                      variant="text"
+                      v-if="userCanEdit"
+                      icon
+                      size="small"
+                      color="primary"
+                      class="handle"
+                      prepend-icon="drag_handle"
+                  ></a-btn>
                 </td>
                 <td class="text-left">
-                  <v-text-field class="one-hunned" v-if="selectedTabId === item.id" v-model="item.tabName"></v-text-field>
+                  <a-text-field class="one-hunned" v-if="selectedTabId === item.id" v-model="item.tabName"></a-text-field>
                   <span v-else>{{item.tabName}}</span>
                 </td>
                 <td class="text-right" :class="{'one-hunned':$vuetify.breakpoint.mdAndDown && selectedTabId !== item.id}">
                   <div class="item-icons" :class="{'d-flex flex-column align-end': $vuetify.breakpoint.xsOnly}">
-                    <v-btn class="clickable" small text color="primary" v-if="userCanEdit">
-                      <v-icon v-if="selectedTabId === item.id" @click="saveTab(item)">save</v-icon>
-                      <v-icon v-else @click="selectedTabId = item.id">edit</v-icon>
-                    </v-btn>
-                    <v-btn class="clickable" small text color="primary" v-if="userCanEdit" @click="tabToDelete=item"><v-icon>delete</v-icon></v-btn>
+                    <a-btn
+                        class="clickable"
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        v-if="userCanEdit && selectedTabId === item.id"
+                        @click="saveTab(item)"
+                        prepend-icon="save"
+                    ></a-btn>
+
+                    <a-btn
+                        class="clickable"
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        v-if="userCanEdit && selectedTabId !== item.id"
+                        @click="selectedTabId = item.id"
+                        prepend-icon="edit"
+                    ></a-btn>
+
+                    <a-btn
+                        class="clickable"
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        v-if="userCanEdit"
+                        @click="tabToDelete=item"
+                        prepend-icon="delete"
+                    ></a-btn>
+
                   </div>
                 </td>
               </tr>
@@ -77,149 +119,117 @@
 </template>
 
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import Sortable from "sortablejs";
-  import cloneDeep from "lodash.clonedeep";
+<script setup>
+
+
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, defineSortableTable} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+  import {useUserStore} from '@/stores/UserStore.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
 
-  export default {
-    name: 'ProjectTabs',
-    components: {ConfirmationDialog},
-    mixins: [Vue2Filters.mixin],
+  onMounted(() => {
+    defineSortableTable('tbody', tabs, 'displayOrder', saveRowChanges)
 
-    mounted() {
-      let table = document.querySelector('tbody')
-      const _self = this
-      Sortable.create(table, {
-        handle: '.handle',
-        onEnd({ newIndex, oldIndex }) {
-          const rowSelected = _self.tabs.splice(oldIndex, 1)[0]
-          _self.tabs.splice(newIndex, 0, rowSelected)
-          let rowsClone = cloneDeep(_self.tabs)
-
-          let rowsToSave = []
-          rowsClone.forEach((r, idx) => {
-            //check if the row needs to be saved before updating display order
-            //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-            let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-            //update display order
-            r.displayOrder = idx
-            //save only rows that changed
-            if(save) {
-              _self.tabs[idx].newDisplayOrder = idx
-              rowsToSave.push(r)
-            }
-          })
-          _self.saveRowChanges(rowsToSave)
-        }
-      })
-    },
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        tabs: [],
-        addNew: false,
-        newTab: {},
-        selectedTabId: null,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        expanded: [],
-        headers: [
+    getTabs()
+  })
+    
+        const tabs = ref( [])
+        const addNew = ref( false)
+        const newTab = ref( {})
+        const selectedTabId = ref( null)
+        const expanded = ref( [])
+        const tabToDelete = ref( null)
+        const headers = ref( [
           { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
           { text: 'Tab Label', value: 'tabName', show: true },
           { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        tabToDelete: null
-      }
-    },
-    computed: {
-      tabToDeleteName(){
-        return this.tabToDelete ? this.tabToDelete.tabName : ''
-      }
-    },
-    methods: {
-      async getTabs() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        ])
+  const filteredTabs = computed(() => {
+    return tabs.value.filter(t => { return !t.archived})
+  })
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
+  const userId = computed(() => {
+    return userStore.details.id
+  })
+  const tabToDeleteName = computed(() => {
+    return tabToDelete.value ? tabToDelete.value.tabName : ''
+  })
+
+    
+      const getTabs = async() => {
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/objectTypeTab/project`)
-          this.tabs = data
+          tabs.value = data
 
-          handleHidingGlobalLoader(this, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Tabs')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Retrieving Tabs')
+          appStore.loading = false
         }
-      },
-      async deleteTab() {
-        const tabId= this.tabToDelete.id
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const deleteTab = async() => {
+        const tabId= tabToDelete.value.id
+        appStore.loading = true
         try {
           const {status} = await deleteRequest(`/objectTypeTab/${tabId}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Tab')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          snackbar('SUCCESS', 'Successfully Deleted Tab')
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Tab')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Deleting Tab')
+          appStore.loading = false
         }
-      },
-      async saveTab(tab) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const saveTab = async(tab) => {
+        appStore.loading = true
         try {
           const {data, status} = await postRequest(`/objectTypeTab/project`, tab)
-          this.snackbar = getSnackbar('SUCCESS', 'Tab Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.selectedTabId = null
+          snackbar('SUCCESS', 'Tab Saved')
+          selectedTabId.value = null
           if(!tab.id) {
             // add it to the records already on the screen
-            this.tabs.push(data)
+            tabs.value.push(data)
           }
 
           // reset the new process fields
-          this.addNew = false
-          this.newTab = {}
+          addNew.value = false
+          newTab.value = {}
 
-          handleHidingGlobalLoader(this, status)
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Tab')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Adding Tab')
+          appStore.loading = false
         }
-      },
-      async saveRowChanges(rows) {
+      }
+      const saveRowChanges = async(rows) => {
         if(rows?.length > 0) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
+          appStore.loading = true
           try {
             const {status} = await putRequest(`/objectTypeTab/order`, rows)
-            this.snackbar = getSnackbar('SUCCESS', 'Tab Order Saved')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            handleHidingGlobalLoader(this, status)
+            snackbar('SUCCESS', 'Tab Order Saved')
+            handleHidingGlobalLoader(status)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Saving Tab Order')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            snackbar('ERROR', 'Error Saving Tab Order')
+            appStore.loading = false
           }
         }
-      },
-      filterTabs () {
-        return this.tabs.filter(t => { return !t.archived})
-      },
-    },
-    async created() {
-      this.getTabs()
-    }
-  }
+      }
 </script>

@@ -1,14 +1,21 @@
 <template>
-  <SidePanelExpansionPanel v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
+  <SidePanelExpansionPanel v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
                            header="Active Events"
                            :section-expanded="sectionExpanded"
                            :is-loading="activeEventsLoading"
                            @click="toggleCollapseExpand">
     <template v-slot:tool-btn>
-      <v-btn v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
-             text small color="primary" @click.stop :to="`/project/${projectId}/events`" class="pa-2 mx-2" max-width="48px">
-        <v-icon :size="20">mdi-format-list-bulleted</v-icon>
-      </v-btn>
+      <a-btn
+          v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
+          variant="text"
+          size="small"
+          color="primary"
+          @click.stop.native
+          :to="`/project/${projectId}/events`"
+          class="pa-2 mx-2"
+          max-width="48px"
+          prepend-icon="mdi-format-list-bulleted"
+      ></a-btn>
     </template>
     <template v-slot:expanded-content>
       <ActiveEventSnippet class="px-3"
@@ -16,7 +23,7 @@
                           :events="events"
                           :projectId="projectId"/>
       <v-col
-          v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
+          v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
           cols="12"
           class="text-left pt-0 albatross-body-3"
       >
@@ -25,82 +32,89 @@
   </SidePanelExpansionPanel>
 </template>
 
-<script>
+<script setup>
 
 import {getRequest, logError} from '@/helpers/helpers'
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import ActiveEventSnippet from '@/views/flow/project/ActiveEventSnippet'
-import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
-import {ProjectMutations} from "@/stores/ProjectStore";
+import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
+import { useProjectStore } from '@/stores/ProjectStore.js'
 
-export default {
-  name: 'ActiveEvents',
-  components: {
-    SidePanelExpansionPanel,
-    SpinnerInline,
-    EventSnippet,
-    ActiveEventSnippet
-  },
-  props: {
-    project: Object,
-    updateKey: Number
-  },
-  watch: {
-    updateKey: function () {
-      this.getEvents()
-    },
-  },
-  data() {
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const projectStore = useProjectStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  project: Object,
+  updateKey: Number
+})
+const { project, updateKey } = toRefs(props)
+
+watch(updateKey, () => {
+  getEvents()
+})
+
+const events = ref([])
+const customFieldGroups = ref([])
+const menuOpen = ref(false)
+const activeEventsLoading = ref(false)
+const eventSearch = ref('')
+const eventsExpanded = ref(false)
+
+onMounted(() => {
+  getEvents()
+})
+
+const projectId = computed(() => {
+  return parseInt(route.params.projectId)
+})
+const sectionExpanded = computed(() => {
+  return projectStore.activeEventDropdown
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const filteredEvents = computed(() => {
+  return eventSearch.value === '' ? eventsByName.value : eventsByName.value.filter(psn => psn.eventName.toLowerCase().includes(eventSearch.value.toLowerCase()))
+})
+const eventsByName = computed(() => {
+  const names = [...new Set(events.value.map(e => e.eventName))]
+
+  return names.map(eventName => {
     return {
-      projectId: parseInt(this.$route.params.projectId),
-      events: [],
-      sectionExpanded: this.$store.state.project.activeEventDropdown,
-      customFieldGroups: [],
-      menuOpen: false,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      activeEventsLoading: false,
-      snackbar: {},
-      eventSearch: '',
-      eventsExpanded: false,
-      companyId: this.$store.state.user.details.companyId,
+      eventName,
+      events: events.value.filter(step => step.eventName === eventName)
     }
-  },
-  created() {
-    this.getEvents()
-  },
-  computed: {
-    eventsByName() {
-      const names = [...new Set(this.events.map(e => e.eventName))]
+  })
+})
 
-      return names.map(eventName => {
-        return {
-          eventName,
-          events: this.events.filter(step => step.eventName === eventName)
-        }
-      })
-    }
-  },
-  methods: {
-    filteredEvents() {
-      return this.eventSearch === '' ? this.eventsByName : this.eventsByName.filter(psn => psn.eventName.toLowerCase().includes(this.eventSearch.toLowerCase()))
-    },
-    getEvents: async function () {
-      try {
-        this.activeEventsLoading = true
-        const {data} = await getRequest(`/project/${this.projectId}/activeEvents`, null, [])
-        this.events = data
-      } catch (e) {
-        logError(e)
-      } finally {
-        this.activeEventsLoading = false
-      }
-    },
-    toggleCollapseExpand(){
-      this.$store.commit(ProjectMutations.ACTIVE_EVENT_COLLAPSE)
-    }
-
+const getEvents = async () => {
+  try {
+    activeEventsLoading.value = true
+    const {data} = await getRequest(`/project/${projectId.value}/activeEvents`, null, [])
+    events.value = data
+  } catch (e) {
+    logError(e)
+  } finally {
+    activeEventsLoading.value = false
   }
+}
+const toggleCollapseExpand = () => {
+  projectStore.activeEventDropdown = !projectStore.activeEventDropdown
 }
 </script>
 
@@ -140,8 +154,5 @@ export default {
 
   margin-left: 12px;
 
-  & > .v-btn__content {
-    color: white !important;
-  }
 }
 </style>

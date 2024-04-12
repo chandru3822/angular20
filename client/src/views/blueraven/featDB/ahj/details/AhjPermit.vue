@@ -3,22 +3,29 @@
   <v-card class="permit-card square-card">
     <v-row no-gutters class="px-2" id="ahj-permit">
       <v-col class="ahj-form-btns py-1" cols="12">
-        <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
-          {{ expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All' }}
-        </v-btn>
-        <v-btn v-if="dataWasChanged"
-               color="primary" text
-               @click="resetForm"
-               class="cancel-link"
-               style="margin-right: 10px"
-        >Cancel
-        </v-btn>
-        <v-btn class="white--text mr-0 save-btn"
-               v-if="userCanEdit"
-               color="primary"
-               @click="validateForm()"
-        >Save
-        </v-btn>
+        <a-btn
+            variant="text"
+            color="primary"
+            class="text-capitalize"
+            @click="toggleMinimizeAll"
+            :text="expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'"
+        ></a-btn>
+        <a-btn
+            v-if="dataWasChanged"
+            color="primary"
+            variant="text"
+            @click="resetForm"
+            class="cancel-link"
+            html-style="margin-right: 10px"
+            text="Cancel"
+        ></a-btn>
+        <a-btn
+            class="mr-0 save-btn"
+            v-if="userCanEdit"
+            color="primary"
+            @click="validateForm()"
+            text="Save"
+        ></a-btn>
       </v-col>
     </v-row>
 
@@ -43,15 +50,15 @@
           <!-- FIRST COLUMN -->
           <v-col cols="12" md="6" class="px-1 mb-3">
             <FeatDbLinks title="Links"
-                     :linkTypeId="this.linksTypeId"
-                     :user-can-edit="userCanEdit"
-                     :itemId="ahjPermit.id"
-                     :itemType="itemType"
-                     :ahjId="ahjId"
-                     :links="ahjPermit.links"
-                     show-expanded
-                     :expanded-all="expandedAll"
-                     @toggle-collapse-expand="toggleCollapseExpand($event)"
+                         :linkTypeId="linksTypeId.value"
+                         :user-can-edit="userCanEdit"
+                         :itemId="ahjPermit.id"
+                         :itemType="itemType"
+                         :ahjId="ahjId"
+                         :links="ahjPermit.links"
+                         show-expanded
+                         :expanded-all="expandedAll"
+                         @toggle-collapse-expand="toggleCollapseExpand($event)"
             ></FeatDbLinks>
           </v-col>
 
@@ -92,23 +99,26 @@
 
           <v-card-actions class="px-6">
             <v-spacer></v-spacer>
-            <v-btn @click="saveDialog = false"
-                   color="primary" text
-                   class="cancel-link mr-2"
-            >Cancel
-            </v-btn>
-            <v-btn v-if="ahjPermit.updateAllInArea?.length > 0"
-                   class="white--text mr-0 save-btn"
-                   color="primary"
-                   @click="saveConfirmDialog = true"
-            >Save
-            </v-btn>
-            <v-btn v-else
-                   class="white--text mr-0 save-btn"
-                   color="primary"
-                   @click="updateAhjPermit"
-            >Save
-            </v-btn>
+            <a-btn
+                @click="saveDialog = false"
+                color="primary"
+                variant="text"
+                class="cancel-link mr-2"
+                text="Cancel"
+            ></a-btn>
+            <a-btn
+                v-if="ahjPermit.updateAllInArea?.length > 0"
+                class="mr-0 save-btn"
+                color="primary"
+                @click="saveConfirmDialog = true"
+                text="Save"
+            ></a-btn>
+            <a-btn
+                v-else
+                class="mr-0 save-btn"
+                color="primary"
+                @click="updateAhjPermit"
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -125,15 +135,19 @@
 
           <v-card-actions class="px-6">
             <v-spacer></v-spacer>
-            <v-btn color="primary" text @click="saveConfirmDialog = false"
-                   class="cancel-link mr-2"
-            >Cancel
-            </v-btn>
-            <v-btn class="white--text mr-0 save-btn"
-                   color="primary"
-                   @click="updateAhjPermit"
-            >Yes
-            </v-btn>
+            <a-btn
+                color="primary"
+                variant="text"
+                @click="saveConfirmDialog = false"
+                class="cancel-link mr-2"
+                text="Cancel"
+            ></a-btn>
+            <a-btn
+                class="mr-0 save-btn"
+                color="primary"
+                @click="updateAhjPermit"
+                text="Yes"
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -142,283 +156,273 @@
   </v-card>
 </template>
 
-<script>
+<script setup>
 import cloneDeep from 'lodash.clonedeep'
 
-import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, } from '@/helpers/helpers'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
 import TwoColumnMasonry from "@/views/blueraven/featDB/components/TwoColumnMasonry.vue";
 import FeatDbCustomFieldGroup from "@/views/blueraven/featDB/components/FeatDbCustomFieldGroup.vue";
 import FeatDbContact from "@/views/blueraven/featDB/components/FeatDbContacts.vue";
 import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue";
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-const { VITE_ENV } =  import.meta.env
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-export default {
-  name: 'ahjPermit',
-  components: {
-    TwoColumnMasonry,
-    FeatDbCustomFieldGroup,
-    FeatDbContact,
-    FeatDbLinks,
-    CustomValueInput
-  },
-  computed: {
-    userCanEdit() {
-      return this.$store.getters.userHasFeatureAccessLevel('AHJ', 'EDIT')
-    },
-    hardCodedDocsMap() {
-      const docsMap = new Map()
-      docsMap.set(1, {
-        title: "Submission Documents",
-        documents: this.submissionDocuments,
-        attachmentTypeId: 1,
-        attachmentType: "All Documents"
-      })
-      docsMap.set(4, {
-        title: "Approval Documents",
-        documents: this.approvalDocuments,
-        attachmentTypeId: this.approvalDocTypeId,
-        attachmentType: "All Documents"
-      })
-      return docsMap
-    },
-    expandedAll() {
-      if (this.expandedGroups === this.totalGroups) {
-        return CollapseExpandEnum.EXPANDED
-      } else if (this.expandedGroups === 0) {
-        return CollapseExpandEnum.COLLAPSED
-      } else {
-        return CollapseExpandEnum.MIXED
+const itemType = ref('permit')
+const saveDialog = ref(false)
+const saveConfirmDialog = ref(false)
+const dataWasChanged = ref(false)
+const dataReady = ref(false)
+const customFieldGroups = ref([])
+const approvalRequiredOptions = ref([
+  {id: null, name: ''}
+])
+const submittalMethods = ref([
+  {id: null, name: ''}
+])
+const businessLicenseMenu = ref(false)
+const contractorLicenseMenu = ref(false)
+const otherLicenseMenu = ref(false)
+const editRevisionSubmissionInstruction = ref(false)
+const editSubmissionInstruction = ref(false)
+const editAsBuiltSubmissionInstruction = ref(false)
+const editNonStandardSubmissionInstruction = ref(false)
+const editDeliveryInstruction = ref(false)
+const editApprovalInstructions = ref(false)
+const editBrsTechnicianPermitPickupAndDeliveryInstructions = ref(false)
+const editCancellationAndRefundInstructions = ref(false)
+const editBrsTechnicianPermitSubmissionInstructions = ref(false)
+const totalGroups = ref(4)
+const expandedGroups = ref(4)
+const ahjPermit = ref({submissionChecklist: [],revisionChecklist: [],asBuiltChecklist: [],nonStandardChecklist: [],links:[],contacts: [],printLocations: [],})
+const submissionDocuments = ref([])
+const approvalDocuments = ref([])
+const approvalDocTypeId = ref(981)
+const linksTypeId = ref(12)
+const ahjPermitForm = ref(null)
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')
+})
+const hardCodedDocsMap = computed(() => {
+  const docsMap = new Map()
+  docsMap.set(1, {
+    title: "Submission Documents",
+    documents: submissionDocuments.value,
+    attachmentTypeId: 1,
+    attachmentType: "All Documents"
+  })
+  docsMap.set(4, {
+    title: "Approval Documents",
+    documents: approvalDocuments.value,
+    attachmentTypeId: approvalDocTypeId.value,
+    attachmentType: "All Documents"
+  })
+  return docsMap
+})
+const expandedAll = computed(() => {
+  if (expandedGroups.value === totalGroups.value) {
+    return CollapseExpandEnum.EXPANDED
+  } else if (expandedGroups.value === 0) {
+    return CollapseExpandEnum.COLLAPSED
+  } else {
+    return CollapseExpandEnum.MIXED
+  }
+})
+
+const ahjId = computed(() => {
+  return parseInt(route.params.ahjId)
+})
+
+onMounted(() => {
+  getAhjPermit().then(() => {
+    getCustomFieldGroupAssignmentsForScreen()
+    getSubmissionDocuments()
+    getApprovalDocuments()
+  })
+})
+
+const updateDirtyValue = (item) => {
+  item.valueWasChanged = true
+  dataWasChanged.value = true
+}
+const validateForm = () => {
+  //checks for required fields prior to opening the save dialog
+  if (ahjPermitForm.value.validate()) {
+    saveDialog.value = true
+  } else {
+    snackbar('ERROR', 'Missing Required Fields')
+
+  }
+}
+const toggleCollapseExpand = (wasExpanded) => {
+  if (wasExpanded === false) {
+    expandedGroups.value--
+  } else {
+    expandedGroups.value++
+  }
+}
+const getAhjPermit = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/featDb/ahj/${ahjId.value}/permit`, 'blueraven')
+
+    ahjPermit.value = cloneDeep(data)
+    window.document.title = `AHJ - ${ahjPermit.value.ahjName}`
+    ahjPermit.value.updateAllInArea = ""
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving AHJ Permit')
+    appStore.loading = false
+  }
+}
+const getCustomFieldGroupAssignmentsForScreen = async() => {
+  appStore.loading = true
+  try {
+    const params = {sourceId: ahjPermit.value.id, objectTypeId: 4}
+    const {
+      data,
+      status
+    } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+    customFieldGroups.value = cloneDeep(data)
+    totalGroups.value = totalGroups.value + customFieldGroups.value.length;
+    expandedGroups.value = totalGroups.value;
+    dataReady.value = true
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving custom fields')
+    appStore.loading = false
+  }
+}
+const getCustomFieldsForGroup = (groupId) => {
+  let match = customFieldGroups.value.find(cfga => cfga.id === groupId)
+  return match ? match.customFieldValues : []
+}
+const showOtherField = (int, list) => {
+  let match = list.find(l => l.id === int)
+  return match ? match.showOther : false
+}
+const resetCustomFieldValueWasChangedFlags = () => {
+  customFieldGroups.value.forEach(group => {
+    group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
+  })
+}
+const resetForm = async() => {
+  appStore.loading = true
+  dataWasChanged.value = false
+  dataReady.value = false
+  getAhjPermit().then(() => {
+    getCustomFieldGroupAssignmentsForScreen()
+  })
+}
+const getSubmissionDocuments = async() => {
+  appStore.loading = true
+  try {
+    const params = {sourceId: ahjPermit.value.id, attachmentTypeId: 1}
+    const {data, status} = await getRequestWithParams('/attachment', {params})
+    submissionDocuments.value = cloneDeep(data)
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving documents')
+    appStore.loading = false
+  }
+}
+const getApprovalDocuments = async() => {
+  appStore.loading = true
+  try {
+    const params = {sourceId: ahjPermit.value.id, attachmentTypeId: approvalDocTypeId.value}
+    const {data, status} = await getRequestWithParams('/attachment', {params})
+    approvalDocuments.value = cloneDeep(data)
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving documents')
+    appStore.loading = false
+  }
+}
+const updateAhjPermit = async() => {
+  saveDialog.value = false
+  saveConfirmDialog.value = false
+  let updateAllInState = (ahjPermit.value.updateAllInArea == 'state');
+  let updateAllInMetro = (ahjPermit.value.updateAllInArea == 'metro');
+
+  try {
+    appStore.loading = true
+
+    if (updateAllInState) {
+      try {
+        const {data} = await getRequest(`/featDb/ahj/${ahjId.value}/permit/searchAhjsByState/${ahjPermit.value.stateId}`, 'blueraven')
+        ahjPermit.value.ahjIds = []
+        ahjPermit.value.permitIds = []
+
+        data.forEach(row => {
+          ahjPermit.value.ahjIds.push(row.ahjId)
+          ahjPermit.value.permitIds.push(row.id)
+        })
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'An error occurred when preparing to update all permits in ' + ahjPermit.value.stateName)
       }
     }
-  },
-  data: () => ({
-    CollapseExpandEnum,
-    ahjId: null,
-    itemType: 'permit',
-    snackbar: {},
-    saveDialog: false,
-    saveConfirmDialog: false,
-    dataWasChanged: false,
-    dataReady: false,
-    customFieldGroups: [],
-    approvalRequiredOptions: [{id: null, name: ''}],
-    submittalMethods: [{id: null, name: ''}],
-    businessLicenseMenu: false,
-    contractorLicenseMenu: false,
-    otherLicenseMenu: false,
-    editRevisionSubmissionInstruction: false,
-    editSubmissionInstruction: false,
-    editAsBuiltSubmissionInstruction: false,
-    editNonStandardSubmissionInstruction: false,
-    editDeliveryInstruction: false,
-    editApprovalInstructions: false,
-    editBrsTechnicianPermitPickupAndDeliveryInstructions: false,
-    editCancellationAndRefundInstructions: false,
-    editBrsTechnicianPermitSubmissionInstructions: false,
-    totalGroups: 4,
-    expandedGroups: 4,
-    // userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AHJ', 'EDIT'),
-    ahjPermit: {
-      submissionChecklist: [],
-      revisionChecklist: [],
-      asBuiltChecklist: [],
-      nonStandardChecklist: [],
-      links:[],
-      contacts: [],
-      printLocations: [],
-    },
-    submissionDocuments: [],
-    approvalDocuments: [],
-    // 981 is the prod value
-    approvalDocTypeId: VITE_ENV === 'local' || VITE_ENV === 'dev' || VITE_ENV === 'stage' ||  VITE_ENV === 'uat' ? 980 : 981,
-    // 12 is the prod value (and the value for all other lanes)
-    linksTypeId: 12,
-  }),
-  methods: {
-    updateDirtyValue(item) {
-      item.valueWasChanged = true
-      this.dataWasChanged = true
-    },
-    validateForm() {
-      //checks for required fields prior to opening the save dialog
-      if (this.$refs.ahjPermitForm.validate()) {
-        this.saveDialog = true
-      } else {
-        this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    toggleCollapseExpand(wasExpanded) {
-      if (wasExpanded === false) {
-        this.expandedGroups--
-      } else {
-        this.expandedGroups++
-      }
-    },
-    async getAhjPermit() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/featDb/ahj/${this.ahjId}/permit`, 'blueraven')
 
-        this.ahjPermit = cloneDeep(data)
-        window.document.title = `AHJ - ${this.ahjPermit.ahjName}`
-        this.ahjPermit.updateAllInArea = ""
-        handleHidingGlobalLoader(this, status)
+    else if (updateAllInMetro){
+      try {
+        const {data} = await getRequest(`/featDb/ahj/${ahjId.value}/permit/searchAhjsByMetro/${ahjPermit.value.metroAreaId}`, 'blueraven')
+        ahjPermit.value.ahjIds = []
+        ahjPermit.value.permitIds = []
+
+        data.forEach(row => {
+          ahjPermit.value.ahjIds.push(row.ahjId)
+          ahjPermit.value.permitIds.push(row.id)
+        })
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Permit')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCustomFieldGroupAssignmentsForScreen() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const params = {sourceId: this.ahjPermit.id, objectTypeId: 4}
-        const {
-          data,
-          status
-        } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-        this.customFieldGroups = cloneDeep(data)
-        this.totalGroups = this.totalGroups + this.customFieldGroups.length;
-        this.expandedGroups = this.totalGroups;
-        this.dataReady = true
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getCustomFieldsForGroup(groupId) {
-      let match = this.customFieldGroups.find(cfga => cfga.id === groupId)
-      return match ? match.customFieldValues : []
-    },
-    showOtherField(int, list) {
-      let match = list.find(l => l.id === int)
-      return match ? match.showOther : false
-    },
-    resetCustomFieldValueWasChangedFlags() {
-      this.customFieldGroups.forEach(group => {
-        group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
-      })
-    },
-    async resetForm() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.dataWasChanged = false
-      this.dataReady = false
-      this.getAhjPermit().then(() => {
-        this.getCustomFieldGroupAssignmentsForScreen()
-      })
-    },
-    async getSubmissionDocuments() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 1}
-        const {data, status} = await getRequestWithParams('/attachment', {params})
-        this.submissionDocuments = cloneDeep(data)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving documents')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getApprovalDocuments() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const params = {sourceId: this.ahjPermit.id, attachmentTypeId: this.approvalDocTypeId}
-        const {data, status} = await getRequestWithParams('/attachment', {params})
-        this.approvalDocuments = cloneDeep(data)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving documents')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async updateAhjPermit() {
-      this.saveDialog = false
-      this.saveConfirmDialog = false
-      let updateAllInState = (this.ahjPermit.updateAllInArea == 'state');
-      let updateAllInMetro = (this.ahjPermit.updateAllInArea == 'metro');
-
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
-        if (updateAllInState) {
-          try {
-            const {data} = await getRequest(`/featDb/ahj/${this.ahjId}/permit/searchAhjsByState/${this.ahjPermit.stateId}`, 'blueraven')
-            this.ahjPermit.ahjIds = []
-            this.ahjPermit.permitIds = []
-
-            data.forEach(row => {
-              this.ahjPermit.ahjIds.push(row.ahjId)
-              this.ahjPermit.permitIds.push(row.id)
-            })
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'An error occurred when preparing to update all permits in ' + this.ahjPermit.stateName)
-          }
-        }
-
-        else if (updateAllInMetro){
-          try {
-            const {data} = await getRequest(`/featDb/ahj/${this.ahjId}/permit/searchAhjsByMetro/${this.ahjPermit.metroAreaId}`, 'blueraven')
-            this.ahjPermit.ahjIds = []
-            this.ahjPermit.permitIds = []
-
-            data.forEach(row => {
-              this.ahjPermit.ahjIds.push(row.ahjId)
-              this.ahjPermit.permitIds.push(row.id)
-            })
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'An error occurred when preparing to update all permits in ' + this.ahjPermit.stateName)
-          }
-        }
-
-        this.ahjPermit.customFieldGroups = this.customFieldGroups
-        const {
-          data,
-          status
-        } = await putRequest(`/featDb/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit, 'blueraven')
-
-        this.ahjPermit = cloneDeep(data)
-        this.ahjPermit.updateAllInArea = ''
-        this.dataWasChanged = false
-        this.resetCustomFieldValueWasChangedFlags()
-        let successMessage = updateAllInState ? 'All permits in ' + this.ahjPermit.stateName + ' have been updated successfully' : updateAllInMetro ? 'All permits in ' + this.ahjPermit.metroArea + ' have been updated successfully': 'Permit updated successfully'
-        this.snackbar = getSnackbar('SUCCESS', successMessage)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        let errorMessage = updateAllInState ? 'An error occurred when attempting to update all permits in ' + this.ahjPermit.stateName : updateAllInMetro ? 'An error occurred when attempting to update all permits in ' + this.ahjPermit.metroArea : 'Failed to update permit'
-        this.snackbar = getSnackbar('ERROR', errorMessage)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-
-    },
-
-    toggleMinimizeAll() {
-      if (this.expandedAll !== CollapseExpandEnum.COLLAPSED) {
-        this.expandedGroups = 0
-      } else {
-        this.expandedGroups = this.totalGroups
+        snackbar('ERROR', 'An error occurred when preparing to update all permits in ' + ahjPermit.value.stateName)
       }
     }
-  },
-  async created() {
-    this.ahjId = parseInt(this.$route.params.ahjId)
-    this.getAhjPermit().then(() => {
-      this.getCustomFieldGroupAssignmentsForScreen()
-      this.getSubmissionDocuments()
-      this.getApprovalDocuments()
-    })
+
+    ahjPermit.value.customFieldGroups = customFieldGroups.value
+    const {
+      data,
+      status
+    } = await putRequest(`/featDb/ahj/${ahjId.value}/permit/${ahjPermit.value.id}`, ahjPermit.value, 'blueraven')
+
+    ahjPermit.value = cloneDeep(data)
+    ahjPermit.value.updateAllInArea = ''
+    dataWasChanged.value = false
+    resetCustomFieldValueWasChangedFlags()
+    let successMessage = updateAllInState ? 'All permits in ' + ahjPermit.value.stateName + ' have been updated successfully' : updateAllInMetro ? 'All permits in ' + ahjPermit.value.metroArea + ' have been updated successfully': 'Permit updated successfully'
+    snackbar('SUCCESS', successMessage)
+
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let errorMessage = updateAllInState ? 'An error occurred when attempting to update all permits in ' + ahjPermit.value.stateName : updateAllInMetro ? 'An error occurred when attempting to update all permits in ' + ahjPermit.value.metroArea : 'Failed to update permit'
+    snackbar('ERROR', errorMessage)
+    appStore.loading = false
+  }
+
+}
+
+const toggleMinimizeAll = () => {
+  if (expandedAll.value !== CollapseExpandEnum.COLLAPSED) {
+    expandedGroups.value = 0
+  } else {
+    expandedGroups.value = totalGroups.value
   }
 }
 </script>

@@ -16,36 +16,33 @@
     <span v-else>{{ snackbar.text }}</span>
 
     <template v-slot:action="{ attrs }">
-      <v-btn text v-bind="attrs"
-             @click="show = false">
-        <v-icon color="secondary">clear</v-icon>
-      </v-btn>
+      <a-btn
+          variant="text"
+          v-bind="attrs"
+          @click="show = false"
+          prepend-icon="clear"
+      ></a-btn>
     </template>
   </v-snackbar>
 </template>
 
-<script>
-  export default {
-    name: 'Snackbar',
-    props: {},
-    data() {
-      return {
-        snackbar: {},
-        show: false
-      }
-    },
-    created() {
-      this.$store.subscribe((mutation, state) => {
-        if (mutation.type === "SHOW_SNACK") {
-          this.snackbar = state.app.snack
-          this.show = true
-        }
-      });
-    },
+<script setup>
+import { ref } from 'vue'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const snackbar = ref({})
+const show = ref(false)
+
+appStore.$subscribe((mut, state) => {
+  if (state.snack.show) {
+    snackbar.value = state.snack
+    show.value = true
+    appStore.snack.show = false
   }
+})
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 #app-snackbar {
   z-index: 1002 !important;

@@ -6,11 +6,11 @@
           <v-row>
             <v-col cols="6" class="">
               <div v-if="!selectedWorkQueueCategoryId && !categoriesLoading" class="body-medium error--text mb-2">
-              Please select a Work Queue Category</div>
-              <v-autocomplete v-model="selectedWorkQueueCategoryId"
+                Please select a Work Queue Category</div>
+              <a-autocomplete v-model="selectedWorkQueueCategoryId"
                               :items="workQueueCategories"
                               label="Work Queue Category"
-                              item-text="workQueueCategory"
+                              item-title="workQueueCategory"
                               item-value="id"
                               solo
                               hide-details
@@ -19,7 +19,7 @@
                               dark
                               class="work-queue-selector d-inline-block clickable"
                               @input="loadBoth()"
-              ></v-autocomplete>
+              ></a-autocomplete>
               <div class="radio-group-container mt-0">
                 <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column :disabled="!selectedWorkQueueCategoryId">
                   <v-radio class="d-inline-block mx-4 wq-radio-label"
@@ -47,12 +47,12 @@
                   Hide work with a next follow-up date in the future
                 </label>
                 <v-switch
-                  dense
-                  :disabled="cardsLoading || metricsLoading || !selectedWorkQueueCategoryId"
-                  hide-details
-                  v-model="hideFutureFollowUps"
-                  class="wq-follow-up-switch d-inline-block fix-switch-color"
-                  @change="getWorkQueues(true)"
+                    dense
+                    :disabled="cardsLoading || metricsLoading || !selectedWorkQueueCategoryId"
+                    hide-details
+                    v-model="hideFutureFollowUps"
+                    class="wq-follow-up-switch d-inline-block fix-switch-color"
+                    @change="getWorkQueues(true)"
                 />
               </div>
               <div class="future-switch">
@@ -60,13 +60,13 @@
                   Hide work with an event start date in the future
                 </label>
                 <v-switch
-                  dense
-                  :disabled="cardsLoading || metricsLoading || !selectedWorkQueueCategoryId"
-                  hide-details
-                  color="primary"
-                  v-model="hideFutureEvents"
-                  class="mt-3 wq-follow-up-switch d-inline-block fix-switch-color"
-                  @change="getWorkQueues(true)"
+                    dense
+                    :disabled="cardsLoading || metricsLoading || !selectedWorkQueueCategoryId"
+                    hide-details
+                    color="primary"
+                    v-model="hideFutureEvents"
+                    class="mt-3 wq-follow-up-switch d-inline-block fix-switch-color"
+                    @change="getWorkQueues(true)"
                 />
               </div>
             </v-col>
@@ -74,10 +74,10 @@
         </v-card>
         <v-card v-if="selectedWorkQueueCategoryId" color="white" class="square-card work-queue-container-bottom mt-3">
           <v-row class="cards my-0">
-<!--            <v-card flat color="transparent" class="ml-8"-->
-<!--                    v-if="!selectedWorkQueueCategoryId && !categoriesLoading">-->
-<!--              Please select a Work Queue Category-->
-<!--            </v-card>-->
+            <!--            <v-card flat color="transparent" class="ml-8"-->
+            <!--                    v-if="!selectedWorkQueueCategoryId && !categoriesLoading">-->
+            <!--              Please select a Work Queue Category-->
+            <!--            </v-card>-->
             <div v-if="cardsLoading" class="one-hunned text-center">
               <SpinnerInline :size="60" color="primary"/>
             </div>
@@ -180,18 +180,19 @@
           tracked will be coming up soon!
         </span>
         <v-card-actions class="flex-display justify-end">
-          <v-btn
-            @click="showMetricsDialog = false">
-            Close
-          </v-btn>
+          <a-btn
+              @click="showMetricsDialog = false"
+              color="unset"
+              text="Close"
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
 
 import orderBy from 'lodash.orderby'
 import {getWorkQueueCategories} from '@/services/workQueueService'
@@ -200,206 +201,194 @@ import axios from 'axios'
 import {
   isLightColor,
   getRequestWithParams,
-  getSnackbar
+
 } from '@/helpers/helpers'
 
-export default {
-  name: 'WorkQueue',
-  components: {
-    SpinnerInline
-  },
-  data() {
-    return {
-      snackbar: {},
-      model: {},
-      categoriesLoading: true,
-      metricsLoading: true,
-      cardsLoading: false,
-      hideFutureFollowUps: false,
-      hideFutureEvents: false,
-      showAll: false,
-      selectedWorkQueueCategoryId: null,
-      workQueueCategories: [],
-      workQueues: [],
-      selectedViewType: 0,
-      selectedUserPosition: {},
-      workQueueOwners: [],
-      anyOwner: {id: -1, fullName: 'Anyone', userId: null, unassigned: false},
-      noOwner: {id: -99, fullName: 'Unassigned', userId: null, unassigned: true},
-      showMetricsDialog: false
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const model = ref({})
+const categoriesLoading = ref(true)
+const metricsLoading = ref(true)
+const cardsLoading = ref(false)
+const hideFutureFollowUps = ref(false)
+const hideFutureEvents = ref(false)
+const showAll = ref(false)
+const selectedWorkQueueCategoryId = ref(null)
+const workQueueCategories = ref([])
+const workQueues = ref([])
+const selectedViewType = ref(0)
+const selectedUserPosition = ref({})
+const workQueueOwners = ref([])
+const anyOwner = ref({id: -1, fullName: 'Anyone', userId: null, unassigned: false})
+const noOwner = ref({id: -99, fullName: 'Unassigned', userId: null, unassigned: true})
+const showMetricsDialog = ref(false)
+const source = ref(null)
+
+onMounted(async () => {
+  hideFutureFollowUps.value = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
+  hideFutureEvents.value = JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
+  selectedWorkQueueCategoryId.value = parseInt(localStorage.getItem('wqCategoryId')) || null
+  let requests = [getAllWorkQueueCategories(), loadBoth()]
+  await Promise.all(requests)
+},)
+
+const goToRoute = (changeRoute, routeName, params, query) => {
+  if (changeRoute) {
+    router.push({name: routeName, params, query})
+  }
+}
+const getTargetColor = (color) => {
+  return isLightColor(color) ? '#363636' : '#ffffff'
+}
+const wqHasMetrics = (wq) => {
+  //per carlin he wants to show the empty box until metrics have loaded so we are changing the "hasMetrics" check to a less restrictive check
+  // let hasMetrics = wq.shortWindow != null && wq.longWindow != null && wq.expectedCycle != null
+  //   && wq.metrics.shortWindowDurationType != null && wq.metrics.longWindowDurationType != null && wq.metrics.expectedCycleDurationType != null
+  let hasMetrics = wq.shortWindow != null && wq.longWindow != null && wq.expectedCycle != null
+  return hasMetrics
+}
+const getAllWorkQueueCategories = async() => {
+  categoriesLoading.value = true
+  try {
+    const {data} = await getWorkQueueCategories()
+    workQueueCategories.value = orderBy(data, [wqc => wqc.displayOrder])
+
+    //trying to make the page load all requests simultaneously to speed things up.  dealing with those ramifications
+    let matchingCategory = workQueueCategories.value.find(wqc => wqc.id === selectedWorkQueueCategoryId.value)
+    if(!matchingCategory) {
+      //unset the selection, should only mean the user no longer has access to a category they used to have access to
+      selectedWorkQueueCategoryId.value = null
+      localStorage.setItem('wqCategoryId', JSON.stringify(selectedWorkQueueCategoryId.value))
     }
-  },
-  computed: {},
-  async created() {
-    this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
-    this.hideFutureEvents = JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
-    this.selectedWorkQueueCategoryId = parseInt(localStorage.getItem('wqCategoryId')) || null
-    let requests = [this.getWorkQueueCategories(), this.loadBoth()]
-    await Promise.all(requests)
-  },
-  methods: {
-    goToRoute(changeRoute, routeName, params, query) {
-      if (changeRoute) {
-        this.$router.push({name: routeName, params, query})
-      }
-    },
-    getTargetColor(color) {
-      return isLightColor(color) ? '#363636' : '#ffffff'
-    },
-    wqHasMetrics(wq) {
-      //per carlin he wants to show the empty box until metrics have loaded so we are changing the "hasMetrics" check to a less restrictive check
-      // let hasMetrics = wq.shortWindow != null && wq.longWindow != null && wq.expectedCycle != null
-      //   && wq.metrics.shortWindowDurationType != null && wq.metrics.longWindowDurationType != null && wq.metrics.expectedCycleDurationType != null
-      let hasMetrics = wq.shortWindow != null && wq.longWindow != null && wq.expectedCycle != null
-      return hasMetrics
-    },
-    async getWorkQueueCategories() {
-      this.categoriesLoading = true
-      try {
-        const {data} = await getWorkQueueCategories()
-        this.workQueueCategories = orderBy(data, [wqc => wqc.displayOrder])
 
-        //trying to make the page load all requests simultaneously to speed things up.  dealing with those ramifications
-        let matchingCategory = this.workQueueCategories.find(wqc => wqc.id === this.selectedWorkQueueCategoryId)
-        if(!matchingCategory) {
-          //unset the selection, should only mean the user no longer has access to a category they used to have access to
-          this.selectedWorkQueueCategoryId = null
-          localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategoryId))
-        }
+    categoriesLoading.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Work Queue Categories')
 
-        this.categoriesLoading = false
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Categories')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.categoriesLoading = false
-      }
-    },
-    // async getWorkQueueOwners() {
-    //   try {
-    //     const {data} = await getRequest(`/workQueue/owners`)
-    //     this.workQueueOwners = data
-    //     this.workQueueOwners.unshift(this.noOwner)
-    //     this.workQueueOwners.unshift(this.anyOwner)
-    //
-    //   } catch (e) {
-    //     console.error('*** ERROR ***', e)
-    //     this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Owners')
-    //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    //   }
-    // },
-    async loadBoth(isFilteredReload) {
-      let requests = [this.getWorkQueues(isFilteredReload), this.loadMetrics()]
-      const [wqResults, metricResults] = await Promise.all(requests)
-      //assign each metric to the appropriate card
-      metricResults?.forEach(d => {
-        let match = this.workQueues.find(wq => wq.workQueueTypeId === d.workQueueTypeId)
-        //if a wqt is hidden from a user then no match will be found
-        if(match) {
-          match.metrics = d
+    categoriesLoading.value = false
+  }
+}
+const loadBoth = async(isFilteredReload) => {
+  let requests = [getWorkQueues(isFilteredReload), loadMetrics()]
+  const [wqResults, metricResults] = await Promise.all(requests)
+  //assign each metric to the appropriate card
+  metricResults?.forEach(d => {
+    let match = workQueues.value.find(wq => wq.workQueueTypeId === d.workQueueTypeId)
+    //if a wqt is hidden from a user then no match will be found
+    if(match) {
+      match.metrics = d
+    }
+  })
+}
+const getWorkQueues = async(isFilteredReload) => {
+  localStorage.setItem('wqCategoryId', JSON.stringify(selectedWorkQueueCategoryId.value))
+  localStorage.setItem('hideFutureWqFollowUps', JSON.stringify(hideFutureFollowUps.value))
+  localStorage.setItem('hideFutureWqEvents', JSON.stringify(hideFutureEvents.value))
+
+  if (selectedWorkQueueCategoryId.value || showAll.value) {
+    if (source.value) {
+      source.value.cancel()
+    }
+    const CancelToken = axios.CancelToken
+    source.value = CancelToken.source()
+
+    cardsLoading.value = true
+    try {
+      const {data, status} = await getRequestWithParams(`/workQueue`, {
+        source: source.value,
+        cancelToken: source.value.token,
+        params: {
+          workQueueCategoryId: selectedWorkQueueCategoryId.value,
+          filterFutureFollowUps: hideFutureFollowUps.value,
+          filterFutureEvents: hideFutureEvents.value
         }
       })
-    },
-    async getWorkQueues(isFilteredReload) {
-      localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategoryId))
-      localStorage.setItem('hideFutureWqFollowUps', JSON.stringify(this.hideFutureFollowUps))
-      localStorage.setItem('hideFutureWqEvents', JSON.stringify(this.hideFutureEvents))
-
-      if (this.selectedWorkQueueCategoryId || this.showAll) {
-        if (this.source) {
-          this.source.cancel()
-        }
-        const CancelToken = axios.CancelToken
-        this.source = CancelToken.source()
-
-        this.cardsLoading = true
-        try {
-          const {data, status} = await getRequestWithParams(`/workQueue`, {
-            source: this.source,
-            cancelToken: this.source.token,
-            params: {
-              workQueueCategoryId: this.selectedWorkQueueCategoryId,
-              filterFutureFollowUps: this.hideFutureFollowUps,
-              filterFutureEvents: this.hideFutureEvents
-            }
-          })
-          if (isFilteredReload) {
-            //if filtered reload then adjust the numbers...dont reload
-            data.forEach(d => {
-              this.workQueues.find(wq => wq.workQueueTypeId === d.workQueueTypeId).workQueueCount = d.workQueueCount
-            })
-          } else {
-            this.workQueues = data
-          }
-          //if you try to load a different wq before the first one is done, the spinner disappears because the first one cancels and hides it. only hide it if successful
-          if (status === 200) {
-            this.cardsLoading = false
-          }
-          //after cards are loaded then load metrics
-          //do not reload metrics if re-filtering for future follow up dates.
-          // if (!isFilteredReload) {
-          //   this.loadMetrics(this.selectedWorkQueueCategoryId)
-          // }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queues')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.cardsLoading = false
-        }
-      } else {
-        this.workQueues = []
-      }
-    },
-    async loadMetrics() {
-      this.metricsLoading = true
-      try {
-        let url = `/workQueue/metrics`
-        //use the same cancel token as loading cards so that this all works
-        const {data, status} = await getRequestWithParams(url, {
-          source: this.source,
-          cancelToken: this.source?.token,
-          params: {
-            workQueueCategoryId: this.selectedWorkQueueCategoryId
-          }
+      if (isFilteredReload) {
+        //if filtered reload then adjust the numbers...dont reload
+        data.forEach(d => {
+          workQueues.value.find(wq => wq.workQueueTypeId === d.workQueueTypeId).workQueueCount = d.workQueueCount
         })
-        //if you try to load a different wq before the first one is done, the spinner disappears because the first one cancels and hides it. only hide it if successful
-        if (status === 200) {
-          this.metricsLoading = false
-          return data
-        }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Categories')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.categoriesLoading = false
-      }
-    },
-    getDurationTypePluralization(duration, durationType) {
-      return duration === 1 ? durationType?.slice(0, -1) : durationType
-    },
-    getMetricPercentColor(value, expectation, inverse) {
-      if (inverse) {
-        return value <= expectation ? 'expectation-met' : 'expectation-missed'
       } else {
-        return value >= expectation ? 'expectation-met' : 'expectation-missed'
+        workQueues.value = data
       }
-    },
-    getMetricDifference(valuePercent, expectationPercent, inverse) {
-      if (inverse) {
-        let difference = (expectationPercent - valuePercent) * 100
-        let symbol = difference >= 0 ? '-' : ''
-        return symbol + this.$filters.currency(difference, '', 0) + '%'
-      } else {
-        let difference = (valuePercent - expectationPercent) * 100
-        let symbol = difference >= 0 ? '+' : ''
-        return symbol + this.$filters.currency(difference, '', 0) + '%'
+      //if you try to load a different wq before the first one is done, the spinner disappears because the first one cancels and hides it. only hide it if successful
+      if (status === 200) {
+        cardsLoading.value = false
       }
-    },
-    getBorder(wq) {
-      return `solid 1px ${wq.color}`
-    },
-  },
+      //after cards are loaded then load metrics
+      //do not reload metrics if re-filtering for future follow up dates.
+      // if (!isFilteredReload) {
+      //   loadMetrics(selectedWorkQueueCategoryId.value)
+      // }
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Work Queues')
 
+      cardsLoading.value = false
+    }
+  } else {
+    workQueues.value = []
+  }
+}
+const loadMetrics = async() => {
+  metricsLoading.value = true
+  try {
+    let url = `/workQueue/metrics`
+    //use the same cancel token as loading cards so that this all works
+    const {data, status} = await getRequestWithParams(url, {
+      source: source.value,
+      cancelToken: source.value?.token,
+      params: {
+        workQueueCategoryId: selectedWorkQueueCategoryId.value
+      }
+    })
+    //if you try to load a different wq before the first one is done, the spinner disappears because the first one cancels and hides it. only hide it if successful
+    if (status === 200) {
+      metricsLoading.value = false
+      return data
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Work Queue Categories')
+
+    categoriesLoading.value = false
+  }
+}
+const getDurationTypePluralization = (duration, durationType) => {
+  return duration === 1 ? durationType?.slice(0, -1) : durationType
+}
+const getMetricPercentColor = (value, expectation, inverse) => {
+  if (inverse) {
+    return value <= expectation ? 'expectation-met' : 'expectation-missed'
+  } else {
+    return value >= expectation ? 'expectation-met' : 'expectation-missed'
+  }
+}
+const getMetricDifference = (valuePercent, expectationPercent, inverse) => {
+  if (inverse) {
+    let difference = (expectationPercent - valuePercent) * 100
+    let symbol = difference >= 0 ? '-' : ''
+    return symbol + vueInstance.$filters.currency(difference, '', 0) + '%'
+  } else {
+    let difference = (valuePercent - expectationPercent) * 100
+    let symbol = difference >= 0 ? '+' : ''
+    return symbol + vueInstance.$filters.currency(difference, '', 0) + '%'
+  }
+}
+const getBorder = (wq) => {
+  return `solid 1px ${wq.color}`
 }
 </script>
 

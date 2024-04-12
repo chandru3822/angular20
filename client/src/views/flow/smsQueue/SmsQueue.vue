@@ -6,44 +6,44 @@
 
         <v-spacer/>
 
-        <v-select class="status-dropdown mr-3"
+        <a-select class="status-dropdown mr-3"
                   v-model="selectedObjectTypeId"
                   :items="objectTypes"
                   label="Type"
-                  item-text="text"
+                  item-title="text"
                   item-value="value"
                   hide-details
         />
 
-        <v-select class="status-dropdown"
+        <a-select class="status-dropdown"
                   v-model="selectedStatus"
                   :items="messageStatuses"
                   label="Status"
-                  item-text="text"
+                  item-title="text"
                   item-value="value"
                   hide-details
         />
-        <v-btn
-          color="primary"
-          text small
-          class="filter-projects-btn"
-          @click="getQueue()"
-        >
-          <v-icon>mdi-filter</v-icon>
-        </v-btn>
+        <a-btn
+            color="primary"
+            variant="text"
+            small
+            class="filter-projects-btn"
+            @click="getQueue()"
+            prepend-icon="mdi-filter"
+        ></a-btn>
       </v-toolbar>
     </v-row>
 
     <v-data-table
-      :headers="headers"
-      :items="queue"
-      :fixed-header="true"
-      :items-per-page="options.itemsPerPage"
-      :footer-props="footerProps"
-      single-expand
-      :mobile-breakpoint="0"
-      :expanded.sync="expanded"
-      class="elevation-1 perf-table pb-md-5"
+        :headers="headers"
+        :items="queue"
+        :fixed-header="true"
+        :items-per-page="options.itemsPerPage"
+        :footer-props="footerProps"
+        single-expand
+        :mobile-breakpoint="0"
+        :expanded.sync="expanded"
+        class="elevation-1 perf-table pb-md-5"
     >
       <template #no-data>
         <span class="default-text-color">NO DATA FOUND</span>
@@ -80,13 +80,13 @@
           <td class="text-left">{{ item.created | formatDate('timestamp', 'M/D/YYYY h:mm a') }}</td>
           <td class="text-left">{{ item.sentByUserName }}</td>
           <td class="text-left">
-            <v-select
-              v-model="item.messageRead"
-              :items="messageStatuses"
-              label="Status"
-              item-text="text"
-              item-value="value"
-              @change="updateMessage(item)"/>
+            <a-select
+                v-model="item.messageRead"
+                :items="messageStatuses"
+                label="Status"
+                item-title="text"
+                item-value="value"
+                @change="updateMessage(item)"/>
           </td>
         </tr>
       </template>
@@ -95,97 +95,105 @@
   </v-container>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar, postRequest, putRequest, getProjectPath} from '@/helpers/helpers'
+<script setup>
+
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  getRequestWithParams,
+  postRequest,
+  putRequest,
+  getProjectPath
+} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
-export default {
-  name: 'SmsQueue',
-  data() {
-    return {
-      snackbar: {},
-      constants,
-      defaultProjectPage: getProjectPath(this).pathSuffix,
-      model: {},
-      expanded: [],
-      queue: [],
-      dashValues: [],
-      performanceMetrics: [],
-      owners: [],
-      selectedStatus: -1,
-      selectedObjectTypeId: -1,
-      objectTypes: [
-        {text: 'All', value: -1},
-        {text: 'Project', value: 1},
-        {text: 'User', value: 3},
-      ],
-      messageStatuses: [
-        {text: 'All', value: -1},
-        {text: 'Unread', value: false},
-        {text: 'Read', value: true},
-      ],
-      headers: [
-        {text: 'Type', value: 'objectTypeId', show: true},
-        {text: 'Sent To', value: 'blah', show: true},
-        {text: 'Message', value: 'message', show: true},
-        {text: 'Received', value: 'twilioDelivered', show: true},
-        {text: 'Sent', value: 'created', show: true},
-        {text: 'Sent By', value: 'sentByUserName', show: true},
-        {text: 'Status', value: 'messageRead', width: '150px', show: true}
-      ],
-      footerProps: {
-        'items-per-page-options': [25, 50, 100],
-        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-      },
-      options: {
-        page: 1,
-        itemsPerPage: 100
-      },
-      pagination: {},
-    }
-  },
-  async created() {
-    this.getQueue()
-  },
-  methods: {
-    async getQueue() {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {page, itemsPerPage} = this.options
-        let params = {
-          page: page - 1, //page needs to start at 0, not 1
-          size: itemsPerPage,
-          objectTypeId: this.selectedObjectTypeId
-        }
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-        if (this.selectedStatus !== -1) {
-          params.messageRead = this.selectedStatus
-        }
-        const {data, status} = await getRequestWithParams(`/sms/queue`, {params});
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-        this.queue = data.content
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving Queue')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async updateMessage(item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await postRequest(`/sms/updateSms`, item)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        item.owner = 'Unassigned'
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving message')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
+const defaultProjectPage = ref(getProjectPath().pathSuffix)
+const model = ref({})
+const expanded = ref([])
+const queue = ref([])
+const dashValues = ref([])
+const performanceMetrics = ref([])
+const owners = ref([])
+const selectedStatus = ref(-1)
+const selectedObjectTypeId = ref(-1)
+const objectTypes = ref([
+  {text: 'All', value: -1},
+  {text: 'Project', value: 1},
+  {text: 'User', value: 3},
+])
+const messageStatuses = ref([
+  {text: 'All', value: -1},
+  {text: 'Unread', value: false},
+  {text: 'Read', value: true},
+])
+const headers = ref([
+  {text: 'Type', value: 'objectTypeId', show: true},
+  {text: 'Sent To', value: 'blah', show: true},
+  {text: 'Message', value: 'message', show: true},
+  {text: 'Received', value: 'twilioDelivered', show: true},
+  {text: 'Sent', value: 'created', show: true},
+  {text: 'Sent By', value: 'sentByUserName', show: true},
+  {text: 'Status', value: 'messageRead', width: '150px', show: true}
+])
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const options = ref({page: 1,itemsPerPage: 100})
+const pagination = ref({})
+
+onMounted(async() => {
+  getQueue()
+})
+
+const getQueue = async() => {
+  try {
+    appStore.loading = true
+    const {page, itemsPerPage} = options.value
+    let params = {
+      page: page - 1, //page needs to start at 0, not 1
+      size: itemsPerPage,
+      objectTypeId: selectedObjectTypeId.value
     }
+
+    if (selectedStatus.value !== -1) {
+      params.messageRead = selectedStatus.value
+    }
+    const {data, status} = await getRequestWithParams(`/sms/queue`, {params});
+
+    queue.value = data.content
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving Queue')
+
+    appStore.loading = false
+  }
+}
+const updateMessage = async(item) => {
+  appStore.loading = true
+  try {
+    const {status} = await postRequest(`/sms/updateSms`, item)
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    item.owner = 'Unassigned'
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving message')
+
+    appStore.loading = false
   }
 }
 </script>

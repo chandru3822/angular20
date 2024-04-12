@@ -4,9 +4,12 @@
       <v-form ref="newValueForm" autocomplete="off">
         <v-card>
           <v-toolbar color="primary" dark>
-            <v-btn icon dark @click="closeDialog">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
+            <a-btn
+                icon
+                @click="closeDialog"
+                color="unset"
+                prepend-icon="mdi-close"
+            ></a-btn>
             <v-toolbar-title>{{ title }}</v-toolbar-title>
           </v-toolbar>
           <v-card-text>
@@ -23,25 +26,41 @@
             </v-container>
           </v-card-text>
           <v-card-actions class="justify-end">
-            <v-btn text color="primary" @click="closeDialog">Close</v-btn>
-            <v-btn
-              :disabled="!Object.keys(dirtyCfvs).length"
-              color="primary"
-              class="white--text"
-              @click="validateForm()"
-            >Save
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                @click="closeDialog"
+                text="Close"
+            ></a-btn>
+            <a-btn
+                :disabled="!Object.keys(dirtyCfvs).length"
+                color="primary"
+                @click="validateForm()"
+                text="Save"
+            ></a-btn>
           </v-card-actions>
         </v-card>
       </v-form>
     </template>
   </v-dialog>
 </template>
-<script>
-import Vue from 'vue'
+<script setup>
 import {getRequestWithParams, getSnackbar} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
 
 const DATA_TYPES = {
   'text': 'textValue',
@@ -79,49 +98,43 @@ const extractFieldData = (field) => {
   return {id: field.id, value: objVal}
 }
 
-export default {
-  name: 'NewProposalValue',
-  props: ['objectCode', 'editing', 'visible'],
-  components: {CustomValueInput},
-  data() {
-    return {
-      snackbar: {},
-      apiPath: 'blueraven',
-      fields: [],
-      dirtyCfvs: {},
+const props = defineProps(
+    ['objectCode', 'editing', 'visible']
+)
+const emit = defineEmits(['input', 'save'])
+
+const apiPath = ref('blueraven')
+const fields = ref([])
+const dirtyCfvs = ref({})
+const newValueForm = ref(null)
+
+watch(visible, async(val) => {
+  if (val) {
+    openDialog()
+  } else {
+    closeDialog()
+  }
+})
+
+  const title = computed(() => {
+    return props.editing ? 'Edit Row' : 'Add Row'
+  })
+
+    const validateForm = () => {
+      if (newValueForm.value.validate()) {
+        save()
+      } else {
+        snackbar('ERROR', 'ERROR: Check for missing fields or incorrect values')
+      }
     }
-  },
-  watch: {
-    visible(val) {
-      if (val) {
-        this.openDialog()
-      } else {
-        this.closeDialog()
-      }
-    },
-  },
-  computed: {
-    title() {
-      return this.editing ? 'Edit Row' : 'Add Row'
-    },
-  },
-  methods: {
-    validateForm() {
-      if (this.$refs.newValueForm.validate()) {
-        this.save()
-      } else {
-        this.snackbar = getSnackbar('ERROR', 'ERROR: Check for missing fields or incorrect values')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async fetchObjectFields(objectCode) {
+    const fetchObjectFields = async(objectCode) => {
       const {data} = await getRequestWithParams(
         `/customField/object/${objectCode}`,
         {},
-        this.apiPath
+        apiPath.value
       )
-      if (this.editing) {
-        this.fields = data?.map((field) => {
+      if (props.editing) {
+        fields.value = data?.map((field) => {
           const datatype = DATA_TYPES[field.dataType]
           if (!datatype) {
             console.warn(
@@ -131,7 +144,7 @@ export default {
             )
           }
           const extra = {}
-          const editingElement = this.editing[field.id]
+          const editingElement = props.editing[field.id]
           if (editingElement !== undefined) {
             // exclude when values are lazy loaded so the entire object is replaced on save
             if (!field.lazyLoadValues) {
@@ -145,36 +158,31 @@ export default {
           }
         })
       } else {
-        this.fields = data
+        fields.value = data
       }
-    },
-
-    updateFieldValue(field) {
+    }
+    const updateFieldValue = (field) => {
       const {value, id} = extractFieldData(field)
       if (value.value === undefined) {
-        Vue.delete(this.dirtyCfvs, id)
+        vueInstance.$delete(dirtyCfvs.value, id)
       } else {
-        Vue.set(this.dirtyCfvs, id, {id, value})
+        vueInstance.$set(dirtyCfvs.value, id, {id, value})
       }
-    },
-
-    save() {
-      this.$emit('save', {
-        rowId: this.editing?.pk,
-        values: Object.values(this.dirtyCfvs),
+    }
+    const save = () => {
+      emit('save', {
+        rowId: props.editing?.pk,
+        values: Object.values(dirtyCfvs.value),
       })
-      this.closeDialog()
-    },
+      closeDialog()
+    }
+    const openDialog = async() => {
+      fields.value = []
+      dirtyCfvs.value = {}
+      await fetchObjectFields(props.objectCode)
+    }
+    const closeDialog = () => {
+      emit('input', false)
+    }
 
-    async openDialog() {
-      this.fields = []
-      this.dirtyCfvs = {}
-      await this.fetchObjectFields(this.objectCode)
-    },
-
-    closeDialog() {
-      this.$emit('input', false)
-    },
-  },
-}
 </script>

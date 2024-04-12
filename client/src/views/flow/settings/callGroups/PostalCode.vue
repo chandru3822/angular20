@@ -3,26 +3,25 @@
     <v-breadcrumbs :items="breadcrumbs" class="pl-3 pt-1 pb-3 back-link"></v-breadcrumbs>
     <v-app-bar color="white" tabs flat class="elevation-1 call-group-bar">
       <v-toolbar-title class="pt-2">
-        <div v-if="editGroup">
-          <v-text-field text class="d-inline-block mt-4 edit-text"
+        <div v-if="editGroup" style="margin-top:30px">
+          <a-text-field  class="d-inline-block mt-4 edit-text"
                         type="text"
                         label="Name"
                         tabindex=1
                         v-model="group.callGroupName">
-          </v-text-field>
-          <v-btn text color="primary" @click="saveGroupInfo()">
-            <v-icon>save</v-icon>
-          </v-btn>
+          </a-text-field>
+          <a-btn variant="text" color="primary" @click="saveGroupInfo()" prepend-icon="save"/>
         </div>
         <div v-else style="margin-top: 30px">
           <b>Call Group Name:</b> {{group.callGroupName}}
         </div>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-toolbar-items>
-        <v-btn text color="primary" v-if="userCanEdit" @click="editGroup = !editGroup">
-          <v-icon>edit</v-icon>
-        </v-btn>
+      <v-toolbar-items style="margin-top: 30px">
+        <a-btn
+          variant="text" color="primary"
+          v-if="userCanEdit" @click="editGroup = !editGroup" :prepend-icon="editGroup ? 'close' : 'edit'"
+        />
       </v-toolbar-items>
       <v-tabs :optional="false" color="primary"
               slot="extension"
@@ -38,82 +37,87 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
-  export default {
-    name: 'PostalCode',
+  import {getCurrentInstance, computed, onMounted, ref} from "vue";
+  import { useUserStore } from '@/stores/UserStore.js'
+  import {useRoute} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
 
-    data() {
-      return {
-        snackbar: {},
-        model: '',
-        tabs: [
-          {
-            label: 'Phone Numbers',
-            path: `/settings/callGroup/${this.$route.params.id}/numbers`,
-            display: true
-          },
-          {
-          label: 'Postal Codes',
-          path: `/settings/callGroup/${this.$route.params.id}/codes`,
-          display: true
-          }
-        ],
-        editGroup: false,
-        constants,
-        group: {},
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'),
-        callGroupId: this.$route.params.id,
-        dataLoading: true,
-        breadcrumbs: [
-          {
-            text: 'Back to Call Groups',
-            disabled: false,
-            exact: true,
-            to: `/settings/callGroups`
-          },
-        ]
-      }
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+  const userStore = useUserStore()
+  const route = useRoute()
+
+  const model = ref('')
+  const tabs = ref([
+    {
+      label: 'Phone Numbers',
+      path: `/settings/callGroup/${route.params.id}/numbers`,
+      display: true
     },
-    created () {
-      this.getCallGroupDetails()
-    },
-    methods: {
-      async saveGroupInfo () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/callGroup`, this.group, 'blueraven')
-          this.group = data
-          this.editGroup = false
-          this.snackbar = getSnackbar('SUCCESS', 'Call Group saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Call Group')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getCallGroupDetails () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/callGroup/${this.callGroupId}`, 'blueraven')
-          this.group = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+    {
+      label: 'Postal Codes',
+      path: `/settings/callGroup/${route.params.id}/codes`,
+      display: true
     }
-  }
+  ])
+  const editGroup = ref(false)
+  const group = ref({})
+  const dataLoading = ref(true)
+  const breadcrumbs = ref([
+    {
+      text: 'Back to Call Groups',
+      disabled: false,
+      exact: true,
+      to: `/settings/callGroups`
+    },
+  ])
+
+  const callGroupId = computed(() => {
+    return route.params.id
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT')
+  })
+
+  onMounted(() => {
+    getCallGroupDetails()
+  })
+      const saveGroupInfo = async () => {
+        appStore.loading = true
+        try {
+          const {data, status} = await postRequest(`/callGroup`, group.value, 'blueraven')
+          group.value = data
+          editGroup.value = false
+          snackbar('SUCCESS', 'Call Group saved')
+
+          handleHidingGlobalLoader(status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          snackbar('ERROR', 'Error Saving Call Group')
+
+          appStore.loading = false
+        }
+      }
+      const getCallGroupDetails = async () => {
+        appStore.loading = true
+        try {
+          const {data, status} = await getRequest(`/callGroup/${callGroupId.value}`, 'blueraven')
+          group.value = data
+          dataLoading.value = false
+          handleHidingGlobalLoader(status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.loading = false
+        }
+      }
 </script>
 
 <style lang="scss" scoped>

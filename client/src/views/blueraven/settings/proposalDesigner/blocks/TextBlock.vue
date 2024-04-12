@@ -1,83 +1,83 @@
 <template>
   <div class="proposal-text" :style="styles">
-    <fragment v-if="!editable || editable && (selectedId !== id)" v-html="html" v-bind="$attrs"/>
+    <fragment
+      v-if="!editable || (editable && selectedId !== id)"
+      v-html="html"
+      v-bind="$attrs"
+    />
     <fragment v-else>
-      <text-editor v-if="editor.current" :editor="editor.current"/>
+      <text-editor v-if="editor.current" :editor="editor.current" />
     </fragment>
   </div>
 </template>
-<script>
+<script setup>
+import { Fragment } from 'vue-frag'
+import { computed, inject, ref, toRefs, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import useProposalStore from '../store.js'
 import TextEditor from './text/TextEditor'
-import {generateHTMLFromJSON} from './text/utils'
-import {mapState} from 'vuex'
-import {Fragment} from 'vue-frag'
+import { generateHTMLFromJSON } from './text/utils'
+
+const store = useProposalStore()
+const { theme, selectedId } = storeToRefs(store)
 
 const xmlSerializer = new XMLSerializer()
 
-export default {
-  name: 'TextBlock',
-  components: {TextEditor, Fragment},
-  inject: ['editor'],
-  props: {
-    id: {
-      required: true
-    },
-    blockValue: {
-      type: Object,
-      required: true
-    },
-    themeKey: {
-      type: String
-    },
-    editable: {
-      type: Boolean
-    },
-    blockStyle: {
-      type: Object,
-      default: function () {
-        return {}
-      }
-    }
+const props = defineProps({
+  id: {
+    required: true
   },
-  data() {
-    return {
-      html: ''
-    }
+  blockValue: {
+    type: Object,
+    required: true
   },
-  computed: {
-    styles() {
-      const themeStyles = this.theme[this.themeKey] ?? {}
-      return {...themeStyles, ...this.blockStyle}
-    },
-    ...mapState({
-      selectedId: state => state.proposal.selectedId,
-      theme: (state) => state.proposal.theme
-    })
+  themeKey: {
+    type: String
   },
-  watch: {
-    blockValue: {
-      immediate: true,
-      handler: function (newVal) {
-        this.html = this.generateHtml(newVal)
-      }
-    }
+  editable: {
+    type: Boolean
   },
-  methods: {
-    generateHtml(val) {
-      try {
-        //trick the fragment into always updating
-        const commentEl = document.createComment(`fragment#id=${this.id} last_updated=${new Date().valueOf()}`)
-        const serializeToString = xmlSerializer.serializeToString(commentEl)
-        const htmlFromJSON = generateHTMLFromJSON(val)
-
-        return serializeToString + htmlFromJSON
-      } catch (e) {
-        console.error('ID:', this.id, e)
-      }
-      return ''
+  blockStyle: {
+    type: Object,
+    default: function () {
+      return {}
     }
   }
+})
+
+const { blockValue } = toRefs(props)
+
+const html = ref('')
+const editor = inject('editor')
+
+const styles = computed(() => {
+  const themeStyles = theme.value[props.themeKey] ?? {}
+  return { ...themeStyles, ...props.blockStyle }
+})
+
+const generateHtml = (val) => {
+  try {
+    //trick the fragment into always updating
+    const commentEl = document.createComment(
+      `fragment#id=${props.id} last_updated=${new Date().valueOf()}`
+    )
+    const serializeToString = xmlSerializer.serializeToString(commentEl)
+    const htmlFromJSON = generateHTMLFromJSON(val)
+
+    return serializeToString + htmlFromJSON
+  } catch (e) {
+    console.error('ID:', props.id, e)
+  }
+  return ''
 }
+
+watch(
+  blockValue,
+  (newVal) => {
+    html.value = generateHtml(newVal)
+  },
+  { immediate: true }
+)
 </script>
 
 <style lang="scss">

@@ -1,21 +1,24 @@
 <template>
   <v-card flat>
-    <image-selector-widget ref="imageSelector" />
-    <v-btn @click="openSelectImage('backgroundImage')">Open Image</v-btn>
+    <ImageSelectorWidget ref="imageSelector" />
+    <a-btn @click="openSelectImage()" color="unset" text="Open Image"></a-btn>
   </v-card>
 </template>
-<script>
+<script setup>
 import ImageSelectorWidget from './ImageSelectorWidget'
+import { ref } from 'vue'
 
-export default {
-  components: { ImageSelectorWidget },
-  methods: {
-    async openSelectImage(){
-      const result = await this.$refs.imageSelector.open()
-      if (result && result.uuid !== undefined){
-        this.$emit('input', result)
-      }
+const imageSelector = ref(null)
+const emit = defineEmits(['input'])
+
+const openSelectImage = async () => {
+  try {
+    const result = await imageSelector.value.open()
+    if (result && result.uuid !== undefined) {
+      emit('input', result)
     }
+  } catch (e) {
+    //ignore this
   }
 }
 </script>

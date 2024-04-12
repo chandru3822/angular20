@@ -2,245 +2,238 @@
   <div id="calendar-container">
 
     <div id="calendar-filter-container" class="pa-6 pt-1">
-      <v-col cols="11" class="pa-0">
-        <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
-        <v-row class="py-0 d-flex align-baseline">
-          <v-col id="states-filter-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
-            <v-autocomplete attach v-model="selectedStates"
-                            :items="sortedStates"
-                            label="States"
-                            multiple
-                            hide-details
-                            return-object
-                            item-text="state"
-                            item-value="id"
-                            @blur="filterOrgsAndUsers"
-            >
-              <template v-slot:selection="{ item, index }">
-                <div v-if="index === 0 && selectedStates.length < 3">
-                  <v-chip small close @click:close="selectedStates.splice(idx, 1)"
-                          v-for="(ss, idx) in selectedStates">
-                    <span>{{ ss.state }}</span>
-                  </v-chip>
-                </div>
-                <span
-                    v-if="index === 1 && selectedStates.length >= 3"
-                    class="primary--text text-caption"
-                >{{ selectedStates.length }} selected</span>
-              </template>
-              <v-list-item
-                  slot="prepend-item"
-                  ripple
-                  @click="toggleSelectAllStates()">
+<v-col cols="11" class="pa-0">
+      <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
+      <v-row class="py-0 d-flex align-baseline">
+        <v-col id="states-filter-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+          <a-autocomplete attach v-model="selectedStates"
+                    :items="sortedStates"
+                    label="States"
+                    multiple
+                    hide-details
+                    return-object
+                    item-title="state"
+                    item-value="id"
+                    @blur="filterOrgsAndUsers"
+          >
+            <template v-slot:selection="{ item, index }">
+              <div v-if="index === 0 && selectedStates.length < 3">
+                <v-chip small close @click:close="selectedStates.splice(idx, 1)"
+                        v-for="(ss, idx) in selectedStates">
+                  <span>{{ ss.state }}</span>
+                </v-chip>
+              </div>
+              <span
+                v-if="index === 1 && selectedStates.length >= 3"
+                class="primary--text text-caption"
+              >{{ selectedStates.length }} selected</span>
+            </template>
+            <v-list-item
+              slot="prepend-item"
+              ripple
+              @click="toggleSelectAllStates()">
                 <v-icon class="mr-4">{{ iconStates }}</v-icon>
-                <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
-              </v-list-item>
-              <v-divider
-                  slot="prepend-item"
-                  class="mt-2"
-              ></v-divider>
+              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
+            </v-list-item>
+            <v-divider
+              slot="prepend-item"
+              class="mt-2"
+            ></v-divider>
 
-              <template v-slot:item="{item}">
-                <v-icon class="mr-4">{{selectedStates.findIndex(s => s.stateId === item.stateId) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
-                <span class="wrap-dropdown-item py-2">{{ item.state }}</span>
-              </template>
-            </v-autocomplete>
-          </v-col>
-          <v-col id="org-resource-types-filter-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
-            <v-autocomplete v-model="selectedOrgTypes"
-                            allow-overflow
-                            :items="sortedOrgTypes"
-                            label="Organization Resource Types"
-                            multiple
-                            type="search"
-                            :loading="orgTypesLoading"
-                            hide-details
-                            return-object
-                            item-text="orgType"
-                            item-value="id"
-                            @input="orgTypeValuesChanged = true"
-                            @blur="filterOrgsAndUsers"
-                            attach
+            <template v-slot:item="{item}">
+              <v-icon class="mr-4">{{selectedStates.findIndex(s => s.stateId === item.stateId) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
+              <span class="wrap-dropdown-item py-2">{{ item.state }}</span>
+            </template>
+          </a-autocomplete>
+        </v-col>
+        <v-col id="org-resource-types-filter-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+          <a-autocomplete v-model="selectedOrgTypes"
+                          allow-overflow
+                    :items="sortedOrgTypes"
+                    label="Organization Resource Types"
+                    multiple
+                    type="search"
+                    :loading="orgTypesLoading"
+                    hide-details
+                    return-object
+                    item-title="orgType"
+                    item-value="id"
+                    @input="orgTypeValuesChanged = true"
+                    @blur="filterOrgsAndUsers"
+                          attach
+          >
+            <template v-slot:selection="{item, index}">
+              <div v-if="index === 0 && selectedOrgTypes.length < 3">
+                <v-chip small close @click:close="selectedOrgTypes.splice(idx, 1)"
+                        v-for="(sr, idx) in selectedOrgTypes">
+                  <span>{{ sr.orgType }}</span>
+                </v-chip>
+              </div>
+              <span
+                  v-if="index === 1 && selectedOrgTypes.length >= 3"
+                  class="primary--text text-caption"
+              >{{ selectedOrgTypes.length }} selected</span>
+            </template>
+            <v-list-item
+                slot="prepend-item"
+                ripple
+                @click="toggleSelectAllOrgTypes()">
+              <v-list-item-action class="mr-4">
+                <v-icon>{{ iconOrgTypes }}</v-icon>
+              </v-list-item-action>
+              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
+            </v-list-item>
+            <v-divider
+                slot="prepend-item"
+                class="mt-2"
+            ></v-divider>
+            <template v-slot:item="{item}">
+              <!--The only purpose of this template is to allow the items to wrap-->
+              <v-icon class="mr-4">{{selectedOrgTypes.findIndex(ot => ot.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
+              <span class="wrap-dropdown-item py-2">{{ item.orgType }}</span>
+            </template>
+          </a-autocomplete>
+        </v-col>
+<!--        <v-col id="placeholder-col-1" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
+        <v-col id="org-resources-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+          <a-autocomplete v-model="selectedOrgs"
+                          ref="orgSelector"
+                          :items="sortedOrgs"
+                          label="Organization Resources"
+                          multiple
+                          clearable
+                          :loading="orgsLoading"
+                          :hide-details="countSelected < maxSelectionAllowed"
+                          :error="countSelected >= maxSelectionAllowed"
+                          :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
+                          return-object
+                          item-title="orgName"
+                          item-value="id"
+                          @input="[orgValuesChanged = true, limiter()]"
+                          @blur="reloadCalendar"
+                          attach
+          >
+            <template
+                v-slot:selection="{item, index}"
             >
-              <template v-slot:selection="{item, index}">
-                <div v-if="index === 0 && selectedOrgTypes.length < 3">
-                  <v-chip small close @click:close="selectedOrgTypes.splice(idx, 1)"
-                          v-for="(sr, idx) in selectedOrgTypes">
-                    <span>{{ sr.orgType }}</span>
-                  </v-chip>
-                </div>
-                <span
-                    v-if="index === 1 && selectedOrgTypes.length >= 3"
-                    class="primary--text text-caption"
-                >{{ selectedOrgTypes.length }} selected</span>
-              </template>
-              <v-list-item
-                  slot="prepend-item"
-                  ripple
-                  @click="toggleSelectAllOrgTypes()">
-                <v-list-item-action class="mr-4">
-                  <v-icon>{{ iconOrgTypes }}</v-icon>
-                </v-list-item-action>
-                <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
-              </v-list-item>
-              <v-divider
-                  slot="prepend-item"
-                  class="mt-2"
-              ></v-divider>
-              <template v-slot:item="{item}">
-                <!--The only purpose of this template is to allow the items to wrap-->
-                <v-icon class="mr-4">{{selectedOrgTypes.findIndex(ot => ot.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
-                <span class="wrap-dropdown-item py-2">{{ item.orgType }}</span>
-              </template>
-            </v-autocomplete>
-          </v-col>
-          <!--        <v-col id="placeholder-col-1" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
-          <v-col id="org-resources-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
-            <v-autocomplete v-model="selectedOrgs"
-                            ref="orgSelector"
-                            :items="sortedOrgs"
-                            label="Organization Resources"
-                            multiple
-                            clearable
-                            :loading="orgsLoading"
-                            :hide-details="countSelected < maxSelectionAllowed"
-                            :error="countSelected >= maxSelectionAllowed"
-                            :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
-                            return-object
-                            item-text="orgName"
-                            item-value="id"
-                            @input="[orgValuesChanged = true, limiter()]"
-                            @blur="reloadCalendar"
-                            attach
-            >
-              <template
-                  v-slot:selection="{item, index}"
-              >
               <span v-if="index === 0" class="primary--text text-caption">
                 {{ selectedOrgs.length }} selected
               </span>
-              </template>
-              <template v-slot:item="{item}">
-                <!--The only purpose of this template is to allow the items to wrap-->
-                <v-icon class="mr-4">{{selectedOrgs.findIndex(o => o.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
-                <span class="wrap-dropdown-item py-2">{{ item.orgName }}</span>
-              </template>
-            </v-autocomplete>
-          </v-col>
-          <v-col id="placeholder-desktop-col" v-if="$vuetify.breakpoint.md && !mapOpen" cols="0" md="3" class="py-0"/>
-          <v-col id="position-resource-types-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
-            <v-autocomplete v-model="selectedPositions"
-                            :items="sortedPositions"
-                            label="Position Resource Types"
-                            multiple
-                            hide-details
-                            :loading="positionsLoading"
-                            return-object
-                            item-text="position"
-                            item-value="id"
-                            @input="positionValuesChanged = true"
-                            @blur="filterOrgsAndUsers"
-                            attach
-            >
-              <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
-              >
-                <div v-if="index === 0 && selectedPositions.length < 3">
-                  <v-chip small close @click:close="selectedPositions.splice(idx, 1)"
-                          v-for="(sr, idx) in selectedPositions">
-                    <span>{{ sr.position }}</span>
-                  </v-chip>
-                </div>
-                <span
-                    v-if="index === 1 && selectedPositions.length >= 3"
-                    class="primary--text text-caption"
-                >{{ selectedPositions.length }} selected</span>
-              </template>
-              <v-list-item
-                  slot="prepend-item"
-                  ripple
+            </template>
+            <template v-slot:item="{item}">
+              <!--The only purpose of this template is to allow the items to wrap-->
+              <v-icon class="mr-4">{{selectedOrgs.findIndex(o => o.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
+              <span class="wrap-dropdown-item py-2">{{ item.orgName }}</span>
+            </template>
+          </a-autocomplete>
+        </v-col>
+        <v-col id="placeholder-desktop-col" v-if="$vuetify.breakpoint.md && !mapOpen" cols="0" md="3" class="py-0"/>
+        <v-col id="position-resource-types-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+          <a-autocomplete v-model="selectedPositions"
+                          :items="sortedPositions"
+                          label="Position Resource Types"
+                          multiple
+                          hide-details
+                          :loading="positionsLoading"
+                          return-object
+                          item-title="position"
+                          item-value="id"
+                          @input="positionValuesChanged = true"
+                          @blur="filterOrgsAndUsers"
+                          attach
+          >
+            <template  v-slot:selection="{item, index}">
+              <div v-if="index === 0 && selectedPositions.length < 3">
+                <v-chip small close @click:close="selectedPositions.splice(idx, 1)"
+                        v-for="(sr, idx) in selectedPositions">
+                  <span>{{ sr.position }}</span>
+                </v-chip>
+              </div>
+              <span
+                  v-if="index === 1 && selectedPositions.length >= 3"
+                  class="primary--text text-caption"
+              >{{ selectedPositions.length }} selected</span>
+            </template>
+            <template  v-slot:prepend-item>
+              <v-list-item ripple
                   @click="toggleSelectAllPositions()">
                 <v-list-item-action class="mr-4">
                   <v-icon>{{ iconPositions }}</v-icon>
                 </v-list-item-action>
                 <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
               </v-list-item>
-              <v-divider
-                  slot="prepend-item"
-                  class="mt-2"
+              <v-divider class="mt-2"
               ></v-divider>
-              <template v-slot:item="{item}">
-                <!--The only purpose of this template is to allow the items to wrap-->
-                <v-icon class="mr-4">{{selectedPositions.findIndex(p => p.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
-                <span class="wrap-dropdown-item py-2">{{ item.position }}</span>
-              </template>
-            </v-autocomplete>
+            </template>
+            <template v-slot:item="{ props, item }">
+              <!--The only purpose of this template is to allow the items to wrap-->
+              <v-icon class="mr-4">{{selectedPositions.findIndex(p => p.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
+              <span class="wrap-dropdown-item py-2">{{ item.position }}</span>
+            </template>
+          </a-autocomplete>
 
-          </v-col>
-          <!--        <v-col id="placeholder-col-2" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
-          <v-col id="user-resources-col"  cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
-            <v-autocomplete v-model="selectedUsers"
-                            :items="sortedUsers"
-                            label="User Resources"
-                            multiple
-                            clearable
-                            :hide-details="countSelected < maxSelectionAllowed"
-                            :error="countSelected >= maxSelectionAllowed"
-                            :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
-                            :loading="usersLoading"
-                            return-object
-                            item-text="fullName"
-                            item-value="id"
-                            @input="[userValuesChanged = true, limiter()]"
-                            @blur="reloadCalendar"
-                            attach
-            >
-              <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
-              >
+        </v-col>
+<!--        <v-col id="placeholder-col-2" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
+        <v-col id="user-resources-col"  cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+          <a-autocomplete v-model="selectedUsers"
+                          :items="sortedUsers"
+                          label="User Resources"
+                          multiple
+                          clearable
+                          :hide-details="countSelected < maxSelectionAllowed"
+                          :error="countSelected >= maxSelectionAllowed"
+                          :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
+                          :loading="usersLoading"
+                          return-object
+                          item-title="fullName"
+                          item-value="id"
+                          @input="[userValuesChanged = true, limiter()]"
+                          @blur="reloadCalendar"
+                          attach
+          >
+            <template  v-slot:selection="{item, index}">
               <span v-if="index === 0" class="primary--text text-caption">
                 {{ selectedUsers.length }} selected
               </span>
-              </template>
-              <template v-slot:item="{item}">
-                <!--The only purpose of this template is to allow the items to wrap-->
-                <v-icon class="mr-4">{{selectedUsers.findIndex(u => u.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
-                <span class="wrap-dropdown-item py-2">{{ item.fullName }}</span>
-              </template>
-            </v-autocomplete>
-          </v-col>
-          <v-col id="time-zone-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
-            <v-select
-                v-model="timezone"
-                :items="timezones"
-                label="Current Time Zone"
-                item-text="friendlyValue"
-                :hide-details="true"
-                return-object
-                prepend-icon="mdi-web"
-            />
-          </v-col>
-          <v-col id="cancelled-events-toggle-col" class="py-0 d-flex align-start" cols="9" sm="4" md="3">
+            </template>
+            <template v-slot:item="{item}">
+              <!--The only purpose of this template is to allow the items to wrap-->
+              <v-icon class="mr-4">{{selectedUsers.findIndex(u => u.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
+              <span class="wrap-dropdown-item py-2">{{ item.fullName }}</span>
+            </template>
+          </a-autocomplete>
+        </v-col>
+        <v-col id="time-zone-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+          <a-select
+              v-model="scheduleTimezone"
+              :items="timezones"
+              label="Current Time Zone"
+              item-title="friendlyValue"
+              :hide-details="true"
+              return-object
+              prepend-icon="mdi-web"
+			  @change="updateTimezone"
+          />
+        </v-col>
+        <v-col id="cancelled-events-toggle-col" class="py-0 d-flex align-start" cols="9" sm="4" md="3">
             <v-switch
-                v-model="includeCancelled"
-                dense
-                hide-details
-                class="fix-switch-color cancelled-event-switch mt-0"
-                label="Cancelled Events"
-                @change="reloadCalendar"
+              v-model="includeCancelled"
+              dense
+              hide-details
+              class="fix-switch-color cancelled-event-switch mt-0"
+              label="Cancelled Events"
+              @change="reloadCalendar"
             />
-          </v-col>
-        </v-row>
-      </v-col>
+        </v-col>
+      </v-row>
+</v-col>
     </div>
     <div class="calendar-resize-container background-white pa-6">
       <div id="calendar-loader" v-if="calendarLoading">
         <v-progress-circular
-            indeterminate
-            :size="80"
-            :color="'primary'"
+          indeterminate
+          :size="80"
+          :color="'primary'"
         ></v-progress-circular>
       </div>
       <FullCalendar ref="eventCalendar" id="event-calendar" :options="calendarOptions">
@@ -251,23 +244,23 @@
             <div>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
-                  <AlbatrossButton icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
+                  <a-btn icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
                     <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
                     <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
-                  </AlbatrossButton>
+                  </a-btn>
                 </template>
                 <span v-if="isResourceOnMap(resource)">Remove pin from map</span>
                 <span v-else>Pin on map</span>
               </v-tooltip>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
-                  <AlbatrossButton v-if="showScheduleBtnForResource(resource)" icon size="small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">
-                    <v-icon>mdi-calendar-plus</v-icon>
-                  </AlbatrossButton>
+              <a-btn v-if="showScheduleBtnForResource(resource)" icon size="small" :color="isAssignedResource(resource) ? 'primary lighten-5' : 'grey darken-1'" class="mx-1" @click="toggleScheduleResource(resource)" :activation-handler="on">
+                <v-icon>mdi-calendar-plus</v-icon>
+              </a-btn>
                 </template>
                 Assign to Event
               </v-tooltip>
-              <AlbatrossButton icon size="small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></AlbatrossButton>
+              <a-btn icon size="small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></a-btn>
             </div>
           </div>
         </template>
@@ -278,7 +271,7 @@
             </template>
             <span>{{event.title}}</span>
           </v-tooltip>
-          <!--yes, 'null' is intentionally a string because that's how it comes back from the calendar-->
+<!--yes, 'null' is intentionally a string because that's how it comes back from the calendar-->
         </template>
       </FullCalendar>
     </div>
@@ -291,24 +284,31 @@ import cloneDeep from 'lodash.clonedeep'
 import {getSchedulingOrgTypes} from '@/services/orgService'
 import {AppMutations} from '@/stores/AppStore'
 
-import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar, getEventColorClass} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getEventColorClass} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "../../../../components/ConfirmationDialog.vue";
-import {UserActions} from "@/stores/UserStore";
 import FullCalendar from "@fullcalendar/vue";
 import momentTimezonePlugin from "@fullcalendar/moment-timezone";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
-import {ScheduleActions, ScheduleMutations} from "@/stores/ScheduleStore.js";
 import {computed, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const refs = vueInstance.$refs
 const filters = vueInstance.$filters
-const router = vueInstance.$router
+const userCanEdit = computed(() => userStore.userHasFeatureAccessLevel('SCHEDULE', 'EDIT'))
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
 
@@ -321,8 +321,9 @@ const props = defineProps({
   preselectedEvent: {type:Object, required: false}
 })
 
+const scheduleTimezone = computed(() => scheduleStore.getTimezone)
+const userTimezone = computed(() => userStore.timezone)
 
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
 const calendarOptions = ref({
   plugins: [
     resourceTimelinePlugin, interaction, momentTimezonePlugin
@@ -376,7 +377,7 @@ const calendarOptions = ref({
     }
   },
   height: '100%',
-  timeZone: store.state.schedule.timezone.value || {},
+  timeZone: scheduleTimezone || {},
 
   customButtons: {
     customToday: {
@@ -389,7 +390,6 @@ const calendarOptions = ref({
     }
   }
 })
-const snackbar = ref({})
 const calendarLoading = ref(false)
 const includeCancelled = ref(false)
 const calendarApi = ref(null)
@@ -423,7 +423,6 @@ const positionsLoading =  ref(true)
 const mapPinnedResources = ref([])
 const mapResourceEvents =  ref([])
 const checkedResources =  ref([])
-const timezone =  ref(store.state.schedule.timezone.value || store.state.user.details.timezone)
 const timezones = ref([
   { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
   { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
@@ -434,6 +433,7 @@ const timezones = ref([
   { friendlyValue: 'US/Mountain', value: 'America/Denver'}
 ])
 
+const updateTimezone = (newTimezone) => scheduleStore.timezone = newTimezone
 
 //states
 const sortedStates = computed(() => {
@@ -520,48 +520,31 @@ const countSelected = computed(() => {
   return selectedOrgs.value?.length + selectedUsers.value?.length
 })
 
-const switchToDayView = (dayOption) => {
-  let calendarApi = refs.eventCalendar.getApi()
-  calendarOptions.value.slotDuration = '00:30:00'
-  calendarOptions.value.minTime = '02:00:00'
-  calendarOptions.value.maxTime = '23:00:00'
-  calendarOptions.value.slotLabelInterval = '01:00:00'
-  calendarOptions.value.slotWidth = 45
-  calendarOptions.value.titleFormat = { month: 'long', year: 'numeric', day: 'numeric', weekday: 'long'}
-  let day = dayOption ? moment.utc(dayOption.rawDate).format('YYYY-MM-DD') : null
-  calendarApi.changeView('resourceTimelineDay', day)
-  reloadCalendar()
-}
-
-onMounted (async () => {
-  calendarApi.value = refs.eventCalendar.getApi()
-  await getSchedulingOrgs()
-  await getSchedulingUsers()
-  await fetchSchedulingOrgTypes()
-  await getPositions()
-  if(props.preselectedEvent){
-    filterOrgsAndUsers()
-  }
-})
-watch(() => store.state.schedule.timezone.value, (value, oldValue) => {
-  //when the schedule timezone value changes, update the calendar plugin's timezone
-  let calendarApi = refs.eventCalendar.getApi()
-  calendarApi.setOption('timeZone', store.state.schedule.timezone.value)
-  //and show a snackbar if the timezones don't match
-  if(store.state.user.details.timezone.value !== timezone.value.value) {
-    let snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-  }
-})
-watch(() => store.state.user.details.timezone, () => {
-  //when the app timezone changes, update the schedule timezone to match
-  timezone.value = store.state.user.details.timezone
-})
-watch(timezone, () => {
-  //when the value of the timezone changes (either via the time zone dropdown selector or a change in the user store timezone value),
-  // update the timezone for the schedule page
-  changeTimezone(timezone.value)
-})
+    onMounted (async () => {
+      calendarApi.value = refs.eventCalendar.getApi()
+      await getSchedulingOrgs()
+      await getSchedulingUsers()
+      await fetchSchedulingOrgTypes()
+      await getPositions()
+      if(props.preselectedEvent){
+        filterOrgsAndUsers()
+      }
+    })
+    watch(() => scheduleTimezone, (value) => {
+        //when the schedule timezone value changes, update the calendar plugin's timezone
+        let calendarApi = refs.eventCalendar.getApi()
+        calendarApi.setOption('timeZone', scheduleTimezone)
+        //and show a snackbar if the timezones don't match
+        if(userTimezone !== scheduleTimezone) {
+          let snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+        }
+      })
+      watch(userTimezone, (newVal) => {
+        //when the value of the timezone changes (either via the time zone dropdown selector or a change in the user store timezone value),
+        // update the timezone for the schedule page
+        changeTimezone(newVal)
+      })
 
 // whenever selectedUsers or selectedOrgs changes, concat them both into resources
 watch(selectedUsers, (newValue, oldValue) => {
@@ -581,7 +564,7 @@ watch(selectedOrgs, (newValue, oldValue) => {
     handlePinsOnSelectedResourceChange(removedOrgs)
   }
   handleResourceColors()
-  refs.orgSelector.setSearch('')//prevents weird scroll bug
+  // refs.orgSelector.setSearch('')//prevents weird scroll bug
 })
 
 const reloadCalendar = () =>{
@@ -593,7 +576,7 @@ const isResourceOnMap = (resource) => {
 }
 const isAssignedResource = (resource) => {
   let result = false
-  const selectedResourceId = store.state.schedule.selectedResourceId
+  const selectedResourceId = scheduleStore.selectedResourceId
   if(!selectedResourceId || selectedResourceId < 0){
     return false
   }
@@ -628,198 +611,194 @@ const handleResourceColors = () => {
 }
 
 
-//filter functions
-const toggleSelectAllStates =  async() => {
-  await nextTick(() => {
-    if (selectAllStates.value) {
-      selectedStates.value = []
-    } else {
-      selectedStates.value = cloneDeep(props.states)
-    }
-  })
-}
-const toggleSelectAllOrgTypes =  () => {
-  nextTick(() => {
-    if (selectAllOrgTypes.value) {
-      selectedOrgTypes.value = []
-    } else {
-      selectedOrgTypes.value = cloneDeep(orgTypes.value)
-    }
-  })
-}
-const toggleSelectAllPositions =  () => {
-  nextTick(() => {
-    if (selectAllPositions.value) {
-      selectedPositions.value = []
-    } else {
-      selectedPositions.value = cloneDeep(positions.value)
-    }
-  })
-}
-const showScheduleBtnForResource = (resource) => {
-  // v-if="userCanEdit && project.editableInSchedule"
-  if(props.preselectedEvent && userCanEdit && props.preselectedEvent.editableInSchedule) {
-    if (props.preselectedEvent.systemListId === 2) {
-      const allowedPositions = resource.extendedProps?.userPositions?.filter(p => props.preselectedEvent.systemListOptionIds.includes(p.positionId))
-      return allowedPositions?.length > 0
-    } else if (props.preselectedEvent.systemListId === 3) {
-      return props.preselectedEvent.systemListOptionIds.includes(resource.extendedProps.orgTypeId)
-    }
-  }
-  return false
-}
-const getSchedulingOrgs = async() => {
-  orgsLoading.value = true
-  try {
-    const {data, status} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
-      params: {
-        stateId: null, //?
-        isSchedulingTool: true
-      }
-    }, null, [])
-    //in order for resources to work as both users and orgs, the resourceId needs to be prefixed with a type_id 1=org, 2=user
-    data?.forEach(d => {
-      d.masterId = d.id
-      d.id = `${1}${d.id}`
-    })
-    orgs.value = data
-    masterOrgs.value = cloneDeep(orgs.value)
-    orgsLoading.value = false
-    selectedOrgs.value = selectedOrgs.value.filter(so => {
-      return orgs.value.some(o => o.id === so.id)
-    })
-    handleHidingGlobalLoader(vueInstance, status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Orgs')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-    store.commit(AppMutations.SET_LOADING, false)
-  }
-}
-const fetchSchedulingOrgTypes = async() => {
-  orgTypesLoading.value = true
-  try {
-    const {data, status} = await getSchedulingOrgTypes()
-    orgTypes.value = data
-
-    //if we came from an event, preselect the correct Resource TYPES
-    if(props.preselectedEvent){
-      if(props.preselectedEvent.systemListId === 3){
-        selectedOrgTypes.value = orgTypes?.value.filter(ot => props.preselectedEvent.systemListOptionIds.includes(ot.id))
-      }
-    }
-
-    orgTypesLoading.value = false
-    handleHidingGlobalLoader(vueInstance, status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Org Types')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
-  }
-}
-const getPositions = async() => {
-  positionsLoading.value = true
-  try {
-    const {data, status} = await getRequest(`/position/schedulable`, null, [])
-    positions.value = data
-    //if we came from an event, preselect the correct Resource TYPES
-    if(props.preselectedEvent){
-      if(props.preselectedEvent.systemListId === 2){
-        selectedPositions.value = positions.value.filter(p => props.preselectedEvent.systemListOptionIds.includes(p.id))
-      }
-    }
-    positionsLoading.value = false
-    handleHidingGlobalLoader(vueInstance, status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Positions')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-    store.commit(AppMutations.SET_LOADING, false)
-  }
-}
-const getSchedulingUsers = async() => {
-  store.commit(AppMutations.SET_LOADING, true)
-  try {
-    const {data, status} = await getRequestWithParams(`/user/getSchedulingUsers`, {
-      params: {
-        stateId: null, //?
-        isSchedulingTool: true
-      }
-    }, null, [])
-    //in order for resources to work as both users and orgs, the resourceId needs to be prefixed with a type_id 1=org, 2=user
-    data.forEach(d => {
-      d.masterId = d.id
-      d.id = `${2}${d.id}`
-    })
-    users.value = data
-    masterUsers.value = cloneDeep(users.value)
-    usersLoading.value = false
-    selectedUsers.value = selectedUsers.value.filter(su => {
-      return users.value.some(u => u.id === su.id)
-    })
-    handleHidingGlobalLoader(vueInstance, status)
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Users')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
-  }
-}
-const limiter = () => {
-  orgs.value.forEach(o => {
-    let match = selectedOrgs.value.find(so => so.id === o.id)
-    o.disabled = !match && countSelected.value >= maxSelectionAllowed.value
-  })
-  users.value.forEach(u => {
-    let match = selectedUsers.value.find(su => su.id === u.id)
-    u.disabled = !match && countSelected.value >= maxSelectionAllowed.value
-  })
-}
-const filterOrgsAndUsers = () => {
-  //only filter if something is selected or deselected back down to 0 length - cant watch these values because we don't want to call the function on the change but only on blur
-  let stateFilterRequired = selectedStates.value?.length > 0
-  let stateReset = previousStateCount.value > 0 && selectedStates.value?.length === 0
-  previousStateCount.value = selectedStates.value?.length
-  let orgTypeFilterRequired = selectedOrgTypes.value?.length > 0
-  let typeReset = previousTypeCount.value > 0 && selectedOrgTypes.value?.length === 0
-  previousTypeCount.value = selectedOrgTypes.value?.length
-  let positionFilterRequired = selectedPositions.value?.length > 0
-  let positionReset = previousPositionCount.value > 0 && selectedOrgTypes.value?.length === 0
-  previousPositionCount.value = selectedPositions.value?.length
-  if(stateFilterRequired || orgTypeFilterRequired || positionFilterRequired || stateReset || typeReset || positionReset) {
-    orgs.value = masterOrgs.value.filter(mo => {
-      let stateMatch = true
-      let orgTypeMatch = true
-      if(stateFilterRequired) {
-        let match = selectedStates.value.find(ss => ss.stateId === mo.stateId)
-        stateMatch = match !== null && match !== undefined
-      }
-      if(orgTypeFilterRequired) {
-        let match = selectedOrgTypes.value.find(sot => sot.id === mo.orgTypeId)
-        orgTypeMatch = match !== null && match !== undefined
-      }
-      return stateMatch && orgTypeMatch
-    })
-    let selectedPositionIds = selectedPositions.value.map(p => p.id)
-    let selectedStateIds = selectedStates.value.map(s => s.stateId)
-    users.value = masterUsers.value.filter(mo => {
-      let stateMatch = true
-      let positionMatch = true
-      if(stateFilterRequired) {
-        stateMatch = mo.userPositions.some(up => {
-          return selectedStateIds.includes(up.stateId)
+      //filter functions
+      const toggleSelectAllStates =  async() => {
+        await nextTick(() => {
+          if (selectAllStates.value) {
+            selectedStates.value = []
+          } else {
+            selectedStates.value = cloneDeep(props.states)
+          }
         })
       }
-      if(positionFilterRequired) {
-        positionMatch = mo?.userPositions.some(up => {
-          return selectedPositionIds.includes(up.positionId)
+      const toggleSelectAllOrgTypes =  () => {
+        nextTick(() => {
+          if (selectAllOrgTypes.value) {
+            selectedOrgTypes.value = []
+          } else {
+            selectedOrgTypes.value = cloneDeep(orgTypes.value)
+          }
         })
       }
-      return stateMatch && positionMatch
-    })
-  }
-}
+      const toggleSelectAllPositions =  () => {
+        nextTick(() => {
+          if (selectAllPositions.value) {
+            selectedPositions.value = []
+          } else {
+            selectedPositions.value = cloneDeep(positions.value)
+          }
+        })
+      }
+      const showScheduleBtnForResource = (resource) => {
+        // v-if="userCanEdit && project.editableInSchedule"
+        if(props.preselectedEvent && userCanEdit && props.preselectedEvent.editableInSchedule) {
+          if (props.preselectedEvent.systemListId === 2) {
+            const allowedPositions = resource.extendedProps?.userPositions?.filter(p => props.preselectedEvent.systemListOptionIds.includes(p.positionId))
+            return allowedPositions?.length > 0
+          } else if (props.preselectedEvent.systemListId === 3) {
+            return props.preselectedEvent.systemListOptionIds.includes(resource.extendedProps.orgTypeId)
+          }
+        }
+        return false
+      }
+      const getSchedulingOrgs = async() => {
+        orgsLoading.value = true
+        try {
+          const {data, status} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
+            params: {
+              stateId: null, //?
+              isSchedulingTool: true
+            }
+          }, null, [])
+          //in order for resources to work as both users and orgs, the resourceId needs to be prefixed with a type_id 1=org, 2=user
+          data?.forEach(d => {
+            d.masterId = d.id
+            d.id = `${1}${d.id}`
+          })
+          orgs.value = data
+          masterOrgs.value = cloneDeep(orgs.value)
+          orgsLoading.value = false
+          selectedOrgs.value = selectedOrgs.value.filter(so => {
+            return orgs.value.some(o => o.id === so.id)
+          })
+          handleHidingGlobalLoader(vueInstance, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          snackbar('ERROR', 'Error Retrieving Orgs')
+          appStore.loading = false
+        }
+      }
+      const fetchSchedulingOrgTypes = async() => {
+        orgTypesLoading.value = true
+        try {
+          const {data, status} = await getSchedulingOrgTypes()
+          orgTypes.value = data
+
+          //if we came from an event, preselect the correct Resource TYPES
+          if(props.preselectedEvent){
+            if(props.preselectedEvent.systemListId === 3){
+              selectedOrgTypes.value = orgTypes?.value.filter(ot => props.preselectedEvent.systemListOptionIds.includes(ot.id))
+            }
+          }
+
+          orgTypesLoading.value = false
+          handleHidingGlobalLoader(vueInstance, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          snackbar('ERROR', 'Error Retrieving Org Types')
+          appStore.loading = false
+        }
+      }
+      const getPositions = async() => {
+        positionsLoading.value = true
+        try {
+          const {data, status} = await getRequest(`/position/schedulable`, null, [])
+          positions.value = data
+          //if we came from an event, preselect the correct Resource TYPES
+          if(props.preselectedEvent){
+            if(props.preselectedEvent.systemListId === 2){
+              selectedPositions.value = positions.value.filter(p => props.preselectedEvent.systemListOptionIds.includes(p.id))
+            }
+          }
+          positionsLoading.value = false
+          handleHidingGlobalLoader(vueInstance, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          snackbar('ERROR', 'Error Retrieving Positions')
+          appStore.loading = false
+        }
+      }
+      const getSchedulingUsers = async() => {
+        appStore.loading = true
+        try {
+          const {data, status} = await getRequestWithParams(`/user/getSchedulingUsers`, {
+            params: {
+              stateId: null, //?
+              isSchedulingTool: true
+            }
+          }, null, [])
+          //in order for resources to work as both users and orgs, the resourceId needs to be prefixed with a type_id 1=org, 2=user
+          data.forEach(d => {
+            d.masterId = d.id
+            d.id = `${2}${d.id}`
+          })
+          users.value = data
+          masterUsers.value = cloneDeep(users.value)
+          usersLoading.value = false
+          selectedUsers.value = selectedUsers.value.filter(su => {
+            return users.value.some(u => u.id === su.id)
+          })
+          handleHidingGlobalLoader(vueInstance, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          snackbar('ERROR', 'Error Retrieving Users')
+          appStore.loading = false
+        }
+      }
+      const limiter = () => {
+        orgs.value.forEach(o => {
+          let match = selectedOrgs.value.find(so => so.id === o.id)
+          o.disabled = !match && countSelected.value >= maxSelectionAllowed.value
+        })
+        users.value.forEach(u => {
+          let match = selectedUsers.value.find(su => su.id === u.id)
+          u.disabled = !match && countSelected.value >= maxSelectionAllowed.value
+        })
+      }
+      const filterOrgsAndUsers = () => {
+        //only filter if something is selected or deselected back down to 0 length - cant watch these values because we don't want to call the function on the change but only on blur
+        let stateFilterRequired = selectedStates.value?.length > 0
+        let stateReset = previousStateCount.value > 0 && selectedStates.value?.length === 0
+        previousStateCount.value = selectedStates.value?.length
+        let orgTypeFilterRequired = selectedOrgTypes.value?.length > 0
+        let typeReset = previousTypeCount.value > 0 && selectedOrgTypes.value?.length === 0
+        previousTypeCount.value = selectedOrgTypes.value?.length
+        let positionFilterRequired = selectedPositions.value?.length > 0
+        let positionReset = previousPositionCount.value > 0 && selectedOrgTypes.value?.length === 0
+        previousPositionCount.value = selectedPositions.value?.length
+        if(stateFilterRequired || orgTypeFilterRequired || positionFilterRequired || stateReset || typeReset || positionReset) {
+          orgs.value = masterOrgs.value.filter(mo => {
+            let stateMatch = true
+            let orgTypeMatch = true
+            if(stateFilterRequired) {
+              let match = selectedStates.value.find(ss => ss.stateId === mo.stateId)
+              stateMatch = match !== null && match !== undefined
+            }
+            if(orgTypeFilterRequired) {
+              let match = selectedOrgTypes.value.find(sot => sot.id === mo.orgTypeId)
+              orgTypeMatch = match !== null && match !== undefined
+            }
+            return stateMatch && orgTypeMatch
+          })
+          let selectedPositionIds = selectedPositions.value.map(p => p.id)
+          let selectedStateIds = selectedStates.value.map(s => s.stateId)
+          users.value = masterUsers.value.filter(mo => {
+            let stateMatch = true
+            let positionMatch = true
+            if(stateFilterRequired) {
+              stateMatch = mo.userPositions.some(up => {
+                return selectedStateIds.includes(up.stateId)
+              })
+            }
+            if(positionFilterRequired) {
+              positionMatch = mo?.userPositions.some(up => {
+                return selectedPositionIds.includes(up.positionId)
+              })
+            }
+            return stateMatch && positionMatch
+          })
+        }
+      }
 
 const closeResource = (resource) => {
   //todo: are there any cases where a user resource and an org resource could end up with the same id??
@@ -836,6 +815,7 @@ const closeResource = (resource) => {
     toggleMapPinForResource(resource)
   }
   calendarOptions.value.resources = selectedOrgs.value.concat(selectedUsers.value)
+  limiter()
 }
 const toggleScheduleResource = (resource) =>{
   if(!isAssignedResource(resource)){
@@ -905,17 +885,17 @@ const handlePopulatingMapPins = (addPin, resource, doCallback) => {
 }
 
 
-//calendar event functions
-const getAvailability = async(info) => {
-  try {
-    let params = {
-      orgIds: selectedOrgs.value?.length > 0 ? selectedOrgs.value.map(o => o.masterId) : [],
-      userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
-      startTime: info.start,
-      endTime: info.end,
-      timezone: timezone.value?.value || timezone.value //this is dumb but the way we save the timezone in the user store is different than how we do it in the schedule store, so if the initial value is from the user store, it will be different than if we change the schedule tool timezone afterwards. todo: I should probably go back and see if I can clean this up
-    }
-    const {data} = await postRequest(`/schedule/availability`, params)
+      //calendar event functions
+      const getAvailability = async(info) => {
+        try {
+          let params = {
+            orgIds: selectedOrgs.value?.length > 0 ? selectedOrgs.value.map(o => o.masterId) : [],
+            userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
+            startTime: info.start,
+            endTime: info.end,
+            timezone: scheduleTimezone
+          }
+          const {data} = await postRequest(`/schedule/availability`, params)
 
     data?.forEach(d => {
       if (d.allDay) {
@@ -979,13 +959,12 @@ const getAvailability = async(info) => {
     })
     return data;
 
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Availability')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
-  }
-}
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          snackbar('ERROR', 'Error Retrieving Availability')
+          appStore.loading = false
+        }
+      }
 const updateCalDates = async(info) => {
   let start = info.start
   let end = info.end
@@ -994,7 +973,7 @@ const updateCalDates = async(info) => {
     //for some reason when you click the date header in the week view, it sometimes tries to navigate to the month view; this prevents that
     //it seems like it should be forcing it to navigate to the current date, but for some reason, it navigates to the date that was clicked...if it ain't broke...
     let calendarApi = refs.eventCalendar.getApi()
-calendarApi.changeView('resourceTimelineDay', new Date)
+    calendarApi.changeView('resourceTimelineDay', new Date)
   }
   calendarStartTime.value = info.start
   calendarEndTime.value = info.end
@@ -1072,8 +1051,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
       calendarLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar.value = getSnackbar('ERROR', 'Error Retrieving Events')
-      store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+      snackbar('ERROR', 'Error Retrieving Events')
       failureCallback(e)
       calendarLoading.value = false
     } finally {
@@ -1100,10 +1078,7 @@ const handleEventClick = (info) => {
   }
 }
 
-const changeTimezone = async (tz) => {
-  //update the timezone in the schedule store
-  await store.dispatch(ScheduleActions.CHANGE_TIMEZONE_SCHEDULE, tz)
-}
+      const changeTimezone = async (tz) => scheduleStore.timezone = tz
 
 const getFormattedDate = (date) => {
   //used for formatting the start/end for the hoverTitle
@@ -1180,22 +1155,6 @@ const createSnackbar = (text) => {
   transform-origin: center;
 }
 
-
-//#calendar-container .fc-event.event-tile:hover {
-//  color: inherit !important;
-//  max-width: unset;
-//  width: fit-content;
-//  -webkit-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-//  -moz-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-//  box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-//  z-index: 5;
-//
-//  span {
-//    max-width: unset;
-//    width: fit-content;
-//    padding-right: 4px;
-//  }
-//}
 
 #calendar-container .fc-rows tr,
 #calendar-container .fc-rows tr .fc-widget-content div{

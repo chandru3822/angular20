@@ -1,219 +1,227 @@
 <template>
-<v-menu
-    v-model="displayDropdown"
-    bottom
-    offset-y
-    min-width="350"
-    :close-on-content-click="false"
-    style="z-index: 10"
->
-  <template #activator="{on}">
-    <v-btn text color="primary" class="text-capitalize add-process-step-menu-btn one-hunned" :outlined="outlined" :small="false"  :large="false" v-on="on" @click="getSteps()" @blur="clear()">
-      <v-icon>add</v-icon>
-      <span v-if="title != null">{{title}}</span>
-    </v-btn>
-  </template>
+  <v-menu
+      v-model="displayDropdown"
+      bottom
+      offset-y
+      min-width="350"
+      :close-on-content-click="false"
+      style="z-index: 10"
+  >
+    <template #activator="{on}">
+      <a-btn
+          variant="text"
+          color="primary"
+          class="text-capitalize add-process-step-menu-btn one-hunned"
+          :outlined="outlined"
+          :activation-handler="on"
+          @click="getSteps()"
+          @blur="clear()"
+          :text="title != null ? title : ''"
+          prepend-icon="add"
+      ></a-btn>
+    </template>
 
-  <v-card class="pa-5">
-<!--    cant change this part cuz the steps used are different depending on if the user is an admin or not -->
-    <v-autocomplete v-model="selectedStep"
-                    :items="steps"
-                    label="Process Steps"
-                    item-text="processStepName"
-                    item-value="id"
-                    placeholder="Select one..."
-                    @input="[getCancelledStatuses(), getActiveStatusesAssignedToStep() ]"
-                    return-object
-                     />
-    <v-autocomplete v-model="newPps.initialCompanyProcessStepStatusTypeId"
-                    :disabled="null === selectedStep"
-                    :items="activeStatusesAssignedToStep"
-                    label="Set initial status to:"
-                    item-text="processStepStatusType"
-                    item-value="id"
-                    placeholder="Select one..."
-                    attach/>
-    <v-autocomplete v-model="newPps.existingCompanyProcessStepStatusTypeId"
-                    :disabled="null === selectedStep"
-                    :items="cancelledCompanyStatuses"
-                    label="Set status of existing active steps of the same type to:"
-                    item-text="processStepStatusType"
-                    item-value="id"
-                    placeholder="Select one..."
-                    attach/>
-    <v-btn
-        class="add-process-step-btn primary"
-        :disabled="selectedStep == null || !newPps.existingCompanyProcessStepStatusTypeId || !newPps.initialCompanyProcessStepStatusTypeId"
-        @click="addStep"
-    >
-      Create
-    </v-btn>
-  </v-card>
-</v-menu>
+    <v-card class="pa-5">
+      <!--    cant change this part cuz the steps used are different depending on if the user is an admin or not -->
+      <a-autocomplete v-model="selectedStep"
+                      :items="steps"
+                      label="Process Steps"
+                      item-title="processStepName"
+                      item-value="id"
+                      placeholder="Select one..."
+                      @input="[getCancelledStatuses(), getActiveStatusesAssignedToStep() ]"
+                      return-object
+      />
+      <a-autocomplete v-model="newPps.initialCompanyProcessStepStatusTypeId"
+                      :disabled="null === selectedStep"
+                      :items="activeStatusesAssignedToStep"
+                      label="Set initial status to:"
+                      item-title="processStepStatusType"
+                      item-value="id"
+                      placeholder="Select one..."
+                      attach/>
+      <a-autocomplete v-model="newPps.existingCompanyProcessStepStatusTypeId"
+                      :disabled="null === selectedStep"
+                      :items="cancelledCompanyStatuses"
+                      label="Set status of existing active steps of the same type to:"
+                      item-title="processStepStatusType"
+                      item-value="id"
+                      placeholder="Select one..."
+                      attach/>
+      <a-btn
+          class="add-process-step-btn primary"
+          :disabled="selectedStep == null || !newPps.existingCompanyProcessStepStatusTypeId || !newPps.initialCompanyProcessStepStatusTypeId"
+          @click="addStep"
+          color="unset"
+          text="Create"
+      ></a-btn>
+    </v-card>
+  </v-menu>
 </template>
 
-<script>
-import { handleHidingGlobalLoader, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
+import { handleHidingGlobalLoader, getRequestWithParams,  logError, postRequest} from '@/helpers/helpers'
+
 import {getActiveAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
 
-export default {
-  name: 'AddProcessStep',
-  props: {
-    admin: {
-      type: Boolean,
-      default: false
-    },
-    projectId: {
-      type: Number
-    },
-    processId: {
-      type: Number
-    },
-    contactId: Number,
-    title: String,
-    showBtnText: {
-      type: Boolean,
-      default: false
-    },
-    largeBtn: {
-      type: Boolean,
-      default: false
-    },
-    outlined: {
-      type: Boolean,
-      default: false
-    }
-  },
+import { getCurrentInstance, computed, ref, toRefs, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-  data () {
-    return {
-      snackbar: {},
-      displayDropdown: false,
-      fetchingSteps: false,
-      steps: [],
-      newPps: {},
-      selectedStep: null,
-      fetchingStatuses: false,
-      cancelledCompanyStatuses: [],
-      activeStatusesAssignedToStep: [],
-    }
-  },
-  created () {
-    // this.getSteps()
-    // this.getCancelledStatuses()
-  },
-  computed: {
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    }
-  },
-  methods: {
-    getSteps: async function () {
-      if(!this.displayDropdown) {
-        try {
-          const url = (this.admin) ? `/processes/${this.processId}` : `/processes/${this.processId}/nonAdminProcessStepsForProcess`
-          this.fetchingSteps = true
-          const {data} = await getRequestWithParams(url, {
-            params: {
-              projectId: this.projectId,
-            }
-          })
-          this.steps = (this.admin) ? data.processStepProcesses : data.filter(ps => {
-            //the query for nonAdminProcessSteps filters on 'non_admin_add is true' so we don't have to check that here
-            let allowAdd = false
-            if(ps.nonAdminAddWhiteListedPositions?.length > 0) {
-              //do any of the user's active positions match the white listed positions
-              allowAdd = ps.nonAdminAddAllow ? this.$store.getters.userHasAnyPosition(ps.nonAdminAddWhiteListedPositions?.map(wlp => wlp.positionId)) :
-                  !this.$store.getters.userHasAnyPosition(ps.nonAdminAddWhiteListedPositions?.map(wlp => wlp.positionId))
-            } else {
-              //allow them to add if nonAdminAdd is true and it is set to a deny list and there are no positions
-              allowAdd = ps.nonAdminAdd && !ps.nonAdminAddAllow
-            }
-            return allowAdd
-          })
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
-          this.fetchingSteps = false
-        }
-      } else {
-        this.clear()
-      }
-    },
-    async getActiveStatusesAssignedToStep() {
-      this.activeStatusesAssignedToStep = []
-      try {
-        let stepId = (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id
-        const {data} = await getActiveAssignedToProcessStep(stepId, !this.admin)
-        this.activeStatusesAssignedToStep = data
-        if (data?.length === 1) {
-          this.newPps.initialCompanyProcessStepStatusTypeId = data[0].id
-        }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    getCancelledStatuses: async function () {
-      this.cancelledCompanyStatuses = []
-      try {
-        let stepId = (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id
-        if(stepId) {
-          this.fetchingStatuses = true
-          const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(stepId, !this.admin)
-          this.cancelledCompanyStatuses = data
-          if(data?.length === 1) {
-            this.newPps.existingCompanyProcessStepStatusTypeId = data[0].id
-          }
-        }
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
-        this.fetchingSteps = false
-      }
-    },
-    addStep: async function () {
-      try {
-        let psId = (this.admin) ? this.selectedStep.processStepId : this.selectedStep.id
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await postRequest(`/projectProcessStep/initialStatus/${this.newPps.initialCompanyProcessStepStatusTypeId}/existingStatus/${this.newPps.existingCompanyProcessStepStatusTypeId}`, {
-          projectId: this.projectId,
-          processStepId: psId,
-          main: true
-        })
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
 
-        this.selectedStep = null
-        this.newPps = {}
-        this.displayDropdown = false
-        handleHidingGlobalLoader(this, status)
-        this.$emit('step-added')
-        //the data returned is the ppsId
-        this.$router.push(`/project/${this.projectId}/processStep/${data}`)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error adding new process step')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    clear(){
-      this.selectedStep = null
-      this.newPps = {}
-    },
+const props = defineProps({
+  admin: {
+    type: Boolean,
+    default: false
+  },
+  projectId: {
+    type: Number
+  },
+  processId: {
+    type: Number
+  },
+  contactId: Number,
+  title: String,
+  showBtnText: {
+    type: Boolean,
+    default: false
+  },
+  largeBtn: {
+    type: Boolean,
+    default: false
+  },
+  outlined: {
+    type: Boolean,
+    default: false
+  }
+})
+const { admin, projectId, processId, contactId, title, showBtnText, largeBtn, outlined } = toRefs(props)
+
+const emit = defineEmits(['step-added'])
+
+const displayDropdown = ref(false)
+const fetchingSteps = ref(false)
+const steps = ref([])
+const newPps = ref({})
+const selectedStep = ref(null)
+const fetchingStatuses = ref(false)
+const cancelledCompanyStatuses = ref([])
+const activeStatusesAssignedToStep = ref([])
+
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+
+const getSteps = async () => {
+  if(!displayDropdown.value) {
+    try {
+      const url = (admin.value) ? `/processes/${processId.value}` : `/processes/${processId.value}/nonAdminProcessStepsForProcess`
+      fetchingSteps.value = true
+      const {data} = await getRequestWithParams(url, {
+        params: {
+          projectId: projectId.value,
+        }
+      })
+      steps.value = (admin.value) ? data.processStepProcesses : data.filter(ps => {
+        //the query for nonAdminProcessSteps filters on 'non_admin_add is true' so we don't have to check that here
+        let allowAdd = false
+        if(ps.nonAdminAddWhiteListedPositions?.length > 0) {
+          //do any of the user's active positions match the white listed positions
+          allowAdd = ps.nonAdminAddAllow ? userStore.userHasAnyPosition(ps.nonAdminAddWhiteListedPositions?.map(wlp => wlp.positionId)) :
+              !userStore.userHasAnyPosition(ps.nonAdminAddWhiteListedPositions?.map(wlp => wlp.positionId))
+        } else {
+          //allow them to add if nonAdminAdd is true and it is set to a deny list and there are no positions
+          allowAdd = ps.nonAdminAdd && !ps.nonAdminAddAllow
+        }
+        return allowAdd
+      })
+    } catch (e) {
+      logError(e)
+      snackbar('ERROR', 'Error fetching process steps')
+
+    } finally {
+      fetchingSteps.value = false
+    }
+  } else {
+    clear()
   }
 }
+const getActiveStatusesAssignedToStep = async() => {
+  activeStatusesAssignedToStep.value = []
+  try {
+    let stepId = (admin.value) ? selectedStep.value.processStepId : selectedStep.value.id
+    const {data} = await getActiveAssignedToProcessStep(stepId, !admin.value)
+    activeStatusesAssignedToStep.value = data
+    if (data?.length === 1) {
+      newPps.value.initialCompanyProcessStepStatusTypeId = data[0].id
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error fetching process step statuses')
+
+  }
+}
+const getCancelledStatuses = async () => {
+  cancelledCompanyStatuses.value = []
+  try {
+    let stepId = (admin.value) ? selectedStep.value.processStepId : selectedStep.value.id
+    if(stepId) {
+      fetchingStatuses.value = true
+      const {data} = await getCancelledCompanyStatusTypesAssignedToProcessStep(stepId, !admin.value)
+      cancelledCompanyStatuses.value = data
+      if(data?.length === 1) {
+        newPps.value.existingCompanyProcessStepStatusTypeId = data[0].id
+      }
+    }
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching process step statuses')
+
+  } finally {
+    fetchingSteps.value = false
+  }
+}
+const addStep = async () => {
+  try {
+    let psId = (admin.value) ? selectedStep.value.processStepId : selectedStep.value.id
+    appStore.loading = true
+    const {data, status} = await postRequest(`/projectProcessStep/initialStatus/${newPps.value.initialCompanyProcessStepStatusTypeId}/existingStatus/${newPps.value.existingCompanyProcessStepStatusTypeId}`, {
+      projectId: projectId.value,
+      processStepId: psId,
+      main: true
+    })
+
+    selectedStep.value = null
+    newPps.value = {}
+    displayDropdown.value = false
+    handleHidingGlobalLoader( status)
+    emit('step-added')
+    //the data returned is the ppsId
+    router.push(`/project/${projectId.value}/processStep/${data}`)
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error adding new process step')
+
+    appStore.loading = false
+  }
+}
+const clear = () => {
+  selectedStep.value = null
+  newPps.value = {}
+}
+
 </script>
 
 <style lang="scss">
-.add-process-step-btn > .v-btn__content {
-  color: white !important;
-}
 #side-panel-expansion-panel-container {
   button.add-process-step-menu-btn {
     border: thin solid var(--v-primary-base);

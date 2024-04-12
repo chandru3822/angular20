@@ -6,7 +6,7 @@
       <p v-for="(fot, index) in servicingFots"
          :key="index"
          class="my-0">
-        <router-link v-if="fot.hierarchy !== null && $store.getters.userHasFeature('ORGS')"
+        <router-link v-if="fot.hierarchy !== null && userStore.userHasFeature('ORGS')"
                      class="list-link"
                      :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}"
                      :to="{ name: 'orgs', params: {orgFilter: fot.hierarchy.orgName} }"
@@ -20,20 +20,25 @@
   </v-container>
 </template>
 
-<script>
-export default {
-  name: "AhjServicingFot",
-  props: {
-    servicingFots: {
-      type: Array,
-      default: () => []
-    },
-    isNested: {
-      type: Boolean,
-      default: false
-    }
+<script setup>
+import { getCurrentInstance, toRefs } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+
+const props = defineProps({
+  servicingFots: {
+    type: Array,
+    default: () => []
+  },
+  isNested: {
+    type: Boolean,
+    default: false
   }
-}
+})
+
+const { servicingFots, isNested } = toRefs(props)
+
 </script>
 
 <style scoped lang="scss">

@@ -6,22 +6,25 @@
           <v-toolbar-title class="app-title">Users</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newUser" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'ADD')">
-              <v-icon>add</v-icon>
-              Add User
-            </v-btn>
+            <a-btn
+                variant="text"
+                to="/newUser"
+                color="primary"
+                v-if="userStore.userHasFeatureAccessLevel('USERS', 'ADD')"
+                prepend-icon="add"
+                text="Add User"
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-toolbar color="white" class="elevation-1 mt-3">
-          <v-text-field
+          <a-text-field
               class="mt-5"
               prepend-inner-icon="search"
-              text
               clearable
               label="Search users..."
               v-model="filters.search"
               @input="debounceGetUsers"
-          ></v-text-field>
+          ></a-text-field>
           <v-checkbox
               class="pt-5 ml-3"
               dense
@@ -29,26 +32,39 @@
               label="Primary Only"
               @change="handleOrgFilterChange(false)"
           />
-          <span class="flex-display justify-end user-selected" @click="selectedUsersDialog = true">{{this.usersSelected}} user(s) selected</span>
+          <span class="flex-display justify-end user-selected" @click="selectedUsersDialog = true">{{usersSelected}} user(s) selected</span>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="toggleImages()" :disabled="allUsersLoading">
-              <v-icon v-if="constants.IS_MOBILE">View Images</v-icon>
-              <span v-else>View Images</span>
-            </v-btn>
-            <v-btn text color="primary" @click="msgDialog = true" :disabled="allUsersLoading">
-              <v-icon v-if="constants.IS_MOBILE">email</v-icon>
-              <span v-else>Send Email/Text</span>
-            </v-btn>
-            <v-btn text color="primary" @click="handleOrgFilterChange(true)">
-              <v-icon v-if="constants.IS_MOBILE">filter_list</v-icon>
-              <span v-else>Reset Filters</span>
-            </v-btn>
-
-            <v-btn text color="primary" @click="exportCsv">
-              <v-icon v-if="constants.IS_MOBILE">mdi-cloud-download</v-icon>
-              <span v-else>Export</span>
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                @click="toggleImages()"
+                :disabled="allUsersLoading"
+                :prepend-icon="constants.IS_MOBILE ? 'mdi-view-grid-outline' : ''"
+                :text="constants.IS_MOBILE ? '' : 'View Images'"
+            ></a-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                @click="msgDialog = true"
+                :disabled="allUsersLoading"
+                :prepend-icon="constants.IS_MOBILE ? 'email' : ''"
+                :text="constants.IS_MOBILE ? '' : 'Send Email/Text'"
+            ></a-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                @click="handleOrgFilterChange(true)"
+                :prepend-icon="constants.IS_MOBILE ? 'filter_list' : ''"
+                :text="constants.IS_MOBILE ? '' : 'Reset Filters'"
+            ></a-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                @click="exportCsv"
+                :prepend-icon="constants.IS_MOBILE ? 'mdi-cloud-download' : ''"
+                :text="constants.IS_MOBILE ? '' : 'Export'"
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-data-table
@@ -57,7 +73,7 @@
             :fixed-header="true"
             :options.sync="options"
             disable-sort
-            ref="pageable-table"
+            ref="pageableTable"
             :page.sync="page"
             :mobile-breakpoint="0"
             :footer-props="footerProps"
@@ -83,23 +99,20 @@
                   :style="{width: header.width ? header.width : 'auto',
                           'padding-bottom': !header.orgFilter && !header.statusFilter ? '13px !important' : ''}">
                 {{ header.text }}
-                <v-autocomplete v-model="filters.orgs[header.level]"
+                <a-autocomplete v-model="filters.orgs[header.level]"
                                 :items="header.orgs"
                                 v-if="header.orgFilter"
-                                item-text="orgName"
+                                item-title="orgName"
                                 item-value="id"
                                 return-object
                                 multiple
                                 placeholder="Select..."
                                 height="35px"
-                                outlined
+                                variant="outlined"
                                 class="user-filter-select"
                                 @change="handleOrgFilterChange(false, header.level)"
                 >
-                  <template
-                    slot="selection"
-                    slot-scope="{ item, index }"
-                  >
+                  <template  v-slot:selection="{item, index}">
                     <v-chip small v-if="index === 0 && filters.orgs[header.level] && filters.orgs[header.level].length < 2">
                       <span>{{ item.orgName }}</span>
                     </v-chip>
@@ -121,37 +134,34 @@
                     <div v-if="header.showType">{{item.orgName}} ({{item.orgType}})</div>
                     <div v-else>{{item.orgName}}</div>
                   </template>
-                </v-autocomplete>
-                <v-autocomplete v-model="filters.statuses"
+                </a-autocomplete>
+                <a-autocomplete v-model="filters.statuses"
                                 :items="statuses"
                                 v-else-if="header.statusFilter"
                                 multiple
-                                item-text="userStatusType"
+                                item-title="userStatusType"
                                 item-value="id"
-                                outlined
+                                variant="outlined"
                                 placeholder="Select..."
                                 height="35px"
                                 class="user-filter-select"
                                 @input="getUsers(true)"
                 >
-                  <v-list-item
-                    slot="prepend-item"
-                    ripple
-                    @click="toggleSelectAllStatuses()"
-                  >
-                    <v-list-item-action>
-                      <v-icon>{{ icon }}</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-title>Select All</v-list-item-title>
-                  </v-list-item>
-                  <v-divider
-                    slot="prepend-item"
-                    class="mt-2"
-                  ></v-divider>
-                  <template
-                    slot="selection"
-                    slot-scope="{ item, index }"
-                  >
+                  <template  v-slot:prepend-item>
+                    <v-list-item
+                      ripple
+                      @click="toggleSelectAllStatuses()"
+                    >
+                      <v-list-item-action>
+                        <v-icon>{{ icon }}</v-icon>
+                      </v-list-item-action>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item>
+                    <v-divider
+                      class="mt-2"
+                    ></v-divider>
+                  </template>
+                  <template  v-slot:selection="{item, index}">
                     <v-chip small v-if="index === 0 && filters.statuses.length < 2">
                       <span>{{ item.userStatusType }}</span>
                     </v-chip>
@@ -160,11 +170,11 @@
                       class="primary--text text-caption"
                     >{{ filters.statuses.length }} selected</span>
                   </template>
-                </v-autocomplete>
-                <v-autocomplete v-model="filters.positions"
+                </a-autocomplete>
+                <a-autocomplete v-model="filters.positions"
                                 :items="positions"
                                 v-else-if="header.positionFilter"
-                                item-text="position"
+                                item-title="position"
                                 item-value="id"
                                 multiple
                                 placeholder="Select..."
@@ -173,10 +183,7 @@
                                 class="user-filter-select"
                                 @input="getUsers(true)"
                 >
-                  <template
-                    slot="selection"
-                    slot-scope="{ item, index }"
-                  >
+                  <template  v-slot:selection="{item, index}">
                     <v-chip small v-if="index === 0 && filters.positions && filters.positions.length < 2">
                       <span>{{ item.position }}</span>
                     </v-chip>
@@ -185,7 +192,7 @@
                       class="primary--text text-caption"
                     >{{ filters.positions.length }} selected</span>
                   </template>
-                </v-autocomplete>
+                </a-autocomplete>
                 <v-checkbox v-else-if="header.selectFilter"
                             :disabled="allUsersLoading"
                             v-model="selectAllUsers" @change="toggleSelectAllUsers()"></v-checkbox>
@@ -202,18 +209,19 @@
 
           <template #item="{ item, index }">
             <tr
-              :class="{'shaded-row': index % 2}" v-if="!showImages"
-            >
+              :class="{'shaded-row': index % 2}" v-if="!showImages">
               <td><v-checkbox v-model="item.selected" :disabled="allUsersLoading" @change="toggleSingleSelect(item)"></v-checkbox></td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.firstName}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.lastName}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.email}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.phoneNumber}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.phoneExtension}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.userStatusType}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.position || 'N/A'}}</td>
-              <td @click="clickRow(item.id)" class="text-left user-column clickable" v-for="(f, index) in orgFilters" :key="index">
-                {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.firstName}}</router-link></td>
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.lastName}}</router-link></td>
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.email}}</router-link></td>
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.phoneNumber}}</router-link></td>
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.phoneExtension}}</router-link></td>
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.userStatusType}}</router-link></td>
+              <td class="text-left user-column clickable"><router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">{{item.position || 'N/A'}}</router-link></td>
+              <td class="text-left user-column clickable" v-for="(f, index) in orgFilters" :key="index">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/user/${item.id}/details`">
+                  {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
+                </router-link>
               </td>
             </tr>
           </template>
@@ -276,27 +284,25 @@
         </v-tabs>
           </v-toolbar-items>
         <v-divider></v-divider>
-        <div v-if="messageTab == 1"  class="pa-6">
+        <div v-if="messageTab === 1"  class="pa-6">
           <label class="mr-2">To:</label>
-          <v-autocomplete
+          <a-autocomplete
             v-model="selectedUsers"
             :items="allUsers"
             multiple
             clearable
             label="Select user(s)"
-            item-text="fullName"
+            item-title="fullName"
             item-value="id"
             height="35px"
             @click:clear="clearUsersAutocomplete()"
             class="d-inline-block mr-3 user-autocomplete">
-            <v-divider
-              slot="prepend-item"
-              class="mt-2"
-            ></v-divider>
-            <template
-              slot="selection"
-              slot-scope="{ item, index }"
-            >
+            <template  v-slot:prepend-item>
+              <v-divider
+                class="mt-2"
+              ></v-divider>
+            </template>
+            <template  v-slot:selection="{item, index}">
               <v-chip small v-if="index === 0 && selectedUsers && selectedUsers.length < 2">
                 <span>{{ item.fullName }}</span>
               </v-chip>
@@ -318,22 +324,22 @@
                 </v-list-item>
               </template>
             </template>
-          </v-autocomplete>
+          </a-autocomplete>
 
           <div class="mb-3 flex-display">
             <label class="mt-5 mr-2">From:</label>
-            <v-select attach
+            <a-select attach
                       label="Select email"
                       v-model="fromEmail"
                       :items="fromEmails"
-                      item-text="email"
+                      item-title="email"
                       item-value="email"
                       class="select-email"
             />
           </div>
 
             <v-text-field v-model="emailSubject" label="Subject"></v-text-field>
-            <b>Message </b><span class="count-span pl-2">Characters: {{this.emailCharacterCount}}  Words: {{this.emailWordCount}}</span>
+            <b>Message </b><span class="count-span pl-2">Characters: {{emailCharacterCount}}  Words: {{emailWordCount}}</span>
             <quill-editor
                 class="py-3 rich-text-editor"
                 v-model="emailMessage"
@@ -359,7 +365,7 @@
               </v-btn>
               <v-btn
                 color="primary" class="white--text"
-                :disabled="this.disableSendEmail"
+                :disabled="disableSendEmail"
                 @click="sendMessage(true, false)">
                 Send Email
               </v-btn>
@@ -369,24 +375,22 @@
             <span>You will not be assigned to bulk conversations sent from this screen. If you wish to stay on top of
             conversations, use Inbox to send messages. <br></span>
             <label class="mr-2">To:</label>
-            <v-autocomplete
+            <a-autocomplete
               v-model="selectedUsers"
               :items="allUsers"
               multiple
               clearable
-              item-text="fullName"
+              item-title="fullName"
               item-value="id"
               height="35px"
               @click:clear="clearUsersAutocomplete()"
               class="d-inline-block mr-3 user-autocomplete">
-              <v-divider
-                slot="prepend-item"
-                class="mt-2"
-              ></v-divider>
-              <template
-                slot="selection"
-                slot-scope="{ item, index }"
-              >
+              <template  v-slot:prepend-item>
+                <v-divider
+                  class="mt-2"
+                ></v-divider>
+              </template>
+              <template  v-slot:selection="{item, index}">
                 <v-chip small v-if="index === 0 && selectedUsers && selectedUsers.length < 2">
                   <span>{{ item.fullName }}</span>
                 </v-chip>
@@ -395,36 +399,39 @@
                   class="primary--text text-caption"
                 >{{ selectedUsers.length }} selected</span>
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
 
           <div class="flex-display justify-end">
-            <v-textarea solo v-model="textMessage"
+            <a-textarea v-model="textMessage"
                         auto-grow
                         rows="4"
-                        outlined
-                        placeholder="Enter message here" class="message-text-area py-1 pr-3"></v-textarea>
+                        variant="outlined"
+                        placeholder="Enter message here" class="message-text-area py-1 pr-3"></a-textarea>
 
-            <v-btn icon color="primary" class="white--text mt-1 templateButton">
               <v-tooltip bottom small>
                 <template v-slot:activator="{on, attrs}">
-                  <v-icon @click="" v-bind="attrs" v-on="on">
-                    article
-                  </v-icon>
+                  <a-btn
+                      icon
+                      color="primary"
+                      v-bind="attrs"
+                      :activation-handler="on"
+                      class="mt-1 templateButton"
+                      prepend-icon="article"
+                  ></a-btn>
                 </template>
                 <span class="albatross-body-3">Templates</span>
               </v-tooltip>
-            </v-btn>
             <v-menu v-model="menuOpen" top left offset-y activator=".templateButton" :close-on-content-click="false">
               <v-card class="template-dialog" width="295px">
                 <v-card-title>
                   <span class="albatross-header-4-new">Add Template</span>
                 </v-card-title>
                 <v-card-text>
-                  <v-select label="Template"
+                  <a-select label="Template"
                             class="template-selector pt-1"
                             v-model="selectedTemplate"
                             :items="selectableTemplates"
-                            item-text="title"
+                            item-title="title"
                             item-value="id"
                             ref="templateSelect"
                             return-object
@@ -437,7 +444,7 @@
                         <span class="template-message">{{ data.item.message }}</span>
                       </div>
                     </template>
-                  </v-select>
+                  </a-select>
                 </v-card-text>
               </v-card>
             </v-menu>
@@ -455,1080 +462,1104 @@
           </div>
           <span v-if="textFiles.length > 0">Attached {{ attachmentsText }}</span>
 
-            <v-card-actions class="flex-display justify-end px-0 pt-0 ml-2">
-              <v-btn
-                text color="primary"
-                @click="cancelSendMessageDialog">
-                Cancel
-              </v-btn>
-              <v-btn
-                color="primary" class="white--text"
-                :disabled="this.disableSendText"
-                @click="sendMessage(false, true)">
-                Send SMS
-              </v-btn>
-            </v-card-actions>
+          <v-card-actions class="flex-display justify-end px-0 pt-0 ml-2">
+            <a-btn
+                variant="text"
+                color="primary"
+                @click="cancelSendMessageDialog"
+                text="Cancel"
+            ></a-btn>
+            <a-btn
+                color="primary"
+                :disabled="disableSendText.value"
+                @click="sendMessage(false, true)"
+                text="Send SMS"
+            ></a-btn>
+          </v-card-actions>
         </div>
       </v-card>
     </v-dialog>
   </v-container>
   <v-container  v-else>
-    <v-btn small text color="primary" @click="toggleImages()">
-      <v-icon small>mdi-chevron-left</v-icon>
-      Back to users
-    </v-btn>
+    <a-btn
+        size="small"
+        variant="text"
+        color="primary"
+        @click="toggleImages()"
+        prepend-icon="mdi-chevron-left"
+        text="Back to users"
+    ></a-btn>
 
     <v-row style="width: 90%; margin-left: auto; margin-right: auto;" >
-      <v-autocomplete v-for="header of headers"
+      <a-autocomplete v-for="header of headers"
                       v-model="filters.orgs[header.level]"
                       :items="header.orgs"
                       :label="header.text"
                       v-if="header.orgFilter"
-                      item-text="orgName"
+                      item-title="orgName"
                       item-value="id"
                       return-object
                       multiple
                       placeholder="Select..."
                       height="35px"
-                      outlined
+                      variant="outlined"
                       class="user-images-filter-select"
                       @change="changeImageFilter(false, header.level)"
       >
-      </v-autocomplete>
-      <v-autocomplete attach
-                label="Users per page"
-                v-model="usersPerPage"
-                :items="usersPerPageOptions"
-                item-text="email"
-                item-value="email"
-                class="user-images-filter-select"
-                auto-select-first
-                outlined
-                @change="returnToPageOne()"
+      </a-autocomplete>
+      <a-autocomplete attach
+                      label="Users per page"
+                      v-model="usersPerPage"
+                      :items="usersPerPageOptions"
+                      item-title="email"
+                      item-value="email"
+                      class="user-images-filter-select"
+                      auto-select-first
+                      variant="outlined"
+                      @change="returnToPageOne()"
       />
-      <v-btn text color="primary" @click="changeImageFilter(true)">
-        <v-icon v-if="constants.IS_MOBILE">filter_list</v-icon>
-        <span v-else>Reset Filters</span>
-      </v-btn>
+      <a-btn
+          variant="text"
+          color="primary"
+          @click="changeImageFilter(true)"
+          :prepend-icon="constants.IS_MOBILE ? 'filter_list' : ''"
+          :text="constants.IS_MOBILE ? '' : 'Reset Filters'"
+      ></a-btn>
     </v-row>
     <div v-if="userImagesLoading" class="section-spinner">
       <br>
       <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
     </div>
     <user-images :users="imageUsers" :headers = "headers" :users-per-page="usersPerPage" v-if="!userImagesLoading"
-    :startingUser="(currentPage-1)*(usersPerPage)" :endingUser="min((currentPage)*(usersPerPage), imageUsers.length)">
+                 :startingUser="(currentPage-1)*(usersPerPage)" :endingUser="min((currentPage)*(usersPerPage), imageUsers.length)">
 
     </user-images>
-    <span v-if="!userImagesLoading">{{min((currentPage-1)*(usersPerPage) + 1, this.totalUsers)}} - {{min((currentPage)*(usersPerPage), this.totalUsers)}} of {{totalUsers}} </span>
-    <v-btn icon :disabled="leftArrowDisabled"  v-if="!userImagesLoading" @click="previousPage()">
-    <v-icon color="primary">
-      mdi-arrow-left
-    </v-icon>
-    </v-btn>
-    <v-btn icon  v-if="!userImagesLoading" :disabled="rightArrowDisabled" @click="nextPage()">
-    <v-icon color="primary">
-      mdi-arrow-right
-    </v-icon>
-    </v-btn>
+    <span v-if="!userImagesLoading">{{min((currentPage-1)*(usersPerPage) + 1, totalUsers.value)}} - {{min((currentPage)*(usersPerPage), totalUsers.value)}} of {{totalUsers}} </span>
+    <a-btn
+        icon
+        :disabled="leftArrowDisabled"
+        v-if="!userImagesLoading"
+        @click="previousPage()"
+        prepend-icon="mdi-arrow-left"
+    ></a-btn>
+    <a-btn
+        icon
+        v-if="!userImagesLoading"
+        :disabled="rightArrowDisabled"
+        @click="nextPage()"
+        prepend-icon="mdi-arrow-right"
+    ></a-btn>
   </v-container>
 
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import { Actions } from '@/store'
+<script setup>
 
-  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, logError, getRequestWithParams} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import debounce from 'lodash.debounce'
-  import cloneDeep from 'lodash.clonedeep'
-  import {getOrgFilters} from '@/services/orgService'
-  import max from 'lodash.max'
-  import 'quill/dist/quill.snow.css'
-  import {quillEditor} from 'vue-quill-editor'
-  import { saveAs } from 'file-saver'
-  import axios from 'axios'
-  import UserImages from "./UserImages";
 
-  const defaultEmailMessage = '${user.firstName},\n'
+import {handleHidingGlobalLoader, getRequest, postRequest,  logError, getRequestWithParams} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import debounce from 'lodash.debounce'
+import cloneDeep from 'lodash.clonedeep'
+import {getOrgFilters} from '@/services/orgService'
+import max from 'lodash.max'
+import 'quill/dist/quill.snow.css'
+import {quillEditor} from 'vue-quill-editor'
+import { saveAs } from 'file-saver'
+import axios from 'axios'
+import UserImages from "./UserImages";
+import UsersFilter from "@/views/flow/users/UsersFilter.vue";
+import { useFileStore } from '@/stores/FileStore.js'
 
-  export default {
-    name: 'Users',
-    components: {UserImages, QuillEditor: quillEditor},
-    watch: {
-      options: {
-        handler() {
-          if(!this.initialLoad) {
-            this.getUsers()
-          }
-        }
-      },
-      page() {
-        let table = this.$refs['pageable-table'];
-        let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-        this.$vuetify.goTo(table); // to table
-        this.$vuetify.goTo(table, {container: wrapper}); // to header
+const appStore = useAppStore()
+const fileStore = useFileStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+
+const defaultEmailMessage = '${user.firstName},\n'
+
+const delay = ref(500)
+const dialog = ref(false)
+const users = ref([])
+const initialLoad = ref(true)
+const currentPage = ref(1)
+const allUsers = ref([])
+const imageUsers = ref([])
+const selectedLevel = ref(null)
+const pageableTable = ref(null)
+const templateSelect = ref(null)
+const masterOrgFilterList = ref([])
+const orgFilters = ref([])
+const statuses = ref([])
+const positions = ref([])
+const descending = ref(true)
+const footerProps = ref({
+  'items-per-page-options': [10, 50, 100, 1000, 3000],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const options = ref({itemsPerPage: 100})
+const totalUsers = ref(0)
+const dataLoading = ref(true)
+const conversationIsLoading = ref(false)
+const usersPerPageOptions = ref([10,100,1000])
+const usersPerPage = ref(10)
+const teamsAssociatedToUser = ref(null)
+const userImagesLoading = ref(true)
+const headers = ref([
+  { text: '', value: 'selectBox', selectFilter:true, show: true, width: '50px' },
+  { text: 'First Name', value: 'firstName', show: true, width: '125px' },
+  { text: 'Last Name', value: 'lastName', show: true, width: '125px' },
+  { text: 'Email', value: 'email', show: true, width: '275px' },
+  { text: 'Phone', value: 'phone', show: true, width: '115px' },
+  { text: 'Ext', value: 'phoneExtension', show: true, width: '75px' },
+  { text: 'User Status', value: 'userStatusType', statusFilter: true, show: true, width: '175px' },
+  { text: 'Position', value: 'position', positionFilter: true, show: true, width: '175px' },
+])
+const filters = ref({search: '',firstName: '',lastName: '',email: '',phone: '',orgs: {},statuses: [],positions: []})
+const usersTableHeaders = ref([
+  { text: 'Name', value: 'fullName', show: true, width: '125px' },
+  { text: 'Position', value: 'position', show: true, width: '125px' }
+])
+const showImages = ref(false)
+const selectAllUsers = ref(false)
+const selectedUsers = ref([])
+const selectedUsersDetails = ref([])
+const msgDialog = ref(false)
+const selectedUsersDialog = ref(false)
+const messageTab = ref(1)
+const page = ref(1)
+const fromEmail = ref('')
+const fromEmails = ref([])
+const emailSubject = ref('')
+const emailMessage = ref(defaultEmailMessage)
+const textMessage = ref('')
+const emailCharacterCount = ref(0)
+const emailWordCount = ref(0)
+const textCharacterCount = ref(0)
+const emailAttachments = ref([])
+const textMediaUrls = ref([])
+const emailFile = ref(null)
+const textFiles = ref([])
+const primaryPositionsOnly = ref(true)
+const source = ref(null)
+const allUsersLoading = ref(false)
+const attachmentTypeId = ref(9)
+const templateTeams = ref([])
+const selectedTemplate = ref(null)
+const selectableTemplates = ref([])
+const menuOpen = ref(false)
+
+watch(options, (newVal) => {
+  if(!initialLoad.value) {
+    getUsers()
+  }
+}, { deep: true });
+
+watch(page, async() => {
+  let table = pageableTable.value;
+  let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+
+  vuetify.goTo(table); // to table
+  vuetify.goTo(table, {container: wrapper}); // to header
+})
+
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const leftArrowDisabled = computed(() => {
+  return currentPage.value == 1;
+})
+const rightArrowDisabled = computed(() => {
+  return currentPage.value*usersPerPage.value >= totalUsers.value;
+})
+const selectAll = computed(() => {
+  return filters.value.statuses.length === statuses.value.length
+})
+const selectSome = computed(() => {
+  return filters.value.statuses.length > 0 && !selectAll.value
+})
+const icon = computed(() => {
+  if (filters.value.statuses && statuses.value && filters.value.statuses.length === statuses.value.length) {
+    return 'check_box'
+  }
+  if (selectSome.value) {
+    return 'indeterminate_check_box'
+  }
+  return 'check_box_outline_blank'
+})
+const usersSelected = computed(() => {
+  return selectedUsers.value.length;
+})
+const disableSendEmail = computed(() => {
+  return !(fromEmail.value.trim().length > 0 && emailSubject.value.trim().length > 0 && emailMessage.value.trim().length > 0 && usersSelected.value)
+})
+const disableSendText = computed(() => {
+  return !((textMessage.value.trim().length > 0 || textMediaUrls.value.length > 0) && usersSelected.value)
+})
+const attachmentsText = computed(() => {
+  if (textFiles.value.length == 1) {
+    return textFiles.value[0].name
+  }
+  else if (textFiles.value.length > 1) {
+    return textFiles.value.length + ' files'
+  }
+})
+const useSavedFilter = computed(() => {
+  return route.params.useSavedFilter
+})
+
+onMounted(() => {
+  getPositions()
+  getTheOrgFilters(true)
+  getEmailSenders()
+  fetchTeamsForUser()
+
+  if(useSavedFilter.value === 'true') {
+    JSON.parse(localStorage.getItem('store'))
+    if(localStorage.getItem('userFilters') != null) {
+      filters.value = JSON.parse(localStorage.getItem('userFilters'))
+    }
+  } else {
+    localStorage.removeItem('userFilters')
+  }
+  // getStatuses calls getUsers because we have to know company statuses before we can filter the list
+  getStatuses(useSavedFilter.value === 'true')
+})
+
+const handleUpdateStatusesListEmit = (newList) => {
+  filters.value.statuses = newList
+  getUsers(true)
+}
+const handleUpdatePositionsListEmit = (newList) => {
+  filters.value.positions = newList
+  getUsers(true)
+}
+const handleUpdateOrgListEmit = (newList, headerLevel) => {
+  let orgFilterList = []
+  let tempFilters = orgFilters.value
+  tempFilters.filter((oFilter) => oFilter.orgLevelId === headerLevel).forEach((o) => newList.forEach((i) => {
+    o.orgs.forEach((j) => {
+      if (j.id === i) {
+        orgFilterList.push(j)
       }
-    },
-    data () {
-      return {
-        delay: 500,
-        constants,
-        dialog: false,
-        snackbar: {},
-        users: [],
-        initialLoad: true,
-        currentPage: 1,
-        allUsers: [],
-        imageUsers: [],
-        selectedLevel: null,
-        masterOrgFilterList: [],
-        orgFilters: [],
-        statuses: [],
-        positions: [],
-        descending: true,
-        footerProps: {
-          'items-per-page-options': [10, 50, 100, 1000, 3000],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        options: {
-          itemsPerPage: 100
-        },
-        totalUsers: 0,
-        dataLoading: true,
-        usersPerPageOptions: [
-          10,
-          100,
-          1000
-        ],
-        usersPerPage: 10,
-        userImagesLoading: true,
-        headers: [
-          { text: '', value: 'selectBox', selectFilter:true, show: true, width: '50px' },
-          { text: 'First Name', value: 'firstName', show: true, width: '125px' },
-          { text: 'Last Name', value: 'lastName', show: true, width: '125px' },
-          { text: 'Email', value: 'email', show: true, width: '275px' },
-          { text: 'Phone', value: 'phone', show: true, width: '115px' },
-          { text: 'Ext', value: 'phoneExtension', show: true, width: '75px' },
-          { text: 'User Status', value: 'userStatusType', statusFilter: true, show: true, width: '175px' },
-          { text: 'Position', value: 'position', positionFilter: true, show: true, width: '175px' },
-        ],
-        filters: {
-          search: '',
-          firstName: '',
-          lastName: '',
-          email: '',
-          phone: '',
-          orgs: {},
-          statuses: [],
-          positions: []
-        },
-        usersTableHeaders: [
-          { text: 'Name', value: 'fullName', show: true, width: '125px' },
-          { text: 'Position', value: 'position', show: true, width: '125px' }
-        ],
-        showImages: false,
-        selectAllUsers: false,
-        selectedUsers: [],
-        selectedUsersDetails: [],
-        msgDialog: false,
-        selectedUsersDialog: false,
-        messageTab: 1,
-        page: 1,
-        fromEmail: '',
-        fromEmails: [],
-        emailSubject: '',
-        emailMessage: defaultEmailMessage,
-        textMessage: '',
-        emailCharacterCount: 0,
-        emailWordCount: 0,
-        textCharacterCount: 0,
-        emailAttachments: [],
-        textMediaUrls: [],
-        emailFile: null,
-        textFiles: [],
-        primaryPositionsOnly: true,
-        source: null,
-        allUsersLoading: false,
-        companyId: this.$store.state.user.details.companyId,
-        attachmentTypeId: 9,
-        templateTeams: [],
-        selectedTemplate: null,
-        selectableTemplates: [],
-        menuOpen: false
-      }
-    },
-    computed: {
-      leftArrowDisabled(){
-        return this.currentPage == 1;
-      },
-      rightArrowDisabled(){
-        return this.currentPage*this.usersPerPage >= this.totalUsers;
-      },
-      selectAll () {
-        return this.filters.statuses.length === this.statuses.length
-      },
-      selectSome () {
-        return this.filters.statuses.length > 0 && !this.selectAll
-      },
-      icon () {
-        if (this.filters.statuses && this.statuses && this.filters.statuses.length === this.statuses.length) {
-          return 'check_box'
-        }
-        if (this.selectSome) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      usersSelected () {
-        return this.selectedUsers.length;
-      },
-      disableSendEmail() {
-          return !(this.fromEmail.trim().length > 0 && this.emailSubject.trim().length > 0 && this.emailMessage.trim().length > 0 && this.usersSelected)
-      },
-      disableSendText() {
-          return !((this.textMessage.trim().length > 0 || this.textMediaUrls.length > 0) && this.usersSelected)
-      },
-      attachmentsText() {
-        if (this.textFiles.length == 1) {
-          return this.textFiles[0].name
-        }
-        else if (this.textFiles.length > 1) {
-          return this.textFiles.length + ' files'
-        }
-      },
-    },
-    beforeRouteEnter(to, from, next) {
-      //if coming to this page from the user details - use the previously used search
-      next((vm) => {
-        let useSavedSearch = false
-        if(from?.fullPath.includes('/user/')) {
-          JSON.parse(localStorage.getItem('store'))
-          if(localStorage.getItem('userFilters') != null) {
-            vm.filters = JSON.parse(localStorage.getItem('userFilters'))
-            useSavedSearch = true
-          }
-        } else {
-          localStorage.removeItem('userFilters')
-        }
-        // getStatuses calls getUsers because we have to know company statuses before we can filter the list
-        vm.getStatuses(useSavedSearch)
-      });
-    },
-    created () {
-      this.getPositions()
-      this.getOrgFilters(true)
-      this.getEmailSenders()
-      this.fetchTeamsForUser()
-    },
-    methods: {
-      handleTemplateSelection() {
-        this.textMessage += this.selectedTemplate.message
-        this.menuOpen = false
-        this.selectedTemplate = null
-        this.$refs.templateSelect.reset();
-      },
-      cancelSendMessageDialog(){
-        this.textMediaUrls = []
-        this.emailAttachments = []
-        this.emailFile = null
-        this.textFiles = []
-        this.msgDialog = false
-        this.textMessage = ''
-      },
-      async nextPage(){
-        this.currentPage++;
-        await this.getUserImage();
-      },
-      async previousPage(){
-        this.currentPage--;
-        await this.getUserImage();
-      },
-      async getUserImage () {
-        await this.getImageUsers()
-        this.userImagesLoading = true
-        let userIds = [];
-        for(let user of this.imageUsers){
-          userIds.push(user.id);
-        }
-        let params = {
-          sourceIds: encodeURI(userIds),
-          attachmentTypeId: 9
-        }
+    })
+  }))
+  filters.value.orgs[headerLevel] = orgFilterList
+  handleOrgFilterChange(false, headerLevel)
+}
+const handleTemplateSelection = () => {
+  textMessage.value += selectedTemplate.value.message
+  menuOpen.value = false
+  selectedTemplate.value = null
+  templateSelect.value.reset();
+}
+const cancelSendMessageDialog = ()=> {
+  textMediaUrls.value = []
+  emailAttachments.value = []
+  emailFile.value = null
+  textFiles.value = []
+  msgDialog.value = false
+  textMessage.value = ''
+}
+const nextPage = async()=> {
+  currentPage.value++;
+  await getUserImage();
+}
+const previousPage = async()=> {
+  currentPage.value--;
+  await getUserImage();
+}
+const getUserImage = async () => {
+  await getImageUsers()
+  userImagesLoading.value = true
+  let userIds = [];
+  for(let user of imageUsers.value){
+    userIds.push(user.id);
+  }
+  let params = {
+    sourceIds: encodeURI(userIds),
+    attachmentTypeId: 9
+  }
 
-        let data = [];
-        while(userIds.length > 0){
-          params.sourceIds =  encodeURI(userIds.slice(0,this.min(userIds.length,100)));
-          userIds = userIds.slice(this.min(userIds.length,100), userIds.length)
-          if(Object.keys(data).length > 0) {
-            data = Object.assign({}, data, (await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})).data);
-          }
-        else{
-            data = (await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})).data;
-          }
-        }
-
-        if (data) {
-          this.imageUsers.forEach(user => {
-            if (user.id && data[user.id]) {
-              user.imageUrl = data[user.id]
-            }
-
-            if (user.imageUrl) {
-              user.userImageAltText = 'Photo of ' + user.name + ', a Blue Raven Solar employee'
-            } else {
-              user.userImageAltText = 'User photo placeholder'
-            }
-          })
-          this.userImagesLoading = false
-        } else {
-          this.userImagesLoading = false
-        }
-      },
-      clickRow(id){
-        this.$router.push({name: 'userDetails', params: {id}})
-      },
-      async toggleImages(){
-        this.userImagesLoading = true;
-        this.showImages = !this.showImages;
-        if(this.showImages) {
-          this.currentPage = 1;
-        }
-        await this.changeImageFilter(true);
-       },
-      debounceGetUsers: debounce( function () {
-        if(this.filters.search == null){
-          this.filters.search = '';
-        }
-        this.getUsers(true)
-      }, 500),
-      async getAllUsers () {
-        // Get allUsers once
-        // this was loading twice if a search was done prior to completing this request. putting it in its own fn that is called by the created method fixes that
-        this.allUsersLoading = true
-        //removing global loader since now it just waits for this to finish before you can send a text
-        // this.$store.commit(AppMutations.SET_LOADING, true)
-
-        try {
-          //could default these params since we want all users
-          const params = {
-            search: this.filters.search,
-            firstName: this.filters.firstName,
-            lastName: this.filters.lastName,
-            email: this.filters.email,
-            phone: this.filters.phone,
-            statuses: this.filters.statuses,
-            positions: this.filters.positions,
-            orgs: this.getOrgIdsForMax(),
-            primaryFlag: this.primaryPositionsOnly
-          }
-          const {data, status} = await postRequest(`/user/search?page=0&size=9999`, params)
-          this.allUsers = data?.content || []
-          this.imageUsers = this.allUsers
-          this.allUsersLoading = false
-          // handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving All Users')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.allUsersLoading = false
-          // this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      min(x, y){
-        if(x < y){
-          return x;
-        }
-        else{
-          return y;
-        }
-      },
-      async getUsers (resetPage) {
-        localStorage.setItem('userFilters', JSON.stringify(this.filters))
-
-        if(resetPage) {
-          this.options.page = 1
-        }
-
-        if(this.source){
-          this.source.cancel()
-        }
-        const CancelToken = axios.CancelToken
-        this.source = CancelToken.source()
-
-        if (this.filters.statuses && this.filters.statuses.length > 0) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          this.dataLoading = true
-          const { page, itemsPerPage } = this.options
-
-          try {
-            const params = {
-              search: this.filters.search,
-              firstName: this.filters.firstName,
-              lastName: this.filters.lastName,
-              email: this.filters.email,
-              phone: this.filters.phone,
-              statuses: this.filters.statuses,
-              positions: this.filters.positions,
-              orgs: this.getOrgIdsForMax(),
-              //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
-              primaryFlag: this.primaryPositionsOnly
-            }
-            const {data, status} = await postRequest(`/user/search?page=${page-1}&size=${this.options.itemsPerPage}`, params, null, [], {
-              source: this.source,
-              cancelToken: this.source.token
-            })
-
-            if(status) {
-              this.users = data?.content || []
-              this.totalUsers = data?.totalElements || 0
-
-              this.users.forEach(u => {
-                // If the user isn't already a selected user, add to list of selected users
-                if (this.selectedUsers.indexOf(u.id) !== -1) {
-                  u.selected = true;
-                }
-              })
-            }
-            this.dataLoading = false
-            this.initialLoad = false
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        } else {
-          this.dataLoading = false
-          this.users = []
-        }
-      },
-      async returnToPageOne(){
-        this.currentPage = 1;
-        await this.getUserImage();
-      },
-      async getImageUsers (resetPage) {
-        localStorage.setItem('userFilters', JSON.stringify(this.filters))
-
-        if(resetPage) {
-          this.options.page = 1
-        }
-
-        if(this.source){
-          this.source.cancel()
-        }
-        const CancelToken = axios.CancelToken
-        this.source = CancelToken.source()
-
-        if (this.filters.statuses && this.filters.statuses.length > 0) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          this.dataLoading = true
-          const { page, itemsPerPage } = this.options
-
-          try {
-            const params = {
-              search: this.filters.search,
-              firstName: this.filters.firstName,
-              lastName: this.filters.lastName,
-              email: this.filters.email,
-              phone: this.filters.phone,
-              statuses: this.filters.statuses,
-              positions: this.filters.positions,
-              orgs: this.getOrgIdsForMax(),
-              //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
-              primaryFlag: this.primaryPositionsOnly
-            }
-
-            const {data, status} = await postRequest(`/user/search?page=${this.currentPage-1}&size=${this.usersPerPage}`, params, null, [], {
-              source: this.source,
-              cancelToken: this.source.token
-            })
-
-            if(status) {
-              this.imageUsers = data?.content || []
-              this.totalUsers = data?.totalElements || 0
-
-              this.imageUsers.forEach(u => {
-                // If the user isn't already a selected user, add to list of selected users
-                if (this.selectedUsers.indexOf(u.id) !== -1) {
-                  u.selected = true;
-                }
-              })
-            }
-            this.dataLoading = false
-            this.initialLoad = false
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        } else {
-          this.dataLoading = false
-          this.imageUsers = []
-        }
-      },
-      async getOrgFilters (initialLoad) {
-        // filter out any org filters that were left empty like {"4": []}
-        Object.keys(this.filters.orgs).forEach(key => {
-          if (this.filters.orgs[key] && this.filters.orgs[key].length === 0) {
-            delete this.filters.orgs[key]
-          }
-        })
-        try {
-          if(Object.keys(this.filters.orgs).length > 0) {
-            //org filters are being used. load their orgs again and repopulate the org lists accordingly
-            const params = {
-              orgs: this.getOrgIds()
-            }
-            const {data} = await postRequest(`/org/orgHierarchyFilter`, params, null, [])
-            data.forEach(d => {
-              //get index of the each header
-              let index = this.headers.findIndex(h => h.level === d.orgLevelId)
-              if(d.orgLevelId === this.selectedLevel) {
-                // if it is the same as the selected level reset the list values to the master list
-                let masterIndex = this.masterOrgFilterList.findIndex(mf => mf.orgLevelId === d.orgLevelId)
-                this.headers[index].orgs = this.masterOrgFilterList[masterIndex].orgs
-              }else {
-                // otherwise use the new result list of orgs
-                this.headers[index].orgs = d.orgs
-              }
-            })
-          } else if(initialLoad) {
-            //org filters not used yet and is initial load, get the full list of orgs and use those, also populate master list
-            const {data} = await getOrgFilters()
-            this.masterOrgFilterList = cloneDeep(data)
-            this.orgFilters = cloneDeep(this.masterOrgFilterList)
-            this.resetHeaderOrgs()
-          } else {
-            //org filters were unset and is not initial load, reset headers to master list
-            this.filters.orgs = {}
-            this.orgFilters = cloneDeep(this.masterOrgFilterList)
-            this.resetHeaderOrgs()
-          }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Filters')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      resetHeaderOrgs(){
-        this.orgFilters.forEach(f => {
-          let index = this.headers.findIndex(h => h.level === f.orgLevelId)
-          if(index > -1) {
-            this.headers[index].orgs = f.orgs
-          } else {
-            this.headers.push({
-              text: f.levelName,
-              value: f.levelName,
-              sortable: false,
-              show: true,
-              level: f.orgLevelId,
-              orgFilter: true,
-              showType: f.showType,
-              orgs: f.orgs,
-              width: '225px'
-            })
-          }
-        })
-      },
-      async getStatuses (useSavedSearch) {
-        //started using a global loader to ensure they don't search before allUsers get loaded
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/user/statuses`, null, [])
-          this.statuses = data
-          if(!useSavedSearch) {
-            this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
-          }
-          //removed the await because this page takes forever to load. instead, you cannot send email/text until the allUsersLoading is false
-          this.getAllUsers()
-          await this.getUsers()
-          // this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getPositions () {
-        try {
-          const {data} = await getRequest(`/position`)
-          this.positions = data
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      toggleSelectAllStatuses () {
-        this.$nextTick(() => {
-          if (this.selectAll) {
-            this.filters.statuses = []
-            this.getUsers(true)
-          } else {
-            this.filters.statuses = this.statuses.map(s => s.id)
-            this.getUsers(true)
-          }
-        })
-      },
-      toggleSingleSelect(item) {
-        if (item.selected) {
-          this.selectedUsers.push(item.id)
-          this.selectedUsersDetails.push(item)
-          // Synchronize the selection of allUsers with users
-          this.allUsers.filter(u => u.id === item.id)[0].selected = true;
-        } else {
-          this.selectedUsers = this.selectedUsers.filter(u => u !== item.id)
-          this.selectedUsersDetails = this.selectedUsersDetails.filter(u => u.id !== item.id)
-          // Synchronize the selection of allUsers with users
-          this.allUsers.filter(u => u.id === item.id)[0].selected = false;
-          this.selectAllUsers = false
-        }
-      },
-      toggleSingleSelectAutocomplete(item) {
-        if (item.selected) {
-          item.selected = false;
-          this.selectedUsers = this.selectedUsers.filter(u => u !== item.id)
-          this.selectedUsersDetails = this.selectedUsersDetails.filter(u => u.id !== item.id)
-          this.selectAllUsers = false
-          // Synchronize the selection of users with allUsers
-          this.users.filter(u => u.id === item.id)[0].selected = false;
-        } else {
-          item.selected = true;
-          this.selectedUsers.push(item.id)
-          this.selectedUsersDetails.push(item)
-          // Synchronize the selection of users with allUsers
-          this.users.filter(u => u.id === item.id)[0].selected = true;
-        }
-      },
-      clearUsersAutocomplete() {
-        this.selectedUsers = []
-        this.selectedUsersDetails = []
-        this.users.forEach(u => {
-          u.selected = false
-        });
-        this.allUsers.forEach(u => {
-          u.selected = false
-        });
-      },
-      toggleSelectAllUsers () {
-        this.selectedUsers = []
-        this.selectedUsersDetails = []
-
-        this.users.forEach(u => {
-          u.selected = this.selectAllUsers
-
-          // If the user isn't already a selected user, add to list of selected users
-          if (this.selectAllUsers && this.selectedUsers.indexOf(u.id) === -1) {
-            this.selectedUsers.push(u.id)
-            this.selectedUsersDetails.push(u)
-          }
-        })
-      },
-      getOrgNameForFilter(hierarchy, filterOrgLevelId, isExport = false) {
-        const result = hierarchy?.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
-        return result?.orgName ?? (isExport ? '' : 'N/A')
-      },
-      getOrgIdsForMax(resetSelected) {
-        let maxKey = max(Object.keys(this.filters.orgs))
-        if(resetSelected){
-          this.selectedLevel = parseInt(maxKey)
-        }
-        return this.filters.orgs && maxKey ? this.filters.orgs[maxKey].map(o => o.id) : []
-      },
-      getOrgIds() {
-        if(this.filters.orgs && this.filters.orgs[this.selectedLevel] && this.filters.orgs[this.selectedLevel].length > 0){
-          return this.filters.orgs ? this.filters.orgs[this.selectedLevel].map(o => o.id) : []
-        } else {
-          return this.getOrgIdsForMax(true)
-        }
-      },
-      async changeImageFilter(reset, selectedLevel){
-        this.currentPage = 1;
-        await this.handleImageFilterChange(reset, selectedLevel);
-        await this.getUserImage();
-      },
-      handleOrgFilterChange (reset, selectedLevel) {
-        this.selectedLevel = selectedLevel
-        if(reset) {
-          this.filters.orgs = {}
-          this.orgFilters = cloneDeep(this.masterOrgFilterList)
-          this.filters.positions = []
-          this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
-          this.filters.search = ''
-          this.filters.firstName = ''
-          this.filters.lastName = ''
-          this.filters.email = ''
-          this.filters.phone = ''
-
-        } else {
-          Object.keys(this.filters.orgs).forEach(k => {
-            if(k > this.selectedLevel) {
-              delete this.filters.orgs[k]
-            }
-          })
-          //reload the filters
-          this.getOrgFilters()
-        }
-
-        this.selectAllUsers = false
-        //reload the users
-        this.getUsers(true)
-      },
-      async handleImageFilterChange (reset, selectedLevel) {
-        this.selectedLevel = selectedLevel
-        if(reset) {
-          this.filters.orgs = {}
-          this.orgFilters = cloneDeep(this.masterOrgFilterList)
-          this.filters.positions = []
-          this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
-          this.filters.search = ''
-          this.filters.firstName = ''
-          this.filters.lastName = ''
-          this.filters.email = ''
-          this.filters.phone = ''
-
-        } else {
-          Object.keys(this.filters.orgs).forEach(k => {
-            if(k > this.selectedLevel) {
-              delete this.filters.orgs[k]
-            }
-          })
-          //reload the filters
-          this.getOrgFilters();
-        }
-
-        this.selectAllUsers = false
-        //reload the users
-      },
-      itemChecked(level, item) {
-        if (this.filters.orgs[level] && this.filters.orgs[level].length > 0) {
-          let match = this.filters.orgs[level].find(of => of.id === item.id)
-          return match != null
-        } else {
-          return false;
-        }
-      },
-      async fetchTeamsForUser() {
-        try {
-          this.conversationIsLoading = true
-          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser`)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.teamsAssociatedToUser = data
-          for (let team of this.teamsAssociatedToUser){
-            this.templateTeams.push(team.id);
-          }
-          handleHidingGlobalLoader(this, status)
-          await this.getSmsTeamTemplates();
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.conversationIsLoading = false
-        }
-      },
-      async getSmsTeamTemplates() {
-        try {
-          this.selectedTemplate = null
-          if (this.teamsAssociatedToUser.length < 1) {
-            return
-          }
-
-          const { data } = await getRequest(`/messaging/templates/` + this.templateTeams)
-          this.selectableTemplates = data
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving templates')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async sendMessage(sendEmail, sendText) {
-          try {
-              this.$store.commit(AppMutations.SET_LOADING, true)
-              //BR is aware that this will not allow them to truly select all users or to select more than 1000 records at a time
-              const userIds = this.selectedUsers;
-              const requests = []
-              if (sendEmail) {
-                const sendEmailFn = (async ()=> {
-                  const formData = new FormData()
-                  formData.append('subject', this.emailSubject);
-                  formData.append('from', this.fromEmail);
-                  formData.append('userIds', userIds);
-                  formData.append('template', this.emailMessage);
-
-                  this.emailAttachments.forEach(e => {
-                    formData.append('attachments', e);
-                  });
-
-                  return postRequest(`/communication/sendEmails`, formData)
-                })()
-                requests.push(sendEmailFn)
-                await Promise.all(requests)
-              }
-
-              if (sendText) {
-                  if (this.textMessage && this.textMessage.length > 1599) {
-                    let textOverflowLength = this.textMessage.length - 1599;
-                    this.snackbar = getSnackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
-                    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                    this.messageSuccess = false
-                    this.$store.commit(AppMutations.SET_LOADING, false)
-                    return;
-                  }
-
-                  let params = {
-                    userIDs: userIds,
-                    message: this.textMessage,
-                    mediaURLs: this.textMediaUrls
-                  }
-
-                  await postRequest(`/communication/sendTexts`, params)
-              }
-          }  catch (e) {
-              console.error('*** ERROR ***', e)
-              let message = e?.message ? 'Error Sending Message: ' + e.message :
-                e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
-              const matches = message.match(/"(.*?)"/);
-              if (matches && matches.length > 1) {
-                message = 'Error Sending Message: ' + matches[1]
-              }
-
-             this.snackbar = getSnackbar('ERROR', message)
-             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-             this.$store.commit(AppMutations.SET_LOADING, false)
-             return
-          }
-
-          let msg = 'Message sent'
-          if (sendEmail && sendText){
-            msg = 'Both Email and Text messages were sent successfully'
-          } else if (sendEmail) {
-            msg = 'Email messages were sent successfully'
-          } else{
-            msg = 'Text messages were sent successfully'
-          }
-
-          this.snackbar = getSnackbar('SUCCESS', msg)
-          this.msgDialog = false
-          this.emailSubject= ''
-          this.emailMessage= defaultEmailMessage
-          this.fromEmail = ''
-          this.textMessage= ''
-          this.textMediaUrls = []
-          this.emailAttachments = []
-          this.emailFile = null
-          this.textFiles = []
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-      },
-      onEmailMessageChange({ text }) {
-          this.emailCharacterCount = text.trim().length;
-          this.emailWordCount = text.trim().split(' ').length;
-      },
-      uploadEmailAttachment: function (files) {
-        this.emailAttachments = files
-      },
-      uploadTextAttachment: async function (files) {
-        try {
-          if (!files){
-            return
-          }
-
-          for (let file of files) {
-            this.$store.commit(AppMutations.SET_LOADING, true)
-            // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
-            await this.$store.dispatch(Actions.FILE_UPLOAD, {
-              file,
-              attachmentTypeId: 3,
-              sourceId: 1,
-              displayName: file.name.substr(0, file.name.lastIndexOf('.')),
-              callback: async (newAttachment) => {
-                this.$store.commit(AppMutations.SET_LOADING, false)
-                this.textMediaUrls.push(newAttachment.url)
-              }
-            })
-          }
-        } catch(e) {
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async getEmailSenders() {
-        try {
-          const {data} = await getRequest(`/emailAddress/${this.companyId}`, null)
-          this.fromEmails = data.map(e => e.emailAddress)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Email Addresses')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async exportCsv() {
-        try {
-          const params = {
-            search: this.filters.search,
-            firstName: this.filters.firstName,
-            lastName: this.filters.lastName,
-            email: this.filters.email,
-            phone: this.filters.phone,
-            statuses: this.filters.statuses,
-            positions: this.filters.positions,
-            orgs: this.getOrgIdsForMax(),
-            //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
-            primaryFlag: this.primaryPositionsOnly
-          }
-
-          const {data} = await postRequest(`/user/search?page=0&size=9999`, params)
-
-          let csv = ''
-
-          this.headers.forEach(h => {
-            if (h.text !== '') {
-              csv += `${h.text},`
-            }
-          })
-
-          csv = `${csv.slice(0, -1)}\n`
-
-          data.content.forEach(u => {
-            csv += `${u.firstName},${u.lastName},${u.email},${u.phoneNumber || ''},'${u.phoneExtension || ''},${u.userStatusType},${u.position || ''},`
-
-            this.orgFilters.forEach(f => {
-              csv += `${this.getOrgNameForFilter(u.hierarchy, f.orgLevelId, true)},`
-            })
-
-            csv += '\n'
-          })
-
-          const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
-          saveAs(blob, 'Users.csv')
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error exporting user data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      }
+  let data = [];
+  while(userIds.length > 0){
+    params.sourceIds =  encodeURI(userIds.slice(0,min(userIds.length,100)));
+    userIds = userIds.slice(min(userIds.length,100), userIds.length)
+    if(Object.keys(data).length > 0) {
+      data = Object.assign({}, data, (await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})).data);
+    }
+    else{
+      data = (await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})).data;
     }
   }
+
+  if (data) {
+    imageUsers.value.forEach(user => {
+      if (user.id && data[user.id]) {
+        user.imageUrl = data[user.id]
+      }
+
+      if (user.imageUrl) {
+        user.userImageAltText = 'Photo of ' + user.name + ', a Blue Raven Solar employee'
+      } else {
+        user.userImageAltText = 'User photo placeholder'
+      }
+    })
+    userImagesLoading.value = false
+  } else {
+    userImagesLoading.value = false
+  }
+}
+const clickRow = (id)=> {
+  router.push({name: 'userDetails', params: {id}})
+}
+const toggleImages = async()=> {
+  userImagesLoading.value = true;
+  showImages.value = !showImages.value;
+  if(showImages.value) {
+    currentPage.value = 1;
+  }
+  await changeImageFilter(true);
+}
+const debounceGetUsers = debounce((query) => {
+  if(filters.value.search == null){
+    filters.value.search = '';
+  }
+  getUsers(true)
+}, 500)
+
+const getAllUsers = async () => {
+  // Get allUsers once
+  // this was loading twice if a search was done prior to completing this request. putting it in its own fn that is called by the created method fixes that
+  allUsersLoading.value = true
+  //removing global loader since now it just waits for this to finish before you can send a text
+  // appStore.loading = true
+
+  try {
+    //could default these params since we want all users
+    const params = {
+      search: filters.value.search,
+      firstName: filters.value.firstName,
+      lastName: filters.value.lastName,
+      email: filters.value.email,
+      phone: filters.value.phone,
+      statuses: filters.value.statuses,
+      positions: filters.value.positions,
+      orgs: getOrgIdsForMax(),
+      primaryFlag: primaryPositionsOnly.value
+    }
+    const {data, status} = await postRequest(`/user/search?page=0&size=9999`, params)
+    allUsers.value = data?.content || []
+    imageUsers.value = allUsers.value
+    allUsersLoading.value = false
+    // handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving All Users')
+
+    allUsersLoading.value = false
+    // appStore.loading = false
+  }
+}
+const min = (x, y)=> {
+  if(x < y){
+    return x;
+  }
+  else{
+    return y;
+  }
+}
+const getUsers = async (resetPage) => {
+  localStorage.setItem('userFilters', JSON.stringify(filters.value))
+
+  if(resetPage) {
+    options.value.page = 1
+  }
+
+  if(source.value){
+    source.value.cancel()
+  }
+  const CancelToken = axios.CancelToken
+  source.value = CancelToken.source()
+
+  if (filters.value.statuses && filters.value.statuses.length > 0) {
+    appStore.loading = true
+    dataLoading.value = true
+    const { page, itemsPerPage } = options.value
+
+    try {
+      const params = {
+        search: filters.value.search,
+        firstName: filters.value.firstName,
+        lastName: filters.value.lastName,
+        email: filters.value.email,
+        phone: filters.value.phone,
+        statuses: filters.value.statuses,
+        positions: filters.value.positions,
+        orgs: getOrgIdsForMax(),
+        //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
+        primaryFlag: primaryPositionsOnly.value
+      }
+      const {data, status} = await postRequest(`/user/search?page=${page-1}&size=${options.value.itemsPerPage}`, params, null, [], {
+        source: source.value,
+        cancelToken: source.value.token
+      })
+
+      if(status) {
+        users.value = data?.content || []
+        totalUsers.value = data?.totalElements || 0
+
+        users.value.forEach(u => {
+          // If the user isn't already a selected user, add to list of selected users
+          if (selectedUsers.value.indexOf(u.id) !== -1) {
+            u.selected = true;
+          }
+        })
+      }
+      dataLoading.value = false
+      initialLoad.value = false
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Users')
+
+      appStore.loading = false
+    }
+  } else {
+    dataLoading.value = false
+    users.value = []
+  }
+}
+const returnToPageOne = async()=> {
+  currentPage.value = 1;
+  await getUserImage();
+}
+const getImageUsers = async (resetPage) => {
+  localStorage.setItem('userFilters', JSON.stringify(filters.value))
+
+  if(resetPage) {
+    options.value.page = 1
+  }
+
+  if(source.value){
+    source.value.cancel()
+  }
+  const CancelToken = axios.CancelToken
+  source.value = CancelToken.source()
+
+  if (filters.value.statuses && filters.value.statuses.length > 0) {
+    appStore.loading = true
+    dataLoading.value = true
+    const { page, itemsPerPage } = options.value
+
+    try {
+      const params = {
+        search: filters.value.search,
+        firstName: filters.value.firstName,
+        lastName: filters.value.lastName,
+        email: filters.value.email,
+        phone: filters.value.phone,
+        statuses: filters.value.statuses,
+        positions: filters.value.positions,
+        orgs: getOrgIdsForMax(),
+        //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
+        primaryFlag: primaryPositionsOnly.value
+      }
+
+      const {data, status} = await postRequest(`/user/search?page=${currentPage.value-1}&size=${usersPerPage.value}`, params, null, [], {
+        source: source.value,
+        cancelToken: source.value.token
+      })
+
+      if(status) {
+        imageUsers.value = data?.content || []
+        totalUsers.value = data?.totalElements || 0
+
+        imageUsers.value.forEach(u => {
+          // If the user isn't already a selected user, add to list of selected users
+          if (selectedUsers.value.indexOf(u.id) !== -1) {
+            u.selected = true;
+          }
+        })
+      }
+      dataLoading.value = false
+      initialLoad.value = false
+      handleHidingGlobalLoader( status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Users')
+
+      appStore.loading = false
+    }
+  } else {
+    dataLoading.value = false
+    imageUsers.value = []
+  }
+}
+const getTheOrgFilters = async (initialLoad) => {
+  // filter out any org filters that were left empty like {"4": []}
+  Object.keys(filters.value.orgs).forEach(key => {
+    if (filters.value.orgs[key] && filters.value.orgs[key].length === 0) {
+      delete filters.value.orgs[key]
+    }
+  })
+  try {
+    if(Object.keys(filters.value.orgs).length > 0) {
+      //org filters are being used. load their orgs again and repopulate the org lists accordingly
+      const params = {
+        orgs: getOrgIds()
+      }
+      const {data} = await postRequest(`/org/orgHierarchyFilter`, params, null, [])
+      data.forEach(d => {
+        //get index of the each header
+        let index = headers.value.findIndex(h => h.level === d.orgLevelId)
+        if(d.orgLevelId === selectedLevel.value) {
+          // if it is the same as the selected level reset the list values to the master list
+          let masterIndex = masterOrgFilterList.value.findIndex(mf => mf.orgLevelId === d.orgLevelId)
+          headers.value[index].orgs = masterOrgFilterList.value[masterIndex].orgs
+        }else {
+          // otherwise use the new result list of orgs
+          headers.value[index].orgs = d.orgs
+        }
+      })
+    } else if(initialLoad) {
+      //org filters not used yet and is initial load, get the full list of orgs and use those, also populate master list
+      const {data} = await getOrgFilters()
+      masterOrgFilterList.value = cloneDeep(data)
+      orgFilters.value = cloneDeep(masterOrgFilterList.value)
+      resetHeaderOrgs()
+    } else {
+      //org filters were unset and is not initial load, reset headers to master list
+      filters.value.orgs = {}
+      orgFilters.value = cloneDeep(masterOrgFilterList.value)
+      resetHeaderOrgs()
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Org Filters')
+
+    appStore.loading = false
+  }
+}
+const resetHeaderOrgs = ()=> {
+  orgFilters.value.forEach(f => {
+    let index = headers.value.findIndex(h => h.level === f.orgLevelId)
+    if(index > -1) {
+      headers.value[index].orgs = f.orgs
+    } else {
+      headers.value.push({
+        text: f.levelName,
+        value: f.levelName,
+        sortable: false,
+        show: true,
+        level: f.orgLevelId,
+        orgFilter: true,
+        showType: f.showType,
+        orgs: f.orgs,
+        width: '225px'
+      })
+    }
+  })
+}
+const getStatuses = async (useSavedSearch) => {
+  //started using a global loader to ensure they don't search before allUsers get loaded
+  appStore.loading = true
+  try {
+    const {data} = await getRequest(`/user/statuses`, null, [])
+    statuses.value = data
+    if(!useSavedSearch) {
+      filters.value.statuses = statuses.value.filter(s => s.hasAccess).map(s => s.id)
+    }
+    //removed the await because this page takes forever to load. instead, you cannot send email/text until the allUsersLoading is false
+    getAllUsers()
+    await getUsers()
+    // appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving User Statuses')
+
+    appStore.loading = false
+  }
+}
+const getPositions = async () => {
+  try {
+    const {data} = await getRequest(`/position`)
+    positions.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Positions')
+
+    appStore.loading = false
+  }
+}
+const toggleSelectAllStatuses =  () => {
+  vueInstance.$nextTick(() => {
+    if (selectAll.value) {
+      filters.value.statuses = []
+      getUsers(true)
+    } else {
+      filters.value.statuses = statuses.value.map(s => s.id)
+      getUsers(true)
+    }
+  })
+}
+const toggleSingleSelect = (item) => {
+  if (item.selected) {
+    selectedUsers.value.push(item.id)
+    selectedUsersDetails.value.push(item)
+    // Synchronize the selection of allUsers with users
+    allUsers.value.filter(u => u.id === item.id)[0].selected = true;
+  } else {
+    selectedUsers.value = selectedUsers.value.filter(u => u !== item.id)
+    selectedUsersDetails.value = selectedUsersDetails.value.filter(u => u.id !== item.id)
+    // Synchronize the selection of allUsers with users
+    allUsers.value.filter(u => u.id === item.id)[0].selected = false;
+    selectAllUsers.value = false
+  }
+}
+const toggleSingleSelectAutocomplete = (item) => {
+  if (item.selected) {
+    item.selected = false;
+    selectedUsers.value = selectedUsers.value.filter(u => u !== item.id)
+    selectedUsersDetails.value = selectedUsersDetails.value.filter(u => u.id !== item.id)
+    selectAllUsers.value = false
+    // Synchronize the selection of users with allUsers
+    users.value.filter(u => u.id === item.id)[0].selected = false;
+  } else {
+    item.selected = true;
+    selectedUsers.value.push(item.id)
+    selectedUsersDetails.value.push(item)
+    // Synchronize the selection of users with allUsers
+    users.value.filter(u => u.id === item.id)[0].selected = true;
+  }
+}
+const clearUsersAutocomplete = () => {
+  selectedUsers.value = []
+  selectedUsersDetails.value = []
+  users.value.forEach(u => {
+    u.selected = false
+  });
+  allUsers.value.forEach(u => {
+    u.selected = false
+  });
+}
+const toggleSelectAllUsers =  () => {
+  selectedUsers.value = []
+  selectedUsersDetails.value = []
+
+  users.value.forEach(u => {
+    u.selected = selectAllUsers.value
+
+    // If the user isn't already a selected user, add to list of selected users
+    if (selectAllUsers.value && selectedUsers.value.indexOf(u.id) === -1) {
+      selectedUsers.value.push(u.id)
+      selectedUsersDetails.value.push(u)
+    }
+  })
+}
+const getOrgNameForFilter = (hierarchy, filterOrgLevelId, isExport = false) => {
+  const result = hierarchy?.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
+  return result?.orgName ?? (isExport ? '' : 'N/A')
+}
+const getOrgIdsForMax = (resetSelected) => {
+  let maxKey = max(Object.keys(filters.value.orgs))
+  if(resetSelected){
+    selectedLevel.value = parseInt(maxKey)
+  }
+  return filters.value.orgs && maxKey ? filters.value.orgs[maxKey].map(o => o.id) : []
+}
+const getOrgIds = () => {
+  if(filters.value.orgs && filters.value.orgs[selectedLevel.value] && filters.value.orgs[selectedLevel.value].length > 0){
+    return filters.value.orgs ? filters.value.orgs[selectedLevel.value].map(o => o.id) : []
+  } else {
+    return getOrgIdsForMax(true)
+  }
+}
+const changeImageFilter = async(reset, selectedLevel)=> {
+  currentPage.value = 1;
+  await handleImageFilterChange(reset, selectedLevel);
+  await getUserImage();
+}
+const handleOrgFilterChange =  (reset, selectedLevelHere) => {
+  selectedLevel.value = selectedLevelHere
+  if(reset) {
+    filters.value.orgs = {}
+    orgFilters.value = cloneDeep(masterOrgFilterList.value)
+    filters.value.positions = []
+    filters.value.statuses = statuses.value.filter(s => s.hasAccess).map(s => s.id)
+    filters.value.search = ''
+    filters.value.firstName = ''
+    filters.value.lastName = ''
+    filters.value.email = ''
+    filters.value.phone = ''
+
+  } else {
+    Object.keys(filters.value.orgs).forEach(k => {
+      if(k > selectedLevel.value) {
+        delete filters.value.orgs[k]
+      }
+    })
+    //reload the filters
+    getOrgFilters()
+  }
+
+  selectAllUsers.value = false
+  //reload the users
+  getUsers(true)
+}
+const handleImageFilterChange = async (reset, selectedLevelHere) => {
+  selectedLevel.value = selectedLevelHere
+  if(reset) {
+    filters.value.orgs = {}
+    orgFilters.value = cloneDeep(masterOrgFilterList.value)
+    filters.value.positions = []
+    filters.value.statuses = statuses.value.filter(s => s.hasAccess).map(s => s.id)
+    filters.value.search = ''
+    filters.value.firstName = ''
+    filters.value.lastName = ''
+    filters.value.email = ''
+    filters.value.phone = ''
+
+  } else {
+    Object.keys(filters.value.orgs).forEach(k => {
+      if(k > selectedLevel.value) {
+        delete filters.value.orgs[k]
+      }
+    })
+    //reload the filters
+    getOrgFilters();
+  }
+
+  selectAllUsers.value = false
+  //reload the users
+}
+const itemChecked = (level, item) => {
+  if (filters.value.orgs[level] && filters.value.orgs[level].length > 0) {
+    let match = filters.value.orgs[level].find(of => of.id === item.id)
+    return match != null
+  } else {
+    return false;
+  }
+}
+const fetchTeamsForUser = async () => {
+  try {
+    conversationIsLoading.value = true
+    const { data, status } = await getRequest(`/smsTeam/getTeamsForUser`)
+    appStore.loading = false
+    teamsAssociatedToUser.value = data
+    for (let team of teamsAssociatedToUser.value){
+      templateTeams.value.push(team.id);
+    }
+    handleHidingGlobalLoader(this, status)
+    await getSmsTeamTemplates();
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error fetching SMS Teams')
+    conversationIsLoading.value = false
+  }
+}
+const getSmsTeamTemplates = async() => {
+  try {
+    selectedTemplate.value = null
+    if (teamsAssociatedToUser.value.length < 1) {
+      return
+    }
+
+    const { data } = await getRequest(`/messaging/templates/` + templateTeams.value)
+    selectableTemplates.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving templates')
+
+  }
+}
+const sendMessage = async(sendEmail, sendText) => {
+  try {
+    appStore.loading = true
+    //BR is aware that this will not allow them to truly select all users or to select more than 1000 records at a time
+    const userIds = selectedUsers.value;
+    const requests = []
+    if (sendEmail) {
+      const sendEmailFn = (async ()=> {
+        const formData = new FormData()
+        formData.append('subject', emailSubject.value);
+        formData.append('from', fromEmail.value);
+        formData.append('userIds', userIds);
+        formData.append('template', emailMessage.value);
+
+        emailAttachments.value.forEach(e => {
+          formData.append('attachments', e);
+        });
+
+        return postRequest(`/communication/sendEmails`, formData)
+      })()
+      requests.push(sendEmailFn)
+      await Promise.all(requests)
+    }
+
+    if (sendText) {
+      if (textMessage.value && textMessage.value.length > 1599) {
+        let textOverflowLength = textMessage.value.length - 1599;
+        snackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
+
+        messageSuccess.value = false
+        appStore.loading = false
+        return;
+      }
+
+      let params = {
+        userIDs: userIds,
+        message: textMessage.value,
+        mediaURLs: textMediaUrls.value
+      }
+
+      await postRequest(`/communication/sendTexts`, params)
+    }
+  }  catch (e) {
+    console.error('*** ERROR ***', e)
+    let message = e?.message ? 'Error Sending Message: ' + e.message :
+        e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
+    const matches = message.match(/"(.*?)"/);
+    if (matches && matches.length > 1) {
+      message = 'Error Sending Message: ' + matches[1]
+    }
+
+    snackbar('ERROR', message)
+
+    appStore.loading = false
+    return
+  }
+
+  let msg = 'Message sent'
+  if (sendEmail && sendText){
+    msg = 'Both Email and Text messages were sent successfully'
+  } else if (sendEmail) {
+    msg = 'Email messages were sent successfully'
+  } else{
+    msg = 'Text messages were sent successfully'
+  }
+
+  snackbar('SUCCESS', msg)
+  msgDialog.value = false
+  emailSubject.value= ''
+  emailMessage.value= defaultEmailMessage
+  fromEmail.value = ''
+  textMessage.value= ''
+  textMediaUrls.value = []
+  emailAttachments.value = []
+  emailFile.value = null
+  textFiles.value = []
+
+  appStore.loading = false
+}
+const onEmailMessageChange = ({ text }) => {
+  emailCharacterCount.value = text.trim().length;
+  emailWordCount.value = text.trim().split(' ').length;
+}
+const uploadEmailAttachment = (files) => {
+  emailAttachments.value = files
+}
+const uploadTextAttachment = async (files) => {
+  try {
+    if (!files){
+      return
+    }
+
+    for (let file of files) {
+      appStore.loading = true
+      // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
+      await fileStore.uploadFile({
+        file,
+        attachmentTypeId: 3,
+        sourceId: 1,
+        displayName: file.name.substr(0, file.name.lastIndexOf('.')),
+        callback: async (newAttachment) => {
+          appStore.loading = false
+          textMediaUrls.value.push(newAttachment.url)
+        }
+      })
+    }
+  } catch(e) {
+    appStore.loading = false
+    logError(e)
+    snackbar('ERROR', 'Error Uploading File')
+
+  }
+}
+const getEmailSenders = async() => {
+  try {
+    const {data} = await getRequest(`/emailAddress/${companyId.value}`, null)
+    fromEmails.value = data.map(e => e.emailAddress)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Email Addresses')
+
+  }
+}
+const exportCsv = async() => {
+  try {
+    const params = {
+      search: filters.value.search,
+      firstName: filters.value.firstName,
+      lastName: filters.value.lastName,
+      email: filters.value.email,
+      phone: filters.value.phone,
+      statuses: filters.value.statuses,
+      positions: filters.value.positions,
+      orgs: getOrgIdsForMax(),
+      //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
+      primaryFlag: primaryPositionsOnly.value
+    }
+
+    const {data} = await postRequest(`/user/search?page=0&size=9999`, params)
+
+    let csv = ''
+
+    headers.value.forEach(h => {
+      if (h.text !== '') {
+        csv += `${h.text},`
+      }
+    })
+
+    csv = `${csv.slice(0, -1)}\n`
+
+    data.content.forEach(u => {
+      csv += `${u.firstName},${u.lastName},${u.email},${u.phoneNumber || ''},'${u.phoneExtension || ''},${u.userStatusType},${u.position || ''},`
+
+      orgFilters.value.forEach(f => {
+        csv += `${getOrgNameForFilter(u.hierarchy, f.orgLevelId, true)},`
+      })
+
+      csv += '\n'
+    })
+
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
+    saveAs(blob, 'Users.csv')
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error exporting user data')
+
+  }
+}
 </script>
 
 <style lang="scss">
-  #users-container .v-data-footer__pagination {
-    display: none !important;
-  }
+#users-container .v-data-footer__pagination {
+  display: none !important;
+}
 
-  #users-container .v-data-table__wrapper {
-    height: calc(100vh - 290px);
-    min-height: 300px;
-  }
-  .filter-header-non-select {
-    padding-bottom: 12px !important;
-  }
+#users-container .v-data-table__wrapper {
+  height: calc(100vh - 290px);
+  min-height: 300px;
+}
+.filter-header-non-select {
+  padding-bottom: 12px !important;
+}
 
-  .user-filter-select,
-  .user-filter-select .v-input__control,
-  .user-filter-select .v-input__control .v-input__slot,
-  .user-filter-select .v-input__control .v-input__slot fieldset {
-    height: 40px !important;
-    min-height: 40px !important;
-  }
-  .user-filter-select .v-select__selections {
-    padding: 0 0 5px 0 !important;
-    height: 40px !important;
-  }
-  .user-filter-select .v-input__append-inner {
-    margin-top: 5px !important;
-  }
-  .ql-editor{
-    min-height:200px;
-  }
+.user-filter-select,
+.user-filter-select .v-input__control,
+.user-filter-select .v-input__control .v-input__slot,
+.user-filter-select .v-input__control .v-input__slot fieldset {
+  height: 40px !important;
+  min-height: 40px !important;
+}
+.user-filter-select .v-select__selections {
+  padding: 0 0 5px 0 !important;
+  height: 40px !important;
+}
+.user-filter-select .v-input__append-inner {
+  margin-top: 5px !important;
+}
+.ql-editor{
+  min-height:200px;
+}
 </style>
 
 <style lang="scss" scoped>
-  #users-container {
-    margin-top: -15px;
-    padding-left: 0;
-    padding-right: 0;
-    padding-top: 0;
-  }
-  .user-table {
-    margin-top: 2px;
-  }
-  .user-column {
-    overflow: hidden;
-  }
-  .count-span {
-    font-size: 0.85em;
-    color: var(--v-grey-darken2);
-  }
-  .user-selected {
-    margin-left: 150px;
-  }
-  .user-autocomplete {
-    width: 350px;
-  }
-  ::v-deep .user-filter-select .v-label{
-    vertical-align: center;
-  }
+#users-container {
+  margin-top: -15px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
+.user-table {
+  margin-top: 2px;
+}
+.user-column {
+  overflow: hidden;
+}
+.count-span {
+  font-size: 0.85em;
+  color: var(--v-grey-darken2);
+}
+.user-selected {
+  margin-left: 150px;
+}
+.user-autocomplete {
+  width: 350px;
+}
+::v-deep .user-filter-select .v-label{
+  vertical-align: center;
+}
 
-  .user-images-filter-select,
-  .user-images-filter-select .v-input__control,
-  .user-images-filter-select .v-input__control .v-input__slot,
-  .user-images-filter-select .v-input__control .v-input__slot fieldset {
-    height: 40px !important;
-    min-height: 40px !important;
-    width:10%;
-  }
-  .user-images-filter-select .v-select__selections {
-    padding: 0 0 5px 0 !important;
-    height: 40px !important;
-  }
-  .user-images-filter-select .v-input__append-inner {
-    margin-top: 5px !important;
-  }
-  .select-email {
-    max-width: 60%;
-  }
+.user-images-filter-select,
+.user-images-filter-select .v-input__control,
+.user-images-filter-select .v-input__control .v-input__slot,
+.user-images-filter-select .v-input__control .v-input__slot fieldset {
+  height: 40px !important;
+  min-height: 40px !important;
+  width:10%;
+}
+.user-images-filter-select .v-select__selections {
+  padding: 0 0 5px 0 !important;
+  height: 40px !important;
+}
+.user-images-filter-select .v-input__append-inner {
+  margin-top: 5px !important;
+}
+.select-email {
+  max-width: 60%;
+}
 
-  .template-dialog {
-    max-width: 500px;
-  }
+.template-dialog {
+  max-width: 500px;
+}
 
-  .message-text-area {
-    width: 100%;
-  }
+.message-text-area {
+  width: 100%;
+}
 
-  .message-tabs {
-    margin-left: 24px;
-  }
+.message-tabs {
+  margin-left: 24px;
+}
 
-  .close-modal-x {
-    font-size: 30px;
+.close-modal-x {
+  font-size: 30px;
 
-    &:hover {
-      font-weight: bolder;
-    }
+  &:hover {
+    font-weight: bolder;
   }
+}
 
-  .select-check {
-    color: var(--v-primary-base) !important;
-  }
+.select-check {
+  color: var(--v-primary-base) !important;
+}
 
-  .ellipse {
-    white-space: nowrap;
-    display: inline-block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 450px;
-  }
+.ellipse {
+  white-space: nowrap;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 450px;
+}
 
 </style>

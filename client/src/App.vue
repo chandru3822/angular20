@@ -1,88 +1,84 @@
 <template>
   <v-app id="app">
-    <ReloadPrompt v-if="$route.name !== 'login'" />
-    <AppNav v-if="!noNavRoutes.includes($route.name) && !hideHeader" />
+    <ReloadPrompt v-if="vueInstance.$route.name !== 'login'"/>
+    <AppNav v-if="!noNavRoutes.includes(vueInstance.$route.name) && !hideHeader"/>
     <v-main>
       <v-container
-        class="router-container"
-        :class="{ 'extra-banner': userIsMasquerading }"
+          class="router-container"
+          :class="{ 'extra-banner': userIsMasquerading }"
       >
         <Spinner
-          v-if="$store.state.app.loading"
-          spinnerColor="primary"
-          :size="100"
+            v-if="appStore.loading"
+            spinnerColor="primary"
+            :size="100"
         />
-        <router-view class="router-view" />
+        <router-view class="router-view"/>
       </v-container>
     </v-main>
-    <Snackbar />
-    <AnnouncementAlert />
+    <Snackbar/>
+    <AnnouncementAlert/>
   </v-app>
 </template>
 
-<script>
-import { AppMutations } from '@/stores/AppStore'
+<script setup>
 import AppNav from '@/components/AppNav'
 import Snackbar from '@/components/Snackbar'
 import Spinner from '@/components/Spinner'
 import AnnouncementAlert from '@/components/AnnouncementAlert.vue'
 import ReloadPrompt from '@/components/ReloadPrompt.vue'
-import { NotificationActions } from '@/plugins/notifications/NotificationStore'
-import { UserActions } from '@/stores/UserStore'
+import {getCurrentInstance, onMounted, ref, computed, watch} from 'vue'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import theme from '@/helpers/defaultTheme.js'
+import { useNotificationStore } from '@/stores/NotificationStore.js'
+import cloneDeep from 'lodash.clonedeep'
 
-export default {
-  name: 'App',
-  components: {
-    AppNav,
-    Snackbar,
-    AnnouncementAlert,
-    Spinner,
-    ReloadPrompt
-  },
-  data() {
-    return {
-      hideHeader: this.$store.state.user.hideHeader || false,
-      userIsMasquerading:
-        this.$store.state.user?.details?.masqueradingUserId != null,
-      userId: this.$store.state.user?.details?.id,
-      noNavRoutes: [
-        'login',
-        'forgotPassword',
-        'forgotPasswordReset',
-        'resetPassword',
-        'siteUnderMaintenance',
-        'stripeSuccess'
-      ]
-    }
-  },
-  watch: {
-    revokeAccessEvents: async function () {
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const router = vueInstance.$router
+const userStore = useUserStore()
+const appStore = useAppStore()
+const notificationStore = useNotificationStore()
+
+// In moving this from vuex to pinia, I noticed `hideHeader` never exists in
+// the user store. Still keeping this logic here though in case of a breaking
+// change I can't see right now
+const hideHeader = ref(userStore.hideHeader || false)
+const userIsMasquerading = ref(userStore?.details?.masqueradingUserId != null)
+const noNavRoutes = ref([
+  'login',
+  'forgotPassword',
+  'forgotPasswordReset',
+  'resetPassword',
+  'siteUnderMaintenance',
+  'stripeSuccess'
+])
+
+const userId = computed(() => {
+  return userStore.details.id
+})
+
+const revokeAccessEvents = computed(() => {
+  return notificationStore.getEventsByTopic('revoke_access')?.filter((e) => e.userId === userId.value)
+})
+
+watch(revokeAccessEvents, async () => {
       //will kick a user out immediately if their access is revoked (only works for web users)
-      if (this.revokeAccessEvents?.length > 0) {
-        await this.$store.dispatch(UserActions.LOGOUT)
+      if (revokeAccessEvents.value?.length > 0) {
+        userStore.logout()
         //i tried dispatch after 'await' but it didn't work. dont know why
-        this.$router.push('/login').then(() => {
-          this.$store.dispatch(
-            NotificationActions.PROCESS_REVOKE_ACCESS,
-            this.userId
-          )
+        router.push('/login').then(() => {
+          notificationStore.processRevokeAccess(userId.value)
         })
       }
     }
-  },
-  computed: {
-    revokeAccessEvents() {
-      return this.$store.getters
-        .getEventsByTopic('revoke_access')
-        ?.filter((e) => e.userId === this.userId)
-    }
-  },
-  created() {
-    //set the theme which will use the default until one load from company
-    this.$store.commit(AppMutations.SET_INITIAL_THEME)
-    this.$vuetify.theme.themes.light = this.$store.state.app.theme
-  }
-}
+)
+
+onMounted(() => {
+  //set the theme which will use the default until one load from company
+  appStore.theme = cloneDeep(theme.LIGHT)
+  vueInstance.$vuetify.theme.themes.light = cloneDeep(theme.LIGHT)
+})
 </script>
 
 <style scoped lang="scss">

@@ -1,47 +1,43 @@
 <template>
-  <v-btn fab height="28px"
-         width="28px"
-         v-on="on"
-         :class="{'not-clickable': !clickable }"
-         :style="{'background-color': '#F5F5F5'}"
-         :outlined="currentStatusId !== milestone.id && milestone.btnColor === 'grey'"
-         :color="currentStatusId  === milestone.id ? 'primary lighten-5' : milestone.btnColor"
-         elevation="0">
-
-    <v-icon size="16" :color="currentStatusId  === milestone.id ? 'white' : milestone.iconColor">{{milestone.iconTag || 'blank'}}</v-icon>
-  </v-btn>
+  <a-btn
+      height="28px"
+      width="28px"
+      :activation-handler="on"
+      :class="{'not-clickable': !clickable }"
+      :html-style="`background-color: ${currentStatusId === milestone.id ? 'var(--v-primary-lighten5)' : milestone.btnColor}`"
+      :variant="currentStatusId !== milestone.id && milestone.btnColor === '#F5F5F5' ? 'outlined' : 'plain'"
+      :elevation="0"
+      :color="milestone.iconColor"
+      size="small"
+      icon
+  >
+    <template #default>
+      <v-icon size="16" :color="currentStatusId  === milestone.id ? 'white' : milestone.iconColor">
+        {{milestone.iconTag || 'blank'}}
+      </v-icon>
+    </template>
+  </a-btn>
 </template>
 
-<script>
+<script setup>
+//NOTE: In the albatross btn, the only thing the :color="milestone.iconColor"
+// is used for is making the outline color correct when needed
 
-import {getRequest, getSnackbar, handleHidingGlobalLoader, logError} from '@/helpers/helpers'
-import constants from "@/helpers/constants";
-import SpinnerInline from '@/components/SpinnerInline'
-import {AppMutations} from "@/stores/AppStore";
 
-export default {
-  name: 'StatusTrackerIcon',
-  components: {
-    SpinnerInline
-  },
-  props: {
-    currentStatusId: Number,
-    milestone: Object,
-    clickable: Boolean,
-    on: Object
-  },
-  data() {
-    return {
-      constants,
-    }
-  },
-  created() {
-  },
-  computed: {},
-  methods: {
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 
-  }
-}
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  currentStatusId: Number,
+  milestone: Object,
+  clickable: Boolean,
+  on: Object
+})
+const { currentStatusId, milestone, clickable, on } = toRefs(props)
+
 </script>
 
 <style lang="scss" scoped>

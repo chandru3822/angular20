@@ -25,6 +25,7 @@
 */
 import {ref, defineProps, defineEmits, onMounted, watch} from 'vue'
 
+
 const props = defineProps({
   menuItems: Array, //@required
   headerHidden: Boolean,
@@ -79,10 +80,8 @@ const chooseSelectedView = (view, id) => {
       </v-list>
     </v-navigation-drawer>
   <v-row>
-    <v-toolbar v-if="!headerHidden" id="three-column-header" flat :height="headerHeight" :color="headerColor ? headerColor : 'grey lighten-2'">
-    <v-btn small text color="primary" @click="toggleMenu(false)" >
-      <v-icon>mdi-menu</v-icon>
-    </v-btn>
+    <v-toolbar  v-if="!headerHidden" id="three-column-header" flat :height="headerHeight" :color="headerColor ? headerColor : 'grey lighten-2'">
+    <a-btn size="small" variant="text" prepend-icon="mdi-menu" @click="toggleMenu(false)"/>
     <slot name="header-contents">
     </slot>
     </v-toolbar>

@@ -10,30 +10,29 @@
     :class="{'py-3': !showFieldInput && !showPsEventInput && !showOperatorInput && !showValueInput}"
   >
     <v-col class="flex-grow-1 flex-shrink-0 d-flex justify-center align-center">
-      <v-autocomplete
+      <a-autocomplete
         v-show="showFieldInput"
         ref="requirementField"
         v-model="requirement"
         :items="calculatedAvailableFields"
-        item-text="calculatedName"
+        item-title="calculatedName"
         return-object
         placeholder="Add Filter"
-        solo
-        :flat="isEditorInUse"
-        hide-details="true"
+        :variant="isEditorInUse ? 'flat' : 'solo'"
+        hide-details
         :class="{'field-selector': !isEditorInUse}"
         @change="afterFieldSelected"
         @focus="onFieldFocus"
       >
         <template #append>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
-      </v-autocomplete>
+      </a-autocomplete>
 
       <span
         v-if="requirement?.displayValue"
@@ -42,55 +41,53 @@
         <span class="highlight-background pa-2 rounded">{{ requirement.name }}</span>
       </span>
 
-      <v-autocomplete
+      <a-autocomplete
         v-show="showPsEventInput"
         ref="psEventField"
         v-model="psEvent"
         :items="calculatedAvailablePsEvents"
-        item-text="name"
+        item-title="name"
         item-value="id"
         return-object
         placeholder="Type or Select Name"
-        solo
-        :flat="isEditorInUse"
-        hide-details="true"
+        :variant="isEditorInUse ? 'flat' : 'solo'"
+        hide-details
         :class="{'field-selector': !isEditorInUse}"
         @blur="afterPsEventSelected"
       >
         <template #append>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
-      </v-autocomplete>
+      </a-autocomplete>
 
-      <v-autocomplete
+      <a-autocomplete
         v-show="showOperatorInput"
         ref="operatorField"
         v-model="operator"
         :items="availableOperators"
-        item-text="operatorType"
+        item-title="operatorType"
         item-value="id"
         return-object
         placeholder="Type or Select Operator"
-        solo
-        flat
-        hide-details="true"
+        :variant="isEditorInUse ? 'flat' : 'solo'"
+        hide-details
         :class="{'field-selector': !isEditorInUse}"
         @change="afterOperatorSelected"
       >
         <template #append v-if="isEditorInUse">
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
-      </v-autocomplete>
+      </a-autocomplete>
 
       <span
         v-if="operator?.displayValue"
@@ -118,12 +115,12 @@
         @change="afterValueSelected(false)"
       >
         <template #append>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
       </v-combobox>
 
@@ -140,29 +137,28 @@
         v-if="isEditing && requirement?.displayValue && operator?.displayValue && value?.displayValue && !showSecondaryValueInput"
         class="px-2"
       >
-        <v-btn
-          icon
-          @click.stop="[reset(), emit('cancelled')]"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
+        <a-btn
+            icon
+            @click.native.stop="[reset(), emit('cancelled')]"
+            color="unset"
+            prepend-icon="mdi-close"
+        ></a-btn>
       </span>
 
-      <v-autocomplete
+      <a-autocomplete
         v-show="showValueInput && requirement?.hasListValues"
         ref="listOfValueField"
         v-model="value"
         :key="UUID()"
         :items="calculatedAvailableValues"
-        item-text="name"
+        item-title="name"
         item-value="id"
         return-object
         placeholder="Type or Select Value"
-        solo
-        flat
+        :variant="isEditorInUse ? 'flat' : 'solo'"
         hide-details="true"
         :multiple="requirement?.allowMultiple"
-        ripple="false"
+        :ripple="false"
         :class="{'field-selector': !isEditorInUse}"
         @change="afterValueSelected(false)"
       >
@@ -171,48 +167,46 @@
         </template>
 
         <template #append>
-          <v-btn
+          <a-btn
             v-if="value !== null && value.length > 0"
             icon
             @click="afterValueSelected(true)"
-          >
-            <v-icon>mdi-check</v-icon>
-          </v-btn>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+            prepend-icon="mdi-check"
+          ></a-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
-      </v-autocomplete>
+      </a-autocomplete>
 
-      <v-text-field
+      <a-text-field
         v-show="showSecondaryValueInput"
         ref="secondaryValueField"
         v-model="secondaryValue"
         placeholder="Type Value"
-        solo
-        flat
-        hide-details="true"
+        variant="solo"
+        hide-details
         @change="add"
       >
         <template #append>
-          <v-btn
+          <a-btn
             v-if="secondaryValue !== null && secondaryValue.trim().length > 0"
             icon
             @click="afterValueSelected(true)"
+            prepend-icon="mdi-check"
           >
-            <v-icon>mdi-check</v-icon>
-          </v-btn>
-          <v-btn
-            icon
-            @click.stop="[reset(), emit('cancelled')]"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          </a-btn>
+          <a-btn
+              icon
+              @click.native.stop="[reset(), emit('cancelled')]"
+              color="unset"
+              prepend-icon="mdi-close"
+          ></a-btn>
         </template>
-      </v-text-field>
+      </a-text-field>
     </v-col>
   </v-row>
 </v-sheet>
@@ -222,6 +216,7 @@
 import { getRequest, logError, UUID } from '@/helpers/helpers'
 import { computed, getCurrentInstance, nextTick, onMounted, ref } from 'vue'
 import cloneDeep from 'lodash.clonedeep'
+import { useUserStore } from '@/stores/UserStore.js'
 
 const emit = defineEmits(['adding', 'added', 'updated', 'cancelled', 'in-progress'])
 
@@ -243,7 +238,8 @@ const props = defineProps({
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
-const companyId = vueInstance.$store.state.user.details.companyId
+const userStore = useUserStore()
+const companyId = userStore.details.companyId
 
 const availableDataTypeRequirements = ref([])
 const availableOperators = ref([])

@@ -6,26 +6,28 @@
           <v-toolbar-title class="title-large">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="getAvailableAttachmentTypes" v-if="userCanAdd">
-              <v-icon>{{ addNewType ? 'close' : 'add' }}</v-icon>
-              <span v-if="$vuetify.breakpoint.smAndUp">{{ addNewType ? 'Cancel' : 'Add Type' }}</span>
-            </v-btn>
+            <a-btn variant="text"
+                             color="primary"
+                             @click="getAvailableAttachmentTypes" v-if="userCanAdd"
+                             :prepend-icon="addNewType ? 'close' : 'add'"
+                             :text="vuetify.breakpoint.smAndUp ? (addNewType ? 'CANCEL' : 'ADD TYPE') : ''"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-card class="square-card pa-2" color="primary lighten-9" v-if="addNewType">
-          <v-autocomplete v-model="newType.attachmentTypeId"
+          <a-autocomplete v-model="newType.attachmentTypeId"
                           :items="availableAttachmentTypes"
                           label="Select Attachment Type"
-                          item-text="attachmentType"
+                          item-title="attachmentType"
                           item-value="id"
                           @input="assignNewType"
                           attach
-          ></v-autocomplete>
+          ></a-autocomplete>
         </v-card>
 
           <v-data-table
-            :headers="visibleHeaders()"
-            :items="filterTypes()"
+            :headers="visibleHeaders"
+            :items="filteredTypes"
             :items-per-page="-1"
             :sort-desc="[false]"
             :sort-by="['displayOrder']"
@@ -60,14 +62,22 @@
               <div style="display: flex; justify-content: flex-end">
                 <router-link class="no-text-decoration pr-3"
                              :to="getAttachmentTypeUrl(item.id)">
-                  <v-btn small text color="primary">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
+                  <a-btn
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    prepend-icon="edit"
+                  />
                 </router-link>
-                <v-btn v-if="userCanEdit" small text color="primary" class="clickable"
-                       @click="attachmentTypeToDelete=item">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <a-btn
+                  v-if="userCanEdit"
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  class="clickable"
+                  @click="attachmentTypeToDelete=item"
+                  prepend-icon="delete"
+                />
               </div>
             </template>
           </v-data-table>
@@ -82,22 +92,27 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from "@/stores/AppStore";
-import draggable from 'vuedraggable'
 import {handleHidingGlobalLoader, deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
-import Vue2Filters from "vue2-filters"
 import orderBy from 'lodash.orderby'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-export default {
-  name: 'ObjectTypeAttachments',
-  mixins: [Vue2Filters.mixin],
-  components: {
-    ConfirmationDialog,
-    draggable
-  },
-  props: {
+import { useUserStore } from '@/stores/UserStore.js'
+import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
+import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const route = useRoute()
+const router = useRouter()
+const vuetify = vueInstance.$vuetify
+const userStore = useUserStore()
+
+  const props = defineProps({
     objectTypeValue: String,
     showReadOnly: Boolean,
     showLinkable: Boolean,
@@ -110,7 +125,7 @@ export default {
       default: true
     },
     primaryId: Number //used to load objects types that have more than one value
-  },
+  })
   // mounted() {
   //   let table = document.querySelector('.attachment-type-table tbody')
   //   const _self = this
@@ -138,155 +153,152 @@ export default {
   //     }
   //   })
   // },
-  computed: {
-    attachmentTypeToDeleteName() {
-      return this.attachmentTypeToDelete ? this.attachmentTypeToDelete.attachmentType : ''
-    },
-    headers() {
-      return [
-        // {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
-        {text: 'Attachment Type', value: 'attachmentType', show: true},
-        {text: 'Allow Upload', value: 'allowUpload', show: this.showUploadable, width: 100},
-        {text: 'Linkable', value: 'linkable', show: this.showLinkable, width: 100},
-        {text: 'Focused', value: 'focused', show: this.showFocused, width: 100},
-        {text: null, value: 'icons', show: true, width: 150}
-      ]
-    },
+  const userCanEdit = computed(() =>{
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const userCanAdd = computed(() =>{
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+  })
+  const attachmentTypeToDeleteName = computed(() =>{
+    return attachmentTypeToDelete.value ? attachmentTypeToDelete.value.attachmentType : ''
+  })
+  const filteredTypes = computed(() =>{
+    return orderBy(attachmentTypes.value.filter(e => { return !e.archived}), [e => e.attachmentType])
+  })
+  const headers = computed(() =>{
+    return [
+      // {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
+      {text: 'Attachment Type', value: 'attachmentType', show: true},
+      {text: 'Allow Upload', value: 'allowUpload', show: props.showUploadable, width: 100},
+      {text: 'Linkable', value: 'linkable', show: props.showLinkable, width: 100},
+      {text: 'Focused', value: 'focused', show: props.showFocused, width: 100},
+      {text: null, value: 'icons', show: true, width: 150}
+    ]
+  })
 
-  },
-  data () {
-    return {
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-      addNewType: false,
-      companyObjectTypeId: this.$route.query.companyObjectTypeId,
-      objectType: this.objectTypeValue || this.$route?.query?.objectType?.toLowerCase(),
-      newType: {},
-      availableAttachmentTypes: [],
-      attachmentTypes: [],
-      attachmentTypeToDelete: null
+  const addNewType = ref(false)
+  const objectType = ref(props.objectTypeValue || route?.query?.objectType?.toLowerCase())
+  const newType = ref({})
+  const availableAttachmentTypes = ref([])
+  const attachmentTypes = ref([])
+  const attachmentTypeToDelete = ref(null)
+
+const companyObjectTypeId = computed(() => {
+  return route.query.companyObjectTypeId
+})
+
+
+  onMounted (() => {
+    getAssignedAttachmentTypes()
+  })
+  const updateType = async (item) => {
+    try {
+      appStore.loading = true
+      const {status} = await putRequest(`/attachmentType/${objectType.value}/update`, item)
+      snackbar('SUCCESS', 'Attachment Type Updated')
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Attachment Type')
+      appStore.loading = false
     }
-  },
-  watch: {},
-  created () {
-    this.getAssignedAttachmentTypes()
-  },
-  methods: {
-    async updateType(item) {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await putRequest(`/attachmentType/${this.objectType}/update`, item)
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    visibleHeaders() {
-      return this.headers.filter(header => header.show === true)
-    },
-    getAttachmentTypeUrl (attachmentTypeId) {
-      switch(this.objectTypeValue) {
-        case 'project':
-          return `/settings/project/attachmentType/${attachmentTypeId}?companyObjectTypeId=${this.companyObjectTypeId}`
-        case 'event':
-          return `/settings/event/${this.primaryId}/attachmentType/${attachmentTypeId}`
-        default:
-          return `/settings/objectType/${this.$route.params.id}/attachmentType/${attachmentTypeId}?objectType=${this.objectType}`
-      }
-    },
-    async assignNewType() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        if(null != this.primaryId) {
-          this.newType.primaryId = this.primaryId
-        }
-        const {data, status} = await postRequest(`/attachmentType/${this.objectType}`, this.newType)
-        this.attachmentTypes.push(data)
-        // reset fields
-        this.addNewType = false
-        this.newType = {}
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getAvailableAttachmentTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.addNewType = !this.addNewType
-        if (this.addNewType) {
-          let url = this.primaryId ? `/attachmentType/${this.objectType}/${this.primaryId}/available` : `/attachmentType/${this.objectType}/available`
-          const {data} = await getRequest(url)
-          this.availableAttachmentTypes = data
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      }
-    },
-    async getAssignedAttachmentTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let url = this.primaryId ? `/attachmentType/${this.objectType}/${this.primaryId}` : `/attachmentType/${this.objectType}`
-        const {data, status} = await getRequest(url)
-        this.attachmentTypes = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveAttachmentTypeOrder(rows) {
-      if(rows?.length > 0) {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {status} = await putRequest(`/attachmentType/${this.objectType}/order`, rows)
-          this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Order Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type Order')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    async deleteTypeFromObject() {
-      const id = this.attachmentTypeToDelete.id
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.addNewType = false
-        const {status} = await deleteRequest(`/attachmentType/${this.objectType}/${id}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.attachmentTypeToDelete = null
-    },
-    filterTypes() {
-      return orderBy(this.attachmentTypes.filter(e => { return !e.archived}), [e => e.attachmentType])
-    },
   }
-}
+  const visibleHeaders = computed(() => {
+    return headers.value.filter(header => header.show === true)
+  })
+  const getAttachmentTypeUrl = (attachmentTypeId) => {
+    switch(props.objectTypeValue) {
+      case 'project':
+        return `/settings/project/attachmentType/${attachmentTypeId}?companyObjectTypeId=${companyObjectTypeId.value}`
+      case 'event':
+        return `/settings/event/${props.primaryId}/attachmentType/${attachmentTypeId}`
+      default:
+        return `/settings/objectType/${route.params.id}/attachmentType/${attachmentTypeId}?objectType=${objectType.value}`
+    }
+  }
+  const assignNewType = async () => {
+    appStore.loading = true
+    try {
+      if(null != props.primaryId) {
+        newType.value.primaryId = props.primaryId
+      }
+      const {data, status} = await postRequest(`/attachmentType/${objectType.value}`, newType.value)
+      attachmentTypes.value.push(data)
+      // reset fields
+      addNewType.value = false
+      newType.value = {}
+      snackbar('SUCCESS', 'Attachment Type Added')
+
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Adding Attachment Type')
+
+      appStore.loading = false
+    }
+  }
+  const getAvailableAttachmentTypes = async () => {
+    appStore.loading = true
+    try {
+      addNewType.value = !addNewType.value
+      if (addNewType.value) {
+        let url = props.primaryId ? `/attachmentType/${objectType.value}/${props.primaryId}/available` : `/attachmentType/${objectType.value}/available`
+        const {data} = await getRequest(url)
+        availableAttachmentTypes.value = data
+      }
+      appStore.loading = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+
+      handleHidingGlobalLoader(status)
+    }
+  }
+  const getAssignedAttachmentTypes = async () => {
+    appStore.loading = true
+    try {
+      let url = props.primaryId ? `/attachmentType/${objectType.value}/${props.primaryId}` : `/attachmentType/${objectType.value}`
+      const {data, status} = await getRequest(url)
+      attachmentTypes.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+
+      appStore.loading = false
+    }
+  }
+  const saveAttachmentTypeOrder = async (rows) => {
+    if(rows?.length > 0) {
+      try {
+        appStore.loading = true
+        const {status} = await putRequest(`/attachmentType/${objectType.value}/order`, rows)
+        snackbar('SUCCESS', 'Attachment Type Order Saved')
+
+        handleHidingGlobalLoader(status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'Error Saving Attachment Type Order')
+
+        appStore.loading = false
+      }
+    }
+  }
+  const deleteTypeFromObject = async () => {
+    const id = attachmentTypeToDelete.value.id
+    appStore.loading = true
+    try {
+      addNewType.value = false
+      const {status} = await deleteRequest(`/attachmentType/${objectType.value}/${id}`)
+      snackbar('SUCCESS', 'Attachment Type Deleted')
+
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting Attachment Type')
+
+      appStore.loading = false
+    }
+    attachmentTypeToDelete.value = null
+  }
 </script>

@@ -37,9 +37,11 @@ public class TournamentPoolQuery {
                                  WHERE tpu.tournament_pool_id = tp.id
                                    AND tpu.archived is not true
                                    order by qualified is not true, "fullName") tb), '[]') AS "users",
-           tpt.pool_type
+           tpt.pool_type,
+           t.active as live_tournament
     from brs.tournament_pool tp
       inner join brs.tournament_pool_type tpt on tp.tournament_pool_type_id = tpt.id
+      inner join brs.tournament t on tp.tournament_id = t.id
     where tp.tournament_id = :tournamentId
     and tp.tournament_pool_type_id = :tournamentPoolTypeId
     """;
@@ -95,9 +97,33 @@ public class TournamentPoolQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getAllUsersInPool = """
+    select tpu.*,
+           concat(u.first_name, ' ', u.last_name) as full_name
+    from brs.tournament_pool_user tpu
+    inner join flow.user u on u.id = tpu.user_id
+    where tpu.tournament_pool_id = :poolId::int
+    and tpu.archived is false
+    """;
+
+  //language=PostgreSQL
   public final static String addUser = """
     insert into brs.tournament_pool_user(user_id, tournament_pool_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:userId, :poolId, :createdById, now(), :createdById, now())
+    """;
+
+  //language=PostgreSQL
+  public final static String addCustomUsers = """
+    select from  brs.assign_users_to_pool(:poolId::int, :minDate::date, :maxDate::date, :minFdc::int, :maxFdc::int, :inclusive::boolean, :createdById::bigint);
+    """;
+
+  //language=PostgreSQL
+  public final static String deleteAllUsers = """
+    update brs.tournament_pool_user
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+      where tournament_pool_id = :poolId
     """;
 
   //language=PostgreSQL

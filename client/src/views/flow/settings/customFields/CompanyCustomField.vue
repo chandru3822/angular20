@@ -6,11 +6,12 @@
 <script setup>
   import CustomField from "@/views/flow/settings/customFields/CustomField.vue"
   import { ref, getCurrentInstance} from 'vue'
+  import {useUserStore} from "@/stores/UserStore.js";
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-
-  const apiPath = ref(store.state.user.details.apiPath)
+  const userStore = useUserStore()
+  const apiPath = ref(userStore.details.apiPath)
 
 </script>
 

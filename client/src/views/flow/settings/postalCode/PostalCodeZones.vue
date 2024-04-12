@@ -6,38 +6,46 @@
           <v-toolbar-title class="title-large">Postal Code Zones</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newZone = {}]" v-if="userCanAdd">
-              <span v-if="!addNew">{{'Add New'}}</span>
-              <span v-else>{{'Cancel'}}</span>
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                @click="[addNew = !addNew, newZone = {}]"
+                v-if="userCanAdd"
+                :text="!addNew ? 'Add New' : 'Cancel'"
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
           <v-card color="transparent" flat v-if="addNew">
-            <v-text-field
+            <a-text-field
                 label="Zone Name"
                 tabindex=1
                 v-model="newZone.zoneName"
-            ></v-text-field>
+            ></a-text-field>
 
-            <v-btn color="primary" :disabled="!newZone.zoneName"
-                   @click="addPostalCodeZone" class="mb-3">Save</v-btn>
+            <a-btn
+                color="primary"
+                :disabled="!newZone.zoneName"
+                @click="addPostalCodeZone"
+                class="mb-3"
+                text="Save"
+            ></a-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
             <v-card-title class="pt-0">
-              <v-text-field
+              <a-text-field
                 v-model="search"
                 prepend-inner-icon="search"
                 label="Search zones"
                 single-line
                 hide-details
-              ></v-text-field>
+              ></a-text-field>
             </v-card-title>
             <v-data-table
               :headers="headers"
               :search="search"
-              :items="filterPostalCodeZones()"
+              :items="filteredPostalCodeZones"
               :fixed-header="true"
               :options.sync="options"
               :footer-props="footerProps"
@@ -56,11 +64,21 @@
                     {{ item.metroArea }}
                   </td>
                   <td class="text-right">
-                    <v-btn small icon @click="goToZone(item)"
-                           :large="$vuetify.breakpoint.smAndDown" color="primary">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                    <v-btn v-if="userCanDelete" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
+                    <a-btn
+                        icon
+                        @click="goToZone(item)"
+                        color="primary"
+                        prepend-icon="edit"
+                        :size="$vuetify.breakpoint.smAndDown ? 'large' : 'small'"
+                    ></a-btn>
+                    <a-btn
+                        v-if="userCanDelete"
+                        icon
+                        color="primary"
+                        @click="[itemToDelete=item, showDeleteDialog=true]"
+                        prepend-icon="delete"
+                        :size="$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
+                    ></a-btn>
                   </td>
                 </tr>
               </template>
@@ -80,116 +98,119 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
+<script setup>
+
+
   import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import constants from "@/helpers/constants";
+  import { getCurrentInstance, computed, ref, onMounted } from 'vue'
+  import {useUserStore} from '@/stores/UserStore.js'
+  import {useRouter} from "vue-router/composables"
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const appStore = useAppStore()
+  const router = useRouter()
+  const userStore = useUserStore()
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
 
-  export default {
-    name: 'PostalCodeZones',
-    components: {ConfirmationDialog},
-    mixins: [Vue2Filters.mixin],
-
-    data () {
-      return {
-        snackbar: {},
-        addNew: false,
-        search: null,
-        newZone: {},
-        dataLoading: true,
-        footerProps: {
+        const addNew = ref(false)
+        const search = ref(null)
+        const newZone = ref({})
+        const dataLoading = ref(true)
+        const postalCodeZones = ref([])
+        const showDeleteDialog = ref(false)
+        const itemToDelete = ref(null)
+        const footerProps = ref({
           'items-per-page-options': [25, 50, 100, 1000],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        options: {
+        })
+        const options = ref({
           itemsPerPage: 100
-        },
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('POSTAL_CODE', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('POSTAL_CODE', 'DELETE'),
-        companyId: this.$store.state.user.details.companyId,
-        userId: this.$store.state.user.details.id,
-        postalCodeZones: [],
-        headers: [
+        })
+        const headers = ref([
           {text: 'Zone Name', value: 'zoneName', show: true},
           {text: 'Metro Area', value: 'metroArea', show: true},
           {text: '', value: 'icons', show: true, width: "100"},
-        ],
-        showDeleteDialog: false,
-        itemToDelete: null
+        ])
+
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('POSTAL_CODE', 'DELETE')
+  })
+  const companyId = computed(() => {
+    return userStore.details.companyId
+  })
+  const userId = computed(() => {
+    return userStore.details.id
+  })
+  const itemToDeleteName = computed(() => {
+    return itemToDelete.value?.postalCode || ''
+  })
+  const filteredPostalCodeZones = computed(() => {
+    return postalCodeZones.value.filter(pcz => { return !pcz.archived})
+  })
+
+  onMounted(() => {
+    getPostalCodeZones()
+  })
+
+      const goToZone = (zone) => {
+        router.push({path: `/settings/zip/zone/${zone.id}`})
       }
-    },
-    computed: {
-      itemToDeleteName() {
-        return this.itemToDelete ? this.itemToDelete.postalCode : '';
-      }
-    },
-    methods: {
-      goToZone(zone) {
-        this.$router.push({path: `/settings/zip/zone/${zone.id}`})
-      },
-      filterPostalCodeZones () {
-        return this.postalCodeZones.filter(pcz => { return !pcz.archived})
-      },
-      async getPostalCodeZones () {
-        this.dataLoading = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      const getPostalCodeZones = async() => {
+        dataLoading.value = true
+        appStore.loading = true
         try {
           const {data, status} = await getRequest(`/postalCode/zones`)
-          this.postalCodeZones = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
+          postalCodeZones.value = data
+          dataLoading.value = false
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.dataLoading = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          dataLoading.value = false
+          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.loading = false
         }
-      },
-      async deletePostalCodeZone () {
-        this.itemToDelete.archived = true
-        const postalCodeZoneId = this.itemToDelete.id
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const deletePostalCodeZone = async() => {
+        itemToDelete.value.archived = true
+        const postalCodeZoneId = itemToDelete.value.id
+        appStore.loading = true
         try {
           const {status} = await deleteRequest(`/postalCode/zone/${postalCodeZoneId}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Postal Code Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          snackbar('SUCCESS', 'Postal Code Deleted')
+          handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Postal Code')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Deleting Postal Code')
+          appStore.loading = false
         }
-        this.closeDeleteDialog()
-      },
-      async addPostalCodeZone () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/postalCode/zone`, this.newZone)
-          this.goToZone(data)
-          this.snackbar = getSnackbar('SUCCESS', 'Postal Code Zone Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Postal Code Zone')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      closeDeleteDialog() {
-        this.showDeleteDialog = false;
-        this.itemToDelete = null;
+        closeDeleteDialog()
       }
-    },
-    async created () {
-      this.getPostalCodeZones()
-    }
-  }
+      const addPostalCodeZone = async() => {
+        appStore.loading = true
+        try {
+          const {data, status} = await postRequest(`/postalCode/zone`, newZone.value)
+          goToZone(data)
+          snackbar('SUCCESS', 'Postal Code Zone Added')
+          handleHidingGlobalLoader(status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          snackbar('ERROR', 'Error Adding Postal Code Zone')
+          appStore.loading = false
+        }
+      }
+      const closeDeleteDialog = () => {
+        showDeleteDialog.value = false;
+        itemToDelete.value = null;
+      }
 </script>
 
 <style lang="scss">

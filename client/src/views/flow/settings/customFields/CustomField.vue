@@ -5,26 +5,30 @@
       <v-col cols="12">
         <v-toolbar flat>
           <v-toolbar-title  class="title-large">
-            <v-btn fab text small color="primary" class="mr-2" :to="null == apiPath ? `/settings/customFields` : `/settings/companyCustomFields`">
-              <v-icon>mdi-chevron-left</v-icon>
-            </v-btn>
-            <span v-if="!isMobile">Custom Field</span>
+            <a-btn fab variant="text" size="small"
+                             color="primary" class="mr-2"
+                             :to="null == apiPath ? `/settings/customFields` : `/settings/companyCustomFields`"
+                             prepend-icon="mdi-chevron-left"
+                             :text="!isMobile ? 'Custom Field' : ''"
+            />
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn v-if="userCanEdit" text
+            <a-btn
+              v-if="userCanEdit"
+              variant="text"
               color="primary"
               :disabled="invalid(customField)"
-              @click="saveChanges(customField)">
-              <v-icon large v-if="$vuetify.breakpoint.smAndDown">save</v-icon>
-              <span v-else>{{ 'Save Changes' }}</span>
-            </v-btn>
+              @click="saveChanges(customField)"
+              :prepend-icon="vuetify.breakpoint.smAndDown ? 'save' : ''"
+              :text="!vuetify.breakpoint.smAndDown ? 'SAVE CHANGES' : ''"
+            />
           </v-toolbar-items>
         </v-toolbar>
 
         <v-card text class="text-left field-card one-hunned" flat>
           <v-card-text class="pl-0">{{ customFieldId ? 'Edit Field' : 'Add Field' }}</v-card-text>
-          <v-text-field
+          <a-text-field
             label="Field Name"
             :readonly="!userCanEdit"
             :disabled="!userCanEdit"
@@ -75,14 +79,14 @@
                      v-model="customField.allowSelectSelf">
             </div>
           </div>
-          <v-autocomplete
+          <a-autocomplete
             v-model="customField.companyDataType"
-            :items="filterCompanyDataTypes()"
+            :items="filterCompanyDataTypes"
             :disabled="undefined !== customFieldId || !userCanEdit"
             :readonly="undefined !== customFieldId || !userCanEdit"
             tabindex="2"
             label="Data Type"
-            item-text="companyDataType"
+            item-title="companyDataType"
             item-value="id"
             autocomplete="off"
             return-object
@@ -90,17 +94,17 @@
           />
 
           <div
-            v-if="$store.getters.userHasFeature('SYSTEM') && customField.companyDataType && customField.companyDataType.customBehavior">
+            v-if="userStore.userHasFeature('SYSTEM') && customField.companyDataType && customField.companyDataType.customBehavior">
 
             <div v-if="isSystemReference(customField.companyDataType.companyDataType)">
-              <v-autocomplete
+              <a-autocomplete
                 v-model="customField.flowCustomFieldId"
                 :items="availableCustomFields"
-                :search-input.sync="customFieldQuery"
+                :search-input="customFieldQuery"
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
                 label="Flow System Field"
-                item-text="fieldName"
+                item-title="fieldName"
                 item-value="id"
                 hide-no-data
                 cache-items
@@ -113,15 +117,15 @@
             </div>
 
             <div v-else>
-              <v-text-field outlined
+              <a-text-field variant="outlined"
                 v-model="customField.customFieldSqlKey"
                 label="SQL Key"
               />
-              <v-textarea auto-grow outlined
+              <a-textarea auto-grow variant="outlined"
                 v-model="customField.customFieldSql"
                 label="SQL"
               />
-              <v-text-field outlined
+              <a-text-field variant="outlined"
                 v-model="customField.customFieldSqlReferenceTable"
                 label="SQL Reference Table"
               />
@@ -134,20 +138,20 @@
             </div>
           </div>
 
-          <v-autocomplete
+          <a-autocomplete
             v-if="customField.companyDataType && customField.companyDataType.systemList"
             v-model="customField.companySystemListId"
             :items="systemLists"
             :disabled="undefined !== customFieldId || !userCanEdit"
             :readonly="undefined !== customFieldId || !userCanEdit"
             label="System List Type"
-            item-text="systemList"
+            item-title="systemList"
             item-value="companySystemListId"
             @change="getSystemListOptions(customField.companySystemListId)"
             attach
           />
 
-          <v-autocomplete
+          <a-autocomplete
             v-if="customField.companySystemListId && systemLists.find(sl => sl.companySystemListId === customField.companySystemListId)  && systemLists.find(sl => sl.companySystemListId === customField.companySystemListId).hasSubOptions"
             v-model="customField.systemListOptionIds"
             :items="systemListOptions"
@@ -155,7 +159,7 @@
             :disabled="!userCanEdit"
             multiple
             label="System List Options"
-            item-text="name"
+            item-title="name"
             item-value="id"
             attach
           />
@@ -179,18 +183,18 @@
                   </v-list-item-action>
                   <v-list-item-content>
                     <div class="flex-align-items-center">
-                      <v-text-field
+                      <a-text-field
                       class="one-hunned"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
                       :placeholder="ddo.placeholder"
                       @input="ddo.isDirty = true"
                       v-model="ddo.name">
-                    </v-text-field>
+                    </a-text-field>
                       <v-tooltip left v-if="!!ddo.id">
                         <template v-slot:activator="{ on, attrs }">
-                          <v-btn icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
-                                 v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                          <a-btn variant="text" icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
+                                 :activation-handler="on" prepend-icon="mdi-information"/>
                         </template>
                         <span>List of Value ID: {{ddo.id}}</span>
                         <div class="text-center">(click to copy)</div>
@@ -216,18 +220,18 @@
                   </v-list-item-action>
                   <v-list-item-content>
                     <div flex-align-items-center>
-                    <v-text-field
+                    <a-text-field
                       class="one-hunned"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
                       :placeholder="ddo.placeholder"
                       @input="ddo.isDirty = true"
                       v-model="ddo.name">
-                    </v-text-field>
+                    </a-text-field>
                       <v-tooltip left v-if="!!ddo.id">
                         <template v-slot:activator="{ on, attrs }">
-                          <v-btn  icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
-                                 v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                          <a-btn variant="text" icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
+                                 :activation-handler="on" prepend-icon="mdi-information"/>
                         </template>
                         <span>List of Value ID: {{ddo.id}} </span>
                         <div class="text-center">(click to copy)</div>
@@ -242,12 +246,12 @@
               </v-list>
             </div>
 
-            <v-btn
+            <a-btn
               color="primary"
               class="mt-2"
-              @click="addOption(customField.listOfValues)">
-              Add Option
-            </v-btn>
+              @click="addOption(customField.listOfValues)"
+              text="ADD OPTION"
+            />
           </v-col>
         </v-card>
       </v-col>
@@ -275,12 +279,11 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from "@/stores/AppStore";
 import orderBy from "lodash.orderby";
 import draggable from "vuedraggable";
 import debounce from "lodash.debounce";
-
 import {
   getRequest,
   getRequestWithParams,
@@ -289,82 +292,94 @@ import {
   postRequest
 } from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { useUserStore } from '@/stores/UserStore.js'
 
-export default {
-  name: "CustomField",
-  props: {
-    apiPath: {type: String}
-  },
-  components: {
-    ConfirmationDialog,
-    draggable
-  },
-  data() {
-    return {
-      snackbar: {},
-      customFieldId: this.$route.params.id,
-      customField: {},
-      fieldLoading: false,
-      customFieldQuery: "",
-      systemLists: [],
-      systemListOptions: [],
-      companyDataTypes: [],
-      availableCustomFields: [],
-      companyId: this.$store.state.user.details.companyId,
-      usesForField: [],
-      userIsSystemAdmin: this.$store.getters.userHasFeature("SYSTEM"),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel("SETTINGS", "EDIT"),
-      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
-    };
-  },
-  computed: {
-    selectedSystemListTypeIsUsers(){
-      let selectedSystemList = this.systemLists.find(sl => sl.id === this.customField.companySystemListId)
-      return selectedSystemList.systemListTypeId === 2; //user type id
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-  },
-  async created() {
-    this.fieldLoading = true
-    Promise.all([
-      this.getCompanyDataTypes(),
-      this.getSystemLists()
-    ]).then(async () => {
-      await this.getCustomField()
-    }).then(async () => {
-      if (this.customField.id) {
-        //don't try to get uses when we're adding a new custom field
-        await this.getUsesForField()
-      }
-      this.fieldLoading = false
-    })
-  },
-  watch: {
-    customFieldQuery(val) {
-      val && this.debounceFindCustomFields(val)
+import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+import {useRouter, useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+const store = vueInstance.$store
+const userStore = useUserStore()
+const route = useRoute()
+const router = useRouter()
+
+const props = defineProps({
+  apiPath: {type: String}
+})
+const customField = ref({})
+const fieldLoading = ref(false)
+const customFieldQuery = ref("")
+const systemLists = ref([])
+const systemListOptions = ref([])
+const companyDataTypes = ref([])
+const availableCustomFields = ref([])
+const usesForField = ref([])
+
+const selectedSystemListTypeIsUsers = computed(() => {
+  let selectedSystemList = systemLists.value.find(sl => sl.id === customField.value.companySystemListId)
+  return selectedSystemList.systemListTypeId === 2; //user type id
+})
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+
+const customFieldId = computed(() => {
+  return route.params.id
+})
+const userIsSystemAdmin = computed(() => {
+  return userStore.userHasFeature("SYSTEM")
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const userCanDelete = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+
+onMounted(async () => {
+  fieldLoading.value = true
+  Promise.all([
+    getCompanyDataTypes(),
+    getSystemLists()
+  ]).then(async () => {
+    await getCustomField()
+  }).then(async () => {
+    if (customField.value.id) {
+      //don't try to get uses when we're adding a new custom field
+      await getUsesForField()
     }
-  },
-  methods: {
-    debounceFindCustomFields: debounce(function (query) {
-      this.findCustomFields(query)
-    }, 250),
-    async findCustomFields(query) {
+    fieldLoading.value = false
+  })
+})
+watch(customFieldQuery, (val) => {
+  val && debounceFindCustomFields(val)
+})
+
+const debounceFindCustomFields = debounce((query) => {
+  findCustomFields(query)
+}, 250)
+
+    const findCustomFields = async (query) => {
       try {
         const {data} = await getRequestWithParams(`/customField/getAll`, {
           params: {query, hasListValues: true}
         }, null, []);
-        this.availableCustomFields = data
+        availableCustomFields.value = data
       } catch (e) {
-        this.availableCustomFields = []
+        availableCustomFields.value = []
         console.error(e)
       }
-    },
-    isSystemReference(dataType) {
+    }
+    const isSystemReference = (dataType) => {
       return /System Reference/i.test(dataType)
-    },
-    getLovValues(lovs, alphaSort) {
+    }
+    const getLovValues = (lovs, alphaSort) => {
       // return lovs
       //when user manually changes the order it was borked. this should fix it, even though it sucks it loads every time.  bandaid crap fixes for the win!
       lovs.forEach((lov, idx) => {
@@ -376,89 +391,85 @@ export default {
         Object.assign(lov, 'nameSortFix', lov.name)
       })
       return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort && lov.id ? lov.nameSortFix?.toLowerCase() : lov.displayOrder);
-    },
-    filterCompanyDataTypes() {
-      if (this.userIsSystemAdmin) {
-        return this.companyDataTypes;
+    }
+    const filterCompanyDataTypes = computed(() => {
+      if (userIsSystemAdmin.value) {
+        return companyDataTypes.value;
       } else {
         // filter out the system item if not a system admin
-        return undefined !== this.customFieldId ? this.companyDataTypes : this.companyDataTypes.filter(dt => {
+        return undefined !== customFieldId.value ? companyDataTypes.value : companyDataTypes.value.filter(dt => {
           return !dt.customBehavior;
         });
       }
-    },
-    async getCustomField() {
-      if (this.customFieldId != null) {
+    })
+    const getCustomField = async ()  => {
+      if (customFieldId.value != null) {
         try {
-          const {data, status} = await getRequest(`/customField/${this.customFieldId}`, this.apiPath, []);
-          this.customField = data
-          this.customField.companyDataType = this.companyDataTypes.find(dt => dt.id === data.companyDataTypeId);
-          if (null != this.customField.companySystemListId) {
-            this.getSystemListOptions(this.customField.companySystemListId)
+          const {data, status} = await getRequest(`/customField/${customFieldId.value}`, props.apiPath, []);
+          customField.value = data
+          customField.value.companyDataType = companyDataTypes.value.find(dt => dt.id === data.companyDataTypeId);
+          if (null != customField.value.companySystemListId) {
+            getSystemListOptions(customField.value.companySystemListId)
           }
-          if (null != this.customField.flowCustomFieldId) {
-            this.findCustomFields()
+          if (null != customField.value.flowCustomFieldId) {
+            findCustomFields()
           }
         } catch (e) {
           console.error("*** ERROR ***", e);
-          this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+          snackbar("ERROR", "Error Retrieving Data");
         }
       } else {
-        //not sure why i am doing this. but leaving for now
-        this.customField = {
+        //not sure why i am doing  but.value leaving for now
+        customField.value = {
           fieldName: "",
-          createdById: this.$store.state.user.details.id,
+          createdById: userStore.details.id,
           listOfValues: [],
         }
       }
-    },
-    async getSystemLists() {
+    }
+    const getSystemLists = async ()  => {
       try {
         const {data, status} = await getRequest(`/systemList`);
-        this.systemLists = data;
+        systemLists.value = data;
       } catch (e) {
         console.error("*** ERROR ***", e);
-        this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+        snackbar("ERROR", "Error Retrieving Data");
       }
-    },
-    async getSystemListOptions(listId) {
-      let match = this.systemLists.find(sl => sl.companySystemListId === listId);
+    }
+    const getSystemListOptions = async (listId)  => {
+      let match = systemLists.value.find(sl => sl.companySystemListId === listId);
       if (listId && match?.hasSubOptions) {
 
-        this.$store.commit(AppMutations.SET_LOADING, true);
+        appStore.loading = true;
         try {
           const {data, status} = await getRequestWithParams(`/systemList/${listId}/options`, {
             params: {
-              //well i named these poorly...
+              // well i named these poorly...
               //  if a list itself has sub options it means they can select suboptions
               // this parameter means whether to get the subOptions or not
               subOptions: false
             }
           });
-          this.systemListOptions = data;
-          handleHidingGlobalLoader(this, status);
+          systemListOptions.value = data;
+          handleHidingGlobalLoader(status);
         } catch (e) {
           console.error("*** ERROR ***", e);
-          this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
-          this.$store.commit(AppMutations.SET_LOADING, false);
+          snackbar("ERROR", "Error Retrieving Data");
+          appStore.loading = false;
         }
       }
-    },
-    async getCompanyDataTypes() {
+    }
+    const getCompanyDataTypes = async ()  => {
       try {
         const {data, status} = await getRequest(`/dataType/getCompanyDataTypes`);
-        this.companyDataTypes = data;
+        companyDataTypes.value = data;
       } catch (e) {
         console.error("*** ERROR ***", e);
-        this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+        snackbar("ERROR", "Error Retrieving Data");
       }
-    },
-    async saveChanges(object) {
-      this.$store.commit(AppMutations.SET_LOADING, true);
+    }
+    const saveChanges = async (object)  => {
+      appStore.loading = true;
       try {
         // set the display order to save to DB
         //this should have already been done by the getLovValues function, but it was in both places so i just left this one
@@ -473,33 +484,29 @@ export default {
         object.companyDataTypeId = object.companyDataType.id
 
         object.fieldName = object.fieldName
-        const {data, status} = await postRequest(`/customField`, object, this.apiPath);
-        data.companyDataType = this.companyDataTypes.find(dt => dt.id === data.companyDataTypeId);
-        this.$set(object, "listOfValues", data.listOfValues);
+        const {data, status} = await postRequest(`/customField`, object, props.apiPath);
+        data.companyDataType = companyDataTypes.value.find(dt => dt.id === data.companyDataTypeId);
+        vueInstance.$set(object, "listOfValues", data.listOfValues);
 
-        // if it was a new field, add the id to the object and the url
-        if (undefined === this.customFieldId || null === this.customFieldId) {
-          this.customFieldId = data.id
-          this.customField.id = data.id
-          let path = null == this.apiPath ? `/settings/customField/${data.id}` : `/settings/companyCustomField/${data.id}`
-          this.$router.push(path)
+        // if it was a new field, add the id to the url
+        if (undefined === customFieldId.value || null === customFieldId.value) {
+          let path = null == props.apiPath ? `/settings/customField/${data.id}` : `/settings/companyCustomField/${data.id}`
+          await router.push(path)
         }
 
         // re-sort in case the fieldName changed
-        this.snackbar = getSnackbar("SUCCESS", "Saved Changes");
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
-        handleHidingGlobalLoader(this, status);
+        snackbar("SUCCESS", "Saved Changes");
+        handleHidingGlobalLoader(status);
       } catch (e) {
         console.error("*** ERROR ***", e);
-        this.snackbar = getSnackbar("ERROR", "Error Saving Changes");
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
-        this.$store.commit(AppMutations.SET_LOADING, false);
+        snackbar("ERROR", "Error Saving Changes");
+        appStore.loading = false;
       }
-    },
-    addOption(options) {
+    }
+    const addOption = (options)  => {
       options.push({placeholder: "Enter New Option Name", archived: false});
-    },
-    invalid(customField) {
+    }
+    const invalid = (customField)  => {
       // todo: use real form validation?
       let invalidOptions = false;
       let invalidCustomSql = false;
@@ -513,34 +520,30 @@ export default {
             }
           });
         }
-      } else if (customField.companyDataType?.customBehavior && !this.isSystemReference(customField.companyDataType.companyDataType)) {
+      } else if (customField.companyDataType?.customBehavior && !isSystemReference(customField.companyDataType.companyDataType)) {
         if (!customField.customFieldSqlKey || !customField.customFieldSql || !customField.customFieldSqlReferenceTable) {
           invalidCustomSql = true;
         }
       }
       return (!customField.fieldName && !customField.newFieldName) || !customField.companyDataType || invalidOptions || invalidCustomSql;
 
-    },
-    async getUsesForField(){
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getUsesForField = async () => {
+      appStore.loading = true
       try {
-        const {data} = await getRequest(`/customField/getUses/${this.customFieldId}`, this.apiPath, null, []);
-        this.usesForField = data;
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        const {data} = await getRequest(`/customField/getUses/${customFieldId.value}`, props.apiPath, null, []);
+        usesForField.value = data;
+        appStore.loading = false
       } catch (e) {
         console.error("*** ERROR ***", e);
-        this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar("ERROR", "Error Retrieving Data");
+        appStore.loading = false
       }
-    },
-    copyToClipBoard(textValue){
+    }
+    const copyToClipBoard = (textValue) => {
       navigator.clipboard.writeText(textValue);
-      this.snackbar = getSnackbar('SUCCESS', 'Copied id to clipboard')
-      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    },
-  }
-};
+      snackbar('SUCCESS', 'Copied id to clipboard')
+    }
 </script>
 
 <style lang="scss">

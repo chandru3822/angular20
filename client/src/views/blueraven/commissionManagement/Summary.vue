@@ -2,25 +2,28 @@
   <v-container class="pt-0">
     <v-row>
       <v-col >
-        <v-btn color="primary" class="white--text"
-               :disabled="payrollSummary.length === 0"
-               @click="exportPayrollSummary">
-          Export
-        </v-btn>
-        <v-btn color="primary" class="white--text ml-3"
-               :disabled="!currentPayroll.id || payrollSummary.length === 0"
-               @click="exportAllOverrides">
-          Export All Overrides
-        </v-btn>
+        <a-btn
+            color="primary"
+            :disabled="payrollSummary.length === 0"
+            @click="exportPayrollSummary"
+            text="Export"
+        ></a-btn>
+        <a-btn
+            color="primary"
+            class="ml-3"
+            :disabled="!currentPayroll.id || payrollSummary.length === 0"
+            @click="exportAllOverrides"
+            text="Export All Overrides"
+        ></a-btn>
         <v-data-table
-          :headers="headers"
-          :items="payrollSummary"
-          :fixed-header="true"
-          disable-sort
-          :items-per-page="25"
-          :footer-props="footerProps"
-          :loading="dataLoading"
-          class="elevation-1 mt-2"
+            :headers="headers"
+            :items="payrollSummary"
+            :fixed-header="true"
+            disable-sort
+            :items-per-page="25"
+            :footer-props="footerProps"
+            :loading="dataLoading"
+            class="elevation-1 mt-2"
         >
           <template #no-data>
             <span class="default-text-color">No available summary data</span>
@@ -47,147 +50,145 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import constants from "@/helpers/constants";
-  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
-  import { saveAs } from 'file-saver'
+<script setup>
 
-  export default {
-    name: 'Summary',
+import constants from "@/helpers/constants";
+import {handleHidingGlobalLoader, getRequest, } from '@/helpers/helpers'
+import { saveAs } from 'file-saver'
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useBrsStore } from '@/stores/BrsStorePinia.js'
 
-    created() {
-      this.viewSummary()
-      this.getCurrentPayroll()
-    },
-    watch: {
-      '$store.state.brs.commissionPositionId': function () {
-        this.positionId = this.$store.state.brs.commissionPositionId
-        this.viewSummary()
-        this.getCurrentPayroll()
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        payrollSummary: [],
-        currentPayroll: {},
-        dataLoading: false,
-        positionId: this.$store.state.brs.commissionPositionId,
-        footerProps: {
-          'items-per-page-options': [25, 50, 100, 500],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        headers: [
-          { text: 'Employee ID', value: 'closer_employee_id', show: true },
-          { text: 'Sales Rep', value: 'closer_user', show: true },
-          { text: 'Total Commission', value: 'total_commission', show: true },
-          { text: 'Total Overrides', value: 'total_overrides', show: true },
-          { text: 'Adjustments', value: 'commission_adjustments', show: true },
-          { text: 'Current Pay', value: 'current_pay', show: true },
-        ],
-      }
-    },
-    methods: {
-      async getCurrentPayroll () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/payroll/current/${this.positionId}`, 'blueraven')
-          this.currentPayroll = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Current Payroll')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async viewSummary() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        this.dataLoading = true
-        try {
-          const {data, status} = await getRequest(`/payroll/current/summary/${this.positionId}`, 'blueraven')
-          this.payrollSummary = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Payroll Summary')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async exportAllOverrides () {
-        try {
-          const {data} = await getRequest(`/payroll/${this.currentPayroll.id}/overrides`, 'blueraven')
+const brsStore = useBrsStore()
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-          let filename = 'Overrides.csv'
-          let csvData = 'Project ID, Customer Name, Closer, Employee ID, Override Plan Name, System Size, Overrides Earned, Prior Pay, Current Pay, User Allocation, Milestone 1 Percentage, Milestone 2 Percentage, Plan Total'
-          csvData += '\n'
+onMounted(() => {
+  viewSummary()
+  getCurrentPayroll()
+})
 
-          data.forEach(p => {
-            csvData +=
-              p.projectId + ',' +
-              '"' + p.customerName + '","' +
-              p.closer + '","' +
-              p.closerEmployeeId + '","' +
-              p.overridePlanName + '",' +
-              p.systemSize + ',' +
-              p.overridesEarned + ',' +
-              p.priorPay + ',' +
-              p.currentPay + ',' +
-              p.userAllocation + ',' +
-              p.milestone1Percentage + ',' +
-              p.milestone2Percentage + ',' +
-              p.planTotal
-            csvData += '\n';
-          })
+const payrollSummary = ref([])
+const currentPayroll = ref({})
+const dataLoading = ref(false)
+const positionId = ref(brsStore.commissionPositionId)
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 500],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const headers = ref([
+  { text: 'Employee ID', value: 'closer_employee_id', show: true },
+  { text: 'Sales Rep', value: 'closer_user', show: true },
+  { text: 'Total Commission', value: 'total_commission', show: true },
+  { text: 'Total Overrides', value: 'total_overrides', show: true },
+  { text: 'Adjustments', value: 'commission_adjustments', show: true },
+  { text: 'Current Pay', value: 'current_pay', show: true },
+])
 
-          let blob = new Blob([csvData], {
-            type: 'text/csv;charset=utf-8'
-          });
+const getCurrentPayroll = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/payroll/current/${positionId.value}`, 'blueraven')
+    currentPayroll.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Current Payroll')
 
-          saveAs(blob, filename);
-
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Payroll Summary')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async exportPayrollSummary () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let filename = 'Payroll Summary.csv'
-          let csvData = 'Employee ID, Sales Rep, Total Commission, Total Overrides, Adjustments, Current Pay'
-          csvData += '\n'
-
-          this.payrollSummary.forEach(p => {
-            csvData +=
-              '"' + p.closer_employee_id + '",' +
-              p.closer_user + ',' +
-              p.total_commission + ',' +
-              p.total_overrides + ',' +
-              p.commission_adjustments + ',' +
-              p.current_pay
-            csvData += '\n';
-          })
-
-          let blob = new Blob([csvData], {
-            type: 'text/csv;charset=utf-8'
-          });
-
-          saveAs(blob, filename);
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Exporting Payroll Summary')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-    }
+    appStore.loading = false
   }
+}
+const viewSummary = async () => {
+  appStore.loading = true
+  dataLoading.value = true
+  try {
+    const {data, status} = await getRequest(`/payroll/current/summary/${positionId.value}`, 'blueraven')
+    payrollSummary.value = data
+    dataLoading.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Payroll Summary')
+
+    appStore.loading = false
+  }
+}
+const exportAllOverrides = async() => {
+  try {
+    const {data} = await getRequest(`/payroll/${currentPayroll.value.id}/overrides`, 'blueraven')
+
+    let filename = 'Overrides.csv'
+    let csvData = 'Project ID, Customer Name, Closer, Employee ID, Override Plan Name, System Size, Overrides Earned, Prior Pay, Current Pay, User Allocation, Milestone 1 Percentage, Milestone 2 Percentage, Plan Total'
+    csvData += '\n'
+
+    data.forEach(p => {
+      csvData +=
+          p.projectId + ',' +
+          '"' + p.customerName + '","' +
+          p.closer + '","' +
+          p.closerEmployeeId + '","' +
+          p.overridePlanName + '",' +
+          p.systemSize + ',' +
+          p.overridesEarned + ',' +
+          p.priorPay + ',' +
+          p.currentPay + ',' +
+          p.userAllocation + ',' +
+          p.milestone1Percentage + ',' +
+          p.milestone2Percentage + ',' +
+          p.planTotal
+      csvData += '\n';
+    })
+
+    let blob = new Blob([csvData], {
+      type: 'text/csv;charset=utf-8'
+    });
+
+    saveAs(blob, filename);
+
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Payroll Summary')
+
+    appStore.loading = false
+  }
+}
+const exportPayrollSummary = async() => {
+  appStore.loading = true
+  try {
+    let filename = 'Payroll Summary.csv'
+    let csvData = 'Employee ID, Sales Rep, Total Commission, Total Overrides, Adjustments, Current Pay'
+    csvData += '\n'
+
+    payrollSummary.value.forEach(p => {
+      csvData +=
+          '"' + p.closer_employee_id + '",' +
+          p.closer_user + ',' +
+          p.total_commission + ',' +
+          p.total_overrides + ',' +
+          p.commission_adjustments + ',' +
+          p.current_pay
+      csvData += '\n';
+    })
+
+    let blob = new Blob([csvData], {
+      type: 'text/csv;charset=utf-8'
+    });
+
+    saveAs(blob, filename);
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Exporting Payroll Summary')
+
+    appStore.loading = false
+  }
+}
 </script>

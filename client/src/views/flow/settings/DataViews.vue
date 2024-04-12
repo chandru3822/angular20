@@ -1,49 +1,61 @@
 <template>
-  <v-container>
+  <v-container id="data-views-settings">
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Data Views</v-toolbar-title>
+          <v-toolbar-title v-if="!isMobile" class="app-title">Data Views</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="is7oaksAdmin"
-                   @click="[addNew = !addNew, newDataView = {}, getCompanyProcesses()]">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <a-btn v-if="is7oaksAdmin"
+              variant="text"
+              color="primary"
+              @click="[addNew = !addNew, newDataView = {}, getCompanyProcesses()]"
+              :hide-text-on-mobile="isMobile"
+              :text="!addNew ? 'Add New' : 'Cancel'"
+              :prepend-icon="addNew ? 'close' : 'add'"
+              >
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add Data View</h3>
           <div class="mb-3">
             <v-form ref="dataViewForm">
-            <v-text-field text v-model="newDataView.displayName"
+            <a-text-field  v-model="newDataView.displayName"
                           :rules="requiredRules"
                           label="Display Name" />
-            <v-text-field text v-model="newDataView.viewName"
+            <a-text-field  v-model="newDataView.viewName"
                           :rules="tableNameRule"
                           label="Table Name (all lower case, underscores instead of spaces)" />
-              <v-select label="Company Processes"
+              <a-select label="Company Processes"
                         v-model="selectedCompanyProcesses"
                         :items="companyProcesses"
-                        item-text="processName"
+                        item-title="processName"
                         placeholder="Select"
                         multiple
                         return-object>
-              </v-select>
+              </a-select>
             </v-form>
           </div>
           <div class="mb-3 error--text" v-if="saveError">
             {{saveErrorMsg}}
           </div>
-          <v-btn :disabled="!newDataView.displayName || !newDataView.viewName || selectedCompanyProcesses.length === 0"
-                 color="primary" class="white--text mr-2"
-                 @click="validateForm(newDataView, true)">
-            Save
-          </v-btn>
-          <v-btn text color="primary" @click="[addNew = !addNew, newDataView = {}]">Cancel</v-btn>
+          <a-btn
+            :disabled="!newDataView.displayName || !newDataView.viewName || selectedCompanyProcesses.length === 0"
+            color="primary"
+            class="white--text mr-2"
+            @click="validateForm(newDataView, true)"
+            text="Save">
+          </a-btn>
+          <a-btn
+            variant="text"
+            color="primary"
+            @click="[addNew = !addNew, newDataView = {}]"
+            text="Cancel">
+          </a-btn>
         </v-card>
         <v-data-table
+            id="data-views-settings-table"
             :headers="headers"
             :items="dataViews"
             :fixed-header="true"
@@ -65,9 +77,11 @@
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.viewName }}</td>
               <td class="text-right">
-                <v-btn small text color="primary">
-                  <v-icon>edit</v-icon>
-                </v-btn>
+                <a-btn
+                  variant="text"
+                  color="primary"
+                  prepend-icon="edit">
+                </a-btn>
 
               </td>
             </tr>
@@ -80,112 +94,118 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+<script setup>
+  import {handleHidingGlobalLoader, getRequest, postRequest} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import {getCurrentInstance, ref, onMounted, computed} from 'vue'
 
-  export default {
-    name: 'DataViews',
+  import { useUserStore } from '@/stores/UserStore.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import {useRouter} from "vue-router/composables"
 
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        addNew: false,
-        saveError: false,
-        saveErrorMsg: '',
-        dataViews: [],
-        companyProcesses: [],
-        selectedCompanyProcesses: [],
-        requiredRules: constants.BASIC_REQUIRED_RULE,
-        is7oaksAdmin: this.$store.getters.isFullAdmin,
-        tableNameRule: [
-          () => (this.newDataView.viewName != null && this.newDataView.viewName !== '') || "Field to Update is required",
-          v => (!v || (v && (v.length >= 5))) || 'Must be 5 characters or more',
-          v => (!v || (v && (v.length <= 60))) || 'Must be 60 characters or less',
-          v => (!v || (v && (v.indexOf(' ') <= 0))) || 'Cannot contain whitespace',
-          v => (!v || (v && (v.indexOf('__') <= 0))) || "All word dividers must be a single '_'",
-          v => (!v || (/^[a-z]+(?:_+[a-z]+)*$/.test(v))) || "Table Name must be all lowercase, no symbols except '_' and must start and end with a letter",
-          v => (!v || (v && (!constants.RESERVED_SQL_WORDS.includes(v)))) || "Cannot use reserved words",
-        ],
-        newDataView: {},
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        headers: [
-          { text: 'Display Name', value: 'displayName', show: true },
-          { text: 'Table Name', value: 'viewName', width: 80, show: true },
-          { text: null, value: 'icons', show: true, sortable: false }
-        ]
-      }
-    },
-    async created () {
-      await this.getDataViews()
-    },
-    methods: {
-      async getCompanyProcesses() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/processes`)
-          this.companyProcesses = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error loading processes')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      validateForm(view, isNew) {
-        this.saveError = false
-        let match = this.dataViews?.find(dv => dv.viewName === view.viewName)
-        if(match) {
-          this.saveError = true
-          this.saveErrorMsg = 'Table Name already in use'
-        } else if (this.$refs.dataViewForm?.validate()) {
-          this.saveDataView(view, isNew)
-        }
-      },
-      async goToView(id) {
-        this.$router.push(`/settings/dataView/${id}`)
-      },
-      async saveDataView(dv, isNew) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          dv.companyProcessIds = this.selectedCompanyProcesses.map(cp => cp.id)
-          const {data, status} = await postRequest(`/dataView`, dv)
-          if(isNew){
-            this.dataViews.push(data)
-            this.addNew = false
-            this.selectedCompanyProcesses = []
-            this.newDataView = {}
-            this.snackbar = getSnackbar('SUCCESS', 'Data View Added')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            this.snackbar = getSnackbar('SUCCESS', 'Data View Updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Data View' : 'Error Updating Data View')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getDataViews() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/dataView`)
-          this.dataViews = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Data Views')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+  const userStore = useUserStore()
+  const appStore = useAppStore()
+  const router = useRouter()
+  const vuetify = vueInstance.$vuetify
+
+  const addNew = ref(false)
+  const saveError = ref(false)
+  const saveErrorMsg = ref('')
+  const dataViews = ref([])
+  const companyProcesses = ref([])
+  const selectedCompanyProcesses = ref([])
+  const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+  const is7oaksAdmin = ref(userStore.isSystemAdmin)
+  const newDataView = ref({})
+  const tableNameRule = ref([
+    () => (newDataView.value.viewName != null && newDataView.value.viewName !== '') || "Field to Update is required",
+    v => (!v || (v && (v.length >= 5))) || 'Must be 5 characters or more',
+    v => (!v || (v && (v.length <= 60))) || 'Must be 60 characters or less',
+    v => (!v || (v && (v.indexOf(' ') <= 0))) || 'Cannot contain whitespace',
+    v => (!v || (v && (v.indexOf('__') <= 0))) || "All word dividers must be a single '_'",
+    v => (!v || (/^[a-z]+(?:_+[a-z]+)*$/.test(v))) || "Table Name must be all lowercase, no symbols except '_' and must start and end with a letter",
+    v => (!v || (v && (!constants.RESERVED_SQL_WORDS.includes(v)))) || "Cannot use reserved words",
+  ])
+
+  const userId = ref(userStore.details.id)
+  const companyId = ref(userStore.details.companyId)
+  const headers = ref([
+    { text: 'Display Name', value: 'displayName', show: true },
+    { text: 'Table Name', value: 'viewName', width: 80, show: true },
+    { text: null, value: 'icons', show: true, sortable: false }
+  ])
+
+  onMounted(async () => {
+    await getDataViews()
+  })
+
+  const getCompanyProcesses = async () => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/processes`)
+      companyProcesses.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error loading processes')
+      appStore.loading = false
     }
   }
+  const validateForm = (view, isNew) => {
+    saveError.value = false
+    let match = dataViews.value?.find(dv => dv.viewName === view.viewName)
+    if(match) {
+      saveError.value = true
+      saveErrorMsg.value = 'Table Name already in use'
+    } else if (vueInstance.$refs.dataViewForm?.validate()) {
+      saveDataView(view, isNew)
+    }
+  }
+  const goToView = async (id) => {
+    await router.push(`/settings/dataView/${id}`)
+  }
+  const saveDataView = async (dv, isNew) => {
+    appStore.loading = true
+    try {
+      dv.companyProcessIds = selectedCompanyProcesses.value.map(cp => cp.id)
+      const {data, status} = await postRequest(`/dataView`, dv)
+      if(isNew){
+        dataViews.value.push(data)
+        addNew.value = false
+        selectedCompanyProcesses.value = []
+        newDataView.value = {}
+        snackbar('SUCCESS', 'Data View Added')
+      } else {
+        snackbar('SUCCESS', 'Data View Updated')
+      }
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', isNew ? 'Error Adding Data View' : 'Error Updating Data View')
+      appStore.loading = false
+    }
+  }
+  const getDataViews = async () => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/dataView`)
+      dataViews.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Data Views')
+      appStore.loading = false
+    }
+  }
+
+  const isMobile = computed(() => vuetify.breakpoint.smAndDown)
 </script>
+
+<style>
+#data-views-settings-table > div.v-data-table__wrapper {
+overflow-x: hidden;
+}
+</style>

@@ -5,31 +5,48 @@
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit && showAdd"
-             @click.stop="handleAddBtnClick(!addMode && !editMode)">
-        <v-icon v-show="!addMode && !editMode" class="white--text">add</v-icon>
-        <v-icon v-show="addMode || editMode"
-                @click.stop="hideCtrls" class="white--text">remove</v-icon>
-      </v-btn>
-      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="showExpanded">
-        <v-icon class="white--text clickable">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
-      </v-btn>
-<!--      <v-icon v-if="showExpanded" class="white&#45;&#45;text clickable">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>-->
+      <a-btn
+          icon
+          color="#ddd"
+          html-style="border-radius: 3px"
+          v-if="userCanEdit && showAdd"
+          @click.native.stop="handleAddBtnClick(!addMode && !editMode)"
+          :prepend-icon="!addMode && !editMode ? 'add' : 'remove'"
+      ></a-btn>
+      <a-btn
+          icon
+          color="#ddd"
+          html-style="border-radius: 3px"
+          v-if="showExpanded"
+          :prepend-icon="expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+      ></a-btn>
+      <!--      <v-icon v-if="showExpanded" class="white&#45;&#45;text clickable">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>-->
     </v-toolbar>
     <v-card-text v-if="expanded">
       <div v-show="addMode || editMode" class="px-3 pt-4 pb-3">
-      <slot name="addOrEdit">Add or Edit</slot>
+        <slot name="addOrEdit">Add or Edit</slot>
         <div class="link-btns">
-          <v-btn color="primary" text @click="hideCtrls"
-                 class="cancel-link">Cancel</v-btn>
-          <v-btn v-show="editMode" dark v-if="userCanEdit"
-                 @click="deleteItem" class="error">
-            Delete
-          </v-btn>
-          <v-btn @click="save" color="primary" class="white--text"
-                 :disabled="addBtnDisabled">
-            {{ addMode ? 'Add' : 'Update' }}
-          </v-btn>
+          <a-btn
+              color="primary"
+              variant="text"
+              @click="hideCtrls"
+              class="cancel-link"
+              text="Cancel"
+          ></a-btn>
+          <a-btn
+              v-show="editMode"
+              v-if="userCanEdit"
+              @click="deleteItem"
+              class="error"
+              color="unset"
+              text="Delete"
+          ></a-btn>
+          <a-btn
+              @click="save"
+              color="primary"
+              :disabled="addBtnDisabled"
+              :text="addMode ? 'Add' : 'Update'"
+          ></a-btn>
         </div>
       </div>
       <slot>Default</slot>
@@ -37,85 +54,94 @@
   </v-card>
 </template>
 
-<script>
+<script setup>
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
+import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue'
 
-export default {
-  name: "FeatDbCard",
-  props: {
-    title: String,
-    userCanEdit: Boolean,
-    showAdd: {
-      type: Boolean,
-      default: false
-    },
-    editMode: Boolean,
-    addBtnDisabled: Boolean,
-    showExpanded: {
-      type: Boolean,
-      default: false
-    },
-    expandedAll: CollapseExpandEnum
-  },
-  data () {
-    return {
-      addMode: false,
-      expanded: true
-    }
-  },
-  watch: {
-    expandedAll(){
-      if(this.expandedAll === CollapseExpandEnum.EXPANDED && this.expanded !== true) {
-        this.expanded = true
-      } else if(this.expandedAll === CollapseExpandEnum.COLLAPSED && this.expanded === true){
-        this.expanded = false
-      }
-    },
-  },
-  methods: {
-    toggleCollapseExpand(){
-      if(this.expanded && (this.addMode || this.editMode)){
-        this.hideCtrls()
-      }
-      this.expanded = !this.expanded
-      this.$emit('toggle-collapse-expand', this.expanded)
-    },
-    hideCtrls() {
-      this.addMode = false
-      this.editMode = false
-      this.$emit('hide-ctrls')
-    },
-    handleAddBtnClick(add) {
-      //without this method it would only show the "add" section if you clicked right on the icon and not if you were inside the button but outside the icon. was causing issues
-      if(add) {
-        this.add()
-      } else {
-        this.hideCtrls()
-      }
-    },
-    add(){
-      if(!this.expanded){
-        this.toggleCollapseExpand()
-      }
-      this.editMode = false
-      this.addMode = true
-    },
-    save(){
-      if(this.addMode){
-        this.$emit('save-new')
-        this.addMode = false
-      } else {
-        this.$emit('save-update')
-        this.$emit('hide-ctrls')
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-      }
-    },
-    deleteItem() {
-      this.$emit('delete-item')
-      this.$emit('hide-ctrls')
-    }
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  title: String,
+  userCanEdit: Boolean,
+  showAdd: {
+    type: Boolean,
+    default: false
+  },
+  editMode: Boolean,
+  addBtnDisabled: Boolean,
+  showExpanded: {
+    type: Boolean,
+    default: false
+  },
+  expandedAll: CollapseExpandEnum
+})
+const { title, userCanEdit, showAdd, editMode, addBtnDisabled, showExpanded, expandedAll } = toRefs(props)
+
+const addMode = ref(false)
+const expanded = ref(true)
+
+watch(expandedAll, () => {
+  if(expandedAll.value === CollapseExpandEnum.EXPANDED && expanded.value !== true) {
+    expanded.value = true
+  } else if(expandedAll.value === CollapseExpandEnum.COLLAPSED && expanded.value === true){
+    expanded.value = false
+  }
+})
+
+const emit = defineEmits(['toggle-collapse-expand', 'hide-ctrls', 'save-new', 'save-update', 'delete-item'])
+
+const toggleCollapseExpand = () => {
+  if(expanded.value && (addMode.value || editMode.value)){
+    hideCtrls()
+  }
+  expanded.value = !expanded.value
+  emit('toggle-collapse-expand', expanded.value)
+}
+const hideCtrls = ()  => {
+  addMode.value = false
+  editMode.value = false
+  emit('hide-ctrls')
+}
+const handleAddBtnClick = (add)  => {
+  //without this method it would only show the "add" section if you clicked right on the icon and not if you were inside the button but outside the icon. was causing issues
+  if(add) {
+    addMe()
+  } else {
+    hideCtrls()
   }
 }
+const addMe = () => {
+  if(!expanded.value){
+    toggleCollapseExpand()
+  }
+  editMode.value = false
+  addMode.value = true
+}
+const save = () => {
+  console.log('here')
+  if(addMode.value){
+    emit('save-new')
+    addMode.value = false
+  } else {
+    emit('save-update')
+    emit('hide-ctrls')
+  }
+}
+const deleteItem = ()  => {
+  emit('delete-item')
+  emit('hide-ctrls')
+}
+
 </script>
 
 <style lang="scss" scoped>

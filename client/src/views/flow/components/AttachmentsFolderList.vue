@@ -28,31 +28,44 @@
     </div>
     <div v-else-if="attachmentTypes.length > 0" :class="{'px-3': isCard}">
       <div v-if="activityTab" class="px-5 sticky-compare-bar">
-        <v-text-field
-          v-model="search"
-          prepend-inner-icon="search"
-          clearable
-          label="Search all project documents"
-          single-line
-          hide-details
-        ></v-text-field>
+        <a-text-field
+            v-model="search"
+            prepend-inner-icon="search"
+            clearable
+            label="Search all project documents"
+            single-line
+            hide-details
+        ></a-text-field>
         <div class="d-flex flex-wrap"
              :class="{'justify-space-between' : $vuetify.breakpoint.smAndUp}">
 
           <div class="my-2" :class="{'text-no-wrap' : $vuetify.breakpoint.lgAndUp}">
-            <v-btn  class="my-2 mr-3" :color="compare ? 'white' : 'primary'"
-                    :class="{'primary--text': compare, 'white--text' : !compare}"
-                    small @click="[cancelResetKey++, selectedAttachmentsForCompare = [], compare = false]"
-                    v-if="compare">
-              Cancel Comparison
-            </v-btn>
-            <v-btn color="primary" class="my-2" small @click="showCompareModal = true" v-if="compare "
-                   :disabled="selectedAttachmentsForCompare.length === 0">
-              Confirm Comparison
-            </v-btn>
-            <v-btn small color="primary" class="my-2" @click="compare = true" v-else-if="!isMobile">
-              Compare
-            </v-btn>
+            <a-btn
+                class="my-2 mr-3"
+                :color="compare ? 'white' : 'primary'"
+                :class="{'primary--text': compare, '' : !compare}"
+                size="small"
+                @click="[cancelResetKey++, selectedAttachmentsForCompare = [], compare = false]"
+                v-if="compare"
+                text="Cancel Comparison"
+            ></a-btn>
+            <a-btn
+                color="primary"
+                class="my-2"
+                size="small"
+                @click="showCompareModal = true"
+                v-if="compare "
+                :disabled="selectedAttachmentsForCompare.length === 0"
+                text="Confirm Comparison"
+            ></a-btn>
+            <a-btn
+                size="small"
+                color="primary"
+                class="my-2"
+                @click="compare = true"
+                v-else-if="!isMobile"
+                text="Compare"
+            ></a-btn>
           </div>
           <div class="text-no-wrap display-empty-folder-toggle">
             <label class="mr-3 body-medium"
@@ -60,17 +73,17 @@
               Hide Empty Folders
             </label>
             <v-switch
-              @change="$emit('toggleEmptyFolders')"
-              :disabled="disableHideEmptyFolderSwitch"
-              v-model="hideEmptyFolderStatus"
-              dense
+                @change="$emit('toggleEmptyFolders')"
+                :disabled="disableHideEmptyFolderSwitch"
+                v-model="hideEmptyFolderStatus"
+                dense
             ></v-switch>
           </div>
         </div>
       </div>
-      <v-toolbar v-if="this.search != null && this.search !== '' && filteredAttachmentTypes.length > 0" dense color="transparent" class="elevation-0 cfg-name-toolbar px-5">
-        <v-toolbar-title :class="{'albatross-header-4-new': !this.smallTitle,
-                                  'albatross-body-2': this.smallTitle}">
+      <v-toolbar v-if="search.value != null && search.value !== '' && filteredAttachmentTypes.length > 0" dense color="transparent" class="elevation-0 cfg-name-toolbar px-5">
+        <v-toolbar-title :class="{'albatross-header-4-new': !smallTitle.value,
+                                  'albatross-body-2': smallTitle.value}">
           Search Results
         </v-toolbar-title>
         <v-spacer></v-spacer>
@@ -82,8 +95,8 @@
         </v-toolbar-items>
       </v-toolbar>
       <v-toolbar v-if="title" dense color="transparent" class="elevation-0 process-step-toolbar cfg-name-toolbar">
-        <v-toolbar-title :class="{'albatross-header-4-new': !this.smallTitle,
-                                  'albatross-body-2': this.smallTitle}">
+        <v-toolbar-title :class="{'albatross-header-4-new': !smallTitle.value,
+                                  'albatross-body-2': smallTitle.value}">
           {{ title }}
         </v-toolbar-title>
       </v-toolbar>
@@ -112,51 +125,57 @@
                   <v-spacer></v-spacer>
 
                   <input
-                    :id="`fileInput${type.attachmentTypeId}`"
-                    type="file"
-                    :multiple="!type.hasFieldsAssigned"
-                    :accept="acceptedFileTypes"
-                    @change='doUpload($event.target.files, type)'
-                    style="display: none"
-                    @click.stop=""
-                    :ref="`fileInput${type.attachmentTypeId}`"
+                      :id="`fileInput${type.attachmentTypeId}`"
+                      type="file"
+                      :multiple="!type.hasFieldsAssigned"
+                      :accept="acceptedFileTypes"
+                      @change='doUpload($event.target.files, type)'
+                      style="display: none"
+                      :ref="`fileInput${type.attachmentTypeId}`"
                   >
                   <div class="expansion-panel-header-open" v-if="open"
                        key="0">
                   </div>
                   <span
-                    v-else
-                    key="1"
+                      v-else
+                      key="1"
                   >
                 </span>
-                  <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="selectFile(type.attachmentTypeId)" :icon="isMobile"
-                         elevation="0" text color="primary" class="text-capitalize" :class="{'mr-4': isMobile}"
-                         :disabled="dragTypeId === type.attachmentTypeId">
-                    <v-icon v-if="isMobile">mdi-tray-arrow-up</v-icon>
-                    <span v-else>Upload</span>
-                  </v-btn>
+                  <a-btn
+                      v-if="allowUpload || forceShowUploadBtn"
+                      @click.native.stop="selectFile(type.attachmentTypeId)"
+                      :icon="isMobile"
+                      :elevation="0"
+                      variant="text"
+                      color="primary"
+                      class="text-capitalize"
+                      :class="{'mr-4': isMobile}"
+                      :disabled="dragTypeId === type.attachmentTypeId"
+                      :prepend-icon="isMobile ? 'mdi-tray-arrow-up' : ''"
+                      :text="!isMobile ? 'Upload' : ''"
+                  ></a-btn>
                 </v-row>
               </template>
             </v-expansion-panel-header>
             <v-expansion-panel-content v-if="getTypeCount(type.attachmentTypeId) > 0 || hideEmptyFolderStatus === false">
               <AttachmentsTable
-                :search="search"
-                :display-type="type"
-                :allow-upload="allowUpload || forceShowUploadBtn"
-                :load-linked="loadLinked"
-                :attachments="sortedAttachments"
-                :projectId="projectId"
-                :projectProcessStepId="projectProcessStepId"
-                :userId="userId"
-                :contactId="contactId"
-                :compare="!allowUpload && !loadLinked && compare"
-                :orgId="orgId"
-                :cancel-reset-key="cancelResetKey"
-                :objectTypeId="objectTypeId"
-                :projectProcessStepEventId="projectProcessStepEventId"
-                :compare-callback="toggleAttachmentToCompare"
-                :delete-callback="attachmentDeleted"
-                :count-selected="selectedAttachmentsForCompare.length"
+                  :search="search"
+                  :display-type="type"
+                  :allow-upload="allowUpload || forceShowUploadBtn"
+                  :load-linked="loadLinked"
+                  :attachments="sortedAttachments"
+                  :projectId="projectId"
+                  :projectProcessStepId="projectProcessStepId"
+                  :userId="userId"
+                  :contactId="contactId"
+                  :compare="!allowUpload && !loadLinked && compare"
+                  :orgId="orgId"
+                  :cancel-reset-key="cancelResetKey"
+                  :objectTypeId="objectTypeId"
+                  :projectProcessStepEventId="projectProcessStepEventId"
+                  :compare-callback="toggleAttachmentToCompare"
+                  :delete-callback="attachmentDeleted"
+                  :count-selected="selectedAttachmentsForCompare.length"
               ></AttachmentsTable>
             </v-expansion-panel-content>
             <v-divider v-if="index !== attachmentTypes.length - 1 && (getTypeCount(type.attachmentTypeId) > 0 || hideEmptyFolderStatus === false)" class="mx-3"></v-divider>
@@ -169,387 +188,401 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import {
   getAttachmentSourceId,
   getRequestWithParams,
-  getSnackbar,
+
   logError
-} from "@/helpers/helpers";
-import {AppMutations} from "@/stores/AppStore";
-import orderBy from "lodash.orderby";
-import {Actions} from "@/store";
+} from '@/helpers/helpers'
+
+import orderBy from 'lodash.orderby'
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable";
 import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversheetModal'
 import AttachmentCompareModal from '@/views/flow/components/AttachmentCompareModal'
-import constants from "@/helpers/constants";
-import {ProjectMutations} from "@/stores/ProjectStore";
+import constants from '@/helpers/constants'
 import SpinnerInline from '@/components/SpinnerInline'
 import cloneDeep from 'lodash.clonedeep'
+import { useProjectStore } from '@/stores/ProjectStore.js'
+import { useFileStore } from '@/stores/FileStore.js'
 
-export default {
-  name: "AttachmentsFolderList",
-  components: {
-    AttachmentsTable,
-    AttachmentCoversheetModal,
-    AttachmentCompareModal,
-    SpinnerInline
-  },
-  props: {
-    allowUpload: Boolean,
-    loadLinked: Boolean,
-    focused: Boolean,
-    hideEmptyFolderStatus: Boolean,
-    smallTitle: Boolean,
-    title: String,
-    activityTab: Boolean, //this tells us whether to show the search and compare buttons
-    forceShowUploadBtn: Boolean,
-    projectId: Number,
-    userId: Number,
-    contactId: Number,
-    orgId: Number,
-    objectTypeId: Number,
-    isCard: Boolean,
-    hideEmpty: Boolean,
-    reloadOnKeyChange: {
-      type: Boolean,
-      default: false
-    }
-  },
-  data() {
-    return {
-      processStepId: null,
-      eventId: null,
-      tempFile: {},
-      fileToUpload: null,
-      loadingDetails: false,
-      projectProcessStepId: null,
-      projectProcessStepEventId: null,
-      selectedAttachmentsForCompare: [],
-      cancelResetKey: 0,
-      attachmentTypes: [],
-      attachments: [],
-      dragTypeId: null,
-      showCoversheetModal: false,
-      coversheetSelectedTypeId: null,
-      attachmentTypesLoading: false,
-      error: {},
-      maxFiles: constants.MAX_FILE_UPLOADS,
-      renderTicker: 0,
-      acceptedFileTypes: constants.STANDARD_IMAGES_DOCS_AUDIO,
-      companyId: this.$store.state.user.details.companyId,
-      headers: [
-        {text: null, value: 'fileIcon', show: true},
-        {text: null, value: 'filename', show: true},
-        {text: null, value: 'icons', show: true},
-      ],
-      search: '',
-      sortOldToNew: false,
-      compare: false,
-      showCompareModal: false,
-      opened:[],
-      emptyFolderToggleState: null,
-    }
-  },
-  watch: {
-    focused: function () {
-      this.loadAllPageDetails()
-    },
-    search: function () {
-      this.$emit('scrollToTop')
-    },
-    filteredAttachmentTypes: function (val) {
-      clearTimeout(this._filterTimerId)
-      this._filterTimerId = setTimeout(() => {
-        this.opened = []
-        if(this.search != null && this.search !== '') {
-          for(let i = 0; i < val.length; i++){
-            this.opened.push(i)
-          }
-        }
-      }, 5)
-    },
-    // // whenever pps id changes, this function will run
-    '$route.params.processStepId': async function () {
-      // reset the selected item
-      this.updateProcessStepAndEventIds()
-      this.loadAllPageDetails()
-    },
-    // // whenever pps event id changes, this function will run
-    '$route.params.ppsEventId': async function () {
-      // reset the selected item
-      this.updateProcessStepAndEventIds()
-      this.loadAllPageDetails()
-    },
-    // // whenever the project store forces a reload - do this - i cant remember why atm
-    '$store.state.project.forceReloadKey': async function () {
-      if (this.reloadOnKeyChange) {
-        // reset the selected item
-        this.updateProcessStepAndEventIds()
-        this.loadAllPageDetails()
-      }
-    }
-  },
-  created() {
-    this.updateProcessStepAndEventIds();
-    this.loadAllPageDetails();
-  },
-  computed: {
-    sortedAttachments() {
-      return orderBy(this.attachments, [a => a.dateCreated], this.search != null && this.search !== '' && this.sortOldToNew ? 'asc' : 'desc')
-    },
-    filteredAttachmentTypes() {
-      //if there's a search value, only show folders with an attachment that matches the search
-      return (this.search != null && this.search !== '') ? this.attachmentTypes.filter(type => {
-        return this.attachments.filter(a => {
-          return a.attachmentTypeId === type.attachmentTypeId && !a.archived && a.linked === this.loadLinked
-            && a.displayName.toLowerCase().includes(this.search.toLowerCase())
-        })?.length > 0
-      }) : this.attachmentTypes
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-    disableHideEmptyFolderSwitch() {
-      return this.search != null && this.search !== ''
-    }
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import {storeToRefs} from "pinia";
 
-  },
-  mounted() {
-    if (this.loadLinked) {
-      //if in the linked section and a new record was linked, add it here
-      this.$root.$on('newAttachmentLinked', data => {
-        let clone = cloneDeep(data)
-        clone.linked = true //if you dont clone it here then it updates the root obj in the calling fn which borks stuff
-        this.attachments.push(clone)
-      })
-      //if in the linked section and a linked attachment is archived, remove it
-      this.$root.$on('attachmentDeleted', id => {
-        this.attachments = this.attachments.filter(a => a.id !== id)
-      })
-    }
-  },
-  methods: {
-    closeCoversheet(attachmentTypeId) {
-      this.showCoversheetModal = false
-      //if you cancel the coversheet the file-input files prop is not getting reset. do manually here
-      //could not get it to reset using the vue $ref stuff. but this way with getElementById does work
-      document.getElementById(`fileInput${attachmentTypeId}`).value = null
-    },
-    closeCompareModal(a) {
-      if (a && null != a.id) {
-        //use if compare modal needs to close and the coversheet needs to open
-        this.tempFile = a
-        this.showCoversheetModal = true
-      }
-      this.showCompareModal = false
-    },
-    toggleAttachmentToCompare(attachment) {
-      if (attachment.compare) {
-        this.selectedAttachmentsForCompare.push(attachment)
-      } else {
-        this.selectedAttachmentsForCompare = this.selectedAttachmentsForCompare.filter(a => a.id !== attachment.id)
-      }
-    },
-    attachmentDeleted(id) {
-      this.attachments = this.attachments.filter(a => a.id !== id)
-    },
-    fileUploaded(attachment, error) {
-      if (error) {
-        this.snackbar = getSnackbar('ERROR', error.message)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } else {
-        this.attachments.push(attachment)
-        if (!this.forceShowUploadBtn) {
-          //so far, if forceShowUploadBtn, then it is on org, user, contact, etc so it is already where it needs to be and doesn't need to refresh again
-          //this value tells the right pane to update when a file is uploaded
-          this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
-        }
-      }
-      this.$store.commit(AppMutations.SET_LOADING, false)
-    },
-    updateProcessStepAndEventIds() {
-      this.processStepId = this.$route.query.processStepId
-      this.projectProcessStepId = parseInt(this.$route.params.processStepId) || null
-      this.projectProcessStepEventId = parseInt(this.$route.params.ppsEventId) || null
-    },
-    async loadAllPageDetails() {
-      //if not objectTypeId(org,contact,user) and should be "all" then use these endpoints to get combined list
-      let params = {}
-      if ((!this.objectTypeId || this.objectTypeId === 1) && !this.allowUpload && !this.loadLinked) {
-        this.typePath = `/combined/project`
-        this.attachmentPath = `/project/${this.projectId}/combinedAttachments`
-        params.ppsEventId = this.projectProcessStepEventId
-        params.ppsId = this.projectProcessStepId
-      } else {
-        if (this.projectProcessStepEventId) {
-          this.typePath = `/eventTypesByPpsEventId/${this.projectProcessStepEventId}`
-          this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/event/${this.projectProcessStepEventId}/attachments`
-        } else if (this.projectProcessStepId) {
-          this.typePath = `/processStepTypes/${this.projectProcessStepId}`
-          this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
-        } else if (this.projectId) {
-          this.typePath = `/objectType/project`
-          this.attachmentPath = `/project/${this.projectId}/attachments`
-        } else if (this.objectTypeId === 2) {
-          //contact
-          this.typePath = `/objectType/contact`
-          this.attachmentPath = `/contact/${this.contactId}/attachments`
-        } else if (this.objectTypeId === 5) {
-          //org
-          this.typePath = `/objectType/org`
-          this.attachmentPath = `/org/${this.orgId}/attachments`
-        } else if (this.objectTypeId === 3) {
-          //user
-          this.typePath = `/objectType/user`
-          this.attachmentPath = `/user/${this.userId}/attachments`
-        }
-      }
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const fileStore = useFileStore()
+const projectStore = useProjectStore()
+const { forceReloadKey } = storeToRefs(projectStore)
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+// const rootInstance = getCurrentInstance().appContext.app;
 
-      //if focused then override attachment path to get all in project
-      // if (this.focused) {
-      //   this.attachmentPath = `/project/${this.projectId}/combinedAttachments`
-      //   params.ppsEventId = this.projectProcessStepEventId
-      //   params.ppsId = this.projectProcessStepId
-      // }
-
-      if (this.typePath && this.attachmentPath) {
-        this.loadingDetails = true
-        let requests = [this.fetchAttachmentTypes(params), this.fetchAttachments(params)]
-        await Promise.all(requests)
-        this.loadingDetails = false
-      }
-    },
-    fetchAttachmentTypes: async function (typeParams) {
-      this.emptyFolderToggleState = this.hideEmptyFolderStatus
-      this.attachmentTypesLoading = true
-      const {data} = await getRequestWithParams(`/attachmentType${this.typePath}`, {
-        params: {
-          ...typeParams,
-          linkable: this.loadLinked,
-          allowUpload: this.allowUpload,
-          focused: this.focused
-        }
-      })
-      this.attachmentTypes = data
-      this.attachmentTypesLoading = false
-    },
-    fetchAttachments: async function (extraParams) {
-      const {data} = await getRequestWithParams(this.attachmentPath, {
-        params: {
-          ...extraParams,
-          linked: this.loadLinked
-        }
-      })
-      data.forEach(d => {
-        let tempFileName = d.filename.substr(0, d.filename.lastIndexOf('.'))
-        d.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
-        //adding this "copy" so that if they edit a name then click cancel we dont update the ui with their change
-        d.editableNameCopy = d.editableName
-      })
-
-      this.attachments = orderBy(data, [a => a.dateCreated], this.sortOldToNew ? 'asc' : 'desc')
-      this.hideEmptyFolderStatus = this.emptyFolderToggleState
-    },
-
-    getTypeCount: function (typeId) {
-      try {
-        return this.attachments.filter(a => {
-          return a.attachmentTypeId === typeId && !a.archived && a.linked === this.loadLinked
-            && ((this.search != null && this.search !== '') ? a.filename.toLowerCase().includes(this.search.toLowerCase()) : true)
-        })?.length || 0
-      } catch {
-        return 0
-      }
-    },
-    addDragDocument: async function (e, type) {
-      this.dragTypeId = null
-      if (this.allowUpload || this.forceShowUploadBtn) {
-        let files = e.dataTransfer.files
-        await this.doUpload(files, type)
-      }
-    },
-    selectFile: function (typeId) {
-      document.getElementById(`fileInput${typeId}`)?.click();
-    },
-    async doUpload(files, type) {
-      if (files?.length > 0) {
-        if (type.hasFieldsAssigned) {
-          let file = files[0]
-          this.setTempFile(file, type)
-        } else {
-          await this.uploadDocument(files, type)
-        }
-      }
-    },
-    setTempFile: function (file, type) {
-      this.tempFile = {}
-      this.fileToUpload = null
-      //we dont upload new files until after they fill in custom fields, need to pass file to next screen
-      this.fileToUpload = file
-      this.tempFile.attachmentTypeId = type.attachmentTypeId
-      this.tempFile.attachmentType = type.attachmentType
-      let displayName = this.fileToUpload.name.substr(0, this.fileToUpload.name.lastIndexOf('.'))
-      this.tempFile.displayName = displayName
-      this.showCoversheetModal = true
-    },
-    uploadDocument: async function (files, type) {
-      //this should only get called if the attachment type doesn't have any native fields
-      try {
-        //reset error message when trying to upload new file
-        this.error = {}
-        if (files?.length > 0) {
-          const { sourceId, secondaryId } = getAttachmentSourceId(this.projectId, this.projectProcessStepId, this.projectProcessStepEventId,
-            this.userId, this.contactId, this.orgId)
-
-          this.$store.commit(AppMutations.SET_LOADING, true)
-
-          //this could probably even be cleaned up a little more. but this is working for my first cleanup attempt
-          if (sourceId != null) {
-            if(files.length > 1) {
-              const filesToUpload = [...files].map(file => {
-                return {
-                  file,
-                  displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
-                  attachmentTypeId: type.attachmentTypeId,
-                  objectTypeId: this.objectTypeId,
-                  sourceId,
-                  secondaryId,
-                }
-              })
-              const uploaded = await this.$store.dispatch(Actions.FILE_UPLOAD_MULTI, filesToUpload)
-              this.attachments = [...this.attachments, ...uploaded]
-              if (!this.forceShowUploadBtn) {
-                //so far, if forceShowUploadBtn, then it is on org, user, contact, etc so it is already where it needs to be and doesn't need to refresh again
-                //this value tells the right pane to update when a file is uploaded
-                this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
-              }
-              this.$store.commit(AppMutations.SET_LOADING, false)
-            } else {
-              let file = files[0]
-              if(file?.size > 0) {
-                await this.$store.dispatch(Actions.FILE_UPLOAD, {
-                  file: file,
-                  attachmentTypeId: type.attachmentTypeId,
-                  displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
-                  objectTypeId: this.objectTypeId,
-                  sourceId,
-                  secondaryId,
-                  callback: this.fileUploaded
-                })
-              }
-            }
-          }
-        }
-      } catch (e) {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-
-    },
+const props = defineProps({
+  allowUpload: Boolean,
+  loadLinked: Boolean,
+  focused: Boolean,
+  hideEmptyFolderStatus: Boolean,
+  smallTitle: Boolean,
+  title: String,
+  activityTab: Boolean, //this tells us whether to show the search and compare buttons
+  forceShowUploadBtn: Boolean,
+  projectId: Number,
+  userId: Number,
+  contactId: Number,
+  orgId: Number,
+  objectTypeId: Number,
+  isCard: Boolean,
+  hideEmpty: Boolean,
+  reloadOnKeyChange: {
+    type: Boolean,
+    default: false
   }
+})
+const { allowUpload, loadLinked, focused, hideEmptyFolderStatus, smallTitle, title,
+  activityTab, forceShowUploadBtn, projectId, userId, contactId, orgId,
+  objectTypeId, isCard, hideEmpty, reloadOnKeyChange } = toRefs(props)
+
+
+
+const eventId = ref(null)
+const tempFile = ref({})
+const fileToUpload = ref(null)
+const loadingDetails = ref(false)
+const selectedAttachmentsForCompare = ref([])
+const cancelResetKey = ref(0)
+const attachmentTypes = ref([])
+const attachments = ref([])
+const dragTypeId = ref(null)
+const showCoversheetModal = ref(false)
+const coversheetSelectedTypeId = ref(null)
+const attachmentTypesLoading = ref(false)
+const error = ref({})
+const maxFiles = ref(constants.MAX_FILE_UPLOADS)
+const renderTicker = ref(0)
+const acceptedFileTypes = ref(constants.STANDARD_IMAGES_DOCS_AUDIO)
+const headers = ref([
+  {text: null, value: 'fileIcon', show: true},
+  {text: null, value: 'filename', show: true},
+  {text: null, value: 'icons', show: true},
+])
+const search = ref('')
+const sortOldToNew = ref(false)
+const compare = ref(false)
+const showCompareModal = ref(false)
+const opened = ref([])
+const emptyFolderToggleState = ref(null)
+const _filterTimerId = ref(null)
+const typePath = ref('')
+const attachmentPath = ref('')
+
+const emit = defineEmits(['scrollToTop'])
+
+const processStepId = computed(() => {
+  return route.query.processStepId
+})
+const projectProcessStepId = computed(() => {
+  return parseInt(route.params.processStepId) || null
+})
+const projectProcessStepEventId = computed(() => {
+  return parseInt(route.params.ppsEventId) || null
+})
+
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const sortedAttachments = computed(() => {
+  return orderBy(attachments.value, [a => a.dateCreated], search.value != null && search.value !== '' && sortOldToNew.value ? 'asc' : 'desc')
+})
+const filteredAttachmentTypes = computed(() => {
+  //if there's a search value, only show folders with an attachment that matches the search
+  return (search.value != null && search.value !== '') ? attachmentTypes.value.filter(type => {
+    return attachments.value.filter(a => {
+      return a.attachmentTypeId === type.attachmentTypeId && !a.archived && a.linked === loadLinked.value
+          && a.displayName.toLowerCase().includes(search.value.toLowerCase())
+    })?.length > 0
+  }) : attachmentTypes.value
+})
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+const disableHideEmptyFolderSwitch = computed(() => {
+  return search.value != null && search.value !== ''
+})
+
+watch(focused, () => {
+  loadAllPageDetails()
+})
+watch(search, () => {
+  emit('scrollToTop')
+})
+
+watch(filteredAttachmentTypes, (val) => {
+  clearTimeout(_filterTimerId.value)
+  _filterTimerId.value = setTimeout(() => {
+    opened.value = []
+    if(search.value != null && search.value !== '') {
+      for(let i = 0; i < val.length; i++){
+        opened.value.push(i)
+      }
+    }
+  }, 5)
+})
+
+watch([projectProcessStepId, projectProcessStepEventId], () => {
+  // whenever pps id ore pps event id changes, this function will run
+  loadAllPageDetails()
+})
+//todo: figure out if this works
+// whenever the project store forces a reload - do this - i cant remember why atm
+watch(forceReloadKey, () => {
+  if (reloadOnKeyChange.value) {
+    // reset the selected item
+    loadAllPageDetails()
+  }
+})
+
+onMounted(() => {
+  // todo: figure this out
+  //this was in mounted() not created()
+  if (loadLinked.value) {
+    //if in the linked section and a new record was linked, add it here
+    vueInstance.$on('newAttachmentLinked', data => {
+      let clone = cloneDeep(data)
+      clone.linked = true //if you dont clone it here then it updates the root obj in the calling fn which borks stuff
+      attachments.value.push(clone)
+    })
+    //if in the linked section and a linked attachment is archived, remove it
+    vueInstance.$on('attachmentDeleted', id => {
+      attachments.value = attachments.value.filter(a => a.id !== id)
+    })
+  }
+
+  loadAllPageDetails();
+})
+
+
+
+const closeCoversheet = (attachmentTypeId) => {
+  showCoversheetModal.value = false
+  //if you cancel the coversheet the file-input files prop is not getting reset. do manually here
+  //could not get it to reset using the vue $ref stuff. but this way with getElementById does work
+  document.getElementById(`fileInput${attachmentTypeId}`).value = null
+}
+const closeCompareModal = (a) => {
+  if (a && null != a.id) {
+    //use if compare modal needs to close and the coversheet needs to open
+    tempFile.value = a
+    showCoversheetModal.value = true
+  }
+  showCompareModal.value = false
+}
+const toggleAttachmentToCompare = (attachment) => {
+  if (attachment.compare) {
+    selectedAttachmentsForCompare.value.push(attachment)
+  } else {
+    selectedAttachmentsForCompare.value = selectedAttachmentsForCompare.value.filter(a => a.id !== attachment.id)
+  }
+}
+const attachmentDeleted = (id) => {
+  attachments.value = attachments.value.filter(a => a.id !== id)
+}
+const fileUploaded = (attachment, error) => {
+  if (error) {
+    snackbar('ERROR', error.message)
+
+  } else {
+    attachments.value.push(attachment)
+    if (!forceShowUploadBtn.value) {
+      //so far, if forceShowUploadBtn, then it is on org, user, contact, etc so it is already where it needs to be and doesn't need to refresh again
+      //this value tells the right pane to update when a file is uploaded
+      projectStore.incrementReloadKey()
+    }
+  }
+  appStore.loading = false
+}
+const loadAllPageDetails = async() => {
+  //if not objectTypeId(org,contact,user) and should be "all" then use these endpoints to get combined list
+  let params = {}
+  if ((!objectTypeId.value || objectTypeId.value === 1) && !allowUpload.value && !loadLinked.value) {
+    typePath.value = `/combined/project`
+    attachmentPath.value = `/project/${projectId.value}/combinedAttachments`
+    params.ppsEventId = projectProcessStepEventId.value
+    params.ppsId = projectProcessStepId.value
+  } else {
+    if (projectProcessStepEventId.value) {
+      typePath.value = `/eventTypesByPpsEventId/${projectProcessStepEventId.value}`
+      attachmentPath.value = `/projectProcessStep/${projectProcessStepId.value}/event/${projectProcessStepEventId.value}/attachments`
+    } else if (projectProcessStepId.value) {
+      typePath.value = `/processStepTypes/${projectProcessStepId.value}`
+      attachmentPath.value = `/projectProcessStep/${projectProcessStepId.value}/attachments`
+    } else if (projectId.value) {
+      typePath.value = `/objectType/project`
+      attachmentPath.value = `/project/${projectId.value}/attachments`
+    } else if (objectTypeId.value === 2) {
+      //contact
+      typePath.value = `/objectType/contact`
+      attachmentPath.value = `/contact/${contactId.value}/attachments`
+    } else if (objectTypeId.value === 5) {
+      //org
+      typePath.value = `/objectType/org`
+      attachmentPath.value = `/org/${orgId.value}/attachments`
+    } else if (objectTypeId.value === 3) {
+      //user
+      typePath.value = `/objectType/user`
+      attachmentPath.value = `/user/${userId.value}/attachments`
+    }
+  }
+
+  //if focused then override attachment path to get all in project
+  // if (focused.value) {
+  //   attachmentPath.value = `/project/${projectId.value}/combinedAttachments`
+  //   params.ppsEventId = projectProcessStepEventId.value
+  //   params.ppsId = projectProcessStepId.value
+  // }
+
+  if (typePath.value && attachmentPath.value) {
+    loadingDetails.value = true
+    let requests = [fetchAttachmentTypes(params), fetchAttachments(params)]
+    await Promise.all(requests)
+    loadingDetails.value = false
+  }
+}
+const fetchAttachmentTypes = async (typeParams) => {
+  emptyFolderToggleState.value = hideEmptyFolderStatus.value
+  attachmentTypesLoading.value = true
+  const {data} = await getRequestWithParams(`/attachmentType${typePath.value}`, {
+    params: {
+      ...typeParams,
+      linkable: loadLinked.value,
+      allowUpload: allowUpload.value,
+      focused: focused.value
+    }
+  })
+  attachmentTypes.value = data
+  attachmentTypesLoading.value = false
+}
+const fetchAttachments = async (extraParams) => {
+  const {data} = await getRequestWithParams(attachmentPath.value, {
+    params: {
+      ...extraParams,
+      linked: loadLinked.value
+    }
+  })
+  data.forEach(d => {
+    let tempFileName = d.filename.substr(0, d.filename.lastIndexOf('.'))
+    d.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : d.filename
+    //adding this "copy" so that if they edit a name then click cancel we dont update the ui with their change
+    d.editableNameCopy = d.editableName
+  })
+
+  attachments.value = orderBy(data, [a => a.dateCreated], sortOldToNew.value ? 'asc' : 'desc')
+  hideEmptyFolderStatus.value = emptyFolderToggleState.value
+}
+
+const getTypeCount = (typeId) => {
+  try {
+    return attachments.value.filter(a => {
+      return a.attachmentTypeId === typeId && !a.archived && a.linked === loadLinked.value
+          && ((search.value != null && search.value !== '') ? a.filename.toLowerCase().includes(search.value.toLowerCase()) : true)
+    })?.length || 0
+  } catch {
+    return 0
+  }
+}
+const addDragDocument = async (e, type) => {
+  dragTypeId.value = null
+  if (allowUpload.value || forceShowUploadBtn.value) {
+    let files = e.dataTransfer.files
+    await doUpload(files, type)
+  }
+}
+const selectFile = (typeId) => {
+  document.getElementById(`fileInput${typeId}`)?.click();
+}
+const doUpload = async(files, type) => {
+  if (files?.length > 0) {
+    if (type.hasFieldsAssigned) {
+      let file = files[0]
+      setTempFile(file, type)
+    } else {
+      await uploadDocument(files, type)
+    }
+  }
+}
+const setTempFile = (file, type) => {
+  tempFile.value = {}
+  fileToUpload.value = null
+  //we dont upload new files until after they fill in custom fields, need to pass file to next screen
+  fileToUpload.value = file
+  tempFile.value.attachmentTypeId = type.attachmentTypeId
+  tempFile.value.attachmentType = type.attachmentType
+  let displayName = fileToUpload.value.name.substr(0, fileToUpload.value.name.lastIndexOf('.'))
+  tempFile.value.displayName = displayName
+  showCoversheetModal.value = true
+}
+const uploadDocument = async (files, type) => {
+  //this should only get called if the attachment type doesn't have any native fields
+  try {
+    //reset error message when trying to upload new file
+    error.value = {}
+    if (files?.length > 0) {
+      const { sourceId, secondaryId } = getAttachmentSourceId(projectId.value, projectProcessStepId.value, projectProcessStepEventId.value,
+          userId.value, contactId.value, orgId.value)
+
+      appStore.loading = true
+
+      //this could probably even be cleaned up a little more. but this is working for my first cleanup attempt
+      if (sourceId != null) {
+        if(files.length > 1) {
+          const filesToUpload = [...files].map(file => {
+            return {
+              file,
+              displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
+              attachmentTypeId: type.attachmentTypeId,
+              objectTypeId: objectTypeId.value,
+              sourceId,
+              secondaryId,
+            }
+          })
+          const uploaded = await fileStore.uploadFileMulti(filesToUpload)
+          attachments.value = [...attachments.value, ...uploaded]
+          if (!forceShowUploadBtn.value) {
+            //so far, if forceShowUploadBtn, then it is on org, user, contact, etc so it is already where it needs to be and doesn't need to refresh again
+            //this value tells the right pane to update when a file is uploaded
+            projectStore.incrementReloadKey()
+          }
+          appStore.loading = false
+        } else {
+          let file = files[0]
+          if(file?.size > 0) {
+            await fileStore.uploadFile({
+              file: file,
+              attachmentTypeId: type.attachmentTypeId,
+              displayName: file?.name?.substr(0, file?.name?.lastIndexOf('.')),
+              objectTypeId: objectTypeId.value,
+              sourceId,
+              secondaryId,
+              callback: fileUploaded
+            })
+          }
+        }
+      }
+    }
+  } catch (e) {
+    appStore.loading = false
+    logError(e)
+    snackbar('ERROR', 'Error Uploading File')
+
+  }
+
 }
 </script>
 
@@ -622,9 +655,10 @@ export default {
   }
 }
 
-.theme--light.v-btn.v-btn--disabled.v-btn--has-bg {
-  background-color: transparent !important;
-}
+//todo check if still needed??
+//.theme--light.v-btn.v-btn--disabled.v-btn--has-bg {
+//  background-color: transparent !important;
+//}
 
 .child-drag-elements {
   pointer-events: none;

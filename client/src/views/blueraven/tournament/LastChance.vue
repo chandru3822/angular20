@@ -16,30 +16,32 @@
         {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn v-if="userCanEdit && !dataLoading && selectedUsers.length > 0"
-                 color="primary" class="white--text" @click="moveUsersToWinnersPool()">
-            <span>Advance Users To Next Round</span>
-          </v-btn>
+          <a-btn
+              v-if="userCanEdit && !dataLoading && selectedUsers.length > 0"
+              color="primary"
+              @click="moveUsersToWinnersPool()"
+              text="Advance Users To Next Round"
+          ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
-      <v-text-field
-        v-model="search"
-        class="mb-2 px-4 py-2"
-        prepend-inner-icon="search"
-        label="Search"
-        single-line
-        hide-details
-      ></v-text-field>
+      <a-text-field
+          v-model="search"
+          class="mb-2 px-4 py-2"
+          prepend-inner-icon="search"
+          label="Search"
+          single-line
+          hide-details
+      ></a-text-field>
       <v-divider></v-divider>
       <v-data-table
-        :headers="headers"
-        :items="poolUsers"
-        :search="search"
-        :fixed-header="true"
-        :items-per-page="100"
-        :footer-props="footerProps"
-        disable-sort
-        class="elevation-1 square-card"
+          :headers="headers"
+          :items="poolUsers"
+          :search="search"
+          :fixed-header="true"
+          :items-per-page="100"
+          :footer-props="footerProps"
+          disable-sort
+          class="elevation-1 square-card"
       >
         <template #no-data>
           <span class="default-text-color">No available users</span>
@@ -69,9 +71,14 @@
               <span v-else>{{item.score}}</span>
             </td>
             <td class="text-right">
-              <v-btn text small color="primary" class="clickable" @click="[showModal = true, showScoreUser = item]">
-                <v-icon>mdi-format-list-bulleted</v-icon>
-              </v-btn>
+              <a-btn
+                  variant="text"
+                  size="small"
+                  color="primary"
+                  class="clickable"
+                  @click="[showModal = true, showScoreUser = item]"
+                  prepend-icon="mdi-format-list-bulleted"
+              ></a-btn>
             </td>
           </tr>
         </template>
@@ -80,104 +87,109 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, logError, postRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import ScoreDrilldown from "./component/ScoreDrilldown"
+<script setup>
 
-  export default {
-    name: 'LastChance',
-    components: {
-      ScoreDrilldown
-    },
-    data() {
-      return {
-        constants,
-        snackbar: {},
-        poolTypeId: 2,
-        search: '',
-        showScoreUser: {},
-        showModal: false,
-        dataLoading: true,
-        footerProps: {
-          'items-per-page-options': [25, 50, 100],
-        },
-        selectRerender: 1,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
-        tournamentId: this.$route.params.id,
-        pool: {},
-        poolUsers: [],
-        selectedUsers: [],
-        headers: [
-          { text: '', value: 'checkbox', show: true, width: '50px' },
-          { text: 'User', value: 'fullName', show: true },
-          { text: 'Score', value: 'score', show: true },
-          {text: '', value: 'details', show: true},
-        ],
-      }
-    },
-    async created () {
-      this.getPool()
-      this.getPoolUsers()
-    },
-    methods: {
-      toggleSingleSelect(item) {
-        if (item.selected) {
-          this.selectedUsers.push(item.userId)
-        } else {
-          this.selectedUsers = this.selectedUsers.filter(u => u !== item.userId)
-        }
-      },
-      async getPool () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        this.dataLoading = true
-        try {
-          const {data, status} = await getRequest(`/tournament/${this.tournamentId}/pool/byType/${this.poolTypeId}`, 'blueraven')
-          this.dataLoading = false
-          this.pool = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching pool details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async moveUsersToWinnersPool () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await postRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/advanceUsersToWinnerPool`, this.selectedUsers, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Selected Users Advanced')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$router.push({name: 'tournamentWinners', params: { id: this.tournamentId }})
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Advancing Users')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getPoolUsers() {
-        try {
-          const {data} = await getRequest(`/tournament/${this.tournamentId}/pool/usersByType/${this.poolTypeId}`, 'blueraven')
-          this.poolUsers = data
-        } catch (e) {
-          logError(e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching pool user details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-    }
+import {handleHidingGlobalLoader, getRequest, logError, postRequest, } from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import ScoreDrilldown from "./component/ScoreDrilldown"
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const poolTypeId = ref(2)
+const search = ref('')
+const showScoreUser = ref({})
+const showModal = ref(false)
+const dataLoading = ref(true)
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100],})
+const selectRerender = ref(1)
+const pool = ref({})
+const poolUsers = ref([])
+const selectedUsers = ref([])
+const headers = ref([
+  { text: '', value: 'checkbox', show: true, width: '50px' },
+  { text: 'User', value: 'fullName', show: true },
+  { text: 'Score', value: 'score', show: true },
+  {text: '', value: 'details', show: true},
+])
+
+onMounted(() => {
+  getPool()
+  getPoolUsers()
+})
+
+const tournamentId = computed(() => {
+  return route.params.id
+})
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
+})
+
+const toggleSingleSelect = (item) => {
+  if (item.selected) {
+    selectedUsers.value.push(item.userId)
+  } else {
+    selectedUsers.value = selectedUsers.value.filter(u => u !== item.userId)
   }
+}
+const getPool = async () => {
+  appStore.loading = true
+  dataLoading.value = true
+  try {
+    const {data, status} = await getRequest(`/tournament/${tournamentId.value}/pool/byType/${poolTypeId.value}`, 'blueraven')
+    dataLoading.value = false
+    pool.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching pool details')
+
+    appStore.loading = false
+  }
+}
+const moveUsersToWinnersPool = async () => {
+  appStore.loading = true
+  try {
+    const {status} = await postRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/advanceUsersToWinnerPool`, selectedUsers.value, 'blueraven')
+    snackbar('SUCCESS', 'Selected Users Advanced')
+
+    router.push({name: 'tournamentWinners', params: { id: tournamentId.value }})
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Advancing Users')
+
+    appStore.loading = false
+  }
+}
+const getPoolUsers = async() => {
+  try {
+    const {data} = await getRequest(`/tournament/${tournamentId.value}/pool/usersByType/${poolTypeId.value}`, 'blueraven', [])
+    poolUsers.value = data
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching pool user details')
+
+  }
+}
 </script>
 
 <style lang="scss">
-  #last-chance-pool-container .v-data-table__wrapper {
-    max-height: calc(100vh - 375px);
-    min-height: 300px;
-  }
+#last-chance-pool-container .v-data-table__wrapper {
+  max-height: calc(100vh - 375px);
+  min-height: 300px;
+}
 </style>
 
 <style lang="scss" scoped>

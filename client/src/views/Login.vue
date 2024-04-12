@@ -8,24 +8,22 @@
               <v-toolbar-title>Albatross</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="login-card-text">
-              <h2 class="error--text" v-if="$store.state.user.loginError">{{ $store.state.user.loginError }}</h2>
+              <h2 class="error--text" v-if="userStore.loginError">{{ userStore.loginError }}</h2>
               <v-form ref="login" v-model="validForm" @submit.prevent="onSubmit()">
-                <v-text-field required color="primary"
+                <a-text-field required color="primary"
                               :rules="requiredRules"
                               v-model="form.email" prepend-icon="person" name="login"
-                              label="Login" type="email"></v-text-field>
-                <v-text-field required color="primary"
+                              label="Login" type="email"></a-text-field>
+                <a-text-field required color="primary"
                               :rules="requiredRules"
                               v-model="form.password" prepend-icon="lock" name="password"
-                              label="Password" id="password" type="password"></v-text-field>
+                              label="Password" id="password" type="password"></a-text-field>
                 <v-card-actions>
                   <router-link :to="'/forgotPassword'" title="Forgot Password">
                     Forgot Password
                   </router-link>
                   <v-spacer></v-spacer>
-                  <v-btn :loading="loginLoading" type="submit"
-                         color="primary" class="white--text">Login
-                  </v-btn>
+                  <a-btn :loading="loginLoading" type="submit" text="Login" />
                 </v-card-actions>
               </v-form>
             </v-card-text>
@@ -36,81 +34,74 @@
   </v-main>
 </template>
 
-<script>
-import {UserActions, UserMutations} from '@/stores/UserStore'
+<script setup>
 import constants from '@/helpers/constants'
 import axios from 'axios'
+import {getCurrentInstance, onMounted, ref} from 'vue'
 
-export default {
-  name: 'Login',
-  data() {
-    return {
-      validForm: false,
-      form: {
-        email: null,
-        password: null
-      },
-      loginLoading: false,
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-    }
-  },
-  created() {
-    //clear any previous login errors on page refresh
-    this.$store.commit(
-      UserMutations.LOGIN_ERROR,
-      null
-    )
-  },
-  methods: {
-    async onSubmit() {
-      this.loginLoading = true
-      if (this.$refs.login.validate()) {
+import { useUserStore } from '@/stores/UserStore.js'
+import {useRouter} from "vue-router/composables"
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const router = useRouter()
+const snackbar = vueInstance.$snackbar
+const userStore = useUserStore()
+
+const validForm = ref(false)
+const form = ref({
+  email: null,
+  password: null
+})
+const loginLoading = ref(false)
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const login = ref(null)
+
+onMounted(() => {
+  userStore.loginError = ''
+})
+
+  const onSubmit = async() => {
+      loginLoading.value = true
+      if (login.value.validate()) {
         try {
           const params = {
-            username: this.form.email,
-            password: this.form.password
+            username: form.value.email,
+            password: form.value.password
           }
           const {data} = await axios.post(`${constants.VUE_APP_BASE_API}/auth/login`, params)
           const {token, details} = data
           if (token) {
-            this.$store.commit(UserMutations.SET_JWT, token)
-            this.loginSuccess(details)
+            userStore.jwt = token
+            loginSuccess(details)
           } else {
-            this.loginLoading = false
-            this.$store.commit(
-              UserMutations.LOGIN_ERROR,
-              'Invalid Username or Password.'
-            )
+            loginLoading.value = false
+            userStore.loginError = 'Invalid Username or Password.'
           }
         } catch (e) {
-          this.loginLoading = false
-          this.$store.commit(
-            UserMutations.LOGIN_ERROR,
-            e.data
-          )
+          loginLoading.value = false
+          userStore.loginError = e.data
 
           if(e?.status === 406) {
             //this means the user tried to login with the company default password. redirect to the reset password screen
-              this.$router.push({path: `/resetPassword`})
+              router.push({path: `/resetPassword`})
           }
 
         }
       } else {
-        this.loginLoading = false
+        loginLoading.value = false
       }
-    },
-    async loginSuccess(details) {
-      await this.$store.dispatch(UserActions.LOGIN_SUCCESS, details)
+    }
+    const loginSuccess = async(details) => {
+      await userStore.login(details)
 
       //this code handles redirecting them back to the page they were trying to get to after they login
       let rt = { name: 'home'}
-      if(this.$route.query?.redirect) {
-        rt = { path: this.$route.query?.redirect}
+      if(vueInstance.$route.query?.redirect) {
+        rt = { path: vueInstance.$route.query?.redirect}
       }
-      this.$router.push(rt)
+      await router.push(rt)
     }
-  }
-}
 </script>
 
 <style scoped lang="scss">

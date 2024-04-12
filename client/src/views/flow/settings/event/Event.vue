@@ -2,30 +2,49 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-btn text class="pl-1 pr-2 anchor" :to="'/settings/events'">
-          <v-icon>arrow_left</v-icon>
-          <span>Back</span>
-        </v-btn>
+        <a-btn
+            variant="text"
+            class="pl-1 pr-2 anchor"
+            :to="'/settings/events'"
+            color="unset"
+            prepend-icon="arrow_left"
+            text="Back"
+        ></a-btn>
         <v-toolbar id="event-name-toolbar" flat class="app-toolbar">
           <span class="headline-small" v-if="!editName">{{ event.eventName }}</span>
-          <v-text-field v-else color="primary" class=""
+          <a-text-field v-else color="primary" class=""
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         v-model="event.eventName"
                         hide-details
-                        label="Event Name"></v-text-field>
+                        label="Event Name"></a-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanEdit && !editName" class="" @click="[oldName = event.eventName, editName = !editName]">
-              <v-icon>edit</v-icon>
-            </v-btn>
-            <v-btn text color="primary" class="" v-else-if="userCanEdit" @click="saveEventName()">
-              <v-icon>save</v-icon>
-            </v-btn>
-            <v-btn text color="primary" v-if="userCanEdit && editName" class="" @click="[event.eventName = oldName, editName = !editName]">
-              <v-icon v-if="$vuetify.breakpoint.smAndDown">close</v-icon>
-              <span v-else>cancel</span>
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                v-if="userCanEdit && !editName"
+                class=""
+                @click="[oldName = event.eventName, editName = !editName]"
+                prepend-icon="edit"
+            ></a-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                class=""
+                v-else-if="userCanEdit"
+                @click="saveEventName()"
+                prepend-icon="save"
+            ></a-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                v-if="userCanEdit && editName"
+                class=""
+                @click="[event.eventName = oldName, editName = !editName]"
+                :prepend-icon="$vuetify.breakpoint.smAndDown ? 'close': ''"
+                :text="$vuetify.breakpoint.smAndDown ? '' : 'cancel'"
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-tabs class="tabs-bar" v-model="activeTab">
@@ -42,92 +61,93 @@
   </v-container>
 </template>
 
-<script>
-import Vue2Filters from 'vue2-filters'
+<script setup>
 
 import {AppMutations} from "@/stores/AppStore";
-import {getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
 
-export default {
-  name: 'Event',
-  mixins: [Vue2Filters.mixin],
+import {getRequest, putRequest} from "@/helpers/helpers";
+import {useRoute} from "vue-router/composables"
 
-  data () {
-    return {
-      snackbar: {},
-      editName: false,
-      oldName: null,
-      event: {},
-      eventId: this.$route.params.id,
-      companyId: this.$store.state.user.details.companyId,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-    }
+import {ref, computed, onMounted, getCurrentInstance} from "vue";
+import { useUserStore } from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const route = useRoute()
+const vuetify = vueInstance.$vuetify
+
+const editName = ref(false)
+const oldName = ref(null)
+const event = ref({})
+
+const eventId = computed(() => {
+  return route.params.id
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+
+
+const activeTab = computed({
+  get() {
+    return route?.path?.includes('/attachmentType') ? `/settings/event/${eventId.value}/attachmentTypes` : null
   },
-  computed: {
-    //this should not be so hard
-    activeTab: {
-      get: function() {
-        return this.$route?.path?.includes('/attachmentType') ? `/settings/event/${this.eventId}/attachmentTypes` : null
-      },
-      set: function(val) {
-        return val
-      }
-    },
-    tabs() {
-      return [
-        {
-          id: 1,
-          label: 'Components',
-          path: `/settings/event/${this.eventId}/components`,
-        },
-        {
-          id: 2,
-          label: 'Custom Field Groups',
-          path: `/settings/event/${this.eventId}/customFieldGroups`,
-        },
-        {
-          id: 3,
-          label: 'Attachment Types',
-          path: `/settings/event/${this.eventId}/attachmentTypes`,
-        }
-      ]
-    }
-  },
-  async created () {
-    await this.getEvent()
-  },
-  methods: {
-    async getEvent () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getRequest(`/event/${this.eventId}`)
-        this.event = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveEventName() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await putRequest(`/event`, this.event)
-        this.editName = false
-        this.snackbar = getSnackbar('SUCCESS', 'Event Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Event')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+  set(val) {
+    return val
   }
-
+})
+const tabs = computed(() => {
+  return [
+    {
+      id: 1,
+      label: 'Components',
+      path: `/settings/event/${eventId.value}/components`,
+    },
+    {
+      id: 2,
+      label: 'Custom Field Groups',
+      path: `/settings/event/${eventId.value}/customFieldGroups`,
+    },
+    {
+      id: 3,
+      label: 'Attachment Types',
+      path: `/settings/event/${eventId.value}/attachmentTypes`,
+    }
+  ]
+})
+onMounted(async () => {
+  await getEvent()
+})
+const getEvent = async () => {
+  appStore.loading = true
+  try {
+    const {data} = await getRequest(`/event/${eventId.value}`)
+    event.value = data
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
   }
+}
+const saveEventName = async () => {
+  appStore.loading = true
+  try {
+    await putRequest(`/event`, event.value)
+    editName.value = false
+    snackbar('SUCCESS', 'Event Updated')
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating Event')
+    appStore.loading = false
+  }
+}
 </script>
 
 <style scoped lang="scss">

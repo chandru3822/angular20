@@ -7,20 +7,28 @@
 *@description
 *
 */
-import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue'
-import { AppMutations } from '@/stores/AppStore.js'
-import { getRequest, getSnackbar, handleHidingGlobalLoader, postRequest } from '@/helpers/helpers.js'
-import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
-import { ScheduleMutations } from '@/stores/ScheduleStore.js'
-import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
+import {getCurrentInstance, computed, onMounted, ref, watch} from "vue";
+import {AppMutations} from "@/stores/AppStore.js";
+import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
+import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/eventStatusTypeService.js";
 import { getEventDefaultFieldReadOnly } from '@/services/customFieldService.js'
 
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useScheduleStore } from '@/stores/ScheduleStore.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const router = vueInstance.$router
+const scheduleStore = useScheduleStore()
+const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
-const route = vueInstance.$route
 const emit = defineEmits(['toggleProjectMapPin', 'updateEvents'])
 
 const props = defineProps({
@@ -29,18 +37,25 @@ const props = defineProps({
   resourceFromCalendar:Object,
 })
 const show = ref(vuetify.breakpoint.mdAndUp)
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
-const userCanManage = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'MANAGE'))
-const userIsAdmin = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN'))
 const fieldsSaving = ref(false)
 const conflictingEvents = ref()
 const saveInvalid = ref(true)
 const cancelledCompanyEventStatuses = ref()
-const timezoneFriendly = ref(store.state.schedule.timezone.friendlyValue)
 const event = ref(null)
 const ppsId = ref(route.query.projectProcessStepId)
 const ppsEventId = ref(route.query.projectProcessStepEventId)
 const saveError = ref(null)
+
+const userCanEdit = computed(() => {
+  return  userStore.userHasFeatureAccessLevel('EVENTS', 'EDIT')
+})
+const userCanManage = computed(() => {
+  return  userStore.userHasFeatureAccessLevel('EVENTS', 'MANAGE')
+})
+const userIsAdmin = computed(() => {
+  return  userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')
+})
+const timezoneFriendly = computed(() => scheduleStore.timezone.friendlyValue)
 
 watch(() => props.resourceFromCalendar, () => {
   if(props.resourceFromCalendar.id) {
@@ -53,14 +68,11 @@ watch(() => props.resourceFromCalendar, () => {
   show.value=true
 })
 
-watch(() => store.state.schedule.timezone.friendlyValue, (fv) => {
-  timezoneFriendly.value = fv
-})
 
 const isUserWhitelisted = computed(() => {
 	if(event.value?.readonlyWhiteListedPositions) {
 		for (let wlp of event.value?.readonlyWhiteListedPositions) {
-			let match = store.state.user.details.userPositions.find(up => up.positionId === wlp.positionId)
+			let match = userStore.details.userPositions.find(up => up.positionId === wlp.positionId)
 			if (match) {
 				return true //if the user has a position that matches any of the whiteList positions, the user should see the event
 			}
@@ -108,14 +120,7 @@ onMounted(async () => {
 	}
 })
 
-const setSelectedResourceInStore = (resourceId) => {
-  if(resourceId){
-    store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, resourceId)
-  }
-  else {
-    store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, null)
-  }
-}
+const setSelectedResourceInStore = (resourceId) => scheduleStore.selectedResourceId = resourceId ?? null
 
 const openInNewTab = (path) => {
   let routerData = router.resolve({path})
@@ -132,7 +137,7 @@ const eventIsSameDay = () => {
 }
 
 const getResources = async(item) => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     item.resources = []
     let params = {
@@ -146,9 +151,8 @@ const getResources = async(item) => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    let snackbar = getSnackbar('ERROR', 'Error Retrieving Resources')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Retrieving Resources')
+    appStore.loading = false
   }
 }
 
@@ -161,6 +165,19 @@ const scheduleCalendarResourceToProject = (resource) => {
   }
   setSelectedResourceInStore(props.project.resource.id)
   validateSaveEvent()
+}
+
+const getCancelledCompanyEventStatuses = async () => {
+  try {
+    const {data} = await getCancelledCompanyStatusTypesAssignedToPpsEvent(props.project.projectProcessStepId, props.project.projectProcessStepEventId)
+    cancelledCompanyEventStatuses.value = data
+    if(data?.length === 1) {
+      props.project.cancelledCompanyStatusType = data[0]
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error fetching process step statuses')
+  }
 }
 
 
@@ -193,7 +210,7 @@ const scheduleProject = async(forceSave) => {
   props.project.resourceId = props.project.resource.id
   props.project.resourceName = props.project.resource.name
   props.project.forceSave = forceSave
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await postRequest(`/schedule/saveEvent`, props.project)
     //if saved successfully then increase the "saveVersion" so they can make a 2nd change too
@@ -209,16 +226,15 @@ const scheduleProject = async(forceSave) => {
     if(e.status === 409){
       conflictingEvents.value = e.data;
       fieldsSaving.value = false
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
     else {
       console.error('*** ERROR ***', e)
       let saveMismatch = e.data?.message === 'Save Version Mismatch'
       let msg = saveMismatch ? 'Error Scheduling Project. This event has been update by another user. Please refresh to see the latest data.' : 'Error Scheduling Project'
-      let snackbar = getSnackbar('ERROR', msg)
+      snackbar('ERROR', msg)
       fieldsSaving.value = false
-      store.commit(AppMutations.SHOW_SNACK, snackbar)
-      store.commit(AppMutations.SET_LOADING, false)
+      appStore.loading = false
     }
   }
 }
@@ -228,13 +244,11 @@ const cancelProjectProcessStepEvent = async() => {
     const {status} = await postRequest(`/projectProcessStep/${props.project.projectProcessStepId}/event/${props.project.projectProcessStepEventId}/status`, props.project.cancelledCompanyStatusType)
     props.project.eventStatusTypeId = props.project?.cancelledCompanyStatusType?.id
     handleHidingGlobalLoader(vueInstance, status)
-    let snackbar = getSnackbar('SUCCESS', 'Successfully Unscheduled Event')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    snackbar('SUCCESS', 'Successfully Unscheduled Event')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    let snackbar = getSnackbar('ERROR', 'Error Unscheduling Event')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Unscheduling Event')
+    appStore.loading = false
   }
 }
 
@@ -246,15 +260,15 @@ const cancelProjectProcessStepEvent = async() => {
   <v-card-title class="d-flex align-start clickable"  @click="show = !show">
     <span class="label-large pr-1 break-word max-width-half">{{project.projectName}}</span>
     <v-spacer/>
-    <AlbatrossButton class="mx-2" icon size="small" color="primary" @click.native.stop="emit('toggleProjectMapPin')">
+    <a-btn class="mx-2" icon size="small" color="primary" @click.native.stop="emit('toggleProjectMapPin')">
       <v-icon v-if="project.pinned">mdi-map-marker</v-icon>
       <v-icon v-else>mdi-map-marker-off</v-icon>
-    </AlbatrossButton>
-    <AlbatrossButton
+    </a-btn>
+    <a-btn
         icon size="small" color="primary"
     >
       <v-icon>{{ show ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
-    </AlbatrossButton>
+    </a-btn>
   </v-card-title>
   <v-card-subtitle class="clickable anchor pt-2 pb-5">
     <span @click="openInNewTab(`/project/${project.projectId}/processStep/${project.projectProcessStepId}/event/${project.projectProcessStepEventId}`)">{{project.eventName}} <v-icon small class="anchor">mdi-open-in-new</v-icon></span>
@@ -266,16 +280,16 @@ const cancelProjectProcessStepEvent = async() => {
     <!--  When the event hasn't been scheduled  -->
     <div v-if="userCanEdit && project.editableInSchedule">
       <v-card-text class="py-0" id="randa-test">
-        <v-autocomplete v-model="project.resource"
+        <a-autocomplete v-model="project.resource"
                         :items="project.resources"
                         :label="project.resourceFieldName  || 'Resource'"
-						:disabled="isResourceReadOnly"
+                        :disabled="isResourceReadOnly"
                         placeholder=" "
                         return-object
                         clearable
                         hide-details
-                        dense
-                        item-text="name"
+                        density="compact"
+                        item-title="name"
                         item-value="id"
                         @input="[validateSaveEvent(), setSelectedResourceInStore(project.resource?.id)]"
                         @click:clear="setSelectedResourceInStore(null)"
@@ -283,10 +297,10 @@ const cancelProjectProcessStepEvent = async() => {
                         :active="!!resourceFromCalendar"
         >              <!--setting the 'active' prop this way forces the value to appear when when click the schedule button on the calendar-->
 
-          <template v-slot:item="data">
-            <div class="body-large">{{data.item.name}}</div>
+          <template v-slot:item="{ props, item }">
+            <div class="body-large">{{item.name}}</div>
           </template>
-        </v-autocomplete>
+        </a-autocomplete>
         <DatetimePickerInput
             v-model="project.start"
             :timezone="timezone?.value"
@@ -316,10 +330,10 @@ const cancelProjectProcessStepEvent = async() => {
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in {{timezoneFriendly}}</div>
       </v-card-text>
       <v-card-actions class="pb-4 px-4">
-        <AlbatrossButton color="primary" html-style="width:100%" class="body-medium"
+        <a-btn color="primary" html-style="width:100%" class="body-medium"
                :disabled="fieldsSaving || saveInvalid"
                @click="[fieldsSaving = true, checkForSchedulingConflicts()]"
-        >Schedule</AlbatrossButton>
+        >Schedule</a-btn>
       </v-card-actions>
     </div>
 <!-- ------------------- -->

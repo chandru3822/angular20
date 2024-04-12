@@ -17,23 +17,22 @@
   </v-row>
 </template>
 
-<script>
-export default {
-  name: 'Spinner',
-  props: {
-    spinnerColor: String,
-    size: Number
-  },
-  computed: {
-    spinnerUrl() {
-      return this.$store.state.app.spinnerUrl || null
-    }
-  },
-  data() {
-    return {
-    }
-  }
-}
+<script setup>
+import { toRefs, computed } from 'vue'
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+
+const props = defineProps({
+  spinnerColor: String,
+  size: Number
+})
+const { spinnerColor, size } = toRefs(props)
+
+const spinnerUrl = computed(() => {
+  return appStore.spinnerUrl || null
+})
+
 </script>
 
 <style scoped lang="scss">

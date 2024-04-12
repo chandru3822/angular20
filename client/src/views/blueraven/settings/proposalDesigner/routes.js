@@ -1,4 +1,7 @@
-import store from '@/store'
+import { pinia } from '@/store'
+import { useUserStore } from '@/stores/UserStore.js'
+
+const userStore = useUserStore(pinia)
 
 export default {
   name: 'proposalDesigner',
@@ -6,7 +9,7 @@ export default {
   meta: { title: 'Albatross - Proposal Designer' },
   component: () => import('./ProposalDesigner.vue'),
   beforeEnter: (to, from, next) => {
-    if (!store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')) {
+    if (!userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')) {
       next({ name: 'AccessDenied' })
     } else {
       next()

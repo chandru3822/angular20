@@ -19,7 +19,11 @@ import {getEventStatusTypes} from "@/services/eventStatusTypeService.js";
 import {getStatusTypes} from "@/services/processStepStatusTypeService.js";
 import ProjectSearchResultCard from "@/views/flow/schedule/components/ProjectSearchResultCard.vue";
 import SpinnerInline from "@/components/SpinnerInline.vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 const props = defineProps({
   states: {
@@ -33,9 +37,14 @@ const props = defineProps({
 
 const emit = defineEmits(['close-dialog', 'zoom-map'])
 
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const router = vueInstance.$router
+const snackbar = vueInstance.$snackbar
 
 const state =ref({}),
     eventStatusTypes= ref([]),
@@ -53,9 +62,8 @@ const state =ref({}),
     eventTypesChanged= ref(false),
     searchProjectsLoading= ref(false),
     search= ref(null),
-      itemsPerPage = 20,
+    itemsPerPage = 20,
     page = ref(0),
-    snackbar=ref({}),
     listLoading = ref(false),
     // initialLoad = ref(true)
     _timerId = ref(),
@@ -87,22 +95,20 @@ const fetchEventTypes = async() => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Event Types')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Retrieving Event Types')
+    appStore.loading = false
   }
 }
 const fetchEventStatusTypes = async() => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getEventStatusTypes()
     eventStatusTypes.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
   }
 }
 const fetchStatusTypes = async() => {
@@ -118,9 +124,8 @@ const fetchStatusTypes = async() => {
     processStepStatusTypes.value = data?.filter(d => d.id !== 3)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Status Types')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
-    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Retrieving Status Types')
+    appStore.loading = false
   }
 }
 const searchForProjects = async(search) => {
@@ -135,8 +140,7 @@ const searchForProjects = async(search) => {
     searchProjectsLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Searching Projects')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+    snackbar('ERROR', 'Error Searching Projects')
   }
 }
 const goGoGadgetMapSearch = () =>{
@@ -176,8 +180,8 @@ const getProjects = async(resetQuery) => {
         processStepStatusTypeId: selectedProcessStepStatusType.value.id,
         eventStatusTypeId: searchEventStatusType.value.id,
         companyStateId: state.value.id,
-        startTime: store.state.schedule.startTime,
-        endTime: store.state.schedule.endTime,
+        startTime: scheduleStore.startTime,
+        endTime: scheduleStore.endTime,
         search:""
       }, { size: itemsPerPage, page: page.value})
       projects.value = projects.value.concat(data.content || [])
@@ -189,8 +193,7 @@ const getProjects = async(resetQuery) => {
       // initialLoad.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar.value = getSnackbar('ERROR', 'Error Retrieving Projects')
-      store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+      snackbar('ERROR', 'Error Retrieving Projects')
       listLoading.value = false
     }
   } else {
@@ -232,8 +235,7 @@ const getProjectsSearchedFor = async(search) => {
     listLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Loading Project Details')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+    snackbar('ERROR', 'Error Loading Project Details')
     listLoading.value = false
   }
 }
@@ -318,30 +320,30 @@ onMounted(() => {
   <v-card id="project-search-card" color="white" style="max-width: 280px; min-width: 280px" class="pa-4 project-search-card" elevation="8"> <!--did this manually instead of using v-menu b/c the dropdowns were getting cut off-->
     <div class="d-flex justify-space-between">
       <v-card-title class="label-large pa-0">Search Projects</v-card-title>
-      <AlbatrossButton icon size="small" @click="emit('close-dialog')"><v-icon>close</v-icon></AlbatrossButton>
+      <a-btn icon size="small" @click="emit('close-dialog')"><v-icon>close</v-icon></a-btn>
     </div>
     <div v-show="!showSearchResults" class="project-search-field-container pt-1">
       <div class="one-hunned pb-3">
-        <v-autocomplete attach v-model="state" class="pb-2 body-large"
+        <a-autocomplete attach v-model="state" class="pb-2 body-large"
         :items="states"
         label="State"
         clearable
         return-object
         hide-details
-        dense
-        item-text="state"
+        density="compact"
+        item-title="state"
         item-value="id"
         @click:clear="clear"
         :disabled="!!searchProject?.projectId"
-        ></v-autocomplete>
-        <v-autocomplete v-model="searchProject"
+        ></a-autocomplete>
+        <a-autocomplete v-model="searchProject"
                         :items="searchProjects"
                         :loading="searchProjectsLoading"
                         cache-items
                         :search-input.sync="search"
                         clearable
                         label="Project"
-                        item-text="displayName"
+                        item-title="displayName"
                         item-value="projectId"
                         autocomplete="off"
                         :disabled="!!state?.id"
@@ -355,25 +357,25 @@ onMounted(() => {
             <!-- HTML that describe how select should render items when the select is open -->
             {{ data.item.displayName }}
           </template>
-        </v-autocomplete>
+        </a-autocomplete>
         <!--only show the other fields once state or project has been selected-->
         <div v-if="searchProject?.projectId || state?.id">
 
-          <v-select attach v-model="searchEventType"
+          <a-select attach v-model="searchEventType"
                     :items="eventTypes"
                     label="Event"
                     hide-details
-                    item-text="eventName"
+                    item-title="eventName"
                     item-value="id"
                     return-object
                     clearable
                     class="pb-2"
                     v-if="searchProject?.projectId"
           />
-          <v-autocomplete attach v-model="selectedEventTypes"
+          <a-autocomplete attach v-model="selectedEventTypes"
                           :items="eventTypes"
                           label="Event"
-                          item-text="eventName"
+                          item-title="eventName"
                           item-value="id"
                           return-object
                           hide-details
@@ -383,10 +385,7 @@ onMounted(() => {
                           multiple
                           v-else
           >
-            <template
-                slot="selection"
-                slot-scope="{ item, index }"
-            >
+            <template  v-slot:selection="{item, index}">
               <div v-if="index === 0 && selectedEventTypes.length < 3">
                 <v-chip small v-for="sp in selectedEventTypes">
                   <span>{{ sp.eventName }}</span>
@@ -397,25 +396,25 @@ onMounted(() => {
                   class="primary--text text-caption"
               >{{ selectedEventTypes.length }} selected</span>
             </template>
-          </v-autocomplete>
+          </a-autocomplete>
 
-          <v-autocomplete v-model="searchEventStatusType"
+          <a-autocomplete v-model="searchEventStatusType"
                           :items="eventStatusTypes"
                           label="Event Status"
                           :disabled="!searchEventType?.id && selectedEventTypes.length === 0"
                           clearable
                           hide-details
                           class="pb-2"
-                          item-text="eventStatusType"
+                          item-title="eventStatusType"
                           item-value="id"
                           return-object
           />
-          <v-autocomplete v-model="selectedProcessStepStatusType"
+          <a-autocomplete v-model="selectedProcessStepStatusType"
                           :items="processStepStatusTypes"
                           label="Process Step Status"
                           clearable
                           hide-details
-                          item-text="processStepStatusType"
+                          item-title="processStepStatusType"
                           item-value="id"
                           return-object
           />
@@ -431,28 +430,28 @@ onMounted(() => {
       <v-chip small color="primary lighten-9" class="mb-1 mr-1 px-2 grey--text text--darken-3">Process Step: {{selectedProcessStepStatusType.processStepStatusType}}</v-chip>
     </div>
     <v-card-actions class="px-0 pb-0">
-      <AlbatrossButton @click="clear" variant="text" small class="text-capitalize flex-grow-0 body-medium">Reset</AlbatrossButton>
-      <AlbatrossButton v-if="!showSearchResults"
+      <a-btn @click="clear" variant="text" small class="text-capitalize flex-grow-0 body-medium">Reset</a-btn>
+      <a-btn v-if="!showSearchResults"
           variant="outlined"
           small
           @click="goGoGadgetMapSearch"
           color="primary"
           class="text-capitalize flex-grow-1 body-medium"
           :disabled="!((state?.id || searchProject?.projectId) && (selectedEventTypes?.length > 0 ||searchEventType?.id) && searchEventStatusType?.id && selectedProcessStepStatusType?.id)"
-      >Go</AlbatrossButton>
-      <AlbatrossButton v-else
+      >Go</a-btn>
+      <a-btn v-else
           variant="outlined"
           size="small"
           @click="[showSearchResults = false, toggleAllPinsOnMap(true)]"
           color="primary"
           class="text-capitalize flex-grow-1 body-medium"
-      >Edit search</AlbatrossButton>
+      >Edit search</a-btn>
     </v-card-actions>
     <div v-if="showSearchResults">
     <div class="d-flex justify-space-between align-baseline py-3">
       <span class="label-medium">Search Results</span>
-      <AlbatrossButton variant="text" size="small" color="primary" class="text-capitalize" :disabled="!projects || projects.length === 0" @click="toggleAllPinsOnMap">
-        {{allPinsPinned ? 'Hide all pins' : 'Show all pins' }}</AlbatrossButton>
+      <a-btn variant="text" size="small" color="primary" class="text-capitalize" :disabled="!projects || projects.length === 0" @click="toggleAllPinsOnMap">
+        {{allPinsPinned ? 'Hide all pins' : 'Show all pins' }}</a-btn>
     </div>
     <div class="search-results">
       <span v-if="(!projects || projects.length === 0) && !listLoading" class="body-medium">No projects found</span>

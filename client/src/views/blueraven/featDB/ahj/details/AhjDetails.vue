@@ -27,44 +27,51 @@
   </v-container>
 </template>
 
-<script>
-import cloneDeep from 'lodash.clonedeep'
+<script setup>
 import {getRequest} from '@/helpers/helpers'
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: 'ahjDetails',
-  data: () => ({
-    ahj: {}
-  }),
-  computed: {
-    ahjDetailTabs() {
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const ahj = ref({})
+
+const ahjId = computed(() => {
+  return route.params.ahjId
+})
+
+    const ahjDetailTabs = computed(() => {
       return [
         {
           label: 'Permitting',
-          path: '/database/ahj/' + this.ahjId + '/permit',
+          path: '/database/ahj/' + ahjId.value + '/permit',
         },
         {
           label: 'Inspection',
-          path: '/database/ahj/' + this.ahjId + '/inspection'
+          path: '/database/ahj/' + ahjId.value + '/inspection'
         },
         {
           label: 'Design',
-          path: '/database/ahj/' + this.ahjId + '/design'
+          path: '/database/ahj/' + ahjId.value + '/design'
         }
       ]
+    })
+
+onMounted(async() => {
+    const {data} = await getRequest(`/featDb/ahj/${ahjId.value}`, 'blueraven')
+    ahj.value = data
+})
+
+    const goToPath = async(path) => {
+      await router.push({ path })
     }
-  },
-  async created() {
-    this.ahjId = parseInt(this.$route.params.ahjId)
-    const {data} = await getRequest(`/featDb/ahj/${this.ahjId}`, 'blueraven')
-    this.ahj = cloneDeep(data)
-  },
-  methods: {
-    goToPath(path) {
-      this.$router.push({ path })
-    },
-  }
-}
 </script>
 
 <style scoped lang="scss">

@@ -2,13 +2,13 @@
 <v-row>
   <v-col cols="12" class="py-0">
     <v-card flat class="square-card pb-3 px-3 elevation-1" color="white">
-      <v-text-field
+      <a-text-field
         v-model="search"
         prepend-inner-icon="mdi-magnify"
         label="Search"
         single-line
         hide-details
-      ></v-text-field>
+      ></a-text-field>
     </v-card>
     <v-divider></v-divider>
     <v-data-table
@@ -31,22 +31,35 @@
       </template>
 
       <template #item="{item: smartlist}">
-        <tr class="clickable" @click="editSmartlist(smartlist)">
-          <td class="text-left td-name">{{ smartlist.name }}</td>
-          <td class="text-left">{{ smartlist.owner }}</td>
-          <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>
+        <tr class="clickable">
+          <td class="text-left td-name">
+            <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+              {{ smartlist.name }}
+            </router-link>
+          </td>
+          <td class="text-left">
+            <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+              {{ smartlist.owner }}
+            </router-link>
+          </td>
+          <td>
+            <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+              {{ smartlist.dateModified | formatDate('timestamp') }}
+            </router-link>
+          </td>
           <td class="d-flex align-center">
-            {{ smartlist.dateLastExported | formatDate('date') }}
-
-            <v-btn
-              v-if="smartlist.dateLastExported"
-              text
-              icon
-              class="btn-metrics pa-5"
-              @click.stop="[showMetricsDialog = true, getMetrics(smartlist.id)]"
-            >
-              <v-icon>mdi-information</v-icon>
-            </v-btn>
+            <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+              {{ smartlist.dateLastExported | formatDate('date') }}
+            </router-link>
+            <a-btn
+                v-if="smartlist.dateLastExported"
+                variant="text"
+                icon
+                class="btn-metrics pa-5"
+                @click="[showMetricsDialog = true, getMetrics(smartlist.id)]"
+                color="unset"
+                prepend-icon="mdi-information"
+            ></a-btn>
           </td>
           <td class="td-action">
             <smartlist-copy
@@ -113,13 +126,12 @@
 
         <v-card-actions>
           <v-spacer/>
-          <v-btn
-            color="primary"
-            class="white--text elevation-2 text-capitalize mr-2 mb-2"
-            @click="[showMetricsDialog = false, metrics = []]"
-          >
-            Close
-          </v-btn>
+          <a-btn
+              color="primary"
+              class="elevation-2 text-capitalize mr-2 mb-2"
+              @click="[showMetricsDialog = false, metrics = []]"
+              text="Close"
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -135,6 +147,7 @@ import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
 import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 import constants from '@/helpers/constants'
+import { useUserStore } from '@/stores/UserStore.js'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100],
@@ -156,11 +169,12 @@ const search = ref('')
 const isLoading = ref(false)
 
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
+const userStore = useUserStore()
+
 const router = vueInstance.$router
-const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
-const userCanEdit = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')
-const userCanDelete = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')
+const userCanAdd = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+const userCanEdit = userStore.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')
+const userCanDelete = userStore.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')
 
 let smartlists = ref([])
 let metrics = ref([])

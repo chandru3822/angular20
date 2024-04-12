@@ -22,14 +22,12 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <v-btn
+          <a-btn
             color="primary"
             dark
-            class="white--text"
             @click="deleteError = false"
-          >
-            OK
-          </v-btn>
+            text="OK"
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -39,36 +37,45 @@
           <v-toolbar-title class="title-large">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newType = {}]" color="primary"
-                   v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon v-if="$vuetify.breakpoint.xsOnly">{{ addNew ? 'close' : 'add' }}</v-icon>
-              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
-            </v-btn>
+            <a-btn v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              variant="text"
+              @click="[addNew = !addNew, newType = {}]"
+              color="primary"
+              :hide-text-on-mobile="constants.IS_MOBILE"
+              :text="!addNew ? 'Add New' : 'Cancel'"
+              :prepend-icon="addNew ? 'close' : 'add'"
+            >
+            </a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
           <v-card color="transparent" flat v-if="addNew" class="mb-3 pa-2">
-            <v-text-field v-if="addNew"
+            <a-text-field v-if="addNew"
                           v-model="newType.attachmentType"
                           placeholder="Enter a type"
                           label="Attachment Type">
-            </v-text-field>
-            <v-btn v-if="addNew" color="primary" :disabled="!newType.attachmentType" @click="addNewType">Save</v-btn>
+            </a-text-field>
+            <a-btn v-if="addNew"
+                             color="primary"
+                             :disabled="!newType.attachmentType"
+                             @click="addNewType"
+                             text="Save"/>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
             <v-card-title class="pt-0">
-              <v-text-field
+              <a-text-field
                 v-model="search"
                 prepend-inner-icon="search"
                 label="Search"
                 single-line
                 hide-details
-              ></v-text-field>
+              ></a-text-field>
             </v-card-title>
             <v-data-table
+                id="attachments-table"
               :headers="headers"
-              :items="filterTypes()"
+              :items="filterTypes"
               :fixed-header="true"
               :items-per-page="100"
               :search="search"
@@ -77,12 +84,20 @@
               class="elevation-1 square-card"
             >
               <template #item="{ item, index }">
-                <tr :class="{'shaded-row': index % 2}">
-                  <td class="text-left clickable" @click="goToType(item.id)">{{ item.attachmentType }}</td>
-                  <td class="text-right" :class="{'d-flex flex-column align-end': $vuetify.breakpoint.xsOnly}">
-                    <v-btn small text color="primary" @click="goToType(item.id)">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
+                <tr :class="{'shaded-row': index % 2, 'mobile-tr': vuetify.breakpoint.xsOnly}">
+                  <td class="text-left clickable">
+                    <router-link :to="getPath()" class="router-link-td">
+                      {{ item.attachmentType }}
+                    </router-link>
+                  </td>
+                  <td class="text-right" :class="{'d-flex flex-column align-end': vuetify.breakpoint.xsOnly}">
+                    <a-btn
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="goToType(item.id)"
+                      prepend-icon="edit"
+                    />
                   </td>
                 </tr>
               </template>
@@ -101,142 +116,174 @@
 </template>
 
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
-import orderBy from 'lodash.orderby'
+<script setup>
+  import { getCurrentInstance, ref, computed, onMounted} from "vue";
+  import orderBy from 'lodash.orderby'
 
-import {
-  handleHidingGlobalLoader,
-  getRequest,
-  deleteRequest,
-  postRequest,
-  getSnackbar
-} from '@/helpers/helpers'
-import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import {
+    handleHidingGlobalLoader,
+    getRequest,
+    deleteRequest,
+    postRequest,
+  } from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
+  import ConfirmationDialog from '@/components/ConfirmationDialog'
+  import { useUserStore } from '@/stores/UserStore.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import {useRouter} from "vue-router/composables"
 
-export default {
-  name: 'Attachments',
-  components: {ConfirmationDialog},
-  mixins: [Vue2Filters.mixin],
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+  const userStore = useUserStore()
+  const appStore = useAppStore()
+  const router = useRouter()
+  const vuetify = vueInstance.$vuetify
+  const attachmentTypes = ref([])
+  const search = ref('')
+  const addNew = ref(false)
+  const newType = ref({})
+  const selectedAttachmentTypeId = ref(null)
+  const companyId = ref(userStore.details.companyId)
+  const cannotDeleteReasons = ref({})
+  const deleteError = ref(false)
+  const headers = ref([
+    {text: 'Attachment Type', value: 'attachmentType', show: true},
+    {text: '', value: 'icons', show: true},
+  ])
+  const footerProps =  ref({
+    'items-per-page-options': [25, 50, 100, 1000],
+    'items-per-page-text': 'Rows per page:'
+  })
+  const showDeleteDialog =  ref(false)
+  const itemToDelete =  ref(null)
 
-  data() {
-    return {
-      snackbar: {},
-      constants,
-      attachmentTypes: [],
-      search: '',
-      addNew: false,
-      newType: {},
-      selectedAttachmentTypeId: null,
-      userId: this.$store.state.user.details.id,
-      companyId: this.$store.state.user.details.companyId,
-      cannotDeleteReasons: {},
-      deleteError: false,
-      headers: [
-        {text: 'Attachment Type', value: 'attachmentType', show: true},
-        {text: '', value: 'icons', show: true},
-      ],
-      footerProps: {
-        'items-per-page-options': [25, 50, 100, 1000],
-        'items-per-page-text': 'Rows per page:'
-      },
-      showDeleteDialog: false,
-      itemToDelete: null
+  const itemToDeleteAttachmentType = computed(() => {
+    return itemToDelete.value ? itemToDelete.value.attachmentType : ''
+  })
+
+  const filterTypes = computed(() => {
+    return attachmentTypes.value.filter(e => {
+      return !e.archived
+    })
+  })
+
+  onMounted(() => {
+    getAttachmentTypes()
+  })
+  const getPath = (typeId) => {
+    return {path: `/settings/attachment/${typeId}/customFieldGroups`}
+  }
+  const getAttachmentTypes = async () => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/attachmentType/types`)
+      attachmentTypes.value = orderBy(data, [a => a.attachmentType.toLowerCase()])
+
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Attachment Types')
+      appStore.loading = false
     }
-  },
-  computed: {
-    itemToDeleteAttachmentType() {
-      return this.itemToDelete ? this.itemToDelete.attachmentType : ''
+  }
+  const deleteType = async () => {
+    const item = itemToDelete.value
+    appStore.loading = true
+    try {
+      const {status} = await deleteRequest(`/attachmentType/delete/${item.id}`)
+      item.archived = true
+      snackbar('SUCCESS', 'Successfully Deleted Attachment Type')
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      if (e.status === 400) {
+        item.deleteConfirm = false
+        deleteError.value = true
+        cannotDeleteReasons.value = e.data
+      }
+      snackbar('ERROR', 'Error Deleting Attachment Type')
+      appStore.loading = false
     }
-  },
-  async created() {
-    await this.getAttachmentTypes()
-  },
-  methods: {
-    goToType(typeId) {
-      this.$router.push({path: `/settings/attachment/${typeId}/customFieldGroups`})
-    },
-    async getAttachmentTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/attachmentType/types`)
-        this.attachmentTypes = orderBy(data, [a => a.attachmentType.toLowerCase()])
+    closeDeleteDialog()
+  }
 
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Attachment Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteType() {
-      const item = this.itemToDelete
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await deleteRequest(`/attachmentType/delete/${item.id}`)
-        item.archived = true
-        this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        if (e.status === 400) {
-          item.deleteConfirm = false
-          this.deleteError = true
-          this.cannotDeleteReasons = e.data
-        }
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.closeDeleteDialog()
-    },
-    async addNewType() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.newType.companyId = this.companyId
-        const {data, status} = await postRequest(`/attachmentType/type`, this.newType, null, [])
+  const addNewType = async () => {
+    appStore.loading = true
+    try {
+      newType.value.companyId = companyId.value
+      const {data, status} = await postRequest(`/attachmentType/type`, newType.value, null, [])
 
-        this.snackbar = getSnackbar('SUCCESS', 'Action Type Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      snackbar('SUCCESS', 'Action Type Added')
 
-        // add it to the records already on the screen
-        this.attachmentTypes.push(data)
-        this.attachmentTypes = orderBy(this.attachmentTypes, [a => a.attachmentType.toLowerCase()])
+      // add it to the records already on the screen
+      attachmentTypes.value.push(data)
+      attachmentTypes.value = orderBy(attachmentTypes.value, [a => a.attachmentType.toLowerCase()])
 
-        // reset the new process fields
-        this.addNew = false
-        this.newType = {}
+      // reset the new process fields
+      addNew.value = false
+      newType.value = {}
 
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    closeDeleteDialog() {
-      this.showDeleteDialog = false
-      this.itemToDelete = null
-    },
-    filterTypes() {
-      return this.attachmentTypes.filter(e => {
-        return !e.archived
-      })
-    },
-  },
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Adding Attachment Type')
+      appStore.loading = false
+    }
+  }
+  const closeDeleteDialog = () => {
+    showDeleteDialog.value = false
+    itemToDelete.value = null
+  }
 
-}
 </script>
 
 <style lang="scss">
 #attachment-type-container .v-data-table__wrapper {
   height: calc(100vh - 310px);
   min-height: 300px;
+}
+
+@media (max-width: 770px) {
+  #attachments-table {
+    padding-bottom: 12px;
+    div.v-data-footer {
+      display: inline-block;
+      width: 100%;
+      padding-bottom: 12px;
+
+      div.v-data-footer__select {
+        justify-content: center;
+      }
+
+      div.v-data-footer__pagination {
+
+      }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: calc(50% - 36px);
+
+
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
+    }
+  }
+}
+
+.mobile-tr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: thin solid rgba(0, 0, 0, 0.12);
+  width: calc(100vw - 100px);
+  td {
+    border-bottom: none !important;
+  }
 }
 
 </style>

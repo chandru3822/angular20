@@ -26,18 +26,14 @@
     </template>
 
     <template #top>
-      <v-btn
-        v-if="isSystemAdmin"
-        fab
-        absolute
-        bottom
-        right
-        color="info"
-        class="mb-16"
-        @click="getQuery"
-      >
-        <v-icon>mdi-database-eye-outline</v-icon>
-      </v-btn>
+      <a-btn
+          v-if="isSystemAdmin"
+          html-style="position:absolute; bottom: 10px; right: 10px;"
+          color="info"
+          class="mb-16"
+          @click="getQuery"
+          prepend-icon="mdi-database-eye-outline"
+      ></a-btn>
     </template>
   </v-data-table>
 </template>
@@ -49,13 +45,17 @@ import {
   requestInterceptor,
   responseInterceptor,
 } from '@/helpers/interceptors'
-import { AppMutations } from '@/stores/AppStore'
 import isEqual from 'lodash.isequal'
 import axios from 'axios'
 import constants from '@/helpers/constants'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userStore = useUserStore()
+const appStore = useAppStore()
+
 const snackbar = vueInstance.$snackbar
 
 const http = axios.create({
@@ -92,7 +92,7 @@ const footerProps = ref({
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
 })
 
-const isSystemAdmin = store.getters.isFullAdmin
+const isSystemAdmin = userStore.isSystemAdmin
 const reportData = ref([])
 const isDataLoading = ref(false)
 const isUpdateQueued = ref(false)
@@ -153,13 +153,13 @@ const headers = computed(() => {
 
 const processQueue = async () => {
   try {
-    store.commit(AppMutations.SET_LOADING, true)
+    appStore.loading = true
     isDataLoading.value = true
     isUpdateQueued.value = false
     reportData.value = []
 
     const response = await http.post(
-      `/smartlist/adhoc?timezone=${store.state.user.details.timezone.value}`,
+      `/smartlist/adhoc?timezone=${userStore.timezone.value}`,
       {
         smartlist: props.report,
         fields: props.fields,
@@ -171,7 +171,7 @@ const processQueue = async () => {
   } catch (e) {
     //@TODO: #smartlistsv2 - Frontend needs to know backend message here. Want a better way
     const errMessage = e.response.data.message
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     if (errMessage.includes('An event smartlist must have at least 1 event type column')) {
       snackbar('ERROR', errMessage)
     } else {
@@ -179,7 +179,7 @@ const processQueue = async () => {
     }
   } finally {
     isDataLoading.value = false
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
     if (isUpdateQueued.value) {
       processQueue()
     }

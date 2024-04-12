@@ -46,12 +46,12 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <AlbatrossButton
+        <a-btn
             class="text-capitalize mr-4 mb-2"
             color="primary"
             @click="closeMilestoneDialog"
             text="Close"
-        ></AlbatrossButton>
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -62,7 +62,10 @@
 import moment from "moment";
 import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
 import {getCurrentInstance, toRefs, ref, computed, onMounted} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+
+import {useUserStore} from "@/stores/UserStore.js";
+
+const userStore = useUserStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -89,7 +92,7 @@ const { selectedQuarter, drilldownData, isOpen } = toRefs(props)
       ])
 
     const milestoneDrilldownTitle = computed(() => {
-      return store.state.user.details.firstName + ' ' + store.state.user.details.lastName + DashboardTypeEnum.CLOSER.drilldown.label + selectedQuarter.value
+      return userStore.details.firstName + ' ' + userStore.details.lastName + DashboardTypeEnum.CLOSER.drilldown.label + selectedQuarter.value
     })
 
     const closeMilestoneDialog = () => {

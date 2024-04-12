@@ -2,33 +2,56 @@
   <v-container class="custom-field-group-container" v-if="processStep && processStep.id">
     <v-row>
       <v-col cols="12">
-        <v-btn text color="primary" class="pl-1 pr-2" :to="'/settings/processSteps'">
-          <v-icon>arrow_left</v-icon>
-          <span>Back</span>
-        </v-btn>
+        <a-btn
+            variant="text"
+            color="primary"
+            class="pl-1 pr-2"
+            :to="'/settings/processSteps'"
+            prepend-icon="arrow_left"
+            text="Back"
+        ></a-btn>
+
         <div class="flex-display pt-3 px-3 mb-4" style="width: 100%">
           <div style="width: 100%">
             <span class="headline-small" v-if="!editName">{{ processStep.processStepName }}</span>
-            <v-text-field v-else color="primary"
+            <a-text-field v-else color="primary"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           v-model="processStep.processStepName"
-                          label="Process Step Name"></v-text-field>
+                          label="Process Step Name"></a-text-field>
 
           </div>
           <div class="text-right" v-if="userCanEdit">
-            <v-btn text color="primary" v-if="!editName" class="" @click="[oldName = processStep.processStepName, editName = !editName]">
-              <v-icon>edit</v-icon>
-            </v-btn>
-            <v-btn text color="primary" class="" v-else @click="saveProcessStep($event,true)">
-              <v-icon>save</v-icon>
-            </v-btn>
-            <v-btn text color="primary" v-if="editName" class="" @click="[processStep.processStepName = oldName, editName = !editName]">
-              cancel
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                v-if="!editName"
+                class=""
+                @click="[oldName = processStep.processStepName, editName = !editName]"
+                prepend-icon="edit"
+            ></a-btn>
+
+            <a-btn
+                variant="text"
+                color="primary"
+                class=""
+                v-else
+                @click="saveProcessStep($event,true)"
+                prepend-icon="save"
+            ></a-btn>
+
+            <a-btn
+                variant="text"
+                color="primary"
+                v-if="editName"
+                class=""
+                @click="[processStep.processStepName = oldName, editName = !editName]"
+                text="cancel"
+            ></a-btn>
+
           </div>
         </div>
-        <v-tabs class="tabs-bar" v-model="activeTab">
+        <v-tabs class="tabs-bar">
           <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
                  class="text-capitalize ma-0"
                  :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
@@ -46,131 +69,119 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
+<script setup>
 
-  import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
-  import { handleHidingGlobalLoader, getRequest, putRequest, getSnackbar } from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
 
-  export default {
-    name: 'ProcessStep',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      ProcessStepCustomFieldGroups,
-    },
-    data () {
-      return {
-        snackbar: {},
-        constants,
-        editName: false,
-        processStepLoading: true,
-        oldName: null,
-        processStepId: this.$route.params.id,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        companyId: this.$store.state.user.details.companyId,
-        processStep: {},
-        positions:[],
-        positionsLoading: false,
-        nonAdminAddWhiteListedPositionsChanged: false,
-        tabs: [
-          {
-            id: 1,
-            label: 'UI Components',
-            path: `/settings/processStep/${this.$route.params.id}/components`,
-          },
-          {
-            id: 2,
-            label: 'Custom Field Groups',
-            path: `/settings/processStep/${this.$route.params.id}/customFieldGroups`,
-          },
-          {
-            id: 3,
-            label: 'Actions',
-            path: `/settings/processStep/${this.$route.params.id}/actions`,
-          },
-          {
-            id: 4,
-            label: 'Events',
-            path: `/settings/processStep/${this.$route.params.id}/events`,
-          },
-          {
-            id: 5,
-            label: 'Attachment Types',
-            path: `/settings/processStep/${this.$route.params.id}/attachmentTypes`,
-          }
-        ]
-      }
-    },
-    computed: {
-      //this should not be so hard
-      activeTab: {
-        get: function() {
-          return this.$route?.path?.includes('/event') ? `/settings/processStep/${this.$route.params.id}/events` : null
-        },
-        set: function(val) {
-          return val
-        }
-      }
-    },
-    async created () {
-      this.getProcessStepDetails()
-      this.getPositions()
-    },
-    methods: {
-      async getProcessStepDetails () {
-        this.processStepLoading = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/processStep/${this.processStepId}`)
-          this.processStep = data
-          this.processStepLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          let msg = e?.data?.message || 'Error Retrieving Data'
-          this.snackbar = getSnackbar('ERROR', msg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.processStepLoading = false
-        }
-      },
-      async saveProcessStep(closeEditor) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await putRequest(`/processStep?savePositions=${this.nonAdminAddWhiteListedPositionsChanged ?? false}`, this.processStep)
-          this.editName = false
-          this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Process Step')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getPositions() {
-        if(this.positions?.length === 0) {
-          try {
-            this.positionsLoading = true
-            const {data, status} = await getRequest(`/position/withParent`)
-            this.positions = data
-            this.positionsLoading = false
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            this.positionsLoading = false
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-    }
+import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {getCurrentInstance, computed, ref, onMounted} from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
+const route = useRoute()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const processStepId = computed(() => {
+  return route.params.id
+})
+
+const editName = ref(false)
+const processStepLoading = ref(true)
+const oldName = ref(null)
+const processStep = ref({})
+const positions = ref([])
+const positionsLoading = ref(false)
+const nonAdminAddWhiteListedPositionsChanged = ref(false)
+const tabs = ref([
+  {
+    id: 1,
+    label: 'UI Components',
+    path: `/settings/processStep/${processStepId.value}/components`,
+  },
+  {
+    id: 2,
+    label: 'Custom Field Groups',
+    path: `/settings/processStep/${processStepId.value}/customFieldGroups`,
+  },
+  {
+    id: 3,
+    label: 'Actions',
+    path: `/settings/processStep/${processStepId.value}/actions`,
+  },
+  {
+    id: 4,
+    label: 'Events',
+    path: `/settings/processStep/${processStepId.value}/events`,
+  },
+  {
+    id: 5,
+    label: 'Attachment Types',
+    path: `/settings/processStep/${processStepId.value}/attachmentTypes`,
   }
+])
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+
+onMounted(() => {
+  getProcessStepDetails()
+  getPositions()
+})
+
+const getProcessStepDetails = async () => {
+  processStepLoading.value = true
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/processStep/${processStepId.value}`)
+    processStep.value = data
+    processStepLoading.value = false
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let msg = e?.data?.message || 'Error Retrieving Data'
+    snackbar('ERROR', msg)
+    appStore.loading = false
+    processStepLoading.value = false
+  }
+}
+const saveProcessStep = async (closeEditor) => {
+  appStore.loading = true
+  try {
+    const {status} = await putRequest(`/processStep?savePositions=${nonAdminAddWhiteListedPositionsChanged.value ?? false}`, processStep.value)
+    editName.value = false
+    snackbar('SUCCESS', 'Process Step Updated')
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating Process Step')
+    appStore.loading = false
+  }
+}
+const getPositions = async () => {
+  if (positions.value?.length === 0) {
+    try {
+      positionsLoading.value = true
+      const {data, status} = await getRequest(`/position/withParent`)
+      positions.value = data
+      positionsLoading.value = false
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      positionsLoading.value = false
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Positions')
+      appStore.loading = false
+    }
+  }
+}
+
 </script>
 
 <style scoped lang="scss">
@@ -189,6 +200,7 @@
   top: -12px;
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;
+
   .v-tab:hover {
     color: var(--v-primary-base);
   }

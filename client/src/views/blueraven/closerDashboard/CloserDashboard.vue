@@ -5,12 +5,12 @@
         <v-app-bar id="date-range-btns-toolbar" class="elevation-1">
           <v-toolbar-items>
             <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
-              <AlbatrossButton v-for="button in timeIntervalBtns"
+              <a-btn v-for="button in timeIntervalBtns"
                   variant="text"
                   @click="setTimeInterval(button.timeInterval)"
                   color="unset"
                   :text="button.name"
-              ></AlbatrossButton>
+              ></a-btn>
             </v-btn-toggle>
           </v-toolbar-items>
         </v-app-bar>
@@ -21,12 +21,12 @@
     <div class="ranking-tables-section-header">
       <span v-if="!userCanViewAll">Your </span>Office Ranking
       <div class="expand-section">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             @click="showOfficeRankingSection = !showOfficeRankingSection"
             color="unset"
             :prepend-icon="!showOfficeRankingSection ? 'mdi-chevron-down' : 'mdi-chevron-up'"
-        ></AlbatrossButton>
+        ></a-btn>
       </div>
     </div>
     <!-- RANKING TABLES FIRST HEADER END -->
@@ -43,18 +43,18 @@
             <v-icon class="ranking-table-icon mr-2 default-text-color">mdi-sort-descending</v-icon>
             <span>Round Robin Lead Allocation Rank</span>
           </div>
-          <v-autocomplete class="table-header-dropdown"
+          <a-autocomplete class="table-header-dropdown"
                           label="Round Robin"
                           v-model="selectedRoundRobin"
                           :items="roundRobins"
-                          item-text="roundRobinName"
+                          item-title="roundRobinName"
                           item-value="id"
                           no-data-text="No Round Robins available"
-                          outlined
-                          dense
+                          variant="outlined"
+                          density="compact"
                           hide-details
                           @input="loadRoundRobinLeadAllocationRankData"
-          ></v-autocomplete>
+          ></a-autocomplete>
         </div>
 
         <table v-if="leadAllocationRankingData.length > 0">
@@ -111,18 +111,18 @@
             <v-icon class="ranking-table-icon mr-2 default-text-color">mdi-chevron-double-down</v-icon>
             <span>Office FDC Rank</span>
           </div>
-          <v-autocomplete class="table-header-dropdown"
+          <a-autocomplete class="table-header-dropdown"
                           label="Closer Office"
                           v-model="selectedCloserOffice"
                           :items="closerOffices"
-                          item-text="orgName"
+                          item-title="orgName"
                           item-value="id"
                           no-data-text="No Closer Offices available"
-                          outlined
-                          dense
+                          variant="outlined"
+                          density="compact"
                           hide-details
                           @input="loadRepRankingsByOrg(selectedCloserOffice)"
-          ></v-autocomplete>
+          ></a-autocomplete>
         </div>
 
         <table v-if="officeFdcRankingData.length > 0">
@@ -167,12 +167,12 @@
     <div class="ranking-tables-section-header" :class="{'fix-bottom-page-issue': !showCompanyRankingSection}">
       Company Ranking
       <div class="expand-section">
-        <AlbatrossButton
+        <a-btn
             variant="text"
             @click="showCompanyRankingSection = !showCompanyRankingSection"
             color="unset"
             :prepend-icon="!showCompanyRankingSection ? 'mdi-chevron-down' : 'mdi-chevron-up'"
-        ></AlbatrossButton>
+        ></a-btn>
       </div>
     </div>
     <!-- RANKING TABLES SECOND HEADER END -->
@@ -297,16 +297,16 @@ import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar}
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
 import {getCurrentInstance, ref, computed, onMounted} from "vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
+import { useUserStore } from '@/stores/UserStore.js'
+
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
+const userStore = useUserStore()
 
-const currentUserId = ref(store.state.user.details.id)
 const currentUserOrgId = ref(null)
 const selectedQuarter = ref(1)
-const userCanViewAll = ref(store.getters.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL'))
 const timeIntervalBtnGroup = ref(1)
 const timeIntervalString = ref('60 days')
 const timeInterval = ref(60)
@@ -350,9 +350,16 @@ const filteredTopRepsData = computed(() => {
   }
 })
 
+const currentUserId = computed(() => {
+  return userStore.details.id
+})
+const userCanViewAll = computed(() => {
+  return userStore.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL')
+})
+
 onMounted(async () => {
-  if (store.state.user.details.userPositions?.length > 0) {
-    let usersPrimaryPosition = store.state.user.details.userPositions.find(p => {
+  if (userStore.details.userPositions?.length > 0) {
+    let usersPrimaryPosition = userStore.details.userPositions.find(p => {
       return (!p.archived && p.primaryFlag)
     })
 
@@ -388,7 +395,7 @@ const loadRoundRobins = async () => {
     }
     roundRobinRanksLoading.value = false
 
-    handleHidingGlobalLoader(vueInstance, status)
+    handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar('ERROR', 'Error retrieving list of round robins')

@@ -6,7 +6,7 @@
           <v-toolbar-title class="title-large text-wrap">Event Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <a-btn
                 variant="text"
                 color="primary"
                 @click="[addNewEventStatusType = !addNewEventStatusType, expanded = [], getCompanyEventStatusTypes()]"
@@ -14,7 +14,7 @@
                 :prepend-icon="!addNewEventStatusType ? 'add' : vuetify.breakpoint.mdAndUp ? '' : 'close'"
                 :text="vuetify.breakpoint.mdAndUp ? (addNewEventStatusType ? 'Cancel' : 'Add Event Status Type') : ''"
             />
-            <AlbatrossButton variant="text" color="primary" @click="expandEsst = !expandEsst"
+            <a-btn variant="text" color="primary" @click="expandEsst = !expandEsst"
                              :prepend-icon="!expandEsst ? 'mdi-chevron-down' : 'mdi-chevron-up'"
             />
           </v-toolbar-items>
@@ -22,20 +22,20 @@
         <div class="mb-4">
           <v-card flat class="square-card mb-3 pa-3" color="primary lighten-9" v-if="addNewEventStatusType">
             <h3>Assign a Status Type</h3>
-            <v-autocomplete label="Event Status Type"
+            <a-autocomplete label="Event Status Type"
                             :items="availableCompanyEventStatusTypes"
                             v-model="newEventStatusTypeId"
-                            item-text="eventStatusType"
+                            item-title="eventStatusType"
                             item-value="id"
                             hide-details
                             :loading="companyStatusesLoading"
                             autocomplete="off"
             >
-              <template v-slot:item="data">
+              <template #item="{ item }">
                 <!-- HTML that describes how select should render items when the select is open -->
-                {{ data.item.eventStatusType }} ({{ data.item.rootEventStatusType }})
+                {{ item.eventStatusType }} ({{ item.rootEventStatusType }})
               </template>
-            </v-autocomplete>
+            </a-autocomplete>
             <v-checkbox v-model="newEventStatusEditableInSchedule" label="Editable in Schedule"/>
             <AlbatrossButton @click="assignStatusTypeToEvent">Save</AlbatrossButton>
           </v-card>
@@ -64,7 +64,14 @@
             </template>
             <td class="text-right">
                   <div class="flex-display align-center">
-                    <v-btn small text color="primary" v-if="userCanEdit" @click="eventStatusTypeToDelete=item"><v-icon>delete</v-icon></v-btn>
+                    <a-btn
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      v-if="userCanEdit"
+                      @click="eventStatusTypeToDelete=item"
+                      prepend-icon="delete"
+                    />
                   </div>
                 </td>
 
@@ -91,7 +98,7 @@
               :alternateLabel = "'Denied Positions'"
               :allow="event.hiddenAllow"
               :contentLoading="positionsLoading"
-              :full-size="$vuetify.breakpoint.smAndDown"
+              :full-size="vuetify.breakpoint.smAndDown"
               :save-button="userCanEdit"
               @selected-changed="hiddenSelectedEventListener"
               @allow-changed="hiddenAllowEventListener"
@@ -110,17 +117,19 @@ import {AppMutations} from "@/stores/AppStore";
 import {getAvailableForEvent} from '@/services/eventStatusTypeService'
 import { getRequest, postRequest, putRequest, handleHidingGlobalLoader} from "@/helpers/helpers";
 import orderBy from "lodash.orderby"
-import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
-import {ref, computed, onMounted, getCurrentInstance} from "vue";
+import MultiSelectGroup from "@/components/MultiSelectGroup.vue"
+import {ref, computed, onMounted, getCurrentInstance} from "vue"
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const route = vueInstance.$route
 const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 
-const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
-const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
 const expandEsst = ref(true)
 const event = ref({})
 const eventId = ref(route.params.id)
@@ -130,6 +139,13 @@ const addNewEventStatusType = ref(false)
 const newType = ref({})
 const newEventStatusTypeId = ref(null)
 const newEventStatusEditableInSchedule = ref(false)
+
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+})
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+})
 
 const eventHeaders = ref([
   {text: 'Status Type', value: 'statusType', show: true},

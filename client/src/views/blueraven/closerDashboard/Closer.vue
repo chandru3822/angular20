@@ -19,11 +19,8 @@
 </template>
 
 <script setup>
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue"
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useRoute, useRouter} from "vue-router/composables";
+import {useRouter} from "vue-router/composables";
 
-const route = useRoute()
 const router = useRouter()
 
 const snackbar = ref({})

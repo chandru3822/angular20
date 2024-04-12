@@ -1,17 +1,18 @@
 <template>
   <v-main>
     <v-container>
+
       <v-row>
         <v-col cols="6">
           <h3 class="mb-5">Paste the v-btn code here</h3>
-          <v-textarea v-model="vBtnValue" outlined @input="vBtnInput()"
+          <a-textarea v-model="vBtnValue" variant="outlined" @input="vBtnInput()"
                       ref="inputField" auto-grow
                       label="V-BTN Value" />
-          <AlbatrossButton
+          <a-btn
               :disabled="!vBtnValue"
-              @click="processBtn" text="Submit"></AlbatrossButton>
-          <AlbatrossButton class="ml-4" variant="text"
-                           @click="doClear" text="Clear"></AlbatrossButton>
+              @click="processBtn" text="Submit"></a-btn>
+          <a-btn class="ml-4" variant="text"
+              @click="doClear" text="Clear"></a-btn>
         </v-col>
         <v-col cols="6" class="mt-9">
           <v-checkbox dense hide-details label="Auto copy to clipboard?" v-model="autoCopyToClipboard"></v-checkbox>
@@ -26,12 +27,12 @@
         <v-col cols="12">
           <div class="d-flex">
             <h3 class="mb-5">Albatross Button Code</h3>
-            <AlbatrossButton icon class="ml-5" color="primary"
-                             v-if="albatrossButtonValue"
-                             @click="copyToClipboard" prepend-icon="mdi-content-copy"></AlbatrossButton>
+            <a-btn icon class="ml-5" color="primary"
+                v-if="albatrossButtonValue"
+                @click="copyToClipboard" prepend-icon="mdi-content-copy"></a-btn>
           </div>
-          <v-textarea outlined v-model="albatrossButtonValue" auto-grow>
-          </v-textarea>
+          <a-textarea variant="outlined" v-model="albatrossButtonValue" auto-grow>
+          </a-textarea>
         </v-col>
       </v-row>
 
@@ -41,7 +42,7 @@
 
 <script setup>
 import {getCurrentInstance, onMounted, ref} from 'vue'
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 import * as prettier from 'prettier'
 import htmlParser from 'prettier/parser-html'
 
@@ -53,8 +54,8 @@ const snackbar = vueInstance.$snackbar
 const vBtnValue = ref(null)
 const albatrossButtonValue = ref(null)
 const inputField = ref(null)
-const autoCopyToClipboard = ref(false)
-const resetFieldsOnPaste = ref(false)
+const autoCopyToClipboard = ref(true)
+const resetFieldsOnPaste = ref(true)
 
 //for testing
 // vBtnValue.value = '<v-btn\n' +
@@ -80,7 +81,7 @@ const doClear = () => {
 
 const processBtn = async () => {
   let tempString = vBtnValue.value
-  tempString = tempString.replaceAll('v-btn', 'AlbatrossButton')
+  tempString = tempString.replaceAll('v-btn', 'a-btn')
   tempString = tempString.replaceAll(' dark ', ' ')
   tempString = tempString.replaceAll(' dark\n', ' ')
   tempString = tempString.replaceAll(' text ', ' variant="text" ')
@@ -99,6 +100,7 @@ const processBtn = async () => {
   tempString = tempString.replaceAll(' large ', ' size="large" ')
   tempString = tempString.replaceAll('v-on="on"', ':activation-handler="on"')
   tempString = tempString.replaceAll('<v-icon', '\n<v-icon')
+  tempString = tempString.replaceAll('class=""', '')
 
   //handle no color
   //if there is no color then it needs to be set to 'unset' as we default to color = primary since that is the most commonly used
@@ -128,11 +130,11 @@ const processBtn = async () => {
 
   //todo: make cool matcher for multiples but i dont really care right now
   tempString = tempString.replaceAll('<span', '\n<span')
-  tempString = tempString.replaceAll('</span></AlbatrossButton>', '</span>\n</AlbatrossButton>')
+  tempString = tempString.replaceAll('</span></a-btn>', '</span>\n</a-btn>')
 
   tempString = tempString.replaceAll('<v-icon', '\n<v-icon')
-  tempString = tempString.replaceAll('</v-icon></AlbatrossButton>', '</v-icon>\n</AlbatrossButton>')
-  tempString = tempString.replaceAll('</v-icon> </AlbatrossButton>', '</v-icon>\n</AlbatrossButton>')
+  tempString = tempString.replaceAll('</v-icon></a-btn>', '</v-icon>\n</a-btn>')
+  tempString = tempString.replaceAll('</v-icon> </a-btn>', '</v-icon>\n</a-btn>')
 
   let formatted
   try{
@@ -146,7 +148,7 @@ const processBtn = async () => {
   }
 
   let finalValue = formatted ? formatted : tempString
-  finalValue = finalValue.replace('</AlbatrossButton>\n', '</AlbatrossButton>')
+  finalValue = finalValue.replace('</a-btn>\n', '</a-btn>')
   albatrossButtonValue.value = finalValue
 
   if(autoCopyToClipboard.value) {
@@ -165,7 +167,7 @@ const vBtnInput = () => {
   }
 }
 const handleButtonText = (textString) => {
-  const regExString = new RegExp(`(?<=>).*?(?=</AlbatrossButton>)`)
+  const regExString = new RegExp(`(?<=>).*?(?=</a-btn>)`)
   textString = textString.replaceAll('\n', '')
   const textBetween = regExString.exec(textString);
 
@@ -240,8 +242,8 @@ const handleSingleButtonTag = (textString, htmlTag, newProperty) => {
 
 const handleConditionalSize = (textString, size, hardcodedSize) => {
   if(textString.includes(`:${size}`)) {
-    const regExString = new RegExp(`(?<=:${size}=").*?(?=")`)
-    const sizeValue = regExString.exec(textString);
+   const regExString = new RegExp(`(?<=:${size}=").*?(?=")`)
+   const sizeValue = regExString.exec(textString);
     if(sizeValue && sizeValue[0]) {
       textString = textString.replace(sizeValue[0], '')
       textString = textString.replace(`:${size}=""`, '')
@@ -265,47 +267,47 @@ const handleTwoIcons = (textString) => {
   let firstIcon, secondIcon
   let stringToRemove, stringToRemove2
 
-  //get the v-if (have to get the text in the icon first in case the btn itself has a v-if
-  const regExString1 = new RegExp(`(?<=<v-icon).*?(?=</v-icon>)`)
-  const regExString2 = new RegExp(`(?<=v-if=").*?(?=")`)
-  const myIfWrapper = regExString1.exec(textString);
-  if(myIfWrapper && myIfWrapper[0]) {
-    const myIfValue = regExString2.exec(myIfWrapper[0]);
-    if(myIfValue && myIfValue[0]) {
-      vIf = myIfValue[0]
-    }
-  }
-  //check if there are only 2
-  if((textString.match(/<v-icon/g))?.length === 2) {
-    //get the first v-icon then remove it
-    let stringToTest = String(textString)
-    const regExString3 = new RegExp(`(?<=>).*?(?=</v-icon>)`)
-    const iconValue = regExString3.exec(stringToTest);
-    if(iconValue && iconValue[0]) {
-      firstIcon = iconValue[0]
-      let firstIndex = stringToTest.indexOf('<v-icon')
-      let secondIndex = stringToTest.indexOf('</v-icon>')
-      stringToRemove = stringToTest.substring(firstIndex, secondIndex + 9)
-      stringToTest = stringToTest.replace(stringToRemove, '')
-
-      const regExString4 = new RegExp(`(?<=>).*?(?=</v-icon>)`)
-      const iconValue2 = regExString4.exec(stringToTest);
-      if(iconValue2 && iconValue2[0]) {
-        secondIcon = iconValue2[0]
-        let firstIndex2 = stringToTest.indexOf('<v-icon')
-        let secondIndex2 = stringToTest.indexOf('</v-icon>')
-        stringToRemove2 = stringToTest.substring(firstIndex2, secondIndex2 + 9)
-
+    //get the v-if (have to get the text in the icon first in case the btn itself has a v-if
+    const regExString1 = new RegExp(`(?<=<v-icon).*?(?=</v-icon>)`)
+    const regExString2 = new RegExp(`(?<=v-if=").*?(?=")`)
+    const myIfWrapper = regExString1.exec(textString);
+    if(myIfWrapper && myIfWrapper[0]) {
+      const myIfValue = regExString2.exec(myIfWrapper[0]);
+      if(myIfValue && myIfValue[0]) {
+        vIf = myIfValue[0]
       }
     }
-  }
+    //check if there are only 2
+    if((textString.match(/<v-icon/g))?.length === 2) {
+      //get the first v-icon then remove it
+      let stringToTest = String(textString)
+      const regExString3 = new RegExp(`(?<=>).*?(?=</v-icon>)`)
+      const iconValue = regExString3.exec(stringToTest);
+      if(iconValue && iconValue[0]) {
+        firstIcon = iconValue[0]
+        let firstIndex = stringToTest.indexOf('<v-icon')
+        let secondIndex = stringToTest.indexOf('</v-icon>')
+        stringToRemove = stringToTest.substring(firstIndex, secondIndex + 9)
+        stringToTest = stringToTest.replace(stringToRemove, '')
+
+        const regExString4 = new RegExp(`(?<=>).*?(?=</v-icon>)`)
+        const iconValue2 = regExString4.exec(stringToTest);
+        if(iconValue2 && iconValue2[0]) {
+          secondIcon = iconValue2[0]
+          let firstIndex2 = stringToTest.indexOf('<v-icon')
+          let secondIndex2 = stringToTest.indexOf('</v-icon>')
+          stringToRemove2 = stringToTest.substring(firstIndex2, secondIndex2 + 9)
+
+        }
+      }
+    }
 
 
-  if(vIf && firstIcon && secondIcon) {
-    textString = textString.replace(stringToRemove, '')
-    textString = textString.replace(stringToRemove2, '')
-    textString = textString.replace('>', ` :prepend-icon="${vIf} ? '${firstIcon}' : '${secondIcon}'">`)
-  }
+    if(vIf && firstIcon && secondIcon) {
+      textString = textString.replace(stringToRemove, '')
+      textString = textString.replace(stringToRemove2, '')
+      textString = textString.replace('>', ` :prepend-icon="${vIf} ? '${firstIcon}' : '${secondIcon}'">`)
+    }
 
   return textString
 }

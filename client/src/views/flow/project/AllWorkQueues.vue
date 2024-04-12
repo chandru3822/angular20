@@ -5,24 +5,26 @@
         <v-toolbar-title class="albatross-header-3">Current Work Queues</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn color="primary" text @click="expandCurrent = !expandCurrent">
-            <v-icon v-if="!expandCurrent">mdi-chevron-down</v-icon>
-            <v-icon v-else>mdi-chevron-up</v-icon>
-          </v-btn>
+          <a-btn
+              color="primary"
+              variant="text"
+              @click="expandCurrent = !expandCurrent"
+              :prepend-icon="!expandCurrent ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+          ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
 
       <v-card class="square-card" v-if="expandCurrent">
         <v-data-table
-          :headers="headers"
-          :items="currentWorkQueues"
-          :fixed-header="true"
-          disable-sort
-          hide-default-footer
-          :items-per-page="-1"
-          :loading="dataLoading"
-          dense
-          class="elevation-1 table-striped"
+            :headers="headers"
+            :items="currentWorkQueues"
+            :fixed-header="true"
+            disable-sort
+            hide-default-footer
+            :items-per-page="-1"
+            :loading="dataLoading"
+            dense
+            class="elevation-1 table-striped"
         >
 
           <template #no-data>
@@ -46,23 +48,25 @@
         <v-toolbar-title class="albatross-header-3">Historic Work Queues</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn color="primary" text @click="expandHistoric = !expandHistoric">
-            <v-icon v-if="!expandHistoric">mdi-chevron-down</v-icon>
-            <v-icon v-else>mdi-chevron-up</v-icon>
-          </v-btn>
+          <a-btn
+              color="primary"
+              variant="text"
+              @click="expandHistoric = !expandHistoric"
+              :prepend-icon="!expandHistoric ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+          ></a-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-card class="square-card" v-if="expandHistoric">
         <v-data-table
-          :headers="headers"
-          :items="historicWorkQueues"
-          :fixed-header="true"
-          disable-sort
-          :items-per-page="-1"
-          hide-default-footer
-          :loading="dataLoading"
-          dense
-          class="elevation-1 table-striped"
+            :headers="headers"
+            :items="historicWorkQueues"
+            :fixed-header="true"
+            disable-sort
+            :items-per-page="-1"
+            hide-default-footer
+            :loading="dataLoading"
+            dense
+            class="elevation-1 table-striped"
         >
 
           <template #no-data>
@@ -85,78 +89,80 @@
   </v-row>
 </template>
 
-<script>
+<script setup>
 
 import {getRequest, logError} from '@/helpers/helpers'
 import TableActiveProjectProcessStepSnippet from '@/views/flow/project/TableActiveProjectProcessStepSnippet'
 import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
-
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import constants from "@/helpers/constants";
 
-export default {
-  name: 'ActiveProcessSteps',
-  components: {
-    SpinnerInline,
-    TableActiveProjectProcessStepSnippet,
-    ProjectProcessStepSnippet,
-    AddProcessStep,
-  },
-  props: {
-    project: Object
-  },
-  data() {
-    return {
-      projectId: parseInt(this.$route.params.projectId),
-      workQueueHistory: [],
-      expandHistoric: true,
-      expandCurrent: true,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      userHasWorkQueueFeature: this.$store.getters.userHasFeature('WORK_QUEUE'),
-      dataLoading: false,
-      snackbar: {},
-      companyId: this.$store.state.user.details.companyId,
-      headers: [
-        {text: 'WQ Category', value: 'workQueueCategory', show: true},
-        {text: 'WQ Type', value: 'workQueueType', show: true},
-        {text: 'Days in Queue', value: 'daysInQueue', show: true},
-        {text: 'Process Step Name', value: 'processStepName', show: true},
-        {text: 'Event Name', value: 'eventName', show: true}
-      ],
-      footerProps: {
-        'items-per-page-options': [25, 50, 100, 500],
-        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-      },
-      options: {
-        itemsPerPage: 100
-      },
-    }
-  },
-  created() {
-    this.getWorkQueueHistory()
-  },
-  computed: {
-    currentWorkQueues() {
-      return this.workQueueHistory.filter(wqh => wqh.status === 'Currently in Queue')
-    },
-    historicWorkQueues() {
-      return this.workQueueHistory.filter(wqh => wqh.status === 'Work Queue History')
-    },
-  },
-  methods: {
-    getWorkQueueHistory: async function () {
-      try {
-        this.dataLoading = true
-        const {data} = await getRequest(`/project/${this.projectId}/workQueueHistory`)
-        this.workQueueHistory = data
-        window.document.title = `${this.project.projectName} - Work Queues`
-      } catch (e) {
-        logError(e)
-      } finally {
-        this.dataLoading = false
-      }
-    },
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  project: Object
+})
+const { project } = toRefs(props)
+
+const workQueueHistory = ref([])
+const expandHistoric = ref(true)
+const expandCurrent = ref(true)
+const dataLoading = ref(false)
+const headers = ref([
+  {text: 'WQ Category', value: 'workQueueCategory', show: true},
+  {text: 'WQ Type', value: 'workQueueType', show: true},
+  {text: 'Days in Queue', value: 'daysInQueue', show: true},
+  {text: 'Process Step Name', value: 'processStepName', show: true},
+  {text: 'Event Name', value: 'eventName', show: true}
+])
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 500],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const options = ref({itemsPerPage: 100})
+
+const projectId = computed(() => {
+  return parseInt(route.params.projectId)
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
+})
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+const currentWorkQueues = computed(() => {
+  return workQueueHistory.value.filter(wqh => wqh.status === 'Currently in Queue')
+})
+const historicWorkQueues = computed(() => {
+  return workQueueHistory.value.filter(wqh => wqh.status === 'Work Queue History')
+})
+
+onMounted(() => {
+  getWorkQueueHistory()
+})
+
+const getWorkQueueHistory = async () => {
+  try {
+    dataLoading.value = true
+    const {data} = await getRequest(`/project/${projectId.value}/workQueueHistory`)
+    workQueueHistory.value = data
+    window.document.title = `${project.value.projectName} - Work Queues`
+  } catch (e) {
+    logError(e)
+  } finally {
+    dataLoading.value = false
   }
 }
 </script>

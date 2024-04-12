@@ -2,21 +2,9 @@
   <CustomField></CustomField>
 </template>
 
-<script>
+<script setup>
   import CustomField from "@/views/flow/settings/customFields/CustomField.vue"
-  export default {
-    name: 'FlowCustomField',
-    components: {
-      CustomField,
-    },
-    data() {
-      return {
-      }
-    },
-    async created() {},
-    methods: {
-    }
-  }
+
 </script>
 
 <style lang="scss">

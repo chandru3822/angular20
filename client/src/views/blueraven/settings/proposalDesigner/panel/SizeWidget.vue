@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-subheader class="pl-0">{{label}} - {{size}}</v-subheader>
+    <v-subheader class="pl-0">{{ label }} - {{ size }}</v-subheader>
     <div class="d-flex flex-row align-end">
       <v-slider
         class="flex-grow-1 flex-shrink-0"
@@ -14,56 +14,53 @@
     </div>
   </div>
 </template>
-<script>
-export default {
-  props: {
-    label: {
-      type: String,
-      required: true
-    },
-    attr: {
-      type: String,
-      required: true
-    },
-    value: {
-      type: String,
-      default: '0px'
-    },
-    min: {
-      type: Number,
-      default: 0
-    },
-    max: {
-      type: Number,
-      default: 50
-    }
-  },
-  watch: {
-    value: {
-      immediate: true,
-      handler: function(newVal) {
-        const args = newVal
-          ?.split(/(\d+)/)
-          ?.filter(x => x !== '')
+<script setup>
+import { ref, toRefs, watch } from 'vue'
 
-        if (args?.length === 2) {
-          this.size = args[0]
-          this.unit = args[1]
-        }
-      }
-    }
+const emit = defineEmits(['input'])
+const props = defineProps({
+  label: {
+    type: String,
+    required: true
   },
-  data() {
-    return {
-      unit: 'px',
-      size: 0,
-      units: ['px']
-    }
+  attr: {
+    type: String,
+    required: true
   },
-  methods: {
-    onChange() {
-      this.$emit('input', { [this.attr]: `${this.size}${this.unit}` })
-    }
+  value: {
+    type: String,
+    default: '0px'
+  },
+  min: {
+    type: Number,
+    default: 0
+  },
+  max: {
+    type: Number,
+    default: 50
   }
+})
+
+const unit = ref('px')
+const size = ref(0)
+const units = ref(['px'])
+
+const { value } = toRefs(props)
+
+watch(
+  value,
+  (newVal) => {
+    const args = newVal?.split(/(\d+)/)?.filter((x) => x !== '')
+
+    if (args?.length === 2) {
+      size.value = args[0]
+      unit.value = args[1]
+    }
+  },
+  { immediate: true }
+)
+
+const onChange = () => {
+  emit('input', { [props.attr]: `${size.value}${unit.value}` })
 }
 </script>

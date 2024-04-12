@@ -8,83 +8,104 @@
       </v-toolbar-title>
       <v-spacer v-if="userCanEdit"></v-spacer>
       <div v-if="userCanEdit">
-        <v-autocomplete v-model="minVersion"
+        <a-autocomplete v-model="minVersion"
                         class="d-inline-block"
                         :items="buildNumbers"
                         :readonly="!editMinVersion"
                         :disabled="!editMinVersion"
                         hide-details
                         label="Min Required Build Number"
-        ></v-autocomplete>
-        <v-btn text color="primary" x-small @click="editMinVersion = !editMinVersion" class="d-inline-block">
-          <v-icon v-if="!editMinVersion">edit</v-icon>
-          <v-icon v-else>close</v-icon>
-        </v-btn>
-        <v-btn text color="primary" x-small v-if="editMinVersion" @click="saveMinVersion()" class="d-inline-block">
-          <v-icon>save</v-icon>
-        </v-btn>
+        ></a-autocomplete>
+        <a-btn
+            variant="text"
+            color="primary"
+            size="x-small"
+            @click="editMinVersion = !editMinVersion"
+            class="d-inline-block"
+            :prepend-icon="!editMinVersion ? 'edit' : 'close'"
+        ></a-btn>
+        <a-btn
+            variant="text"
+            color="primary"
+            size="x-small"
+            v-if="editMinVersion"
+            @click="saveMinVersion()"
+            class="d-inline-block"
+            prepend-icon="save"
+        ></a-btn>
       </div>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text color="primary" @click="[addNew = !addNew, newApp = {}]" v-if="userCanAdd">
-          <v-icon>add</v-icon>
-        </v-btn>
-        <v-btn v-if="isIos" text color="primary" @click="showIos = !showIos">
-          <v-icon>mdi-chevron-down</v-icon>
-        </v-btn>
-        <v-btn v-else text color="primary" @click="showAndroid = !showAndroid">
-          <v-icon>mdi-chevron-down</v-icon>
-        </v-btn>
+        <a-btn
+            variant="text"
+            color="primary"
+            @click="[addNew = !addNew, newApp = {}]"
+            v-if="userCanAdd"
+            prepend-icon="add"
+        ></a-btn>
+        <a-btn
+            v-if="isIos"
+            variant="text"
+            color="primary"
+            @click="showIos = !showIos"
+            prepend-icon="mdi-chevron-down"
+        ></a-btn>
+        <a-btn
+            v-else
+            variant="text"
+            color="primary"
+            @click="showAndroid = !showAndroid"
+            prepend-icon="mdi-chevron-down"
+        ></a-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-card flat class="square-card mt-3 pa-4" v-if="addNew">
       <v-file-input
-        dense
-        v-if="isIos"
-        class="mb-3"
-        :accept="'.ipa'"
-        ref="fileInput"
-        hide-details
-        label="Select an .ipa File"
-        @change="uploadSecondaryFile"
+          dense
+          v-if="isIos"
+          class="mb-3"
+          :accept="'.ipa'"
+          ref="fileInput"
+          hide-details
+          label="Select an .ipa File"
+          @change="uploadSecondaryFile"
       />
       <v-file-input
-        dense
-        class="mb-3"
-        :accept="isIos ? '.plist' : '.apk'"
-        ref="fileInput"
-        hide-details
-        :label="isIos ? 'Select a .plist File' : 'Select an .apk File'"
-        @change="uploadFile"
+          dense
+          class="mb-3"
+          :accept="isIos ? '.plist' : '.apk'"
+          ref="fileInput"
+          hide-details
+          :label="isIos ? 'Select a .plist File' : 'Select an .apk File'"
+          @change="uploadFile"
       />
-      <v-text-field text
+      <a-text-field
                     type="text"
                     label="Version Number"
                     v-model="newApp.versionNumber">
-      </v-text-field>
-      <v-text-field text
+      </a-text-field>
+      <a-text-field
                     type="number"
                     label="Build Number"
                     v-model.number="newApp.buildNumber">
-      </v-text-field>
+      </a-text-field>
 
-      <v-btn color="primary"
-             :disabled="!newApp.versionNumber || !newApp.buildNumber
-                        || (!newApp.attachment || !newApp.attachment.name)
-                        || (isIos && (!newApp.secondaryAttachment || !newApp.secondaryAttachment.name))"
-             @click="saveNewApp">
-        Save
-      </v-btn>
+      <a-btn
+          color="primary"
+          :disabled="!newApp.versionNumber || !newApp.buildNumber || (!newApp.attachment || !newApp.attachment.name) || (isIos && (!newApp.secondaryAttachment || !newApp.secondaryAttachment.name))"
+          @click="saveNewApp"
+          text="Save"
+      ></a-btn>
     </v-card>
     <v-data-table v-if="(isIos && showIos) || (!isIos && showAndroid)"
-        :headers="filterHeaders"
-        :items="getFilteredApps(true)"
-        :fixed-header="true"
-        disable-sort
-        hide-default-footer
-        :mobile-breakpoint="0"
-        :items-per-page="-1"
-        class="elevation-1"
+                  :headers="filterHeaders"
+                  :items="getFilteredApps(true)"
+                  :fixed-header="true"
+                  disable-sort
+                  hide-default-footer
+                  :mobile-breakpoint="0"
+                  :items-per-page="-1"
+                  class="elevation-1"
     >
       <template #no-data>
         <span class="default-text-color">No available apps</span>
@@ -96,16 +117,22 @@
       <template #item="{ item, index }">
         <tr :class="{'default-row': item.show, 'shaded-row': index % 2}">
           <td>
-            <v-btn text color="primary" small
-                   v-if="isIos"
-                   :href="`itms-services://?action=download-manifest&url=https://7oaks-albatross.s3.amazonaws.com/${item.s3Key}`">
-              <v-icon>download</v-icon>
-            </v-btn>
-            <v-btn text color="primary" small
-                   v-else
-                   :href="item.presignedUrl">
-              <v-icon>download</v-icon>
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                small
+                v-if="isIos"
+                :href="`itms-services://?action=download-manifest&url=https://7oaks-albatross.s3.amazonaws.com/${item.s3Key}`"
+                prepend-icon="download"
+            ></a-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                small
+                v-else
+                :href="item.presignedUrl"
+                prepend-icon="download"
+            ></a-btn>
           </td>
           <td class="text-left">
             {{item.buildNumber}}
@@ -120,10 +147,21 @@
             {{item.dateCreated | formatDate('timestamp')}}
           </td>
           <td class="px-0" v-if="userCanEdit">
-            <v-btn v-if="userCanDelete" text color="primary" @click="appToDelete = item"><v-icon>delete</v-icon></v-btn>
-            <v-btn v-if="userCanEdit" small text color="primary" @click="appToShowHide = item">
-              {{ item.show ? 'hide' : 'show'}}
-            </v-btn>
+            <a-btn
+                v-if="userCanDelete"
+                variant="text"
+                color="primary"
+                @click="appToDelete = item"
+                prepend-icon="delete"
+            ></a-btn>
+            <a-btn
+                v-if="userCanEdit"
+                size="small"
+                variant="text"
+                color="primary"
+                @click="appToShowHide = item"
+                :text="item.show ? 'hide' : 'show'"
+            ></a-btn>
           </td>
           <td class="text-left">
             <v-checkbox v-if="userCanEdit || userHasBeta"
@@ -143,8 +181,8 @@
   </v-main>
 </template>
 
-<script>
-import {AppMutations} from '@/stores/AppStore'
+<script setup>
+
 import {
   handleHidingGlobalLoader,
   deleteRequest,
@@ -152,221 +190,247 @@ import {
   putRequestWithRequestParams,
   getRequestWithParams,
   getRequest,
-  getSnackbar,
+
   postRequest
 } from '@/helpers/helpers'
-import Vue2Filters from "vue2-filters";
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-export default {
-  name: 'AppDownloads',
-  mixins: [Vue2Filters.mixin],
-  components: {ConfirmationDialog},
-  props: {
-    isIos: Boolean
-  },
-  data () {
-    return {
-      snackbar: {},
-      constants,
-      showIos: true,
-      addNew: false,
-      apps: [],
-      newApp: {},
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'ADD'),
-      userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_ALL'),
-      userCanView: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW'),
-      userHasBeta: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_CUSTOM'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT'),
-      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'DELETE'),
-      minVersion: null,
-      buildNumbers: [],
-      editMinVersion: false,
-      appTypeId: this.isIos ? 1 : 3,
-      showAndroid: true,
-      isMobile: false,
-      headers: [
-        {text: '', value: 'dlIcon', show: true, width: 40},
-        {text: 'Build', value: 'buildNumber', show: true},
-        {text: 'Version', value: 'version', show: true},
-        {text: 'Branch', value: 'mobileBranch', show: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')},
-        {text: 'Created', value: 'dateCreated', show: true},
-        {text: '', value: 'icons', width: 175, show: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')},
-        {text: 'Beta', value: 'beta', show: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_CUSTOM') || this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')}
-      ],
-      appToDelete: null,
-      appToShowHide: null,
-      appToToggleBeta: null,
-      betaUpdatedAlertSuccess: false,
-      betaUpdatedAlertFailed: false
-    }
-  },
-  computed:{
-    filterHeaders () {
-      return this.headers.filter(header => header.show === true)
-    },
-    appToDeleteName(){
-      return this.appToDelete ? this.appToDelete.filename : ''
-    },
-    hideOrShowApp(){
-      return this.appToShowHide ? this.appToShowHide.show : false
-    }
-  },
-  created () {
-    this.getApps()
-    this.getMinVersion()
-    this.getAvailableBuildNumbers()
-    let userAgent = window.navigator.userAgent
-    if(userAgent && userAgent.includes('Android')){
-      this.showIos = false
-      this.isMobile = true
-    } else if (userAgent && (userAgent.includes('iPhone') || userAgent.includes('iPad'))) {
-      this.showAndroid = false
-      this.isMobile = true
-    }
-  },
-  methods: {
-    async saveNewApp() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      const formData = new FormData()
-      formData.append('versionNumber', this.newApp.versionNumber);
-      formData.append('buildNumber', this.newApp.buildNumber);
-      formData.append('attachment', this.newApp.attachment);
-      formData.append('secondaryAttachment', this.newApp.secondaryAttachment);
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-      let url = this.isIos ? '/app/ios' : '/app/android'
-      await postRequest(url, formData)
-      this.newApp = {}
-      this.addNew = false
-      //reload it all cuz i'm lazy
-      await this.getApps()
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  isIos: Boolean
+})
+const { isIos } = toRefs(props)
+
+const emit = defineEmits(['versionNumberLoaded'])
+
+const showIos = ref(true)
+const addNew = ref(false)
+const apps = ref([])
+const newApp = ref({})
+const minVersion = ref(null)
+const buildNumbers = ref([])
+const editMinVersion = ref(false)
+const showAndroid = ref(true)
+const isMobile = ref(false)
+const appToDelete = ref(null)
+const appToShowHide = ref(null)
+const appToToggleBeta = ref(null)
+const betaUpdatedAlertSuccess = ref(false)
+const betaUpdatedAlertFailed = ref(false)
+const appTypeId = ref(isIos.value ? 1 : 3)
+
+const userCanAdd = computed(() => {
+  return userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'ADD')
+})
+const userCanViewAll = computed(() => {
+  return userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_ALL')
+})
+const userCanView = computed(() => {
+  return userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW')
+})
+const userHasBeta = computed(() => {
+  return userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_CUSTOM')
+})
+const userCanEdit = computed(() => {
+  return userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')
+})
+const userCanDelete = computed(() => {
+  return userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'DELETE')
+})
+const headers = computed(() => {
+  return [
+    {text: '', value: 'dlIcon', show: true, width: 40},
+    {text: 'Build', value: 'buildNumber', show: true},
+    {text: 'Version', value: 'version', show: true},
+    {
+      text: 'Branch',
+      value: 'mobileBranch',
+      show: userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')
     },
-    uploadFile: function (file) {
-      this.newApp.attachment = file
-    },
-    uploadSecondaryFile: function (file) {
-      this.newApp.secondaryAttachment = file
-    },
-    async getApps() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let url = this.isIos ? '/app/ios' : '/app/android'
-        const {data, status} = await getRequest(url)
-        this.apps = data
-        let versionNumber = this.apps[0].versionNumber
-        this.$emit('versionNumberLoaded', versionNumber)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Apps')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveMinVersion () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await putRequestWithRequestParams(`/app/${this.appTypeId}/minVersion`, null, { minVersion: this.minVersion})
-        this.editMinVersion = false
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Min Build Number')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getAvailableBuildNumbers () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequestWithParams(`/app/${this.appTypeId}/buildNumbers`)
-        this.buildNumbers = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Build Numbers')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getMinVersion () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequestWithParams(`/app/${this.appTypeId}/minVersion`)
-        this.minVersion = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Min Build Number')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteApp() {
-      const item = this.appToDelete
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await deleteRequest(`/app/${item.id}`)
-        item.archived = true
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Apps')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async showHideApp() {
-      const app = this.appToShowHide
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        app.show = !app.show
-        const {status} = await putRequest(`/app/show`, app)
-        app.showConfirm = false
-        this.appToShowHide = null
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating App')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async toggleBetaForApp() {
-      const app = this.appToToggleBeta
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await putRequest(`/app/beta`, app)
-        app.showConfirm = false
-        this.appToToggleBeta = null
-        handleHidingGlobalLoader(this, status)
-        this.betaUpdatedAlertSuccess = true
-        this.betaUpdatedAlertFailed = false
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating App')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        this.betaUpdatedAlertSuccess = false
-        this.betaUpdatedAlertFailed = true
-      }
-    },
-    getFilteredApps() {
-      //filter archived
-      return this.apps.filter(a => {
-        //user can view all or can edit then return all unarchived
-        return this.userCanEdit || this.userCanViewAll ? !a.archived :
-          //if they have beta AND view access then just show them all the shown apps regardless of beta status
-          this.userHasBeta && this.userCanView ? !a.archived && a.show :
-          //if they ONLY have beta then only show them shown beta apps
-          this.userHasBeta ? !a.archived && a.show && a.beta :
-          //otherwise they should only have view acces and only show them shown non-beta apps
-          a.show && !a.archived && !a.beta
-      })
+    {text: 'Created', value: 'dateCreated', show: true},
+    {text: '', value: 'icons', width: 175, show: userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')},
+    {
+      text: 'Beta',
+      value: 'beta',
+      show: userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_CUSTOM') || userStore.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')
     }
+  ]
+})
+const filterHeaders = computed(() => {
+  return headers.value.filter(header => header.show === true)
+})
+const appToDeleteName = computed(() => {
+  return appToDelete.value ? appToDelete.value.filename : ''
+})
+const hideOrShowApp = computed(() => {
+  return appToShowHide.value ? appToShowHide.value.show : false
+})
+
+onMounted(() => {
+  getApps()
+  getMinVersion()
+  getAvailableBuildNumbers()
+  let userAgent = window.navigator.userAgent
+  if(userAgent && userAgent.includes('Android')){
+    showIos.value = false
+    isMobile.value = true
+  } else if (userAgent && (userAgent.includes('iPhone') || userAgent.includes('iPad'))) {
+    showAndroid.value = false
+    isMobile.value = true
+  }
+})
+const saveNewApp = async() => {
+  appStore.loading = true
+  const formData = new FormData()
+  formData.append('versionNumber', newApp.value.versionNumber);
+  formData.append('buildNumber', newApp.value.buildNumber);
+  formData.append('attachment', newApp.value.attachment);
+  formData.append('secondaryAttachment', newApp.value.secondaryAttachment);
+
+  let url = isIos.value ? '/app/ios' : '/app/android'
+  await postRequest(url, formData)
+  newApp.value = {}
+  addNew.value = false
+  //reload it all cuz i'm lazy
+  await getApps()
+}
+const uploadFile = (file) => {
+  newApp.value.attachment = file
+}
+const uploadSecondaryFile = (file) => {
+  newApp.value.secondaryAttachment = file
+}
+const getApps = async() => {
+  appStore.loading = true
+  try {
+    let url = isIos.value ? '/app/ios' : '/app/android'
+    const {data, status} = await getRequest(url)
+    apps.value = data
+    let versionNumber = apps.value[0].versionNumber
+    emit('versionNumberLoaded', versionNumber)
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Apps')
+
+    appStore.loading = false
   }
 }
+const saveMinVersion = async () => {
+  appStore.loading = true
+  try {
+    const {status} = await putRequestWithRequestParams(`/app/${appTypeId.value}/minVersion`, null, { minVersion: minVersion.value})
+    editMinVersion.value = false
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Min Build Number')
+
+    appStore.loading = false
+  }
+}
+const getAvailableBuildNumbers = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequestWithParams(`/app/${appTypeId.value}/buildNumbers`)
+    buildNumbers.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Build Numbers')
+
+    appStore.loading = false
+  }
+}
+const getMinVersion = async () => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequestWithParams(`/app/${appTypeId.value}/minVersion`)
+    minVersion.value = data
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Min Build Number')
+
+    appStore.loading = false
+  }
+}
+const deleteApp = async() => {
+  const item = appToDelete.value
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/app/${item.id}`)
+    item.archived = true
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Apps')
+
+    appStore.loading = false
+  }
+}
+const showHideApp = async() => {
+  const app = appToShowHide.value
+  appStore.loading = true
+  try {
+    app.show = !app.show
+    const {status} = await putRequest(`/app/show`, app)
+    app.showConfirm = false
+    appToShowHide.value = null
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating App')
+
+    appStore.loading = false
+  }
+}
+const toggleBetaForApp = async() => {
+  const app = appToToggleBeta.value
+  appStore.loading = true
+  try {
+    const {status} = await putRequest(`/app/beta`, app)
+    app.showConfirm = false
+    appToToggleBeta.value = null
+    handleHidingGlobalLoader( status)
+    betaUpdatedAlertSuccess.value = true
+    betaUpdatedAlertFailed.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating App')
+
+    appStore.loading = false
+    betaUpdatedAlertSuccess.value = false
+    betaUpdatedAlertFailed.value = true
+  }
+}
+const getFilteredApps = () => {
+  //filter archived
+  return apps.value.filter(a => {
+    //user can view all or can edit then return all unarchived
+    return userCanEdit.value || userCanViewAll.value ? !a.archived :
+        //if they have beta AND view access then just show them all the shown apps regardless of beta status
+        userHasBeta.value && userCanView.value ? !a.archived && a.show :
+            //if they ONLY have beta then only show them shown beta apps
+            userHasBeta.value ? !a.archived && a.show && a.beta :
+                //otherwise they should only have view acces and only show them shown non-beta apps
+                a.show && !a.archived && !a.beta
+  })
+}
+
 </script>
 
 <style lang="scss">

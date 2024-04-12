@@ -42,54 +42,60 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn class="white--text text-capitalize mr-4 mb-2" color="primary"
-               @click="closeMilestoneDialog">
-          Close
-        </v-btn>
+        <a-btn
+            class="text-capitalize mr-4 mb-2"
+            color="primary"
+            @click="closeMilestoneDialog"
+            text="Close"
+        ></a-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 
 </template>
 
-<script>
+<script setup>
 import moment from "moment";
 import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
 
-export default {
-  name: "SetterMilestoneDrilldown",
-  props: {
-    selectedQuarter: Number,
-    drilldownData: [],
-    isOpen: Boolean
-  },
-  data () {
-    return {
-      currentQuarter: moment().quarter(),
-      headers: [
-        { text: '', value: '', show: true, sortable: false },
-        { text: 'Name', value: 'customer_name', show: true },
-        { text: 'Project ID', value: 'id', show: true },
-        { text: 'Source', value: 'source_name', show: true },
-        { text: 'Appointment Date', value: 'appointment_date', show: true },
-        { text: 'Appointment Outcome', value: 'appointment_outcome', show: true }
-      ],
-    }
-  },
-  watch: {
-    isOpen () {
-    }
-  },
-  computed: {
-    milestoneDrilldownTitle () {
-      return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + DashboardTypeEnum.SETTER.drilldown.label + this.selectedQuarter
-    },
-  },
-  methods: {
-    closeMilestoneDialog() {
-      this.$emit('close-drilldown')
-    }
-  }
+import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
+
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const emit = defineEmits(['close-drilldown'])
+
+const props = defineProps({
+  selectedQuarter: Number,
+  drilldownData: Array,
+  isOpen: Boolean
+})
+const { selectedQuarter, drilldownData, isOpen } = toRefs(props)
+
+const currentQuarter = ref(moment().quarter())
+const headers = ref([
+  { text: '', value: '', show: true, sortable: false },
+  { text: 'Name', value: 'customer_name', show: true },
+  { text: 'Project ID', value: 'id', show: true },
+  { text: 'Source', value: 'source_name', show: true },
+  { text: 'Appointment Date', value: 'appointment_date', show: true },
+  { text: 'Appointment Outcome', value: 'appointment_outcome', show: true }
+])
+
+const milestoneDrilldownTitle = computed(() => {
+  return userStore.details.firstName + ' ' + userStore.details.lastName + DashboardTypeEnum.SETTER.drilldown.label + selectedQuarter.value
+})
+
+const closeMilestoneDialog = () => {
+  emit('close-drilldown')
 }
 </script>
 

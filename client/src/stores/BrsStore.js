@@ -9,8 +9,8 @@ export const BrsStore = {
     commissionPositionId: null,
   },
   mutations: {
-    [BrsMutations.SET_COMMISSION_POSITION_ID]: (state, positionId) =>
-      (state.commissionPositionId = positionId),
+    // [BrsMutations.SET_COMMISSION_POSITION_ID]: (state, positionId) =>
+    //   (state.commissionPositionId = positionId),
   },
   actions: {},
   getters: {},

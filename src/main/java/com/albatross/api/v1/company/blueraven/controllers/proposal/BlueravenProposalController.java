@@ -333,7 +333,7 @@ public class BlueravenProposalController {
 
   private String getCleanFilename(Proposal proposal) {
     return proposal.getDisplayName().trim()
-      .replace("- ", "")
+      .replaceAll("[^a-zA-Z0-9\\s]", "")
       .replace(" ", "_");
   }
 

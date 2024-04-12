@@ -1,116 +1,182 @@
 <template>
   <div>
     <v-btn-toggle v-model="toggle">
-      <v-btn text small value="all">All</v-btn>
-      <v-btn text small value="hv">H/V</v-btn>
-      <v-btn text small value="custom">Custom</v-btn>
+      <a-btn
+        variant="text"
+        size="small"
+        value="all"
+        color="unset"
+        text="All"
+      ></a-btn>
+      <a-btn
+        variant="text"
+        size="small"
+        value="hv"
+        color="unset"
+        text="H/V"
+      ></a-btn>
+      <a-btn
+        variant="text"
+        size="small"
+        value="custom"
+        color="unset"
+        text="Custom"
+      ></a-btn>
     </v-btn-toggle>
 
     <div v-if="toggle === 'all'">
-      <size-widget label="All" attr="all" :value="all" :min="min" :max="max" @input="onChange" />
+      <size-widget
+        label="All"
+        attr="all"
+        :value="all"
+        :min="min"
+        :max="max"
+        @input="onChange"
+      />
     </div>
     <div v-if="toggle === 'hv'">
-      <size-widget label="Vertical" attr="vertical" :value="vertical" :min="min" :max="max" @input="onChange" />
-      <size-widget label="Horizontal" attr="horizontal" :value="horizontal" :min="min" :max="max" @input="onChange" />
+      <size-widget
+        label="Vertical"
+        attr="vertical"
+        :value="vertical"
+        :min="min"
+        :max="max"
+        @input="onChange"
+      />
+      <size-widget
+        label="Horizontal"
+        attr="horizontal"
+        :value="horizontal"
+        :min="min"
+        :max="max"
+        @input="onChange"
+      />
     </div>
     <div v-if="toggle === 'custom'">
-      <size-widget label="Top" attr="top" :value="top" :min="min" :max="max" @input="onChange" />
-      <size-widget label="Right" attr="right" :value="right" :min="min" :max="max" @input="onChange" />
-      <size-widget label="Bottom" attr="bottom" :value="bottom" :min="min" :max="max" @input="onChange" />
-      <size-widget label="Left" attr="left" :value="left" :min="min" :max="max" @input="onChange" />
+      <size-widget
+        label="Top"
+        attr="top"
+        :value="top"
+        :min="min"
+        :max="max"
+        @input="onChange"
+      />
+      <size-widget
+        label="Right"
+        attr="right"
+        :value="right"
+        :min="min"
+        :max="max"
+        @input="onChange"
+      />
+      <size-widget
+        label="Bottom"
+        attr="bottom"
+        :value="bottom"
+        :min="min"
+        :max="max"
+        @input="onChange"
+      />
+      <size-widget
+        label="Left"
+        attr="left"
+        :value="left"
+        :min="min"
+        :max="max"
+        @input="onChange"
+      />
     </div>
   </div>
-
 </template>
-<script>
+<script setup>
 import SizeWidget from './SizeWidget.vue'
+import { ref, toRefs, watch } from 'vue'
 
-export default {
-  components: { SizeWidget },
-  props: {
-    value: {
-      type: String
-    },
-    attr: {
-      type: String,
-      required: true
-    },
-    min: {
-      type: Number,
-      default: 0
-    },
-    max: {
-      type: Number,
-      default: 50
-    }
+const emit = defineEmits(['input'])
+const props = defineProps({
+  value: {
+    type: String
   },
-  watch: {
-    value: {
-      immediate: true,
-      handler: function(newVal) {
-        this.top = null
-        this.right = null
-        this.bottom = null
-        this.left = null
-        this.horizontal = null
-        this.vertical = null
-        this.all = null
-
-        const args = newVal?.split(' ') ?? []
-        if (args.length === 0) {
-          return
-        }
-
-        if (args?.length === 4) {
-          this.toggle = 'custom'
-
-          this.top = args[0]
-          this.right = args[1]
-          this.bottom = args[2]
-          this.left = args[3]
-        } else if (args?.length === 2) {
-          this.toggle = 'hv'
-
-          this.vertical = args[0]
-          this.horizontal = args[1]
-        } else {
-          this.toggle = 'all'
-
-          this.all = args[0]
-        }
-      }
-    }
+  attr: {
+    type: String,
+    required: true
   },
-  data() {
-    return {
-      all: null,
-      horizontal: null,
-      vertical: null,
-      top: null,
-      right: null,
-      bottom: null,
-      left: null,
-      toggle: null
-    }
+  min: {
+    type: Number,
+    default: 0
   },
-  methods: {
-    onChange(updated) {
-      Object.keys(updated).forEach(key => {
-        this[key] = updated[key]
-      })
-
-      let val = ''
-      if (this.toggle === 'all') {
-        val = this.all
-      } else if (this.toggle === 'hv') {
-        val = [this.vertical, this.horizontal].map(x => x?.trim()?.length > 1 ? x : '0').join(' ')
-      } else if (this.toggle === 'custom') {
-        val = [this.top, this.right, this.bottom, this.left].map(x => x?.trim()?.length > 1 ? x : '0').join(' ')
-      } else {
-        throw new Error('Unknown type')
-      }
-      this.$emit('input', { [this.attr]: val })
-    }
+  max: {
+    type: Number,
+    default: 50
   }
+})
+const all = ref(null)
+const horizontal = ref(null)
+const vertical = ref(null)
+const top = ref(null)
+const right = ref(null)
+const bottom = ref(null)
+const left = ref(null)
+const toggle = ref(null)
+
+const { value } = toRefs(props)
+
+watch(
+  value,
+  (newVal) => {
+    top.value = null
+    right.value = null
+    bottom.value = null
+    left.value = null
+    horizontal.value = null
+    vertical.value = null
+    all.value = null
+
+    const args = newVal?.split(' ') ?? []
+    if (args.length === 0) {
+      return
+    }
+
+    if (args?.length === 4) {
+      toggle.value = 'custom'
+
+      top.value = args[0]
+      right.value = args[1]
+      bottom.value = args[2]
+      left.value = args[3]
+    } else if (args?.length === 2) {
+      toggle.value = 'hv'
+
+      vertical.value = args[0]
+      horizontal.value = args[1]
+    } else {
+      toggle.value = 'all'
+
+      all.value = args[0]
+    }
+  },
+  { immediate: true }
+)
+
+const onChange = (updated) => {
+  Object.keys(updated).forEach((key) => {
+    this[key] = updated[key]
+  })
+
+  let val = ''
+  if (toggle.value === 'all') {
+    val = all.value
+  } else if (toggle.value === 'hv') {
+    val = [vertical.value, horizontal.value]
+      .map((x) => (x?.trim()?.length > 1 ? x : '0'))
+      .join(' ')
+  } else if (toggle.value === 'custom') {
+    val = [top.value, right.value, bottom.value, left.value]
+      .map((x) => (x?.trim()?.length > 1 ? x : '0'))
+      .join(' ')
+  } else {
+    throw new Error('Unknown type')
+  }
+  emit('input', { [props.attr]: val })
 }
 </script>

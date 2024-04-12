@@ -19,24 +19,30 @@
           <v-card class="mx-2 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
               <v-col class="form-btns" cols="12">
-                <v-btn text color="primary" class="text-capitalize" @click="toggleMinimizeAll">
-                  {{ expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All' }}
-                </v-btn>
-                <v-btn v-if="dataWasChanged"
-                       @click="resetForm"
-                       text
-                       color="primary"
-                       class="cancel-link"
-                       style="margin-right: 10px"
-                >Cancel
-                </v-btn>
-                <v-btn id="save-btn"
-                       v-if="userCanEdit"
-                       color="primary"
-                       class="white--text mr-0"
-                       @click="validateForm()"
-                >Save
-                </v-btn>
+                <a-btn
+                    variant="text"
+                    color="primary"
+                    class="text-capitalize"
+                    @click="toggleMinimizeAll"
+                    :text="expandedAll !== CollapseExpandEnum.COLLAPSED ? 'Minimize All' : 'Expand All'"
+                ></a-btn>
+                <a-btn
+                    v-if="dataWasChanged"
+                    @click="resetForm"
+                    variant="text"
+                    color="primary"
+                    class="cancel-link"
+                    html-style="margin-right: 10px"
+                    text="Cancel"
+                ></a-btn>
+                <a-btn
+                    id="save-btn"
+                    v-if="userCanEdit"
+                    color="primary"
+                    class="mr-0"
+                    @click="validateForm()"
+                    text="Save"
+                ></a-btn>
               </v-col>
             </v-row>
             <v-form ref="hoaForm">
@@ -57,27 +63,27 @@
                   <v-col cols="12" md="6" class="group px-2 py-2">
                     <!-- CONTACTS -->
                     <FeatDbContact title="Contacts"
-                                :user-can-edit="userCanEdit"
-                                :contactTypeId="10"
-                                :itemId="hoa.id"
-                                :itemType="itemType"
-                                :contacts="hoa.contacts"
-                                show-expanded
-                                :expanded-all="expandedAll"
-                                @toggle-collapse-expand="toggleCollapseExpand($event)"
+                                   :user-can-edit="userCanEdit"
+                                   :contactTypeId="10"
+                                   :itemId="hoa.id"
+                                   :itemType="itemType"
+                                   :contacts="hoa.contacts"
+                                   show-expanded
+                                   :expanded-all="expandedAll"
+                                   @toggle-collapse-expand="toggleCollapseExpand($event)"
                     ></FeatDbContact>
                   </v-col>
                   <v-col cols="12" md="6" class="group px-2 py-2">
                     <FeatDbLinks title="All Links"
-                              :user-can-edit="userCanEdit"
-                              :linkTypeId="11"
-                              :itemId="hoa.id"
-                              :itemType="itemType"
-                              :links="hoa.links"
-                              :isNested="false"
-                              show-expanded
-                              :expanded-all="expandedAll"
-                              @toggle-collapse-expand="toggleCollapseExpand($event)"></FeatDbLinks>
+                                 :user-can-edit="userCanEdit"
+                                 :linkTypeId="11"
+                                 :itemId="hoa.id"
+                                 :itemType="itemType"
+                                 :links="hoa.links"
+                                 :isNested="false"
+                                 show-expanded
+                                 :expanded-all="expandedAll"
+                                 @toggle-collapse-expand="toggleCollapseExpand($event)"></FeatDbLinks>
                   </v-col>
                 </v-row>
               </div>
@@ -89,10 +95,10 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import cloneDeep from "lodash.clonedeep"
-import {AppMutations} from "@/stores/AppStore"
-import {getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
+
+import {getRequest, getRequestWithParams,  handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue"
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
 import TwoColumnMasonry from "@/views/blueraven/featDB/components/TwoColumnMasonry.vue";
@@ -100,151 +106,147 @@ import FeatDbContact from "@/views/blueraven/featDB/components/FeatDbContacts.vu
 import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue";
 import FeatDbCustomFields from "@/views/blueraven/featDB/components/FeatDbCustomFieldGroup.vue";
 import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
+import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStorePinia.js'
 
-export default {
-  name: "hoaDetails",
-  components: {
-    TwoColumnMasonry,
-    FeatDbCustomFields,
-    CustomValueInput,
-    FeatDbCard,
-    FeatDbContact,
-    FeatDbLinks,
-  },
-  computed: {
-    userCanEdit() {
-      return this.$store.getters.userHasFeatureAccessLevel("HOA", "EDIT")
-    },
-    expandedAll(){
-      if(this.expandedGroups === this.totalGroups){
-        return CollapseExpandEnum.EXPANDED
-      } else if (this.expandedGroups === 0) {
-        return CollapseExpandEnum.COLLAPSED
-      } else {
-        return CollapseExpandEnum.MIXED
-      }
-    }
-  },
-  data: () => ({
-    CollapseExpandEnum,
-    hoaId: null,
-    itemType: "hoa",
-    snackbar: {},
-    dataWasChanged: false,
-    dataReady: false,
-    customFieldGroups: [],
-    hoa: {},
-    totalGroups: 2,
-    expandedGroups: 2,
-  }),
-  methods: {
-    updateDirtyValue(item) {
-      item.valueWasChanged = true
-      this.dataWasChanged = true
-    },
-    toggleCollapseExpand(wasExpanded) {
-      if(wasExpanded === false) {
-        this.expandedGroups--
-      }else {
-        this.expandedGroups++
-      }
-    },
-    async getHoa() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/featDb/hoa/${this.hoaId}`, "blueraven")
-        this.hoa = cloneDeep(data)
-        window.document.title = `HOA - ${this.hoa.name}`
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error("*** ERROR ***", e)
-        this.snackbar = getSnackbar("ERROR", "Error retrieving HOA")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    validateForm() {
-      //checks for required fields prior to opening the save dialog
-      if (this.$refs.hoaForm.validate()) {
-        this.saveHoa()
-      } else {
-        this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getCustomFieldGroupAssignmentsForScreen() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const params = {sourceId: this.hoa.id, objectTypeId: 24}
-        const {
-          data,
-          status
-        } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, "blueraven")
-        this.customFieldGroups = cloneDeep(data)
-        this.totalGroups = this.totalGroups + this.customFieldGroups.length;
-        this.expandedGroups = this.totalGroups;
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error("*** ERROR ***", e)
-        this.snackbar = getSnackbar("ERROR", "Error retrieving custom fields")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getCustomFieldsForGroup(groupId) {
-      let match = this.customFieldGroups.find(cfga => cfga.id === groupId)
-      return match ? match.customFieldValues : []
-    },
-    showOtherField(int, list) {
-      let match = list.find(l => l.id === int)
-      return match ? match.showOther : false
-    },
-    resetCustomFieldValueWasChangedFlags() {
-      this.customFieldGroups.forEach(group => {
-        group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
-      })
-    },
-    async resetForm() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.dataWasChanged = false
-      this.dataReady = false
-      this.getHoa().then(() => {
-        this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
-      })
-    },
-    async saveHoa() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
 
-      try {
-        this.hoa.customFieldGroups = this.customFieldGroups
-        const {data, status} = await putRequest("/featDb/hoa", this.hoa, "blueraven")
-        this.hoa = cloneDeep(data)
-        this.dataWasChanged = false
-        this.snackbar = getSnackbar("SUCCESS", "HOA saved")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error("*** ERROR ***", e)
-        this.snackbar = getSnackbar("ERROR", "Error saving HOA")
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    toggleMinimizeAll() {
-      if (this.expandedAll !== CollapseExpandEnum.COLLAPSED) {
-        this.expandedGroups = 0
-      } else {
-        this.expandedGroups = this.totalGroups
-      }
-    }
-  },
-  async created() {
-    this.$store.commit(AppMutations.SET_LOADING, true)
-    this.hoaId = parseInt(this.$route.params.hoaId)
+const appStore = useAppStore()
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-    await this.getHoa()
-    await this.getCustomFieldGroupAssignmentsForScreen()
-    this.dataReady = true
+
+const userCanEdit = computed(()  => {
+  return userStore.userHasFeatureAccessLevel("HOA", "EDIT")
+})
+const expandedAll = computed(() => {
+  if(expandedGroups.value === totalGroups.value){
+    return CollapseExpandEnum.EXPANDED
+  } else if (expandedGroups.value === 0) {
+    return CollapseExpandEnum.COLLAPSED
+  } else {
+    return CollapseExpandEnum.MIXED
+  }
+})
+
+
+const itemType = ref("hoa")
+const dataWasChanged = ref(false)
+const dataReady = ref(false)
+const customFieldGroups = ref([])
+const hoa = ref({})
+const totalGroups = ref(2)
+const expandedGroups = ref(2)
+const hoaForm = ref(null)
+
+const hoaId = computed(() => {
+  return route.params.hoaId
+})
+
+onMounted(async() => {
+  await getHoa()
+  await getCustomFieldGroupAssignmentsForScreen()
+  dataReady.value = true
+})
+
+
+const updateDirtyValue = (item) => {
+  item.valueWasChanged = true
+  dataWasChanged.value = true
+}
+const toggleCollapseExpand = (wasExpanded) => {
+  if(wasExpanded === false) {
+    expandedGroups.value--
+  }else {
+    expandedGroups.value++
+  }
+}
+const getHoa = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/featDb/hoa/${hoaId.value}`, "blueraven")
+    hoa.value = cloneDeep(data)
+    window.document.title = `HOA - ${hoa.value.name}`
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error("*** ERROR ***", e)
+    snackbar("ERROR", "Error retrieving HOA")
+    appStore.loading = false
+  }
+}
+const validateForm = () => {
+  //checks for required fields prior to opening the save dialog
+  if (hoaForm.value.validate()) {
+    saveHoa()
+  } else {
+    snackbar('ERROR', 'Missing Required Fields')
+  }
+}
+const getCustomFieldGroupAssignmentsForScreen = async() => {
+  appStore.loading = true
+  try {
+    const params = {sourceId: hoa.value.id, objectTypeId: 24}
+    const {
+      data,
+      status
+    } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, "blueraven")
+    customFieldGroups.value = cloneDeep(data)
+    totalGroups.value = totalGroups.value + customFieldGroups.value.length;
+    expandedGroups.value = totalGroups.value;
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error("*** ERROR ***", e)
+    snackbar("ERROR", "Error retrieving custom fields")
+    appStore.loading = false
+  }
+}
+const getCustomFieldsForGroup = (groupId) => {
+  let match = customFieldGroups.value.find(cfga => cfga.id === groupId)
+  return match ? match.customFieldValues : []
+}
+const showOtherField = (int, list) => {
+  let match = list.find(l => l.id === int)
+  return match ? match.showOther : false
+}
+const resetCustomFieldValueWasChangedFlags = () => {
+  customFieldGroups.value.forEach(group => {
+    group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
+  })
+}
+const resetForm = async() => {
+  appStore.loading = true
+  dataWasChanged.value = false
+  dataReady.value = false
+  getHoa().then(() => {
+    getCustomFieldGroupAssignmentsForScreen().then(() => dataReady.value = true)
+  })
+}
+const saveHoa = async() => {
+  appStore.loading = true
+
+  try {
+    hoa.value.customFieldGroups = customFieldGroups.value
+    const {data, status} = await putRequest("/featDb/hoa", hoa.value, "blueraven")
+    hoa.value = cloneDeep(data)
+    dataWasChanged.value = false
+    snackbar("SUCCESS", "HOA saved")
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error("*** ERROR ***", e)
+    snackbar("ERROR", "Error saving HOA")
+    appStore.loading = false
+  }
+}
+const toggleMinimizeAll = () => {
+  if (expandedAll.value !== CollapseExpandEnum.COLLAPSED) {
+    expandedGroups.value = 0
+  } else {
+    expandedGroups.value = totalGroups.value
   }
 }
 </script>

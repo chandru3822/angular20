@@ -2,13 +2,13 @@
   <v-row>
     <v-col cols="12" class="py-0">
       <v-card flat class="square-card pb-3 px-3 elevation-1" color="white">
-        <v-text-field
+        <a-text-field
           v-model="search"
           prepend-inner-icon="mdi-magnify"
           label="Search"
           single-line
           hide-details
-        ></v-text-field>
+        ></a-text-field>
       </v-card>
       <v-divider></v-divider>
       <v-data-table
@@ -31,11 +31,23 @@
         </template>
 
         <template #item="{item: smartlist}">
-          <tr class="clickable" @click="router.push({name: 'reportEditor', params: {reportId: smartlist.id}})">
-            <td class="td-name">{{ smartlist.name }}</td>
-            <td>{{ smartlist.owner }}</td>
-            <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>
-            <td class="td-action">
+          <tr class="clickable">
+            <td class="td-name">
+              <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+                {{ smartlist.name }}
+              </router-link>
+            </td>
+            <td>
+              <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+                {{ smartlist.owner }}
+              </router-link>
+            </td>
+            <td>
+              <router-link class="router-link-td" :to="{name: 'reportEditor', params: {reportId: smartlist.id}}">
+                {{ smartlist.dateModified | formatDate('timestamp') }}
+              </router-link>
+            </td>
+              <td class="td-action">
               <smartlist-copy
                 v-if="canAdd"
                 :smartlist="smartlist"
@@ -75,6 +87,7 @@ import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
 import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 import constants from '@/helpers/constants'
+import { useUserStore } from '@/stores/UserStore.js'
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100],
@@ -95,10 +108,11 @@ const search = ref('')
 const isLoading = ref(false)
 
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
+const userStore = useUserStore()
+
 const router = vueInstance.$router
-const hasAddAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
-const hasManageAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
+const hasAddAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+const hasManageAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
 
 const smartlists = ref([])
 

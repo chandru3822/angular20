@@ -8,15 +8,16 @@
 
 </template>
 
-<script>
+<script setup>
+import { toRefs } from 'vue'
 
-export default {
-  name: "trophy-dynamic",
-  props: {
-    color: Object, //the object we're passing in is the function that converts the MilestoneEnum to the class name; if we need different logic this can be adjusted
-    active: Boolean
-  }
-}
+const props = defineProps({
+  color: Object, //the object we're passing in is the function that converts the MilestoneEnum to the class name; if we need different logic this can be adjusted
+  active: Boolean
+
+})
+const { color, active } = toRefs(props)
+
 </script>
 
 <style lang="scss" scoped>

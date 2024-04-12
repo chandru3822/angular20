@@ -1,4 +1,6 @@
-import store from '@/store'
+import { useUserStore } from '@/stores/UserStore.js'
+
+const userStore = useUserStore()
 
 export default class Smartlist {
 
@@ -20,13 +22,13 @@ export default class Smartlist {
       return false
     }
 
-    const isOwner = smartlist.ownerId === store.state.user.details.id
+    const isOwner = smartlist.ownerId === userStore.details.id
     if (isOwner) {
       return true
     }
 
-    const isAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN') ||
-                    store.getters.isFullAdmin
+    const isAdmin = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN') ||
+                    userStore.isSystemAdmin
 
     if (isAdmin) {
       return true
@@ -36,7 +38,7 @@ export default class Smartlist {
       return false
     }
 
-    const primaryPositions = store.state.user.details.userPositions.filter(p => p.primaryFlag === true)
+    const primaryPositions = userStore.details.userPositions.filter(p => p.primaryFlag === true)
 
     //check access by user position first since it takes priority over org
     const userPositionIds = primaryPositions.map(p => p.id)

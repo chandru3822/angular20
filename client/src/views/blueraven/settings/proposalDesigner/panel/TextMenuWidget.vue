@@ -1,118 +1,188 @@
 <template>
   <div class="d-flex flex-column justify-center align-center">
     <div>
-      <v-btn icon @click="editor.chain().focus().toggleBold().run()" :class="{ 'is-active': editor.isActive('bold') }">
-        <v-icon>mdi-format-bold</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().toggleItalic().run()"
-             :class="{ 'is-active': editor.isActive('italic') }">
-        <v-icon>mdi-format-italic</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().toggleStrike().run()"
-             :class="{ 'is-active': editor.isActive('strike') }">
-        <v-icon>mdi-format-strikethrough</v-icon>
-      </v-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().toggleBold().run()"
+        :class="{ 'is-active': editor.isActive('bold') }"
+        color="unset"
+        prepend-icon="mdi-format-bold"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().toggleItalic().run()"
+        :class="{ 'is-active': editor.isActive('italic') }"
+        color="unset"
+        prepend-icon="mdi-format-italic"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().toggleStrike().run()"
+        :class="{ 'is-active': editor.isActive('strike') }"
+        color="unset"
+        prepend-icon="mdi-format-strikethrough"
+      ></a-btn>
 
       <!--      TODO: add in font size -->
-      <v-btn icon @click="editor.chain().focus().setParagraph().run()"
-             :class="{ 'is-active': editor.isActive('paragraph') }">
-        <v-icon>mdi-format-paragraph</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
-             :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }">
-        <v-icon>mdi-format-header-1</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-             :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }">
-        <v-icon>mdi-format-header-2</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-             :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }">
-        <v-icon>mdi-format-header-3</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
-             :class="{ 'is-active': editor.isActive('heading', { level: 4 }) }">
-        <v-icon>mdi-format-header-4</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
-             :class="{ 'is-active': editor.isActive('heading', { level: 5 }) }">
-        <v-icon>mdi-format-header-5</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
-             :class="{ 'is-active': editor.isActive('heading', { level: 6 }) }">
-        <v-icon>mdi-format-header-6</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().toggleSuperscript().run()"
-             :class="{ 'is-active': editor.isActive('superscript') }">
-        <v-icon>mdi-format-superscript</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().toggleBulletList().run()"
-             :class="{ 'is-active': editor.isActive('bulletList') }">
-        <v-icon>mdi-format-list-bulleted</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().toggleOrderedList().run()"
-             :class="{ 'is-active': editor.isActive('orderedList') }">
-        <v-icon>mdi-format-list-numbered</v-icon>
-      </v-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().setParagraph().run()"
+        :class="{ 'is-active': editor.isActive('paragraph') }"
+        color="unset"
+        prepend-icon="mdi-format-paragraph"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
+        :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }"
+        color="unset"
+        prepend-icon="mdi-format-header-1"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+        :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }"
+        color="unset"
+        prepend-icon="mdi-format-header-2"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
+        :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }"
+        color="unset"
+        prepend-icon="mdi-format-header-3"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
+        :class="{ 'is-active': editor.isActive('heading', { level: 4 }) }"
+        color="unset"
+        prepend-icon="mdi-format-header-4"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
+        :class="{ 'is-active': editor.isActive('heading', { level: 5 }) }"
+        color="unset"
+        prepend-icon="mdi-format-header-5"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
+        :class="{ 'is-active': editor.isActive('heading', { level: 6 }) }"
+        color="unset"
+        prepend-icon="mdi-format-header-6"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().toggleSuperscript().run()"
+        :class="{ 'is-active': editor.isActive('superscript') }"
+        color="unset"
+        prepend-icon="mdi-format-superscript"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().toggleBulletList().run()"
+        :class="{ 'is-active': editor.isActive('bulletList') }"
+        color="unset"
+        prepend-icon="mdi-format-list-bulleted"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().toggleOrderedList().run()"
+        :class="{ 'is-active': editor.isActive('orderedList') }"
+        color="unset"
+        prepend-icon="mdi-format-list-numbered"
+      ></a-btn>
 
-      <v-btn icon @click="editor.chain().focus().setHorizontalRule().run()">
-        <v-icon>mdi-minus</v-icon>
-      </v-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().setHorizontalRule().run()"
+        color="unset"
+        prepend-icon="mdi-minus"
+      ></a-btn>
     </div>
 
     <div>
-      <v-btn icon @click="editor.chain().focus().insertTable({ rows: 4, cols: 2 }).run()">
-        <v-icon>mdi-table-plus</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().addColumnBefore().run()" :disabled="!editor.can().addColumnBefore()">
-        <v-icon>mdi-table-column-plus-before</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().addColumnAfter().run()" :disabled="!editor.can().addColumnAfter()">
-        <v-icon>mdi-table-column-plus-after</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().deleteColumn().run()" :disabled="!editor.can().deleteColumn()">
-        <v-icon>mdi-table-column-remove</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().addRowBefore().run()" :disabled="!editor.can().addRowBefore()">
-        <v-icon>mdi-table-row-plus-before</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().addRowAfter().run()" :disabled="!editor.can().addRowAfter()">
-        <v-icon>mdi-table-row-plus-after</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().deleteRow().run()" :disabled="!editor.can().deleteRow()">
-        <v-icon>mdi-table-row-remove</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().deleteTable().run()" :disabled="!editor.can().deleteTable()">
-        <v-icon>mdi-table-remove</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().mergeCells().run()" :disabled="!editor.can().mergeCells()">
-        <v-icon>mdi-table-merge-cells</v-icon>
-      </v-btn>
-      <v-btn icon @click="editor.chain().focus().splitCell().run()" :disabled="!editor.can().splitCell()">
-        <v-icon>mdi-table-split-cell</v-icon>
-      </v-btn>
-
-      <!--      <v-btn icon @click="editor.chain().focus().mergeOrSplit().run()" :disabled="!editor.can().mergeOrSplit()">-->
-      <!--        mergeOrSplit-->
-      <!--        <v-icon>mdi-table-column-remove</v-icon>-->
-
-      <!--      </v-btn>-->
-      <!--          TODO: run this before saving if there is a table-->
-<!--                <v-btn @click="editor.chain().focus().fixTables().run()" :disabled="!editor.can().fixTables()">-->
-<!--                  fixTables-->
-<!--                </v-btn>-->
+      <a-btn
+        icon
+        @click="editor.chain().focus().insertTable({ rows: 4, cols: 2 }).run()"
+        color="unset"
+        prepend-icon="mdi-table-plus"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().addColumnBefore().run()"
+        :disabled="!editor.can().addColumnBefore()"
+        color="unset"
+        prepend-icon="mdi-table-column-plus-before"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().addColumnAfter().run()"
+        :disabled="!editor.can().addColumnAfter()"
+        color="unset"
+        prepend-icon="mdi-table-column-plus-after"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().deleteColumn().run()"
+        :disabled="!editor.can().deleteColumn()"
+        color="unset"
+        prepend-icon="mdi-table-column-remove"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().addRowBefore().run()"
+        :disabled="!editor.can().addRowBefore()"
+        color="unset"
+        prepend-icon="mdi-table-row-plus-before"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().addRowAfter().run()"
+        :disabled="!editor.can().addRowAfter()"
+        color="unset"
+        prepend-icon="mdi-table-row-plus-after"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().deleteRow().run()"
+        :disabled="!editor.can().deleteRow()"
+        color="unset"
+        prepend-icon="mdi-table-row-remove"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().deleteTable().run()"
+        :disabled="!editor.can().deleteTable()"
+        color="unset"
+        prepend-icon="mdi-table-remove"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().mergeCells().run()"
+        :disabled="!editor.can().mergeCells()"
+        color="unset"
+        prepend-icon="mdi-table-merge-cells"
+      ></a-btn>
+      <a-btn
+        icon
+        @click="editor.chain().focus().splitCell().run()"
+        :disabled="!editor.can().splitCell()"
+        color="unset"
+        prepend-icon="mdi-table-split-cell"
+      ></a-btn>
     </div>
   </div>
 </template>
-<script>
-export default {
-  props: {
-    editor: {
-      type: Object,
-      required: true
-    }
+<script setup>
+const props = defineProps({
+  editor: {
+    type: Object,
+    required: true
   }
-}
+})
 </script>
 <style lang="scss" scoped>
 .is-active {

@@ -6,20 +6,25 @@
           <v-toolbar-title class="app-title">Message Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanAdd" @click="[addNew = !addNew, newType = {}]">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <a-btn
+              variant="text"
+              color="primary"
+              v-if="userCanAdd"
+              @click="[addNew = !addNew, newType = {}]"
+              :hide-text-on-mobile="constants.IS_MOBILE"
+              :prepend-icon="constants.IS_MOBILE ? 'add' : ''"
+              :text="addNew ? 'CANCEL' : 'ADD NEW'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add Message Type</h3>
           <div class="mb-3">
-            <v-text-field text v-model="newType.title"
+            <a-text-field  v-model="newType.title"
                           label="Title" />
-            <v-text-field text v-model="newType.description"
+            <a-text-field  v-model="newType.description"
                           label="Description" />
-            <v-textarea text v-model="newType.content" auto-grow outlined hide-details
+            <a-textarea text v-model="newType.content" auto-grow variant="outlined" hide-details
                           label="Content" />
             <div class="helper-buttons">
               <a v-for="hb in helperButtons" class="mr-3"
@@ -28,12 +33,19 @@
               </a>
             </div>
           </div>
-          <v-btn :disabled="!newType.title || !newType.content"
-                 color="primary" class="white--text mr-2"
-                 @click="saveMessageType(newType, true)">
-            Save
-          </v-btn>
-          <v-btn text color="primary" @click="[addNew = !addNew, newType = {}]">Cancel</v-btn>
+          <a-btn
+            :disabled="!newType.title || !newType.content"
+            color="primary"
+            class="white--text mr-2"
+            @click="saveMessageType(newType, true)"
+            text="SAVE"
+          />
+          <a-btn
+            variant="text"
+            color="primary"
+            @click="[addNew = !addNew, newType = {}]"
+            text="CANCEL"
+          />
         </v-card>
         <v-data-table
             id="types-settings-table"
@@ -58,11 +70,11 @@
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': filterTypes.indexOf(item) % 2}">
               <h3>Edit Message Type</h3>
               <div class="mb-3">
-                <v-text-field text v-model="item.title"
+                <a-text-field  v-model="item.title"
                               label="Title" />
-                <v-text-field text v-model="item.description"
+                <a-text-field  v-model="item.description"
                               label="Description" />
-                <v-textarea text v-model="item.content" auto-grow outlined hide-details
+                <a-textarea text v-model="item.content" auto-grow variant="outlined" hide-details
                               label="Content" />
 
                 <div class="helper-buttons">
@@ -75,20 +87,44 @@
                 <label>Include Manager:</label>
                 <input class="ml-3" type="checkbox" v-model="item.includeManager">
               </div>
-              <v-btn :disabled="!item.title || !item.description || !item.content"
-                     color="primary" class="white--text mr-2"
-                     @click="saveMessageType(item, false)">
-                Save
-              </v-btn>
+              <a-btn
+                :disabled="!item.title || !item.description || !item.content"
+                color="primary"
+                class="white--text mr-2"
+                @click="saveMessageType(item, false)"
+                text="SAVE"
+              />
             </td>
           </template>
           <template #item.icons="{ item}">
             <td class="text-right">
-              <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]">
-                <v-icon>edit</v-icon>
-              </v-btn>
-              <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit && expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-              <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanDelete" @click="typeToDelete=item"><v-icon>delete</v-icon></v-btn>
+              <a-btn
+                size="small"
+                variant="text"
+                :large="vuetify.breakpoint.smAndDown"
+                color="primary"
+                v-if="userCanEdit && !expanded.includes(item)"
+                @click="expandItem(item)"
+                prepend-icon="edit"
+              />
+              <a-btn
+                size="small"
+                variant="text"
+                :large="vuetify.breakpoint.smAndDown"
+                color="primary"
+                v-if="userCanEdit && expanded.includes(item)"
+                @click="expanded = []; item.content = tempItemContent; tempItemContent = ''"
+                text="CANCEL"
+              />
+              <a-btn
+                size="small"
+                variant="text"
+                :large="vuetify.breakpoint.smAndDown"
+                color="primary"
+                v-if="userCanDelete"
+                @click="typeToDelete=item"
+                prepend-icon="delete"
+              />
             </td>
           </template>
 
@@ -101,128 +137,137 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+<script setup>
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  export default {
-    name: 'MessageTypes',
-    components: {ConfirmationDialog},
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        addNew: false,
-        levels: [],
-        messageTypes: [],
-        newType: {},
-        types: [],
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
-        headers: [
-          { text: 'ID', value: 'id', show: true },
-          { text: 'Title', value: 'title', show: true },
-          { text: 'Content', value: 'content', show: true },
-          { text: 'Description', value: 'description', show: true },
-          { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        helperButtons: [
-          { textValue: 'v_closer_first_name', label: 'Closer First Name'},
-          { textValue: 'v_contact_name', label: 'Contact Name'},
-          { textValue: 'v_contact_street', label: 'Contact Street'},
-          { textValue: 'v_contact_city', label: 'Contact City'},
-          { textValue: 'v_contact_state', label: 'Contact State'},
-          { textValue: 'v_appt_start_time', label: 'Closer Appt Start Time'},
-          { textValue: 'v_appt_end_time', label: 'Closer Appt End Time'},
-          { textValue: 'v_site_survey_start_time', label: 'Site Survey Start Time'},
-          { textValue: 'v_system_size', label: 'System Size'},
-          { textValue: 'v_installation_start_time', label: 'Installation Start Time'},
-          { textValue: 'v_project_name', label: 'Project Name'},
-          { textValue: 'v_project_id', label: 'Project ID'},
-          { textValue: 'v_project_phone', label: 'Project Phone'},
-        ],
-        expanded: [],
-        typeToDelete: null
-      }
-    },
-    computed:{
-      typeToDeleteName() {
-        return this.typeToDelete ? this.typeToDelete.type : ''
-      },
-      filterTypes () {
-        return this.messageTypes.filter(cs => { return !cs.archived})
-      },
-    },
-    async created () {
-      this.getMessageTypes()
-    },
-    methods: {
-      appendText(item, value) {
-        this.$set(item, 'content', ((item.content || '') + value))
-      },
-      async saveMessageType(ol, isNew) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            ...ol
-          }
-          params.id = isNew ? null : params.id
-          const {data, status} = await postRequest(`/messageType`, params, 'blueraven', {})
-          if(isNew){
-            this.messageTypes.push(data)
-            this.addNew = false
-            this.newType = {}
-            this.snackbar = getSnackbar('SUCCESS', 'Message Type Added')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            this.expanded = []
-            this.snackbar = getSnackbar('SUCCESS', 'Message Type Updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Message Type' : 'Error Updating Message Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getMessageTypes() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/messageType`, 'blueraven', [])
-          this.messageTypes = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Company Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteMessageType() {
-        const messageType = this.typeToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/messageType/${messageType.id}`, 'blueraven')
-          messageType.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Message Type Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Message Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.typeToDelete = null
-      },
+  import {computed, getCurrentInstance, onMounted, ref} from "vue";
+  import { useUserStore } from '@/stores/UserStore.js'
+  import { useAppStore } from '@/stores/AppStorePinia.js'
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const vuetify = vueInstance.$vuetify
+  const store = vueInstance.$store
+  const userStore = useUserStore()
+  const appStore = useAppStore()
 
+  const addNew = ref(false)
+  const levels = ref([])
+  const messageTypes = ref([])
+  const newType = ref({})
+  const types = ref([])
+
+  // stores the content when editing a message type. This way we can discard changes if the user presses 'cancel'
+  const tempItemContent = ref('')
+  const headers = ref([
+    { text: 'ID', value: 'id', show: true },
+    { text: 'Title', value: 'title', show: true },
+    { text: 'Content', value: 'content', show: true },
+    { text: 'Description', value: 'description', show: true },
+    { text: null, value: 'icons', show: true, sortable: false }
+  ])
+  const helperButtons = ref([
+    { textValue: 'v_closer_first_name', label: 'Closer First Name'},
+    { textValue: 'v_contact_name', label: 'Contact Name'},
+    { textValue: 'v_contact_street', label: 'Contact Street'},
+    { textValue: 'v_contact_city', label: 'Contact City'},
+    { textValue: 'v_contact_state', label: 'Contact State'},
+    { textValue: 'v_appt_start_time', label: 'Closer Appt Start Time'},
+    { textValue: 'v_appt_end_time', label: 'Closer Appt End Time'},
+    { textValue: 'v_site_survey_start_time', label: 'Site Survey Start Time'},
+    { textValue: 'v_system_size', label: 'System Size'},
+    { textValue: 'v_installation_start_time', label: 'Installation Start Time'},
+    { textValue: 'v_project_name', label: 'Project Name'},
+    { textValue: 'v_project_id', label: 'Project ID'},
+    { textValue: 'v_project_phone', label: 'Project Phone'},
+  ])
+  const expanded = ref([])
+  const typeToDelete = ref(null)
+
+  const typeToDeleteName = computed(() => {
+    return typeToDelete.value ? typeToDelete.value.type : ''
+  })
+  const filterTypes = computed (() => {
+    return messageTypes.value.filter(cs => { return !cs.archived})
+  })
+
+  const userCanAdd = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
+  })
+  const userCanEdit = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
+  })
+  const userCanDelete = computed(() => {
+    return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+  })
+
+  onMounted (() => {
+    getMessageTypes()
+  })
+
+  const appendText = (item, value) => {
+    vueInstance.$set(item, 'content', ((item.content || '') + value))
+  }
+  const saveMessageType = async (ol, isNew) => {
+    appStore.loading = true
+    try {
+      let params = {
+        ...ol
+      }
+      params.id = isNew ? null : params.id
+      const {data, status} = await postRequest(`/messageType`, params, 'blueraven', {})
+      if(isNew){
+        messageTypes.value.push(data)
+        addNew.value = false
+        newType.value = {}
+        snackbar('SUCCESS', 'Message Type Added')
+      } else {
+        expanded.value = []
+        snackbar('SUCCESS', 'Message Type Updated')
+      }
+
+      tempItemContent.value = ''
+
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', isNew ? 'Error Adding Message Type' : 'Error Updating Message Type')
+      appStore.loading = false
     }
+  }
+  const getMessageTypes = async () => {
+    appStore.loading = true
+    try {
+      const {data, status} = await getRequest(`/messageType`, 'blueraven', [])
+      messageTypes.value = data
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Company Types')
+      appStore.loading = false
+    }
+  }
+  const deleteMessageType = async () => {
+    const messageType = typeToDelete.value
+    appStore.loading = true
+    try {
+      const {status} = await deleteRequest(`/messageType/${messageType.id}`, 'blueraven')
+      messageType.archived = true
+      snackbar('SUCCESS', 'Message Type Deleted')
+      handleHidingGlobalLoader(status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting Message Type')
+      appStore.loading = false
+    }
+    typeToDelete.value = null
+  }
+
+  const expandItem = (item) => {
+    expanded.value = [item]
+    tempItemContent.value = item?.content
+
   }
 </script>
 <style scoped lang="scss">

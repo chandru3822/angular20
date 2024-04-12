@@ -16,20 +16,19 @@
             >
               {{ title }}
               <v-spacer></v-spacer>
-              <v-btn text>
-                <v-icon>expand_more</v-icon>
-              </v-btn>
+              <a-btn prepend-icon="expand_more">
+              </a-btn>
             </v-toolbar>
           </template>
           <v-list dense class="pa-3">
-            <template v-for="(item, index) in filterBy(items, true, 'show')">
+            <template v-for="(item, index) in filteredItems">
               <h3 v-if="item.header">{{item.header}}</h3>
 
               <v-list-item
                   v-else
                   :key="item.title"
                   :to="item.path"
-                  :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
+                  :class="{'shaded-row': item.pathMatch ? route.path.includes(`${item.pathMatch}`) : route.path === item.path}"
                   @click="menuOpen = false"
               >
                 <v-list-item-content>
@@ -41,7 +40,7 @@
         </v-menu>
         <v-card class="px-5 py-2" v-else>
           <v-list dense>
-            <template v-for="(item, index) in filterBy(items, true, 'show')">
+            <template v-for="(item, index) in filteredItems">
               <h3 v-if="item.header">{{item.header}}</h3>
 
               <v-list-item
@@ -49,7 +48,7 @@
                   :key="item.title"
                   @click="title = item.title"
                   :to="item.path"
-                  :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
+                  :class="{'shaded-row': item.pathMatch ? route.path.includes(`${item.pathMatch}`) : route.path === item.path}"
               >
                 <v-list-item-content>
                   <v-list-item-title>{{item.title}}</v-list-item-title>
@@ -69,69 +68,62 @@
   </v-container>
 </template>
 
-<script>
-import Vue2Filters from 'vue2-filters'
+<script setup>
 import constants from '@/helpers/constants'
+import {getCurrentInstance, computed, ref} from 'vue'
+import { useUserStore } from '@/stores/UserStore.js'
+import {useRoute} from "vue-router/composables"
 
-export default {
-  name: 'Settings',
-  mixins: [Vue2Filters.mixin],
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userStore = useUserStore()
+const route = useRoute()
 
-  data () {
-    return {
-      snackbar: {},
-      menuOpen: false,
-      constants,
-      companyId: this.$store.state.user.details.companyId,
-      parentId: this.$store.state.user.details.parentCompanyId,
+const menuOpen = ref(false)
+const title = ref(null)
 
+const items = computed(() => {
+  return [
+    {
+      header: 'Admin',
+      show: true
+    }, {
+      path: '/admin/features',
+      title: 'Features',
+      show: true
+    }, {
+      path: '/admin/functions',
+      title: 'Functions',
+      show: userStore.isCompanyRoot
+    }, {
+      path: '/admin/certs',
+      title: 'Certs',
+      show: userStore.isCompanyRoot
+    }, {
+      path: '/admin/orgFilters',
+      title: 'Org Filters',
+      show: !userStore.isCompanyRoot
+    }, {
+      path: '/admin/orgLevels',
+      title: 'Org Levels',
+      show: !userStore.isCompanyRoot
+    }, {
+      path: '/admin/statusTypes',
+      title: 'Status Types',
+      //todo: make this page work like features. so that if at root you add a status type to flow.user_status_type instead of flow.company_user_status_type
+      show: !userStore.isCompanyRoot
+    },  {
+      path: '/admin/uploads',
+      title: 'File Upload',
+      show: !userStore.isCompanyRoot
     }
-  },
-  computed: {
-    items() { return [
-      {
-        header: 'Admin',
-        show: true
-      }, {
-        path: '/admin/features',
-        title: 'Features',
-        show: true
-      }, {
-        path: '/admin/functions',
-        title: 'Functions',
-        show: this.$store.getters.isCompanyRoot(this.companyId)
-      }, {
-        path: '/admin/certs',
-        title: 'Certs',
-        show: this.$store.getters.isCompanyRoot(this.companyId)
-      }, {
-        path: '/admin/orgFilters',
-        title: 'Org Filters',
-        show: !this.$store.getters.isCompanyRoot(this.companyId)
-      }, {
-        path: '/admin/orgLevels',
-        title: 'Org Levels',
-        show: !this.$store.getters.isCompanyRoot(this.companyId)
-      }, {
-        path: '/admin/statusTypes',
-        title: 'Status Types',
-        //todo: make this page work like features. so that if at root you add a status type to flow.user_status_type instead of flow.company_user_status_type
-        show: !this.$store.getters.isCompanyRoot(this.companyId)
-      },  {
-        path: '/admin/uploads',
-        title: 'File Upload',
-        show: !this.$store.getters.isCompanyRoot(this.companyId)
-      }
-    ]
-  }
-  },
-  methods: {
+  ]
+})
 
-  },
-  created () {
+const filteredItems = computed(() => {
+  return items.value.filter(i => i.show)
+})
 
-  }
-}
 </script>
 
 <style scoped lang="scss">

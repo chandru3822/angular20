@@ -5,8 +5,8 @@
         <v-toolbar flat class="app-toolbar" id="project-settings-toolbar">
           <h3>Projects</h3>
           <v-spacer></v-spacer>
-          <v-toolbar-items :slot="isMobile ? 'extension' : 'default'">
-            <v-tabs class="tabs-bar" v-model="activeTab" id="projects-settings-tabs">
+          <v-toolbar-items :slot="$vuetify.breakpoint.smAndDown ? 'extension' : 'default'">
+            <v-tabs class="tabs-bar" id="projects-settings-tabs">
               <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
                      class="text-capitalize ma-0"
                      :style="{'margin-left': (index === 0 && $vuetify.breakpoint.smAndDown) ? '12px !important' : '0'}">
@@ -22,65 +22,53 @@
   </v-container>
 </template>
 
-<script>
-  import Vue2Filters from 'vue2-filters'
+<script setup>
+import {getCurrentInstance, computed, ref, onMounted} from 'vue'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useRoute} from "vue-router/composables"
+import { useAppStore } from '@/stores/AppStorePinia.js'
+const appStore = useAppStore()
 
-  import constants from '@/helpers/constants'
+const route = useRoute()
+const userStore = useUserStore()
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 
-  export default {
-    name: 'ProjectSettings',
-    mixins: [Vue2Filters.mixin],
+const processStepId = computed(() => {
+  return route.params.id
+})
+const companyObjectTypeId = computed(() => {
+  return route.query.companyObjectTypeId
+})
 
-    data () {
-      return {
-        snackbar: {},
-        constants,
-        processStepId: this.$route.params.id,
-        companyId: this.$store.state.user.details.companyId,
-        companyObjectTypeId: this.$route.query.companyObjectTypeId,
-        tabs: [
-          {
-            id: 1,
-            label: 'Custom Field Groups',
-            path: `/settings/project/customFieldGroups?companyObjectTypeId=${this.$route.query.companyObjectTypeId}`,
-          },
-          {
-            id: 2,
-            label: 'Tabs',
-            path: `/settings/project/tabs?companyObjectTypeId=${this.$route.query.companyObjectTypeId}`,
-          },
-          {
-            id: 3,
-            label: 'Attachment Types',
-            path: `/settings/project/attachmentTypes?companyObjectTypeId=${this.$route.query.companyObjectTypeId}`,
-          },
-          {
-            id: 4,
-            label: 'System',
-            path: `/settings/project/system?companyObjectTypeId=${this.$route.query.companyObjectTypeId}`,
-          }
-        ]
-      }
-    },
-    computed: {
-      //this should not be so hard
-      activeTab: {
-        get: function() {
-          return this.$route?.path?.includes('/attachmentType') ? `/settings/project/attachmentTypes?companyObjectTypeId=${this.companyObjectTypeId}` : null
-        },
-        set: function(val) {
-          return val
-        }
-      },
-      isMobile(){
-        return this.$vuetify.breakpoint.smAndDown
-      },
-    },
-    async created () {
-    },
-    methods: {}
-
+const tabs = ref([
+  {
+    id: 1,
+    label: 'Custom Field Groups',
+    path: `/settings/project/customFieldGroups?companyObjectTypeId=${companyObjectTypeId.value}`,
+  },
+  {
+    id: 2,
+    label: 'Tabs',
+    path: `/settings/project/tabs?companyObjectTypeId=${companyObjectTypeId.value}`,
+  },
+  {
+    id: 3,
+    label: 'Attachment Types',
+    path: `/settings/project/attachmentTypes?companyObjectTypeId=${companyObjectTypeId.value}`,
+  },
+  {
+    id: 4,
+    label: 'System',
+    path: `/settings/project/system?companyObjectTypeId=${companyObjectTypeId.value}`,
   }
+])
+
+const companyId = computed(() => {
+  return userStore.details.companyId
+})
+
+
 </script>
 
 <style scoped lang="scss">
