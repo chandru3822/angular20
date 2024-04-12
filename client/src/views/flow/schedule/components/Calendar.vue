@@ -295,7 +295,6 @@ import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
-
 const appStore = useAppStore()
 const route = useRoute()
 const router = useRouter()
@@ -303,10 +302,10 @@ const userStore = useUserStore()
 const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
 const refs = vueInstance.$refs
 const filters = vueInstance.$filters
+
 const userCanEdit = computed(() => userStore.userHasFeatureAccessLevel('SCHEDULE', 'EDIT'))
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
@@ -536,7 +535,7 @@ const countSelected = computed(() => {
         //and show a snackbar if the timezones don't match
         if(userTimezone !== scheduleTimezone) {
           const snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
-		  appStore.snack = {...snackbar, show: true}
+          appStore.snack = {...snackbar, show: true}
         }
       })
       watch(userTimezone, (newVal) => {
@@ -673,7 +672,7 @@ const handleResourceColors = () => {
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Orgs')
+          appStore.showSnack('ERROR', 'Error Retrieving Orgs')
           appStore.loading = false
         }
       }
@@ -694,7 +693,7 @@ const handleResourceColors = () => {
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Org Types')
+          appStore.showSnack('ERROR', 'Error Retrieving Org Types')
           appStore.loading = false
         }
       }
@@ -713,7 +712,7 @@ const handleResourceColors = () => {
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Positions')
+          appStore.showSnack('ERROR', 'Error Retrieving Positions')
           appStore.loading = false
         }
       }
@@ -740,7 +739,7 @@ const handleResourceColors = () => {
           handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Users')
+          appStore.showSnack('ERROR', 'Error Retrieving Users')
           appStore.loading = false
         }
       }
@@ -960,7 +959,7 @@ const handlePopulatingMapPins = (addPin, resource, doCallback) => {
 
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Availability')
+          appStore.showSnack('ERROR', 'Error Retrieving Availability')
           appStore.loading = false
         }
       }
@@ -1050,7 +1049,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
       calendarLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Events')
+      appStore.showSnack('ERROR', 'Error Retrieving Events')
       failureCallback(e)
       calendarLoading.value = false
     } finally {

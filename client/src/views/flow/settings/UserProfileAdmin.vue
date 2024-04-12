@@ -68,7 +68,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const store = vueInstance.$store
 const userStore = useUserStore()
 
@@ -95,7 +95,7 @@ const getAllUserProfileDefaultFields = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Default Fields')
+    appStore.showSnack('ERROR', 'Error Retrieving Default Fields')
     loadingUserProfileCustomFields.value = false
     appStore.loading = false
   }
@@ -104,11 +104,11 @@ const updateShowOnUserProfile = async (item) => {
   appStore.loading = true
   try {
     const {status} = await putRequest(`/defaultField`, item)
-    snackbar('SUCCESS', 'Saved Changes')
+    appStore.showSnack('SUCCESS', 'Saved Changes')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Changes')
+    appStore.showSnack('ERROR', 'Error Saving Changes')
     appStore.loading = false
   }
 }

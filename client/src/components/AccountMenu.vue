@@ -75,7 +75,6 @@ const fileStore = useFileStore()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   showImage: Boolean

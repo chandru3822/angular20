@@ -162,7 +162,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const residual = ref({})
 const showModal = ref(false)
@@ -279,7 +278,7 @@ const getResidual = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Residual Details')
+    appStore.showSnack('ERROR', 'Error Retrieving Residual Details')
 
     appStore.loading = false
   }
@@ -295,7 +294,7 @@ const getResidualSnapshot = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Residual Snapshot')
+    appStore.showSnack('ERROR', 'Error Retrieving Residual Snapshot')
 
     appStore.loading = false
   }
@@ -370,7 +369,7 @@ const exportResidualReview = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Exporting Residual Review')
+    appStore.showSnack('ERROR', 'Error Exporting Residual Review')
 
     appStore.loading = false
   }
@@ -430,7 +429,7 @@ const exportResidualReviewForNetSuite = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Exporting Residual Review')
+    appStore.showSnack('ERROR', 'Error Exporting Residual Review')
 
     appStore.loading = false
   }
@@ -459,7 +458,7 @@ const loadModalData = async (residualItem, typeId) => {
     showModal.value = true
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Data')
+    appStore.showSnack('ERROR', 'Error Loading Data')
 
     appStore.loading = false
   }

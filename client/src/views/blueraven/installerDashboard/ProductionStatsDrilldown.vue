@@ -125,8 +125,7 @@
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
-  const router = vueInstance.$router
+     const router = vueInstance.$router
   const route = vueInstance.$route
   const vuetify = vueInstance.$vuetify
 

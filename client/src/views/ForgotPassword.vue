@@ -47,7 +47,7 @@ const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
-const snackbar = vueInstance.$snackbar
+
 
 const email = ref(null)
 const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
@@ -63,12 +63,12 @@ const validate = async () => {
       const {status} = await postRequest(`/user/forgotPassword`, params)
       email.value = null
       handleHidingGlobalLoader(status)
-      snackbar('SUCCESS', 'An email has been sent.')
+      appStore.showSnack('SUCCESS', 'An email has been sent.')
       await router.push('/login')
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = e?.data?.message ?? 'Error Retrieving Account Details'
-      snackbar('ERROR', msg)
+      appStore.showSnack('ERROR', msg)
       appStore.loading = false
     }
   }

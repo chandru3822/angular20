@@ -19,7 +19,6 @@ import {getCurrentInstance, onMounted, ref} from 'vue'
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
-const snackbar = vueInstance.$snackbar
 
 onMounted(() => {
   // processBtn()

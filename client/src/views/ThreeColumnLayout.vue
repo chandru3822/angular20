@@ -72,7 +72,7 @@ const projectStore = useProjectStore()
 const appStore = useProjectStore()
 const route = useRoute()
 const router = useRouter()
-const snackbar = vueInstance.$snackbar
+
 
 const props = defineProps({
   headerText: String,

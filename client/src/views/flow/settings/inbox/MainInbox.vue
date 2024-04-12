@@ -265,8 +265,7 @@ const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const route = useRoute()
+ const route = useRoute()
 const router = useRouter()
 const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
@@ -518,7 +517,7 @@ const fetchConversations = async () => {
     initialLoad.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching conversations')
+    appStore.showSnack('ERROR', 'Error fetching conversations')
     showLoading(false)
   }
 }
@@ -588,7 +587,7 @@ const reloadConversations = async () => {
     reloadInProgress.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching conversations')
+    appStore.showSnack('ERROR', 'Error fetching conversations')
 
     showLoading(false)
     reloadInProgress.value = false
@@ -624,7 +623,7 @@ const joinConversation = async (selectedTeam) => {
 
     let addTeamUrl = assignToMe.value.projectId ? `/messaging/addTeam/project/${assignToMe.value.projectId}` : `/messaging/addTeam/user/${assignToMe.value.userId}`
     await postRequest(addTeamUrl, selectedTeam)
-    snackbar('SUCCESS', 'Successfully joined conversation')
+    appStore.showSnack('SUCCESS', 'Successfully joined conversation')
 
     if (!route.path.includes('inboxConversation')) {
       let inboxUrl = assignToMe.value.projectId ? `/inbox/inboxConversation/project/${assignToMe.value.projectId}` : `/inbox/inboxConversation/user/${assignToMe.value.userId}`
@@ -636,7 +635,7 @@ const joinConversation = async (selectedTeam) => {
     await fetchConversations()
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error joining conversation')
+    appStore.showSnack('ERROR', 'Error joining conversation')
     showLoading(false)
   }
 }
@@ -652,7 +651,7 @@ const fetchTeamsForUser = async () => {
     await getAvailableTeams()
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching SMS Teams')
+    appStore.showSnack('ERROR', 'Error fetching SMS Teams')
 
     showLoading(false)
   }
@@ -767,7 +766,7 @@ const getAvailableTeams = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.loading = false
-    snackbar('ERROR', 'Error retrieving teams')
+    appStore.showSnack('ERROR', 'Error retrieving teams')
   }
 }
 const ownerAlreadyAddedToFilter = (ownerToAdd) => {
@@ -838,7 +837,7 @@ watch(smsOwnershipEvents, debounce(async function() {
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.loading = false
-    snackbar('ERROR', 'Error reloading conversations')
+    appStore.showSnack('ERROR', 'Error reloading conversations')
 
   } finally {
     isSmsOwnershipEventsRunning.value = false;

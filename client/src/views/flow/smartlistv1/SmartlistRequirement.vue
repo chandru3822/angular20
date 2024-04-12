@@ -421,7 +421,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const emit = defineEmits(['input', 'update', 'delete', 'form-reset'])
 
@@ -559,7 +558,7 @@ const getAvailableFields = async () => {
     }
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching available fields')
+    appStore.showSnack('ERROR', 'Error fetching available fields')
 
   }
 }
@@ -569,7 +568,7 @@ const getOperators = async (dataTypeId) => {
     operators.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching operators for selected field')
+    appStore.showSnack('ERROR', 'Error fetching operators for selected field')
 
   }
 }
@@ -579,7 +578,7 @@ const getDataTypeRequirements = async (dataTypeId) => {
     dataTypeRequirements.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching data type requirements for selected field')
+    appStore.showSnack('ERROR', 'Error fetching data type requirements for selected field')
 
   }
 }
@@ -590,7 +589,7 @@ const getProcessStepFieldData = async () => {
       newRequirement.value.selectedField = data
     } catch (e) {
       logError(e)
-      snackbar('ERROR', 'Error fetching process step data')
+      appStore.showSnack('ERROR', 'Error fetching process step data')
 
     }
   }
@@ -624,7 +623,7 @@ const getSystemFieldListOfValues = async() => {
       newRequirement.value.isCustomValue = true
     } catch (e) {
       logError(e)
-      snackbar('ERROR', 'Error fetching available values')
+      appStore.showSnack('ERROR', 'Error fetching available values')
 
     }
   } else if (newRequirement.value.eventId !== null) {
@@ -652,7 +651,7 @@ const getSystemFieldListOfValues = async() => {
       newRequirement.value.isCustomValue = true
     } catch (e) {
       logError(e)
-      snackbar('ERROR', 'Error fetching available values')
+      appStore.showSnack('ERROR', 'Error fetching available values')
 
     }
   }
@@ -664,7 +663,7 @@ const getProjectStatusTypes = async () => {
     companyProjectStatusTypes.value = companyResult.data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching project statuses')
+    appStore.showSnack('ERROR', 'Error fetching project statuses')
 
   }
 }
@@ -675,7 +674,7 @@ const getProjectStatusTypes = async () => {
 //     companyProcessStepStatusTypes.value = companyResult.data
 //   } catch (e) {
 //     logError(e)
-//     snackbar('ERROR', 'Error fetching process step statuses')
+//     appStore.showSnack('ERROR', 'Error fetching process step statuses')
 //
 //   }
 // }
@@ -692,7 +691,7 @@ const getEventStatuses = async() => {
       calculateAvailableFields()
     } catch(e) {
       logError(e)
-      snackbar('ERROR', 'Error fetching event statuses')
+      appStore.showSnack('ERROR', 'Error fetching event statuses')
 
     }
   }
@@ -707,7 +706,7 @@ const getEventCategories = async() => {
       // calculateAvailableFields()
     } catch(e) {
       logError(e)
-      snackbar('ERROR', 'Error fetching event categories')
+      appStore.showSnack('ERROR', 'Error fetching event categories')
 
     }
   }
@@ -723,7 +722,7 @@ const getProcessStepEvents = async() => {
     }
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching operations')
+    appStore.showSnack('ERROR', 'Error fetching operations')
 
   }
 }

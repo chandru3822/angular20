@@ -104,7 +104,7 @@
   import {useRouter} from "vue-router/composables"
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const store = vueInstance.$store
   const userStore = useUserStore()
   const appStore = useAppStore()
@@ -150,7 +150,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error loading processes')
+      appStore.showSnack('ERROR', 'Error loading processes')
       appStore.loading = false
     }
   }
@@ -177,14 +177,14 @@
         addNew.value = false
         selectedCompanyProcesses.value = []
         newDataView.value = {}
-        snackbar('SUCCESS', 'Data View Added')
+        appStore.showSnack('SUCCESS', 'Data View Added')
       } else {
-        snackbar('SUCCESS', 'Data View Updated')
+        appStore.showSnack('SUCCESS', 'Data View Updated')
       }
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', isNew ? 'Error Adding Data View' : 'Error Updating Data View')
+      appStore.showSnack('ERROR', isNew ? 'Error Adding Data View' : 'Error Updating Data View')
       appStore.loading = false
     }
   }
@@ -196,7 +196,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Data Views')
+      appStore.showSnack('ERROR', 'Error Loading Data Views')
       appStore.loading = false
     }
   }

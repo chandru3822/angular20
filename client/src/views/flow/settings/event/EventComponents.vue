@@ -128,7 +128,7 @@ const userStore = useUserStore()
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 
 const expandEsst = ref(true)
@@ -209,11 +209,11 @@ const saveEditableInSchedule = async (item) => {
       appStore.loading = true
       try {
        await postRequest(`/event/status/updateEditableInSchedule/${item.companyEventStatusTypeId}/forEvent/${parseInt(eventId.value)}?editableInSchedule=${item.editableInSchedule}`)
-        snackbar('SUCCESS', 'Editable in Schedule Updated')
+        appStore.showSnack('SUCCESS', 'Editable in Schedule Updated')
         appStore.loading = false
       }catch (e){
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Updating Editable in Schedule')
+        appStore.showSnack('ERROR', 'Error Updating Editable in Schedule')
         appStore.loading = false
       }
     }
@@ -273,7 +273,7 @@ const saveHiddenAndWhiteList = async () => {
     if(!event.value.hidden) {
       event.value.hiddenWhiteListedPositions = []
     }
-    snackbar('SUCCESS', 'Saved Successfully')
+    appStore.showSnack('SUCCESS', 'Saved Successfully')
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)

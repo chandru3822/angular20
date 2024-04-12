@@ -20,8 +20,7 @@ const userStore = useUserStore()
 const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 const refs = vueInstance.$refs
 const filters = vueInstance.$filters
 
@@ -151,7 +150,7 @@ const getRoundRobins = async() => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Round Robins')
+    appStore.showSnack('ERROR', 'Error Retrieving Round Robins')
     appStore.loading = false
   }
 }
@@ -182,7 +181,7 @@ const getRoundRobinUsers = async() => {
       handleHidingGlobalLoader(vueInstance, status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Users')
+      appStore.showSnack('ERROR', 'Error Retrieving Users')
       appStore.loading = false
     }
   }
@@ -292,7 +291,7 @@ const getEventSources = async(info, successCallback, failureCallback) => {
         calendarLoading.value = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Events')
+        appStore.showSnack('ERROR', 'Error Retrieving Events')
         failureCallback(e)
         calendarLoading.value = false
       } finally {
@@ -372,7 +371,7 @@ const getAvailability = async(info) => {
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Availability')
+    appStore.showSnack('ERROR', 'Error Retrieving Availability')
     appStore.loading = false
   }
 }

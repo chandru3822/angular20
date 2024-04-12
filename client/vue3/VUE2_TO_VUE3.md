@@ -401,8 +401,8 @@ this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 <td>
 
 ```
-const snackbar = vueInstance.$snackbar
-snackbar('SUCCESS', 'Announcement Saved')
+const snackbar = 
+ appStore.showSnack('SUCCESS', 'Announcement Saved')
 ```
 </td>
 </tr>

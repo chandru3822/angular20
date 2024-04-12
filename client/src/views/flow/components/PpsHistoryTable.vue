@@ -41,8 +41,7 @@ import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 
 
 const props = defineProps({

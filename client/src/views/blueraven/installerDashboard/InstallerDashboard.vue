@@ -473,8 +473,7 @@ import {useAppStore} from "@/stores/AppStore.js";
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const router = vueInstance.$router
+ const router = vueInstance.$router
 const route = vueInstance.$route
 const vuetify = vueInstance.$vuetify
 
@@ -620,7 +619,7 @@ onMounted(() => {
       await getInstallationCrew()
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error retrieving Regional Managers')
+      appStore.showSnack('ERROR', 'Error retrieving Regional Managers')
     }
   }
   const getInstallationCrew = async () => {
@@ -635,7 +634,7 @@ onMounted(() => {
       toggleSelectAllCrews();
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error retrieving Installation Crew')
+      appStore.showSnack('ERROR', 'Error retrieving Installation Crew')
 
     }
   }
@@ -655,7 +654,7 @@ onMounted(() => {
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error retrieving data')
+      appStore.showSnack('ERROR', 'Error retrieving data')
       isLoading.value = false
       appStore.loading = false
     }
@@ -670,7 +669,7 @@ onMounted(() => {
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error retrieving WIP data')
+      appStore.showSnack('ERROR', 'Error retrieving WIP data')
       isLoading.value = false
       appStore.loading = false
     }
@@ -690,7 +689,7 @@ onMounted(() => {
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error retrieving data')
+      appStore.showSnack('ERROR', 'Error retrieving data')
       isLoading.value = false
       appStore.loading = false
     }

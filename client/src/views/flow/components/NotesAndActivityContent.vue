@@ -361,7 +361,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   showNotes: Boolean,
@@ -448,11 +447,11 @@ const deleteNote = async() => {
     if (isChildNote) {
       parentOfNoteToDelete.value.childNotes = parentOfNoteToDelete.value.childNotes.filter(cn => !cn.archived)
     }
-    snackbar('SUCCESS', 'Note Deleted')
+    appStore.showSnack('SUCCESS', 'Note Deleted')
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Note')
+    appStore.showSnack('ERROR', 'Error Deleting Note')
 
   }
   closeNoteDelete()
@@ -504,13 +503,13 @@ const saveNote = async(n) => {
       //if it is a new (non-child) note or edit to the first note, send the note back in the callback so the wq ui can be updated
       props.callback(data)
     }
-    snackbar('SUCCESS', 'Note Added')
+    appStore.showSnack('SUCCESS', 'Note Added')
 
     dirtyNote.value = false
     savingNote.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Note')
+    appStore.showSnack('ERROR', 'Error Saving Note')
 
     savingNote.value = false
   }
@@ -525,7 +524,7 @@ const getUsers = async () => {
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Users')
+    appStore.showSnack('ERROR', 'Error Retrieving Users')
 
     appStore.loading = false
   }

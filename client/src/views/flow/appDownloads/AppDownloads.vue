@@ -76,7 +76,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const newBuild = ref({})
 const buildMenu = ref(false)
@@ -113,13 +112,13 @@ const testBuild = async() => {
       dataSource: newBuild.value.dataSource
     }
     const {status} = await postRequest(`/bitrise/build`, params, 'blueraven')
-    snackbar('SUCCESS', 'Build Succeeded')
+    appStore.showSnack('SUCCESS', 'Build Succeeded')
     buildMenu.value = false
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Building App')
+    appStore.showSnack('ERROR', 'Error Building App')
 
     appStore.loading = false
   }

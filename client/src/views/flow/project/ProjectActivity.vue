@@ -203,7 +203,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 
 const props = defineProps({
@@ -395,13 +395,13 @@ const joinConversation = async(selectedTeam) => {
       await postRequest(`/messaging/addTeam/user/${userId.value}`, selectedTeam)
     }
 
-    snackbar('SUCCESS', 'Successfully joined conversation')
+    appStore.showSnack('SUCCESS', 'Successfully joined conversation')
 
     await loadConversation()
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error joining conversation')
+    appStore.showSnack('ERROR', 'Error joining conversation')
 
     appStore.loading = false
   }
@@ -422,7 +422,7 @@ const fetchTeamsForUser = async() => {
       await loadConversation()
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error fetching SMS Teams')
+      appStore.showSnack('ERROR', 'Error fetching SMS Teams')
 
       conversationIsLoading.value = false
     }
@@ -448,7 +448,7 @@ const loadConversation = async() => {
       conversationIsLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error fetching project messaging details')
+      appStore.showSnack('ERROR', 'Error fetching project messaging details')
 
       conversationIsLoading.value = false
     }
@@ -471,7 +471,7 @@ const loadConversation = async() => {
       conversationIsLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error fetching user messaging details')
+      appStore.showSnack('ERROR', 'Error fetching user messaging details')
 
       conversationIsLoading.value = false
     }
@@ -489,7 +489,7 @@ const getAvailableTeams = async() => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     // appStore.loading = false
-    snackbar('ERROR', 'Error retrieving teams')
+    appStore.showSnack('ERROR', 'Error retrieving teams')
 
   }
 }
@@ -507,7 +507,7 @@ const openHistoryDrilldown = async() => {
     showHistoryDialog.value = true
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching history')
+    appStore.showSnack('ERROR', 'Error fetching history')
 
   }
 }

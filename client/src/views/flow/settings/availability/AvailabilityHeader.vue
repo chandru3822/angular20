@@ -22,8 +22,7 @@ import {getCurrentInstance, ref, computed} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
-const store = vueInstance.$store
+ const store = vueInstance.$store
 const userStore = useUserStore()
 
 const tabs = ref([

@@ -145,7 +145,6 @@ const appStore = useAppStore()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   selectedActionIndex: Number,
@@ -177,7 +176,7 @@ const loadChildTemplates = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Templates')
+    appStore.showSnack('ERROR', 'Error Loading Templates')
     appStore.loading = false
   }
 }
@@ -194,11 +193,11 @@ const saveSmsToAction = async () => {
     addSmsCallback(action.id, data)
     selectedTemplate.value = {}
     selectedTeams.value = []
-    snackbar('SUCCESS', 'SMS Template Added To Action')
+    appStore.showSnack('SUCCESS', 'SMS Template Added To Action')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding SMS Template to Action')
+    appStore.showSnack('ERROR', 'Error Adding SMS Template to Action')
     appStore.loading = false
   }
 }
@@ -207,11 +206,11 @@ const deleteSmsFromAction = async (id) => {
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId}/action/${action.id}/deleteSms/${id}`)
     deleteSmsCallback(action.id, id)
-    snackbar('SUCCESS', 'SMS Template Deleted From Action')
+    appStore.showSnack('SUCCESS', 'SMS Template Deleted From Action')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting SMS Template From Action')
+    appStore.showSnack('ERROR', 'Error Deleting SMS Template From Action')
     appStore.loading = false
   }
 }

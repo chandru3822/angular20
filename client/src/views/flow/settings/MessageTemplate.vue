@@ -173,7 +173,7 @@ import {computed, getCurrentInstance, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
@@ -218,7 +218,7 @@ const getTemplates = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Templates')
+    appStore.showSnack('ERROR', 'Error Retrieving Templates')
     appStore.loading = false
   }
 }
@@ -230,15 +230,15 @@ const saveTemplate = async (template, isNew) => {
       templates.value.push(data)
       addTemplate.value = false
       newTemplate.value = {}
-      snackbar('SUCCESS', 'Template Added')
+      appStore.showSnack('SUCCESS', 'Template Added')
     } else {
       expanded.value = []
-      snackbar('SUCCESS', 'Template Updated')
+      appStore.showSnack('SUCCESS', 'Template Updated')
     }
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', isNew ? 'Error Adding Template' : 'Error Updating Template')
+    appStore.showSnack('ERROR', isNew ? 'Error Adding Template' : 'Error Updating Template')
 
     appStore.loading = false
   }
@@ -249,11 +249,11 @@ const deleteTemplate = async () => {
     const {status} = await putRequest(`/messaging/template/delete/${template.id}`)
     showDeleteDialog.value = false
     template.archived = true
-    snackbar('SUCCESS', 'Template Deleted')
+    appStore.showSnack('SUCCESS', 'Template Deleted')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Template')
+    appStore.showSnack('ERROR', 'Error Deleting Template')
     appStore.loading = false
   }
 }
@@ -263,7 +263,7 @@ const getTeams = async () => {
     selectableTeams.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving teams')
+    appStore.showSnack('ERROR', 'Error retrieving teams')
   }
 }
 

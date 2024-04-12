@@ -211,7 +211,7 @@ const getMetrics = async (smartlistId) => {
     metrics.value = data
   } catch (e) {
     logError(e)
-    vueInstance.$snackbar('ERROR', 'Unable to fetch smartlist metrics')
+    ('ERROR', 'Unable to fetch smartlist metrics')
   }
 }
 

@@ -512,7 +512,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 import {useRouter, useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
@@ -588,7 +588,7 @@ onMounted(() => {
 })
 const copyToClipBoard = (textValue) => {
   navigator.clipboard.writeText(textValue)
-  snackbar('SUCCESS', 'Copied text to clipboard')
+  appStore.showSnack('SUCCESS', 'Copied text to clipboard')
 }
 
 const getCompanyProcesses = async () => {
@@ -599,7 +599,7 @@ const getCompanyProcesses = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error loading processes')
+    appStore.showSnack('ERROR', 'Error loading processes')
     appStore.loading = false
   }
 }
@@ -615,11 +615,11 @@ const saveDataView = async () => {
     const {data, status} = await postRequest(`/dataView`, dataView.value)
     oldCompanyProcessIds.value = cloneDeep(dataView.value.companyProcessIds)
     oldCompanyProcesses.value = cloneDeep(dataView.value.companyProcesses)
-    snackbar('SUCCESS', 'Data View Updated')
+    appStore.showSnack('SUCCESS', 'Data View Updated')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Data View')
+    appStore.showSnack('ERROR', 'Error Updating Data View')
     appStore.loading = false
   }
 }
@@ -673,7 +673,7 @@ const getUniqueBehaviorTypes = async () => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Unique Behavior Types')
+      appStore.showSnack('ERROR', 'Error Loading Unique Behavior Types')
       appStore.loading = false
     }
   }
@@ -690,7 +690,7 @@ const loadProcessStepEvents = async () => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
       appStore.loading = false
     }
   }
@@ -718,7 +718,7 @@ const loadFieldsByParent = async (isEvent) => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -734,7 +734,7 @@ const getParentObjects = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Details')
+    appStore.showSnack('ERROR', 'Error Loading Details')
     appStore.loading = false
   }
 }
@@ -753,7 +753,7 @@ const getProcessStepEventData = async () => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Details')
+      appStore.showSnack('ERROR', 'Error Loading Details')
       appStore.loading = false
     }
   }
@@ -773,7 +773,7 @@ const getProcessStepData = async () => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Details')
+      appStore.showSnack('ERROR', 'Error Loading Details')
       appStore.loading = false
     }
   }
@@ -788,7 +788,7 @@ const getAvailableDefaultFields = async () =>{
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Details')
+    appStore.showSnack('ERROR', 'Error Loading Details')
     appStore.loading = false
   }
 }
@@ -809,7 +809,7 @@ const getDataView = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Details')
+    appStore.showSnack('ERROR', 'Error Loading Details')
     appStore.loading = false
   }
 }
@@ -835,15 +835,15 @@ const saveFieldConfig = async (field, isNew) => {
       selectedDefaultField.value = {}
       newField.value = {processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null}
       defaultFields.value = []
-      snackbar('SUCCESS', 'New Field Config Added')
+      appStore.showSnack('SUCCESS', 'New Field Config Added')
     } else {
-      snackbar('SUCCESS', 'Data View Updated')
+      appStore.showSnack('SUCCESS', 'Data View Updated')
     }
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let msg = null != e.data?.message ? e.data?.message : isNew ? 'Error Adding Field' : 'Error Updating Field'
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
     appStore.loading = false
   }
 }
@@ -861,12 +861,12 @@ const saveChildFieldConfig = async (primaryField, childField, isNew) => {
     addChild.value = false
     childField.value = {}
     childFieldExpanded.value = []
-    snackbar('SUCCESS', 'Child Field Config Saved')
+    appStore.showSnack('SUCCESS', 'Child Field Config Saved')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let msg = null != e.data?.message ? e.data?.message : 'Error Saving Field'
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
     appStore.loading = false
   }
 }

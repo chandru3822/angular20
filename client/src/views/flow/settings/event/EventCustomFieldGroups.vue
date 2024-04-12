@@ -583,8 +583,7 @@ const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
-const snackbar = vueInstance.$snackbar
-const route = useRoute()
+ const route = useRoute()
 const vuetify = vueInstance.$vuetify
 
 const WhiteListTypeEnum = Object.freeze({
@@ -690,7 +689,7 @@ const getResourceFields = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -705,7 +704,7 @@ const getEvent = async () => {
     eventLoading.value = false;
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     appStore.loading = false
   }
@@ -849,12 +848,12 @@ const saveChangesToDefaultFields = async () => {
       if (event.value.resourceHiddenPositionsChanged || (!event.value.resourceHidden && event.value.resourceHiddenWhiteListedPositions?.length > 0)) {
         saveWhiteListedPositions(WhiteListTypeEnum.EVENT_RESOURCE_HIDDEN, (!event.value.resourceHidden && event.value.resourceHiddenWhiteListedPositions?.length > 0) ? [] : event.value.resourceHiddenWhiteListedPositions)
       }
-      snackbar('SUCCESS', 'Event Changes Saved')
+      appStore.showSnack('SUCCESS', 'Event Changes Saved')
 
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Changes')
+      appStore.showSnack('ERROR', 'Error Saving Changes')
 
       appStore.loading = false
     }
@@ -865,7 +864,7 @@ const saveWhiteListedPositions = async (whiteListTypeId, whiteListedPositions) =
     await putRequest(`/event/${eventId.value}/saveWhiteListPositions/${whiteListTypeId}`, whiteListedPositions)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving')
+    appStore.showSnack('ERROR', 'Error Saving')
 
     appStore.loading = false
   }
@@ -876,12 +875,12 @@ const saveDetailView = async (cf) => {
   appStore.loading = true
   try {
     await putRequest(`/customFieldGroup/saveDetailView/${cf.customFieldGroupAssignmentId}?detailView=${detailViewValue}`)
-    snackbar('SUCCESS', 'Value Saved')
+    appStore.showSnack('SUCCESS', 'Value Saved')
 
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving')
+    appStore.showSnack('ERROR', 'Error Saving')
 
     appStore.loading = false
   }
@@ -890,12 +889,12 @@ const saveCfToDisplayOnSnippet = async ()=> {
   appStore.loading = true
   try {
     await putRequest(`/customFieldGroup/saveDisplayOnSnippet/${cfToDisplayOnSnippet.value.customFieldGroupAssignmentId}`)
-    snackbar('SUCCESS', 'Custom Field to Display on Snippet Saved')
+    appStore.showSnack('SUCCESS', 'Custom Field to Display on Snippet Saved')
 
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Custom Field to Display on Snippet')
+    appStore.showSnack('ERROR', 'Error Saving Custom Field to Display on Snippet')
 
     appStore.loading = false
   }
@@ -909,12 +908,12 @@ const saveFieldGroup = async () => {
     localCustomFieldGroups.value.push(data)
     newGroup.value = {}
     createNew.value = false
-    snackbar('SUCCESS', 'Group Saved')
+    appStore.showSnack('SUCCESS', 'Group Saved')
 
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Group')
+    appStore.showSnack('ERROR', 'Error Saving Group')
 
     appStore.loading = false
   }
@@ -926,12 +925,12 @@ const deleteWithChecks = async (item, customFieldGroupId, customFieldGroupAssign
     await deleteRequest(url)
     fieldsInUse.value = []
     item.archived = true
-    snackbar('SUCCESS', 'Item Deleted')
+    appStore.showSnack('SUCCESS', 'Item Deleted')
 
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting')
+    appStore.showSnack('ERROR', 'Error Deleting')
 
     appStore.loading = false
   }
@@ -942,12 +941,12 @@ const saveGroupName = async (group) => {
   appStore.loading = true
   try {
     await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
-    snackbar('SUCCESS', 'Group Name Updated')
+    appStore.showSnack('SUCCESS', 'Group Name Updated')
 
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Change')
+    appStore.showSnack('ERROR', 'Error Saving Change')
 
     appStore.loading = false
   }
@@ -956,13 +955,13 @@ const moveFieldToOtherGroup = async (field, newGroup) => {
   appStore.loading = true
   try {
     await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
-    snackbar('SUCCESS', 'Field Moved')
+    appStore.showSnack('SUCCESS', 'Field Moved')
 
     //currently reloading the page because moving the field in the UI seems too hard (even though it isn't i just cant make myself do it right now)
     window.location.reload()
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Moving Field')
+    appStore.showSnack('ERROR', 'Error Moving Field')
 
     appStore.loading = false
   }
@@ -990,7 +989,7 @@ const fetchAvailableCustomFields = async (objectTypeId, groupId) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     appStore.loading = false
   }
@@ -1012,7 +1011,7 @@ const loadFieldsByParent = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     appStore.loading = false
   }
@@ -1026,7 +1025,7 @@ const saveUseParentData = async (field) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Field')
+    appStore.showSnack('ERROR', 'Error Saving Field')
 
     appStore.loading = false
   }
@@ -1044,7 +1043,7 @@ const saveReadOnlyAndWhiteList = async (field) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Field')
+    appStore.showSnack('ERROR', 'Error Saving Field')
 
     appStore.loading = false
   }
@@ -1063,7 +1062,7 @@ const saveHiddenAndWhiteList = async (field) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Field')
+    appStore.showSnack('ERROR', 'Error Saving Field')
 
     appStore.loading = false
   }
@@ -1085,12 +1084,12 @@ const saveFieldChanges = async (fields) => {
     if (fieldsToSave.length > 0) {
       await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
     }
-    snackbar('SUCCESS', 'Fields Updated')
+    appStore.showSnack('SUCCESS', 'Fields Updated')
 
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Fields')
+    appStore.showSnack('ERROR', 'Error Updating Fields')
 
     appStore.loading = false
   }
@@ -1107,12 +1106,12 @@ const assignCustomField = async (cfg) => {
     const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, newField.value)
     cfg.customFields.push(data)
     newField.value = {}
-    snackbar('SUCCESS', 'Custom Field Assigned')
+    appStore.showSnack('SUCCESS', 'Custom Field Assigned')
 
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Assigning Custom Field')
+    appStore.showSnack('ERROR', 'Error Assigning Custom Field')
 
     appStore.loading = false
   }
@@ -1133,12 +1132,12 @@ const assignAncillaryCustomField = async (cfg) => {
     selectedAncillaryField.value = {}
     addField.value = false
     parent.value = {}
-    snackbar('SUCCESS', 'Reference Field Assigned')
+    appStore.showSnack('SUCCESS', 'Reference Field Assigned')
 
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Assigning Reference Field')
+    appStore.showSnack('ERROR', 'Error Assigning Reference Field')
 
     appStore.loading = false
   }
@@ -1156,7 +1155,7 @@ const getAllEventTypes = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     appStore.loading = false
   }
@@ -1167,14 +1166,14 @@ const saveRowChanges = async (rows) => {
     try {
       await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
       localCustomFieldGroups.value = orderBy(localCustomFieldGroups.value, 'groupOrder')
-      snackbar('SUCCESS', 'Group Order Saved')
+      appStore.showSnack('SUCCESS', 'Group Order Saved')
 
       // this componentKey forces the data-table component to re-render
       componentKey.value += 1
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Group Order')
+      appStore.showSnack('ERROR', 'Error Saving Group Order')
 
       appStore.loading = false
     }
@@ -1191,7 +1190,7 @@ const getPositions = async () => {
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Positions')
+      appStore.showSnack('ERROR', 'Error Retrieving Positions')
 
       appStore.loading = false
     }
@@ -1221,7 +1220,7 @@ const toggleSelectAllPositions = (item, wlpField) => {
 }
 const copyToClipBoard = (textValue) => {
   navigator.clipboard.writeText(textValue);
-  snackbar('SUCCESS', 'Copied text to clipboard')
+  appStore.showSnack('SUCCESS', 'Copied text to clipboard')
 
 }
 </script>

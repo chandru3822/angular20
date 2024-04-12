@@ -45,7 +45,7 @@ import {useRouter} from "vue-router/composables"
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = useRouter()
-const snackbar = vueInstance.$snackbar
+
 const userStore = useUserStore()
 
 const validForm = ref(false)

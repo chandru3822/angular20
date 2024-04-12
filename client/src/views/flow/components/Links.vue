@@ -26,7 +26,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 // @TODO: need to generisize this so it can be used for any object type (project, process step, contact, user, org)
 

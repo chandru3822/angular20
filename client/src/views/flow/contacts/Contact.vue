@@ -575,7 +575,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const states = ref([])
@@ -777,12 +777,12 @@ const saveContactAddressFields = async () => {
     //temp contact holds all the changes in case they cancel. use those values
     tempContact.value.ownerUserPositionId = tempContact.value.owner?.userPositionId || null
     const {status} = await postRequest(`/contact`, tempContact.value)
-    snackbar('SUCCESS', 'Contact Updated')
+    appStore.showSnack('SUCCESS', 'Contact Updated')
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error Saving Fields')
+    appStore.showSnack('ERROR', 'Error Saving Fields')
 
     appStore.loading = false
   }
@@ -806,7 +806,7 @@ const validateFields = async(saveContact) => {
     await saveCustomFieldValues()
     fieldsSaving.value = false
   } else {
-    snackbar('ERROR', 'Missing Required Fields')
+    appStore.showSnack('ERROR', 'Missing Required Fields')
 
   }
 }
@@ -832,12 +832,12 @@ const saveCustomFieldValues = async() => {
       addressChanged.value = false
       customFieldGroups.value = data?.cfgs
       fieldsSaving.value = false
-      snackbar('SUCCESS', 'Fields Saved')
+      appStore.showSnack('SUCCESS', 'Fields Saved')
 
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Contact')
+      appStore.showSnack('ERROR', 'Error Saving Contact')
 
     } finally {
       appStore.loading = false
@@ -857,7 +857,7 @@ const getCustomFieldGroups = async() => {
     customFieldGroups.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Custom Fields')
+    appStore.showSnack('ERROR', 'Error Retrieving Custom Fields')
 
   }
 }
@@ -870,7 +870,7 @@ const getContact = async() => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     contactLoading.value = false
-    snackbar('ERROR', 'Error Retrieving Contact')
+    appStore.showSnack('ERROR', 'Error Retrieving Contact')
 
   }
 }
@@ -883,7 +883,7 @@ const getOwners = async() => {
     availableOwners.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Owners')
+    appStore.showSnack('ERROR', 'Error Retrieving Owners')
 
   }
 }
@@ -908,7 +908,7 @@ const getAvailableProcesses = async() => {
     processesLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Available Processes')
+    appStore.showSnack('ERROR', 'Error Retrieving Available Processes')
 
   }
 }
@@ -916,7 +916,7 @@ const convertToCustomer = async() => {
   appStore.loading = true
   try {
     const {data, status} = await putRequest(`/contact/${contact.value.id}/convert`, selectedProcess.value)
-    snackbar('SUCCESS', 'Successfully Converted')
+    appStore.showSnack('SUCCESS', 'Successfully Converted')
 
     // router.push({name: 'projectDetails', params: {projectId: data.id}, query: { checkAddress: true }})
     // ^^ i cant figure out why but doing the routing by name, param, query doesn't load the proper modal on the project screen when needed but it work by hard-coded path
@@ -925,7 +925,7 @@ const convertToCustomer = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Converting Contact')
+    appStore.showSnack('ERROR', 'Error Converting Contact')
 
     appStore.loading = false
   }
@@ -936,7 +936,7 @@ const getAllCompanyStates = async() => {
     states.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving States')
+    appStore.showSnack('ERROR', 'Error Retrieving States')
 
   }
 }
@@ -946,7 +946,7 @@ const getAllCountries = async() => {
     countries.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Countries')
+    appStore.showSnack('ERROR', 'Error Retrieving Countries')
 
   }
 }
@@ -961,12 +961,12 @@ const deleteContact = async() => {
   try {
     appStore.loading = true
     await deleteRequest(`/contact/${contact.value.id}`)
-    snackbar('SUCCESS', 'Contact Deleted')
+    appStore.showSnack('SUCCESS', 'Contact Deleted')
 
     router.push('/contacts')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error deleting contact')
+    appStore.showSnack('ERROR', 'Error deleting contact')
 
     appStore.loading = false
   }

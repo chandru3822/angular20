@@ -55,7 +55,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const announcementAlert = ref({})
 const showModal = ref(false)
@@ -111,7 +110,7 @@ const markAnnouncement = async(item, read, seen, alerted) => {
       await postRequestWithRequestParams(`/announcements/${item.id}/mark`, {}, params)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Marking Announcement As Seen')
+      appStore.showSnack('ERROR', 'Error Marking Announcement As Seen')
 
     }
   }

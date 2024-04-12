@@ -38,7 +38,6 @@ const userStore = useUserStore()
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
     quarter: QuarterEnum,
@@ -172,7 +171,7 @@ onMounted(() => {
         appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error retrieving drilldown data')
+        appStore.showSnack('ERROR', 'Error retrieving drilldown data')
         appStore.loading = false
       }
     }

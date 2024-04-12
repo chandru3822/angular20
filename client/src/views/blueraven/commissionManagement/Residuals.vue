@@ -347,7 +347,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 onMounted(() => {
   getCurrentResidual()
@@ -476,7 +475,7 @@ const getResiduals = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Residuals')
+    appStore.showSnack('ERROR', 'Error Loading Residuals')
 
     appStore.loading = false
   }
@@ -490,12 +489,12 @@ const addAdjustment = async (item) => {
       note: item.adjustmentNote
     }
     await postRequest(`/payroll/residual/${currentResidual.value.id}/adjustments`, params, 'blueraven')
-    snackbar('SUCCESS', 'Adjustment Added')
+    appStore.showSnack('SUCCESS', 'Adjustment Added')
 
     await getResiduals()
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Adjustment')
+    appStore.showSnack('ERROR', 'Error Adding Adjustment')
 
     appStore.loading = false
   }
@@ -509,7 +508,7 @@ const getProjects = async (search) => {
     projects.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Data')
+    appStore.showSnack('ERROR', 'Error Loading Data')
 
     appStore.loading = false
   }
@@ -528,7 +527,7 @@ const saveOverrideDate = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     let msg = e?.data?.message || 'Error Loading Data'
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
 
     appStore.loading = false
   }
@@ -559,7 +558,7 @@ const loadModalData = async (residualItem, typeId) => {
     showModal.value = true
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Data')
+    appStore.showSnack('ERROR', 'Error Loading Data')
 
     appStore.loading = false
   }
@@ -577,7 +576,7 @@ const getCurrentResidual = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Current Payroll')
+    appStore.showSnack('ERROR', 'Error Loading Current Payroll')
 
     appStore.loading = false
   }
@@ -593,19 +592,19 @@ const submitForApproval = async (action) => {
       payDate: payDate.value
     }
     if(payrollStatus.value.showSelect && (!selectedIds || selectedIds.length === 0)) {
-      snackbar('WARNING', 'You must select at least one user.')
+      appStore.showSnack('WARNING', 'You must select at least one user.')
 
     } else {
       appStore.loading = true
       try {
         await postRequest(`/payroll/residual/${currentResidual.value.id}/${action}`, params, 'blueraven')
-        snackbar('SUCCESS', 'Successfully Updated')
+        appStore.showSnack('SUCCESS', 'Successfully Updated')
 
         //todo: reload residuals after approving
         await getCurrentResidual()
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Updating')
+        appStore.showSnack('ERROR', 'Error Updating')
 
         appStore.loading = false
       }
@@ -655,7 +654,7 @@ const saveChangesToResidual = async (keepLoading) => {
   appStore.loading = true
   try {
     const {data} = await postRequest(`/payroll/residual/${currentResidual.value.id}`, params, 'blueraven')
-    snackbar('SUCCESS', 'Successfully Updated')
+    appStore.showSnack('SUCCESS', 'Successfully Updated')
 
     currentResidual.value = data
     additionalPayrollDataNeeded.value = null == currentResidual.value.description
@@ -669,7 +668,7 @@ const saveChangesToResidual = async (keepLoading) => {
     return true
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating')
+    appStore.showSnack('ERROR', 'Error Updating')
 
     appStore.loading = false
     return false
@@ -719,7 +718,7 @@ const exportResiduals = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Exporting Residuals')
+    appStore.showSnack('ERROR', 'Error Exporting Residuals')
 
     appStore.loading = false
   }

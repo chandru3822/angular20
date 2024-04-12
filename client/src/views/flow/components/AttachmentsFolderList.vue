@@ -221,7 +221,7 @@ const projectStore = useProjectStore()
 const { forceReloadKey } = storeToRefs(projectStore)
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 // const rootInstance = getCurrentInstance().appContext.app;
 
@@ -396,7 +396,7 @@ const attachmentDeleted = (id) => {
 }
 const fileUploaded = (attachment, error) => {
   if (error) {
-    snackbar('ERROR', error.message)
+    appStore.showSnack('ERROR', error.message)
 
   } else {
     attachments.value.push(attachment)
@@ -579,7 +579,7 @@ const uploadDocument = async (files, type) => {
   } catch (e) {
     appStore.loading = false
     logError(e)
-    snackbar('ERROR', 'Error Uploading File')
+    appStore.showSnack('ERROR', 'Error Uploading File')
 
   }
 

@@ -208,7 +208,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const isSetter = ref(false)
 const isSetterMgr = ref(false)
@@ -377,7 +376,7 @@ const loadPersonalPerformance = async () => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving personal performance data')
+    appStore.showSnack('ERROR', 'Error retrieving personal performance data')
 
   }
 }
@@ -401,7 +400,7 @@ const getRepToBeatImage = async (repToBeatId) => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving rep to beat image')
+    appStore.showSnack('ERROR', 'Error retrieving rep to beat image')
 
     appStore.loading = false
   }
@@ -454,7 +453,7 @@ const getTopReps = async () => {
     topRepsLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving top reps data')
+    appStore.showSnack('ERROR', 'Error retrieving top reps data')
 
   }
 }
@@ -481,7 +480,7 @@ const getTopOffices = async () => {
     topOfficesLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving top offices data')
+    appStore.showSnack('ERROR', 'Error retrieving top offices data')
 
   }
 }
@@ -507,7 +506,7 @@ const getOfficeRanking = async () => {
     officeRankingLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving office ranking data')
+    appStore.showSnack('ERROR', 'Error retrieving office ranking data')
 
   }
 }
@@ -553,7 +552,7 @@ const setTimeInterval = (tis) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving ranking table data')
+    appStore.showSnack('ERROR', 'Error retrieving ranking table data')
 
     rankingTablesLoaded.value = true
     appStore.loading = false

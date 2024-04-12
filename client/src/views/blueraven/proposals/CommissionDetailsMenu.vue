@@ -89,7 +89,6 @@ import SpinnerInline from '@/components/SpinnerInline'
 import { getCurrentInstance, toRefs, ref, watch } from 'vue'
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   proposalId: Number,
@@ -185,7 +184,7 @@ const getCommissionDetails = async () => {
     console.error('*** ERROR ***', e)
     fieldError.value = true
     fieldErrorMsg.value = 'Error retrieving commission details'
-    snackbar('ERROR', 'Error retrieving commission details')
+    appStore.showSnack('ERROR', 'Error retrieving commission details')
   } finally {
     detailsLoading.value = false
   }

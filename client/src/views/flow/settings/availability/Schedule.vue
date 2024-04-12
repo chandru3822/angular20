@@ -362,8 +362,7 @@
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
-  const store = vueInstance.$store
+     const store = vueInstance.$store
   const userStore = useUserStore()
 
   const props = defineProps({
@@ -488,7 +487,7 @@
       } catch (e) {
         console.error('*** ERROR ***', e)
         appStore.loading = false
-        snackbar('ERROR', 'Error Loading Schedules')
+        appStore.showSnack('ERROR', 'Error Loading Schedules')
 
       }
     }
@@ -502,7 +501,7 @@
     } catch (e) {
       console.error('*** ERROR ***', e)
       appStore.loading = false
-      snackbar('ERROR', 'Error Loading Work Days')
+      appStore.showSnack('ERROR', 'Error Loading Work Days')
 
     }
   }
@@ -519,7 +518,7 @@
     } catch (e) {
       console.error('*** ERROR ***', e)
       appStore.loading = false
-      snackbar('ERROR', 'Error Loading Schedules')
+      appStore.showSnack('ERROR', 'Error Loading Schedules')
 
     }
   }
@@ -632,7 +631,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             appStore.loading = false
-            snackbar('ERROR', 'Error Saving Schedule')
+            appStore.showSnack('ERROR', 'Error Saving Schedule')
 
           }
         }
@@ -681,12 +680,12 @@
       item.archived = true
       //remove it from the schedules list so they can recreate one with the same dates
       schedules.value = schedules.value.filter(s => { return s.id !== item.id })
-      snackbar('SUCCESS', 'Schedule Deleted')
+      appStore.showSnack('SUCCESS', 'Schedule Deleted')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error deleting schedule')
+      appStore.showSnack('ERROR', 'Error deleting schedule')
 
       appStore.loading = false
     }

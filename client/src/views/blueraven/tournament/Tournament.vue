@@ -47,7 +47,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const tournament = ref({})
 const tournamentLoaded = ref(false)
@@ -99,7 +98,7 @@ const getTournament = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Tournament')
+    appStore.showSnack('ERROR', 'Error Loading Tournament')
 
     appStore.loading = false
   }

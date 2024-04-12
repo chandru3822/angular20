@@ -80,8 +80,7 @@
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
-  const { commissionPositionId } = storeToRefs(brsStore)
+     const { commissionPositionId } = storeToRefs(brsStore)
 
   onMounted(() => {
     getCommissions()
@@ -110,7 +109,7 @@
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Loading Commissions')
+          appStore.showSnack('ERROR', 'Error Loading Commissions')
           appStore.loading = false
         }
       }

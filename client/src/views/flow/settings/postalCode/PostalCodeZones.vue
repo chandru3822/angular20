@@ -113,7 +113,6 @@
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
 
         const addNew = ref(false)
         const search = ref(null)
@@ -175,7 +174,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
-          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.showSnack('ERROR', 'Error Retrieving Data')
           appStore.loading = false
         }
       }
@@ -185,11 +184,11 @@
         appStore.loading = true
         try {
           const {status} = await deleteRequest(`/postalCode/zone/${postalCodeZoneId}`)
-          snackbar('SUCCESS', 'Postal Code Deleted')
+          appStore.showSnack('SUCCESS', 'Postal Code Deleted')
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Deleting Postal Code')
+          appStore.showSnack('ERROR', 'Error Deleting Postal Code')
           appStore.loading = false
         }
         closeDeleteDialog()
@@ -199,11 +198,11 @@
         try {
           const {data, status} = await postRequest(`/postalCode/zone`, newZone.value)
           goToZone(data)
-          snackbar('SUCCESS', 'Postal Code Zone Added')
+          appStore.showSnack('SUCCESS', 'Postal Code Zone Added')
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Adding Postal Code Zone')
+          appStore.showSnack('ERROR', 'Error Adding Postal Code Zone')
           appStore.loading = false
         }
       }

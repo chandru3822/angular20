@@ -321,7 +321,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const store = vueInstance.$store
 const userStore = useUserStore()
 const route = useRoute()
@@ -458,7 +458,7 @@ const getPositions = async () => {
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Positions')
+      appStore.showSnack('ERROR', 'Error Retrieving Positions')
 
       appStore.loading = false
     }
@@ -472,7 +472,7 @@ const saveHiddenAndWhiteList = async () => {
     if(!workQueueType.value.hidden) {
       workQueueType.value.hiddenWhiteListedPositions = []
     }
-    snackbar('SUCCESS', 'Saved Successfully')
+    appStore.showSnack('SUCCESS', 'Saved Successfully')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
@@ -487,10 +487,10 @@ const buildSql = async () => {
       }})
     sql.value = data
     navigator.clipboard.writeText(sql.value);
-    snackbar('SUCCESS', 'Copied query to clipboard')
+    appStore.showSnack('SUCCESS', 'Copied query to clipboard')
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching sql')
+    appStore.showSnack('ERROR', 'Error fetching sql')
   }
 }
 const getCompanyObjectTypes = async () => {
@@ -499,7 +499,7 @@ const getCompanyObjectTypes = async () => {
     companyObjectTypes.value = data.sort((a, b) => a.objectType.localeCompare(b.objectType))
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching object types')
+    appStore.showSnack('ERROR', 'Error fetching object types')
 
   }
 }
@@ -509,7 +509,7 @@ const getDurationTypes = async () => {
     durationTypes.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching duration types')
+    appStore.showSnack('ERROR', 'Error fetching duration types')
 
   }
 }
@@ -519,7 +519,7 @@ const getPsAndEventsUsingWqt = async () => {
     itemsUsingType.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Work Queue Types')
+    appStore.showSnack('ERROR', 'Error Retrieving Work Queue Types')
 
     appStore.loading = false
   }
@@ -536,7 +536,7 @@ const getWorkQueueType = async () => {
     workQueueLoading.value = false;
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Work Queue Types')
+    appStore.showSnack('ERROR', 'Error Retrieving Work Queue Types')
 
     appStore.loading = false
   }
@@ -547,7 +547,7 @@ const getAllWorkQueueCategories = async () => {
     workQueueCategories.value = orderBy(data, [wt => wt.workQueueCategory.toLowerCase()])
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Work Queue Types')
+    appStore.showSnack('ERROR', 'Error Retrieving Work Queue Types')
 
     appStore.loading = false
   }
@@ -560,11 +560,11 @@ const saveType = async () => {
       workQueueType.value = data
       editType.value = false
       editSchedule.value = false
-      snackbar('SUCCESS', 'Work Queue Type Saved')
+      appStore.showSnack('SUCCESS', 'Work Queue Type Saved')
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Work Queue Type')
+      appStore.showSnack('ERROR', 'Error Saving Work Queue Type')
       appStore.loading = false
     }
   }
@@ -590,7 +590,7 @@ const validateSchedule = () => {
   }
 
   if (invalidDate) {
-    snackbar('ERROR', 'Invalid schedule: All selected days must have a start and end time')
+    appStore.showSnack('ERROR', 'Invalid schedule: All selected days must have a start and end time')
     return false;
   }
 

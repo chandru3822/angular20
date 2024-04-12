@@ -31,7 +31,6 @@
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
 
   const model = ref('')
 

@@ -49,7 +49,6 @@ import htmlParser from 'prettier/parser-html'
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
-const snackbar = vueInstance.$snackbar
 
 const vBtnValue = ref(null)
 const albatrossButtonValue = ref(null)
@@ -314,6 +313,6 @@ const handleTwoIcons = (textString) => {
 
 const copyToClipboard = () => {
   navigator.clipboard.writeText(albatrossButtonValue.value);
-  snackbar('SUCCESS', `Copied to clipboard`)
+  appStore.showSnack('SUCCESS', `Copied to clipboard`)
 }
 </script>

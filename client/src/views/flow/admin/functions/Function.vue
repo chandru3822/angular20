@@ -239,7 +239,7 @@ const store = vueInstance.$store
 const appStore = useAppStore()
 const router = useRouter()
 const route = useRoute()
-const snackbar = vueInstance.$snackbar
+
 
 const addNew = ref(false)
 const dbFunction = ref({})
@@ -286,7 +286,7 @@ const getFunction = async() => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Function')
+    appStore.showSnack('ERROR', 'Error Loading Function')
     appStore.loading = false
   }
 }
@@ -298,7 +298,7 @@ const getCompanies = async() => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Function')
+    appStore.showSnack('ERROR', 'Error Loading Function')
     appStore.loading = false
   }
 }
@@ -311,7 +311,7 @@ const getDataTypes = async() => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Data Types')
+      appStore.showSnack('ERROR', 'Error Loading Data Types')
       appStore.loading = false
     }
   }
@@ -325,7 +325,7 @@ const getParameterTypes = async() => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Parameter Types')
+      appStore.showSnack('ERROR', 'Error Loading Parameter Types')
       appStore.loading = false
     }
   }
@@ -338,7 +338,7 @@ const saveParam = async(item) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Function Param')
+    appStore.showSnack('ERROR', 'Error Saving Function Param')
     appStore.loading = false
   }
 }
@@ -354,7 +354,7 @@ const addParam = async() => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Function Param')
+    appStore.showSnack('ERROR', 'Error Saving Function Param')
     appStore.loading = false
   }
 }
@@ -375,7 +375,7 @@ const pushToCompanies = async() => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Function Param')
+    appStore.showSnack('ERROR', 'Error Saving Function Param')
     appStore.loading = false
   }
 }
@@ -388,7 +388,7 @@ const getSystemValues = async() => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
       appStore.loading = false
     }
   }

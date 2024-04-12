@@ -39,7 +39,6 @@ import constants from '@/helpers/constants'
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
-const snackbar = vueInstance.$snackbar
 
 const basicRequiredRule = ref(constants.BASIC_REQUIRED_RULE)
 

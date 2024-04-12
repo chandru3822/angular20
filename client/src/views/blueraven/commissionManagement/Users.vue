@@ -101,7 +101,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 onMounted(() => {
   getUsers()
@@ -136,7 +135,7 @@ const getUsers = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Users')
+    appStore.showSnack('ERROR', 'Error Loading Users')
 
     appStore.loading = false
   }

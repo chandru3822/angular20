@@ -183,7 +183,6 @@ import {useRouter, useRoute} from "vue-router/composables"
 const vueInstance = getCurrentInstance().proxy
 const route = useRoute()
 const router = useRouter()
-const snackbar = vueInstance.$snackbar
 
 const store = vueInstance.$store
 const userStore = useUserStore()
@@ -332,12 +331,12 @@ const validate = async () => {
 
       const {data, status} = await postRequest(`/announcements`, formData)
       announcement.value = data
-      snackbar('SUCCESS', 'Announcement Saved')
+      appStore.showSnack('SUCCESS', 'Announcement Saved')
       override.value = true
       await router.push(pathUrl.value)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Announcement')
+      appStore.showSnack('ERROR', 'Error Saving Announcement')
     } finally {
       saving.value = false
     }
@@ -352,7 +351,7 @@ const getAnnouncement = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
   } finally {
     appStore.loading = false
     dataLoading.value = false
@@ -371,13 +370,13 @@ const deleteAttachment = async () => {
         }
         announcement.value.presignedUrl = null
         announcement.value.attachmentId = null
-        snackbar('SUCCESS', 'Image Deleted')
+        appStore.showSnack('SUCCESS', 'Image Deleted')
         appStore.loading = false
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting File')
+    appStore.showSnack('ERROR', 'Error Deleting File')
     appStore.loading = false
   }
 }
@@ -396,21 +395,21 @@ const uploadFile = async (uploadedFile, existingFile) => {
         displayName: file.name.substr(0, file.name.lastIndexOf('.')),
         callback: async (img, error) => {
           if (error?.error) {
-            snackbar('ERROR', error.errorMsg)
+            appStore.showSnack('ERROR', error.errorMsg)
             appStore.loading = false
           } else {
             announcement.value.presignedUrl = img.presignedUrl
             announcementLogo.value.image = img
             announcementLogo.value.add = false
             announcementLogo.value.saving = false
-            snackbar('SUCCESS', 'Image Uploaded')
+            appStore.showSnack('SUCCESS', 'Image Uploaded')
             appStore.loading = false
           }
         }
       })
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Uploading File')
+      appStore.showSnack('ERROR', 'Error Uploading File')
       appStore.loading = false
     }
   }

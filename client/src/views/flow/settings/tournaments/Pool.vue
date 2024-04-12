@@ -390,8 +390,7 @@ const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const fileStore = useFileStore()
+ const fileStore = useFileStore()
 const route = useRoute()
 const userStore = useUserStore()
 const filters = vueInstance.$filters
@@ -503,11 +502,11 @@ const savePoolDates = async () => {
   try {
     const {status} = await putRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}`, pool.value, 'blueraven')
     editPool.value = false
-    snackbar('SUCCESS', 'Pool Changes Saved')
+    appStore.showSnack('SUCCESS', 'Pool Changes Saved')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Pool')
+    appStore.showSnack('ERROR', 'Error Updating Pool')
     appStore.loading = false
   }
 }
@@ -520,7 +519,7 @@ const getPositions = async () => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Positions')
+      appStore.showSnack('ERROR', 'Error Retrieving Positions')
       appStore.loading = false
     } finally {
       positionsLoading.value = false
@@ -534,7 +533,7 @@ const deleteUsersFromPool = async () => {
     pool.value.users = []
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Users')
+    appStore.showSnack('ERROR', 'Error Deleting Users')
   } finally {
     appStore.loading = false
   }
@@ -548,7 +547,7 @@ const getUsers = async () => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Users')
+      appStore.showSnack('ERROR', 'Error Retrieving Users')
       appStore.loading = false
     } finally {
       usersLoading.value = false
@@ -568,7 +567,7 @@ const getTournamentPool = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Tournament')
+    appStore.showSnack('ERROR', 'Error Loading Tournament')
     appStore.loading = false
   }
 }
@@ -585,7 +584,7 @@ const addPositionToPool = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Position')
+    appStore.showSnack('ERROR', 'Error Adding Position')
     appStore.loading = false
   }
 }
@@ -599,7 +598,7 @@ const deletePositionFromPool = async () => {
     positionToDelete.value = null
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Position')
+    appStore.showSnack('ERROR', 'Error Deleting Position')
     appStore.loading = false
     positionToDelete.value = null
   }
@@ -630,12 +629,12 @@ const saveCustomUsers = async () => {
     } = await postRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/addCustomUsers`, params, 'blueraven')
     pool.value.users = data
     resetCustom()
-    snackbar('SUCCESS', 'Successfully added matching users.')
+    appStore.showSnack('SUCCESS', 'Successfully added matching users.')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let msg = e?.data?.detail || 'Error Adding Users'
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
     appStore.loading = false
   }
 }
@@ -654,7 +653,7 @@ const addUserToPool = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     let msg = e?.data?.detail || 'Error Adding User'
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
     appStore.loading = false
   }
 }
@@ -667,7 +666,7 @@ const deleteUserFromPool = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting User')
+    appStore.showSnack('ERROR', 'Error Deleting User')
     appStore.loading = false
   }
   userToDelete.value = null
@@ -685,20 +684,20 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
       displayName: file.name.substr(0, file.name.lastIndexOf('.')),
       callback: async (img, error) => {
         if (error?.error) {
-          snackbar('ERROR', error.errorMsg)
+          appStore.showSnack('ERROR', error.errorMsg)
           appStore.loading = false
         } else {
           pool.value.backgroundAttachmentPresignedUrl = img.presignedUrl
           pool.value.backgroundAttachmentId = img.id
           addImage.value = false
-          snackbar('SUCCESS', 'Image Uploaded')
+          appStore.showSnack('SUCCESS', 'Image Uploaded')
           appStore.loading = false
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Uploading File')
+    appStore.showSnack('ERROR', 'Error Uploading File')
     appStore.loading = false
   }
 }
@@ -711,13 +710,13 @@ const deleteAttachment = async (id) => {
         pool.value.backgroundAttachmentId = null
         pool.value.backgroundAttachmentPresignedUrl = null
         // store.commit(UserMutations.SET_USER_IMAGE, {})
-        snackbar('SUCCESS', 'Image Deleted')
+        appStore.showSnack('SUCCESS', 'Image Deleted')
         appStore.loading = false
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting File')
+    appStore.showSnack('ERROR', 'Error Deleting File')
     appStore.loading = false
   }
   deleteWinnerBackgroundDialog.value = false

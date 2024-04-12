@@ -59,7 +59,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 
 const DATA_TYPES = {
@@ -124,7 +123,7 @@ watch(visible, async(val) => {
       if (newValueForm.value.validate()) {
         save()
       } else {
-        snackbar('ERROR', 'ERROR: Check for missing fields or incorrect values')
+        appStore.showSnack('ERROR', 'ERROR: Check for missing fields or incorrect values')
       }
     }
     const fetchObjectFields = async(objectCode) => {

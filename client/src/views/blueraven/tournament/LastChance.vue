@@ -103,7 +103,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const poolTypeId = ref(2)
 const search = ref('')
@@ -153,7 +152,7 @@ const getPool = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching pool details')
+    appStore.showSnack('ERROR', 'Error fetching pool details')
 
     appStore.loading = false
   }
@@ -162,13 +161,13 @@ const moveUsersToWinnersPool = async () => {
   appStore.loading = true
   try {
     const {status} = await postRequest(`/tournament/${tournamentId.value}/pool/${pool.value.id}/advanceUsersToWinnerPool`, selectedUsers.value, 'blueraven')
-    snackbar('SUCCESS', 'Selected Users Advanced')
+    appStore.showSnack('SUCCESS', 'Selected Users Advanced')
 
     router.push({name: 'tournamentWinners', params: { id: tournamentId.value }})
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Advancing Users')
+    appStore.showSnack('ERROR', 'Error Advancing Users')
 
     appStore.loading = false
   }
@@ -179,7 +178,7 @@ const getPoolUsers = async() => {
     poolUsers.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching pool user details')
+    appStore.showSnack('ERROR', 'Error fetching pool user details')
 
   }
 }

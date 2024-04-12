@@ -146,7 +146,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const addCalendar = ref(false)
 const userId = ref(route.params.id)
@@ -201,7 +201,7 @@ const getUserCompanyFeatures = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving User Access Details')
+    appStore.showSnack('ERROR', 'Error Retrieving User Access Details')
 
     appStore.loading = false
   }
@@ -212,7 +212,7 @@ const getUserOrgAccessLevel = async() => {
     userHasFullAccess.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Org Access Level')
+    appStore.showSnack('ERROR', 'Error Retrieving Org Access Level')
 
   }
 }
@@ -230,7 +230,7 @@ const getAllOrgCalendars = async() => {
     await getUserOrgCalendars()
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Org Calendars')
+    appStore.showSnack('ERROR', 'Error Retrieving Org Calendars')
   }
 }
 const getUserOrgCalendars = async() => {
@@ -245,7 +245,7 @@ const getUserOrgCalendars = async() => {
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Org Calendars')
+    appStore.showSnack('ERROR', 'Error Retrieving Org Calendars')
 
   }
 }
@@ -264,7 +264,7 @@ const saveUserOrgCalendars = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Org Calendar to User')
+    appStore.showSnack('ERROR', 'Error Saving Org Calendar to User')
 
     appStore.loading = false
   }
@@ -277,7 +277,7 @@ const deleteOrgCalendarFromUser = async(item) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Org Calendar from User')
+    appStore.showSnack('ERROR', 'Error Deleting Org Calendar from User')
 
     appStore.loading = false
   }
@@ -295,7 +295,7 @@ const saveUserAccess = async() => {
     dirtyFields.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving User Access Details')
+    appStore.showSnack('ERROR', 'Error Saving User Access Details')
 
     appStore.loading = false
   }

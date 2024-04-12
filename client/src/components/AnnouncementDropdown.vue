@@ -100,7 +100,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const showModal = ref(false)
 const headerColor = ref(constants.ENV_COLOR)
@@ -136,7 +135,7 @@ const getActiveAnnouncementsAgain = async() => {
     appStore.announcements = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   } finally {
     loadingAgain.value = false

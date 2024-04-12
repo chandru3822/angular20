@@ -92,8 +92,7 @@ const ImageTypeEnum = ref({
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const userStore = useUserStore()
+ const userStore = useUserStore()
 const fileStore = useFileStore()
 
 const companyId = userStore.details.companyId
@@ -120,7 +119,7 @@ const loadImage = async(logoType) => {
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Image')
+    appStore.showSnack('ERROR', 'Error Loading Image')
     appStore.loading = false
   }
 }

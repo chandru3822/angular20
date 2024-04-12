@@ -91,7 +91,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   headers: Array, // format {text: '', value: '', show: boolean}

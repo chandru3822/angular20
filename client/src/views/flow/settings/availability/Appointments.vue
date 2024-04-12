@@ -245,8 +245,7 @@
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
-  const store = vueInstance.$store
+     const store = vueInstance.$store
   const userStore = useUserStore()
   const route = useRoute()
 
@@ -383,7 +382,7 @@
       } catch (e) {
         console.error('*** ERROR ***', e)
         appStore.loading = false
-        snackbar('ERROR', 'Error Loading Appointments')
+        appStore.showSnack('ERROR', 'Error Loading Appointments')
 
       }
     }
@@ -456,7 +455,7 @@
     } catch (e) {
       console.error('*** ERROR ***', e)
       appStore.loading = false
-      snackbar('ERROR', 'Error Saving Appointment')
+      appStore.showSnack('ERROR', 'Error Saving Appointment')
     }
   }
   const filterAppointments = computed(() => {
@@ -489,12 +488,12 @@
         //reload appointments if we deleted more than one
         await getAppointments()
       }
-      snackbar('SUCCESS', 'Appointment Deleted')
+      appStore.showSnack('SUCCESS', 'Appointment Deleted')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error deleting appointment')
+      appStore.showSnack('ERROR', 'Error deleting appointment')
 
       appStore.loading = false
     }
@@ -506,12 +505,12 @@
     try {
       const {status} = await deleteRequest(`/availability/appointment/${item.id}`)
       item.archived = true
-      snackbar('SUCCESS', 'Appointment Deleted')
+      appStore.showSnack('SUCCESS', 'Appointment Deleted')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error deleting appointment')
+      appStore.showSnack('ERROR', 'Error deleting appointment')
 
       appStore.loading = false
     }

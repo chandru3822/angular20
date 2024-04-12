@@ -129,7 +129,7 @@ const getEvent = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -138,11 +138,11 @@ const saveEventName = async () => {
   try {
     await putRequest(`/event`, event.value)
     editName.value = false
-    snackbar('SUCCESS', 'Event Updated')
+    appStore.showSnack('SUCCESS', 'Event Updated')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Event')
+    appStore.showSnack('ERROR', 'Error Updating Event')
     appStore.loading = false
   }
 }

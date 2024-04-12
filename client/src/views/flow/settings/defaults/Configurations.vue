@@ -60,7 +60,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
@@ -88,7 +88,7 @@ onMounted(async () => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.showSnack('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       }
     }
@@ -100,7 +100,7 @@ onMounted(async () => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving Configuration Value')
+        appStore.showSnack('ERROR', 'Error Saving Configuration Value')
         appStore.loading = false
       }
     }

@@ -41,8 +41,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 
 const props = defineProps({
   project: Object,

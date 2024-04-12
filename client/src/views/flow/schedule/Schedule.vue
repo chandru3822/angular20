@@ -88,7 +88,6 @@ const vueInstance = getCurrentInstance().proxy
 const vuetify = vueInstance.$vuetify
 const calendarRef = ref(null);
 
-const snackbar = ref({})
 const saveInvalid = ref(true)
 const startTime = ref(null)
 const endTime = ref(null)

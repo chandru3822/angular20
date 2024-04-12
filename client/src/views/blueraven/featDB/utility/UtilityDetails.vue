@@ -127,7 +127,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 
 const userCanEdit = computed(() => {
@@ -189,7 +188,7 @@ const getUtility = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)
-    snackbar("ERROR", "Error retrieving Utility")
+    appStore.showSnack("ERROR", "Error retrieving Utility")
 
     appStore.loading = false
   }
@@ -214,7 +213,7 @@ const getDocuments = async(docTypeId) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving documents')
+    appStore.showSnack('ERROR', 'Error retrieving documents')
     appStore.loading = false
   }
 }
@@ -223,7 +222,7 @@ const validateForm = () => {
   if (utilityForm.value.validate()) {
     saveUtility()
   } else {
-    snackbar('ERROR', 'Missing Required Fields')
+    appStore.showSnack('ERROR', 'Missing Required Fields')
 
   }
 }
@@ -236,7 +235,7 @@ const getFinancierList = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)
-    snackbar("ERROR", "Error retrieving list of financiers")
+    appStore.showSnack("ERROR", "Error retrieving list of financiers")
 
     appStore.loading = false
   }
@@ -255,7 +254,7 @@ const getCustomFieldGroupAssignmentsForScreen = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)
-    snackbar("ERROR", "Error retrieving custom fields")
+    appStore.showSnack("ERROR", "Error retrieving custom fields")
 
     appStore.loading = false
   }
@@ -302,12 +301,12 @@ const saveUtility = async() => {
     const {data, status} = await putRequest("/featDb/utility", utility.value, "blueraven")
     utility.value = cloneDeep(data)
     dataWasChanged.value = false
-    snackbar("SUCCESS", "Utility saved")
+    appStore.showSnack("SUCCESS", "Utility saved")
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)
-    snackbar("ERROR", "Error saving Utility")
+    appStore.showSnack("ERROR", "Error saving Utility")
 
     appStore.loading = false
   }

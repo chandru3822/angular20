@@ -157,7 +157,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
@@ -197,7 +197,7 @@ const getEmailSenders = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Email Addresses')
+    appStore.showSnack('ERROR', 'Error Retrieving Email Addresses')
 
     appStore.loading = false
   }
@@ -231,7 +231,7 @@ const updateEmailAddress = async (item) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Email Address')
+    appStore.showSnack('ERROR', 'Error Updating Email Address')
 
     appStore.loading = false
   }
@@ -256,7 +256,7 @@ const addEmail = async () => {
     if(e.data != false) {
       console.error('*** ERROR ***', e)
     }
-    snackbar('ERROR', 'Error Adding Email Address')
+    appStore.showSnack('ERROR', 'Error Adding Email Address')
 
     appStore.loading = false
   }
@@ -277,7 +277,7 @@ const deleteEmailAddress = async () => {
     if(e.data != false) {
       console.error('*** ERROR ***', e)
     }
-    snackbar('ERROR', 'Error Updating Email Address')
+    appStore.showSnack('ERROR', 'Error Updating Email Address')
     appStore.loading = false
   }
   emailToDelete.value = null
@@ -292,7 +292,7 @@ const processEmailQueue = async () => {
     emailQueueProcessing.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Processing Email Queue')
+    appStore.showSnack('ERROR', 'Error Processing Email Queue')
 
     emailQueueProcessing.value = false
   }

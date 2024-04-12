@@ -26,8 +26,7 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const scheduleStore = useScheduleStore()
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 const emit = defineEmits(['toggleProjectMapPin', 'updateEvents'])
 
 const props = defineProps({
@@ -149,7 +148,7 @@ const getResources = async(item) => {
     handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Resources')
+    appStore.showSnack('ERROR', 'Error Retrieving Resources')
     appStore.loading = false
   }
 }
@@ -174,7 +173,7 @@ const getCancelledCompanyEventStatuses = async () => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching process step statuses')
+    appStore.showSnack('ERROR', 'Error fetching process step statuses')
   }
 }
 
@@ -229,7 +228,7 @@ const scheduleProject = async(forceSave) => {
       console.error('*** ERROR ***', e)
       let saveMismatch = e.data?.message === 'Save Version Mismatch'
       let msg = saveMismatch ? 'Error Scheduling Project. This event has been update by another user. Please refresh to see the latest data.' : 'Error Scheduling Project'
-      snackbar('ERROR', msg)
+      appStore.showSnack('ERROR', msg)
       fieldsSaving.value = false
       appStore.loading = false
     }

@@ -82,7 +82,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   userFullName: String,
@@ -168,7 +167,7 @@ const exportData = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Exporting Data')
+    appStore.showSnack('ERROR', 'Error Exporting Data')
 
     appStore.loading = false
   }

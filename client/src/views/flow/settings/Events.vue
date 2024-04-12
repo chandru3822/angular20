@@ -134,7 +134,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 import {useRouter} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const store = vueInstance.$store
 const router = useRouter()
 const userStore = useUserStore()
@@ -190,7 +190,7 @@ const getResourceFields = async () => {
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
       appStore.loading = false
     }
   }
@@ -205,7 +205,7 @@ const getEvents = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -216,7 +216,7 @@ const deleteEvent =  async () => {
   try {
     const {status} = await putRequest(`/event/delete/${event.id}`)
     event.archived = true
-    snackbar('SUCCESS', 'Event Deleted')
+    appStore.showSnack('SUCCESS', 'Event Deleted')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -225,7 +225,7 @@ const deleteEvent =  async () => {
       deleteError.value = true
       cannotDeleteReasons.value = e.data
     }
-    snackbar('ERROR', 'Error Deleting Event')
+    appStore.showSnack('ERROR', 'Error Deleting Event')
     appStore.loading = false
   }
   eventToDelete.value = null
@@ -236,11 +236,11 @@ const addEvent = async () => {
   try {
     const {data} = await postRequest(`/event`, newEvent.value)
     router.push({path: `/settings/event/${data.id}/customFieldGroups`})
-    snackbar('SUCCESS', 'Event Added')
+    appStore.showSnack('SUCCESS', 'Event Added')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Event')
+    appStore.showSnack('ERROR', 'Error Adding Event')
     appStore.loading = false
   }
 }

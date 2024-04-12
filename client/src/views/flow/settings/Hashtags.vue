@@ -195,8 +195,7 @@ import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
-const store = vueInstance.$store
+ const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
 
@@ -253,7 +252,7 @@ const getTags = async () => {
     handleHidingGlobalLoader(status)
   } catch (pe) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -264,12 +263,12 @@ const deleteTag = async () =>{
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/hashtag/${hashtagId}`)
-    snackbar('SUCCESS', 'Hashtag Deleted')
+    appStore.showSnack('SUCCESS', 'Hashtag Deleted')
     tag.archived = true
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Tag')
+    appStore.showSnack('ERROR', 'Error Deleting Tag')
     appStore.loading = false
   }
   tagToDelete.value = null
@@ -288,11 +287,11 @@ const saveTag = async (hashtag, isNew) => {
     } else {
       selectedTagId.value = null
     }
-    snackbar('SUCCESS', 'Hashtag Saved')
+    appStore.showSnack('SUCCESS', 'Hashtag Saved')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Hashtag')
+    appStore.showSnack('ERROR', 'Error Saving Hashtag')
     appStore.loading = false
   }
 }

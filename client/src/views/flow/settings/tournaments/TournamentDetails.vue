@@ -168,8 +168,7 @@ const route = useRoute()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const fileStore = useFileStore()
+ const fileStore = useFileStore()
 
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')
@@ -220,7 +219,7 @@ const getTournamentOwnerTypes = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -236,7 +235,7 @@ const getTournamentFormulas = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -248,7 +247,7 @@ const getTournament = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Tournament')
+    appStore.showSnack('ERROR', 'Error Loading Tournament')
     appStore.loading = false
   }
 }
@@ -264,7 +263,7 @@ const updateTournament = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Tournament')
+    appStore.showSnack('ERROR', 'Error Saving Tournament')
     appStore.loading = false
   }
 }
@@ -280,20 +279,20 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
       displayName: file.name.substr(0, file.name.lastIndexOf('.')),
       callback: async (img, error) => {
         if (error?.error) {
-          snackbar('ERROR', error.errorMsg)
+          appStore.showSnack('ERROR', error.errorMsg)
           appStore.loading = false
         } else {
           tournament.value.backgroundAttachmentPresignedUrl = img.presignedUrl
           tournament.value.backgroundAttachmentId = img.id
           addImage.value = false
-          snackbar('SUCCESS', 'Image Uploaded')
+          appStore.showSnack('SUCCESS', 'Image Uploaded')
           appStore.loading = false
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Uploading File')
+    appStore.showSnack('ERROR', 'Error Uploading File')
     appStore.loading = false
   }
 }
@@ -305,13 +304,13 @@ const deleteAttachment = async (id) => {
       callback: async () => {
         tournament.value.backgroundAttachmentId = null
         tournament.value.backgroundAttachmentPresignedUrl = null
-        snackbar('SUCCESS', 'Image Deleted')
+        appStore.showSnack('SUCCESS', 'Image Deleted')
         appStore.loading = false
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting File')
+    appStore.showSnack('ERROR', 'Error Deleting File')
     appStore.loading = false
   }
 }

@@ -128,7 +128,6 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 onMounted(() => {
   defineSortableTable('tbody', assignedFields, 'displayOrder', saveOrderChanges)
@@ -178,11 +177,11 @@ const filteredAssignedFields = computed(() => {
       appStore.loading = true
       try {
         const {status} = await putRequest(`/projectStatus/company/${statusId.value}/fields`, fields)
-        snackbar('SUCCESS', 'Field Order Updated')
+        appStore.showSnack('SUCCESS', 'Field Order Updated')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving Field Order')
+        appStore.showSnack('ERROR', 'Error Saving Field Order')
         appStore.loading = false
       }
     }
@@ -200,7 +199,7 @@ const filteredAssignedFields = computed(() => {
           appStore.loading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.showSnack('ERROR', 'Error Retrieving Data')
           appStore.loading = false
         }
       }
@@ -215,7 +214,7 @@ const filteredAssignedFields = computed(() => {
           appStore.loading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.showSnack('ERROR', 'Error Retrieving Data')
           appStore.loading = false
         }
       }
@@ -226,11 +225,11 @@ const filteredAssignedFields = computed(() => {
         let id = itemToDelete.value.id
         const {status} = await deleteRequest(`/projectStatus/field/${id}`)
         assignedFields.value = assignedFields.value.filter(af => af.id !== id)
-        snackbar('SUCCESS', 'Field Removed')
+        appStore.showSnack('SUCCESS', 'Field Removed')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Removing Field')
+        appStore.showSnack('ERROR', 'Error Removing Field')
         appStore.loading = false
       }
     }
@@ -248,7 +247,7 @@ const filteredAssignedFields = computed(() => {
         appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.showSnack('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       }
     }
@@ -260,7 +259,7 @@ const filteredAssignedFields = computed(() => {
         fieldsLoading.value = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.showSnack('ERROR', 'Error Retrieving Data')
         fieldsLoading.value = false
       }
     }
