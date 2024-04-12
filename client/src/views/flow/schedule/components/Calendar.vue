@@ -291,7 +291,7 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
 import {computed, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue";
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'

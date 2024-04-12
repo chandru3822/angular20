@@ -4,7 +4,7 @@
 <script setup>
 import constants from '@/helpers/constants'
 import {getCurrentInstance, onBeforeUnmount, onMounted, ref} from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
 
 const vueInstance = getCurrentInstance().proxy

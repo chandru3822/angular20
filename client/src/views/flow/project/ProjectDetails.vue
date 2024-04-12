@@ -175,7 +175,7 @@ import { useFileStore } from '@/stores/FileStore.js'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useProjectStore} from '@/stores/ProjectStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'

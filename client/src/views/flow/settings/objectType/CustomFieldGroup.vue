@@ -444,7 +444,7 @@ import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getReque
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 
 import {ref, onMounted, getCurrentInstance, computed, defineProps, watch} from "vue";

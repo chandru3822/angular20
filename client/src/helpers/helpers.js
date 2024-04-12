@@ -5,7 +5,7 @@ import moment from 'moment'
 import Sortable from "sortablejs";
 import cloneDeep from "lodash.clonedeep";
 import { useAppStore } from '@/stores/AppStorePinia.js'
-import { useUserStore } from "@/stores/UserStorePinia.js";
+import { useUserStore } from "@/stores/UserStore.js";
 
 export function getSnackbar(type, text, displayMsgAsHtml) {
   //if you need a custom snackbar build it in your component

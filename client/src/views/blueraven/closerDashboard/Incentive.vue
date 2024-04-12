@@ -56,7 +56,7 @@ import IncentiveMilestone from "@/views/blueraven/closerDashboard/IncentiveMiles
 import {AppMutations} from "@/stores/AppStore";
 import {getSnackbar} from "@/helpers/helpers";
 import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 

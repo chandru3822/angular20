@@ -20,7 +20,7 @@ import {getStatusTypes} from "@/services/processStepStatusTypeService.js";
 import ProjectSearchResultCard from "@/views/flow/schedule/components/ProjectSearchResultCard.vue";
 import SpinnerInline from "@/components/SpinnerInline.vue";
 
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'

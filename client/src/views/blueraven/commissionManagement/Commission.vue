@@ -702,7 +702,7 @@ import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/Proje
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { useBrsStore } from '@/stores/BrsStorePinia.js'
 import {getCurrentInstance, computed, ref, onMounted, watch} from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useAppStore} from '@/stores/AppStorePinia.js'
 import {useRoute, useRouter} from "vue-router/composables"
 import debounce from "lodash.debounce"

@@ -112,7 +112,7 @@
 
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 const userStore = useUserStore()
 import {useRoute} from "vue-router/composables";
 

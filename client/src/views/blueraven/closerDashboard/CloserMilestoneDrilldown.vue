@@ -63,7 +63,7 @@ import moment from "moment";
 import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
 import {getCurrentInstance, toRefs, ref, computed, onMounted} from "vue";
 
-import {useUserStore} from "@/stores/UserStorePinia.js";
+import {useUserStore} from "@/stores/UserStore.js";
 
 const userStore = useUserStore()
 

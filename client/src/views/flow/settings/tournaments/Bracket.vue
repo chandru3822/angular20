@@ -251,7 +251,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 import {useRoute} from "vue-router/composables";
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import constants from "@/helpers/constants.js";
 const userStore = useUserStore()
 

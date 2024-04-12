@@ -119,7 +119,7 @@ import { getRequest, postRequest, putRequest, handleHidingGlobalLoader} from "@/
 import orderBy from "lodash.orderby"
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue"
 import {ref, computed, onMounted, getCurrentInstance} from "vue"
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 
 const route = useRoute()

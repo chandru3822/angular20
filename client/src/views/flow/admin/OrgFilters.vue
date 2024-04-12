@@ -109,7 +109,7 @@ import {handleHidingGlobalLoader, deleteRequest, putRequest} from '@/helpers/hel
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import {useRouter} from "vue-router/composables"
 

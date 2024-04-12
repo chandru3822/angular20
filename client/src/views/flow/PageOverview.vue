@@ -169,7 +169,7 @@ import NewMessageDialog from "./settings/inbox/NewMessageDialog";
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 
 import {getCurrentInstance, onMounted, ref, defineProps} from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useProjectStore } from '@/stores/ProjectStorePinia.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()

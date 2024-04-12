@@ -74,7 +74,7 @@ import ProjectSearchDialog from "@/views/flow/schedule/components/ProjectSearchD
 import ProjectModal from "@/views/flow/schedule/components/ProjectModal.vue";
 import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'

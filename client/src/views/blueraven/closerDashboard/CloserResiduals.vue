@@ -254,7 +254,7 @@
 
   import {useRoute, useRouter} from "vue-router/composables";
   import { useAppStore } from '@/stores/AppStorePinia.js'
-  import {useUserStore} from "@/stores/UserStorePinia.js";
+  import {useUserStore} from "@/stores/UserStore.js";
 
   const userStore = useUserStore()
   const appStore = useAppStore()

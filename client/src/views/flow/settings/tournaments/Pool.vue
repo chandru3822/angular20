@@ -382,7 +382,7 @@ import {
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, watch, computed, ref, onMounted} from 'vue'
 import {useRoute} from "vue-router/composables";
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 
 import { useFileStore } from '@/stores/FileStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'

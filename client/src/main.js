@@ -18,7 +18,7 @@ import AlbatrossAutocomplete from '@/components/customVuetify/AlbatrossAutocompl
 
 import '@/styles/main.scss'
 import { requestInterceptor, responseInterceptor  } from '@/helpers/interceptors'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 const { VITE_GA_ID } = import.meta.env

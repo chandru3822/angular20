@@ -164,7 +164,7 @@ import SpinnerInline from "@/components/SpinnerInline.vue";
 import BudgetReportTable from "@/views/blueraven/expenses/BudgetReportTable.vue";
 
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import { useFileStore } from '@/stores/FileStore.js'

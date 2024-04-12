@@ -297,7 +297,7 @@ import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
 import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend

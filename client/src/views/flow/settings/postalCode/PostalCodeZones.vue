@@ -105,7 +105,7 @@
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import constants from "@/helpers/constants";
   import { getCurrentInstance, computed, ref, onMounted } from 'vue'
-  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useUserStore} from '@/stores/UserStore.js'
   import {useRouter} from "vue-router/composables"
   import { useAppStore } from '@/stores/AppStorePinia.js'
   const appStore = useAppStore()

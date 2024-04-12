@@ -175,7 +175,7 @@ import moment from 'moment'
 import cloneDeep from 'lodash.clonedeep'
 import isEqual from 'lodash.isequal'
 
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 import {useRouter, useRoute} from "vue-router/composables"

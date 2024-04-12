@@ -47,7 +47,7 @@
 import {getRequest, logError} from '@/helpers/helpers'
 
 import {getCurrentInstance, onMounted, ref} from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import {useRouter} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStorePinia.js'
 const appStore = useAppStore()

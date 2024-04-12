@@ -50,7 +50,7 @@ import { quillEditor } from 'vue-quill-editor'
 import SpinnerInline from '@/components/SpinnerInline'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStorePinia.js'
 
 const appStore = useAppStore()

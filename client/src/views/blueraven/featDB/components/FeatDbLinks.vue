@@ -58,7 +58,7 @@ import {putRequest, postRequest, } from '@/helpers/helpers'
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
 import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
 import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import {useAppStore} from '@/stores/AppStorePinia.js'
 
