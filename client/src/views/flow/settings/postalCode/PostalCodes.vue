@@ -164,7 +164,6 @@ const store = vueInstance.$store
 
       const addNew = ref(false)
       const search = ref(null)
-      const postalCodeForm = ref(null)
       const newPostalCode = ref({})
       const states = ref([])
       const dataLoading = ref(true)

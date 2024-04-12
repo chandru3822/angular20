@@ -241,7 +241,7 @@ onMounted(() => {
   fetchTeamsForUser();
 })
 const attachmentsText = computed(() => {
-  if (uploadedFiles.value.length == 1) {
+  if (uploadedFiles.value.length === 1) {
     return uploadedFiles.value[0][0].name
   }
   else if (uploadedFiles.value.length > 1) {
