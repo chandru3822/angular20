@@ -161,6 +161,8 @@ const vueInstance = getCurrentInstance().proxy
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
+
+const emailSettingsForm = ref(null)
 const addFormValid = ref(false)
 const emailQueueProcessing = ref(false)
 const is7oaksAdmin = ref(userStore.isSystemAdmin)
@@ -239,7 +241,7 @@ const updateEmailAddress = async (item) => {
 const addEmail = async () => {
   appStore.loading = true
   try {
-    vueInstance.$refs.emailSettingsForm.validate();
+    emailSettingsForm.value.validate();
     if(!addFormValid.value) {
       throw {data: false};
     }

@@ -303,9 +303,9 @@ const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const vuetify = vueInstance.$vuetify
-const refs = vueInstance.$refs
 const filters = vueInstance.$filters
 
+const eventCalendar = ref(null)
 const userCanEdit = computed(() => userStore.userHasFeatureAccessLevel('SCHEDULE', 'EDIT'))
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
@@ -381,7 +381,7 @@ const calendarOptions = ref({
     customToday: {
       text: 'Today',
       click: async () => {
-        let calendarApi = refs.eventCalendar.getApi()
+        let calendarApi = eventCalendar.value.getApi()
         calendarApi.gotoDate(new Date)
         handlePinsOnDayChange()
       }
@@ -519,7 +519,7 @@ const countSelected = computed(() => {
 })
 
     onMounted (async () => {
-      calendarApi.value = refs.eventCalendar.getApi()
+      calendarApi.value = eventCalendar.value.getApi()
       await getSchedulingOrgs()
       await getSchedulingUsers()
       await fetchSchedulingOrgTypes()
@@ -530,7 +530,7 @@ const countSelected = computed(() => {
     })
     watch(() => scheduleTimezone, (value) => {
         //when the schedule timezone value changes, update the calendar plugin's timezone
-        let calendarApi = refs.eventCalendar.getApi()
+        let calendarApi = eventCalendar.value.getApi()
         calendarApi.setOption('timeZone', scheduleTimezone)
         //and show a snackbar if the timezones don't match
         if(userTimezone !== scheduleTimezone) {
@@ -566,7 +566,7 @@ watch(selectedOrgs, (newValue, oldValue) => {
 })
 
 const reloadCalendar = () =>{
-  let calendarApi = refs.eventCalendar.getApi()
+  let calendarApi = eventCalendar.value.getApi()
   calendarApi.refetchEvents()
 }
 const isResourceOnMap = (resource) => {
@@ -844,7 +844,7 @@ const handlePinsOnDayChange = () => {
 }
 const handlePopulatingMapPins = (addPin, resource, doCallback) => {
   if(addPin) {
-    let calendarApi = refs.eventCalendar.getApi()
+    let calendarApi = eventCalendar.value.getApi()
 
     let resourceEvents = calendarApi.getEvents().filter(e => {
       return e.display !== 'inverse-background' && e.display !== 'background' && e._def.resourceIds.indexOf(resource.id) >= 0
@@ -879,7 +879,7 @@ const handlePopulatingMapPins = (addPin, resource, doCallback) => {
   if(doCallback) {
     props.callback(mapResourceEvents.value, addPin)
   }
-  let calendarApi = refs.eventCalendar.getApi()
+  let calendarApi = eventCalendar.value.getApi()
 }
 
 
@@ -970,7 +970,7 @@ const updateCalDates = async(info) => {
   if(diff > 7){
     //for some reason when you click the date header in the week view, it sometimes tries to navigate to the month view; this prevents that
     //it seems like it should be forcing it to navigate to the current date, but for some reason, it navigates to the date that was clicked...if it ain't broke...
-    let calendarApi = refs.eventCalendar.getApi()
+    let calendarApi = eventCalendar.value.getApi()
     calendarApi.changeView('resourceTimelineDay', new Date)
   }
   calendarStartTime.value = info.start

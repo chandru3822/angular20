@@ -217,6 +217,7 @@ const LogoTypeEnum = ref({
   }
 })
 
+const companyForm = ref(null)
 const loadComplete = ref(false)
 const company = ref({})
 const rules = ref([
@@ -293,7 +294,7 @@ const logoToDeleteId = computed(() => {
       }
     }
     const saveTestUserPassword = async () => {
-      if (vueInstance.$refs.companyForm.validate()) {
+      if (companyForm.value.validate()) {
         appStore.loading = true
         try {
           let params = {
@@ -311,7 +312,7 @@ const logoToDeleteId = computed(() => {
       }
     }
     const saveCompany = async () => {
-      if (vueInstance.$refs.companyForm.validate()) {
+      if (companyForm.value.validate()) {
         appStore.loading = true
         try {
           const {status} = await putRequest(`/companies`, company.value)

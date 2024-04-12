@@ -29,7 +29,7 @@
             :headers="headers"
             :items="projects"
             fixed-header
-            ref="pageable-table"
+            ref="pageableTable"
             :page.sync="page"
             :options.sync="options"
             disable-sort
@@ -100,6 +100,7 @@ const store = vueInstance.$store
 const vuetify = vueInstance.$vuetify
 
 const initialLoad = ref(true)
+const pageableTable = ref(null)
 const options = ref({itemsPerPage: 100})
 const headers = ref([
   {text: 'ID', value: 'id', show: true},
@@ -135,7 +136,7 @@ onMounted(() => {
 })
 
 watch(page, async() => {
-  let table = vueInstance.$refs['pageable-table'];
+  let table = pageableTable.value;
   let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
 
   vuetify.goTo(table); // to table

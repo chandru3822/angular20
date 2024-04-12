@@ -209,6 +209,7 @@ const userId = ref(userStore.details.id)
 const companyId = ref(userStore.details.companyId)
 const tagToDelete = ref(null)
 const tagToSave = ref(null)
+const hashtagForm = ref(null)
 
 const headers = ref([
   {text: 'Hashtag', value: 'hashtag', show: true},
@@ -236,7 +237,7 @@ const filteredHashtags = computed(() => {
 })
 
 const validateNew = () => {
-  formValid.value = vueInstance.$refs.hashtagForm.validate()
+  formValid.value = hashtagForm.value.validate()
 }
 const validateExisting = async (item) => {
     let ref = vueInstance.$refs[`editForm${item.id}`]

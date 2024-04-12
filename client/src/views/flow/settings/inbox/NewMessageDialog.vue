@@ -223,6 +223,7 @@ const selectedTemplate = ref(null)
 const selectableTemplates = ref([])
 const selectedUserIds = ref([])
 const projectQuery = ref(null)
+const templateSelect = ref(null)
 const teamsAssociatedToUser = ref([])
 const attachmentUrl = ref('')
 const sendTextUrl = ref('')
@@ -271,7 +272,7 @@ const handleTemplateSelection = () => {
   message.value += selectedTemplate.value.message
   menuOpen.value = false
   selectedTemplate.value = null
-  vueInstance.$refs.templateSelect.reset();
+  templateSelect.value.reset();
 }
 const exitDialogue = () => {
   selectedProjectIds.value = []

@@ -21,10 +21,10 @@ const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
  const vuetify = vueInstance.$vuetify
-const refs = vueInstance.$refs
 const filters = vueInstance.$filters
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
+const eventCalendar = ref(null)
 
 // Calendar Info
 const calendarApi = ref(null)
@@ -94,7 +94,7 @@ const calendarOptions = ref({
     customToday: {
       text: 'Today',
       click: async () => {
-        let calendarApi = refs.eventCalendar.getApi()
+        let calendarApi = eventCalendar.value.getApi()
         calendarApi.gotoDate(new Date)
       }
     },
@@ -102,7 +102,7 @@ const calendarOptions = ref({
 })
 
 const reloadCalendar = () =>{
-  let calendarApi = refs.eventCalendar.getApi()
+  let calendarApi = eventCalendar.value.getApi()
   calendarApi.refetchEvents()
 }
 const updateCalDates = async(info) => {
@@ -112,7 +112,7 @@ const updateCalDates = async(info) => {
   if(diff > 7){
     //for some reason when you click the date header in the week view, it sometimes tries to navigate to the month view; this prevents that
     //it seems like it should be forcing it to navigate to the current date, but for some reason, it navigates to the date that was clicked...if it ain't broke...
-    let calendarApi = refs.eventCalendar.getApi()
+    let calendarApi = eventCalendar.value.getApi()
     calendarApi.changeView('resourceTimelineDay', new Date)
   }
 }
@@ -393,7 +393,7 @@ const getFormattedDate = (date) => {
 }
 
 onMounted (async () => {
-  calendarApi.value = refs.eventCalendar.getApi()
+  calendarApi.value = eventCalendar.value.getApi()
   await getRoundRobins()
   await getRoundRobinUsers()
 })

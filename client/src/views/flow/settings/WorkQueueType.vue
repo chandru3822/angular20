@@ -326,6 +326,7 @@ const store = vueInstance.$store
 const userStore = useUserStore()
 const route = useRoute()
 
+const wqtForm = ref(null)
 const editType = ref(false)
 const editSchedule = ref(false)
 const workQueueCategories = ref([])
@@ -553,7 +554,7 @@ const getAllWorkQueueCategories = async () => {
   }
 }
 const saveType = async () => {
-  if (vueInstance.$refs.wqtForm.validate() && validateSchedule()) {
+  if (wqtForm.value.validate() && validateSchedule()) {
     appStore.loading = true
     try {
       const {data, status} = await putRequest(`/workQueueType/type`, workQueueType.value)

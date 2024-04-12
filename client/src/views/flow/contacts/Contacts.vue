@@ -137,6 +137,7 @@ const store = vueInstance.$store
 
 const vuetify = vueInstance.$vuetify
 
+const pageableTable = ref(null)
 const initialLoad = ref(true)
 const delay = ref(500)
 const menuOpen = ref(false)
@@ -181,7 +182,7 @@ watch(
 )
 watch(page, async() => {
   //this will also scroll when the rows per page changes IF not on the first page, which is correct behavior since it is resetting the search page back to 0
-  let table = vueInstance.$refs['pageable-table'];
+  let table = pageableTable.value;
   let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
   vuetify.goTo(table, {container: wrapper}); // to header
 })

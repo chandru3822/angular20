@@ -618,6 +618,7 @@ const createNew = ref(false)
 const newFieldType = ref('native')
 const addField = ref(false)
 const selectedGroupId = ref(null)
+const defaultFieldForm = ref(null)
 const availableCustomFields = ref([])
 const parent = ref({})
 const parentObjects = ref([])
@@ -819,7 +820,7 @@ const icon = (f, fieldName) => {
   return 'check_box_outline_blank'
 }
 const saveChangesToDefaultFields = async () => {
-  if (vueInstance.$refs.defaultFieldForm.validate()) {
+  if (defaultFieldForm.value.validate()) {
     //save the read only and resource custom fields
     appStore.loading = true
     try {

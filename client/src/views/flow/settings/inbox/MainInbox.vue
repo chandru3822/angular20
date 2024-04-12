@@ -288,6 +288,7 @@ const teamFilterOptions = ref([])
 const selectedTeamFilters = ref([])
 const showUnreadOnly = ref(false)
 const showInbox = ref(true)
+const pageableTable = ref(null)
 const showAssignToMeDialog = ref(false)
 const showNewMessageDialog = ref(false)
 const assignToMe = ref([])
@@ -849,7 +850,7 @@ watch(options, () => {
   }
 })
 watch(page, () => {
-  let table = vueInstance.$refs['pageable-table'];
+  let table = pageableTable.value;
   let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
 
   vuetify.goTo(table); // to table

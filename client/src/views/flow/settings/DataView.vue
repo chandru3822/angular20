@@ -549,6 +549,8 @@ const expanded = ref([])
 const childFieldExpanded = ref([])
 const edit = ref(false)
 const oldName = ref(null)
+const fieldConfigForm = ref(null)
+const childFieldForm = ref(null)
 const defaultFields = ref([])
 const processStepEvents = ref([])
 const processSteps = ref([])
@@ -637,7 +639,7 @@ const resetAllFields = () => {
   newField.value.processStepId = null
 }
 const validateFields = (field, isNew) => {
-  let valid = vueInstance.$refs.fieldConfigForm?.validate()
+  let valid = fieldConfigForm.value?.validate()
 
   //if they had set one of these as true but then changed the field type to a different type then reset the values here
   if (![4, 6].includes(selectedObjectTypeId.value)) {
@@ -660,7 +662,7 @@ const validateChildField = (item, newChildField, isNew) => {
   } else if (newChildField.fieldToUpdate === item.fieldToUpdate) {
     childSaveError.value = true
     childSaveErrorMsg.value = 'Field to Update already in use by parent'
-  } else if (vueInstance.$refs.childFieldForm?.validate()) {
+  } else if (childFieldForm.value?.validate()) {
     saveChildFieldConfig(item, newChildField, isNew)
   }
 }

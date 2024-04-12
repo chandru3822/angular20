@@ -111,6 +111,7 @@
   const router = useRouter()
   const vuetify = vueInstance.$vuetify
 
+  const dataViewForm = ref(null)
   const addNew = ref(false)
   const saveError = ref(false)
   const saveErrorMsg = ref('')
@@ -160,7 +161,7 @@
     if(match) {
       saveError.value = true
       saveErrorMsg.value = 'Table Name already in use'
-    } else if (vueInstance.$refs.dataViewForm?.validate()) {
+    } else if (dataViewForm.value?.validate()) {
       saveDataView(view, isNew)
     }
   }

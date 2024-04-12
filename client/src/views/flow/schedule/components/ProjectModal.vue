@@ -201,7 +201,6 @@ const checkForSchedulingConflicts = async() => {
 const cancelDialog = async() => {
   conflictingEvents.value = null
   fieldsSaving.value = false
-  // $refs.value.calendar.getEvents(false, true)
 }
 const scheduleProject = async(forceSave) => {
   props.project.resourceId = props.project.resource.id

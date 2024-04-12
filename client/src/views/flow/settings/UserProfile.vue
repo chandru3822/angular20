@@ -261,6 +261,7 @@ const dirtyCfvs = ref([])
 // timeValue: moment.utc().format('YYYY-MM-DD HH:mm Z'),
 const timeValue = ref(moment.utc().format('YYYY-MM-DDTHH:mm:ssZ'))
 const user = ref({})
+const userForm = ref(null)
 const homePages = ref([])
 const projectPages = ref([])
 const userIsAlbatross = ref(false)
@@ -330,7 +331,7 @@ onBeforeRouteLeave(async (to, from, next) => {
   }
 })
 const validate = () => {
-  if (vueInstance.$refs.userForm.validate()) {
+  if (userForm.value.validate()) {
     saveUser()
   }
 }
