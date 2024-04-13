@@ -187,7 +187,6 @@ import { storeToRefs } from 'pinia'
 
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
 
 const store = useProposalStore()
 const { selectedId, template } = storeToRefs(store)
@@ -296,7 +295,7 @@ const downloadPreview = async () => {
       }, 100)
     }
   } catch (e) {
-    snackbar('ERROR', e?.data?.message || 'Error while generating preview')
+    appStore.showSnack('ERROR', e?.data?.message || 'Error while generating preview')
     console.error(e)
   } finally {
     appStore.loading = false

@@ -26,8 +26,7 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const scheduleStore = useScheduleStore()
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 const emit = defineEmits(['toggleProjectMapPin', 'updateEvents'])
 
 const props = defineProps({
@@ -146,10 +145,10 @@ const getResources = async(item) => {
     }
     const {data, status} = await postRequest(`/schedule/projectResources`, params, null, [])
     item.resources = data || []
-    handleHidingGlobalLoader(vueInstance, status)
+     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Resources')
+    appStore.showSnack('ERROR', 'Error Retrieving Resources')
     appStore.loading = false
   }
 }
@@ -174,7 +173,7 @@ const getCancelledCompanyEventStatuses = async () => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching process step statuses')
+    appStore.showSnack('ERROR', 'Error fetching process step statuses')
   }
 }
 
@@ -202,7 +201,6 @@ const checkForSchedulingConflicts = async() => {
 const cancelDialog = async() => {
   conflictingEvents.value = null
   fieldsSaving.value = false
-  // $refs.value.calendar.getEvents(false, true)
 }
 const scheduleProject = async(forceSave) => {
   props.project.resourceId = props.project.resource.id
@@ -215,7 +213,7 @@ const scheduleProject = async(forceSave) => {
     props.project.saveVersion++
     // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
     // this.$refs.calendar.getEvents(false, true) todo: figure out what this should change to
-    handleHidingGlobalLoader(vueInstance, status)
+     handleHidingGlobalLoader( status)
     fieldsSaving.value = false
     emit('updateEvents')
 	appStore.showSnack('SUCCESS', 'Job Scheduled')
@@ -229,7 +227,7 @@ const scheduleProject = async(forceSave) => {
       console.error('*** ERROR ***', e)
       let saveMismatch = e.data?.message === 'Save Version Mismatch'
       let msg = saveMismatch ? 'Error Scheduling Project. This event has been update by another user. Please refresh to see the latest data.' : 'Error Scheduling Project'
-      snackbar('ERROR', msg)
+      appStore.showSnack('ERROR', msg)
       fieldsSaving.value = false
       appStore.loading = false
     }
@@ -240,7 +238,7 @@ const cancelProjectProcessStepEvent = async() => {
   try {
     const {status} = await postRequest(`/projectProcessStep/${props.project.projectProcessStepId}/event/${props.project.projectProcessStepEventId}/status`, props.project.cancelledCompanyStatusType)
     props.project.eventStatusTypeId = props.project?.cancelledCompanyStatusType?.id
-    handleHidingGlobalLoader(vueInstance, status)
+     handleHidingGlobalLoader( status)
 	appStore.showSnack('SUCCESS', 'Successfully Unscheduled Event')
   } catch (e) {
     console.error('*** ERROR ***', e)

@@ -143,8 +143,7 @@
   import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
-  const vuetify = vueInstance.$vuetify
+     const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
   const router = useRouter()
@@ -216,7 +215,7 @@
     } catch (e) {
       console.error('*** ERROR ***', e)
       dataLoading.value = false
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
 
       appStore.loading = false
     }
@@ -226,12 +225,12 @@
     appStore.loading = true
     try {
       const {status} = await deleteRequest(`/callGroup/${groupId}`, 'blueraven')
-      snackbar('SUCCESS', 'Call Group Deleted')
+      appStore.showSnack('SUCCESS', 'Call Group Deleted')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting Call Group')
+      appStore.showSnack('ERROR', 'Error Deleting Call Group')
 
       appStore.loading = false
     }
@@ -244,12 +243,12 @@
       newCallGroup.value.daysPerPeriod = daysPerPeriod.value
       const {data, status} = await postRequest(`/callGroup`, newCallGroup.value, 'blueraven')
       router.push({path: `/settings/callGroup/${data.id}/codes`})
-      snackbar('SUCCESS', 'Call Group Added')
+      appStore.showSnack('SUCCESS', 'Call Group Added')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Adding Call Group')
+      appStore.showSnack('ERROR', 'Error Adding Call Group')
 
       appStore.loading = false
     }
@@ -264,7 +263,7 @@
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = 'Error updating Call Group'
-      snackbar('ERROR', msg)
+      appStore.showSnack('ERROR', msg)
 
       appStore.loading = false
     }
@@ -278,12 +277,12 @@
       }
       const {status} = await postRequest(`/callGroup/config`, params, 'blueraven')
       editGroup.value = false
-      snackbar('SUCCESS', 'Call Group settings saved')
+      appStore.showSnack('SUCCESS', 'Call Group settings saved')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Call Group')
+      appStore.showSnack('ERROR', 'Error Saving Call Group')
       appStore.loading = false
     }
   }

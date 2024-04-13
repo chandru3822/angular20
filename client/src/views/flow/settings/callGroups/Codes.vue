@@ -97,7 +97,7 @@
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
@@ -151,7 +151,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
 
       appStore.loading = false
     }
@@ -168,7 +168,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
 
       appStore.loading = false
     }
@@ -183,7 +183,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Removing Postal Code')
+      appStore.showSnack('ERROR', 'Error Removing Postal Code')
 
       appStore.loading = false
     }
@@ -202,7 +202,7 @@
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = e.data?.message?.includes('Postal Code Already In Use') ? e.data.message : 'Error Adding Postal Code'
-      snackbar('ERROR', msg)
+      appStore.showSnack('ERROR', msg)
 
       appStore.loading = false
     }

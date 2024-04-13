@@ -117,7 +117,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 
 const userCanEdit = computed(()  => {
@@ -173,7 +172,7 @@ const getIncentive = async()  => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)
-    snackbar("ERROR", "Error retrieving Incentive")
+    appStore.showSnack("ERROR", "Error retrieving Incentive")
 
     appStore.loading = false
   }
@@ -183,7 +182,7 @@ const validateForm = () => {
   if (incentiveForm.value.validate()) {
     saveIncentive()
   } else {
-    snackbar('ERROR', 'Missing Required Fields')
+    appStore.showSnack('ERROR', 'Missing Required Fields')
 
   }
 }
@@ -201,7 +200,7 @@ const getCustomFieldGroupAssignmentsForScreen = async()  => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)
-    snackbar("ERROR", "Error retrieving custom fields")
+    appStore.showSnack("ERROR", "Error retrieving custom fields")
 
     appStore.loading = false
   }
@@ -235,12 +234,12 @@ const saveIncentive = async()  => {
     const {data, status} = await putRequest("/featDb/incentive", incentive.value, "blueraven")
     incentive.value = cloneDeep(data)
     dataWasChanged.value = false
-    snackbar("SUCCESS", "Incentive saved")
+    appStore.showSnack("SUCCESS", "Incentive saved")
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)
-    snackbar("ERROR", "Error saving Incentive")
+    appStore.showSnack("ERROR", "Error saving Incentive")
 
     appStore.loading = false
   }

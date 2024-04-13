@@ -356,7 +356,7 @@ const userStore = useUserStore()
 const projectStore = useProjectStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 
 const props = defineProps({
@@ -527,7 +527,7 @@ const getAvailableStatuses = async() => {
       // const {data} = await getRequest(`/processStep/status`)
       availableProcessStepStatuses.value = data
     } catch (e) {
-      snackbar('ERROR', 'Error fetching available process step statuses')
+      appStore.showSnack('ERROR', 'Error fetching available process step statuses')
 
       logError(e)
     }
@@ -541,7 +541,7 @@ const getProcessStep = async (reloadAll) => {
     if (data && data.projectId && data.projectId !== projectId.value) {
       projectMismatch.value = true
       processStepLoading.value = false
-      snackbar('ERROR', `Invalid Request: Project Mismatch`)
+      appStore.showSnack('ERROR', `Invalid Request: Project Mismatch`)
 
     } else {
       processStep.value = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
@@ -579,7 +579,7 @@ const getCustomFieldGroups = async() => {
     return status
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error Retrieving Custom Fields')
+    appStore.showSnack('ERROR', 'Error Retrieving Custom Fields')
 
   }
 }
@@ -593,7 +593,7 @@ const getAvailableOwners = async() => {
       // appStore.loading = false
     } catch (e) {
       logError(e)
-      snackbar('ERROR', 'Error Retrieving List of Owners')
+      appStore.showSnack('ERROR', 'Error Retrieving List of Owners')
 
       // appStore.loading = false
     }
@@ -616,12 +616,12 @@ const updateFieldGroups = async() => {
     await getProcessStep(false)
     //not sure why $refs.value.ppsFieldsContainer.scrollTop = 0 works everywhere else in the app but not here
     ppsFieldsContainer.value.$el.scrollTop = 0
-    snackbar('SUCCESS', 'Fields Saved')
+    appStore.showSnack('SUCCESS', 'Fields Saved')
 
     appStore.loading = false
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error Saving Custom Fields')
+    appStore.showSnack('ERROR', 'Error Saving Custom Fields')
 
     appStore.loading = false
   } finally {
@@ -645,12 +645,12 @@ const removeOwner = async() => {
   try {
     processStep.value.owner = {}
     const {status} = await postRequest(`/projectProcessStep/${projectProcessStepId.value}/owner`, processStep.value.owner)
-    snackbar('SUCCESS', 'Owner Removed')
+    appStore.showSnack('SUCCESS', 'Owner Removed')
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Removing Owner')
+    appStore.showSnack('ERROR', 'Error Removing Owner')
 
     appStore.loading = false
   }
@@ -664,7 +664,7 @@ const updateOwner = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Owner')
+    appStore.showSnack('ERROR', 'Error Saving Owner')
 
     appStore.loading = false
   }
@@ -686,7 +686,7 @@ const updateMain = async(pps) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Unable to update to primary process step')
+    appStore.showSnack('ERROR', 'Unable to update to primary process step')
 
     processStep.value.main = false
     appStore.loading = false
@@ -734,7 +734,7 @@ const handleActionCompleted = (data) => {
   emit('refresh-upcoming-pps')
   emit('refresh-project-status')
 
-  snackbar('SUCCESS', 'Action Completed')
+  appStore.showSnack('SUCCESS', 'Action Completed')
 
   //if there are links returned, open them
   data?.childFunctionReturnedStrings?.forEach(rs => {
@@ -768,7 +768,7 @@ const handleOnCompleteError = (actionId, errorMessage) => {
     }
   }
 
-  snackbar('ERROR', message)
+  appStore.showSnack('ERROR', message)
 
 }
 const addEvent =  async () => {
@@ -780,7 +780,7 @@ const addEvent =  async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Event')
+    appStore.showSnack('ERROR', 'Error Adding Event')
 
     appStore.loading = false
   }
@@ -807,7 +807,7 @@ const getProcessStepEvents =  async () => {
     return status
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Details')
+    appStore.showSnack('ERROR', 'Error Retrieving Details')
 
     appStore.loading = false
   }

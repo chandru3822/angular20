@@ -28,17 +28,17 @@
                 class="primary--text text-caption"
               >{{ selectedStates.length }} selected</span>
             </template>
-            <v-list-item
-              slot="prepend-item"
-              ripple
-              @click="toggleSelectAllStates()">
-                <v-icon class="mr-4">{{ iconStates }}</v-icon>
-              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
-            </v-list-item>
-            <v-divider
-              slot="prepend-item"
-              class="mt-2"
-            ></v-divider>
+            <template  v-slot:prepend-item>
+              <v-list-item
+                ripple
+                @click="toggleSelectAllStates()">
+                  <v-icon class="mr-4">{{ iconStates }}</v-icon>
+                <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
+                class="mt-2"
+              ></v-divider>
+            </template>
 
             <template v-slot:item="{item}">
               <v-icon class="mr-4">{{selectedStates.findIndex(s => s.stateId === item.stateId) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
@@ -74,19 +74,19 @@
                   class="primary--text text-caption"
               >{{ selectedOrgTypes.length }} selected</span>
             </template>
-            <v-list-item
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllOrgTypes()">
-              <v-list-item-action class="mr-4">
-                <v-icon>{{ iconOrgTypes }}</v-icon>
-              </v-list-item-action>
-              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
-            </v-list-item>
-            <v-divider
-                slot="prepend-item"
-                class="mt-2"
-            ></v-divider>
+            <template  v-slot:prepend-item>
+              <v-list-item
+                  ripple
+                  @click="toggleSelectAllOrgTypes()">
+                <v-list-item-action class="mr-4">
+                  <v-icon>{{ iconOrgTypes }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
+                  class="mt-2"
+              ></v-divider>
+            </template>
             <template v-slot:item="{item}">
               <!--The only purpose of this template is to allow the items to wrap-->
               <v-icon class="mr-4">{{selectedOrgTypes.findIndex(ot => ot.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
@@ -295,7 +295,6 @@ import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
-
 const appStore = useAppStore()
 const route = useRoute()
 const router = useRouter()
@@ -303,10 +302,10 @@ const userStore = useUserStore()
 const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
-const refs = vueInstance.$refs
 const filters = vueInstance.$filters
+
+const eventCalendar = ref(null)
 const userCanEdit = computed(() => userStore.userHasFeatureAccessLevel('SCHEDULE', 'EDIT'))
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
@@ -382,7 +381,7 @@ const calendarOptions = ref({
     customToday: {
       text: 'Today',
       click: async () => {
-        let calendarApi = refs.eventCalendar.getApi()
+        let calendarApi = eventCalendar.value.getApi()
         calendarApi.gotoDate(new Date)
         handlePinsOnDayChange()
       }
@@ -520,7 +519,7 @@ const countSelected = computed(() => {
 })
 
     onMounted (async () => {
-      calendarApi.value = refs.eventCalendar.getApi()
+      calendarApi.value = eventCalendar.value.getApi()
       await getSchedulingOrgs()
       await getSchedulingUsers()
       await fetchSchedulingOrgTypes()
@@ -531,12 +530,12 @@ const countSelected = computed(() => {
     })
     watch(() => scheduleTimezone, (value) => {
         //when the schedule timezone value changes, update the calendar plugin's timezone
-        let calendarApi = refs.eventCalendar.getApi()
+        let calendarApi = eventCalendar.value.getApi()
         calendarApi.setOption('timeZone', scheduleTimezone)
         //and show a snackbar if the timezones don't match
         if(userTimezone !== scheduleTimezone) {
           const snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
-		  appStore.snack = {...snackbar, show: true}
+          appStore.snack = {...snackbar, show: true}
         }
       })
       watch(userTimezone, (newVal) => {
@@ -567,7 +566,7 @@ watch(selectedOrgs, (newValue, oldValue) => {
 })
 
 const reloadCalendar = () =>{
-  let calendarApi = refs.eventCalendar.getApi()
+  let calendarApi = eventCalendar.value.getApi()
   calendarApi.refetchEvents()
 }
 const isResourceOnMap = (resource) => {
@@ -670,10 +669,10 @@ const handleResourceColors = () => {
           selectedOrgs.value = selectedOrgs.value.filter(so => {
             return orgs.value.some(o => o.id === so.id)
           })
-          handleHidingGlobalLoader(vueInstance, status)
+           handleHidingGlobalLoader( status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Orgs')
+          appStore.showSnack('ERROR', 'Error Retrieving Orgs')
           appStore.loading = false
         }
       }
@@ -691,10 +690,10 @@ const handleResourceColors = () => {
           }
 
           orgTypesLoading.value = false
-          handleHidingGlobalLoader(vueInstance, status)
+           handleHidingGlobalLoader( status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Org Types')
+          appStore.showSnack('ERROR', 'Error Retrieving Org Types')
           appStore.loading = false
         }
       }
@@ -710,10 +709,10 @@ const handleResourceColors = () => {
             }
           }
           positionsLoading.value = false
-          handleHidingGlobalLoader(vueInstance, status)
+           handleHidingGlobalLoader( status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Positions')
+          appStore.showSnack('ERROR', 'Error Retrieving Positions')
           appStore.loading = false
         }
       }
@@ -737,10 +736,10 @@ const handleResourceColors = () => {
           selectedUsers.value = selectedUsers.value.filter(su => {
             return users.value.some(u => u.id === su.id)
           })
-          handleHidingGlobalLoader(vueInstance, status)
+           handleHidingGlobalLoader( status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Users')
+          appStore.showSnack('ERROR', 'Error Retrieving Users')
           appStore.loading = false
         }
       }
@@ -845,7 +844,7 @@ const handlePinsOnDayChange = () => {
 }
 const handlePopulatingMapPins = (addPin, resource, doCallback) => {
   if(addPin) {
-    let calendarApi = refs.eventCalendar.getApi()
+    let calendarApi = eventCalendar.value.getApi()
 
     let resourceEvents = calendarApi.getEvents().filter(e => {
       return e.display !== 'inverse-background' && e.display !== 'background' && e._def.resourceIds.indexOf(resource.id) >= 0
@@ -880,7 +879,7 @@ const handlePopulatingMapPins = (addPin, resource, doCallback) => {
   if(doCallback) {
     props.callback(mapResourceEvents.value, addPin)
   }
-  let calendarApi = refs.eventCalendar.getApi()
+  let calendarApi = eventCalendar.value.getApi()
 }
 
 
@@ -960,7 +959,7 @@ const handlePopulatingMapPins = (addPin, resource, doCallback) => {
 
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Availability')
+          appStore.showSnack('ERROR', 'Error Retrieving Availability')
           appStore.loading = false
         }
       }
@@ -971,7 +970,7 @@ const updateCalDates = async(info) => {
   if(diff > 7){
     //for some reason when you click the date header in the week view, it sometimes tries to navigate to the month view; this prevents that
     //it seems like it should be forcing it to navigate to the current date, but for some reason, it navigates to the date that was clicked...if it ain't broke...
-    let calendarApi = refs.eventCalendar.getApi()
+    let calendarApi = eventCalendar.value.getApi()
     calendarApi.changeView('resourceTimelineDay', new Date)
   }
   calendarStartTime.value = info.start
@@ -1050,7 +1049,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
       calendarLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Events')
+      appStore.showSnack('ERROR', 'Error Retrieving Events')
       failureCallback(e)
       calendarLoading.value = false
     } finally {

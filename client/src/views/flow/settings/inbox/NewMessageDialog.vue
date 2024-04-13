@@ -139,11 +139,11 @@
                         ref="templateSelect"
                         @change="handleTemplateSelection">
 
-                <template slot="item" slot-scope="data">
+                <template v-slot:item="{ props, item }">
                   <!-- HTML that describes how select should render items when the select is open -->
                   <div class="ellipse">
-                    <h4 class="template-title">{{ data.item.title }}<br /></h4>
-                    <span class="template-message">{{ data.item.message }}</span>
+                    <h4 class="template-title">{{ item.title }}<br /></h4>
+                    <span class="template-message">{{ item.message }}</span>
                   </div>
                 </template>
               </a-select>
@@ -200,8 +200,7 @@ const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const route = useRoute()
+ const route = useRoute()
 const router = useRouter()
 const vuetify = vueInstance.$vuetify
 
@@ -224,6 +223,7 @@ const selectedTemplate = ref(null)
 const selectableTemplates = ref([])
 const selectedUserIds = ref([])
 const projectQuery = ref(null)
+const templateSelect = ref(null)
 const teamsAssociatedToUser = ref([])
 const attachmentUrl = ref('')
 const sendTextUrl = ref('')
@@ -241,7 +241,7 @@ onMounted(() => {
   fetchTeamsForUser();
 })
 const attachmentsText = computed(() => {
-  if (uploadedFiles.value.length == 1) {
+  if (uploadedFiles.value.length === 1) {
     return uploadedFiles.value[0][0].name
   }
   else if (uploadedFiles.value.length > 1) {
@@ -272,7 +272,7 @@ const handleTemplateSelection = () => {
   message.value += selectedTemplate.value.message
   menuOpen.value = false
   selectedTemplate.value = null
-  vueInstance.$refs.templateSelect.reset();
+  templateSelect.value.reset();
 }
 const exitDialogue = () => {
   selectedProjectIds.value = []
@@ -338,13 +338,13 @@ const sendMessage = async () => {
     exitDialogue()
     appStore.loading = false
     if (assignAndSend.value) {
-      snackbar('SUCCESS', 'Message sent and conversation assigned')
+      appStore.showSnack('SUCCESS', 'Message sent and conversation assigned')
       if (props.isInbox && !route.path.includes(inboxUrl.value)) {
         await router.push({ path: inboxUrl.value })
       }
     }
     else {
-      snackbar('SUCCESS', 'Message sent')
+      appStore.showSnack('SUCCESS', 'Message sent')
       appStore.loading = false
 
     }
@@ -353,7 +353,7 @@ const sendMessage = async () => {
 const onMessageWasSent = async () => {
   if (message.value && message.value.length > 1599) {
     let textOverflowLength = message.value.length - 1599;
-    snackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
+    appStore.showSnack('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
 
     messageSuccess.value = false
     appStore.loading = false
@@ -364,7 +364,7 @@ const onMessageWasSent = async () => {
   let params
   let smsTeamId = teamsAssociatedToUser.value.length > 0 ? teamsAssociatedToUser.value[0].id : null
   if (!smsTeamId) {
-    snackbar('ERROR', 'Error: No SMS Team found')
+    appStore.showSnack('ERROR', 'Error: No SMS Team found')
 
     appStore.loading = false
     return
@@ -418,7 +418,7 @@ const onMessageWasSent = async () => {
     messageSuccess.value = false
     let message = e?.message ? 'Error Sending Message: ' + e.message :
       e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
-    snackbar('ERROR', message)
+    appStore.showSnack('ERROR', message)
 
     appStore.loading = false
     return;
@@ -427,7 +427,7 @@ const onMessageWasSent = async () => {
 const sendMessageAndAssign = async () => {
   let smsTeamId = teamsAssociatedToUser.value.length > 0 ? teamsAssociatedToUser.value[0].id : null
   if (!smsTeamId) {
-    snackbar('ERROR', 'Error: No SMS Team found')
+    appStore.showSnack('ERROR', 'Error: No SMS Team found')
 
     appStore.loading = false
     return
@@ -461,7 +461,7 @@ const getProjects = async (val) => {
     availableProjects.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving projects')
+    appStore.showSnack('ERROR', 'Error retrieving projects')
 
   }
 }
@@ -478,7 +478,7 @@ const getUsers = async () => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving users and positions')
+    appStore.showSnack('ERROR', 'Error retrieving users and positions')
 
   }
 }
@@ -497,7 +497,7 @@ const fetchTeamsForUser = async () => {
     await getSmsTeamTemplates();
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching SMS Teams')
+    appStore.showSnack('ERROR', 'Error fetching SMS Teams')
 
     conversationIsLoading.value = false
   }
@@ -514,7 +514,7 @@ const getSmsTeamTemplates = async () => {
   } catch (e) {
     // console.log('ccc')
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving templates')
+    appStore.showSnack('ERROR', 'Error retrieving templates')
 
   }
 }
@@ -527,7 +527,7 @@ const uploadTextAttachment = async (file) => {
   } catch(e) {
     appStore.loading = false
     logError(e)
-    snackbar('ERROR', 'Error Uploading File')
+    appStore.showSnack('ERROR', 'Error Uploading File')
 
   }
 }

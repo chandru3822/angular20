@@ -33,7 +33,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const route = useRoute()
 const router = useRouter()
 const vuetify = vueInstance.$vuetify

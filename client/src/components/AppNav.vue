@@ -168,8 +168,7 @@ const userStore = useUserStore()
 const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 
 const loadComplete = ref(false)
 const clearingMasquerade = ref(false)
@@ -318,7 +317,7 @@ const getCompanies = async () => {
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Changing Companies')
+    appStore.showSnack('ERROR', 'Error Changing Companies')
     // appStore.loading = false
   }
 }
@@ -350,7 +349,7 @@ const getCompanyTools = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Changing Companies')
+    appStore.showSnack('ERROR', 'Error Changing Companies')
     appStore.loading = false
   }
 }
@@ -373,7 +372,7 @@ const clearMasquerade = async () => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Clearing Masquerade')
+    appStore.showSnack('ERROR', 'Error Clearing Masquerade')
 
     appStore.loading = false
   }
@@ -390,7 +389,7 @@ const getActiveAnnouncements = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   } finally {
     appStore.loading = false

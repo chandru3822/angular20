@@ -29,24 +29,21 @@
                               item-title="fullName"
                               @change="getInstallationCrew()"
                               @click:clear="selectedInstallationCrews = []">
-                <v-list-item
-                  slot="prepend-item"
-                  ripple
-                  @click="toggleSelectAllManagers()"
-                >
-                  <v-list-item-action>
-                    <v-icon>{{ iconManagers }}</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-title>Select All</v-list-item-title>
-                </v-list-item>
-                <v-divider
-                  slot="prepend-item"
-                  class="mt-2"
-                ></v-divider>
-                <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
-                >
+                <template  v-slot:prepend-item>
+                  <v-list-item
+                    ripple
+                    @click="toggleSelectAllManagers()"
+                  >
+                    <v-list-item-action>
+                      <v-icon>{{ iconManagers }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item>
+                  <v-divider
+                    class="mt-2"
+                  ></v-divider>
+                </template>
+                <template  v-slot:selection="{item, index}">
                 <span v-if="index === 0" class="primary--text text-caption">
                   {{ selectedRegionalManagers.length }} selected
                 </span>
@@ -230,24 +227,21 @@
                                 item-title="fullName"
                                 @change="getInstallationCrew()"
                                 @click:clear="selectedInstallationCrews = []">
-                  <v-list-item
-                    slot="prepend-item"
-                    ripple
-                    @click="toggleSelectAllManagers()"
-                  >
-                    <v-list-item-action>
-                      <v-icon>{{ iconManagers }}</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-title>Select All</v-list-item-title>
-                  </v-list-item>
-                  <v-divider
-                    slot="prepend-item"
-                    class="mt-2"
-                  ></v-divider>
-                  <template
-                    slot="selection"
-                    slot-scope="{ item, index }"
-                  >
+                  <template  v-slot:prepend-item>
+                    <v-list-item
+                      ripple
+                      @click="toggleSelectAllManagers()"
+                    >
+                      <v-list-item-action>
+                        <v-icon>{{ iconManagers }}</v-icon>
+                      </v-list-item-action>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item>
+                    <v-divider
+                      class="mt-2"
+                    ></v-divider>
+                  </template>
+                  <template  v-slot:selection="{item, index}">
                   <span v-if="index === 0" class="primary--text text-caption">
                     {{ selectedRegionalManagers.length }} selected
                   </span>
@@ -276,10 +270,7 @@
                       class="mt-2"
                     ></v-divider>
                   </template>
-                  <template
-                    slot="selection"
-                    slot-scope="{ item, index }"
-                  >
+                  <template  v-slot:selection="{item, index}">
                   <span v-if="index === 0" class="primary--text text-caption">
                     {{ selectedInstallationCrews.length }} selected
                   </span>
@@ -472,11 +463,6 @@ import {ref, onMounted, computed, watch, getCurrentInstance} from "vue";
 import {useAppStore} from "@/stores/AppStore.js";
 
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const router = vueInstance.$router
-const route = vueInstance.$route
-const vuetify = vueInstance.$vuetify
 
 const model = ref({})
 const workQueues = ref([])
@@ -620,7 +606,7 @@ onMounted(() => {
       await getInstallationCrew()
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error retrieving Regional Managers')
+      appStore.showSnack('ERROR', 'Error retrieving Regional Managers')
     }
   }
   const getInstallationCrew = async () => {
@@ -635,7 +621,7 @@ onMounted(() => {
       toggleSelectAllCrews();
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error retrieving Installation Crew')
+      appStore.showSnack('ERROR', 'Error retrieving Installation Crew')
 
     }
   }
@@ -655,7 +641,7 @@ onMounted(() => {
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error retrieving data')
+      appStore.showSnack('ERROR', 'Error retrieving data')
       isLoading.value = false
       appStore.loading = false
     }
@@ -670,7 +656,7 @@ onMounted(() => {
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error retrieving WIP data')
+      appStore.showSnack('ERROR', 'Error retrieving WIP data')
       isLoading.value = false
       appStore.loading = false
     }
@@ -690,7 +676,7 @@ onMounted(() => {
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error retrieving data')
+      appStore.showSnack('ERROR', 'Error retrieving data')
       isLoading.value = false
       appStore.loading = false
     }

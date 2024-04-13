@@ -131,7 +131,7 @@
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
+
 
   onMounted(() => {
     defineSortableTable('tbody', tabs, 'displayOrder', saveRowChanges)
@@ -179,7 +179,7 @@
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Tabs')
+          appStore.showSnack('ERROR', 'Error Retrieving Tabs')
           appStore.loading = false
         }
       }
@@ -188,11 +188,11 @@
         appStore.loading = true
         try {
           const {status} = await deleteRequest(`/objectTypeTab/${tabId}`)
-          snackbar('SUCCESS', 'Successfully Deleted Tab')
+          appStore.showSnack('SUCCESS', 'Successfully Deleted Tab')
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Deleting Tab')
+          appStore.showSnack('ERROR', 'Error Deleting Tab')
           appStore.loading = false
         }
       }
@@ -200,7 +200,7 @@
         appStore.loading = true
         try {
           const {data, status} = await postRequest(`/objectTypeTab/project`, tab)
-          snackbar('SUCCESS', 'Tab Saved')
+          appStore.showSnack('SUCCESS', 'Tab Saved')
           selectedTabId.value = null
           if(!tab.id) {
             // add it to the records already on the screen
@@ -214,7 +214,7 @@
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Adding Tab')
+          appStore.showSnack('ERROR', 'Error Adding Tab')
           appStore.loading = false
         }
       }
@@ -223,11 +223,11 @@
           appStore.loading = true
           try {
             const {status} = await putRequest(`/objectTypeTab/order`, rows)
-            snackbar('SUCCESS', 'Tab Order Saved')
+            appStore.showSnack('SUCCESS', 'Tab Order Saved')
             handleHidingGlobalLoader(status)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            snackbar('ERROR', 'Error Saving Tab Order')
+            appStore.showSnack('ERROR', 'Error Saving Tab Order')
             appStore.loading = false
           }
         }

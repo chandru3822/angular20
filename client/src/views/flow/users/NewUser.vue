@@ -107,10 +107,10 @@
                       type="search"
                       attach
                   >
-                    <template slot="selection" slot-scope="{ item }">
+                    <template  v-slot:selection="{item, index}">
                       {{ item.orgName }}{{ item.showType ? ' (' + item.orgType + ')' : '' }}
                     </template>
-                    <template slot='item' slot-scope='{ item }'>
+                    <template v-slot:item="{ props, item }">
                       {{ item.orgName }}{{ item.showType ? ' (' + item.orgType + ')' : '' }}
                     </template>
                   </a-autocomplete>
@@ -156,7 +156,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const user = ref({})
 const states = ref([])
@@ -210,7 +210,7 @@ const getCustomFieldGroups = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Custom Fields')
+    appStore.showSnack('ERROR', 'Error Retrieving Custom Fields')
     loadingUserInsertFields.value = false
 
     appStore.loading = false
@@ -228,7 +228,7 @@ const getAllUserStatusTypes = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving User Statuses')
+    appStore.showSnack('ERROR', 'Error Retrieving User Statuses')
 
     appStore.loading = false
   }
@@ -241,7 +241,7 @@ const getAllCompanyStates = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving States')
+    appStore.showSnack('ERROR', 'Error Retrieving States')
 
     appStore.loading = false
   }
@@ -254,7 +254,7 @@ const getAllCountries = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Countries')
+    appStore.showSnack('ERROR', 'Error Retrieving Countries')
 
     appStore.loading = false
   }
@@ -267,7 +267,7 @@ const getPositions = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Positions')
+    appStore.showSnack('ERROR', 'Error Retrieving Positions')
 
     appStore.loading = false
   }
@@ -280,7 +280,7 @@ const getFilters = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving org levels')
+    appStore.showSnack('ERROR', 'Error retrieving org levels')
 
     appStore.loading = false
   }
@@ -324,7 +324,7 @@ const getOrgsMatchingPositionOrgType = (orgs, newPosition) => {
 const saveUser = async() => {
   let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
   if (!user.value?.phoneNumber?.match(phoneRegex) || user.value?.phoneNumber?.length > 20) {
-    snackbar('ERROR', 'Error saving user: Please enter a valid phone number')
+    appStore.showSnack('ERROR', 'Error saving user: Please enter a valid phone number')
 
     return;
   }
@@ -354,7 +354,7 @@ const saveUser = async() => {
     if (e?.message?.includes('Email already in use')) {
       errorMsg += ': Email Already in Use'
     }
-    snackbar('ERROR', errorMsg)
+    appStore.showSnack('ERROR', errorMsg)
 
     appStore.loading = false
   }
@@ -371,7 +371,7 @@ const savePosition = async(userId) => {
     await postRequest(`/userPosition`, params)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error saving user new position')
+    appStore.showSnack('ERROR', 'Error saving user new position')
 
     appStore.loading = false
   }

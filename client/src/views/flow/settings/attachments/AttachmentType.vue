@@ -56,8 +56,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
-const store = vueInstance.$store
+ const store = vueInstance.$store
 const userStore = useUserStore()
 const route = useRoute()
 const vuetify = vueInstance.$vuetify
@@ -87,7 +86,7 @@ onMounted(async () => {
         appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.showSnack('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       }
     }
@@ -96,11 +95,11 @@ onMounted(async () => {
       try {
         const {status} = await putRequest(`/attachmentType/type`, attachment.value)
         editName.value = false
-        snackbar('SUCCESS', 'Attachment Type Updated')
+        appStore.showSnack('SUCCESS', 'Attachment Type Updated')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving Attachment Type')
+        appStore.showSnack('ERROR', 'Error Saving Attachment Type')
         appStore.loading = false
       }
     }

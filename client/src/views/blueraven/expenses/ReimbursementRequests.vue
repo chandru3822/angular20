@@ -326,8 +326,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 
 const createNew = ref(false)
 const dataLoading = ref(true)
@@ -434,7 +433,7 @@ const getReimbursementRequests = async() => {
     dataLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -446,7 +445,7 @@ const deleteReimbursementRequest = async(item) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Reimbursement Request')
+    appStore.showSnack('ERROR', 'Error Deleting Reimbursement Request')
 
     appStore.loading = false
   }
@@ -467,7 +466,7 @@ const saveReimbursementRequest = async(item, isNew) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Reimbursement Request')
+    appStore.showSnack('ERROR', 'Error Saving Reimbursement Request')
 
     appStore.loading = false
   }
@@ -483,7 +482,7 @@ const approveRequest = async() => {
     //1 = approve
     selectedRequest.value.reimbursementRequestStatusId = 1
     await putRequest(`/reimbursement/request`, selectedRequest.value, 'blueraven')
-    snackbar('SUCCESS', 'Request Approved')
+    appStore.showSnack('SUCCESS', 'Request Approved')
 
     reimbursementRequests.value = reimbursementRequests.value?.filter(rr => rr.id !== selectedRequest.value.id)
     rejectDropdown.value = false
@@ -491,7 +490,7 @@ const approveRequest = async() => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Approving Reimbursement Request')
+    appStore.showSnack('ERROR', 'Error Approving Reimbursement Request')
 
     appStore.loading = false
   }
@@ -501,7 +500,7 @@ const rejectRequest = async(item) => {
   try {
     item.reimbursementRequestStatusId = 2
     const {status} = await postRequest(`/reimbursement/request/updateStatus`, item, 'blueraven')
-    snackbar('SUCCESS', 'Request Rejected.')
+    appStore.showSnack('SUCCESS', 'Request Rejected.')
 
 
     selectedRequest.value = {}
@@ -510,7 +509,7 @@ const rejectRequest = async(item) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Rejecting Reimbursement Request')
+    appStore.showSnack('ERROR', 'Error Rejecting Reimbursement Request')
 
     appStore.loading = false
   }
@@ -524,7 +523,7 @@ const getTheBudgetTypes = async() => {
     budgetTypesLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -536,7 +535,7 @@ const getTheGlCodes = async() => {
     glCodesLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -546,7 +545,7 @@ const getTheUsersWithBudget = async() => {
     usersWithBudget.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -566,7 +565,7 @@ const getMonthlyBudgetReport = async(isNew) => {
       selectedBudgetReport.value = data && data.length > 0 ? data[0] : []
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     } finally {
       loadingBudgetReport.value = false
@@ -584,7 +583,7 @@ const getTheBudgetsForUser = async(userId, doReportLoad, isNew) => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   } finally {
     budgetsLoading.value = false
@@ -601,7 +600,7 @@ const getRequestAttachmentPresignedUrl = async(item) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Attached Image')
+    appStore.showSnack('ERROR', 'Error Retrieving Attached Image')
 
     appStore.loading = false
   }

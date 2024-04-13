@@ -64,11 +64,11 @@
                     return-object
                     @change="sendTemplateMessage">
 
-            <template slot="item" slot-scope="data">
+            <template v-slot:item="{ props, item }">
               <!-- HTML that describes how select should render items when the select is open -->
               <div class="ellipse">
-                <h4 class="template-title">{{ data.item.title }}<br /></h4>
-                <span class="template-message">{{ data.item.message }}</span>
+                <h4 class="template-title">{{ item.title }}<br /></h4>
+                <span class="template-message">{{ item.message }}</span>
               </div>
             </template>
           </a-select>
@@ -97,8 +97,7 @@ const userStore = useUserStore()
 const notificationStore = useNotificationStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const filters = vueInstance.$filters
+ const filters = vueInstance.$filters
 
 const props = defineProps({
   userAssigned: Boolean,
@@ -222,7 +221,7 @@ const sendMessage = (text) => {
 const onMessageWasSent = async(message) => {
   if (message.data.text && message.data.text.length > 1599) {
     let textOverflowLength = message.data.text.length - 1599;
-    snackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
+    appStore.showSnack('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
 
   }
   // called when the user sends a message
@@ -280,7 +279,7 @@ const onMessageWasSent = async(message) => {
     console.error('*** ERROR ***', e)
     let message = e?.message ? 'Error Sending Message: ' + e.message :
         e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
-    snackbar('ERROR', message)
+    appStore.showSnack('ERROR', message)
 
     let textInput = document.querySelector('.sc-user-input--text')
     // This line fails, but accomplishes what I want - stops the plugin from clearing the message box
@@ -308,7 +307,7 @@ const fetchContact = async() => {
     }]
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching SMS users')
+    appStore.showSnack('ERROR', 'Error fetching SMS users')
 
   }
 }
@@ -374,7 +373,7 @@ const fetchSmsData = async() => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching messages')
+    appStore.showSnack('ERROR', 'Error fetching messages')
 
   }
 }
@@ -388,7 +387,7 @@ const getTemplates = async() => {
     selectableTemplates.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving templates')
+    appStore.showSnack('ERROR', 'Error retrieving templates')
 
   }
 }

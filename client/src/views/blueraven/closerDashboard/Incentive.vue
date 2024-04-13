@@ -88,7 +88,6 @@ const store = vueInstance.$store
 const userStore = useUserStore()
 const fileStore = useFileStore()
 const appStore = useAppStore()
-const snackbar = vueInstance.$snackbar
 
 const percentAchieved = ref(0),
     progressBarIsFull=ref(false),
@@ -148,7 +147,7 @@ const loadImage= async (typeId, imageType) => {
     })
   } catch(e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', `Error Loading ${imageType}`)
+    appStore.showSnack('ERROR', `Error Loading ${imageType}`)
     if(typeId === backgroundImageTypeId.value){
       backgroundImageLoaded.value = true
     }

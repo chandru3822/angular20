@@ -90,7 +90,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   smartlistId: Number,
@@ -137,7 +136,7 @@ const generateReport = async () =>{
     });
     saveAs(blob, "smartlist.csv");
   } catch (e) {
-    snackbar('ERROR', e.message)
+    appStore.showSnack('ERROR', e.message)
 
     logError(e)
   } finally {

@@ -117,10 +117,10 @@
 
             bookingsLoading.value = false
 
-            handleHidingGlobalLoader(vueInstance, status)
+             handleHidingGlobalLoader( status)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            snackbar('ERROR', `Error retrieving bookings.`)
+            appStore.showSnack('ERROR', `Error retrieving bookings.`)
             bookingsLoading.value = false
           }
         }

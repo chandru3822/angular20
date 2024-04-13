@@ -236,7 +236,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
@@ -286,11 +286,11 @@ const saveOrderChanges = async (types) => {
   appStore.loading = true
   try {
     await putRequest(`/event/companyStatuses`, types)
-    snackbar('SUCCESS', 'Status Types Updated')
+    appStore.showSnack('SUCCESS', 'Status Types Updated')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Status Type Changes')
+    appStore.showSnack('ERROR', 'Error Saving Status Type Changes')
     appStore.loading = false
   }
 }
@@ -306,18 +306,18 @@ const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) =>
       displayName: file.name.substr(0, file.name.lastIndexOf('.')),
       callback: async (img, error) => {
         if (error?.error) {
-          snackbar('ERROR', error.errorMsg)
+          appStore.showSnack('ERROR', error.errorMsg)
           appStore.loading = false
         } else {
           item.icon = img
-          snackbar('SUCCESS', 'Image Uploaded')
+          appStore.showSnack('SUCCESS', 'Image Uploaded')
           appStore.loading = false
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Uploading File')
+    appStore.showSnack('ERROR', 'Error Uploading File')
     appStore.loading = false
   }
 }
@@ -329,13 +329,13 @@ const deleteAttachment = async (item) => {
       id: item.icon.id,
       callback: async (status) => {
         item.icon = {}
-        snackbar('SUCCESS', 'Image Deleted')
+        appStore.showSnack('SUCCESS', 'Image Deleted')
         appStore.loading = false
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting File')
+    appStore.showSnack('ERROR', 'Error Deleting File')
     appStore.loading = false
   }
 }
@@ -348,7 +348,7 @@ const getCompanyStatusTypes = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -361,7 +361,7 @@ const getAllEventStatusTypes = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -376,7 +376,7 @@ const getUsesForStatus = async (eventStatusId, eventStatusName) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -388,7 +388,7 @@ const deleteType = async () => {
   try {
     await deleteRequest(`/event/companyStatus/${item.id}`)
     fieldsInUse.value = [];
-    snackbar('SUCCESS', 'Status Deleted')
+    appStore.showSnack('SUCCESS', 'Status Deleted')
 
     appStore.loading = false
     item.archived = true
@@ -400,12 +400,12 @@ const deleteType = async () => {
       deleteError.value = true
       objectsUsingStatus.value = e.data;
       objectsUsingStatus.value.fieldName = item.eventStatusType
-      snackbar("ERROR", "Error Deleting Status");
+      appStore.showSnack("ERROR", "Error Deleting Status");
       appStore.loading = false
     }
     else {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting Status')
+      appStore.showSnack('ERROR', 'Error Deleting Status')
       appStore.loading = false
     }
   } finally {
@@ -433,18 +433,18 @@ const saveType = async (type, isNew) => {
     }
     expanded.value = []
     selectedStatusTypeId.value = null
-    snackbar('SUCCESS', 'Event Status Saved')
+    appStore.showSnack('SUCCESS', 'Event Status Saved')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Event Status')
+    appStore.showSnack('ERROR', 'Error Saving Event Status')
     appStore.loading = false
   }
 }
 
 const copyToClipBoard = (textValue) =>{
   navigator.clipboard.writeText(textValue);
-  snackbar('SUCCESS', 'Copied text to clipboard')
+  appStore.showSnack('SUCCESS', 'Copied text to clipboard')
 
 }
 const closeDeleteDialog = () =>{

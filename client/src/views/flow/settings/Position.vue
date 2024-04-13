@@ -145,7 +145,7 @@
   import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const store = vueInstance.$store
   const userStore = useUserStore()
   const route = useRoute()
@@ -216,7 +216,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Org Types')
+      appStore.showSnack('ERROR', 'Error Retrieving Org Types')
 
       appStore.loading = false
     }
@@ -258,7 +258,7 @@
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Position')
+      appStore.showSnack('ERROR', 'Error Saving Position')
       appStore.loading = false
     }
   }
@@ -271,7 +271,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Position')
+      appStore.showSnack('ERROR', 'Error Retrieving Position')
 
       appStore.loading = false
     }
@@ -284,7 +284,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Positions')
+      appStore.showSnack('ERROR', 'Error Retrieving Positions')
 
       appStore.loading = false
     }

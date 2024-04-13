@@ -79,7 +79,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const dataLoading = ref(true)
 const footerProps = ref({
@@ -157,7 +156,7 @@ const fetchProjects = async(searchQuery) => {
     dataLoading.value = false;
     appStore.loading = false
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving projects')
+    appStore.showSnack('ERROR', 'Error retrieving projects')
 
   }
 }
@@ -193,7 +192,7 @@ const fetchTemplates = async() => {
   } catch (e) {
     appStore.loading = false
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving documents')
+    appStore.showSnack('ERROR', 'Error retrieving documents')
 
   }
 }
@@ -202,7 +201,7 @@ const submitRequest = async() => {
     appStore.loading = true
     if (selectedDocIds.value.length === 0) {
       console.error('*** ERROR ***', 'Error generating document: No document selected')
-      snackbar('ERROR', 'Error generating document: No document selected')
+      appStore.showSnack('ERROR', 'Error generating document: No document selected')
 
       appStore.loading = false
       return
@@ -218,9 +217,9 @@ const submitRequest = async() => {
       for (let i = 0; i < data.length; i++) {
         window.open(data[i]);
       }
-      snackbar('SUCCESS', 'Electronic document generated')
+      appStore.showSnack('SUCCESS', 'Electronic document generated')
     } else {
-      snackbar('ERROR', 'Error generating document')
+      appStore.showSnack('ERROR', 'Error generating document')
     }
 
     requestDialog.value = false;
@@ -228,7 +227,7 @@ const submitRequest = async() => {
 
   } catch (e) {
     appStore.loading = false
-    snackbar('ERROR', 'Error generating document')
+    appStore.showSnack('ERROR', 'Error generating document')
 
     console.error('*** ERROR ***', e)
   }

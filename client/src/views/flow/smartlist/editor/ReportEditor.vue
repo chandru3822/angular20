@@ -299,6 +299,7 @@ import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
 import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
+import {useRouter, useRoute} from "vue-router/composables"
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
@@ -308,8 +309,8 @@ const UPDATE_TYPE = Object.freeze({
 })
 
 const vueInstance = getCurrentInstance().proxy
-const router = vueInstance.$router
-const snackbar = vueInstance.$snackbar
+const router = useRouter()
+const route = useRoute()
 
 const store = vueInstance.$store
 const userStore = useUserStore()
@@ -342,7 +343,7 @@ const sourceRequirements = ref([])
 
 const reportTypes = ref([])
 const availableFields = ref([])
-const isEditing = ref(typeof vueInstance.$route.params.reportId !== 'undefined')
+const isEditing = ref(typeof route.params.reportId !== 'undefined')
 const prevObjectTypeId = ref([])
 /**
  * If editing a report, show only types available to that group
@@ -410,8 +411,8 @@ const canDelete = computed(() => {
   return false
 })
 
-watch(() => vueInstance.$route.params?.reportId, async () => {
-  if (vueInstance.$route.params?.reportId) {
+watch(() => route.params?.reportId, async () => {
+  if (route.params?.reportId) {
     isEditing.value = true
     refreshReport()
   }
@@ -432,12 +433,12 @@ const refreshReport = async (forceUpdate = false) => {
 
 const getReport = async () => {
   try {
-    const {data} = await getRequest(`/smartlist/${vueInstance.$route.params?.reportId}?accessControl=true`)
+    const {data} = await getRequest(`/smartlist/${route.params?.reportId}?accessControl=true`)
     report.value = cloneDeep(data)
     sourceReport.value = cloneDeep(data)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Unable to fetch smartlist')
+    appStore.showSnack('ERROR', 'Unable to fetch smartlist')
   }
 }
 
@@ -448,7 +449,7 @@ const getFields = async () => {
     sourceFields.value = cloneDeep(data)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Unable to fetch columns')
+    appStore.showSnack('ERROR', 'Unable to fetch columns')
   }
 }
 
@@ -459,7 +460,7 @@ const getRequirements = async() => {
     sourceRequirements.value = cloneDeep(data)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Unable to fetch filters')
+    appStore.showSnack('ERROR', 'Unable to fetch filters')
   }
 }
 
@@ -508,10 +509,10 @@ const save = async () => {
       await router.replace({name: 'reportEditor', params: {reportId: data.id}})
       await refreshReport()
     }
-    snackbar('SUCCESS', 'Save Successful')
+    appStore.showSnack('SUCCESS', 'Save Successful')
   } catch (e) {
     logError(e)
-    snackbar('ERROR', e.message || e.data?.message || 'Error saving smartlist')
+    appStore.showSnack('ERROR', e.message || e.data?.message || 'Error saving smartlist')
   } finally {
     appStore.loading = false
   }
@@ -524,7 +525,7 @@ const getReportTypes = async () => {
     reportTypes.value = data.sort((a, b) => a.objectType.localeCompare(b.objectType))
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching data types')
+    appStore.showSnack('ERROR', 'Error fetching data types')
   } finally {
     loadingAvailableFields.value = false
   }
@@ -544,7 +545,7 @@ const getAvailableFields = async (forceUpdate = false) => {
       availableFields.value = data
     } catch (e) {
       logError(e)
-      snackbar('ERROR', 'Error fetching available columns')
+      appStore.showSnack('ERROR', 'Error fetching available columns')
     } finally {
       loadingAvailableFields.value = false
     }
@@ -633,7 +634,7 @@ const toggleDataView = async () => {
     await putRequest(`/smartlist/toggleProjectDetails`, report.value)
     refreshReport(true)
   } catch (e) {
-    snackbar('ERROR', 'Unable to update project details setting')
+    appStore.showSnack('ERROR', 'Unable to update project details setting')
   } finally {
     appStore.loading = false
   }
@@ -648,7 +649,7 @@ const toggleEditingReportName = () => {
 const saveClicked = () => {
   if (!isEditing.value) {
     if (!Object.hasOwn(report.value, 'companyObjectTypeId') || report.value.name.trim().length < 1) {
-      snackbar('ERROR', 'Smartlist must have a name and data type')
+      appStore.showSnack('ERROR', 'Smartlist must have a name and data type')
       return
     }
   }

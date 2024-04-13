@@ -69,7 +69,7 @@
   import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const store = vueInstance.$store
   const router = useRouter()
 
@@ -106,7 +106,7 @@
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Role')
+      appStore.showSnack('ERROR', 'Error Saving Role')
       appStore.loading = false
     }
 
@@ -130,7 +130,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Features')
+      appStore.showSnack('ERROR', 'Error Retrieving Features')
       appStore.loading = false
     }
   }
@@ -143,7 +143,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Role')
+      appStore.showSnack('ERROR', 'Error Retrieving Role')
       appStore.loading = false
     }
   }

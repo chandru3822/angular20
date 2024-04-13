@@ -149,7 +149,7 @@
   import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
@@ -191,7 +191,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
       appStore.loading = false
     }
   }
@@ -211,16 +211,16 @@
         deleteError.value = true
         processStep.deleteConfirm = false
         fieldsInUse.value = data
-        snackbar('ERROR', 'Process Step Cannot Be Deleted')
+        appStore.showSnack('ERROR', 'Process Step Cannot Be Deleted')
       } else {
         fieldsInUse.value = []
         processStep.archived = true
-        snackbar('SUCCESS', 'Process Step Deleted')
+        appStore.showSnack('SUCCESS', 'Process Step Deleted')
       }
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting Process Step')
+      appStore.showSnack('ERROR', 'Error Deleting Process Step')
       appStore.loading = false
     }
     psToDelete.value = null
@@ -230,11 +230,11 @@
     try {
       const {data, status} = await postRequest(`/processStep`, newStep.value)
       router.push({path: `/settings/processStep/${data.id}/components`})
-      snackbar('SUCCESS', 'Process Step Added')
+      appStore.showSnack('SUCCESS', 'Process Step Added')
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Adding Process Step')
+      appStore.showSnack('ERROR', 'Error Adding Process Step')
       appStore.loading = false
     }
   }

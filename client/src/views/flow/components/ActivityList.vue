@@ -108,7 +108,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   activities: Array,
@@ -177,11 +176,11 @@ const pinActivity = async(activity) => {
     await postRequestWithRequestParams(`/activity/${activity.id}/pin/${sectionType.value}`, null, params)
     let msg = activity.pinned ? 'Note Pinned' : 'Note Unpinned'
     emit('reload');
-    snackbar('SUCCESS', msg)
+    appStore.showSnack('SUCCESS', msg)
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error pinning note')
+    appStore.showSnack('ERROR', 'Error pinning note')
 
     savingActivity.value = false
   }
@@ -191,12 +190,12 @@ const deleteActivity = async(activity) => {
     await deleteRequest(`/activity/${activity.id}/${sectionType.value}`)
     activity.archived = true
     //todo handle sending this back up
-    snackbar('SUCCESS', 'Note Deleted')
+    appStore.showSnack('SUCCESS', 'Note Deleted')
 
     emit('remove-deleted', activity.id);
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error deleting note')
+    appStore.showSnack('ERROR', 'Error deleting note')
 
     savingActivity.value = false
   }

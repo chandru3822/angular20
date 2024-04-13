@@ -105,8 +105,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const route = useRoute()
+ const route = useRoute()
 const router = useRouter()
 const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
@@ -194,11 +193,11 @@ const companyObjectTypeId = computed(() => {
     try {
       appStore.loading = true
       const {status} = await putRequest(`/attachmentType/${objectType.value}/update`, item)
-      snackbar('SUCCESS', 'Attachment Type Updated')
+      appStore.showSnack('SUCCESS', 'Attachment Type Updated')
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Attachment Type')
+      appStore.showSnack('ERROR', 'Error Saving Attachment Type')
       appStore.loading = false
     }
   }
@@ -226,12 +225,12 @@ const companyObjectTypeId = computed(() => {
       // reset fields
       addNewType.value = false
       newType.value = {}
-      snackbar('SUCCESS', 'Attachment Type Added')
+      appStore.showSnack('SUCCESS', 'Attachment Type Added')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Adding Attachment Type')
+      appStore.showSnack('ERROR', 'Error Adding Attachment Type')
 
       appStore.loading = false
     }
@@ -248,7 +247,7 @@ const companyObjectTypeId = computed(() => {
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
 
       handleHidingGlobalLoader(status)
     }
@@ -262,7 +261,7 @@ const companyObjectTypeId = computed(() => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
 
       appStore.loading = false
     }
@@ -272,12 +271,12 @@ const companyObjectTypeId = computed(() => {
       try {
         appStore.loading = true
         const {status} = await putRequest(`/attachmentType/${objectType.value}/order`, rows)
-        snackbar('SUCCESS', 'Attachment Type Order Saved')
+        appStore.showSnack('SUCCESS', 'Attachment Type Order Saved')
 
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving Attachment Type Order')
+        appStore.showSnack('ERROR', 'Error Saving Attachment Type Order')
 
         appStore.loading = false
       }
@@ -289,12 +288,12 @@ const companyObjectTypeId = computed(() => {
     try {
       addNewType.value = false
       const {status} = await deleteRequest(`/attachmentType/${objectType.value}/${id}`)
-      snackbar('SUCCESS', 'Attachment Type Deleted')
+      appStore.showSnack('SUCCESS', 'Attachment Type Deleted')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting Attachment Type')
+      appStore.showSnack('ERROR', 'Error Deleting Attachment Type')
 
       appStore.loading = false
     }

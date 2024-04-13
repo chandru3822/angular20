@@ -20,7 +20,6 @@ const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const incentiveDataLoaded = ref(false)
 const closerDashContainer = ref(null)
@@ -70,7 +69,7 @@ const loadIncentive = async () => {
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving incentive data')
+    appStore.showSnack('ERROR', 'Error retrieving incentive data')
     incentiveDataLoaded.value = true
     appStore.loading = false
   }

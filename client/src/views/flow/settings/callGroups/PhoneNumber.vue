@@ -20,7 +20,7 @@
         <a-btn variant="text" color="primary" v-if="userCanEdit" @click="editGroup = !editGroup" prepend-icon="edit"/>
       </v-toolbar-items>
       <v-tabs :optional="false" color="primary"
-              slot="extension"
+              v-slot:extension
               class="hello mb-2"
               dense
               background-color="white" v-model="model" slider-color="primary">
@@ -46,7 +46,7 @@
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
@@ -92,7 +92,7 @@
     try {
       let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
       if (!newCallGroup.value.phoneNumber.match(phoneRegex) || newCallGroup.value.phoneNumber.length > 20) {
-        snackbar('ERROR', 'Error Saving Call Group: Please reformat the Phone field with a valid phone number')
+        appStore.showSnack('ERROR', 'Error Saving Call Group: Please reformat the Phone field with a valid phone number')
 
         appStore.loading = false
         return;
@@ -101,11 +101,11 @@
       const {data, status} = await postRequest(`/callGroup`, group.value, 'blueraven')
       group.value = data
       editGroup.value = false
-      snackbar('SUCCESS', 'Call Group saved')
+      appStore.showSnack('SUCCESS', 'Call Group saved')
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Call Group')
+      appStore.showSnack('ERROR', 'Error Saving Call Group')
       appStore.loading = false
     }
   }
@@ -118,7 +118,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
       appStore.loading = false
     }
   }

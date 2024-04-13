@@ -453,7 +453,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 onMounted(() => {
   getCloserDetails()
@@ -526,7 +525,7 @@ const getCloserDetails = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading User Details')
+    appStore.showSnack('ERROR', 'Error Loading User Details')
 
     appStore.loading = false
   }
@@ -540,7 +539,7 @@ const getCommissionPlans = async () => {
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Commission Plans')
+      appStore.showSnack('ERROR', 'Error Loading Commission Plans')
 
       appStore.loading = false
     }
@@ -555,7 +554,7 @@ const getOverridePlans = async () => {
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Override Plans')
+      appStore.showSnack('ERROR', 'Error Loading Override Plans')
 
       appStore.loading = false
     }
@@ -646,13 +645,13 @@ const savePlan = async (item, type, isNew) => {
       receivingExpanded.value = []
       addNewReceivingPlan.value = false
     }
-    snackbar('SUCCESS', 'Saved Successfully')
+    appStore.showSnack('SUCCESS', 'Saved Successfully')
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let errorMsg = e?.msg ?? 'Error Saving Plan'
-    snackbar('ERROR', errorMsg)
+    appStore.showSnack('ERROR', errorMsg)
 
     appStore.loading = false
   }
@@ -671,7 +670,7 @@ const clonePlan = async () => {
     await router.push({name: 'override', params: {id: data.id}})
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Plan to User')
+    appStore.showSnack('ERROR', 'Error Saving Plan to User')
 
     appStore.loading = false
   }
@@ -682,7 +681,7 @@ const addOverridePlan = async() => {
     addReceivingUserToOverridePlan(data.id)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Creating New Plan')
+    appStore.showSnack('ERROR', 'Error Creating New Plan')
 
     appStore.loading = false
   }
@@ -699,7 +698,7 @@ const addReceivingUserToOverridePlan = async(overridePlanId) => {
     await router.push({name: 'override', params: {id: overridePlanId}})
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding User to Plan')
+    appStore.showSnack('ERROR', 'Error Adding User to Plan')
 
     appStore.loading = false
   }

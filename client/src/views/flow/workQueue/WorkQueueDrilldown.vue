@@ -265,8 +265,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 
 const showNotesModal = ref(false)
 const itemToUpdate = ref(null)
@@ -345,7 +344,7 @@ const getWorkQueueName = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Results')
+    appStore.showSnack('ERROR', 'Error Retrieving Results')
 
     appStore.loading = false
   }
@@ -401,7 +400,7 @@ const exportCsv = async() => {
     saveAs(blob, `${workQueue.value.workQueueType} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
     handleHidingGlobalLoader( status)
   } catch (e) {
-    snackbar('ERROR', e.message)
+    appStore.showSnack('ERROR', e.message)
 
     logError(e)
     appStore.loading = false
@@ -566,7 +565,7 @@ const getWorkDetails = async() => {
     dataLoading.value = false
     errorLoading.value = true
     let msg = e?.data?.message || 'Error Retrieving Results'
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
 
     appStore.loading = false
   }
@@ -576,7 +575,7 @@ const assignToUser = async(item) => {
     let userPosition = userPositions.value.find(up => up.canAssign)
     const {status} = await postRequest(`/projectProcessStep/${item.projectProcessStepId}/owner/checkExisting`, {userPositionId: userPosition.id})
     item['Owner'] = userFullName.value
-    snackbar('SUCCESS', 'You are now assigned as the owner.')
+    appStore.showSnack('SUCCESS', 'You are now assigned as the owner.')
 
     item.owner = userStore.details.fullName
     handleHidingGlobalLoader( status)
@@ -587,7 +586,7 @@ const assignToUser = async(item) => {
     if (alreadyAssigned) {
       item['Owner'] = 'Already Assigned. Please Refresh.'
     }
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
 
     appStore.loading = false
   }

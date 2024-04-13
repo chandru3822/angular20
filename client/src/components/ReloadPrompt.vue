@@ -5,7 +5,6 @@ import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 // const intervalMS = 5 * 60 * 1000 //5 minutes
 const intervalMS = 60 * 60 * 1000 //1 hour

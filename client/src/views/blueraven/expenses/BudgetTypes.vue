@@ -127,8 +127,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 
 const createNew = ref(false)
 const dataLoading = ref(true)
@@ -167,7 +166,7 @@ const getBudgetTypes = async() => {
     dataLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -179,7 +178,7 @@ const deleteBudgetType = async(item) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Budget Type')
+    appStore.showSnack('ERROR', 'Error Deleting Budget Type')
 
     appStore.loading = false
   }
@@ -199,7 +198,7 @@ const saveBudgetType = async(item, isNew) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Budget Type')
+    appStore.showSnack('ERROR', 'Error Saving Budget Type')
 
     appStore.loading = false
   }

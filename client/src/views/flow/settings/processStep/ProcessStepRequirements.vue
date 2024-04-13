@@ -236,9 +236,9 @@
                 item-title="eventStatusType"
                 return-object
             >
-              <template slot="item" slot-scope="data">
+              <template v-slot:item="{ props, item }">
                 <!-- HTML that describes how select should render items when the select is open -->
-                {{ data.item.eventStatusType }}
+                {{ item.eventStatusType }}
               </template>
             </a-autocomplete>
             <!-- currently only a listOfValueId can be a multiselect.  we may change this down the road for custom sql and system lists -->
@@ -263,11 +263,11 @@
                 item-title="processStepStatusType"
                 return-object
             >
-              <template slot="item" slot-scope="data">
+              <template v-slot:item="{ props, item }">
                 <!-- HTML that describes how select should render items when the select is open -->
-                {{ data.item.processStepStatusType }}
+                {{ item.processStepStatusType }}
                 <span v-if="newRequirement.processStepRequirementTypeId === 7"
-                      class="ml-1">({{ data.item.rootProcessStepStatusType }})</span>
+                      class="ml-1">({{ item.rootProcessStepStatusType }})</span>
               </template>
             </a-autocomplete>
             <a-autocomplete
@@ -281,11 +281,11 @@
                 item-title="projectStatusType"
                 return-object
             >
-              <template slot="item" slot-scope="data">
+              <template v-slot:item="{ props, item }">
                 <!-- HTML that describes how select should render items when the select is open -->
-                {{ data.item.projectStatusType }}
+                {{ item.projectStatusType }}
                 <span v-if="newRequirement.projectStatusTypeId === 9" class="ml-1">({{
-                    data.item.projectStatusType
+                    item.projectStatusType
                   }})</span>
               </template>
             </a-autocomplete>
@@ -732,7 +732,6 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 import {defineProps} from 'vue'
 
@@ -836,7 +835,7 @@ const getRequirements = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -852,7 +851,7 @@ const getRequirementTypes = async () => {
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
       appStore.loading = false
     }
   }
@@ -895,7 +894,7 @@ const selectRequirementType = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -907,7 +906,7 @@ const loadParentObjects = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -919,7 +918,7 @@ const loadDataViews = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -931,7 +930,7 @@ const getDataViewFields = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -959,7 +958,7 @@ const getCompanyStatusesAssignedToProcessStep = async (parent) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -972,7 +971,7 @@ const getStatusesAssignedToProcessStep = async (parent) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -984,7 +983,7 @@ const getProjectStatuses = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -997,7 +996,7 @@ const getEventStatuses = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1009,7 +1008,7 @@ const getCompanyProjectStatuses = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1027,7 +1026,7 @@ const loadFieldsByParent = async (parent) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1043,7 +1042,7 @@ const loadCustomFieldsByObjectType = async (objectTypeId) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1059,7 +1058,7 @@ const loadFunctionParams = async (dbFunctionId, isRequirement) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1075,7 +1074,7 @@ const loadOperatorTypes = async (dataTypeId, processStepRequirementTypeId) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1087,7 +1086,7 @@ const loadDataTypeRequirements = async (dataTypeId) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1225,10 +1224,10 @@ const saveNewRequirement = async () => {
     selectedDataTypeRequirement.value = {}
     parent.value = {}
     availableFunctions.value = []
-    snackbar('SUCCESS', 'Requirement Added')
+    appStore.showSnack('SUCCESS', 'Requirement Added')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Requirement')
+    appStore.showSnack('ERROR', 'Error Adding Requirement')
   } finally {
     appStore.loading = false
   }
@@ -1266,11 +1265,11 @@ const updateRequirement = async (requirement) => {
     expanded.value = []
     // this forces the list to update the operator displayed ... using requirement = data did not work
     requirement.operatorType = data.operatorType
-    snackbar('SUCCESS', 'Requirement Updated')
+    appStore.showSnack('SUCCESS', 'Requirement Updated')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Requirement')
+    appStore.showSnack('ERROR', 'Error Updating Requirement')
     appStore.loading = false
   }
 }
@@ -1295,7 +1294,7 @@ const showActionsUsingLogic = async (requirementId) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Fetching Requirement Info')
+    appStore.showSnack('ERROR', 'Error Fetching Requirement Info')
     appStore.loading = false
   }
 }
@@ -1308,16 +1307,16 @@ const deleteRequirement = async () => {
     if (actionsUsingLogic.value?.length > 0) {
       deleteError.value = true //opens the delete error dialog
       item.deleteConfirm = false
-      snackbar('ERROR', 'Error Deleting Requirement')
+      appStore.showSnack('ERROR', 'Error Deleting Requirement')
     } else {
       item.archived = true
       requirements.value = requirements.value.filter(r => !r.archived)
-      snackbar('SUCCESS', 'Requirement Deleted')
+      appStore.showSnack('SUCCESS', 'Requirement Deleted')
     }
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Requirement')
+    appStore.showSnack('ERROR', 'Error Deleting Requirement')
     appStore.loading = false
   }
   closeDeleteDialog()

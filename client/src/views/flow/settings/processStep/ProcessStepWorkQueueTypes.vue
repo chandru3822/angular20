@@ -381,7 +381,6 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 import {defineProps} from 'vue'
 const props = defineProps({
@@ -604,7 +603,7 @@ onMounted(() => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Project Status Types')
+        appStore.showSnack('ERROR', 'Error Retrieving Project Status Types')
         appStore.loading = false
       }
     }
@@ -711,7 +710,7 @@ onMounted(() => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Process Step Status Types')
+        appStore.showSnack('ERROR', 'Error Retrieving Process Step Status Types')
         appStore.loading = false
       }
     }
@@ -838,7 +837,7 @@ onMounted(() => {
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Event Status Types')
+          appStore.showSnack('ERROR', 'Error Retrieving Event Status Types')
           appStore.loading = false
         }
       }
@@ -856,7 +855,7 @@ onMounted(() => {
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Work Queue Types')
+        appStore.showSnack('ERROR', 'Error Retrieving Work Queue Types')
         appStore.loading = false
       }
     }
@@ -876,11 +875,11 @@ onMounted(() => {
         // reset fields
         addNewWorkQueueType.value = false
         newWorkQueueType.value = {projectStatuses: [], processStepStatuses: [], eventStatuses: []}
-        snackbar('SUCCESS', 'Work Queue Type Added')
+        appStore.showSnack('SUCCESS', 'Work Queue Type Added')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Adding Work Queue Type')
+        appStore.showSnack('ERROR', 'Error Adding Work Queue Type')
         appStore.loading = false
       }
     }
@@ -894,11 +893,11 @@ onMounted(() => {
         item.processStepStatuses = data.processStepStatuses
         item.eventStatuses = data.eventStatuses || []
         expanded.value = []
-        snackbar('SUCCESS', 'Status Types Saved')
+        appStore.showSnack('SUCCESS', 'Status Types Saved')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Adding Status Types')
+        appStore.showSnack('ERROR', 'Error Adding Status Types')
         appStore.loading = false
       }
     }
@@ -910,11 +909,11 @@ onMounted(() => {
         let url = showEventFields.value ? `/workQueueType/event/${item.id}` : `/workQueueType/processStep/${item.id}`
         const {status} = await deleteRequest(url)
         item.archived = true
-        snackbar('SUCCESS', 'Work Queue Type Deleted')
+        appStore.showSnack('SUCCESS', 'Work Queue Type Deleted')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Deleting Link')
+        appStore.showSnack('ERROR', 'Error Deleting Link')
         appStore.loading = false
       }
     }

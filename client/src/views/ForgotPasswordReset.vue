@@ -74,7 +74,7 @@
   const store = vueInstance.$store
   const route = useRoute()
   const router = useRouter()
-  const snackbar = vueInstance.$snackbar
+
 
   const validForm = ref(false)
   const passwordsMatch = ref(true)
@@ -113,12 +113,12 @@
           user.value = data
           requestValidating.value = false
           requestValid.value = user.value?.id
-          handleHidingGlobalLoader( vueInstance, status)
+          handleHidingGlobalLoader( status)
         } catch (e) {
           requestValidating.value = false
           requestValid.value = false
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Validating This Request')
+          appStore.showSnack('ERROR', 'Error Validating This Request')
           appStore.loading = false
         }
       }
@@ -134,12 +134,12 @@
             }
             const {status} = await postRequest(`/user/forgotPassword/change/password`, params)
             handleHidingGlobalLoader(status)
-            snackbar('SUCCESS', 'Your password has been changed.')
+            appStore.showSnack('SUCCESS', 'Your password has been changed.')
             await router.push('/login')
           } catch (e) {
             console.error('*** ERROR ***', e)
             let msg = e?.data?.message ?? 'Error Retrieving Account Details'
-            snackbar('ERROR', msg)
+            appStore.showSnack('ERROR', msg)
             appStore.loading = false
           }
         } else {

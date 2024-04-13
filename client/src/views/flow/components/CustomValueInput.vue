@@ -306,7 +306,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const props = defineProps({
   apiPath: {
@@ -447,7 +447,7 @@ watch(search, (val) => {
 
 const copyToClipBoard = (textValue) => {
   navigator.clipboard.writeText(textValue);
-  snackbar('SUCCESS', 'Copied text to clipboard')
+  appStore.showSnack('SUCCESS', 'Copied text to clipboard')
 
 }
 const doRichTextFieldCallback = (field, quill)  => {

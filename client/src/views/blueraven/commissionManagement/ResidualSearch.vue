@@ -108,7 +108,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 onMounted(() => {
   getPayrollData()
@@ -149,7 +148,7 @@ const getPayrollData = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Residual Data')
+    appStore.showSnack('ERROR', 'Error Loading Residual Data')
 
     appStore.loading = false
   }

@@ -48,7 +48,7 @@
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
+
   const userStore = useUserStore()
 
   const validForm = ref(false);

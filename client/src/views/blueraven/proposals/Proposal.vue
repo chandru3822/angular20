@@ -132,7 +132,7 @@
                     :hint="getHint(field)"
                   />
                   <CommissionDetailsMenu
-                    v-if="field.customFieldGroupAssignmentId === 454"
+                    v-if="field.customFieldGroupAssignmentId === 454 && isFieldVisible(field)"
                     :custom-field-groups="sortedCustomFieldGroups"
                     :proposal-id="proposalId"
                   />
@@ -299,7 +299,6 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
 
 const store = useProposalStore()
 const { template, loading: templateLoading } = storeToRefs(store)
@@ -497,7 +496,7 @@ const handleNameChange = async ({ save, value }) => {
       )
       proposal.value = data
     } catch (e) {
-      snackbar('ERROR', e?.data?.message || 'Error updating proposal name')
+      appStore.showSnack('ERROR', e?.data?.message || 'Error updating proposal name')
     }
   }
 }
@@ -569,7 +568,7 @@ const getProposalDetails = async () => {
   } catch (e) {
     logError(e)
     proposalExists.value = false
-    snackbar('ERROR', `Error retrieving proposal #${proposalId.value}`)
+    appStore.showSnack('ERROR', `Error retrieving proposal #${proposalId.value}`)
   } finally {
     appStore.loading = false
   }
@@ -583,7 +582,7 @@ const validateForm = () => {
   if (proposalForm.value.validate()) {
     saveCustomFieldValues()
   } else {
-    snackbar('ERROR', 'Missing Required Fields')
+    appStore.showSnack('ERROR', 'Missing Required Fields')
   }
 }
 const loadProposalVersions = async () => {
@@ -595,7 +594,7 @@ const loadProposalVersions = async () => {
     )
     versions.value = data.content
   } catch (e) {
-    snackbar('ERROR', 'Error loading proposal versions')
+    appStore.showSnack('ERROR', 'Error loading proposal versions')
   } finally {
     appStore.loading = false
     loadingVersions.value = false
@@ -613,7 +612,7 @@ const updateProposalVersion = async () => {
     //todo: probably should put in a v-dialog warning thing when they try to save
     window.location.reload()
   } catch (e) {
-    snackbar('ERROR', 'Error updating proposal versions')
+    appStore.showSnack('ERROR', 'Error updating proposal versions')
   } finally {
     appStore.loading = false
   }
@@ -629,7 +628,7 @@ const saveCustomFieldValues = async () => {
     )
     proposal.value = data
     dirtyCfvs.value = []
-    snackbar('SUCCESS', 'Proposal Updated')
+    appStore.showSnack('SUCCESS', 'Proposal Updated')
     await store.fetchTemplateContext({
       proposalId: proposalId.value
     })
@@ -637,7 +636,7 @@ const saveCustomFieldValues = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     const msg = e?.data?.message || 'Error Saving Proposal'
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
   } finally {
     appStore.loading = false
   }
@@ -681,14 +680,14 @@ const deleteProposal = async () => {
       'blueraven'
     )
     proposalExists.value = false
-    snackbar('SUCCESS', `Deleted proposal #${proposal.value?.proposalNbr}`)
+    appStore.showSnack('SUCCESS', `Deleted proposal #${proposal.value?.proposalNbr}`)
     handleHidingGlobalLoader(status)
     await router.push({
       name: 'proposalDesigns',
       params: { projectId: proposal.value?.projectId }
     })
   } catch (e) {
-    snackbar('ERROR', e?.data?.message || 'Error deleting proposal')
+    appStore.showSnack('ERROR', e?.data?.message || 'Error deleting proposal')
   } finally {
     appStore.loading = false
   }
@@ -709,7 +708,7 @@ const duplicate = async () => {
         name: 'proposal',
         params: { proposalId: data.id }
       })
-      snackbar(
+       appStore.showSnack(
         'SUCCESS',
         `Duplicate proposal #${data?.proposalNbr} created in new tab. <br/> <a href="${href}">Click to open again</a>`,
         true
@@ -718,7 +717,7 @@ const duplicate = async () => {
     }
     handleHidingGlobalLoader(status)
   } catch (e) {
-    snackbar('ERROR', e?.data?.message || 'Error creating duplicate')
+    appStore.showSnack('ERROR', e?.data?.message || 'Error creating duplicate')
   } finally {
     appStore.loading = false
   }
@@ -751,7 +750,7 @@ const downloadPdf = async () => {
         URL.revokeObjectURL(pdfFile)
       }, 100)
 
-      snackbar('SUCCESS', 'Proposal Downloaded')
+      appStore.showSnack('SUCCESS', 'Proposal Downloaded')
     }
   } finally {
     appStore.loading = false
@@ -845,7 +844,7 @@ const buildFilters = async (field) => {
     }
   } catch (e) {
     logError(e)
-    snackbar('ERROR', e?.data?.message)
+    appStore.showSnack('ERROR', e?.data?.message)
   } finally {
     loading.value = false
   }

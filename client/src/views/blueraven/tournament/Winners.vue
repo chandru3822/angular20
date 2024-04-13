@@ -126,7 +126,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const search = ref('')
 const footerProps = ref({
@@ -169,7 +168,7 @@ const getPool = async() => {
     poolLoading.value = false
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching pool details')
+    appStore.showSnack('ERROR', 'Error fetching pool details')
 
   }
 }
@@ -184,7 +183,7 @@ const getPoolUsers = async() => {
     })
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching pool user details')
+    appStore.showSnack('ERROR', 'Error fetching pool user details')
 
   }
 }

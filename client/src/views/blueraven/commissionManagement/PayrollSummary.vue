@@ -70,7 +70,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 onMounted(() => {
   viewSummary()
@@ -110,7 +109,7 @@ const viewSummary = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Payroll Summary')
+    appStore.showSnack('ERROR', 'Error Retrieving Payroll Summary')
 
     appStore.loading = false
   }
@@ -140,7 +139,7 @@ const exportPayrollSummary = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Exporting Payroll Summary')
+    appStore.showSnack('ERROR', 'Error Exporting Payroll Summary')
 
     appStore.loading = false
   }

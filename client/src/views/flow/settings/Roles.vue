@@ -103,7 +103,7 @@
   import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const store = vueInstance.$store
   const router = useRouter()
 
@@ -134,7 +134,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Roles')
+      appStore.showSnack('ERROR', 'Error Retrieving Roles')
       appStore.loading = false
     }
   }
@@ -145,7 +145,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting Role')
+      appStore.showSnack('ERROR', 'Error Deleting Role')
       appStore.loading = false
     }
   }

@@ -289,7 +289,6 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   nonAdminAdd: Boolean
@@ -404,7 +403,7 @@ onMounted(async () => {
         } catch (e) {
           positionsLoading.value = false
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Positions')
+          appStore.showSnack('ERROR', 'Error Retrieving Positions')
           appStore.loading = false
         }
       }
@@ -417,7 +416,7 @@ onMounted(async () => {
         if(!processStep.value.readonly) {
           processStep.value.whiteListedPositions = []
         }
-        snackbar('SUCCESS', 'Saved Successfully')
+        appStore.showSnack('SUCCESS', 'Saved Successfully')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -438,11 +437,11 @@ onMounted(async () => {
       appStore.loading = true
       try {
         const {status} = await putRequest(`/processStep?savePositions=${nonAdminAddWhiteListedPositionsChanged.value ?? false}`, processStep.value)
-        snackbar('SUCCESS', 'Process Step Updated')
+        appStore.showSnack('SUCCESS', 'Process Step Updated')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Updating Process Step')
+        appStore.showSnack('ERROR', 'Error Updating Process Step')
         appStore.loading = false
       }
     }
@@ -455,7 +454,7 @@ onMounted(async () => {
           companyStatusesLoading.value = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Process Step Status Types')
+          appStore.showSnack('ERROR', 'Error Retrieving Process Step Status Types')
           companyStatusesLoading.value = false
         }
       }
@@ -468,7 +467,7 @@ onMounted(async () => {
         expanded.value = []
         const {status} = await putRequest(`/processStep/status/removeStatus/${item.id}/fromStep/${processStepId.value}`)
         item.archived = true
-        snackbar('SUCCESS', 'Status Type Deleted')
+        appStore.showSnack('SUCCESS', 'Status Type Deleted')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -478,7 +477,7 @@ onMounted(async () => {
           deleteError.value = true
           cannotDeleteReasons.value = e.data
         }
-        snackbar('ERROR', 'Error Deleting Status Type')
+        appStore.showSnack('ERROR', 'Error Deleting Status Type')
         appStore.loading = false
       }
     }
@@ -489,11 +488,11 @@ onMounted(async () => {
           allowNonAdminUse: e.target.checked || false
         }
         const {data, status} = await putRequest(`/processStep/status/${item.id}/updateAllowNonAdminUse`, body)
-        snackbar('SUCCESS', 'Changes Saved')
+        appStore.showSnack('SUCCESS', 'Changes Saved')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving')
+        appStore.showSnack('ERROR', 'Error Saving')
         appStore.loading = false
       }
     }
@@ -506,11 +505,11 @@ onMounted(async () => {
         // reset fields
         addNewProcessStepStatusType.value = false
         newProcessStepStatusTypeId.value = null
-        snackbar('SUCCESS', 'Status Type Added')
+        appStore.showSnack('SUCCESS', 'Status Type Added')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Adding Status Type')
+        appStore.showSnack('ERROR', 'Error Adding Status Type')
         appStore.loading = false
       }
     }
@@ -524,7 +523,7 @@ onMounted(async () => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.showSnack('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       } finally {
         psLoading.value = false
@@ -541,7 +540,7 @@ onMounted(async () => {
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.showSnack('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       }
     }
@@ -554,11 +553,11 @@ onMounted(async () => {
         // reset fields
         addNewLink.value = false
         newLink.value = {}
-        snackbar('SUCCESS', 'Link Added')
+        appStore.showSnack('SUCCESS', 'Link Added')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Adding Link')
+        appStore.showSnack('ERROR', 'Error Adding Link')
         appStore.loading = false
       }
     }
@@ -567,11 +566,11 @@ onMounted(async () => {
       try {
         addNewLink.value = false
         const {status} = await deleteRequest(`/links/processStep/${id}`)
-        snackbar('SUCCESS', 'Link Deleted')
+        appStore.showSnack('SUCCESS', 'Link Deleted')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Deleting Link')
+        appStore.showSnack('ERROR', 'Error Deleting Link')
         appStore.loading = false
       }
     }
@@ -594,10 +593,10 @@ onMounted(async () => {
           const {status} = await putRequest(`/links/updateOrderInProcessStep`, linksToSave)
           handleHidingGlobalLoader(status)
         }
-        snackbar('SUCCESS', 'Links Updated')
+        appStore.showSnack('SUCCESS', 'Links Updated')
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Updating Links')
+        appStore.showSnack('ERROR', 'Error Updating Links')
         appStore.loading = false
       }
     }

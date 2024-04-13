@@ -56,7 +56,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const props = defineProps({
   projectId: Number,
@@ -119,7 +119,7 @@ const getCancelledStatuses = async() => {
       }
     } catch (e) {
       logError(e)
-      snackbar('ERROR', 'Error fetching process step statuses')
+      appStore.showSnack('ERROR', 'Error fetching process step statuses')
 
     }
   }

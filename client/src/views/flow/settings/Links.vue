@@ -140,7 +140,7 @@
   import { useUserStore } from '@/stores/UserStore.js'
   import { useAppStore } from '@/stores/AppStore.js'
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
@@ -184,7 +184,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
       appStore.loading = false
     }
   }
@@ -194,13 +194,13 @@
     appStore.loading = true
     try {
       const {status} = await deleteRequest(`/links/${typeId}`)
-      snackbar('SUCCESS', 'Link Deleted')
+      appStore.showSnack('SUCCESS', 'Link Deleted')
 
       link.archived = true
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting Link')
+      appStore.showSnack('ERROR', 'Error Deleting Link')
 
       appStore.loading = false
     }
@@ -220,12 +220,12 @@
       // reset the new process fields
       addNew.value = false
       newLink.value = { url: ''}
-      snackbar('SUCCESS', 'Link Added')
+      appStore.showSnack('SUCCESS', 'Link Added')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Adding Link')
+      appStore.showSnack('ERROR', 'Error Adding Link')
 
       appStore.loading = false
     }
@@ -236,12 +236,12 @@
       selectedLinkId.value = null
       a.modifiedById = userId.value
       const {status} = await putRequest(`/links`, a)
-      snackbar('SUCCESS', 'Link Updated')
+      appStore.showSnack('SUCCESS', 'Link Updated')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Updating Link')
+      appStore.showSnack('ERROR', 'Error Updating Link')
       appStore.loading = false
     }
   }

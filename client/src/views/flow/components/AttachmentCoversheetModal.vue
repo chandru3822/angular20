@@ -280,8 +280,7 @@ const userStore = useUserStore()
 const fileStore = useFileStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 
 const props = defineProps({
   existingAttachment: Object,
@@ -452,7 +451,7 @@ const saveAndUpload = async() => {
   } else {
     errorMsg.value = 'Additional fields are required before saving.'
     saveError.value = true
-    snackbar('ERROR', 'Missing Required Fields')
+    appStore.showSnack('ERROR', 'Missing Required Fields')
 
   }
 }
@@ -465,7 +464,7 @@ const saveDisplayName = async() => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Changes')
+    appStore.showSnack('ERROR', 'Error Saving Changes')
 
     appStore.loading = false
   }
@@ -495,14 +494,14 @@ const uploadDocument = async() => {
   } catch (e) {
     appStore.loading = false
     logError(e)
-    snackbar('ERROR', 'Error Uploading File')
+    appStore.showSnack('ERROR', 'Error Uploading File')
 
   }
 }
 const uploadCallback = async(newAttachment, error) => {
   if (error) {
     error.value = error
-    snackbar('ERROR', error.message)
+    appStore.showSnack('ERROR', error.message)
 
   } else {
     await updateFieldGroups(newAttachment.id)
@@ -520,12 +519,12 @@ const updateFieldGroups = async(attachmentId) => {
       const {data} = await postRequest(`/customFieldValues/attachmentType/${existingAttachment.value.attachmentTypeId}/attachment/${attachmentId}`, dirtyCfvs.value)
       dirtyCfvs.value = []
       customFieldGroups.value = data
-      snackbar('SUCCESS', 'Fields Saved')
+      appStore.showSnack('SUCCESS', 'Fields Saved')
 
       appStore.loading = false
     } catch (e) {
       logError(e)
-      snackbar('ERROR', 'Error Saving Custom Fields')
+      appStore.showSnack('ERROR', 'Error Saving Custom Fields')
 
       appStore.loading = false
     } finally {

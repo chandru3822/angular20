@@ -220,7 +220,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const smartlist = ref({mainProcessSteps: true})
 const companyObjectTypes = ref([])
@@ -336,7 +335,7 @@ const getSmartlist = async () => {
     originalObjectTypeId.value = data.objectTypeId
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching smartlist')
+    appStore.showSnack('ERROR', 'Error fetching smartlist')
 
   }
 }
@@ -346,7 +345,7 @@ const getCompanyObjectTypes = async () => {
     companyObjectTypes.value = data.sort((a, b) => a.objectType.localeCompare(b.objectType))
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching object types')
+    appStore.showSnack('ERROR', 'Error fetching object types')
 
   }
 }
@@ -356,7 +355,7 @@ const getRequirements = async () => {
     requirements.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching requirements')
+    appStore.showSnack('ERROR', 'Error fetching requirements')
 
   }
 }
@@ -367,7 +366,7 @@ const getLogic = async () => {
     logic.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching smartlist logic')
+    appStore.showSnack('ERROR', 'Error fetching smartlist logic')
 
   }
 }
@@ -377,7 +376,7 @@ const getProjectDetailsColumns = async () => {
     projectDetailsColumns.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching project details fields')
+    appStore.showSnack('ERROR', 'Error fetching project details fields')
 
   }
 }
@@ -387,7 +386,7 @@ const getOperations = async () => {
     operations.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching operations')
+    appStore.showSnack('ERROR', 'Error fetching operations')
 
   }
 }
@@ -403,12 +402,12 @@ const addSmartlist = async () => {
     smartlist.value = data
     originalObjectTypeId.value = data.objectTypeId
     router.replace({name: 'smartlistEditor', params: {smartlistId: smartlist.value.id}})
-    snackbar('SUCCESS', `Smartlist Created`)
+    appStore.showSnack('SUCCESS', `Smartlist Created`)
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', e.message || e.data?.message || 'Error saving smartlist')
+    appStore.showSnack('ERROR', e.message || e.data?.message || 'Error saving smartlist')
 
     appStore.loading = false
   }
@@ -430,7 +429,7 @@ const addNewRequirement = async (requirement) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error adding requirement to smartlist')
+    appStore.showSnack('ERROR', 'Error adding requirement to smartlist')
 
     appStore.loading = false
   }
@@ -446,12 +445,12 @@ const updateSmartlist = async () => {
     const {status} = await putRequest(`/smartlistv1/${smartlist.value.id}`, smartlist.value)
     const companyObjectType = companyObjectTypes.value.find(t => t.companyObjectTypeId === smartlist.value.companyObjectTypeId)
     originalObjectTypeId.value = companyObjectType.objectTypeId
-    snackbar('SUCCESS', `Smartlist Updated`)
+    appStore.showSnack('SUCCESS', `Smartlist Updated`)
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', e.message || 'Error saving smartlist')
+    appStore.showSnack('ERROR', e.message || 'Error saving smartlist')
 
     appStore.loading = false
   }
@@ -465,7 +464,7 @@ const updateLogic = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error updating smartlist logic')
+    appStore.showSnack('ERROR', 'Error updating smartlist logic')
 
     appStore.loading = false
   }
@@ -478,7 +477,7 @@ const updateRequirement = async (requirement) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error updating requirement')
+    appStore.showSnack('ERROR', 'Error updating requirement')
 
     appStore.loading = false
   }
@@ -491,7 +490,7 @@ const deleteSmartlist = async () => {
     router.go(-1)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Unable to delete smartlist')
+    appStore.showSnack('ERROR', 'Unable to delete smartlist')
 
     appStore.loading = false
   }
@@ -507,7 +506,7 @@ const deleteRequirement = async (requirement) => {
     requirements.value.splice(deleteIndex, 1)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error deleting requirement')
+    appStore.showSnack('ERROR', 'Error deleting requirement')
 
   } finally {
     appStore.loading = false
@@ -524,7 +523,7 @@ const runReport = async () => {
     saveAs(blob, `${smartlist.value.name} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
     handleHidingGlobalLoader( status)
   } catch (e) {
-    snackbar('ERROR', e.data.message)
+    appStore.showSnack('ERROR', e.data.message)
 
     logError(e)
     appStore.loading = false
@@ -548,7 +547,7 @@ const toggleProjectDetails = async () => {
   } catch (e) {
     logError(e)
     smartlist.value.projectDetails = !smartlist.value.projectDetails
-    snackbar('ERROR', 'Error updating smartlist')
+    appStore.showSnack('ERROR', 'Error updating smartlist')
 
     appStore.loading = false
   }
@@ -590,7 +589,7 @@ const toggleSmartlistObjectType = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error updating smartlist row type')
+    appStore.showSnack('ERROR', 'Error updating smartlist row type')
     smartlist.value.objectTypeId = originalObjectTypeId.value
     smartlist.value.companyObjectTypeId = companyObjectTypes.value.find(t => t.objectTypeId === originalObjectTypeId.value).companyObjectTypeId
 
@@ -602,12 +601,12 @@ const copy = async () => {
     appStore.loading = true
     const {data, status} = await postRequest(`/smartlistv1/${smartlist.value.id}/copy`)
     router.go(-1)
-    snackbar('SUCCESS', `Smartlist "${data.name}" was created`)
+    appStore.showSnack('SUCCESS', `Smartlist "${data.name}" was created`)
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error duplicating smartlist')
+    appStore.showSnack('ERROR', 'Error duplicating smartlist')
 
     appStore.loading = false
   }
@@ -618,11 +617,11 @@ const buildSql = async() => {
     const {data} = await getRequestWithParams(`/smartlistv1/${smartlist.value.id}/getSqlString`, {params})
     sql.value = data
     navigator.clipboard.writeText(sql.value);
-    snackbar('SUCCESS', 'Copied query to clipboard')
+    appStore.showSnack('SUCCESS', 'Copied query to clipboard')
 
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching sql')
+    appStore.showSnack('ERROR', 'Error fetching sql')
 
   }
 }

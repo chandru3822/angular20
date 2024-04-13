@@ -46,7 +46,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const headers = ref([
   {text: 'ID', value: 'id', show: true, width: 80},

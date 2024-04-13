@@ -346,7 +346,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const org = ref({})
 const tempOrg = ref({})
@@ -497,12 +497,12 @@ const saveOrgSystemFields = async() => {
     const {data, status} = await putRequest(`/org`, tempOrg.value)
     org.value = data
     showEditModal.value = false
-    snackbar('SUCCESS', 'Organization Updated')
+    appStore.showSnack('SUCCESS', 'Organization Updated')
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error Saving Fields')
+    appStore.showSnack('ERROR', 'Error Saving Fields')
 
     appStore.loading = false
   }
@@ -517,20 +517,20 @@ const saveOrg = async() => {
       const {data} = await postRequest(`/customFieldValues/org/${orgId.value}`, dirtyCfvs.value)
       dirtyCfvs.value = []
       customFieldGroups.value = data
-      snackbar('SUCCESS', 'Organization Saved')
+      appStore.showSnack('SUCCESS', 'Organization Saved')
 
       fieldsSaving.value = false
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = org.value.id ? 'Error Saving Organization' : 'Error Adding Organization'
-      snackbar('ERROR', msg)
+      appStore.showSnack('ERROR', msg)
 
       fieldsSaving.value = false
       appStore.loading = false
     }
   } else {
-    snackbar('ERROR', 'Missing Required Fields')
+    appStore.showSnack('ERROR', 'Missing Required Fields')
 
   }
 }
@@ -548,7 +548,7 @@ const getCustomFieldGroups = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Custom Fields')
+    appStore.showSnack('ERROR', 'Error Retrieving Custom Fields')
 
     appStore.loading = false
   }
@@ -561,7 +561,7 @@ const getCompanyTimezones = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Timezones')
+    appStore.showSnack('ERROR', 'Error Retrieving Timezones')
 
     appStore.loading = false
   }
@@ -575,7 +575,7 @@ const getOrg = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Organization')
+    appStore.showSnack('ERROR', 'Error Retrieving Organization')
 
     appStore.loading = false
   }
@@ -588,7 +588,7 @@ const getAllOrgTypes = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Org Types')
+    appStore.showSnack('ERROR', 'Error Retrieving Org Types')
 
     appStore.loading = false
   }
@@ -599,7 +599,7 @@ const getAllOrgsByType = async(orgTypeId) => {
     parents.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Parent Orgs')
+    appStore.showSnack('ERROR', 'Error Retrieving Parent Orgs')
 
     appStore.loading = false
   }
@@ -610,7 +610,7 @@ const getUsersInOrg = async() => {
     usersInOrg.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Users In Org')
+    appStore.showSnack('ERROR', 'Error Retrieving Users In Org')
 
   }
 }
@@ -622,7 +622,7 @@ const getAllCompanyStates = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving States')
+    appStore.showSnack('ERROR', 'Error Retrieving States')
 
     appStore.loading = false
   }

@@ -69,7 +69,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   milestones: Array,
@@ -96,7 +95,7 @@ const getCurrentStatus = async() => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Current Project Status')
+    appStore.showSnack('ERROR', 'Error Retrieving Current Project Status')
 
   }
 }

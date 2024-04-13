@@ -53,11 +53,6 @@ import {getCurrentInstance, onMounted, ref} from 'vue'
 import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const router = vueInstance.$router
-const snackbar = vueInstance.$snackbar
-
 const dialog = ref(false)
 const errors = ref([])
 const dataLoading = ref(true)
@@ -81,7 +76,7 @@ const getErrors = async () => {
     dataLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Error Logs')
+    appStore.showSnack('ERROR', 'Error Loading Error Logs')
     dataLoading.value = false
   }
 }
@@ -94,7 +89,7 @@ const deleteError = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Error Deleting Log')
+    appStore.showSnack('ERROR', 'Error Error Deleting Log')
     appStore.loading = false
   }
 }

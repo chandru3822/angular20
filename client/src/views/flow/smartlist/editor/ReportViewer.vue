@@ -56,7 +56,6 @@ const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
 
-const snackbar = vueInstance.$snackbar
 
 const http = axios.create({
   baseURL: `${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/flow`,
@@ -173,9 +172,9 @@ const processQueue = async () => {
     const errMessage = e.response.data.message
     appStore.loading = false
     if (errMessage.includes('An event smartlist must have at least 1 event type column')) {
-      snackbar('ERROR', errMessage)
+      appStore.showSnack('ERROR', errMessage)
     } else {
-      snackbar('ERROR', 'Error while fetching smartlist data')
+      appStore.showSnack('ERROR', 'Error while fetching smartlist data')
     }
   } finally {
     isDataLoading.value = false
@@ -195,10 +194,10 @@ const getQuery = async () => {
     })
 
     navigator.clipboard.writeText(data.query)
-    snackbar('SUCCESS', 'Query copied to clipboard')
+    appStore.showSnack('SUCCESS', 'Query copied to clipboard')
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching query')
+    appStore.showSnack('ERROR', 'Error fetching query')
   }
 }
 </script>

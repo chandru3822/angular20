@@ -34,7 +34,6 @@ import {useRouter, useRoute} from "vue-router/composables"
 const vueInstance = getCurrentInstance().proxy
 const route = useRoute()
 const router = useRouter()
-const snackbar = vueInstance.$snackbar
 
 const isMobile = ref(false)
 const userAgent = ref('')
@@ -70,7 +69,7 @@ const setStripePaymentId = async() => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error saving payment ID to process step')
+    appStore.showSnack('ERROR', 'Error saving payment ID to process step')
   }
 }
 </script>

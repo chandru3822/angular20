@@ -249,8 +249,7 @@ const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-import {useRoute} from "vue-router/composables";
+ import {useRoute} from "vue-router/composables";
 import {useUserStore} from '@/stores/UserStore.js'
 import constants from "@/helpers/constants.js";
 const userStore = useUserStore()
@@ -345,7 +344,7 @@ const replicateBracket = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Bracket')
+    appStore.showSnack('ERROR', 'Error Saving Bracket')
     appStore.loading = false
   }
 }
@@ -358,7 +357,7 @@ const getTournamentOwnerTypes = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -374,7 +373,7 @@ const getTournament = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Tournament')
+    appStore.showSnack('ERROR', 'Error Loading Tournament')
     appStore.loading = false
   }
 }
@@ -387,7 +386,7 @@ const updateTournament = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Tournament')
+    appStore.showSnack('ERROR', 'Error Saving Tournament')
     appStore.loading = false
   }
 }
@@ -410,7 +409,7 @@ const addNewBracket = async () => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Bracket')
+      appStore.showSnack('ERROR', 'Error Saving Bracket')
       appStore.loading = false
     }
   } else {
@@ -423,12 +422,12 @@ const deleteBracket = async () => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/tournament/bracket/${id}`, 'blueraven')
-    snackbar('SUCCESS', 'Bracket Deleted')
+    appStore.showSnack('SUCCESS', 'Bracket Deleted')
     tournament.value.brackets.splice(tournament.value.brackets.indexOf(bracketToDelete.value))
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Bracket')
+    appStore.showSnack('ERROR', 'Error Deleting Bracket')
     appStore.loading = false
   }
 }
@@ -452,7 +451,7 @@ const saveRound = async (bracket, round) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Round')
+    appStore.showSnack('ERROR', 'Error Saving Round')
     appStore.loading = false
   }
 }
@@ -469,11 +468,11 @@ const deleteRound = async () => {
     bracket.rounds = data.rounds
     // this is dumb but i am getting an infinite loop error if i try to use the increment render key solution
     bracket.maxRounds = false
-    snackbar('SUCCESS', 'Round Deleted')
+    appStore.showSnack('SUCCESS', 'Round Deleted')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Round')
+    appStore.showSnack('ERROR', 'Error Deleting Round')
     appStore.loading = false
   }
 }
@@ -484,11 +483,11 @@ const generateMatches = async () => {
     const {status} = await putRequest(`/tournament/bracket/${bracket.id}/generateMatches`, {}, 'blueraven')
     //disable the button
     bracket.matchesGenerated = true
-    snackbar('SUCCESS', 'Matches Generated')
+    appStore.showSnack('SUCCESS', 'Matches Generated')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Generating Matches')
+    appStore.showSnack('ERROR', 'Error Generating Matches')
     appStore.loading = false
   }
 }

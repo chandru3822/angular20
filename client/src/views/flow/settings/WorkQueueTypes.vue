@@ -171,7 +171,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
 const router = useRouter()
-const snackbar = vueInstance.$snackbar
+
 
 const deleteError = ref(false)
 const cannotDeleteReasons = ref({})
@@ -242,7 +242,7 @@ const getAllWorkQueueTypes = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Work Queue Types')
+    appStore.showSnack('ERROR', 'Error Retrieving Work Queue Types')
     appStore.loading = false
   }
 }
@@ -256,7 +256,7 @@ const getAllWorkQueueCategories = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Work Queue Types')
+    appStore.showSnack('ERROR', 'Error Retrieving Work Queue Types')
     appStore.loading = false
   }
 }
@@ -267,7 +267,7 @@ const deleteType = async (item) => {
   appStore.loading = true
   try {
     const {status} = await putRequest(`/workQueueType/delete/${item.id}`)
-    snackbar('SUCCESS', 'Successfully Deleted Work Queue Type')
+    appStore.showSnack('SUCCESS', 'Successfully Deleted Work Queue Type')
     item.archived = true
     handleHidingGlobalLoader(status)
   } catch (e) {
@@ -278,7 +278,7 @@ const deleteType = async (item) => {
       deleteError.value = true
       cannotDeleteReasons.value = e.data
     }
-    snackbar('ERROR', 'Error Deleting Work Queue Type')
+    appStore.showSnack('ERROR', 'Error Deleting Work Queue Type')
     appStore.loading = false
   }
 }
@@ -287,7 +287,7 @@ const addNewType = async () => {
   try {
     const {data, status} = await postRequest(`/workQueueType/type`, newType.value)
 
-    snackbar('SUCCESS', 'Work Queue Type Added')
+    appStore.showSnack('SUCCESS', 'Work Queue Type Added')
 
     // add it to the master list too
     masterWorkQueueTypes.value.push(data)
@@ -300,7 +300,7 @@ const addNewType = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Work Queue Type')
+    appStore.showSnack('ERROR', 'Error Adding Work Queue Type')
     appStore.loading = false
   }
 }
@@ -309,11 +309,11 @@ const saveRowChanges = async (rows) => {
     appStore.loading = true
     try {
       const {status} = await putRequest(`/workQueueType/order`, rows)
-      snackbar('SUCCESS', 'Order Updated')
+      appStore.showSnack('SUCCESS', 'Order Updated')
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Order Changes')
+      appStore.showSnack('ERROR', 'Error Saving Order Changes')
       appStore.loading = false
     }
   }

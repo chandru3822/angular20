@@ -181,7 +181,6 @@ const appStore = useAppStore()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const filteredProjectStatuses = computed(() => {
   return statusTypes.value.filter(s => {
@@ -230,11 +229,11 @@ const saveOrderChanges = async (types) => {
   appStore.loading = true
   try {
     const {status} = await putRequest(`/projectStatus/companyStatuses`, types)
-    snackbar('SUCCESS', 'Status Types Updated')
+    appStore.showSnack('SUCCESS', 'Status Types Updated')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Status Type Changes')
+    appStore.showSnack('ERROR', 'Error Saving Status Type Changes')
     appStore.loading = false
   }
 }
@@ -248,7 +247,7 @@ const getCompanyStatusTypes = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -265,11 +264,11 @@ const saveNewType = async (type) => {
     addNew.value = false
     newType.value = {}
 
-    snackbar('SUCCESS', 'Project Status Saved')
+    appStore.showSnack('SUCCESS', 'Project Status Saved')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Project Status')
+    appStore.showSnack('ERROR', 'Error Saving Project Status')
     appStore.loading = false
   }
 }
@@ -281,7 +280,7 @@ const getTheseProjectStatusTypes = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -291,17 +290,17 @@ const deleteType = async () => {
   try {
     const {status} = await deleteRequest(`/projectStatus/companyStatus/${item.id}`)
     item.archived = true
-    snackbar('SUCCESS', 'Status Deleted')
+    appStore.showSnack('SUCCESS', 'Status Deleted')
     handleHidingGlobalLoader(status)
   } catch (e) {
     if (e.status === 400) {
       deleteError.value = true;
       fieldsInUse.value = e.data;
-      snackbar("ERROR", "Error Deleting Status");
+      appStore.showSnack("ERROR", "Error Deleting Status");
       appStore.loading = false
     } else {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting Status')
+      appStore.showSnack('ERROR', 'Error Deleting Status')
       appStore.loading = false
     }
   }
@@ -310,7 +309,7 @@ const deleteType = async () => {
 
 const copyToClipBoard = (textValue) => {
   navigator.clipboard.writeText(textValue);
-  snackbar('SUCCESS', 'Copied text to clipboard')
+  appStore.showSnack('SUCCESS', 'Copied text to clipboard')
 }
 const closeDeleteDialog = () => {
   showDeleteDialog.value = false

@@ -52,8 +52,7 @@ import {useRouter} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
 const router = useRouter()
@@ -76,7 +75,7 @@ const getCompanyObjectTypes = async () => {
     companyObjectTypes.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching object types')
+    appStore.showSnack('ERROR', 'Error fetching object types')
   }
 }
 const goToDetails = (item) => {

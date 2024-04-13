@@ -138,7 +138,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const initialLoad = ref(true)
 const delay = ref(500)
@@ -211,7 +211,7 @@ const getOrgs = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Organizations')
+    appStore.showSnack('ERROR', 'Error Loading Organizations')
 
     appStore.loading = false
   }

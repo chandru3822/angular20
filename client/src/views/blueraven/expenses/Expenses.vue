@@ -17,7 +17,7 @@
             Expense Management
           </v-toolbar-title>
           <v-tabs :optional="false" color="primary"
-                  slot="extension"
+                   v-slot:extension
                   background-color="white" v-model="model" slider-color="primary">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{tab.label}}
@@ -45,7 +45,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const model = ref('')
 const userCanManage = computed(() => {

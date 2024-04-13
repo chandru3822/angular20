@@ -118,7 +118,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const model = ref({})
@@ -178,7 +177,7 @@ const getQueue = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving Queue')
+    appStore.showSnack('ERROR', 'Error retrieving Queue')
 
     appStore.loading = false
   }
@@ -191,7 +190,7 @@ const updateMessage = async(item) => {
   } catch (e) {
     item.owner = 'Unassigned'
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving message')
+    appStore.showSnack('ERROR', 'Error Saving message')
 
     appStore.loading = false
   }

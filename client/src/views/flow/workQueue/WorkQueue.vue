@@ -215,7 +215,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const model = ref({})
 const categoriesLoading = ref(true)
@@ -275,7 +274,7 @@ const getAllWorkQueueCategories = async() => {
     categoriesLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Work Queue Categories')
+    appStore.showSnack('ERROR', 'Error Retrieving Work Queue Categories')
 
     categoriesLoading.value = false
   }
@@ -334,7 +333,7 @@ const getWorkQueues = async(isFilteredReload) => {
       // }
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Work Queues')
+      appStore.showSnack('ERROR', 'Error Retrieving Work Queues')
 
       cardsLoading.value = false
     }
@@ -361,7 +360,7 @@ const loadMetrics = async() => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Work Queue Categories')
+    appStore.showSnack('ERROR', 'Error Retrieving Work Queue Categories')
 
     categoriesLoading.value = false
   }
