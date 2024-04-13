@@ -399,7 +399,6 @@ import moment from 'moment-timezone'
 import {DateTime} from 'luxon'
 import SpinnerInline from '@/components/SpinnerInline'
 import {getStatusClass} from '@/services/eventStatusTypeService'
-import Vue2Filters from 'vue2-filters'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import ActionButton from "./ActionButton";

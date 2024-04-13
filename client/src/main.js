@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Vuetify from '@/plugins/vuetify'
 import Chat from 'vue-beautiful-chat'
-import Vue2Filters from 'vue2-filters'
 import App from '@/App.vue'
 import router from '@/router'
 import pinia from '@/store'
@@ -24,9 +23,9 @@ const { VITE_GA_ID } = import.meta.env
 Vue.config.productionTip = false
 
 Vue.use(SnackbarPlugin)
-Vue.use(Vue2Filters)
 Vue.prototype.$filters = Vue.options.filters
 
+//todo: @kaleb the filters in your mixin.js didnt seem to be working
 Vue.filter('capitalize', function(value) {
   if (!value) return
   return value[0].toUpperCase() + value?.slice(1).toLowerCase()
