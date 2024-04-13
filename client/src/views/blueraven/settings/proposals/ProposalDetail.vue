@@ -419,7 +419,7 @@ const showHistory = ref(false)
     const getProposalObjectTypeFields = async(objectType) => {
       const {data} = await getRequestWithParams(`/proposal/versions/fields/${objectType}`, {}, 'blueraven')
 
-      let headers = data?.length > 0
+      let headersTemp = data?.length > 0
         ? data.map(r => ({
           text: r.fieldName,
           sortable: true,
@@ -429,18 +429,18 @@ const showHistory = ref(false)
         }))
         : []
 
-      headers.sort((a, b) => a.fieldOrder - b.fieldOrder)
+      headersTemp.sort((a, b) => a.fieldOrder - b.fieldOrder)
 
       if (detail.value.status === 'DRAFT') {
-        headers.push(defaultActionColumn)
+        headersTemp.push(defaultActionColumn)
       }
-      headers.value = headers
+      headers.value = headersTemp
     }
     const getProposalObjectTypeFieldValues = async(proposalVersionId, objectType) => {
       const {data} = await getRequestWithParams(`/proposal/versions/${proposalVersionId}/values/${objectType}`, {}, 'blueraven')
       const filteredValues = data.map(({pk, versionId, archived, row}) => ({pk, versionId, archived, ...row}))
       const sortHeader = headers.value?.find(h => h.fieldOrder === 1)
-      filteredValues.sort(sorterFn(sortHeader.value))
+      filteredValues.sort(sorterFn(sortHeader))
       values.value = filteredValues
     }
     const publish = async(proposalVersionId, message) => {

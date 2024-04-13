@@ -27,6 +27,25 @@ Vue.use(SnackbarPlugin)
 Vue.use(Vue2Filters)
 Vue.prototype.$filters = Vue.options.filters
 
+Vue.filter('capitalize', function(value) {
+  if (!value) return
+  return value[0].toUpperCase() + value?.slice(1).toLowerCase()
+})
+
+Vue.filter('customValueFormatter', function(value, type) {
+  if (Array.isArray(value)) {
+    return value?.join(', ')
+  }
+
+  if (type === 'timestamp') {
+    return new Intl.DateTimeFormat('default', {
+      dateStyle: 'short',
+      timeStyle: 'short'
+    }).format(new Date(value))
+  }
+  return value
+})
+
 //this filter is only used for the zoneless time picker stuff
 Vue.filter('formatDateZoneless', function(value) {
   if (value) {

@@ -14,7 +14,7 @@
         color="primary"
         size="x-small"
         :activation-handler="on"
-        class="commission-detail-button"
+        custom-classes="commission-detail-button"
         prepend-icon="mdi-information"
       ></a-btn>
     </template>

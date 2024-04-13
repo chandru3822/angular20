@@ -132,7 +132,7 @@
                     :hint="getHint(field)"
                   />
                   <CommissionDetailsMenu
-                    v-if="field.customFieldGroupAssignmentId === 454"
+                    v-if="field.customFieldGroupAssignmentId === 454 && isFieldVisible(field)"
                     :custom-field-groups="sortedCustomFieldGroups"
                     :proposal-id="proposalId"
                   />

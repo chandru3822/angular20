@@ -480,6 +480,10 @@ const groupOrderChanged = ref(false)
 const whiteListedPositions = ref([])
 const whiteListedPositionsChanged = ref(null)
 const customFieldGroupAssignmentReadOnly = ref(null)
+const hiddenWhiteListedPositionsChanged = ref(null)
+const hiddenWhiteListedPositions = ref(null)
+const customFieldGroupAssignmentHiddenAllow = ref(null)
+const customFieldGroupAssignmentHidden = ref(null)
 const customFieldGroupAssignmentReadOnlyAllow = ref(null)
 const newGroup = ref({
   groupName: null
