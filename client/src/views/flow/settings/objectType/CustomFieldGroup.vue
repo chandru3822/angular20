@@ -444,18 +444,17 @@ import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getReque
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 
 import {ref, onMounted, getCurrentInstance, computed, defineProps, watch} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const route = useRoute()
+ const route = useRoute()
 const router = useRouter()
 const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
@@ -481,6 +480,10 @@ const groupOrderChanged = ref(false)
 const whiteListedPositions = ref([])
 const whiteListedPositionsChanged = ref(null)
 const customFieldGroupAssignmentReadOnly = ref(null)
+const hiddenWhiteListedPositionsChanged = ref(null)
+const hiddenWhiteListedPositions = ref(null)
+const customFieldGroupAssignmentHiddenAllow = ref(null)
+const customFieldGroupAssignmentHidden = ref(null)
 const customFieldGroupAssignmentReadOnlyAllow = ref(null)
 const newGroup = ref({
   groupName: null
@@ -591,7 +594,7 @@ const iconOwner = () => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Tabs')
+        appStore.showSnack('ERROR', 'Error Retrieving Tabs')
 
         appStore.loading = false
       }
@@ -608,7 +611,7 @@ const iconOwner = () => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.showSnack('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       }
     }
@@ -634,7 +637,7 @@ const iconOwner = () => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.showSnack('ERROR', 'Error Retrieving Data')
 
         appStore.loading = false
       }
@@ -649,12 +652,12 @@ const iconOwner = () => {
           addNew.value = false
           // add the new type to the list
           customFieldGroups.value.push(data)
-          snackbar('SUCCESS', 'Group Added')
+          appStore.showSnack('SUCCESS', 'Group Added')
 
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Adding Custom Field Group')
+          appStore.showSnack('ERROR', 'Error Adding Custom Field Group')
 
           appStore.loading = false
         }
@@ -672,12 +675,12 @@ const iconOwner = () => {
         parent.value = {}
         addField.value = false
         snackbar
-        snackbar('SUCCESS', 'Field Added to Group')
+        appStore.showSnack('SUCCESS', 'Field Added to Group')
 
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Adding Field to Group')
+        appStore.showSnack('ERROR', 'Error Adding Field to Group')
 
         appStore.loading = false
       }
@@ -686,13 +689,13 @@ const iconOwner = () => {
       appStore.loading = true
       try {
         await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
-        snackbar('SUCCESS', 'Field Moved')
+        appStore.showSnack('SUCCESS', 'Field Moved')
 
         //currently reloading the page because moving the field in the UI seems too hard (even though it isn't i just cant make myself do it right now)
         window.location.reload()
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Moving Field')
+        appStore.showSnack('ERROR', 'Error Moving Field')
 
         appStore.loading = false
       }
@@ -713,12 +716,12 @@ const iconOwner = () => {
         selectedAncillaryField.value = {}
         parent.value = {}
         addField.value = false
-        snackbar('SUCCESS', 'Field Added to Group')
+        appStore.showSnack('SUCCESS', 'Field Added to Group')
 
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Adding Field to Group')
+        appStore.showSnack('ERROR', 'Error Adding Field to Group')
 
         appStore.loading = false
       }
@@ -727,12 +730,12 @@ const iconOwner = () => {
       appStore.loading = true
       try {
         const {status} = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups)
-        snackbar('SUCCESS', 'Groups Updated')
+        appStore.showSnack('SUCCESS', 'Groups Updated')
 
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving Group Changes')
+        appStore.showSnack('ERROR', 'Error Saving Group Changes')
 
         appStore.loading = false
       }
@@ -743,12 +746,12 @@ const iconOwner = () => {
         const {data, status} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
         group.tabName = data.tabName
         group.companyObjectTypeTabDisplayOrder = data.companyObjectTypeTabDisplayOrder
-        snackbar('SUCCESS', 'Custom Field Group Updated')
+        appStore.showSnack('SUCCESS', 'Custom Field Group Updated')
 
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving Change')
+        appStore.showSnack('ERROR', 'Error Saving Change')
 
         appStore.loading = false
       }
@@ -772,19 +775,19 @@ const iconOwner = () => {
             deleteHeader.value = 'Error Deleting Custom Field from Group'
             deleteText.value = 'You cannot delete a field from a group that is in use by other groups or requirements.'
           }
-          snackbar('ERROR', errorMsg)
+          appStore.showSnack('ERROR', errorMsg)
 
           handleHidingGlobalLoader(status)
         } else {
           fieldsInUse.value = []
           item.archived = true
-          snackbar('SUCCESS', 'Item Deleted')
+          appStore.showSnack('SUCCESS', 'Item Deleted')
 
           appStore.loading = false
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Deleting')
+        appStore.showSnack('ERROR', 'Error Deleting')
 
         appStore.loading = false
       }
@@ -821,7 +824,7 @@ const iconOwner = () => {
         if(!field.customFieldGroupAssignmentReadOnly) {
           vueInstance.$set(field, 'whiteListedPositions', [])
         }
-        snackbar('SUCCESS', 'Field Updated')
+        appStore.showSnack('SUCCESS', 'Field Updated')
 
         handleHidingGlobalLoader(status)
       } catch (e) {
@@ -850,11 +853,11 @@ const iconOwner = () => {
           vueInstance.$set(field, 'hiddenWhiteListedPositions', [])
         }
         handleHidingGlobalLoader(status)
-        snackbar('SUCCESS', 'Field Updated')
+        appStore.showSnack('SUCCESS', 'Field Updated')
 
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving Field')
+        appStore.showSnack('ERROR', 'Error Saving Field')
 
         appStore.loading = false
       }
@@ -869,7 +872,7 @@ const iconOwner = () => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Details')
+        appStore.showSnack('ERROR', 'Error Retrieving Details')
         appStore.loading = false
       }
     }
@@ -881,7 +884,7 @@ const iconOwner = () => {
         if(!objectType.value.ownerReadOnly) {
           ownerReadOnlyWhiteListedPositions.value = []
         }
-        snackbar('SUCCESS', 'Saved Successfully')
+        appStore.showSnack('SUCCESS', 'Saved Successfully')
 
         handleHidingGlobalLoader(status)
       } catch (e) {
@@ -905,13 +908,13 @@ const iconOwner = () => {
         if(fieldsToSave.length > 0) {
           appStore.loading = true
           const {status} = await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
-          snackbar('SUCCESS', 'Fields Updated')
+          appStore.showSnack('SUCCESS', 'Fields Updated')
 
           handleHidingGlobalLoader(status)
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Updating Fields')
+        appStore.showSnack('ERROR', 'Error Updating Fields')
 
         appStore.loading = false
       }
@@ -930,12 +933,12 @@ const iconOwner = () => {
           required: cf.required || false
         }
         const {status} = await putRequest(`/customFieldGroup/updateFieldShowOrRequire`, objectType)
-        snackbar('SUCCESS', 'Updated Field')
+        appStore.showSnack('SUCCESS', 'Updated Field')
 
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving Data')
+        appStore.showSnack('ERROR', 'Error Saving Data')
 
         appStore.loading = false
       }
@@ -954,7 +957,7 @@ const iconOwner = () => {
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.showSnack('ERROR', 'Error Retrieving Data')
 
         appStore.loading = false
       }
@@ -971,7 +974,7 @@ const iconOwner = () => {
         } catch (e) {
           positionsLoading.value = false
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Positions')
+          appStore.showSnack('ERROR', 'Error Retrieving Positions')
 
           appStore.loading = false
         }
@@ -1012,7 +1015,7 @@ const iconOwner = () => {
     }
     const copyToClipBoard = (textValue)=> {
         navigator.clipboard.writeText(textValue);
-        snackbar('SUCCESS', 'Copied id to clipboard')
+        appStore.showSnack('SUCCESS', 'Copied id to clipboard')
     }
     const objectTypeReadOnlySelectedEventListener = (e) => {
       objectType.value.ownerReadOnlyWhiteListedPositions = e;

@@ -20,9 +20,9 @@
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
 import FeatDbCustomFieldGroup from "@/views/blueraven/featDB/components/FeatDbCustomFieldGroup.vue";
 import { getCurrentInstance, computed, ref, toRefs, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -31,7 +31,6 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const vuetify = vueInstance.$vuetify
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   customFieldGroups: Array,

@@ -158,14 +158,13 @@
   import ConfirmationDialog from '@/components/ConfirmationDialog'
   import {computed, getCurrentInstance, onMounted, ref} from 'vue'
   import {useRouter} from 'vue-router/composables'
-  import { useUserStore } from '@/stores/UserStorePinia.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useUserStore } from '@/stores/UserStore.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
-  const userStore = useUserStore()
+     const userStore = useUserStore()
 
   const router = useRouter()
 
@@ -247,7 +246,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
-          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.showSnack('ERROR', 'Error Retrieving Data')
           appStore.loading = false
         }
       },
@@ -262,7 +261,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             dataLoading.value = false
-            snackbar('ERROR', 'Error Retrieving Data')
+            appStore.showSnack('ERROR', 'Error Retrieving Data')
             appStore.loading = false
           }
         },
@@ -275,7 +274,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
-          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.showSnack('ERROR', 'Error Retrieving Data')
           appStore.loading = false
         }
       },
@@ -290,7 +289,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
-          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.showSnack('ERROR', 'Error Retrieving Data')
           appStore.loading = false
         }
       },
@@ -299,11 +298,11 @@
         appStore.loading = true
         try {
           const {status} = await deleteRequest(`/tournament/${id}`, 'blueraven')
-          snackbar('SUCCESS', 'Tournament Deleted')
+          appStore.showSnack('SUCCESS', 'Tournament Deleted')
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Deleting Tournament')
+          appStore.showSnack('ERROR', 'Error Deleting Tournament')
           appStore.loading = false
         }
         tournamentToDelete.value=null
@@ -314,11 +313,11 @@
         try {
           const {data, status} = await postRequest(`/tournament`, newTournament.value, 'blueraven')
           router.push({path: `/settings/tournaments/${data.id}/details`})
-          snackbar('SUCCESS', 'Tournament Added')
+          appStore.showSnack('SUCCESS', 'Tournament Added')
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Adding Tournament')
+          appStore.showSnack('ERROR', 'Error Adding Tournament')
           appStore.loading = false
         }
       }

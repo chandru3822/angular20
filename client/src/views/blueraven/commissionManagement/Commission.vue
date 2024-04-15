@@ -700,10 +700,10 @@ import {
 } from '@/helpers/helpers';
 import ProjectAssignmentModal from "@/views/blueraven/commissionManagement/ProjectAssignmentModal";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { useBrsStore } from '@/stores/BrsStorePinia.js'
+import { useBrsStore } from '@/stores/BrsStore.js'
 import {getCurrentInstance, computed, ref, onMounted, watch} from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useAppStore} from '@/stores/AppStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useAppStore} from '@/stores/AppStore.js'
 import {useRoute, useRouter} from "vue-router/composables"
 import debounce from "lodash.debounce"
 import { storeToRefs } from 'pinia'
@@ -717,7 +717,6 @@ const { commissionPositionId } = storeToRefs(brsStore)
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const showProjectAssignmentModal = ref(false)
 const cloneDialog = ref(false)
@@ -914,7 +913,7 @@ const getCommissionDetails = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Commission Details')
+    appStore.showSnack('ERROR', 'Error Loading Commission Details')
     appStore.loading = false
   }
 }
@@ -1012,7 +1011,7 @@ const savePlan = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Commission Plan')
+    appStore.showSnack('ERROR', 'Error Saving Commission Plan')
     appStore.loading = false
   }
 }
@@ -1020,12 +1019,12 @@ const approvePlan = async () => {
   appStore.loading = true
   try {
     const {data, status} = await postRequest(`/commissionManagement/${planId.value}/approve`, {}, 'blueraven')
-    snackbar('SUCCESS', 'Commission Plan Approved')
+    appStore.showSnack('SUCCESS', 'Commission Plan Approved')
     commission.value = data
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Approving Commission Plan')
+    appStore.showSnack('ERROR', 'Error Approving Commission Plan')
     appStore.loading = false
   }
 }
@@ -1033,11 +1032,11 @@ const inactivatePlan = async () => {
   appStore.loading = true
   try {
     await postRequest(`/commissionManagement/${planId.value}/inactivate`, {}, 'blueraven')
-    snackbar('SUCCESS', 'Commission Plan Inactivated')
+    appStore.showSnack('SUCCESS', 'Commission Plan Inactivated')
     await router.push({name: 'commissions'})
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Inactivating Commission Plan')
+    appStore.showSnack('ERROR', 'Error Inactivating Commission Plan')
     appStore.loading = false
   }
 }
@@ -1045,11 +1044,11 @@ const deletePlan = async () => {
   appStore.loading = true
   try {
     await deleteRequest(`/commissionManagement/${planId.value}`, 'blueraven')
-    snackbar('SUCCESS', 'Commission Plan Deleted')
+    appStore.showSnack('SUCCESS', 'Commission Plan Deleted')
     await router.push({name: 'commissions'})
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Commission Plan')
+    appStore.showSnack('ERROR', 'Error Deleting Commission Plan')
     appStore.loading = false
   }
 }
@@ -1067,7 +1066,7 @@ const clonePlan = async (users, startDate) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Cloning Commission')
+    appStore.showSnack('ERROR', 'Error Cloning Commission')
     appStore.loading = false
   }
 }
@@ -1077,11 +1076,11 @@ const updateAssignedUser = async (item) => {
     const {status} = await postRequest(`/commissionManagement/${planId.value}/updateUser`, item, 'blueraven')
     assignedUserExpanded.value = []
     userHistory.value = []
-    snackbar('SUCCESS', 'Assigned User Updated')
+    appStore.showSnack('SUCCESS', 'Assigned User Updated')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Assigned User')
+    appStore.showSnack('ERROR', 'Error Updating Assigned User')
     appStore.loading = false
   }
 }
@@ -1103,7 +1102,7 @@ const getUsersToAdd = async (query) => {
       usersLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Commission Plan Users')
+      appStore.showSnack('ERROR', 'Error Retrieving Commission Plan Users')
       appStore.loading = false
     }
   }
@@ -1122,13 +1121,13 @@ const addUserToPlan = async () => {
       status
     } = await postRequestWithRequestParams(`/commissionManagement/${planId.value}/users/${commission.value.positionId}`, params, {addUserToPlan: true}, 'blueraven')
     commission.value.users = data
-    snackbar('SUCCESS', 'Commission Plan User Added')
+    appStore.showSnack('SUCCESS', 'Commission Plan User Added')
     addUser.value = false
     newUser.value = {}
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Commission Plan User')
+    appStore.showSnack('ERROR', 'Error Adding Commission Plan User')
     appStore.loading = false
   }
 }
@@ -1137,12 +1136,12 @@ const deleteUserFromPlan = async () => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/commissionManagement/${planId.value}/commissionUser/${commissionPlanUser.id}`, 'blueraven')
-    snackbar('SUCCESS', 'Commission Plan User Deleted')
+    appStore.showSnack('SUCCESS', 'Commission Plan User Deleted')
     commissionPlanUser.archived = true
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Commission Plan User')
+    appStore.showSnack('ERROR', 'Error Deleting Commission Plan User')
     appStore.loading = false
   }
 }
@@ -1157,7 +1156,7 @@ const getMilestones = async () => {
       // }
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Milestones')
+      appStore.showSnack('ERROR', 'Error Retrieving Milestones')
       appStore.loading = false
     }
   }
@@ -1170,7 +1169,7 @@ const updateMilestone = async (item) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Milestone')
+    appStore.showSnack('ERROR', 'Error Saving Milestone')
     appStore.loading = false
   }
 }
@@ -1189,7 +1188,7 @@ const addMilestoneToPlan = async () => {
     addMilestone.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Milestone')
+    appStore.showSnack('ERROR', 'Error Adding Milestone')
     appStore.loading = false
   }
 }
@@ -1198,7 +1197,7 @@ const deleteMilestone = async () => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/commissionManagement/${planId.value}/milestone/${commissionPlanAllocationId}`, 'blueraven')
-    snackbar('SUCCESS', `${levelText} Deleted`)
+    appStore.showSnack('SUCCESS', `${levelText} Deleted`)
     commission.value.milestones = commission.value.milestones.filter(m => {
       return m.commissionPlanAllocationId !== commissionPlanAllocationId
     })
@@ -1206,7 +1205,7 @@ const deleteMilestone = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', `Error Deleting ${levelText}`)
+    appStore.showSnack('ERROR', `Error Deleting ${levelText}`)
     appStore.loading = false
   }
 }
@@ -1228,7 +1227,7 @@ const getSources = async () => {
       sources.value = data
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Sources')
+      appStore.showSnack('ERROR', 'Error Retrieving Sources')
       appStore.loading = false
     }
   }
@@ -1242,7 +1241,7 @@ const updateSource = async (item) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Milestone')
+    appStore.showSnack('ERROR', 'Error Saving Milestone')
     appStore.loading = false
   }
 }
@@ -1263,7 +1262,7 @@ const getUserHistory = async (userId) => {
   } catch (e) {
     errorLoadingUserHistory.value = true
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving User History')
+    appStore.showSnack('ERROR', 'Error Retrieving User History')
     appStore.loading = false
   }
 }
@@ -1281,7 +1280,7 @@ const addSourceToPlan = async () => {
     addSource.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Source')
+    appStore.showSnack('ERROR', 'Error Adding Source')
     appStore.loading = false
   }
 }
@@ -1290,14 +1289,14 @@ const deleteSource = async () => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/commissionManagement/${planId.value}/source/${id}`, 'blueraven')
-    snackbar('SUCCESS', 'Source Deleted')
+    appStore.showSnack('SUCCESS', 'Source Deleted')
     commission.value.sources = commission.value.sources.filter(s => {
       return s.id !== id
     })
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Source')
+    appStore.showSnack('ERROR', 'Error Deleting Source')
     appStore.loading = false
   }
 }

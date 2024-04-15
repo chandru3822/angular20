@@ -75,12 +75,12 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import {useRouter} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const store = vueInstance.$store
 const userStore = useUserStore()
 const router = useRouter()
@@ -113,7 +113,7 @@ const getProcesses = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -122,11 +122,11 @@ const deleteProcess = async () => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/processes/${processId}`)
-    snackbar('SUCCESS', 'Process Deleted')
+    appStore.showSnack('SUCCESS', 'Process Deleted')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Process')
+    appStore.showSnack('ERROR', 'Error Deleting Process')
     appStore.loading = false
   }
 }
@@ -143,7 +143,7 @@ const addNewProcess = async () => {
     await router.push({name: 'process', params: {id: data.id}})
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Process')
+    appStore.showSnack('ERROR', 'Error Adding Process')
     appStore.loading = false
   }
 }

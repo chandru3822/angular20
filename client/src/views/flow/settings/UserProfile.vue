@@ -231,14 +231,14 @@ import { useFirebase } from '@/firebase/firebase.js'
 import { onBeforeRouteLeave } from 'vue-router/composables'
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
 
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 import {useRouter} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
@@ -261,6 +261,7 @@ const dirtyCfvs = ref([])
 // timeValue: moment.utc().format('YYYY-MM-DD HH:mm Z'),
 const timeValue = ref(moment.utc().format('YYYY-MM-DDTHH:mm:ssZ'))
 const user = ref({})
+const userForm = ref(null)
 const homePages = ref([])
 const projectPages = ref([])
 const userIsAlbatross = ref(false)
@@ -330,7 +331,7 @@ onBeforeRouteLeave(async (to, from, next) => {
   }
 })
 const validate = () => {
-  if (vueInstance.$refs.userForm.validate()) {
+  if (userForm.value.validate()) {
     saveUser()
   }
 }
@@ -358,7 +359,7 @@ const getUserProfileCustomFields = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Custom Fields')
+    appStore.showSnack('ERROR', 'Error Retrieving Custom Fields')
     loadingUserProfileCustomFields.value = false
 
     appStore.loading = false
@@ -372,7 +373,7 @@ const getAllUserProfileDefaultFields = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Default Fields')
+    appStore.showSnack('ERROR', 'Error Retrieving Default Fields')
     loadingUserProfileCustomFields.value = false
     appStore.loading = false
   }
@@ -387,7 +388,7 @@ const getHomePages = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Home Pages')
+    appStore.showSnack('ERROR', 'Error Retrieving Home Pages')
     appStore.loading = false
   }
 }
@@ -436,11 +437,11 @@ const getProjectPages = async () => {
     })
 
     projectPages.value = data
-    handleHidingGlobalLoader(vueInstance, status)
+     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Project Pages')
-    store.commit(AppMutations.SET_LOADING, false)
+	appStore.showSnack('ERROR', 'Error Retrieving Project Pages')
+	appStore.loading = false
   }
 }
 const getUser = async (userIsAlbatross) => {
@@ -451,7 +452,7 @@ const getUser = async (userIsAlbatross) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving User')
+    appStore.showSnack('ERROR', 'Error Retrieving User')
     appStore.loading = false
   }
 }
@@ -468,13 +469,13 @@ const saveUser = async () => {
     }
     user.value.newPassword = null
     user.value.newPasswordConfirm = null
-    snackbar('SUCCESS', 'Saved Changes')
+    appStore.showSnack('SUCCESS', 'Saved Changes')
     dirtyFields.value = false;
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let errorMsg = e?.message ? 'Error Saving User: ' + e.message : e?.data?.message ? 'Error Saving User: ' + e.data.message :'Error Saving User'
-    snackbar('ERROR', errorMsg)
+    appStore.showSnack('ERROR', errorMsg)
     appStore.loading = false
   }
 }
@@ -486,13 +487,13 @@ const deleteAttachment = async (id) => {
       callback: async () => {
         profileImage.value = {}
         userStore.userImage = {}
-        snackbar('SUCCESS', 'Image Deleted')
+        appStore.showSnack('SUCCESS', 'Image Deleted')
         appStore.loading = false
       }
     })
   } catch(e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting File')
+    appStore.showSnack('ERROR', 'Error Deleting File')
     appStore.loading = false
   }
 }
@@ -508,21 +509,21 @@ const uploadFile = async (files, attachmentTypeId, sourceId, sizeLimit) => {
       displayName: file.name.substr(0, file.name.lastIndexOf('.')),
       callback: async (img, error) => {
         if(error?.error) {
-          snackbar('ERROR', error.errorMsg)
+          appStore.showSnack('ERROR', error.errorMsg)
 
           appStore.loading = false
         } else {
           profileImage.value = img
           userStore.userImage = img
           addImage.value = false
-          snackbar('SUCCESS', 'Image Uploaded')
+          appStore.showSnack('SUCCESS', 'Image Uploaded')
           appStore.loading = false
         }
       }
     })
   } catch(e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Uploading File')
+    appStore.showSnack('ERROR', 'Error Uploading File')
     appStore.loading = false
   }
 }
@@ -539,7 +540,7 @@ const loadProfileImage = async () =>{
     })
   } catch(e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Image')
+    appStore.showSnack('ERROR', 'Error Loading Image')
     appStore.loading = false
   }
 }
@@ -561,7 +562,7 @@ const getSmsTeams = async () =>{
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving User')
+    appStore.showSnack('ERROR', 'Error Retrieving User')
     appStore.loading = false
   }
 }

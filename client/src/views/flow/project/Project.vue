@@ -337,13 +337,13 @@ import StatusTrackerIcon from "@/views/flow/project/StatusTrackerIcon";
 import StatusTrackerItem from "@/views/flow/project/StatusTrackerItem";
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
 import ThreeColumnLayoutMobile from '@/views/ThreeColumnLayoutMobile'
-import { useProjectStore } from '@/stores/ProjectStorePinia.js'
-import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStore.js'
+import { useNotificationStore } from '@/stores/NotificationStore.js'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -353,7 +353,7 @@ const notificationStore = useNotificationStore()
 const projectStore = useProjectStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 
 const editState = ref(false)
@@ -566,7 +566,7 @@ const getMilestones = async() => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Status Tracker Details')
+    appStore.showSnack('ERROR', 'Error Retrieving Status Tracker Details')
 
   }
 }
@@ -605,7 +605,7 @@ const getStatuses = async () => {
     statusesLoading.value = false
   } catch (e) {
     statusesLoading.value = false
-    snackbar('ERROR', 'Error fetching project statuses')
+    appStore.showSnack('ERROR', 'Error fetching project statuses')
 
   }
 }
@@ -637,7 +637,7 @@ const updateStatus = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error updating project status')
+    appStore.showSnack('ERROR', 'Error updating project status')
 
     appStore.loading = false
   }
@@ -650,7 +650,7 @@ const updateOwner = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error Saving Owner')
+    appStore.showSnack('ERROR', 'Error Saving Owner')
 
     appStore.loading = false
   }
@@ -670,7 +670,7 @@ const getCompanyStates = async () => {
     statesLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving States')
+    appStore.showSnack('ERROR', 'Error Retrieving States')
 
     statesLoading.value = false
   }
@@ -683,7 +683,7 @@ const getAllCountries = async () => {
     countriesLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Countries')
+    appStore.showSnack('ERROR', 'Error Retrieving Countries')
 
     countriesLoading.value = false
   }
@@ -713,12 +713,12 @@ const saveProjectAddressFields = async () => {
   try {
     //temp project holds all the changes in case they cancel. use those values
     const {status} = await putRequest(`/project`, tempProject.value)
-    snackbar('SUCCESS', 'Project Updated')
+    appStore.showSnack('SUCCESS', 'Project Updated')
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error Saving Address')
+    appStore.showSnack('ERROR', 'Error Saving Address')
 
     appStore.loading = false
   }
@@ -732,7 +732,7 @@ const getOwners = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     ownersLoading.value = false
-    snackbar('ERROR', 'Error Retrieving Available Owners')
+    appStore.showSnack('ERROR', 'Error Retrieving Available Owners')
 
   }
 }

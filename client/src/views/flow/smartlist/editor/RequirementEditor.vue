@@ -216,7 +216,7 @@
 import { getRequest, logError, UUID } from '@/helpers/helpers'
 import { computed, getCurrentInstance, nextTick, onMounted, ref } from 'vue'
 import cloneDeep from 'lodash.clonedeep'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 const emit = defineEmits(['adding', 'added', 'updated', 'cancelled', 'in-progress'])
 
@@ -237,8 +237,7 @@ const props = defineProps({
 })
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
-const userStore = useUserStore()
+ const userStore = useUserStore()
 const companyId = userStore.details.companyId
 
 const availableDataTypeRequirements = ref([])
@@ -547,7 +546,7 @@ const getSystemListValues = async () => {
     //Event and PS data return correctly and don't need manipulation
     requirement.value.listOfValues = ([4,6].includes(requirement.value.objectTypeId)) ? data : data.map(v => ({id: v.userPositionId, name: v.fullName}))
   } catch (e) {
-    snackbar('ERROR', 'Error fetching list values')
+    appStore.showSnack('ERROR', 'Error fetching list values')
   }
 }
 
@@ -561,7 +560,7 @@ const getDataTypeRequirements = async () => {
     availableDataTypeRequirements.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Unable to fetch data type requirements')
+    appStore.showSnack('ERROR', 'Unable to fetch data type requirements')
   }
 }
 
@@ -575,7 +574,7 @@ const getOperators = async () => {
     availableOperators.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Unable to fetch operators')
+    appStore.showSnack('ERROR', 'Unable to fetch operators')
   }
 }
 
@@ -590,12 +589,12 @@ const add = () => {
 
   //vuetify's combobox will return custom input as a string
   if (typeof value.value === 'string' && value.value.trim().length === 0) {
-    snackbar('ERROR', 'Invalid value')
+    appStore.showSnack('ERROR', 'Invalid value')
     return
   }
 
   if (value.value?.secondaryRequirement && secondaryValue.value.trim().length === 0) {
-    snackbar('ERROR', 'Invalid value')
+    appStore.showSnack('ERROR', 'Invalid value')
     return
   }
 

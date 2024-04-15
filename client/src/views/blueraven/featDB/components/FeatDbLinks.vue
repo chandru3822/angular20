@@ -58,9 +58,9 @@ import {putRequest, postRequest, } from '@/helpers/helpers'
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
 import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
 import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import {useAppStore} from '@/stores/AppStorePinia.js'
+import {useAppStore} from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -68,7 +68,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 
 const props = defineProps({
@@ -147,11 +146,11 @@ const saveLink = async (newLink) => {
       }
 
       linksCopy.value.push(cloneDeep(res.data))
-      snackbar('SUCCESS', 'Link added')
+      appStore.showSnack('SUCCESS', 'Link added')
       linkForm.value.reset()
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error adding link')
+      appStore.showSnack('ERROR', 'Error adding link')
     }
   } else {
     try {
@@ -169,11 +168,11 @@ const saveLink = async (newLink) => {
       linksCopy.value[updatedLinkIndex].username = res.data.username
       linksCopy.value[updatedLinkIndex].password = res.data.password
       linksCopy.value[updatedLinkIndex].notes = res.data.notes
-      snackbar('SUCCESS', 'Link updated')
+      appStore.showSnack('SUCCESS', 'Link updated')
       linkForm.value.reset()
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error adding link')
+      appStore.showSnack('ERROR', 'Error adding link')
     }
   }
   appStore.loading = false
@@ -192,10 +191,10 @@ const deleteLink = async () => {
 
     let deletedLinkIndex = linksCopy.value.findIndex(i => i.id === selectedLink.value.id)
     linksCopy.value.splice(deletedLinkIndex, 1)
-    snackbar('SUCCESS', 'Link deleted')
+    appStore.showSnack('SUCCESS', 'Link deleted')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error deleting link')
+    appStore.showSnack('ERROR', 'Error deleting link')
   }
   appStore.loading = false
 }

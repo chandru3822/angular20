@@ -93,13 +93,13 @@
 
 
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useUserStore } from '@/stores/UserStore.js'
   import {useRouter} from "vue-router/composables"
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const store = vueInstance.$store
   const userStore = useUserStore()
   const vuetify = vueInstance.$vuetify
@@ -153,7 +153,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Positions')
+      appStore.showSnack('ERROR', 'Error Retrieving Positions')
 
       appStore.loading = false
     }
@@ -164,12 +164,12 @@
     try {
       const {status} = await deleteRequest(`/position/${p.id}`)
       p.archived = true
-      snackbar('SUCCESS', 'Position Deleted')
+      appStore.showSnack('SUCCESS', 'Position Deleted')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting Position')
+      appStore.showSnack('ERROR', 'Error Deleting Position')
       appStore.loading = false
     }
   }

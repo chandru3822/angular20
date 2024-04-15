@@ -433,10 +433,10 @@
   import { saveAs } from 'file-saver'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useUserStore} from '@/stores/UserStore.js'
   import {useRoute} from "vue-router/composables";
-  import { useBrsStore } from '@/stores/BrsStorePinia.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useBrsStore } from '@/stores/BrsStore.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   import debounce from 'lodash.debounce'
 
   const route = useRoute()
@@ -445,8 +445,7 @@
   const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
-  const filters = vueInstance.$filters
+     const filters = vueInstance.$filters
 
         const dataLoading = ref(true)
         const selectAll = ref(false)
@@ -614,16 +613,16 @@
             payDate: payDate.value
           }
           if(payrollStatus.value.showSelect && (!selectedIds || selectedIds.length === 0)) {
-            snackbar('WARNING', 'You must select at least one project.')
+            appStore.showSnack('WARNING', 'You must select at least one project.')
           } else {
             appStore.loading = true
             try {
               await postRequest(`/payroll/${currentPayroll.value.id}/${action}`, params, 'blueraven')
-              snackbar('SUCCESS', 'Successfully Updated')
+              appStore.showSnack('SUCCESS', 'Successfully Updated')
               await getCurrentPayroll()
             } catch (e) {
               console.error('*** ERROR ***', e)
-              snackbar('ERROR', 'Error Updating')
+              appStore.showSnack('ERROR', 'Error Updating')
               appStore.loading = false
             }
           }
@@ -638,7 +637,7 @@
           vueInstance.$set(item, 'adjustmentHistory', data)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Adjustment History')
+          appStore.showSnack('ERROR', 'Error Retrieving Adjustment History')
           appStore.loading = false
         }
       }
@@ -654,11 +653,11 @@
             note: item.adjustmentNote
           }
           await postRequest(`/payroll/${currentPayroll.value.id}/adjustments`, params, 'blueraven')
-          snackbar('SUCCESS', 'Adjustment Added')
+          appStore.showSnack('SUCCESS', 'Adjustment Added')
           await getCurrentPayroll()
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Adding Adjustment')
+          appStore.showSnack('ERROR', 'Error Adding Adjustment')
           appStore.loading = false
         }
       }
@@ -671,7 +670,7 @@
         appStore.loading = true
         try {
           const {data} = await postRequest(`/payroll/${currentPayroll.value.id}`, params, 'blueraven')
-          snackbar('SUCCESS', 'Successfully Updated')
+          appStore.showSnack('SUCCESS', 'Successfully Updated')
           currentPayroll.value = data
           totalPay.value = sumBy(accountingData.value,  function(o) { return o.selected ? o.current_pay : 0 })
           additionalPayrollDataNeeded.value = null == currentPayroll.value.periodEnd || null == currentPayroll.value.description
@@ -688,7 +687,7 @@
           return true
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Updating')
+          appStore.showSnack('ERROR', 'Error Updating')
           appStore.loading = false
           return false
         }
@@ -747,7 +746,7 @@
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Loading Current Payroll')
+          appStore.showSnack('ERROR', 'Error Loading Current Payroll')
           appStore.loading = false
         }
       }
@@ -786,7 +785,7 @@
           appStore.loading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Loading Accounting Data')
+          appStore.showSnack('ERROR', 'Error Loading Accounting Data')
           appStore.loading = false
         }
       }
@@ -802,7 +801,7 @@
             customersLoading.value = false
           } catch (e) {
             console.error('*** ERROR ***', e)
-            snackbar('ERROR', 'Error Retrieving Customers')
+            appStore.showSnack('ERROR', 'Error Retrieving Customers')
           }
       }
   const getCustomersDebounced = debounce((val) => {
@@ -828,7 +827,7 @@
           repsLoading.value = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Sales Reps')
+          appStore.showSnack('ERROR', 'Error Retrieving Sales Reps')
         }
       }
       const exportAccountingReview = async () => {
@@ -885,7 +884,7 @@
           appStore.loading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Exporting Accounting Review')
+          appStore.showSnack('ERROR', 'Error Exporting Accounting Review')
           appStore.loading = false
         }
       }

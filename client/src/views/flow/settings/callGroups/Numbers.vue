@@ -97,13 +97,13 @@
 
 
   import {getCurrentInstance, onMounted, ref, computed} from "vue";
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useUserStore } from '@/stores/UserStore.js'
   import {useRoute} from "vue-router/composables"
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
@@ -162,7 +162,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
 
       appStore.loading = false
     }
@@ -176,7 +176,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Removing Phone Number')
+      appStore.showSnack('ERROR', 'Error Removing Phone Number')
 
       appStore.loading = false
     }
@@ -188,7 +188,7 @@
     try {
       let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
       if (!newNumber.value.match(phoneRegex) || newNumber.value.length > 20) {
-        snackbar('ERROR', 'Error Adding Phone Number: Please reformat the Phone field with a valid phone number')
+        appStore.showSnack('ERROR', 'Error Adding Phone Number: Please reformat the Phone field with a valid phone number')
 
         appStore.loading = false
         return;
@@ -206,7 +206,7 @@
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = e.data?.message?.includes('Phone Number Already In Use') ? e.data.message : 'Error Adding Phone Number'
-      snackbar('ERROR', msg)
+      appStore.showSnack('ERROR', msg)
 
       appStore.loading = false
     }
@@ -225,7 +225,7 @@
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = 'Error updating Phone Number'
-      snackbar('ERROR', msg)
+      appStore.showSnack('ERROR', msg)
       appStore.loading = false
     }
   }

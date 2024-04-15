@@ -253,8 +253,8 @@
   import {getCurrentInstance, toRefs, ref, computed, onMounted} from "vue";
 
   import {useRoute, useRouter} from "vue-router/composables";
-  import { useAppStore } from '@/stores/AppStorePinia.js'
-  import {useUserStore} from "@/stores/UserStorePinia.js";
+  import { useAppStore } from '@/stores/AppStore.js'
+  import {useUserStore} from "@/stores/UserStore.js";
 
   const userStore = useUserStore()
   const appStore = useAppStore()
@@ -263,7 +263,6 @@
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
 
   const props = defineProps({
       isAdmin: Boolean
@@ -356,7 +355,7 @@
           const {data} = await getRequest('/closerDashboard/closers', 'blueraven')
           users.value = data
         } catch (e) {
-          snackbar('ERROR', 'Error retrieving users')
+          appStore.showSnack('ERROR', 'Error retrieving users')
           usersLoading.value = false
         }
       }
@@ -375,7 +374,7 @@
             dataLoading.value = false
             appStore.loading = false
           } catch (e) {
-            snackbar('ERROR', 'Error retrieving residual data')
+            appStore.showSnack('ERROR', 'Error retrieving residual data')
             dataLoading.value = false
             appStore.loading = false
           }

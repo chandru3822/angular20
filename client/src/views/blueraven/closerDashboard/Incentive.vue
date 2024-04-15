@@ -53,12 +53,10 @@
 import {incentive_constants} from './incentive_constants'
 import {MilestoneEnum, QuarterEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import IncentiveMilestone from "@/views/blueraven/closerDashboard/IncentiveMilestone";
-import {AppMutations} from "@/stores/AppStore";
-import {getSnackbar} from "@/helpers/helpers";
 import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 /**
  * counts: {q1:Number, q2:Number, q3:Number, q4:Number}
@@ -90,7 +88,6 @@ const store = vueInstance.$store
 const userStore = useUserStore()
 const fileStore = useFileStore()
 const appStore = useAppStore()
-const snackbar = vueInstance.$snackbar
 
 const percentAchieved = ref(0),
     progressBarIsFull=ref(false),
@@ -150,7 +147,7 @@ const loadImage= async (typeId, imageType) => {
     })
   } catch(e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', `Error Loading ${imageType}`)
+    appStore.showSnack('ERROR', `Error Loading ${imageType}`)
     if(typeId === backgroundImageTypeId.value){
       backgroundImageLoaded.value = true
     }

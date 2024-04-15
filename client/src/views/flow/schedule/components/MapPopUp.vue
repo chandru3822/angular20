@@ -7,11 +7,9 @@
 *@description
 *
 */
-import {getCurrentInstance} from "vue";
+import {useRouter} from "vue-router/composables"
 
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-const router = vueInstance.$router
+const router = useRouter()
 
 const props = defineProps({
   marker:Object,

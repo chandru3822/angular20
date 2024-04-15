@@ -138,6 +138,9 @@ $default-text: rgba(0,0,0,0.87);
   color: #9E9E9E !important;
 }
 /* theme the calendar */
+:root{
+  --fc-now-indicator-color:var(--v-error-lighten1);//change the color of the now indicator line for the fullcalendar plugin
+}
 .fc-button-primary.fc-prev-button, .fc-button-primary.fc-customToday-button, .fc-button-primary.fc-next-button, .fc-button-primary.fc-button-active {
   color: white !important;
   background-color: var(--v-primary-base) !important;

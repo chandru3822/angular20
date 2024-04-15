@@ -121,9 +121,9 @@ import constants from '@/helpers/constants'
 import { useFileStore } from '@/stores/FileStore.js'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 const appStore = useAppStore()
@@ -134,7 +134,7 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const scheduleStore = useScheduleStore()
-const snackbar = vueInstance.$snackbar
+
 
 const breadcrumbs = ref([
   {text: 'Back to Users',disabled: false,exact: true,to: `/users`},
@@ -228,7 +228,7 @@ const masquerade = async () => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Aliasing as User')
+    appStore.showSnack('ERROR', 'Error Aliasing as User')
 
     appStore.loading = false
   }
@@ -242,7 +242,7 @@ const getUser = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving User')
+    appStore.showSnack('ERROR', 'Error Retrieving User')
 
     appStore.loading = false
   }
@@ -259,13 +259,13 @@ const uploadUserImage = async (files, attachmentTypeId, sourceId, sizeLimit) => 
       displayName: file.name.substr(0, file.name.lastIndexOf('.')),
       callback: async (img, error) => {
         if(error?.error) {
-          snackbar('ERROR', error.errorMsg)
+          appStore.showSnack('ERROR', error.errorMsg)
 
           appStore.loading = false
         } else {
           userImage.value = img
           changePhoto.value = false
-          snackbar('SUCCESS', 'Image Uploaded')
+          appStore.showSnack('SUCCESS', 'Image Uploaded')
 
           appStore.loading = false
         }
@@ -273,7 +273,7 @@ const uploadUserImage = async (files, attachmentTypeId, sourceId, sizeLimit) => 
     })
   } catch(e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Uploading File')
+    appStore.showSnack('ERROR', 'Error Uploading File')
 
     appStore.loading = false
   }

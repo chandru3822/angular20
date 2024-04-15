@@ -328,9 +328,9 @@ import cloneDeep from 'lodash.clonedeep'
 import {DateTime} from "luxon";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -338,7 +338,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const showDrilldown = ref(false)
 const openFirstPeriodMenu = ref(false)
@@ -566,7 +565,7 @@ const getDrilldownHeaders = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving drilldown data')
+    appStore.showSnack('ERROR', 'Error retrieving drilldown data')
     drilldownIsLoading.value = false
     appStore.loading = false
   }
@@ -588,7 +587,7 @@ const getDrilldownData = async(column) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving drilldown data')
+    appStore.showSnack('ERROR', 'Error retrieving drilldown data')
     drilldownIsLoading.value = false
     appStore.loading = false
   }
@@ -911,7 +910,7 @@ const exportCsv = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Exporting Residual Review')
+    appStore.showSnack('ERROR', 'Error Exporting Residual Review')
 
     appStore.loading = false
   }
@@ -935,7 +934,7 @@ const getDashBoardData = async(startDate, endDate, trendStart, trendEnd)=> {
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving data')
+    appStore.showSnack('ERROR', 'Error retrieving data')
     isLoading.value = false
     appStore.loading = false
   }
@@ -990,7 +989,7 @@ const getDropdownValues = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving data')
+    appStore.showSnack('ERROR', 'Error retrieving data')
     isLoading.value = false
     appStore.loading = false
   }

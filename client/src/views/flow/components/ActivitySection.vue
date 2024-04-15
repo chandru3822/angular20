@@ -253,12 +253,12 @@ import {Mentionable} from 'vue-mention'
 import {SearchTypeEnum} from "./ActivityListConstants";
 import SpinnerInline from "@/components/SpinnerInline.vue";
 import constants from "@/helpers/constants";
-import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStore.js'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -266,7 +266,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   contactId: Number,
@@ -498,7 +497,7 @@ const getActivityTopics = async () => {
       activityTopics.value = data
     } catch {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error loading notes')
+      appStore.showSnack('ERROR', 'Error loading notes')
 
     }
   }
@@ -511,7 +510,7 @@ const getActivities = async () => {
       activities.value = data
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error loading notes')
+      appStore.showSnack('ERROR', 'Error loading notes')
 
     } finally {
       activitiesLoading.value = false
@@ -525,7 +524,7 @@ const getUsers = async () => {
     users.value = data.map(u => ({...u, value: `${u.fullName} (${u.email})`}))
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Users')
+    appStore.showSnack('ERROR', 'Error Retrieving Users')
 
     appStore.loading = false
   }
@@ -545,7 +544,7 @@ const getTopics = async() => {
     topicsLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error loading topics')
+    appStore.showSnack('ERROR', 'Error loading topics')
 
     topicsLoading.value = false
   }
@@ -634,11 +633,11 @@ const saveNewActivity = async() => {
     editedActivity.value = {}
     savingActivity.value = false
     emit('scrollToTop')
-    snackbar('SUCCESS', 'Note Added')
+    appStore.showSnack('SUCCESS', 'Note Added')
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error saving note')
+    appStore.showSnack('ERROR', 'Error saving note')
 
     savingActivity.value = false
   }
@@ -689,11 +688,11 @@ const editActivity = async() => {
       emit('scrollToTop')
     }
     savingActivity.value = false
-    snackbar('SUCCESS', 'Note Edited')
+    appStore.showSnack('SUCCESS', 'Note Edited')
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error saving note')
+    appStore.showSnack('ERROR', 'Error saving note')
 
     savingActivity.value = false
   }

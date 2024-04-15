@@ -312,9 +312,9 @@ import moment from "moment";
 import {getCompanyStates} from '@/services/stateService'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 
 const appStore = useAppStore()
@@ -323,7 +323,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const userCanAdd = computed(() => {
   return userStore.userHasFeatureAccessLevel('REBATES', 'ADD')
@@ -400,7 +399,7 @@ const fetchPayments = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving rebate details')
+    appStore.showSnack('ERROR', 'Error retrieving rebate details')
 
     appStore.loading = false
   }
@@ -453,12 +452,12 @@ const saveMailingAddress = async(removeAddress) => {
 
   try {
     await putRequest(`/contact/updateMailingAddress`, contact)
-    snackbar('SUCCESS', 'Mailing address saved')
+    appStore.showSnack('SUCCESS', 'Mailing address saved')
 
     editMailing.value = false;
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error saving mailing address')
+    appStore.showSnack('ERROR', 'Error saving mailing address')
 
   }
 }
@@ -512,12 +511,12 @@ const updateTotalPromotionAmount = async() => {
   }
   try {
     await postRequest(`/rebate/updateTotalPromotionAmount`, params, 'blueraven')
-    snackbar('SUCCESS', 'Total Promotion Amount saved!')
+    appStore.showSnack('SUCCESS', 'Total Promotion Amount saved!')
 
     editMailing.value = false;
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error saving Total Promotion Amount')
+    appStore.showSnack('ERROR', 'Error saving Total Promotion Amount')
 
   }
 }
@@ -542,7 +541,7 @@ const deletePayment = async() => {
       editMailing.value = false;
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error deleting payment')
+      appStore.showSnack('ERROR', 'Error deleting payment')
 
     }
   } else {
@@ -571,7 +570,7 @@ const savePaymentHistoryChanges = async() => {
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error saving payments')
+      appStore.showSnack('ERROR', 'Error saving payments')
 
     }
   }
@@ -597,7 +596,7 @@ const updatePaymentNote = async() => {
     await postRequest(`/rebate/updateNote`, params, 'blueraven')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error saving payment note')
+    appStore.showSnack('ERROR', 'Error saving payment note')
 
   }
 
@@ -615,7 +614,7 @@ const voidPayment = async() => {
     item.void_note = '';
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error voiding payment')
+    appStore.showSnack('ERROR', 'Error voiding payment')
 
   }
 
@@ -632,7 +631,7 @@ const unvoidPayment = async() => {
     await postRequest(`/rebate/unvoidPayment`, params, 'blueraven')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error unvoiding payment')
+    appStore.showSnack('ERROR', 'Error unvoiding payment')
 
   }
 
@@ -646,7 +645,7 @@ const getStates = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving States')
+    appStore.showSnack('ERROR', 'Error Retrieving States')
 
     appStore.loading = false
   }

@@ -112,17 +112,16 @@
 
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 const userStore = useUserStore()
 import {useRoute} from "vue-router/composables";
 
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const route = useRoute()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const roundRobinId = computed(() => {
   return route.params.id
@@ -171,11 +170,11 @@ onMounted(async () => {
       try {
         const {status} = await postRequest(`/roundRobin`, roundRobin.value)
         editRoundRobin.value = false
-        snackbar('SUCCESS', 'Round Robin Name Saved')
+        appStore.showSnack('SUCCESS', 'Round Robin Name Saved')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving Round Robin Name')
+        appStore.showSnack('ERROR', 'Error Saving Round Robin Name')
         appStore.loading = false
       }
     }
@@ -187,7 +186,7 @@ onMounted(async () => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Timezones')
+        appStore.showSnack('ERROR', 'Error Retrieving Timezones')
         appStore.loading = false
       }
     }
@@ -200,7 +199,7 @@ onMounted(async () => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.showSnack('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       }
     }

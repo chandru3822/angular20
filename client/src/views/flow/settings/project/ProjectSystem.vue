@@ -70,14 +70,14 @@
 import cloneDeep from 'lodash.clonedeep'
 import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 
 
@@ -145,7 +145,7 @@ const getPositions = async () => {
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Positions')
+      appStore.showSnack('ERROR', 'Error Retrieving Positions')
       appStore.loading = false
     }
   }
@@ -159,7 +159,7 @@ const saveReadOnlyAndWhiteList = async () => {
     if (!projectObjectType.value.statusReadOnly) {
       statusReadOnlyWhiteListedPositions.value = []
     }
-    snackbar('SUCCESS', 'Saved Successfully')
+    appStore.showSnack('SUCCESS', 'Saved Successfully')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -174,7 +174,7 @@ const saveOwnerReadOnlyAndWhiteList = async () => {
     if (!projectObjectType.value.ownerReadOnly) {
       ownerReadOnlyWhiteListedPositions.value = []
     }
-    snackbar('SUCCESS', 'Saved Successfully')
+    appStore.showSnack('SUCCESS', 'Saved Successfully')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -191,7 +191,7 @@ const getObjectTypeDetails = async () => {
     objectTypeDetailsLoading.value = false;
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Details')
+    appStore.showSnack('ERROR', 'Error Retrieving Details')
     appStore.loading = false
   }
 }

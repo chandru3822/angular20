@@ -109,8 +109,8 @@ import {handleHidingGlobalLoader, deleteRequest, putRequest} from '@/helpers/hel
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import {useRouter} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
@@ -118,7 +118,7 @@ const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
 const router = useRouter()
-const snackbar = vueInstance.$snackbar
+
 
 const addNew = ref(false)
 const levels = ref([])
@@ -152,7 +152,7 @@ const getOrganizationFilters = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Org Filters')
+    appStore.showSnack('ERROR', 'Error Retrieving Org Filters')
     appStore.loading = false
   }
 }
@@ -164,15 +164,15 @@ const saveOrgFilter = async (of, isNew) => {
       orgFilters.value.push(data)
       addNew.value = false
       newOrgFilter.value = {}
-      snackbar('SUCCESS', 'Org Filter Added')
+      appStore.showSnack('SUCCESS', 'Org Filter Added')
     } else {
       expanded.value = []
-      snackbar('SUCCESS', 'Org Filter Updated')
+      appStore.showSnack('SUCCESS', 'Org Filter Updated')
     }
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', isNew ? 'Error Adding Org Filter' : 'Error Updating Org Filter')
+    appStore.showSnack('ERROR', isNew ? 'Error Adding Org Filter' : 'Error Updating Org Filter')
     appStore.loading = false
   }
 }
@@ -184,7 +184,7 @@ const getOrganizationLevels = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Org Levels')
+    appStore.showSnack('ERROR', 'Error Loading Org Levels')
     appStore.loading = false
   }
 }
@@ -196,11 +196,11 @@ const deleteOrgFilter = async () => {
     orgFilters.value = orgFilters.value.filter(ol => {
       return ol.id !== filter.id
     })
-    snackbar('SUCCESS', 'Org Filter Deleted')
+    appStore.showSnack('SUCCESS', 'Org Filter Deleted')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Org Filter')
+    appStore.showSnack('ERROR', 'Error Deleting Org Filter')
     appStore.loading = false
   }
 }

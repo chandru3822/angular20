@@ -1,10 +1,9 @@
 import Vue from 'vue'
 import Vuetify from '@/plugins/vuetify'
 import Chat from 'vue-beautiful-chat'
-import Vue2Filters from 'vue2-filters'
 import App from '@/App.vue'
 import router from '@/router'
-import store, { pinia } from '@/store'
+import pinia from '@/store'
 import axios from 'axios'
 import { SnackbarPlugin } from '@/plugins/SnackbarPlugin'
 import moment from 'moment-timezone'
@@ -15,17 +14,64 @@ import AlbatrossButton from '@/components/customVuetify/AlbatrossButton.vue'
 import AlbatrossSelect from '@/components/customVuetify/AlbatrossSelect.vue'
 import AlbatrossAutocomplete from '@/components/customVuetify/AlbatrossAutocomplete.vue'
 
-
 import '@/styles/main.scss'
 import { requestInterceptor, responseInterceptor  } from '@/helpers/interceptors'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 const { VITE_GA_ID } = import.meta.env
 Vue.config.productionTip = false
 
 Vue.use(SnackbarPlugin)
-Vue.use(Vue2Filters)
 Vue.prototype.$filters = Vue.options.filters
+
+//todo: @kaleb the filters in your mixin.js didnt seem to be working
+Vue.filter('capitalize', function(value) {
+  if (!value) return
+  return value[0].toUpperCase() + value?.slice(1).toLowerCase()
+})
+
+Vue.filter('currency', function (value, symbol, digits) {
+  if (typeof value != "number" || typeof digits != "number")
+    return
+
+  let integer = parseInt(value);
+
+  if (value === integer)
+    return symbol + value;
+  else {
+    return symbol + parseFloat(value).toFixed(digits);
+  }
+});
+
+Vue.filter('percent', function (value, digits = 0) {
+  if (typeof value != "number" || typeof digits != "number")
+    return
+
+  value = value * 100
+
+  let integer = parseInt(value);
+
+  if (value === integer)
+    return value + '%';
+  else {
+    return parseFloat(value).toFixed(digits) + '%';
+  }
+});
+
+Vue.filter('customValueFormatter', function(value, type) {
+  if (Array.isArray(value)) {
+    return value?.join(', ')
+  }
+
+  if (type === 'timestamp') {
+    return new Intl.DateTimeFormat('default', {
+      dateStyle: 'short',
+      timeStyle: 'short'
+    }).format(new Date(value))
+  }
+  return value
+})
 
 //this filter is only used for the zoneless time picker stuff
 Vue.filter('formatDateZoneless', function(value) {
@@ -55,12 +101,13 @@ Vue.filter('formatDate', function(value, type, format, inputFormat) {
   */
 
   const userStore = useUserStore()
+  const scheduleStore = useScheduleStore()
 
   let timezone = userStore.timezone.value
 
   //The schedule screen has it's own timezone. Use that if user is on schedule screen, else default to regular timezone
-  if (router.currentRoute.name === 'schedule' && store?.state?.schedule?.timezone?.value) {
-    timezone = store.state.schedule.timezone.value
+  if (router.currentRoute.name === 'schedule' && scheduleStore.timezone?.value) {
+    timezone = scheduleStore.timezone.value
   }
 
   if (!type || (type === 'timestamp' && !timezone)) {
@@ -111,7 +158,6 @@ Vue.use(Chat)
 
 new Vue({
   router,
-  store,
   vuetify: Vuetify,
   pinia,
   render: (h) => h(App)

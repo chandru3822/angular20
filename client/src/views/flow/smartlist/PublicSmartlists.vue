@@ -66,7 +66,8 @@ import { getRequest, logError } from '@/helpers/helpers'
 import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
 import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import constants from '@/helpers/constants'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
+import {useRouter} from "vue-router/composables"
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100],
@@ -85,8 +86,8 @@ const search = ref('')
 const isLoading = ref(false)
 const vueInstance = getCurrentInstance().proxy
 const userStore = useUserStore()
+const router = useRouter()
 
-const router = vueInstance.$router
 const hasAddAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
 const hasManageAccess = userStore.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
 

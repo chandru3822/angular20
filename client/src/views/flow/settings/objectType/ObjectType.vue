@@ -24,16 +24,16 @@
 
 <script setup>
 import constants from '@/helpers/constants'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 
 import {ref, onMounted, getCurrentInstance, computed, defineProps, watch} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const route = useRoute()
 const router = useRouter()
 const vuetify = vueInstance.$vuetify

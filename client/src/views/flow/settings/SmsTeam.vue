@@ -274,13 +274,13 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
@@ -350,7 +350,7 @@ const getTeams = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Teams')
+    appStore.showSnack('ERROR', 'Error Retrieving Teams')
 
     appStore.loading = false
   }
@@ -373,18 +373,18 @@ const saveTeam = async (team, isNew) => {
       teams.value.push(data)
       addTeam.value = false
       newTeam.value = {}
-      snackbar('SUCCESS', 'Team Added')
+      appStore.showSnack('SUCCESS', 'Team Added')
 
     } else {
       expanded.value = []
-      snackbar('SUCCESS', 'Team Updated')
+      appStore.showSnack('SUCCESS', 'Team Updated')
 
     }
     handleHidingGlobalLoader(status)
     await getTeams();
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', isNew ? 'Error Adding Team' : 'Error Updating Team')
+    appStore.showSnack('ERROR', isNew ? 'Error Adding Team' : 'Error Updating Team')
 
     appStore.loading = false
   }
@@ -393,13 +393,13 @@ const deleteTeam = async (team) => {
   try {
     const {data, status} = await putRequest(`/smsTeam/${team.id}/delete`)
     team.archived = true
-    snackbar('SUCCESS', 'Team Deleted')
+    appStore.showSnack('SUCCESS', 'Team Deleted')
     showDeleteDialog.value = false
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Team')
+    appStore.showSnack('ERROR', 'Error Deleting Team')
 
     appStore.loading = false
     await getTeams()
@@ -412,7 +412,7 @@ const getPositions = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Positions')
+    appStore.showSnack('ERROR', 'Error Retrieving Positions')
 
     appStore.loading = false
   }
@@ -427,7 +427,7 @@ const getUsers = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Users')
+    appStore.showSnack('ERROR', 'Error Retrieving Users')
 
     appStore.loading = false
   }
@@ -439,7 +439,7 @@ const getOrgs = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Organizations')
+    appStore.showSnack('ERROR', 'Error Retrieving Organizations')
 
     appStore.loading = false
   }
@@ -457,7 +457,7 @@ const addPositionToTeam = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error adding Position')
+    appStore.showSnack('ERROR', 'Error adding Position')
 
     appStore.loading = false
   }
@@ -472,7 +472,7 @@ const addUserToTeam = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error adding User')
+    appStore.showSnack('ERROR', 'Error adding User')
 
     appStore.loading = false
   }
@@ -481,14 +481,14 @@ const deleteUserFromTeam = async (user) => {
   appStore.loading = true
   try {
     const {data, status} = await deleteRequest(`/smsTeam/${expandedItem.value.id}/user/` + user.id)
-    snackbar('SUCCESS', 'User removed')
+    appStore.showSnack('SUCCESS', 'User removed')
     user.archived = true
     const userIndex = expandedItem.value.users.findIndex(u => u.id === user.id);
     expandedItem.value.users.splice(userIndex, 1)
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Unable to remove User')
+    appStore.showSnack('ERROR', 'Unable to remove User')
 
     appStore.loading = false
   }
@@ -500,11 +500,11 @@ const deletePositionFromTeam = async (position) => {
     position.archived = true
     const positionIndex = expandedItem.value.positions.findIndex(p => p.id === position.id);
     expandedItem.value.positions.splice(positionIndex, 1)
-    snackbar('SUCCESS', 'Position removed')
+    appStore.showSnack('SUCCESS', 'Position removed')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Unable to removing Position')
+    appStore.showSnack('ERROR', 'Unable to removing Position')
 
     appStore.loading = false
   }
@@ -519,7 +519,7 @@ const addOrgToTeam = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error adding Organization')
+    appStore.showSnack('ERROR', 'Error adding Organization')
 
     appStore.loading = false
   }
@@ -528,14 +528,14 @@ const deleteOrgFromTeam = async (org) => {
   appStore.loading = true
   try {
     const {data, status} = await deleteRequest(`/smsTeam/${expandedItem.value.id}/org/` + org.orgId)
-    snackbar('SUCCESS', 'Organization removed')
+    appStore.showSnack('SUCCESS', 'Organization removed')
     org.archived = true
     const orgIndex = expandedItem.value.orgs.findIndex(o => o.id === org.id);
     expandedItem.value.orgs.splice(orgIndex, 1)
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error removing Organization')
+    appStore.showSnack('ERROR', 'Error removing Organization')
     appStore.loading = false
   }
 }

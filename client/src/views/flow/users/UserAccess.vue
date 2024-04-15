@@ -53,10 +53,7 @@
                             clearable
                             autocomplete="off"
                             attach>
-              <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
-              >
+              <template  v-slot:selection="{item, index}">
                 <v-chip small v-if="index < 21 && userOrgCalendars.length < 21"
                         close @click:close="userOrgCalendars.splice(index, 1)">
                   <span>{{ item.orgName }}</span>
@@ -136,9 +133,9 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import SpinnerInline from '@/components/SpinnerInline'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -146,7 +143,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const addCalendar = ref(false)
 const userId = ref(route.params.id)
@@ -201,7 +198,7 @@ const getUserCompanyFeatures = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving User Access Details')
+    appStore.showSnack('ERROR', 'Error Retrieving User Access Details')
 
     appStore.loading = false
   }
@@ -212,7 +209,7 @@ const getUserOrgAccessLevel = async() => {
     userHasFullAccess.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Org Access Level')
+    appStore.showSnack('ERROR', 'Error Retrieving Org Access Level')
 
   }
 }
@@ -230,7 +227,7 @@ const getAllOrgCalendars = async() => {
     await getUserOrgCalendars()
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Org Calendars')
+    appStore.showSnack('ERROR', 'Error Retrieving Org Calendars')
   }
 }
 const getUserOrgCalendars = async() => {
@@ -245,7 +242,7 @@ const getUserOrgCalendars = async() => {
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Org Calendars')
+    appStore.showSnack('ERROR', 'Error Retrieving Org Calendars')
 
   }
 }
@@ -264,7 +261,7 @@ const saveUserOrgCalendars = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Org Calendar to User')
+    appStore.showSnack('ERROR', 'Error Saving Org Calendar to User')
 
     appStore.loading = false
   }
@@ -277,7 +274,7 @@ const deleteOrgCalendarFromUser = async(item) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Org Calendar from User')
+    appStore.showSnack('ERROR', 'Error Deleting Org Calendar from User')
 
     appStore.loading = false
   }
@@ -295,7 +292,7 @@ const saveUserAccess = async() => {
     dirtyFields.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving User Access Details')
+    appStore.showSnack('ERROR', 'Error Saving User Access Details')
 
     appStore.loading = false
   }

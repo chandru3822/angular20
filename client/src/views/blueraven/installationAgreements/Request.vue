@@ -98,9 +98,9 @@ import constants from '@/helpers/constants'
 import RequestTable from "@/components/RequestTable";
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -108,7 +108,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const dataLoading = ref(true)
 const footerProps = ref({
@@ -179,7 +178,7 @@ const fetchProjects = async(search) => {
     dataLoading.value = false;
     appStore.loading = false
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving installation agreements')
+    appStore.showSnack('ERROR', 'Error retrieving installation agreements')
 
   }
 }
@@ -213,7 +212,7 @@ const openRequest = async(it) => {
   } catch (e) {
     appStore.loading = false
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving proposal numbers')
+    appStore.showSnack('ERROR', 'Error retrieving proposal numbers')
 
   }
 }
@@ -222,7 +221,7 @@ const submitRequest = async() => {
     appStore.loading = true
     if (!requestItem.value.proposalNbr) {
       console.error('*** ERROR ***', 'Error saving installation agreement request: No Proposal Number selected')
-      snackbar('ERROR', 'Unable to save installation agreement request without Proposal Number')
+      appStore.showSnack('ERROR', 'Unable to save installation agreement request without Proposal Number')
 
       appStore.loading = false
       return
@@ -230,16 +229,16 @@ const submitRequest = async() => {
 
     const {status} = await postRequest('/install-agreement/create', requestItem.value, 'blueraven')
     handleHidingGlobalLoader( status)
-    snackbar('SUCCESS', 'Installation agreement request submitted')
+    appStore.showSnack('SUCCESS', 'Installation agreement request submitted')
 
   } catch (e) {
     appStore.loading = false
     if (e?.data?.message.includes('locate')) {
-      snackbar('ERROR', 'Error: Unable to locate a finance application for this project')
+      appStore.showSnack('ERROR', 'Error: Unable to locate a finance application for this project')
     } else if (e?.data?.message) {
-      snackbar('ERROR', e.data.message)
+      appStore.showSnack('ERROR', e.data.message)
     } else {
-      snackbar('ERROR', 'Error submitting installation agreement request ')
+      appStore.showSnack('ERROR', 'Error submitting installation agreement request ')
     }
 
     console.error('*** ERROR ***', e)
@@ -251,15 +250,15 @@ const updateSunpowerApp = async() => {
     const {status} = await postRequest('/install-agreement/updateSunpowerApp/' + requestItem.value.projectId + '/' + requestItem.value.proposalNbr, {}, 'blueraven')
     requestDialog.value = false;
     handleHidingGlobalLoader( status)
-    snackbar('SUCCESS', 'SunPower loan application updated')
+    appStore.showSnack('SUCCESS', 'SunPower loan application updated')
 
     appStore.loading = false
   } catch (e) {
     appStore.loading = false
     if (e?.data?.message) {
-      snackbar('ERROR', e.data.message)
+      appStore.showSnack('ERROR', e.data.message)
     } else {
-      snackbar('ERROR', 'Error updating SunPower loan application')
+      appStore.showSnack('ERROR', 'Error updating SunPower loan application')
     }
 
     console.error('*** ERROR ***', e)
@@ -270,7 +269,7 @@ const openLoanApp = async() => {
     appStore.loading = true
     if (!requestItem.value.proposalNbr) {
       console.error('*** ERROR ***', 'Error: Unable to generate Finance application without Proposal Number')
-      snackbar('ERROR', 'Unable to generate Finance application without Proposal Number')
+      appStore.showSnack('ERROR', 'Unable to generate Finance application without Proposal Number')
 
       appStore.loading = false
       return
@@ -278,7 +277,7 @@ const openLoanApp = async() => {
 
     if (!requestItem.value.email) {
       console.error('*** ERROR ***', 'Error: Unable to generate Finance application without Email Address')
-      snackbar('ERROR', 'Unable to generate Finance application without Email Address')
+      appStore.showSnack('ERROR', 'Unable to generate Finance application without Email Address')
 
       appStore.loading = false
       return
@@ -291,7 +290,7 @@ const openLoanApp = async() => {
 
     // Handle case for Sunpower update
     if (data === 'Quote Updated') {
-      snackbar('SUCCESS', 'Quote Updated')
+      appStore.showSnack('SUCCESS', 'Quote Updated')
 
     }
     else {
@@ -303,11 +302,11 @@ const openLoanApp = async() => {
     appStore.loading = false
     console.error('*** ERROR ***', e)
     if (e.data.message != null) {
-      snackbar('ERROR', e.data.message)
+      appStore.showSnack('ERROR', e.data.message)
     } else if (e.data.detail != null) {
-      snackbar('ERROR', e.data.detail)
+      appStore.showSnack('ERROR', e.data.detail)
     } else {
-      snackbar('ERROR', 'Error generating Finance Application')
+      appStore.showSnack('ERROR', 'Error generating Finance Application')
     }
   }
 }
@@ -320,14 +319,14 @@ const updateEmail = async() => {
 
     currentEmail.value = requestItem.value.email;
     editEmail.value = false;
-    snackbar('SUCCESS', 'Email address updated')
+    appStore.showSnack('SUCCESS', 'Email address updated')
 
     handleHidingGlobalLoader( status)
     await fetchProjects(searchQuery.value);
   } catch (e) {
     appStore.loading = false
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error updating email address')
+    appStore.showSnack('ERROR', 'Error updating email address')
 
   }
 }

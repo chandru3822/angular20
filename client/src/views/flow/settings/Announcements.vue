@@ -95,8 +95,8 @@ import constants from '@/helpers/constants'
 import {deleteRequest, getRequestWithParams, handleHidingGlobalLoader} from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCurrentInstance, ref, computed, onMounted, watch} from "vue";
-import { useUserStore } from '@/stores/UserStorePinia.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 
 
@@ -104,8 +104,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
-const snackbar = vueInstance.$snackbar
-const router = useRouter()
+ const router = useRouter()
 const route = useRoute()
 
 
@@ -188,7 +187,7 @@ const getAnnouncements = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.loading = false
-    snackbar('ERROR', 'Error Loading Announcements')
+    appStore.showSnack('ERROR', 'Error Loading Announcements')
   } finally {
     announcementsLoading.value = false
   }
@@ -204,17 +203,17 @@ const deleteAnnouncement = async () => {
     const {status} = await deleteRequest(`/announcements/${item.id}`)
     item.archived = true
     announcements.value = announcements.value.filter(a => a.id !== item.id)
-    snackbar('SUCCESS', 'Announcement Deleted')
+    appStore.showSnack('SUCCESS', 'Announcement Deleted')
     handleHidingGlobalLoader(status)
   } catch (e) {
     if (e.status === 400) {
       deleteError.value = true;
       fieldsInUse.value = e.data;
-      snackbar("ERROR", "Error Deleting Announcement");
+      appStore.showSnack("ERROR", "Error Deleting Announcement");
       appStore.loading = false
     } else {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting Status')
+      appStore.showSnack('ERROR', 'Error Deleting Status')
       appStore.loading = false
     }
   }

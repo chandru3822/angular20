@@ -101,15 +101,14 @@
   import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import { getCurrentInstance, computed, ref, onMounted } from 'vue'
-  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useUserStore} from '@/stores/UserStore.js'
   import {useRoute} from "vue-router/composables"
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
   const route = useRoute()
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
 
         const dataLoading = ref(true)
         const itemToDelete = ref({})
@@ -143,7 +142,7 @@
           metroAreas.value = data?.listOfValues
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.showSnack('ERROR', 'Error Retrieving Data')
         }
       }
       const getPostalCodeZone = async() => {
@@ -157,7 +156,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           dataLoading.value = false
-          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.showSnack('ERROR', 'Error Retrieving Data')
           appStore.loading = false
         }
       }
@@ -170,7 +169,7 @@
             handleHidingGlobalLoader(status)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            snackbar('ERROR', 'Error Retrieving Data')
+            appStore.showSnack('ERROR', 'Error Retrieving Data')
             appStore.loading = false
           }
         }
@@ -179,11 +178,11 @@
         appStore.loading = true
         try {
           const {data, status} = await postRequest(`/postalCode/zone`, postalCodeZone.value)
-          snackbar('SUCCESS', 'Postal Code Zone Saved')
+          appStore.showSnack('SUCCESS', 'Postal Code Zone Saved')
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Saving Postal Code Zone')
+          appStore.showSnack('ERROR', 'Error Saving Postal Code Zone')
           appStore.loading = false
         }
       }
@@ -194,11 +193,11 @@
           postalCodeZone.value.postalCodes.push(data)
           availablePostalCodes.value = availablePostalCodes.value.filter(apc => apc.id !== data.id)
           selectedPostalCode.value = {}
-          snackbar('SUCCESS', 'Postal Code Saved to Zone')
+          appStore.showSnack('SUCCESS', 'Postal Code Saved to Zone')
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Saving Postal Code to Zone')
+          appStore.showSnack('ERROR', 'Error Saving Postal Code to Zone')
           appStore.loading = false
         }
       }
@@ -207,11 +206,11 @@
         try {
           await deleteRequest(`/postalCode/zone/${postalCodeZoneId.value}/postalCode/${itemToDelete.value.id}`)
           itemToDelete.value.archived = true
-          snackbar('SUCCESS', 'Postal Code Removed from Zone')
+          appStore.showSnack('SUCCESS', 'Postal Code Removed from Zone')
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Removing Postal Code from Zone')
+          appStore.showSnack('ERROR', 'Error Removing Postal Code from Zone')
           appStore.loading = false
         }
       }

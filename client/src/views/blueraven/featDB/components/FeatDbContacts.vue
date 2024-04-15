@@ -113,9 +113,9 @@ import cloneDeep from 'lodash.clonedeep'
 import { putRequest, postRequest,  } from '@/helpers/helpers'
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants"
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 
 const appStore = useAppStore()
@@ -124,7 +124,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   title: {
@@ -221,12 +220,12 @@ const saveContact = async() => {
       }
 
       contactsCopy.value.push(cloneDeep(res.data))
-      snackbar('SUCCESS', 'Contact added')
+      appStore.showSnack('SUCCESS', 'Contact added')
 
       contactForm.value.reset()
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error adding contact')
+      appStore.showSnack('ERROR', 'Error adding contact')
 
     }
     addMode.value = false
@@ -248,12 +247,12 @@ const saveContact = async() => {
       contactsCopy.value[updatedContactIndex].hours = res.data.hours
       contactsCopy.value[updatedContactIndex].address = res.data.address
       contactsCopy.value[updatedContactIndex].notes = res.data.notes
-      snackbar('SUCCESS', 'Contact updated')
+      appStore.showSnack('SUCCESS', 'Contact updated')
 
       contactForm.value.reset()
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error adding contact')
+      appStore.showSnack('ERROR', 'Error adding contact')
 
     }
     editMode.value = false
@@ -273,11 +272,11 @@ const deleteContact = async() => {
 
     let deletedContactIndex = contactsCopy.value.findIndex(i => i.id === selectedContact.value.id)
     contactsCopy.value.splice(deletedContactIndex, 1)
-    snackbar('SUCCESS', 'Contact deleted')
+    appStore.showSnack('SUCCESS', 'Contact deleted')
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error deleting contact')
+    appStore.showSnack('ERROR', 'Error deleting contact')
 
   }
   editMode.value = false

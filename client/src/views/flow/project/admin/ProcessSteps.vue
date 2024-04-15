@@ -171,9 +171,9 @@ import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepSta
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -181,8 +181,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -249,7 +248,7 @@ const getProjectProcessSteps = async () => {
     return {status}
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching process steps')
+    appStore.showSnack('ERROR', 'Error fetching process steps')
 
   } finally {
     isProjectProcessStepsLoading.value = false
@@ -268,7 +267,7 @@ const getAvailableStatuses = async(pps) => {
       }
     }
   } catch (e) {
-    snackbar('ERROR', 'Error fetching available process step statuses')
+    appStore.showSnack('ERROR', 'Error fetching available process step statuses')
 
     logError(e)
   }
@@ -280,7 +279,7 @@ const getCancelledStatuses = async() => {
       cancelledCompanyStatuses.value = data
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error fetching process step statuses')
+      appStore.showSnack('ERROR', 'Error fetching process step statuses')
 
     }
   }
@@ -296,7 +295,7 @@ const updateOwner = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error Saving Owner')
+    appStore.showSnack('ERROR', 'Error Saving Owner')
 
     appStore.loading = false
   }
@@ -311,7 +310,7 @@ const updateStatus = async (pps) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error updating process step status')
+    appStore.showSnack('ERROR', 'Error updating process step status')
 
 
     const previousStatus = availableProcessStepStatuses.value.find(status => status.id === selectedStep.companyProcessStepStatusTypeId)
@@ -333,7 +332,7 @@ const deleteProjectProcessStep = async (projectProcessStepId) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error deleting process step')
+    appStore.showSnack('ERROR', 'Error deleting process step')
 
     appStore.loading = false
   }
@@ -348,7 +347,7 @@ const updateMain = async (pps) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Unable to update the primary process step')
+    appStore.showSnack('ERROR', 'Unable to update the primary process step')
 
     if (selectedStep) {
       selectedStep.main = false
@@ -365,7 +364,7 @@ const getPpsHistory = async(pps) => {
     selectedPpsHistory.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error getting project process step history')
+    appStore.showSnack('ERROR', 'Error getting project process step history')
 
   } finally {
     appStore.loading = false

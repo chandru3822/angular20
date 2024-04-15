@@ -123,13 +123,6 @@
 
   import {ref, onMounted, computed, watch, getCurrentInstance, defineEmits} from "vue";
 
-  const vueInstance = getCurrentInstance().proxy
-  const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
-  const router = vueInstance.$router
-  const route = vueInstance.$route
-  const vuetify = vueInstance.$vuetify
-
   const emit = defineEmits(['prodStatsDrilldownDialogClosed'])
   const props = defineProps({
     startDate: String,

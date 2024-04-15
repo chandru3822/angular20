@@ -50,12 +50,12 @@
 import constants from '@/helpers/constants'
 import axios from 'axios'
 import {getCurrentInstance, onMounted, ref} from 'vue'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const appStore = useAppStore()
-const snackbar = vueInstance.$snackbar
+
 
 const attachments = ref([])
 onMounted(() => {
@@ -69,7 +69,7 @@ const getMaintenanceAttachments = async() => {
     attachments.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Files')
+    appStore.showSnack('ERROR', 'Error Retrieving Files')
     appStore.loading = false
   }
 }

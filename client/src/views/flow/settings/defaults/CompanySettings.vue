@@ -170,14 +170,14 @@ import {
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, ref, computed} from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 import {useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
@@ -217,6 +217,7 @@ const LogoTypeEnum = ref({
   }
 })
 
+const companyForm = ref(null)
 const loadComplete = ref(false)
 const company = ref({})
 const rules = ref([
@@ -287,13 +288,13 @@ const logoToDeleteId = computed(() => {
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Company')
+        appStore.showSnack('ERROR', 'Error Retrieving Company')
 
         appStore.loading = false
       }
     }
     const saveTestUserPassword = async () => {
-      if (vueInstance.$refs.companyForm.validate()) {
+      if (companyForm.value.validate()) {
         appStore.loading = true
         try {
           let params = {
@@ -301,7 +302,7 @@ const logoToDeleteId = computed(() => {
           }
           const {status} = await postRequestWithRequestParams(`/user/updateTestAccounts`, null, params)
           testUserPassword.value = ''
-          snackbar('SUCCESS', 'Test User Password Saved')
+          appStore.showSnack('SUCCESS', 'Test User Password Saved')
 
           handleHidingGlobalLoader(status)
         } catch (e) {
@@ -311,14 +312,15 @@ const logoToDeleteId = computed(() => {
       }
     }
     const saveCompany = async () => {
-      if (vueInstance.$refs.companyForm.validate()) {
+      if (companyForm.value.validate()) {
         appStore.loading = true
         try {
           const {status} = await putRequest(`/companies`, company.value)
+          appStore.showSnack('SUCCESS', 'Saved Company')
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Saving Company')
+          appStore.showSnack('ERROR', 'Error Saving Company')
 
           appStore.loading = false
         }
@@ -331,14 +333,14 @@ const logoToDeleteId = computed(() => {
           id: logoToDelete.image?.id,
           callback: async () => {
             LogoTypeEnum.value[logoToDelete.key].image = {}
-            snackbar('SUCCESS', 'Image Deleted')
+            appStore.showSnack('SUCCESS', 'Image Deleted')
 
             appStore.loading = false
           }
         })
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Deleting File')
+        appStore.showSnack('ERROR', 'Error Deleting File')
 
         appStore.loading = false
       }
@@ -355,14 +357,14 @@ const logoToDeleteId = computed(() => {
           displayName: file.name.substr(0, file.name.lastIndexOf('.')),
           callback: async (img, error) => {
             if (error?.error) {
-              snackbar('ERROR', error.errorMsg)
+              appStore.showSnack('ERROR', error.errorMsg)
 
               appStore.loading = false
             } else {
               LogoTypeEnum.value[logoType.key].image = img
               LogoTypeEnum.value[logoType.key].add = false
               LogoTypeEnum.value[logoType.key].saving = false
-              snackbar('SUCCESS', 'Image Uploaded')
+              appStore.showSnack('SUCCESS', 'Image Uploaded')
 
               appStore.loading = false
             }
@@ -370,7 +372,7 @@ const logoToDeleteId = computed(() => {
         })
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Uploading File')
+        appStore.showSnack('ERROR', 'Error Uploading File')
 
         appStore.loading = false
       }
@@ -388,7 +390,7 @@ const logoToDeleteId = computed(() => {
         })
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Loading Image')
+        appStore.showSnack('ERROR', 'Error Loading Image')
         appStore.loading = false
       }
     }

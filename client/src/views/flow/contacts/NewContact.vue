@@ -146,9 +146,9 @@ import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -156,7 +156,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const contact = ref({})
 const states = ref([])
@@ -219,7 +219,7 @@ const getCustomFieldGroups = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     loadingInsertFields.value = false
-    snackbar('ERROR', 'Error Retrieving Custom Fields')
+    appStore.showSnack('ERROR', 'Error Retrieving Custom Fields')
 
     appStore.loading = false
   }
@@ -232,7 +232,7 @@ const getAllCompanyStates = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving States')
+    appStore.showSnack('ERROR', 'Error Retrieving States')
 
     appStore.loading = false
   }
@@ -248,7 +248,7 @@ const getAllCountries = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Countries')
+    appStore.showSnack('ERROR', 'Error Retrieving Countries')
 
     appStore.loading = false
   }
@@ -269,7 +269,7 @@ const saveNewContact = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Contact')
+    appStore.showSnack('ERROR', 'Error Adding Contact')
 
     appStore.loading = false
   }

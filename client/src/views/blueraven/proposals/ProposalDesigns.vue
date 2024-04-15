@@ -481,16 +481,15 @@ import ImgProxy from '@/components/ImgProxy'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter } from 'vue-router/composables'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
 
 const dateSortFn = (prop = 'dateCreated') => {
   return (a, b) => {
@@ -542,9 +541,9 @@ const projectId = computed(() => {
 const closerApptRequirementsMet = computed(() => {
   return (
     project.value.closerAppointmentStart != null &&
-    moment(project.value.closerAppointmentStart).isBetween(
-      moment(),
-      moment().add(30, 'm')
+    moment().isBetween(
+      moment(project.value.closerAppointmentStart).subtract(30, 'm'),
+      moment(project.value.closerAppointmentEnd)
     )
   )
 })
@@ -603,12 +602,12 @@ const createAiFromExisting = async () => {
       //reload the active design
       await getActiveDesign()
     } else {
-      snackbar('ERROR', 'Failed to find Aurora Project')
+      appStore.showSnack('ERROR', 'Failed to find Aurora Project')
     }
   } catch (e) {
     logError(e)
     appStore.loading = false
-    snackbar(
+     appStore.showSnack(
       'ERROR',
       e?.data?.message || 'There was an error requesting a new design'
     )
@@ -665,7 +664,7 @@ const requestAIDesign = async () => {
   } catch (e) {
     logError(e)
     appStore.loading = false
-    snackbar(
+     appStore.showSnack(
       'ERROR',
       e?.data?.message || 'There was an error requesting a new design'
     )
@@ -696,7 +695,7 @@ const syncAuroraDesignDetails = async () => {
       await pageLoadOrRefresh()
       handleHidingGlobalLoader(status)
     } else {
-      snackbar(
+       appStore.showSnack(
         'ERROR',
         `Aurora design incomplete. Please navigate back to Aurora and finish your design changes before syncing.`
       )
@@ -704,7 +703,7 @@ const syncAuroraDesignDetails = async () => {
     }
   } catch (e) {
     appStore.loading = false
-    snackbar(
+     appStore.showSnack(
       'ERROR',
       `Aurora design incomplete. Please navigate back to Aurora and finish your design changes before syncing.`
     )
@@ -740,7 +739,7 @@ const requestNewDesign = async () => {
   } catch (e) {
     logError(e)
     appStore.loading = false
-    snackbar(
+     appStore.showSnack(
       'ERROR',
       e?.data?.message || 'There was an error requesting a new design'
     )
@@ -762,7 +761,7 @@ const requestPostalCodeApproval = async (comments) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     appStore.loading = false
-    snackbar(
+     appStore.showSnack(
       'ERROR',
       e?.data?.message || 'There was an error requesting a new design'
     )
@@ -874,7 +873,7 @@ const addProposal = async (design) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     logError(e)
-    snackbar(
+     appStore.showSnack(
       'ERROR',
       `An error occurred while creating proposal: <strong>${e?.data?.message}</strong>`,
       true

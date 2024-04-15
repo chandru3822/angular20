@@ -99,18 +99,19 @@
   import constants from '@/helpers/constants'
   import {getCurrentInstance, ref, onMounted, computed} from 'vue'
 
-  import { useUserStore } from '@/stores/UserStorePinia.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useUserStore } from '@/stores/UserStore.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   import {useRouter} from "vue-router/composables"
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const store = vueInstance.$store
   const userStore = useUserStore()
   const appStore = useAppStore()
   const router = useRouter()
   const vuetify = vueInstance.$vuetify
 
+  const dataViewForm = ref(null)
   const addNew = ref(false)
   const saveError = ref(false)
   const saveErrorMsg = ref('')
@@ -150,7 +151,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error loading processes')
+      appStore.showSnack('ERROR', 'Error loading processes')
       appStore.loading = false
     }
   }
@@ -160,7 +161,7 @@
     if(match) {
       saveError.value = true
       saveErrorMsg.value = 'Table Name already in use'
-    } else if (vueInstance.$refs.dataViewForm?.validate()) {
+    } else if (dataViewForm.value?.validate()) {
       saveDataView(view, isNew)
     }
   }
@@ -177,14 +178,14 @@
         addNew.value = false
         selectedCompanyProcesses.value = []
         newDataView.value = {}
-        snackbar('SUCCESS', 'Data View Added')
+        appStore.showSnack('SUCCESS', 'Data View Added')
       } else {
-        snackbar('SUCCESS', 'Data View Updated')
+        appStore.showSnack('SUCCESS', 'Data View Updated')
       }
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', isNew ? 'Error Adding Data View' : 'Error Updating Data View')
+      appStore.showSnack('ERROR', isNew ? 'Error Adding Data View' : 'Error Updating Data View')
       appStore.loading = false
     }
   }
@@ -196,7 +197,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Data Views')
+      appStore.showSnack('ERROR', 'Error Loading Data Views')
       appStore.loading = false
     }
   }

@@ -280,27 +280,23 @@
 </template>
 
 <script setup>
-import {AppMutations} from "@/stores/AppStore";
 import orderBy from "lodash.orderby";
 import draggable from "vuedraggable";
 import debounce from "lodash.debounce";
 import {
   getRequest,
   getRequestWithParams,
-  getSnackbar,
   handleHidingGlobalLoader,
   postRequest
 } from "@/helpers/helpers";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
 const route = useRoute()
@@ -416,7 +412,7 @@ const debounceFindCustomFields = debounce((query) => {
           }
         } catch (e) {
           console.error("*** ERROR ***", e);
-          snackbar("ERROR", "Error Retrieving Data");
+          appStore.showSnack("ERROR", "Error Retrieving Data");
         }
       } else {
         //not sure why i am doing  but.value leaving for now
@@ -433,7 +429,7 @@ const debounceFindCustomFields = debounce((query) => {
         systemLists.value = data;
       } catch (e) {
         console.error("*** ERROR ***", e);
-        snackbar("ERROR", "Error Retrieving Data");
+        appStore.showSnack("ERROR", "Error Retrieving Data");
       }
     }
     const getSystemListOptions = async (listId)  => {
@@ -454,7 +450,7 @@ const debounceFindCustomFields = debounce((query) => {
           handleHidingGlobalLoader(status);
         } catch (e) {
           console.error("*** ERROR ***", e);
-          snackbar("ERROR", "Error Retrieving Data");
+          appStore.showSnack("ERROR", "Error Retrieving Data");
           appStore.loading = false;
         }
       }
@@ -465,7 +461,7 @@ const debounceFindCustomFields = debounce((query) => {
         companyDataTypes.value = data;
       } catch (e) {
         console.error("*** ERROR ***", e);
-        snackbar("ERROR", "Error Retrieving Data");
+        appStore.showSnack("ERROR", "Error Retrieving Data");
       }
     }
     const saveChanges = async (object)  => {
@@ -495,11 +491,11 @@ const debounceFindCustomFields = debounce((query) => {
         }
 
         // re-sort in case the fieldName changed
-        snackbar("SUCCESS", "Saved Changes");
+        appStore.showSnack("SUCCESS", "Saved Changes");
         handleHidingGlobalLoader(status);
       } catch (e) {
         console.error("*** ERROR ***", e);
-        snackbar("ERROR", "Error Saving Changes");
+        appStore.showSnack("ERROR", "Error Saving Changes");
         appStore.loading = false;
       }
     }
@@ -536,13 +532,13 @@ const debounceFindCustomFields = debounce((query) => {
         appStore.loading = false
       } catch (e) {
         console.error("*** ERROR ***", e);
-        snackbar("ERROR", "Error Retrieving Data");
+        appStore.showSnack("ERROR", "Error Retrieving Data");
         appStore.loading = false
       }
     }
     const copyToClipBoard = (textValue) => {
       navigator.clipboard.writeText(textValue);
-      snackbar('SUCCESS', 'Copied id to clipboard')
+      appStore.showSnack('SUCCESS', 'Copied id to clipboard')
     }
 </script>
 

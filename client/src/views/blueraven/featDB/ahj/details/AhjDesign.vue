@@ -123,9 +123,9 @@ import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, 
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
 import TwoColumnMasonry from "@/views/blueraven/featDB/components/TwoColumnMasonry.vue";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -133,7 +133,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const itemType = ref('design')
 const saveDialog = ref(false)
@@ -199,7 +198,7 @@ const getAhjDesign = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving AHJ Design')
+    appStore.showSnack('ERROR', 'Error retrieving AHJ Design')
     appStore.loading = false
   }
 }
@@ -218,11 +217,11 @@ const getCustomFieldGroupAssignmentsForScreen = async() => {
       handleHidingGlobalLoader( status)
     } else {
       console.error('*** ERROR ***', 'Missing parameter "sourceId"')
-      snackbar('ERROR', 'Error retrieving custom fields')
+      appStore.showSnack('ERROR', 'Error retrieving custom fields')
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving custom fields')
+    appStore.showSnack('ERROR', 'Error retrieving custom fields')
     appStore.loading = false
   }
 }
@@ -249,7 +248,7 @@ const validateForm = () => {
   if (ahjDesignForm.value.validate()) {
     saveDialog.value = true
   } else {
-    snackbar('ERROR', 'Missing Required Fields')
+    appStore.showSnack('ERROR', 'Missing Required Fields')
 
   }
 }
@@ -275,7 +274,7 @@ const updateAhjDesign = async() => {
         })
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'An error occurred when preparing to update all designs in ' + ahjDesign.value.stateName)
+        appStore.showSnack('ERROR', 'An error occurred when preparing to update all designs in ' + ahjDesign.value.stateName)
       }
     } else if (updateAllInMetro) {
       try {
@@ -289,7 +288,7 @@ const updateAhjDesign = async() => {
         })
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'An error occurred when preparing to update all designs in ' + ahjDesign.value.stateName)
+        appStore.showSnack('ERROR', 'An error occurred when preparing to update all designs in ' + ahjDesign.value.stateName)
       }
     }
 
@@ -303,13 +302,13 @@ const updateAhjDesign = async() => {
     dataWasChanged.value = false
     resetCustomFieldValueWasChangedFlags()
     let successMessage = updateAllInState ? 'All designs in ' + ahjDesign.value.stateName + ' have been updated successfully' : updateAllInMetro ? 'All designs in ' + ahjDesign.value.metroArea + ' have been updated successfully' : 'Design updated successfully'
-    snackbar('SUCCESS', successMessage)
+    appStore.showSnack('SUCCESS', successMessage)
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let errorMessage = updateAllInState ? 'An error occurred when attempting to update all designs in ' + ahjDesign.value.stateName : 'Failed to update design'
-    snackbar('ERROR', errorMessage)
+    appStore.showSnack('ERROR', errorMessage)
     appStore.loading = false
   }
 }

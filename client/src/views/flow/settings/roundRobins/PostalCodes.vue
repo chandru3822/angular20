@@ -90,15 +90,14 @@ import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSna
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const userStore = useUserStore()
+ const userStore = useUserStore()
 const route = useRoute()
 
 
@@ -160,7 +159,7 @@ const getAvailablePostalCodes = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -173,7 +172,7 @@ const getCodesAssignedToRoundRobin = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -187,7 +186,7 @@ const deleteCodeFromRoundRobin = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Removing Postal Code')
+    appStore.showSnack('ERROR', 'Error Removing Postal Code')
     appStore.loading = false
   }
   closeDeleteDialog()
@@ -211,7 +210,7 @@ const addCodeToRoundRobin = async () => {
     } catch (e) {
       console.error('*** ERROR ***', e)
       let msg = e.data?.message?.includes('Postal Code Already In Use') ? e.data.message : 'Error Adding Postal Code'
-      snackbar('ERROR', msg)
+      appStore.showSnack('ERROR', msg)
       appStore.loading = false
     }
   } else {

@@ -175,10 +175,10 @@ import { useFileStore } from '@/stores/FileStore.js'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
-import {useProjectStore} from '@/stores/ProjectStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
+import {useProjectStore} from '@/stores/ProjectStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const projectStore = useProjectStore()
 const fileStore = useFileStore()
@@ -188,7 +188,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 
 const customFieldGroups = ref([])
@@ -308,19 +308,19 @@ const updateFieldGroups = async () => {
       })
       dirtyCfvs.value = []
       customFieldGroups.value = data
-      snackbar('SUCCESS', 'Fields Saved')
+      appStore.showSnack('SUCCESS', 'Fields Saved')
 
       handleHidingGlobalLoader( status)
     } catch (e) {
       logError(e)
-      snackbar('ERROR', 'Error Updating Project Fields')
+      appStore.showSnack('ERROR', 'Error Updating Project Fields')
 
       appStore.loading = false
     } finally {
       fieldsSaving.value = false
     }
   } else {
-    snackbar('ERROR', 'Missing Required Fields')
+    appStore.showSnack('ERROR', 'Missing Required Fields')
 
   }
 }
@@ -405,13 +405,13 @@ const uploadDocument = async (files, type) => {
   } catch (e) {
     appStore.loading = false
     logError(e)
-    snackbar('ERROR', 'Error Uploading File')
+    appStore.showSnack('ERROR', 'Error Uploading File')
 
   }
 }
 const fileUploaded = (attachment, error) => {
   if (error) {
-    snackbar('ERROR', error.message)
+    appStore.showSnack('ERROR', error.message)
 
   } else {
     //this value tells the right pane to update when a file is uploaded

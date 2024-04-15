@@ -109,25 +109,22 @@
 </template>
 
 <script setup>
-import {AppMutations} from "@/stores/AppStore";
 import cloneDeep from "lodash.clonedeep";
 import orderBy from "lodash.orderby";
 import {
   getRequest,
-  getSnackbar,
   handleHidingGlobalLoader,
   putRequest
 } from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import {useRouter} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
 const router = useRouter()
@@ -195,7 +192,7 @@ const userCanEdit = computed(() => {
         customFields.value = cloneDeep(allCustomFields.value);
       } catch (e) {
         console.error("*** ERROR ***", e);
-        snackbar("ERROR", "Error Retrieving Data");
+        appStore.showSnack("ERROR", "Error Retrieving Data");
 
       }
     }
@@ -209,7 +206,7 @@ const userCanEdit = computed(() => {
         appStore.loading = false
       } catch (e) {
         console.error("*** ERROR ***", e);
-        snackbar("ERROR", "Error Retrieving Data");
+        appStore.showSnack("ERROR", "Error Retrieving Data");
 
         appStore.loading = false
       }
@@ -223,7 +220,7 @@ const userCanEdit = computed(() => {
           item.deleteConfirm = false;
           deleteError.value = true;
           fieldsInUse.value = data;
-          // snackbar("ERROR", "Field Cannot Be Deleted");
+          // appStore.showSnack("ERROR", "Field Cannot Be Deleted");
           //
         } else {
           item.archived = true;
@@ -231,13 +228,13 @@ const userCanEdit = computed(() => {
           customFields.value = customFields.value.filter((cf) => {
             return cf.id !== item.id;
           });
-          snackbar("SUCCESS", "Field Deleted");
+          appStore.showSnack("SUCCESS", "Field Deleted");
 
         }
         handleHidingGlobalLoader(status);
       } catch (e) {
         console.error("*** ERROR ***", e);
-        snackbar("ERROR", "Error Deleting Field");
+        appStore.showSnack("ERROR", "Error Deleting Field");
         appStore.loading = false;
       }
       closeDeleteDialog()

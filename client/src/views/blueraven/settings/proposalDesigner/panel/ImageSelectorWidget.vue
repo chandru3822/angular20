@@ -95,12 +95,11 @@ import {
 import ImgProxy from '@/components/ImgProxy'
 import { getCurrentInstance, ref } from 'vue'
 import { useFileStore } from '@/stores/FileStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const fileStore = useFileStore()
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
 
 const PROPOSAL_TEMPLATE_ATTACHMENT_TYPE_ID = 939
 const IMAGE_REGEX = /^(jpe?g|png|gif|webp)$/i
@@ -131,7 +130,7 @@ const _fetchProposalImages = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error retrieving data')
+    appStore.showSnack('ERROR', 'Error retrieving data')
   } finally {
     appStore.loading = false
   }
@@ -180,7 +179,7 @@ const uploadAttachments = async (files) => {
       uploadFiles.value = []
     } catch (e) {
       logError(e)
-      snackbar('ERROR', 'Error uploading document')
+      appStore.showSnack('ERROR', 'Error uploading document')
       appStore.loading = false
     } finally {
       appStore.loading = true

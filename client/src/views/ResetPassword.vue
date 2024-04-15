@@ -44,11 +44,11 @@
   import axios from 'axios'
   import {getCurrentInstance, ref} from 'vue'
 
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useUserStore } from '@/stores/UserStore.js'
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
+
   const userStore = useUserStore()
 
   const validForm = ref(false);

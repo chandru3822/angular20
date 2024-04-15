@@ -212,9 +212,9 @@ import {deleteRequest, getRequest,  handleHidingGlobalLoader, postRequest, putRe
 import {getActiveStates} from "@/services/stateService";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -222,7 +222,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const dataLoading = ref(true)
 const hoaFilters = ref({name: {value: '', type: 'text', model: 'name'},state: {value: [], type: 'select', model: 'state'},managementCompany: {value: '', type: 'text', model: 'managementCompany'}})
@@ -298,7 +298,7 @@ const getActiveManagementCompanies = async()  => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     appStore.loading = false
   }
@@ -312,7 +312,7 @@ const fetchHoas = async()  => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     dataLoading.value = false
     appStore.loading = false
@@ -326,7 +326,7 @@ const fetchStates = async()  => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving States')
+    appStore.showSnack('ERROR', 'Error Retrieving States')
 
     appStore.loading = false
   }
@@ -356,13 +356,13 @@ const confirmDeleteHoa = async()  => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/featDb/hoa/${hoaToDelete.value.id}`, 'blueraven')
-    snackbar('SUCCESS', 'HOA deleted')
+    appStore.showSnack('SUCCESS', 'HOA deleted')
 
     await fetchHoas().then(() => fetchStates())
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error deleting HOA')
+    appStore.showSnack('ERROR', 'Error deleting HOA')
 
     appStore.loading = false
   }
@@ -412,24 +412,24 @@ const saveHoa = async()  => {
         }
       }
       const {status} = await postRequest('/featDb/hoa', editedItem.value, 'blueraven')
-      snackbar('SUCCESS', 'HOA created')
+      appStore.showSnack('SUCCESS', 'HOA created')
 
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error creating HOA')
+      appStore.showSnack('ERROR', 'Error creating HOA')
 
       appStore.loading = false
     }
   } else {
     try {
       const {status} = await putRequest(`/featDb/hoa/simpleUpdate`, editedItem.value, 'blueraven')
-      snackbar('SUCCESS', 'HOA updated')
+      appStore.showSnack('SUCCESS', 'HOA updated')
 
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error updating HOA')
+      appStore.showSnack('ERROR', 'Error updating HOA')
 
       appStore.loading = false
     }

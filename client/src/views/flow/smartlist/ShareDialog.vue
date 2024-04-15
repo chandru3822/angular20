@@ -195,14 +195,13 @@
 
 import { getRequest, handleHidingGlobalLoader, logError, postRequest, putRequest, UUID } from '@/helpers/helpers'
 import { getCurrentInstance, ref, computed } from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   openDialog: {
@@ -329,10 +328,10 @@ const updateAccess = async () => {
       await postRequest(`/smartlist/${props.smartlist.id}/access`, {...payload, smartlistId: props.smartlist.id})
 
       if (payload.updatePublic && payload.public) {
-        snackbar('SUCCESS', `Smartlist made public`)
+        appStore.showSnack('SUCCESS', `Smartlist made public`)
       }
       else {
-        snackbar('SUCCESS', `Access updated`)
+        appStore.showSnack('SUCCESS', `Access updated`)
       }
 
       emit('dialog-closed')
@@ -341,12 +340,12 @@ const updateAccess = async () => {
       }
     } catch (err) {
       logError(err)
-      snackbar('ERROR', 'Error while sharing Smartlist')
+      appStore.showSnack('ERROR', 'Error while sharing Smartlist')
     } finally {
-      handleHidingGlobalLoader(vueInstance, true)
+       handleHidingGlobalLoader( true)
     }
   } else {
-    snackbar('SUCCESS', `Access updated`)
+    appStore.showSnack('SUCCESS', `Access updated`)
     emit('dialog-closed')
   }
 }
@@ -360,7 +359,7 @@ const updateOwner = async () => {
   try {
     appStore.loading = true
     await putRequest(`/smartlist/${props.smartlist.id}/owner`, newOwner.value)
-    snackbar('SUCCESS', `Ownership successfully transferred`)
+    appStore.showSnack('SUCCESS', `Ownership successfully transferred`)
     emit('dialog-closed')
     emit('updated-owner', {
       name: newOwner.value.name,
@@ -371,9 +370,9 @@ const updateOwner = async () => {
     })
   } catch (err) {
     logError(err)
-    snackbar('ERROR', 'Error while transferring ownership')
+    appStore.showSnack('ERROR', 'Error while transferring ownership')
   } finally {
-    handleHidingGlobalLoader(vueInstance, true)
+     handleHidingGlobalLoader( true)
   }
 }
 

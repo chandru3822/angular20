@@ -1,7 +1,7 @@
 <template>
   <v-app id="app">
-    <ReloadPrompt v-if="vueInstance.$route.name !== 'login'"/>
-    <AppNav v-if="!noNavRoutes.includes(vueInstance.$route.name) && !hideHeader"/>
+    <ReloadPrompt v-if="route.name !== 'login'"/>
+    <AppNav v-if="!noNavRoutes.includes(route.name) && !hideHeader"/>
     <v-main>
       <v-container
           class="router-container"
@@ -27,15 +27,17 @@ import Spinner from '@/components/Spinner'
 import AnnouncementAlert from '@/components/AnnouncementAlert.vue'
 import ReloadPrompt from '@/components/ReloadPrompt.vue'
 import {getCurrentInstance, onMounted, ref, computed, watch} from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import theme from '@/helpers/defaultTheme.js'
-import { useNotificationStore } from '@/stores/NotificationStorePinia.js'
+import { useNotificationStore } from '@/stores/NotificationStore.js'
 import cloneDeep from 'lodash.clonedeep'
+import {useRoute, useRouter} from "vue-router/composables";
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const router = vueInstance.$router
+const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 const appStore = useAppStore()
 const notificationStore = useNotificationStore()

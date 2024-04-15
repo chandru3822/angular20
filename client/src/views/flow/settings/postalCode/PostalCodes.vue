@@ -152,16 +152,15 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import constants from "@/helpers/constants";
 import {getStates} from "@/services/stateService";
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRouter} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
       const addNew = ref(false)
       const search = ref(null)
@@ -225,7 +224,7 @@ onMounted(() => {
 
 
     const validateForm = async () => {
-      if (vueInstance.$refs.postalCodeForm.validate()) {
+      if (postalCodeForm.value.validate()) {
         await addPostalCode()
       }
     }
@@ -236,7 +235,7 @@ onMounted(() => {
           states.value = data
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.showSnack('ERROR', 'Error Retrieving Data')
         }
       }
     }
@@ -252,7 +251,7 @@ onMounted(() => {
       } catch (e) {
         console.error('*** ERROR ***', e)
         dataLoading.value = false
-        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.showSnack('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       }
     }
@@ -262,11 +261,11 @@ onMounted(() => {
       appStore.loading = true
       try {
         const {status} = await deleteRequest(`/postalCode/${postalCodeId}`)
-        snackbar('SUCCESS', 'Postal Code Deleted')
+        appStore.showSnack('SUCCESS', 'Postal Code Deleted')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Deleting Postal Code')
+        appStore.showSnack('ERROR', 'Error Deleting Postal Code')
         appStore.loading = false
       }
       closeDeleteDialog()
@@ -276,12 +275,12 @@ onMounted(() => {
       try {
         const {data, status} = await postRequest(`/postalCode`, newPostalCode.value)
         router.push({path: `/settings/zip/postalCode/${data.id}`})
-        snackbar('SUCCESS', 'Postal Code Added')
+        appStore.showSnack('SUCCESS', 'Postal Code Added')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         let msg = e?.data?.message ? e.data.message : 'Error Adding Postal Code'
-        snackbar('ERROR', msg)
+        appStore.showSnack('ERROR', msg)
         appStore.loading = false
       }
     }

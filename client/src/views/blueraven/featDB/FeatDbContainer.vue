@@ -27,9 +27,9 @@
 
   import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
   import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-  import {useUserStore} from '@/stores/UserStorePinia.js'
+  import {useUserStore} from '@/stores/UserStore.js'
   import {useRoute, useRouter} from "vue-router/composables";
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
 
   const appStore = useAppStore()
   const route = useRoute()
@@ -37,7 +37,6 @@
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
 
   const tabs = ref(FEAT_DB_TABS)
 

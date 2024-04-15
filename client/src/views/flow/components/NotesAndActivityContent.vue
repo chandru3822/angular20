@@ -351,9 +351,9 @@ import DatetimePickerInput from "@/components/DatetimePickerInput"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -361,7 +361,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   showNotes: Boolean,
@@ -448,11 +447,11 @@ const deleteNote = async() => {
     if (isChildNote) {
       parentOfNoteToDelete.value.childNotes = parentOfNoteToDelete.value.childNotes.filter(cn => !cn.archived)
     }
-    snackbar('SUCCESS', 'Note Deleted')
+    appStore.showSnack('SUCCESS', 'Note Deleted')
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Note')
+    appStore.showSnack('ERROR', 'Error Deleting Note')
 
   }
   closeNoteDelete()
@@ -497,20 +496,19 @@ const saveNote = async(n) => {
       n.showReply = false
       n.childNotes == null ? n.childNotes = [data] : n.childNotes.push(data)
     } else if (!n.id) {
-      notes.value.unshift(data)
       note.value = {}
     }
     if((isPsWqtNote.value || isEventWqtNote.value) && (!n.id || notes.value.findIndex(i => i.id === n.id) === 0)) {
       //if it is a new (non-child) note or edit to the first note, send the note back in the callback so the wq ui can be updated
-      props.callback(data)
+      props.callback(data, n.id === null)
     }
-    snackbar('SUCCESS', 'Note Added')
+    appStore.showSnack('SUCCESS', n.id === null ? 'Note Added' : 'Note Saved')
 
     dirtyNote.value = false
     savingNote.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Note')
+    appStore.showSnack('ERROR', 'Error Saving Note')
 
     savingNote.value = false
   }
@@ -525,7 +523,7 @@ const getUsers = async () => {
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Users')
+    appStore.showSnack('ERROR', 'Error Retrieving Users')
 
     appStore.loading = false
   }

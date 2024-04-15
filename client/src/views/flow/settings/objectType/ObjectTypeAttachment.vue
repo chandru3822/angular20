@@ -84,7 +84,7 @@
                         <a-text-field
                                       v-if="item.edit"
                                       v-model="item.groupName">
-                          <template slot="append-outer">
+                          <template v-slot:append-outer>
                             <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
                             <v-icon @click="item.edit = false">clear</v-icon>
                           </template>
@@ -198,7 +198,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from "@/stores/AppStore";
 import draggable from 'vuedraggable'
 import {
   handleHidingGlobalLoader,
@@ -208,20 +207,18 @@ import {
   putRequest,
   getRequestWithParams
 } from "@/helpers/helpers";
-import constants from "@/helpers/constants";
 import orderBy from 'lodash.orderby'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const route = useRoute()
+ const route = useRoute()
 const router = useRouter()
 const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
@@ -310,7 +307,7 @@ const props = defineProps({
     } catch (e) {
       attachmentLoading.value = true
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Attachment Type Details')
+      appStore.showSnack('ERROR', 'Error Retrieving Attachment Type Details')
 
       companyStatusesLoading.value = false
     }
@@ -340,12 +337,12 @@ const props = defineProps({
       localCustomFieldGroups.value.push(data)
       newGroup.value = {}
       createNew.value = false
-      snackbar('SUCCESS', 'Group Saved')
+      appStore.showSnack('SUCCESS', 'Group Saved')
 
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Group')
+      appStore.showSnack('ERROR', 'Error Saving Group')
 
       appStore.loading = false
     }
@@ -367,12 +364,12 @@ const props = defineProps({
       if (fieldsToSave.length > 0) {
         await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
       }
-      snackbar('SUCCESS', 'Fields Updated')
+      appStore.showSnack('SUCCESS', 'Fields Updated')
 
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Updating Fields')
+      appStore.showSnack('ERROR', 'Error Updating Fields')
 
       appStore.loading = false
     }
@@ -382,12 +379,12 @@ const props = defineProps({
     appStore.loading = true
     try {
       await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
-      snackbar('SUCCESS', 'Group Name Updated')
+      appStore.showSnack('SUCCESS', 'Group Name Updated')
 
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Change')
+      appStore.showSnack('ERROR', 'Error Saving Change')
 
       appStore.loading = false
     }
@@ -402,7 +399,7 @@ const props = defineProps({
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
 
       appStore.loading = false
     }
@@ -429,12 +426,12 @@ const props = defineProps({
           deleteHeader.value = 'Error Deleting Custom Field from Group'
           deleteText.value = 'You cannot delete a field from a group that is in use by other groups or requirements.'
         }
-        snackbar('ERROR', errorMsg)
+        appStore.showSnack('ERROR', errorMsg)
 
       } else {
         fieldsInUse.value = []
         item.archived = true
-        snackbar('SUCCESS', 'Item Deleted')
+        appStore.showSnack('SUCCESS', 'Item Deleted')
 
         appStore.loading = false
       }
@@ -442,7 +439,7 @@ const props = defineProps({
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting')
+      appStore.showSnack('ERROR', 'Error Deleting')
 
       appStore.loading = false
     }
@@ -459,7 +456,7 @@ const props = defineProps({
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
 
       appStore.loading = false
     }
@@ -479,11 +476,11 @@ const props = defineProps({
       selectedAncillaryField.value = {}
       parent = {}
       addField.value = false
-      snackbar('SUCCESS', 'Field Added to Group')
+      appStore.showSnack('SUCCESS', 'Field Added to Group')
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Adding Field to Group')
+      appStore.showSnack('ERROR', 'Error Adding Field to Group')
 
       appStore.loading = false
     }
@@ -494,13 +491,13 @@ const props = defineProps({
       try {
         await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
         localCustomFieldGroups.value = orderBy(localCustomFieldGroups.value, 'groupOrder')
-        snackbar('SUCCESS', 'Group Order Saved')
+        appStore.showSnack('SUCCESS', 'Group Order Saved')
         // this componentKey forces the data-table component to re-render
         componentKey.value += 1
         appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving Group Order')
+        appStore.showSnack('ERROR', 'Error Saving Group Order')
         appStore.loading = false
       }
     }

@@ -153,15 +153,14 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useRouter} from "vue-router/composables";
-import {useUserStore} from '@/stores/UserStorePinia.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const router = useRouter()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const userStore = useUserStore()
+ const userStore = useUserStore()
 
 
 const addNew = ref(false)
@@ -221,7 +220,7 @@ const getCompanyTimezones = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Timezones')
+    appStore.showSnack('ERROR', 'Error Retrieving Timezones')
     appStore.loading = false
   }
 }
@@ -246,7 +245,7 @@ const getRoundRobins = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -256,11 +255,11 @@ const deleteRoundRobin = async () => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/roundRobin/${roundRobinId}`)
-    snackbar('SUCCESS', 'Round Robin Deleted')
+    appStore.showSnack('SUCCESS', 'Round Robin Deleted')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Round Robin')
+    appStore.showSnack('ERROR', 'Error Deleting Round Robin')
     appStore.loading = false
   }
   closeDeleteDialog()
@@ -269,12 +268,12 @@ const addRoundRobin = async () => {
   appStore.loading = true
   try {
     const {data, status} = await postRequest(`/roundRobin`, newRoundRobin.value)
-    snackbar('SUCCESS', 'Round Robin Added')
+    appStore.showSnack('SUCCESS', 'Round Robin Added')
     handleHidingGlobalLoader(status)
     await router.push({path: `/settings/roundRobin/${data.id}/scheduleTo`})
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Round Robin')
+    appStore.showSnack('ERROR', 'Error Adding Round Robin')
     appStore.loading = false
   }
 }

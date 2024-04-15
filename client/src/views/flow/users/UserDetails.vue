@@ -269,12 +269,12 @@ import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import PageOverview from '../PageOverview'
 import SidePanelExpansionPanel from '@/components/SidePanelExpansionPanel.vue'
-import { useProjectStore } from '@/stores/ProjectStorePinia.js'
+import { useProjectStore } from '@/stores/ProjectStore.js'
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const projectStore = useProjectStore()
 const appStore = useAppStore()
@@ -283,7 +283,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 
 const breadcrumbs = ref([
@@ -396,12 +396,12 @@ const saveUserSystemFields = async () => {
     user.value.userStatusType = data.userStatusType
     user.value.hasAccess = data.hasAccess
     showEditModal.value = false
-    snackbar('SUCCESS', 'User Updated')
+    appStore.showSnack('SUCCESS', 'User Updated')
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error Saving Fields')
+    appStore.showSnack('ERROR', 'Error Saving Fields')
 
     appStore.loading = false
   }
@@ -419,19 +419,19 @@ const saveUser = async() => {
       dirtyCfvs.value = []
       customFieldGroups.value = data
       fieldsSaving.value = false
-      snackbar('SUCCESS', 'User Saved')
+      appStore.showSnack('SUCCESS', 'User Saved')
 
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
       let errorMsg = e?.message ? 'Error Saving User: ' + e.message : 'Error Saving User'
-      snackbar('ERROR', errorMsg)
+      appStore.showSnack('ERROR', errorMsg)
 
       fieldsSaving.value = false
       appStore.loading = false
     }
   } else {
-    snackbar('ERROR', 'Missing Required Fields')
+    appStore.showSnack('ERROR', 'Missing Required Fields')
 
   }
 }
@@ -447,7 +447,7 @@ const getCustomFieldGroups = async() => {
     customFieldGroups.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Custom Fields')
+    appStore.showSnack('ERROR', 'Error Retrieving Custom Fields')
 
     appStore.loading = false
   }
@@ -458,7 +458,7 @@ const getUser = async() => {
     user.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving User')
+    appStore.showSnack('ERROR', 'Error Retrieving User')
 
     appStore.loading = false
   }
@@ -469,7 +469,7 @@ const getCompanies = async() => {
     companies.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Companies')
+    appStore.showSnack('ERROR', 'Error Retrieving Companies')
 
     appStore.loading = false
   }
@@ -489,7 +489,7 @@ const getUserStatusTypes = async(companyId) => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving User Statuses')
+    appStore.showSnack('ERROR', 'Error Retrieving User Statuses')
 
     appStore.loading = false
   }
@@ -510,7 +510,7 @@ const removeUserCompany = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Removing User Company')
+    appStore.showSnack('ERROR', 'Error Removing User Company')
 
     appStore.loading = false
   }
@@ -530,7 +530,7 @@ const saveUserCompany = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving User Company')
+    appStore.showSnack('ERROR', 'Error Saving User Company')
 
     appStore.loading = false
   }
@@ -542,7 +542,7 @@ const saveUserStatus = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving User Status')
+    appStore.showSnack('ERROR', 'Error Saving User Status')
 
     appStore.loading = false
   }
@@ -552,12 +552,12 @@ const unlockUserAccount = async() => {
   try {
     const {status} = await putRequest(`/user/${userId.value}/unlock`)
     user.value.loginAttempts = 0
-    snackbar('SUCCESS', 'User Unlocked')
+    appStore.showSnack('SUCCESS', 'User Unlocked')
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Unlocking User')
+    appStore.showSnack('ERROR', 'Error Unlocking User')
 
     appStore.loading = false
   }

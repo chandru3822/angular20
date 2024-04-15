@@ -120,16 +120,15 @@ import {
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, computed, ref, onMounted } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
       const expandTypes = ref(true)
       const addNewType = ref(false)
@@ -170,11 +169,11 @@ onMounted(async() => {
       try {
         appStore.loading = true
         const {status} = await putRequest(`/processStep/${processStepId.value}/attachmentType/update`, item)
-        snackbar('SUCCESS', 'Attachment Type Updated')
+        appStore.showSnack('SUCCESS', 'Attachment Type Updated')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving Attachment Type')
+        appStore.showSnack('ERROR', 'Error Saving Attachment Type')
         appStore.loading = false
       }
     }
@@ -186,7 +185,7 @@ onMounted(async() => {
         appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
+        appStore.showSnack('ERROR', 'Error Retrieving Data')
         appStore.loading = false
       }
     }
@@ -199,7 +198,7 @@ onMounted(async() => {
           appStore.loading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.showSnack('ERROR', 'Error Retrieving Data')
           appStore.loading = false
         }
       }
@@ -217,7 +216,7 @@ onMounted(async() => {
         appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Adding Attachment Type')
+        appStore.showSnack('ERROR', 'Error Adding Attachment Type')
         appStore.loading = false
       }
     }
@@ -227,11 +226,11 @@ onMounted(async() => {
       try {
         await deleteRequest(`/processStep/${processStepId.value}/attachmentType/${item.id}`)
         item.archived = true
-        snackbar('SUCCESS', 'Attachment Type Deleted')
+        appStore.showSnack('SUCCESS', 'Attachment Type Deleted')
         appStore.loading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Deleting Attachment Type')
+        appStore.showSnack('ERROR', 'Error Deleting Attachment Type')
         appStore.loading = false
       }
     }
@@ -240,11 +239,11 @@ onMounted(async() => {
         appStore.loading = true
         try {
           await putRequest(`/processStep/${processStepId.value}/attachmentType/order`, rows)
-          snackbar('SUCCESS', 'Attachment Type Order Saved')
+          appStore.showSnack('SUCCESS', 'Attachment Type Order Saved')
           appStore.loading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Saving Attachment Type Order')
+          appStore.showSnack('ERROR', 'Error Saving Attachment Type Order')
           appStore.loading = false
         }
       }

@@ -115,10 +115,10 @@ import {
   getRequestWithParams
 } from '@/helpers/helpers'
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
-import { useBrsStore } from '@/stores/BrsStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
+import { useBrsStore } from '@/stores/BrsStore.js'
 import debounce from 'lodash.debounce'
 import { storeToRefs } from 'pinia'
 
@@ -130,7 +130,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const payrollSearch = ref({})
 const footerProps = ref({
@@ -188,7 +187,7 @@ const getPayrollData = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Payroll Data')
+    appStore.showSnack('ERROR', 'Error Loading Payroll Data')
 
     appStore.loading = false
   }
@@ -211,7 +210,7 @@ const getReps = async(query) => {
     repsLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Sales Reps')
+    appStore.showSnack('ERROR', 'Error Retrieving Sales Reps')
 
   }
 }

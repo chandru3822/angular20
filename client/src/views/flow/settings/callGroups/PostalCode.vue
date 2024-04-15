@@ -43,13 +43,13 @@
   import constants from '@/helpers/constants'
 
   import {getCurrentInstance, computed, onMounted, ref} from "vue";
-  import { useUserStore } from '@/stores/UserStorePinia.js'
+  import { useUserStore } from '@/stores/UserStore.js'
   import {useRoute} from "vue-router/composables"
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const store = vueInstance.$store
   const userStore = useUserStore()
   const route = useRoute()
@@ -95,12 +95,12 @@
           const {data, status} = await postRequest(`/callGroup`, group.value, 'blueraven')
           group.value = data
           editGroup.value = false
-          snackbar('SUCCESS', 'Call Group saved')
+          appStore.showSnack('SUCCESS', 'Call Group saved')
 
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Saving Call Group')
+          appStore.showSnack('ERROR', 'Error Saving Call Group')
 
           appStore.loading = false
         }
@@ -114,7 +114,7 @@
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Data')
+          appStore.showSnack('ERROR', 'Error Retrieving Data')
           appStore.loading = false
         }
       }

@@ -979,16 +979,15 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ActionChildSms from "@/views/flow/settings/processStep/ActionChildSms";
 
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables";
-import {useAppStore} from '@/stores/AppStorePinia.js'
+import {useAppStore} from '@/stores/AppStore.js'
 
 const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const appStore = useAppStore()
+ const appStore = useAppStore()
 
 const expandRequirements = ref(true)
 const expandActions = ref(true)
@@ -1153,11 +1152,11 @@ const saveChildFunctionOrder = async (actionId, childFns) => {
     if (fnsToSave.length > 0) {
       await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateChildFunctionOrder`, fnsToSave)
     }
-    snackbar('SUCCESS', 'Function Order Updated')
+    appStore.showSnack('SUCCESS', 'Function Order Updated')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Function Order')
+    appStore.showSnack('ERROR', 'Error Updating Function Order')
     appStore.loading = false
   }
 
@@ -1193,12 +1192,12 @@ const getStatusesAssignedToStep = async (item) => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching process step statuses')
+    appStore.showSnack('ERROR', 'Error fetching process step statuses')
   }
 }
 const copyToClipBoard = () => {
   navigator.clipboard.writeText(actionLogicString.value);
-  snackbar('SUCCESS', 'Copied text to clipboard')
+  appStore.showSnack('SUCCESS', 'Copied text to clipboard')
 }
 const getLogicMargin = (item, parentItem, index) => {
   parentItem.logicMargin = parentItem.logicMargin || 0
@@ -1291,7 +1290,7 @@ const getActionLogicString = async (actionId) => {
     showLogicInfoDialog.value = true
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching logic string')
+    appStore.showSnack('ERROR', 'Error fetching logic string')
   }
 }
 const getCancelledStatuses = async (item) => {
@@ -1304,7 +1303,7 @@ const getCancelledStatuses = async (item) => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching process step statuses')
+    appStore.showSnack('ERROR', 'Error fetching process step statuses')
   }
 }
 const getActions = async () => {
@@ -1315,7 +1314,7 @@ const getActions = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1327,7 +1326,7 @@ const loadChildFunctions = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Functions')
+    appStore.showSnack('ERROR', 'Error Loading Functions')
     appStore.loading = false
   }
 }
@@ -1360,11 +1359,11 @@ const saveNewAction = async () => {
     actions.value.push(data)
     addNewAction.value = false
     newAction.value = {}
-    snackbar('SUCCESS', 'Action Added')
+    appStore.showSnack('SUCCESS', 'Action Added')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Action')
+    appStore.showSnack('ERROR', 'Error Adding Action')
     appStore.loading = false
   }
 }
@@ -1376,7 +1375,7 @@ const duplicateAction = async (actionId) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Duplicating Action')
+    appStore.showSnack('ERROR', 'Error Duplicating Action')
     appStore.loading = false
   }
 }
@@ -1416,11 +1415,11 @@ const updateAction = async (action) => {
       })
     }
 
-    snackbar('SUCCESS', 'Action Updated')
+    appStore.showSnack('SUCCESS', 'Action Updated')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Action')
+    appStore.showSnack('ERROR', 'Error Updating Action')
     appStore.loading = false
   }
 }
@@ -1436,7 +1435,7 @@ const loadFunctionParams = async (dbFunctionId, isRequirement) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1448,7 +1447,7 @@ const getStatusTypes = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1460,7 +1459,7 @@ const getTheseCompanyProjectStatusTypes = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     handleHidingGlobalLoader(status)
   }
 }
@@ -1472,7 +1471,7 @@ const getOperationTypes = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1482,11 +1481,11 @@ const deleteAction = async () => {
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${item.id}`)
     item.archived = true
-    snackbar('SUCCESS', 'Action Deleted')
+    appStore.showSnack('SUCCESS', 'Action Deleted')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Action')
+    appStore.showSnack('ERROR', 'Error Deleting Action')
     appStore.loading = false
   }
   itemToDelete.value.archive = true
@@ -1510,11 +1509,11 @@ const saveChildProcessCancelledStatus = async (action, cp) => {
     cpExpanded.value = []
     cp.existingProcessStepStatusType = data.existingProcessStepStatusType
     cp.initialProcessStepStatusType = data.initialProcessStepStatusType
-    snackbar('SUCCESS', 'Child Process Status Saved')
+    appStore.showSnack('SUCCESS', 'Child Process Status Saved')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Child Process Status')
+    appStore.showSnack('ERROR', 'Error Saving Child Process Status')
     appStore.loading = false
   }
 }
@@ -1533,11 +1532,11 @@ const saveProcessStepToAction = async (action) => {
     action.processStepActionChildProcesses.push(data)
     newChildProcessStep.value = {}
     addChildProcess.value = false
-    snackbar('SUCCESS', 'Child Process Added To Action')
+    appStore.showSnack('SUCCESS', 'Child Process Added To Action')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Child Process Action')
+    appStore.showSnack('ERROR', 'Error Adding Child Process Action')
     appStore.loading = false
   }
 }
@@ -1548,11 +1547,11 @@ const deleteChildProcessFromAction = async () => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildStep/${id}`)
-    snackbar('SUCCESS', 'Child Process Deleted From Action')
+    appStore.showSnack('SUCCESS', 'Child Process Deleted From Action')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Child Process From Action')
+    appStore.showSnack('ERROR', 'Error Deleting Child Process From Action')
     appStore.loading = false
   }
 }
@@ -1571,11 +1570,11 @@ const saveFunctionToAction = async (action) => {
     selectedChildFunction.value = {}
     selectedChildRequirementParamDynamicValues.value = []
     addChildFunction.value = false
-    snackbar('SUCCESS', 'Child Function Added To Action')
+    appStore.showSnack('SUCCESS', 'Child Function Added To Action')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Child Function Action')
+    appStore.showSnack('ERROR', 'Error Adding Child Function Action')
     appStore.loading = false
   }
 }
@@ -1586,11 +1585,11 @@ const deleteChildFunctionFromAction = async () => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteChildFunction/${id}`)
-    snackbar('SUCCESS', 'Child Function Deleted From Action')
+    appStore.showSnack('SUCCESS', 'Child Function Deleted From Action')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Child Function From Action')
+    appStore.showSnack('ERROR', 'Error Deleting Child Function From Action')
     appStore.loading = false
   }
 }
@@ -1598,11 +1597,11 @@ const updateChildFunction = async (actionId, childFunction) => {
   appStore.loading = true
   try {
     const {status} = await putRequest(`/processStep/${processStepId.value}/action/${actionId}/updateActionChildFunction`, childFunction)
-    snackbar('SUCCESS', 'Child Process Updated')
+    appStore.showSnack('SUCCESS', 'Child Process Updated')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Child Process')
+    appStore.showSnack('ERROR', 'Error Updating Child Process')
     appStore.loading = false
   }
 }
@@ -1615,7 +1614,7 @@ const loadLinks = async (actionId) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -1631,11 +1630,11 @@ const saveLinkToAction = async (action) => {
     action.processStepActionLinks.push(data)
     selectedLink.value = {}
     addChildLink.value = false
-    snackbar('SUCCESS', 'Link Added to Action')
+    appStore.showSnack('SUCCESS', 'Link Added to Action')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Link to Action')
+    appStore.showSnack('ERROR', 'Error Adding Link to Action')
     appStore.loading = false
   }
 }
@@ -1646,11 +1645,11 @@ const deleteLinkFromAction = async () => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId.value}/action/${actionId}/deleteLinkFromAction/${id}`)
-    snackbar('SUCCESS', 'Link Deleted From Action')
+    appStore.showSnack('SUCCESS', 'Link Deleted From Action')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Link From Action')
+    appStore.showSnack('ERROR', 'Error Deleting Link From Action')
     appStore.loading = false
   }
 }
@@ -1665,11 +1664,11 @@ const saveRowChanges = async (rows) => {
     appStore.loading = true
     try {
       const {status} = await putRequest(`/processStep/${processStepId.value}/action/order`, rows)
-      snackbar('SUCCESS', 'Action Order Saved')
+      appStore.showSnack('SUCCESS', 'Action Order Saved')
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Action Order')
+      appStore.showSnack('ERROR', 'Error Saving Action Order')
       appStore.loading = false
     }
   }

@@ -467,12 +467,11 @@ import cloneDeep from 'lodash.clonedeep'
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 import {useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
 const route = useRoute()
@@ -489,7 +488,7 @@ import {
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 const addNew = ref(false)
 const newFieldType = ref('native')
 const deleteError = ref(false)
@@ -598,7 +597,7 @@ const fetchAvailableCustomFields = async (groupId) => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -609,12 +608,12 @@ const updateRequired = async (cf) => {
       required: cf.required || false
     }
     const {status} = await putRequest(`/customFieldGroup/updateRequired`, field, 'blueraven')
-    snackbar('SUCCESS', 'Updated Field')
+    appStore.showSnack('SUCCESS', 'Updated Field')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Data')
+    appStore.showSnack('ERROR', 'Error Saving Data')
 
     appStore.loading = false
   }
@@ -623,12 +622,12 @@ const saveMinMax = async (cf) => {
   try {
     const {status} = await putRequest(`/customFieldGroup/saveMinMax`, cf, 'blueraven')
     cf.minMaxValueChanged = false
-    snackbar('SUCCESS', 'Updated Field')
+    appStore.showSnack('SUCCESS', 'Updated Field')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Data')
+    appStore.showSnack('ERROR', 'Error Saving Data')
 
     appStore.loading = false
   }
@@ -645,13 +644,11 @@ const saveConditionalField = async (cf) => {
     }
 
     const {status} = await putRequest(`/customFieldGroup/updateConditionalId`, cf, 'blueraven')
-    snackbar('SUCCESS', 'Updated Field')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+	appStore.showSnack('SUCCESS', 'Updated Field')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Data')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+	appStore.showSnack('ERROR', 'Error Saving Data')
     appStore.loading = false
   }
 }
@@ -673,12 +670,12 @@ const assignCustomField = async (cfg, isAncillary) => {
     ancillaryCustomFields.value = []
     addField.value = false
     parent.value = {}
-    snackbar('SUCCESS', 'Field Added to Group')
+    appStore.showSnack('SUCCESS', 'Field Added to Group')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Field to Group')
+    appStore.showSnack('ERROR', 'Error Adding Field to Group')
 
     appStore.loading = false
   }
@@ -687,12 +684,12 @@ const saveGroupChanges = async (groups) => {
   appStore.loading = true
   try {
     const {status} = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups, 'blueraven')
-    snackbar('SUCCESS', 'Groups Updated')
+    appStore.showSnack('SUCCESS', 'Groups Updated')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Group Changes')
+    appStore.showSnack('ERROR', 'Error Saving Group Changes')
 
     appStore.loading = false
   }
@@ -705,12 +702,12 @@ const moveCustomFieldGroupToColumn = async (group, columnNumber) => {
     const {data, status} = await putRequest(`/customFieldGroup/moveGroupToColumn`, group, 'blueraven')
     groupsByColumn.value[fromColumn] = groupsByColumn.value[fromColumn].filter(f => f.id !== group.id)
     groupsByColumn.value[columnNumber].push(data)
-    snackbar('SUCCESS', 'Group Updated')
+    appStore.showSnack('SUCCESS', 'Group Updated')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Group Changes')
+    appStore.showSnack('ERROR', 'Error Saving Group Changes')
 
     appStore.loading = false
   }
@@ -721,12 +718,12 @@ const saveGroup = async (group) => {
     const {data, status} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group, 'blueraven')
     group.tabName = data.tabName
     group.companyObjectTypeTabDisplayOrder = data.companyObjectTypeTabDisplayOrder
-    snackbar('SUCCESS', 'Custom Field Group Updated')
+    appStore.showSnack('SUCCESS', 'Custom Field Group Updated')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Change')
+    appStore.showSnack('ERROR', 'Error Saving Change')
 
     appStore.loading = false
   }
@@ -737,13 +734,13 @@ const deleteGroup = async () => {
   try {
     const {status} = await deleteRequest(`/customFieldGroup/${item.id}`, 'blueraven')
     item.archived = true
-    snackbar('SUCCESS', 'Group Deleted')
+    appStore.showSnack('SUCCESS', 'Group Deleted')
 
     emit('group-deleted')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Group')
+    appStore.showSnack('ERROR', 'Error Deleting Group')
 
     appStore.loading = false
   }
@@ -756,12 +753,12 @@ const deleteFieldFromGroup = async () => {
     const {status} = await deleteRequest(`/customFieldGroup/assignment/${item.id}`, 'blueraven')
     fieldsInUse.value = []
     item.archived = true
-    snackbar('SUCCESS', 'Item Deleted')
+    appStore.showSnack('SUCCESS', 'Item Deleted')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting')
+    appStore.showSnack('ERROR', 'Error Deleting')
 
     appStore.loading = false
   }
@@ -774,12 +771,12 @@ const deleteField = async (item, customFieldGroupId) => {
     const {status} = await deleteRequest(`/customFieldGroup/${customFieldGroupId}`, 'blueraven')
     fieldsInUse.value = []
     item.archived = true
-    snackbar('SUCCESS', 'Item Deleted')
+    appStore.showSnack('SUCCESS', 'Item Deleted')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting')
+    appStore.showSnack('ERROR', 'Error Deleting')
 
     appStore.loading = false
   }
@@ -800,13 +797,13 @@ const saveFieldChanges = async (fields) => {
     if (fieldsToSave.length > 0) {
       appStore.loading = true
       const {status} = await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave, 'blueraven')
-      snackbar('SUCCESS', 'Fields Updated')
+      appStore.showSnack('SUCCESS', 'Fields Updated')
 
       handleHidingGlobalLoader(status)
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Fields')
+    appStore.showSnack('ERROR', 'Error Updating Fields')
 
     appStore.loading = false
   }
@@ -849,7 +846,7 @@ const loadFieldsByParent = async () => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     appStore.loading = false
   }
@@ -861,7 +858,7 @@ const saveUseParentData = async (field) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Field')
+    appStore.showSnack('ERROR', 'Error Saving Field')
     appStore.loading = false
   }
 }
@@ -878,7 +875,7 @@ const saveReadOnlyAndWhiteList = async (field) => {
     if (!field.customFieldGroupAssignmentReadOnly) {
       vueInstance.$set(field, 'whiteListedPositions', [])
     }
-    snackbar('SUCCESS', 'Field Updated')
+    appStore.showSnack('SUCCESS', 'Field Updated')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
@@ -895,11 +892,11 @@ const saveHiddenAndWhiteList = async (field) => {
       vueInstance.$set(field, 'hiddenWhiteListedPositions', [])
     }
     handleHidingGlobalLoader(status)
-    snackbar('SUCCESS', 'Field Updated')
+    appStore.showSnack('SUCCESS', 'Field Updated')
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Field')
+    appStore.showSnack('ERROR', 'Error Saving Field')
 
     appStore.loading = false
   }
@@ -930,7 +927,7 @@ const getPositions = async () => {
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Positions')
+      appStore.showSnack('ERROR', 'Error Retrieving Positions')
 
       appStore.loading = false
     }
@@ -947,7 +944,7 @@ const toggleSelectAllPositions = (field, attr = 'whiteListedPositions') => {
 }
 const copyToClipBoard = (textValue) => {
   navigator.clipboard.writeText(textValue);
-  snackbar('SUCCESS', 'Copied text to clipboard')
+  appStore.showSnack('SUCCESS', 'Copied text to clipboard')
 }
 
 onMounted(() => {

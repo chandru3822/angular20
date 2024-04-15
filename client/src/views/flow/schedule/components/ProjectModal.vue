@@ -8,16 +8,15 @@
 *
 */
 import {getCurrentInstance, computed, onMounted, ref, watch} from "vue";
-import {AppMutations} from "@/stores/AppStore.js";
-import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
+import {getRequest, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {getCancelledCompanyStatusTypesAssignedToPpsEvent} from "@/services/eventStatusTypeService.js";
 import { getEventDefaultFieldReadOnly } from '@/services/customFieldService.js'
 
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 const appStore = useAppStore()
@@ -27,8 +26,7 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const scheduleStore = useScheduleStore()
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 const emit = defineEmits(['toggleProjectMapPin', 'updateEvents'])
 
 const props = defineProps({
@@ -55,9 +53,7 @@ const userCanManage = computed(() => {
 const userIsAdmin = computed(() => {
   return  userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')
 })
-const timezoneFriendly = computed(() => {
-  return  store.state.schedule.timezone.friendlyValue
-})
+const timezoneFriendly = computed(() => scheduleStore.timezone.friendlyValue)
 
 watch(() => props.resourceFromCalendar, () => {
   if(props.resourceFromCalendar.id) {
@@ -90,24 +86,24 @@ const isEventEditableByThisUserIgnoringReadOnly = computed(() => {
 })
 
 const isEventReadyOnly = computed(() => {
-	return !store.getters.isFullAdmin && ((event.value?.readonly && !isUserWhitelisted.value) || !isEventEditableByThisUserIgnoringReadOnly.value)
+	return !userStore.isSystemAdmin && ((event.value?.readonly && !isUserWhitelisted.value) || !isEventEditableByThisUserIgnoringReadOnly.value)
 })
 
 //this logic comes from ProjectProcessStepEvent.vue. We want the readonly logic here to match that
 const isResourceReadOnly = computed(() => {
-	return (!store.getters.isFullAdmin &&
+	return (!userStore.isSystemAdmin &&
 			getEventDefaultFieldReadOnly(store, event.value?.resourceWhiteListedPositions, event.value?.resourceReadOnly, event.value?.resourceReadOnlyAllow)) ||
 		isEventReadyOnly.value
 })
 
 const isStartReadOnly = computed(() => {
-	return (!store.getters.isFullAdmin &&
+	return (!userStore.isSystemAdmin &&
 		getEventDefaultFieldReadOnly(store, event.value?.startTimeWhiteListedPositions, event.value?.startTimeReadOnly, event.value?.startTimeReadOnlyAllow)) ||
 		isEventReadyOnly.value
 })
 
 const isEndReadOnly = computed(() => {
-	return (!store.getters.isFullAdmin &&
+	return (!userStore.isSystemAdmin &&
 			getEventDefaultFieldReadOnly(store, event.value?.endTimeWhiteListedPositions, event.value?.endTimeReadOnly, event.value?.endTimeReadOnlyAllow)) ||
 		isEventReadyOnly.value
 })
@@ -117,8 +113,7 @@ onMounted(async () => {
 		const {data} = await getRequest(`/projectProcessStep/${ppsId.value}/event/${ppsEventId.value}`)
 		event.value = data
 	} catch (e) {
-		let snackbar = getSnackbar('ERROR', 'Failed to fetch event details')
-		store.commit(AppMutations.SHOW_SNACK, snackbar)
+		appStore.showSnack('ERROR', 'Failed to fetch event details')
 	}
 })
 
@@ -150,10 +145,10 @@ const getResources = async(item) => {
     }
     const {data, status} = await postRequest(`/schedule/projectResources`, params, null, [])
     item.resources = data || []
-    handleHidingGlobalLoader(vueInstance, status)
+     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Resources')
+    appStore.showSnack('ERROR', 'Error Retrieving Resources')
     appStore.loading = false
   }
 }
@@ -178,7 +173,7 @@ const getCancelledCompanyEventStatuses = async () => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching process step statuses')
+    appStore.showSnack('ERROR', 'Error fetching process step statuses')
   }
 }
 
@@ -206,7 +201,6 @@ const checkForSchedulingConflicts = async() => {
 const cancelDialog = async() => {
   conflictingEvents.value = null
   fieldsSaving.value = false
-  // $refs.value.calendar.getEvents(false, true)
 }
 const scheduleProject = async(forceSave) => {
   props.project.resourceId = props.project.resource.id
@@ -219,11 +213,10 @@ const scheduleProject = async(forceSave) => {
     props.project.saveVersion++
     // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
     // this.$refs.calendar.getEvents(false, true) todo: figure out what this should change to
-    handleHidingGlobalLoader(vueInstance, status)
+     handleHidingGlobalLoader( status)
     fieldsSaving.value = false
     emit('updateEvents')
-    let snackbar = getSnackbar('SUCCESS', 'Job Scheduled')
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+	appStore.showSnack('SUCCESS', 'Job Scheduled')
   } catch (e) {
     if(e.status === 409){
       conflictingEvents.value = e.data;
@@ -234,7 +227,7 @@ const scheduleProject = async(forceSave) => {
       console.error('*** ERROR ***', e)
       let saveMismatch = e.data?.message === 'Save Version Mismatch'
       let msg = saveMismatch ? 'Error Scheduling Project. This event has been update by another user. Please refresh to see the latest data.' : 'Error Scheduling Project'
-      snackbar('ERROR', msg)
+      appStore.showSnack('ERROR', msg)
       fieldsSaving.value = false
       appStore.loading = false
     }
@@ -245,11 +238,11 @@ const cancelProjectProcessStepEvent = async() => {
   try {
     const {status} = await postRequest(`/projectProcessStep/${props.project.projectProcessStepId}/event/${props.project.projectProcessStepEventId}/status`, props.project.cancelledCompanyStatusType)
     props.project.eventStatusTypeId = props.project?.cancelledCompanyStatusType?.id
-    handleHidingGlobalLoader(vueInstance, status)
-    snackbar('SUCCESS', 'Successfully Unscheduled Event')
+     handleHidingGlobalLoader( status)
+	appStore.showSnack('SUCCESS', 'Successfully Unscheduled Event')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Unscheduling Event')
+	appStore.showSnack('ERROR', 'Error Unscheduling Event')
     appStore.loading = false
   }
 }

@@ -12,14 +12,15 @@
 <script setup>
 import SpinnerInline from "@/components/SpinnerInline.vue";
 import {getCurrentInstance, ref, watch, computed, onMounted} from 'vue'
-import { onBeforeRouteLeave } from 'vue-router/composables'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import {useRouter, onBeforeRouteLeave, useRoute} from 'vue-router/composables'
+import { useUserStore } from '@/stores/UserStore.js'
 
 //FYI: Vue2 w/composition API requires some additional definitions that Vue 3 might not (vueInstance...for example)
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
-const router = vueInstance.$router
+const router = useRouter()
+const route = useRoute()
 
 const emit = defineEmits(['clearSearch'])
 
@@ -35,7 +36,7 @@ watch(watchedValue, () => {
 const myDynamicObject = ref({})
 const myStaticObject = {}
 const myDynamicBoolean = ref(false)
-const projectId = vueInstance.$route.params?.projectId
+const projectId = route.params?.projectId
 const userCanAdd = userStore.userHasFeatureAccessLevel('PROJECTS', 'ADD')
 
 const canAdd = computed(() => {

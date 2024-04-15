@@ -329,9 +329,9 @@ import cloneDeep from 'lodash.clonedeep'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -339,7 +339,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const selectedExpense = ref({})
 const approveDropdown = ref(false)
@@ -493,7 +492,7 @@ const getSubmittedExpenses = async() => {
     masterExpenses.value = cloneDeep(data)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -505,7 +504,7 @@ const deleteSubmittedExpense = async(item) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Submitted Expense')
+    appStore.showSnack('ERROR', 'Error Deleting Submitted Expense')
 
     appStore.loading = false
   }
@@ -551,7 +550,7 @@ const exportExpenses = async(unpaid) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Exporting Expenses')
+    appStore.showSnack('ERROR', 'Error Exporting Expenses')
 
     appStore.loading = false
   }
@@ -580,7 +579,7 @@ const getAllUnpaid = async() => {
     masterExpenses.value = cloneDeep(data)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -595,7 +594,7 @@ const confirmPayment = async() => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Marking Selected Expenses as Paid')
+    appStore.showSnack('ERROR', 'Error Marking Selected Expenses as Paid')
     paymentConfirmLoading.value = false
 
     appStore.loading = false
@@ -611,7 +610,7 @@ const saveSubmittedExpense = async(item) => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Changes to Expense')
+    appStore.showSnack('ERROR', 'Error Saving Changes to Expense')
 
     appStore.loading = false
   }
@@ -623,7 +622,7 @@ const getTheBudgetsForUser = async(userId) => {
     budgetsForUser.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   } finally {
     budgetsLoading.value = false
@@ -636,7 +635,7 @@ const getTheBudgetTypes = async() => {
     budgetTypes.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -646,7 +645,7 @@ const getTheGlCodes = async() => {
     glCodes.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -656,7 +655,7 @@ const getTheUsersWithBudget = async() => {
     usersWithBudget.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -671,7 +670,7 @@ const getRequestAttachmentPresignedUrl = async(item) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Attached Image')
+    appStore.showSnack('ERROR', 'Error Retrieving Attached Image')
 
     appStore.loading = false
   }

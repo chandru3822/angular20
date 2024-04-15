@@ -120,9 +120,9 @@ import debounce from "lodash.debounce";
 import {getCurrentInstance, ref, watch} from "vue";
 import MapPopUp from "@/views/flow/schedule/components/MapPopUp.vue"
 
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -278,7 +278,7 @@ const geoCode = async(address) => {
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Getting Address Suggestions')
+      appStore.showSnack('ERROR', 'Error Getting Address Suggestions')
 
     }
   }
@@ -374,7 +374,7 @@ const getLatLong = async(address) => {
     return await getRequestWithParams(`/mapbox/getLatLong`, {params})
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Getting Address Lat & Long')
+    appStore.showSnack('ERROR', 'Error Getting Address Lat & Long')
 
   }
 }
@@ -408,7 +408,7 @@ const getDirections = async(firstPair, secondPair) => {
     loadingDriveTime.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Getting Drive Time')
+    appStore.showSnack('ERROR', 'Error Getting Drive Time')
 
   }
 }
@@ -423,7 +423,7 @@ const changeMapLocation = async() => {
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error jumping to address')
+    appStore.showSnack('ERROR', 'Error jumping to address')
 
   }
 }

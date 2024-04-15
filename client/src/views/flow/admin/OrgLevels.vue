@@ -93,16 +93,16 @@ import {handleHidingGlobalLoader, deleteRequest, putRequest} from '@/helpers/hel
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
-import { useUserStore } from '@/stores/UserStorePinia.js'
+import { useUserStore } from '@/stores/UserStore.js'
 import {useRouter} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
 const router = useRouter()
-const snackbar = vueInstance.$snackbar
+
 
 const addNew = ref(false)
 const levels = ref([])
@@ -133,15 +133,15 @@ const headers = ref([
             orgLevels.value.push(data)
             addNew.value = false
             newOrgLevel.value = {}
-            snackbar('SUCCESS', 'Org Level Added')
+            appStore.showSnack('SUCCESS', 'Org Level Added')
           } else {
             expanded.value = []
-            snackbar('SUCCESS', 'Org Level Updated')
+            appStore.showSnack('SUCCESS', 'Org Level Updated')
           }
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', isNew ? 'Error Adding Org Level' : 'Error Updating Org Level')
+          appStore.showSnack('ERROR', isNew ? 'Error Adding Org Level' : 'Error Updating Org Level')
           appStore.loading = false
         }
       }
@@ -153,7 +153,7 @@ const headers = ref([
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Loading Org Levels')
+          appStore.showSnack('ERROR', 'Error Loading Org Levels')
           appStore.loading = false
         }
       }
@@ -165,11 +165,11 @@ const headers = ref([
           orgLevels.value = orgLevels.value.filter(ol => {
             return ol.id !== level.id
           })
-          snackbar('SUCCESS', 'Org Level Deleted')
+          appStore.showSnack('SUCCESS', 'Org Level Deleted')
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Deleting Org Level')
+          appStore.showSnack('ERROR', 'Error Deleting Org Level')
           appStore.loading = false
         }
       }

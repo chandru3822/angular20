@@ -8,7 +8,7 @@
 <script setup>
   import CustomFields from "@/views/flow/settings/customFields/CustomFields.vue"
   import { ref } from 'vue'
-  import {useUserStore} from "@/stores/UserStorePinia.js";
+  import {useUserStore} from "@/stores/UserStore.js";
 
   const userStore = useUserStore()
   const apiPath = ref(userStore.details.apiPath)

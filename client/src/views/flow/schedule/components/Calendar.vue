@@ -28,17 +28,17 @@
                 class="primary--text text-caption"
               >{{ selectedStates.length }} selected</span>
             </template>
-            <v-list-item
-              slot="prepend-item"
-              ripple
-              @click="toggleSelectAllStates()">
-                <v-icon class="mr-4">{{ iconStates }}</v-icon>
-              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
-            </v-list-item>
-            <v-divider
-              slot="prepend-item"
-              class="mt-2"
-            ></v-divider>
+            <template  v-slot:prepend-item>
+              <v-list-item
+                ripple
+                @click="toggleSelectAllStates()">
+                  <v-icon class="mr-4">{{ iconStates }}</v-icon>
+                <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
+                class="mt-2"
+              ></v-divider>
+            </template>
 
             <template v-slot:item="{item}">
               <v-icon class="mr-4">{{selectedStates.findIndex(s => s.stateId === item.stateId) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
@@ -74,19 +74,19 @@
                   class="primary--text text-caption"
               >{{ selectedOrgTypes.length }} selected</span>
             </template>
-            <v-list-item
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllOrgTypes()">
-              <v-list-item-action class="mr-4">
-                <v-icon>{{ iconOrgTypes }}</v-icon>
-              </v-list-item-action>
-              <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
-            </v-list-item>
-            <v-divider
-                slot="prepend-item"
-                class="mt-2"
-            ></v-divider>
+            <template  v-slot:prepend-item>
+              <v-list-item
+                  ripple
+                  @click="toggleSelectAllOrgTypes()">
+                <v-list-item-action class="mr-4">
+                  <v-icon>{{ iconOrgTypes }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-title class="wrap-dropdown-item py-2">Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
+                  class="mt-2"
+              ></v-divider>
+            </template>
             <template v-slot:item="{item}">
               <!--The only purpose of this template is to allow the items to wrap-->
               <v-icon class="mr-4">{{selectedOrgTypes.findIndex(ot => ot.id === item.id) >= 0 ? 'check_box' : 'check_box_outline_blank'}}</v-icon>
@@ -212,6 +212,7 @@
               :hide-details="true"
               return-object
               prepend-icon="mdi-web"
+			  @change="updateTimezone"
           />
         </v-col>
         <v-col id="cancelled-events-toggle-col" class="py-0 d-flex align-start" cols="9" sm="4" md="3">
@@ -257,7 +258,7 @@
                 <v-icon>mdi-calendar-plus</v-icon>
               </a-btn>
                 </template>
-                Assign to Event
+                {{isAssignedResource(resource) ? 'Remove Resource' : 'Assign to Event' }}
               </v-tooltip>
               <a-btn icon size="small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></a-btn>
             </div>
@@ -281,7 +282,6 @@
 import moment from 'moment'
 import cloneDeep from 'lodash.clonedeep'
 import {getSchedulingOrgTypes} from '@/services/orgService'
-import {AppMutations} from '@/stores/AppStore'
 
 import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getEventColorClass} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
@@ -290,11 +290,10 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
 import {computed, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue";
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
-
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -303,10 +302,11 @@ const userStore = useUserStore()
 const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 const vuetify = vueInstance.$vuetify
-const refs = vueInstance.$refs
 const filters = vueInstance.$filters
+
+const eventCalendar = ref(null)
+const userCanEdit = computed(() => userStore.userHasFeatureAccessLevel('SCHEDULE', 'EDIT'))
 
 const emit = defineEmits(['scheduleResource', 'unscheduleResource'])
 
@@ -319,13 +319,8 @@ const props = defineProps({
   preselectedEvent: {type:Object, required: false}
 })
 
-const scheduleTimezone = computed(() => {
-  return store.state.schedule.timezone?.value
-})
-
-const userTimezone = computed(() => {
-  return userStore.timezone.value
-})
+const scheduleTimezone = computed(() => scheduleStore.getTimezone)
+const userTimezone = computed(() => userStore.timezone)
 
 const calendarOptions = ref({
   plugins: [
@@ -363,6 +358,7 @@ const calendarOptions = ref({
   slotMinWidth:40,
   slotMinTime:"04:00:00",
   slotMaxTime:"23:00:00",
+  nowIndicator:true,
   views:{
     resourceTimelineDay:{
       titleFormat:{ month: 'long',
@@ -380,13 +376,13 @@ const calendarOptions = ref({
     }
   },
   height: '100%',
-  timeZone: scheduleTimezone.value || {},
+  timeZone: scheduleTimezone.value.value || {},
 
   customButtons: {
     customToday: {
       text: 'Today',
       click: async () => {
-        let calendarApi = refs.eventCalendar.getApi()
+        let calendarApi = eventCalendar.value.getApi()
         calendarApi.gotoDate(new Date)
         handlePinsOnDayChange()
       }
@@ -435,6 +431,8 @@ const timezones = ref([
   { friendlyValue: 'US/Eastern', value: 'America/New_York'},
   { friendlyValue: 'US/Mountain', value: 'America/Denver'}
 ])
+
+const updateTimezone = (newTimezone) => scheduleStore.timezone = newTimezone
 
 //states
 const sortedStates = computed(() => {
@@ -522,7 +520,7 @@ const countSelected = computed(() => {
 })
 
     onMounted (async () => {
-      calendarApi.value = refs.eventCalendar.getApi()
+      calendarApi.value = eventCalendar.value.getApi()
       await getSchedulingOrgs()
       await getSchedulingUsers()
       await fetchSchedulingOrgTypes()
@@ -533,18 +531,18 @@ const countSelected = computed(() => {
     })
     watch(() => scheduleTimezone, (value) => {
         //when the schedule timezone value changes, update the calendar plugin's timezone
-        let calendarApi = refs.eventCalendar.getApi()
-        calendarApi.setOption('timeZone', scheduleTimezone.value)
+        let calendarApi = eventCalendar.value.getApi()
+        calendarApi.setOption('timeZone', scheduleTimezone)
         //and show a snackbar if the timezones don't match
-        if(userTimezone.value !== scheduleTimezone.value) {
-          let snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
-          store.commit(AppMutations.SHOW_SNACK, snackbar)
+        if(userTimezone !== scheduleTimezone) {
+          const snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
+          appStore.snack = {...snackbar, show: true}
         }
       })
-      watch(userTimezone, () => {
+      watch(userTimezone, (newVal) => {
         //when the value of the timezone changes (either via the time zone dropdown selector or a change in the user store timezone value),
         // update the timezone for the schedule page
-        changeTimezone(userTimezone.value)
+        changeTimezone(newVal)
       })
 
 // whenever selectedUsers or selectedOrgs changes, concat them both into resources
@@ -569,7 +567,7 @@ watch(selectedOrgs, (newValue, oldValue) => {
 })
 
 const reloadCalendar = () =>{
-  let calendarApi = refs.eventCalendar.getApi()
+  let calendarApi = eventCalendar.value.getApi()
   calendarApi.refetchEvents()
 }
 const isResourceOnMap = (resource) => {
@@ -577,7 +575,7 @@ const isResourceOnMap = (resource) => {
 }
 const isAssignedResource = (resource) => {
   let result = false
-  const selectedResourceId = store.state.schedule.selectedResourceId
+  const selectedResourceId = scheduleStore.selectedResourceId
   if(!selectedResourceId || selectedResourceId < 0){
     return false
   }
@@ -672,10 +670,10 @@ const handleResourceColors = () => {
           selectedOrgs.value = selectedOrgs.value.filter(so => {
             return orgs.value.some(o => o.id === so.id)
           })
-          handleHidingGlobalLoader(vueInstance, status)
+           handleHidingGlobalLoader( status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Orgs')
+          appStore.showSnack('ERROR', 'Error Retrieving Orgs')
           appStore.loading = false
         }
       }
@@ -693,10 +691,10 @@ const handleResourceColors = () => {
           }
 
           orgTypesLoading.value = false
-          handleHidingGlobalLoader(vueInstance, status)
+           handleHidingGlobalLoader( status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Org Types')
+          appStore.showSnack('ERROR', 'Error Retrieving Org Types')
           appStore.loading = false
         }
       }
@@ -712,10 +710,10 @@ const handleResourceColors = () => {
             }
           }
           positionsLoading.value = false
-          handleHidingGlobalLoader(vueInstance, status)
+           handleHidingGlobalLoader( status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Positions')
+          appStore.showSnack('ERROR', 'Error Retrieving Positions')
           appStore.loading = false
         }
       }
@@ -739,10 +737,10 @@ const handleResourceColors = () => {
           selectedUsers.value = selectedUsers.value.filter(su => {
             return users.value.some(u => u.id === su.id)
           })
-          handleHidingGlobalLoader(vueInstance, status)
+           handleHidingGlobalLoader( status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Users')
+          appStore.showSnack('ERROR', 'Error Retrieving Users')
           appStore.loading = false
         }
       }
@@ -847,7 +845,7 @@ const handlePinsOnDayChange = () => {
 }
 const handlePopulatingMapPins = (addPin, resource, doCallback) => {
   if(addPin) {
-    let calendarApi = refs.eventCalendar.getApi()
+    let calendarApi = eventCalendar.value.getApi()
 
     let resourceEvents = calendarApi.getEvents().filter(e => {
       return e.display !== 'inverse-background' && e.display !== 'background' && e._def.resourceIds.indexOf(resource.id) >= 0
@@ -882,7 +880,7 @@ const handlePopulatingMapPins = (addPin, resource, doCallback) => {
   if(doCallback) {
     props.callback(mapResourceEvents.value, addPin)
   }
-  let calendarApi = refs.eventCalendar.getApi()
+  let calendarApi = eventCalendar.value.getApi()
 }
 
 
@@ -894,7 +892,7 @@ const handlePopulatingMapPins = (addPin, resource, doCallback) => {
             userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
             startTime: info.start,
             endTime: info.end,
-            timezone: scheduleTimezone.value
+            timezone: scheduleTimezone.value.value
           }
           const {data} = await postRequest(`/schedule/availability`, params)
 
@@ -962,7 +960,7 @@ const handlePopulatingMapPins = (addPin, resource, doCallback) => {
 
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving Availability')
+          appStore.showSnack('ERROR', 'Error Retrieving Availability')
           appStore.loading = false
         }
       }
@@ -973,7 +971,7 @@ const updateCalDates = async(info) => {
   if(diff > 7){
     //for some reason when you click the date header in the week view, it sometimes tries to navigate to the month view; this prevents that
     //it seems like it should be forcing it to navigate to the current date, but for some reason, it navigates to the date that was clicked...if it ain't broke...
-    let calendarApi = refs.eventCalendar.getApi()
+    let calendarApi = eventCalendar.value.getApi()
     calendarApi.changeView('resourceTimelineDay', new Date)
   }
   calendarStartTime.value = info.start
@@ -1052,7 +1050,7 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
       calendarLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Events')
+      appStore.showSnack('ERROR', 'Error Retrieving Events')
       failureCallback(e)
       calendarLoading.value = false
     } finally {
@@ -1116,6 +1114,7 @@ const createSnackbar = (text) => {
   font-size: 1.375rem;
   line-height: 1.4;
 }
+
 
 #calendar-container .fc-toolbar-title {
   @media(max-width: 960px) {
@@ -1204,6 +1203,12 @@ const createSnackbar = (text) => {
 #event-calendar > div.fc-view-harness.fc-view-harness-active > div.fc-resourceTimelineWeek-view.fc-view.fc-resource-timeline.fc-resource-timeline-flat.fc-timeline.fc-timeline-overlap-enabled > table > tbody > tr > td:nth-child(3) > div > div > div > div.fc-timeline-slots > table > tbody > tr > td:nth-child(19n+1) {
   border-left-width: 3px;
 }
+
+
+.fc .fc-scrollgrid {
+  border-radius: 4px;
+}
+
 </style>
 
 <style lang="scss" scoped>

@@ -29,7 +29,7 @@
             :headers="headers"
             :items="projects"
             fixed-header
-            ref="pageable-table"
+            ref="pageableTable"
             :page.sync="page"
             :options.sync="options"
             disable-sort
@@ -86,9 +86,9 @@ import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 import axios from 'axios'
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStorePinia.js'
+import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -96,10 +96,11 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 
 const initialLoad = ref(true)
+const pageableTable = ref(null)
 const options = ref({itemsPerPage: 100})
 const headers = ref([
   {text: 'ID', value: 'id', show: true},
@@ -135,7 +136,7 @@ onMounted(() => {
 })
 
 watch(page, async() => {
-  let table = vueInstance.$refs['pageable-table'];
+  let table = pageableTable.value;
   let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
 
   vuetify.goTo(table); // to table
