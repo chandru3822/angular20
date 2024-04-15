@@ -44,6 +44,21 @@ Vue.filter('currency', function (value, symbol, digits) {
   }
 });
 
+Vue.filter('percent', function (value, digits = 0) {
+  if (typeof value != "number" || typeof digits != "number")
+    return
+
+  value = value * 100
+
+  let integer = parseInt(value);
+
+  if (value === integer)
+    return value + '%';
+  else {
+    return parseFloat(value).toFixed(digits) + '%';
+  }
+});
+
 Vue.filter('customValueFormatter', function(value, type) {
   if (Array.isArray(value)) {
     return value?.join(', ')
