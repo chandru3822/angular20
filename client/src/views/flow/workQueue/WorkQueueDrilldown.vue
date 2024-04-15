@@ -221,6 +221,7 @@
           :showNotes="true"
           :showActivity="false"
           :bordered="true"
+          :key="damnKeyThing"
           :notes="itemToUpdate ? itemToUpdate.notes : []"
           :is-ps-wqt-note="!workQueue.useEventData"
           :is-event-wqt-note="!!workQueue.useEventData"
@@ -267,6 +268,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
  const vuetify = vueInstance.$vuetify
 
+const damnKeyThing = ref(0)
 const showNotesModal = ref(false)
 const itemToUpdate = ref(null)
 const hideFutureFollowUps = ref(false)
@@ -656,6 +658,8 @@ const updateRowNotes = (item) => {
   //also re-populate the entire notes array
   matchInFilteredResults.notes = results.value[notesPpsIndex.value].notes
 
+  itemToUpdate.value.notes = [ item, ...itemToUpdate.value.notes ]
+  damnKeyThing.value++
 }
 const closeNotesModal = () => {
   //this is dumb.  if you update the results before the modal closes things get weird
