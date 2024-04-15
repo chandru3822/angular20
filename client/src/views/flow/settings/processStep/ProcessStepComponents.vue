@@ -60,6 +60,7 @@
                 <a-btn
                     variant="text"
                     color="primary"
+                    id="qa-add-process-step-status-type-button"
                     @click="[addNewProcessStepStatusType = !addNewProcessStepStatusType, expanded = [], getCompanyProcessStepStatusTypes()]"
                     v-if="userCanAdd"
                     :prepend-icon="!addNewProcessStepStatusType ? 'add' : 'close'"
@@ -234,6 +235,7 @@
                       :dropdownEnabled="processStep.nonAdminAdd"
                       :selectedContent="processStep.nonAdminAddWhiteListedPositions"
                       title="Allow Non-Admin to Add to Project"
+                      id="qa-non-admin-add"
                       label="Allowed Positions"
                       alternateLabel = "Denied Positions"
                       :allow="true"

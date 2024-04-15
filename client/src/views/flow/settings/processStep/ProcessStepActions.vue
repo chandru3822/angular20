@@ -20,6 +20,7 @@
                 variant="text"
                 color="primary"
                 v-if="userCanAdd"
+                id="qa-add-action-button"
                 :prepend-icon="!addNewAction ? 'add' : $vuetify.breakpoint.smAndDown ? 'close' : ''"
                 :text="addNewAction ? 'Cancel' : 'Add Action'"
             ></a-btn>

@@ -10,6 +10,7 @@
     <template #activator="{on}">
       <a-btn
           variant="text"
+          id="qa-add-process-step-button"
           color="primary"
           class="text-capitalize add-process-step-menu-btn one-hunned"
           :outlined="outlined"

@@ -43,6 +43,7 @@
             <a-btn
               variant="text"
               color="primary"
+              id="qa-add-new-process-step-button"
               @click="[addNew = !addNew, newStep = {}]"
               v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               :shide-text-on-mobile="true"
@@ -54,12 +55,14 @@
         <v-container class="pa-0">
           <v-card color="transparent" flat v-if="addNew" class="mb-3 pa-2">
             <a-text-field
+                id="qa-new-process-step-name"
                 label="Process Step Name"
                 tabindex=1
                 v-model="newStep.processStepName"
             ></a-text-field>
             <a-btn
               color="primary"
+              id="qa-save-new-process-step-button"
               :disabled="!newStep.processStepName"
               @click="addProcessStep"
               text="SAVE"

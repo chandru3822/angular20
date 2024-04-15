@@ -124,6 +124,7 @@
                 <a-btn
                     color="primary"
                     class="mt-3"
+                    id="qa-save-fields-button"
                     v-if="userCanEdit"
                     :loading="fieldsLoading"
                     :disabled="fieldsSaving"
