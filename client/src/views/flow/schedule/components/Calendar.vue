@@ -358,6 +358,7 @@ const calendarOptions = ref({
   slotMinWidth:40,
   slotMinTime:"04:00:00",
   slotMaxTime:"23:00:00",
+  nowIndicator:true,
   views:{
     resourceTimelineDay:{
       titleFormat:{ month: 'long',
