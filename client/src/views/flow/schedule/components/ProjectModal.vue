@@ -86,24 +86,24 @@ const isEventEditableByThisUserIgnoringReadOnly = computed(() => {
 })
 
 const isEventReadyOnly = computed(() => {
-	return !store.getters.isFullAdmin && ((event.value?.readonly && !isUserWhitelisted.value) || !isEventEditableByThisUserIgnoringReadOnly.value)
+	return !userStore.isSystemAdmin && ((event.value?.readonly && !isUserWhitelisted.value) || !isEventEditableByThisUserIgnoringReadOnly.value)
 })
 
 //this logic comes from ProjectProcessStepEvent.vue. We want the readonly logic here to match that
 const isResourceReadOnly = computed(() => {
-	return (!store.getters.isFullAdmin &&
+	return (!userStore.isSystemAdmin &&
 			getEventDefaultFieldReadOnly(store, event.value?.resourceWhiteListedPositions, event.value?.resourceReadOnly, event.value?.resourceReadOnlyAllow)) ||
 		isEventReadyOnly.value
 })
 
 const isStartReadOnly = computed(() => {
-	return (!store.getters.isFullAdmin &&
+	return (!userStore.isSystemAdmin &&
 		getEventDefaultFieldReadOnly(store, event.value?.startTimeWhiteListedPositions, event.value?.startTimeReadOnly, event.value?.startTimeReadOnlyAllow)) ||
 		isEventReadyOnly.value
 })
 
 const isEndReadOnly = computed(() => {
-	return (!store.getters.isFullAdmin &&
+	return (!userStore.isSystemAdmin &&
 			getEventDefaultFieldReadOnly(store, event.value?.endTimeWhiteListedPositions, event.value?.endTimeReadOnly, event.value?.endTimeReadOnlyAllow)) ||
 		isEventReadyOnly.value
 })
