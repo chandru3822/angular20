@@ -430,23 +430,8 @@ public class InstallAgreementService {
           return sunlightPortalUrl + "salesdashboard";
         }
       } else if (loanType.toLowerCase().contains("sunpower")) {
-        Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
-        try {
-          User user = securityService.getCurrentUser();
-          Optional<Boolean> hasDolphinAccess =
-            sqlCache.getBySql(
-              PandaDocQuery.hasDolphinPortalAccess,
-              Map.of("currentUserId", user.trueUserId()),
-              new SingleColumnRowMapper<>(Boolean.class));
-          if (hasDolphinAccess.isPresent() && hasDolphinAccess.get()) {
-            return sunpowerService.openDolphinLoanApp(propLogDetail.get());
-          }
-          else {
-            return sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, sendVia, false);
-          }
-        } catch (Exception e) {
-          throw new Exception(e.getMessage(), e);
-        }
+        throw new Exception(
+          "Sunpower Financial is no longer approving new credit applications as of April 15. Please make a new proposal with another financier.");
       } else if (loanType.toLowerCase().contains("loanpal") || loanType.toLowerCase().contains("goodleap")) {
         // Check if this project has already had a credit check via Sunlight, if so throw error
         Optional<Object> creditLastCheckedBy = sunlightService.getCreditLastCheckedBy(projectId);
