@@ -411,7 +411,6 @@ const displayedHeaders = computed(() => {
   return headers.value.filter(header => header.show)
 })
 const filteredNotes = computed(() => {
-  console.log('in computed',notes.value.length)
   return notes.value?.filter(n => {
     return !n.archived
   })
