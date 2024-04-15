@@ -541,9 +541,9 @@ const projectId = computed(() => {
 const closerApptRequirementsMet = computed(() => {
   return (
     project.value.closerAppointmentStart != null &&
-    moment(project.value.closerAppointmentStart).isBetween(
-      moment(),
-      moment().add(30, 'm')
+    moment().isBetween(
+      moment(project.value.closerAppointmentStart).subtract(30, 'm'),
+      moment(project.value.closerAppointmentEnd)
     )
   )
 })
