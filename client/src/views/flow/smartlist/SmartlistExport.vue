@@ -1,6 +1,6 @@
 <template>
   <a-btn
-    @click.stop="exportSmartlist"
+    @click.native.stop="exportSmartlist"
     :icon="!showText"
     :variant="showText ? 'text' : ''"
     class="pa-5"

@@ -10,7 +10,7 @@
           variant="text"
           size="small"
           color="primary"
-          @click.stop.native
+          @click.native.stop
           :to="`/project/${projectId}/events`"
           class="pa-2 mx-2"
           max-width="48px"

@@ -258,7 +258,7 @@
                 <v-icon>mdi-calendar-plus</v-icon>
               </a-btn>
                 </template>
-                Assign to Event
+                {{isAssignedResource(resource) ? 'Remove Resource' : 'Assign to Event' }}
               </v-tooltip>
               <a-btn icon size="small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></a-btn>
             </div>
@@ -358,6 +358,7 @@ const calendarOptions = ref({
   slotMinWidth:40,
   slotMinTime:"04:00:00",
   slotMaxTime:"23:00:00",
+  nowIndicator:true,
   views:{
     resourceTimelineDay:{
       titleFormat:{ month: 'long',
@@ -1114,6 +1115,7 @@ const createSnackbar = (text) => {
   line-height: 1.4;
 }
 
+
 #calendar-container .fc-toolbar-title {
   @media(max-width: 960px) {
     font-size: 1.25rem;
@@ -1201,6 +1203,12 @@ const createSnackbar = (text) => {
 #event-calendar > div.fc-view-harness.fc-view-harness-active > div.fc-resourceTimelineWeek-view.fc-view.fc-resource-timeline.fc-resource-timeline-flat.fc-timeline.fc-timeline-overlap-enabled > table > tbody > tr > td:nth-child(3) > div > div > div > div.fc-timeline-slots > table > tbody > tr > td:nth-child(19n+1) {
   border-left-width: 3px;
 }
+
+
+.fc .fc-scrollgrid {
+  border-radius: 4px;
+}
+
 </style>
 
 <style lang="scss" scoped>

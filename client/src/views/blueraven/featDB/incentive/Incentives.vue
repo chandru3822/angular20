@@ -35,6 +35,7 @@
                                 v-model="incentiveFilters[header.value].value"
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
                                 clearable
+                                class="px-2"
                                 variant="filled"
                                 density="compact"
                                 hide-details
@@ -44,9 +45,10 @@
                                   v-model="incentiveFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
-                                  filled
                                   :item-title=header.value
-                                  dense
+                                  variant="filled"
+                                  class="px-2"
+                                  density="compact"
                                   type="search"
                                   autocomplete="off"
                                   hide-details
@@ -56,6 +58,7 @@
                                   v-model="incentiveFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
+                                  class="px-2"
                                   :item-title="header.value"
                                   item-value="type"
                                   variant="filled"
@@ -69,6 +72,7 @@
                                   v-model="incentiveFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
+                                  class="px-2"
                                   :item-title="header.value"
                                   item-value="status"
                                   variant="filled"

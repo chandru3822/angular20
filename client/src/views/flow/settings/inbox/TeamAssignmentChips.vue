@@ -133,8 +133,7 @@
                 icon
                 v-bind="attrs"
                 :activation-handler="{...tooltip, ...menu}"
-                size="small"
-                class="align-self-baseline"
+                custom-classes="align-self-baseline"
                 prepend-icon="mdi-plus"
               />
             </template>
