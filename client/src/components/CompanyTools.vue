@@ -93,7 +93,6 @@
 
 <script setup>
 import constants from '@/helpers/constants'
-import Vue2Filters from 'vue2-filters'
 import SpinnerInline from '@/components/SpinnerInline'
 import { getRequest,  } from '@/helpers/helpers'
 
