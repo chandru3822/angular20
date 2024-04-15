@@ -462,8 +462,8 @@ onMounted(async () => {
     const deleteStatusTypeFromStep = async (item) => {
       appStore.loading = true
       try {
-        //have to close the work queue editor to for the component to refresh available values
-        addNewWorkQueueType.value = false
+        //have to close the add new ps editor to for the component to refresh available values
+        addNewProcessStepStatusType.value = false
         expanded.value = []
         const {status} = await putRequest(`/processStep/status/removeStatus/${item.id}/fromStep/${processStepId.value}`)
         item.archived = true
