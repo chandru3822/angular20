@@ -20,7 +20,7 @@
         <a-btn variant="text" color="primary" v-if="userCanEdit" @click="editGroup = !editGroup" prepend-icon="edit"/>
       </v-toolbar-items>
       <v-tabs :optional="false" color="primary"
-              v-slot:extension
+              slot="extension"
               class="hello mb-2"
               dense
               background-color="white" v-model="model" slider-color="primary">

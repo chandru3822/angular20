@@ -90,7 +90,7 @@
                     color="primary"
                     size="small"
                     class="mr-3 feat-db-link-icon"
-                    @click.stop="editUtility(item)"
+                    @click.native.stop="editUtility(item)"
                     v-if="userStore.userHasFeatureAccessLevel('UTILITY', 'EDIT')"
                     prepend-icon="edit"
                 ></a-btn>

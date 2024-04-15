@@ -274,7 +274,7 @@
             <a class="close-modal-x pb-3" title="Close" @click="cancelSendMessageDialog">×</a>
         </v-card-title>
           <v-toolbar-items>
-        <v-tabs color="primary" v-slot:extension slider-color="primary" class="message-tabs">
+        <v-tabs color="primary" slot="extension" slider-color="primary" class="message-tabs">
             <v-tab @click="messageTab = 1">
               Emails
             </v-tab>

@@ -20,7 +20,7 @@
                    :prepend-icon="vuetify.breakpoint.smAndDown ? addNew ? 'close' : 'add' : ''"
             />
           </v-toolbar-items>
-          <template v-slot:extension>
+          <template slot="extension">
             <div v-if="editGroup">
               <a-text-field  class="d-inline-block mt-4 edit-text"
                             label="Contacts per Phone Number"
