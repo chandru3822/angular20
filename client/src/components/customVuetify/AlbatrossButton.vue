@@ -7,6 +7,7 @@
     :disabled="props.disabled"
     :color="props.color"
     :elevation="props.elevation"
+    :block="props.block"
     :icon="props.icon"
     v-on="activationHandler"
     :style="props.htmlStyle"
@@ -22,13 +23,13 @@
   >
     <slot name="default">
       <template>
-        <v-icon v-if="props.prependIcon" class="mr-1">
+        <v-icon v-if="props.prependIcon" :class="{'mr-1': props.text !== ''}">
           {{ props.prependIcon }}
         </v-icon>
         <span :class="{ 'hide-sm': props.hideTextOnMobile }">
           {{ props.text }}
         </span>
-        <v-icon v-if="props.appendIcon" class="ml-3">
+        <v-icon v-if="props.appendIcon" :class="{'ml-3': props.text !== ''}">
           {{ props.appendIcon }}
         </v-icon>
       </template>
@@ -51,7 +52,7 @@ const props = defineProps({
   htmlStyle: String, //style was a reserved word...only seen this used to set a max width so far. in v3 there is an option for that so style should go away
   htmlStyleObject: String, //style was a reserved word...only seen this used to set a max width so far. in v3 there is an option for that so style should go away
   activationHandler: Object,
-  text: {
+  text: {         //note in vue3 you can pass in a text prop and you wont need a slot. but for now we have to take that text value and throw it into the default slot until we are on vue3
     type: String,
     default: ''
   },
@@ -86,6 +87,10 @@ const props = defineProps({
     default: 'default'
   },
   hideTextOnMobile: {
+    type: Boolean,
+    default: false
+  },
+  block: {
     type: Boolean,
     default: false
   },

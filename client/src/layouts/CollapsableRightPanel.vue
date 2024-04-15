@@ -118,6 +118,10 @@ const isMobile = computed(() => {
           class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
       >
         <v-col v-for="(option, index) in viewOptions" :cols="12/viewOptions.length" class="px-0">
+<!--        <v-btn v-if="option.visible" text :color="selectedOption === index ? 'white' : 'primary'" block elevation="0" @click="selectView(index)" :dark="selectedOption === index"
+                 :class="{'section-selected': selectedOption===index}" >
+            <v-icon>{{option.icon}}</v-icon>
+          </v-btn>-->
           <a-btn
               v-if="option.visible"
               variant="text"

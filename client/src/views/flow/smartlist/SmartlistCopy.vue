@@ -1,6 +1,6 @@
 <template>
   <a-btn
-    @click.stop="copySmartlist"
+    @click.native.stop="copySmartlist"
     :icon="!showText"
     :variant="showText ? 'text' : ''"
     class="pa-5"

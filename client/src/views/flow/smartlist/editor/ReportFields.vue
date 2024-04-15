@@ -34,7 +34,7 @@
       <template #append>
         <a-btn
             icon
-            @click.stop="reset()"
+            @click.native.stop="reset()"
             color="unset"
             prepend-icon="mdi-close"
         ></a-btn>
@@ -68,7 +68,7 @@
             <v-list-item-action v-if="canEdit">
               <a-btn
                   icon
-                  @click.stop="remove(index)"
+                  @click.native.stop="remove(index)"
                   color="unset"
                   prepend-icon="mdi-close"
               ></a-btn>
