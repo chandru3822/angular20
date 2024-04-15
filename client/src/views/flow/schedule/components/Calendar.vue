@@ -375,7 +375,7 @@ const calendarOptions = ref({
     }
   },
   height: '100%',
-  timeZone: scheduleTimezone || {},
+  timeZone: scheduleTimezone.value.value || {},
 
   customButtons: {
     customToday: {
@@ -891,7 +891,7 @@ const handlePopulatingMapPins = (addPin, resource, doCallback) => {
             userIds: selectedUsers.value?.length > 0 ? selectedUsers.value.map(u => u.masterId) : [],
             startTime: info.start,
             endTime: info.end,
-            timezone: scheduleTimezone
+            timezone: scheduleTimezone.value.value
           }
           const {data} = await postRequest(`/schedule/availability`, params)
 
