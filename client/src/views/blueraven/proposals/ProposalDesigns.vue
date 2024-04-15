@@ -319,9 +319,9 @@
           "
         >
           <div class="mb-10">Immediate Design Pending Aurora Adjustments</div>
-          <v-btn outlined color="primary" @click="syncAuroraDesignDetails()">
+          <a-btn variant="outlined" color="primary" @click="syncAuroraDesignDetails()">
             Sync Design
-          </v-btn>
+          </a-btn>
         </v-card-text>
       </v-card>
     </v-row>
