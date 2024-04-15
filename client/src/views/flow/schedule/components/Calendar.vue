@@ -258,7 +258,7 @@
                 <v-icon>mdi-calendar-plus</v-icon>
               </a-btn>
                 </template>
-                Assign to Event
+                {{isAssignedResource(resource) ? 'Remove Resource' : 'Assign to Event' }}
               </v-tooltip>
               <a-btn icon size="small" color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></a-btn>
             </div>
