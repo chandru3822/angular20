@@ -411,6 +411,7 @@ const displayedHeaders = computed(() => {
   return headers.value.filter(header => header.show)
 })
 const filteredNotes = computed(() => {
+  console.log('in computed',notes.value.length)
   return notes.value?.filter(n => {
     return !n.archived
   })
@@ -496,7 +497,6 @@ const saveNote = async(n) => {
       n.showReply = false
       n.childNotes == null ? n.childNotes = [data] : n.childNotes.push(data)
     } else if (!n.id) {
-      notes.value.unshift(data)
       note.value = {}
     }
     if((isPsWqtNote.value || isEventWqtNote.value) && (!n.id || notes.value.findIndex(i => i.id === n.id) === 0)) {
