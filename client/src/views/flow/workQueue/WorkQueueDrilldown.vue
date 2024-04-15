@@ -637,7 +637,7 @@ const filterResults = () => {
   //we populate this so that if they hide/unhide future after doing some filtering we can get back to the filtered state
   filteredResults.value = cloneDeep(results.value)
 }
-const updateRowNotes = (item) => {
+const updateRowNotes = (item, isNew) => {
   //have to set the matching value in filteredResults...cuz we do and it is dumb
   let matchInFilteredResults = filteredResults.value.find(fr => fr.projectProcessStepEventId === results.value[notesPpsIndex.value].projectProcessStepEventId && fr.processStepEventWorkQueueTypeId === results.value[notesPpsIndex.value].processStepEventWorkQueueTypeId)
 
@@ -658,8 +658,10 @@ const updateRowNotes = (item) => {
   //also re-populate the entire notes array
   matchInFilteredResults.notes = results.value[notesPpsIndex.value].notes
 
-  itemToUpdate.value.notes = [ item, ...itemToUpdate.value.notes ]
-  damnKeyThing.value++
+  if(isNew) {
+    itemToUpdate.value.notes = [ item, ...itemToUpdate.value.notes ]
+    damnKeyThing.value++
+  }
 }
 const closeNotesModal = () => {
   //this is dumb.  if you update the results before the modal closes things get weird
