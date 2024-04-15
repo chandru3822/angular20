@@ -133,8 +133,7 @@
                 icon
                 v-bind="attrs"
                 :activation-handler="{...tooltip, ...menu}"
-                size="small"
-                class="align-self-baseline"
+                custom-classes="align-self-baseline"
                 prepend-icon="mdi-plus"
               />
             </template>
@@ -153,12 +152,12 @@ import AddTeamDropdown from "@/views/flow/settings/inbox/AddTeamDropdown";
 import {ref, computed, onMounted, getCurrentInstance, watch, defineProps} from "vue";
 import {useUserStore} from "@/stores/UserStore.js";
 import {useRouter, useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const route = useRoute()
 const router = useRouter()
 const vuetify = vueInstance.$vuetify
@@ -260,10 +259,10 @@ const removeTeam = async (teamId) => {
     if (route.path.includes('inboxConversation') && (route.path.includes(props.projectId) || route.path.includes(props.userId))) {
       await router.push({path: `/inbox`})
     }
-    snackbar('SUCCESS', 'Team removed')
+    appStore.showSnack('SUCCESS', 'Team removed')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error removing team')
+    appStore.showSnack('ERROR', 'Error removing team')
   }
 
   emit('updateOwner')
@@ -290,10 +289,10 @@ const removeUser = async () => {
       }
       await putRequest(`/messaging/removeOwner/user/`+ props.userId, bodyData)
     }
-    snackbar('SUCCESS', 'Unassigned')
+    appStore.showSnack('SUCCESS', 'Unassigned')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error removing team')
+    appStore.showSnack('ERROR', 'Error removing team')
   }
 
   emit('updateOwner')
@@ -314,7 +313,7 @@ const getSmsAccess = async () => {
     readOnly.value = !data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving SMS Access')
+    appStore.showSnack('ERROR', 'Error Retrieving SMS Access')
     appStore.loading = false
   }
 }

@@ -234,10 +234,10 @@
   import {getCurrentInstance, onMounted, ref, computed} from 'vue'
 
   import { useUserStore } from '@/stores/UserStore.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const store = vueInstance.$store
   const userStore = useUserStore()
   const vuetify= vueInstance.$vuetify
@@ -296,7 +296,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
       appStore.loading = false
     }
   }
@@ -308,7 +308,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
       appStore.loading = false
     }
   }
@@ -322,7 +322,7 @@
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
       appStore.loading = false
     }
   }
@@ -333,19 +333,19 @@
       const {data, status} = await deleteRequest(`/processStep/status/${type.id}`)
       fieldsInUse.value = [];
       type.archived = true
-      snackbar('SUCCESS', 'Status Deleted')
+      appStore.showSnack('SUCCESS', 'Status Deleted')
       handleHidingGlobalLoader(status)
       appStore.loading = false
     } catch (e) {
       if (e.status === 400) {
         deleteError.value = true;
         fieldsInUse.value = e.data;
-        snackbar("ERROR", "Status Cannot Be Deleted");
+        appStore.showSnack("ERROR", "Status Cannot Be Deleted");
         appStore.loading = false
       }
       else {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Deleting Status')
+        appStore.showSnack('ERROR', 'Error Deleting Status')
         appStore.loading = false
       }
     }
@@ -364,12 +364,12 @@
       // reset the new process fields
       addNew.value = false
       newType.value = {}
-      snackbar('SUCCESS', 'Status Added')
+      appStore.showSnack('SUCCESS', 'Status Added')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Adding Status')
+      appStore.showSnack('ERROR', 'Error Adding Status')
 
       appStore.loading = false
     }
@@ -380,12 +380,12 @@
       const {status} = await putRequest(`/processStep/status`, s)
       selectedStatusTypeId.value = null
       expanded.value = []
-      snackbar('SUCCESS', 'Status Updated')
+      appStore.showSnack('SUCCESS', 'Status Updated')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Updating Status')
+      appStore.showSnack('ERROR', 'Error Updating Status')
 
       appStore.loading = false
     }
@@ -393,7 +393,7 @@
 
   const copyToClipBoard = (textValue)=> {
     navigator.clipboard.writeText(textValue);
-    snackbar('SUCCESS', 'Copied id to clipboard')
+    appStore.showSnack('SUCCESS', 'Copied id to clipboard')
 
   }
   const closeDeleteDialog = () => {

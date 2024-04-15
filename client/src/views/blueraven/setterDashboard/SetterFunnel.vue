@@ -523,7 +523,7 @@ import {
 import {getCurrentInstance, toRefs, computed, ref, onMounted, watch} from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import {useAppStore} from '@/stores/AppStorePinia.js'
+import {useAppStore} from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -531,7 +531,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const userOfficeId = ref(null)
 const userOffice = ref(null)
@@ -1112,7 +1111,7 @@ const pipelineLoad = async (start, end, useRepDataInstead) => {
   } catch (e) {
     setterPipelineLoading.value = false
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving pipeline data')
+    appStore.showSnack('ERROR', 'Error retrieving pipeline data')
 
     funnelDataLoaded.value = true
     appStore.loading = false
@@ -1401,7 +1400,7 @@ const funnelDrilldown = async (funnelIdClicked, dateRange, funnelName) => {
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving drilldown data')
+    appStore.showSnack('ERROR', 'Error retrieving drilldown data')
 
     appStore.loading = false
   }

@@ -161,11 +161,11 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
@@ -198,7 +198,7 @@ const getTags = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     appStore.loading = false
   }
@@ -209,13 +209,13 @@ const deleteTag = async () => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/tag/${typeId}`)
-    snackbar('SUCCESS', 'Tag Deleted')
+    appStore.showSnack('SUCCESS', 'Tag Deleted')
 
     tag.archived = true
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Tag')
+    appStore.showSnack('ERROR', 'Error Deleting Tag')
 
     appStore.loading = false
   }
@@ -235,11 +235,11 @@ const saveTag = async (tag, isNew) => {
     } else {
       selectedTagId.value = null
     }
-    snackbar('SUCCESS', 'Tag Saved')
+    appStore.showSnack('SUCCESS', 'Tag Saved')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Tag')
+    appStore.showSnack('ERROR', 'Error Saving Tag')
     appStore.loading = false
   }
 }

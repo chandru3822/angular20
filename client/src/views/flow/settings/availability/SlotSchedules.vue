@@ -133,12 +133,11 @@
   import {getCurrentInstance, onMounted, ref, computed, watch, defineProps} from "vue";
   import { useUserStore } from '@/stores/UserStore.js'
   import {useRoute} from "vue-router/composables"
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
-  const store = vueInstance.$store
+     const store = vueInstance.$store
   const userStore = useUserStore()
   const route = useRoute()
 
@@ -212,12 +211,12 @@
           addNew.value = false
           slotSchedules.value.push(data)
         }
-        snackbar('SUCCESS', 'Schedule Saved')
+        appStore.showSnack('SUCCESS', 'Schedule Saved')
         handleHidingGlobalLoader(status)
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Schedule')
+      appStore.showSnack('ERROR', 'Error Saving Schedule')
       appStore.loading = false
     }
   }
@@ -229,7 +228,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Slot Schedules')
+      appStore.showSnack('ERROR', 'Error Loading Slot Schedules')
       appStore.loading = false
     }
   }
@@ -239,11 +238,11 @@
     try {
       const {status} = await deleteRequest(`/availability/slotSchedule/${schedule.id}`)
       schedule.archived = true
-      snackbar('SUCCESS', 'Schedule Deleted')
+      appStore.showSnack('SUCCESS', 'Schedule Deleted')
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting Schedule')
+      appStore.showSnack('ERROR', 'Error Deleting Schedule')
       appStore.loading = false
     }
     closeDeleteDialog()

@@ -161,7 +161,7 @@ import ScoreDrilldown from "./ScoreDrilldown"
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 
 const appStore = useAppStore()
@@ -170,7 +170,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   bracket: {type: Object},
@@ -202,7 +201,7 @@ const getOverrideUsers = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Users')
+    appStore.showSnack('ERROR', 'Error Retrieving Users')
 
     appStore.loading = false
   }
@@ -217,7 +216,7 @@ const overrideMatchUser = async() => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
-    snackbar('ERROR', 'Error Saving Data')
+    appStore.showSnack('ERROR', 'Error Saving Data')
 
     appStore.loading = false
   }
@@ -269,13 +268,13 @@ const advanceWinners = async(round) => {
   appStore.loading = true
   try {
     const {status} = await putRequest(`/tournament/${bracket.value.tournamentId}/round/${round.id}/advanceWinners`, round.matches, 'blueraven')
-    snackbar('SUCCESS', 'Finalists Advanced')
+    appStore.showSnack('SUCCESS', 'Finalists Advanced')
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     appStore.loading = false
   }
@@ -298,7 +297,7 @@ const advanceMatches = async(round) => {
   round?.matches.forEach(m => {
     if(!m.winnerUserId) {
       allMatchesHaveWinners = false
-      snackbar('ERROR', 'All matches must have a winner selected')
+      appStore.showSnack('ERROR', 'All matches must have a winner selected')
 
       return
     }
@@ -314,7 +313,7 @@ const advanceMatches = async(round) => {
     } catch (e) {
       console.error('*** ERROR ***', e)
       dataLoading.value = false
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
 
       appStore.loading = false
     }

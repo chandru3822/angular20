@@ -142,7 +142,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const route = useRoute()
@@ -150,7 +150,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 onMounted(async () => {
   defineSortableTable('.event-table tbody', events, 'displayOrder', saveRowChanges)
@@ -201,7 +200,7 @@ const getEvents = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -214,7 +213,7 @@ const getAvailableEvents = async () => {
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
       appStore.loading = false
     }
   }
@@ -234,7 +233,7 @@ const addEventToProcessStep = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Event')
+    appStore.showSnack('ERROR', 'Error Adding Event')
     appStore.loading = false
   }
 }
@@ -244,11 +243,11 @@ const deleteEventFromStep = async () => {
   try {
     await deleteRequest(`/processStep/${processStepId.value}/event/${item.id}`)
     item.archived = true
-    snackbar('SUCCESS', 'Event Deleted')
+    appStore.showSnack('SUCCESS', 'Event Deleted')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Event')
+    appStore.showSnack('ERROR', 'Error Deleting Event')
     appStore.loading = false
   }
   closeDeleteDialog()
@@ -258,11 +257,11 @@ const saveRowChanges = async (rows) => {
     appStore.loading = true
     try {
       await putRequest(`/processStep/${processStepId.value}/event/order`, rows)
-      snackbar('SUCCESS', 'Event Order Saved')
+      appStore.showSnack('SUCCESS', 'Event Order Saved')
       appStore.loading = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Event Order')
+      appStore.showSnack('ERROR', 'Error Saving Event Order')
       appStore.loading = false
     }
   }

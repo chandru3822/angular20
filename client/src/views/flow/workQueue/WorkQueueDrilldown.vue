@@ -221,6 +221,7 @@
           :showNotes="true"
           :showActivity="false"
           :bordered="true"
+          :key="damnKeyThing"
           :notes="itemToUpdate ? itemToUpdate.notes : []"
           :is-ps-wqt-note="!workQueue.useEventData"
           :is-event-wqt-note="!!workQueue.useEventData"
@@ -257,7 +258,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -265,9 +266,9 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 
+const damnKeyThing = ref(0)
 const showNotesModal = ref(false)
 const itemToUpdate = ref(null)
 const hideFutureFollowUps = ref(false)
@@ -345,7 +346,7 @@ const getWorkQueueName = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Results')
+    appStore.showSnack('ERROR', 'Error Retrieving Results')
 
     appStore.loading = false
   }
@@ -401,7 +402,7 @@ const exportCsv = async() => {
     saveAs(blob, `${workQueue.value.workQueueType} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
     handleHidingGlobalLoader( status)
   } catch (e) {
-    snackbar('ERROR', e.message)
+    appStore.showSnack('ERROR', e.message)
 
     logError(e)
     appStore.loading = false
@@ -566,7 +567,7 @@ const getWorkDetails = async() => {
     dataLoading.value = false
     errorLoading.value = true
     let msg = e?.data?.message || 'Error Retrieving Results'
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
 
     appStore.loading = false
   }
@@ -576,7 +577,7 @@ const assignToUser = async(item) => {
     let userPosition = userPositions.value.find(up => up.canAssign)
     const {status} = await postRequest(`/projectProcessStep/${item.projectProcessStepId}/owner/checkExisting`, {userPositionId: userPosition.id})
     item['Owner'] = userFullName.value
-    snackbar('SUCCESS', 'You are now assigned as the owner.')
+    appStore.showSnack('SUCCESS', 'You are now assigned as the owner.')
 
     item.owner = userStore.details.fullName
     handleHidingGlobalLoader( status)
@@ -587,7 +588,7 @@ const assignToUser = async(item) => {
     if (alreadyAssigned) {
       item['Owner'] = 'Already Assigned. Please Refresh.'
     }
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
 
     appStore.loading = false
   }
@@ -636,7 +637,7 @@ const filterResults = () => {
   //we populate this so that if they hide/unhide future after doing some filtering we can get back to the filtered state
   filteredResults.value = cloneDeep(results.value)
 }
-const updateRowNotes = (item) => {
+const updateRowNotes = (item, isNew) => {
   //have to set the matching value in filteredResults...cuz we do and it is dumb
   let matchInFilteredResults = filteredResults.value.find(fr => fr.projectProcessStepEventId === results.value[notesPpsIndex.value].projectProcessStepEventId && fr.processStepEventWorkQueueTypeId === results.value[notesPpsIndex.value].processStepEventWorkQueueTypeId)
 
@@ -657,6 +658,10 @@ const updateRowNotes = (item) => {
   //also re-populate the entire notes array
   matchInFilteredResults.notes = results.value[notesPpsIndex.value].notes
 
+  if(isNew) {
+    itemToUpdate.value.notes = [ item, ...itemToUpdate.value.notes ]
+    damnKeyThing.value++
+  }
 }
 const closeNotesModal = () => {
   //this is dumb.  if you update the results before the modal closes things get weird

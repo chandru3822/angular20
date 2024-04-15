@@ -396,7 +396,7 @@
                                 @input="getUserHistory(newAssignedUser.userId)"
                                 attach
                 >
-                  <template slot='item' slot-scope='{ item }'>
+                  <template v-slot:item="{ props, item }">
                     {{ item.name }} - {{ item.position }}
                   </template>
                 </a-autocomplete>
@@ -575,8 +575,8 @@
   import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
   import {useUserStore} from '@/stores/UserStore.js'
   import {useRoute, useRouter} from "vue-router/composables";
-  import { useAppStore } from '@/stores/AppStorePinia.js'
-  import { useBrsStore } from '@/stores/BrsStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
+  import { useBrsStore } from '@/stores/BrsStore.js'
   import debounce from 'lodash.debounce'
   import { storeToRefs } from 'pinia'
 
@@ -588,7 +588,6 @@
   const userStore = useUserStore()
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store
-  const snackbar = vueInstance.$snackbar
 
   const deleteTypes = {
     OVERRIDE:0,
@@ -743,7 +742,7 @@
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error retrieving custom fields')
+          appStore.showSnack('ERROR', 'Error retrieving custom fields')
         }
       }
       const getOverrideDetails = async () => {
@@ -757,7 +756,7 @@
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Loading Override Details')
+          appStore.showSnack('ERROR', 'Error Loading Override Details')
           appStore.loading = false
         }
       }
@@ -785,11 +784,11 @@
         appStore.loading = true
         try {
           await deleteRequest(`/commissionManagement/overrides/${overrideId.value}`, 'blueraven')
-          snackbar('SUCCESS', 'Override Plan Deleted')
+          appStore.showSnack('SUCCESS', 'Override Plan Deleted')
           await router.push({name: 'overrides'})
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Deleting Override Plan')
+          appStore.showSnack('ERROR', 'Error Deleting Override Plan')
         }
       }
       const cloneOverride = async () => {
@@ -805,7 +804,7 @@
           await router.push({name: 'override', params: {id: data.id}})
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Cloning Override Plan')
+          appStore.showSnack('ERROR', 'Error Cloning Override Plan')
           appStore.loading = false
         }
       }
@@ -826,7 +825,7 @@
         } catch (e) {
           errorLoadingUserHistory.value = true
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Retrieving User History')
+          appStore.showSnack('ERROR', 'Error Retrieving User History')
           appStore.loading = false
         }
       }
@@ -903,7 +902,7 @@
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Saving Override Plan')
+          appStore.showSnack('ERROR', 'Error Saving Override Plan')
           appStore.loading = false
         }
       }
@@ -911,12 +910,12 @@
         appStore.loading = true
         try {
           const {data, status} = await postRequest(`/commissionManagement/overrides/${overrideId.value}/approve`, {}, 'blueraven')
-          snackbar('SUCCESS', 'Override Plan Approved')
+          appStore.showSnack('SUCCESS', 'Override Plan Approved')
           override.value = data
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Approving Override Plan')
+          appStore.showSnack('ERROR', 'Error Approving Override Plan')
           appStore.loading = false
         }
       }
@@ -924,11 +923,11 @@
         appStore.loading = true
         try {
           await postRequest(`/commissionManagement/overrides/${overrideId.value}/inactivate`, {}, 'blueraven')
-          snackbar('SUCCESS', 'Override Plan Inactivated')
+          appStore.showSnack('SUCCESS', 'Override Plan Inactivated')
           await router.push({name: 'overrides'})
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Inactivating Override Plan')
+          appStore.showSnack('ERROR', 'Error Inactivating Override Plan')
           appStore.loading = false
         }
       }
@@ -938,11 +937,11 @@
           const {status} = await postRequest(`/commissionManagement/overrides/${overrideId.value}/updateUser`, item, 'blueraven')
           assignedUserExpanded.value = []
           userHistory.value = []
-          snackbar('SUCCESS', 'Assigned User Updated')
+          appStore.showSnack('SUCCESS', 'Assigned User Updated')
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Updating Assigned User')
+          appStore.showSnack('ERROR', 'Error Updating Assigned User')
           appStore.loading = false
         }
       }
@@ -968,7 +967,7 @@
             assignedUsersLoading.value = false
           } catch (e) {
             console.error('*** ERROR ***', e)
-            snackbar('ERROR', 'Error Retrieving Override Plan Users')
+            appStore.showSnack('ERROR', 'Error Retrieving Override Plan Users')
             appStore.loading = false
           }
         }
@@ -988,7 +987,7 @@
             addAssignedUser.value = false
           } catch (e) {
             console.error('*** ERROR ***', e)
-            snackbar('ERROR', 'Error Assigning User')
+            appStore.showSnack('ERROR', 'Error Assigning User')
             appStore.loading = false
           }
         }
@@ -999,14 +998,14 @@
         appStore.loading = true
         try {
           const {status} = await deleteRequest(`/commissionManagement/overrides/${overrideId.value}/assignedUsers/${assignedUserId}`, 'blueraven')
-          snackbar('SUCCESS', 'Assigned User Deleted')
+          appStore.showSnack('SUCCESS', 'Assigned User Deleted')
           override.value.assignedUsers = override.value.assignedUsers.filter(au => {
             return au.id !== assignedUserId
           })
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Deleting Assigned User')
+          appStore.showSnack('ERROR', 'Error Deleting Assigned User')
           appStore.loading = false
         }
       }
@@ -1025,7 +1024,7 @@
             receivingUsersLoading.value = false
           } catch (e) {
             console.error('*** ERROR ***', e)
-            snackbar('ERROR', 'Error Retrieving Receiving Override Users')
+            appStore.showSnack('ERROR', 'Error Retrieving Receiving Override Users')
             appStore.loading = false
           }
         }
@@ -1038,7 +1037,7 @@
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Saving Receiving User')
+          appStore.showSnack('ERROR', 'Error Saving Receiving User')
           appStore.loading = false
         }
       }
@@ -1065,7 +1064,7 @@
             addReceivingUser.value = false
           } catch (e) {
             console.error('*** ERROR ***', e)
-            snackbar('ERROR', 'Error Adding Receiving User')
+            appStore.showSnack('ERROR', 'Error Adding Receiving User')
             appStore.loading = false
           }
         }
@@ -1075,7 +1074,7 @@
         appStore.loading = true
         try {
           const {status} = await deleteRequest(`/commissionManagement/overrides/${overrideId.value}/receivingUsers/${receivingUserId}`, 'blueraven')
-          snackbar('SUCCESS', 'Receiving User Deleted')
+          appStore.showSnack('SUCCESS', 'Receiving User Deleted')
           override.value.receivingUsers = override.value.receivingUsers.filter(au => {
             return au.userId !== receivingUserId
           })
@@ -1083,7 +1082,7 @@
           handleHidingGlobalLoader(status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          snackbar('ERROR', 'Error Deleting Receiving User')
+          appStore.showSnack('ERROR', 'Error Deleting Receiving User')
           appStore.loading = false
         }
         closeDeleteDialog()

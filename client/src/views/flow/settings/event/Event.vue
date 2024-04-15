@@ -63,14 +63,12 @@
 
 <script setup>
 
-import {AppMutations} from "@/stores/AppStore";
-
 import {getRequest, putRequest} from "@/helpers/helpers";
 import {useRoute} from "vue-router/composables"
 
 import {ref, computed, onMounted, getCurrentInstance} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -131,7 +129,7 @@ const getEvent = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -140,11 +138,11 @@ const saveEventName = async () => {
   try {
     await putRequest(`/event`, event.value)
     editName.value = false
-    snackbar('SUCCESS', 'Event Updated')
+    appStore.showSnack('SUCCESS', 'Event Updated')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Event')
+    appStore.showSnack('ERROR', 'Error Updating Event')
     appStore.loading = false
   }
 }

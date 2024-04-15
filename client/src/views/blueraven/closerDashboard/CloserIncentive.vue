@@ -12,7 +12,7 @@ import Incentive from "@/views/blueraven/closerDashboard/Incentive";
 import {DashboardTypeEnum} from "@/views/blueraven/closerDashboard/incentive_constants";
 import {MilestoneEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import {getCurrentInstance, ref, computed, onMounted} from "vue";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import {useUserStore} from "@/stores/UserStore.js";
 
 const userStore = useUserStore()
@@ -20,7 +20,6 @@ const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const incentiveDataLoaded = ref(false)
 const closerDashContainer = ref(null)
@@ -70,7 +69,7 @@ const loadIncentive = async () => {
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving incentive data')
+    appStore.showSnack('ERROR', 'Error retrieving incentive data')
     incentiveDataLoaded.value = true
     appStore.loading = false
   }

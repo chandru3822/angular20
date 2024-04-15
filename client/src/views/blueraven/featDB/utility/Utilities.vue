@@ -90,7 +90,7 @@
                     color="primary"
                     size="small"
                     class="mr-3 feat-db-link-icon"
-                    @click.stop="editUtility(item)"
+                    @click.native.stop="editUtility(item)"
                     v-if="userStore.userHasFeatureAccessLevel('UTILITY', 'EDIT')"
                     prepend-icon="edit"
                 ></a-btn>
@@ -180,7 +180,7 @@ import {FILTER_DEFAULTS, FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbCons
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -188,7 +188,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const dataLoading = ref(true)
 const tabs = ref(FEAT_DB_TABS)
@@ -255,7 +255,7 @@ const fetchStates = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving States')
+    appStore.showSnack('ERROR', 'Error Retrieving States')
 
     appStore.loading = false
   }
@@ -269,7 +269,7 @@ const fetchUtilities = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     dataLoading.value = false
     appStore.loading = false
@@ -289,7 +289,7 @@ const getActiveMetroAreas = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     appStore.loading = false
   }
@@ -317,24 +317,24 @@ const saveUtility = async () => {
   if (addMode.value) {
     try {
       const {status} = await postRequest('/featDb/utility', editedItem.value, 'blueraven')
-      snackbar('SUCCESS', 'Utility created')
+      appStore.showSnack('SUCCESS', 'Utility created')
 
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error creating utility')
+      appStore.showSnack('ERROR', 'Error creating utility')
 
       appStore.loading = false
     }
   } else {
     try {
       const {status} = await putRequest('/featDb/utility/simpleUpdate', editedItem.value, 'blueraven')
-      snackbar('SUCCESS', 'Utility updated')
+      appStore.showSnack('SUCCESS', 'Utility updated')
 
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error updating utility')
+      appStore.showSnack('ERROR', 'Error updating utility')
 
       appStore.loading = false
     }

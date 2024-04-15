@@ -172,7 +172,7 @@ BEGIN
               from (select pd.project_id,
                            pd.project_name,
                            ((pd.first_appointment_pitched at time zone 'UTC') at time zone v_timezone)::timestamp as first_appointment,
-                           lov.name,
+                           coalesce(lov.name, 'Not Found') as name,
                            count(1) * (select field_value
                                           from brs.tournament_formula_field_value tffv
                                                  inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
@@ -189,7 +189,7 @@ BEGIN
                     select pd.project_id,
                            pd.project_name,
                            ((pd.first_appointment_missed at time zone 'UTC') at time zone v_timezone)::timestamp as first_appointment,
-                           lov.name,
+                           coalesce(lov.name, 'Not Found') as name,
                            count(1)  * (select field_value
                                         from brs.tournament_formula_field_value tffv
                                                  inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
@@ -207,7 +207,7 @@ BEGIN
                     select pd.project_id,
                            pd.project_name,
                            ((pd.first_appointment_not_pitched_or_missed at time zone 'UTC') at time zone v_timezone)::timestamp as first_appointment,
-                           lov.name,
+                           coalesce(lov.name, 'Not Found') as name,
                            count(1)  * (select field_value
                                         from brs.tournament_formula_field_value tffv
                                                  inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
@@ -215,7 +215,7 @@ BEGIN
                                           and tffv.tournament_id = p_tournament_id
                                           and tff.field_code = 'NOT_PITCHED_SCORE_VALUE')::int as score
                     from brs.project_details pd
-                             inner join flow.list_of_value lov on lov.id = pd.first_appointment_missed_id
+                             inner join flow.list_of_value lov on lov.id = pd.first_appointment_not_pitched_or_missed_id
                     where ((pd.first_appointment_not_pitched_or_missed at time zone 'UTC') at time zone
                            v_timezone)::date between p_start_date and p_end_date
                       and pd.first_appointment_not_pitched_or_missed_id in (58, 56)
@@ -227,7 +227,7 @@ BEGIN
                     select pd.project_id,
                            pd.project_name,
                            ((pd.final_design_complete_date at time zone 'UTC') at time zone v_timezone)::timestamp as first_appointment,
-                           lov.name,
+                           'Final Design Complete',
                            count(1)  * (select field_value
                                         from brs.tournament_formula_field_value tffv
                                                  inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
@@ -235,7 +235,6 @@ BEGIN
                                           and tffv.tournament_id = p_tournament_id
                                           and tff.field_code = 'FDC_SCORE_VALUE')::int as score
                     from brs.project_details pd
-                             inner join flow.list_of_value lov on lov.id = pd.first_appointment_missed_id
                     where pd.setter_user_id = p_user_id
                       and pd.cancelled_date is null
                       and pd.final_design_complete_date between p_start_date and p_end_date

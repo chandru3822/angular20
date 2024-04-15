@@ -1,17 +1,16 @@
-export const BrsActions = {}
+import { defineStore } from 'pinia'
 
-export const BrsMutations = {
-  SET_COMMISSION_POSITION_ID: 'setCommissionPositionId',
+const defaultState = {
+  commissionPositionId: 1 //1 is always the default to start with
 }
 
-export const BrsStore = {
-  state: {
-    commissionPositionId: null,
+export const useBrsStore = defineStore('brs', {
+  persist: true,
+  state: () => ({...defaultState}),
+  getters: {
+
   },
-  mutations: {
-    // [BrsMutations.SET_COMMISSION_POSITION_ID]: (state, positionId) =>
-    //   (state.commissionPositionId = positionId),
-  },
-  actions: {},
-  getters: {},
-}
+  actions: {
+
+  }
+})

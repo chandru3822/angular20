@@ -187,7 +187,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -195,7 +195,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const dataLoading = ref(true)
 const supplierFilters = ref({name: {value: '', type: 'text', model: 'name'},state: {value: [], type: 'select', model: 'state'},})
@@ -265,7 +264,7 @@ const fetchSuppliers = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     dataLoading.value = false
     appStore.loading = false
@@ -279,7 +278,7 @@ const fetchStates = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving States')
+    appStore.showSnack('ERROR', 'Error Retrieving States')
 
     appStore.loading = false
   }
@@ -307,13 +306,13 @@ const confirmDeleteSupplier = async() => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/featDb/supplier/${supplierToDelete.value.id}`, 'blueraven')
-    snackbar('SUCCESS', 'Supplier deleted')
+    appStore.showSnack('SUCCESS', 'Supplier deleted')
 
     await fetchSuppliers().then(() => fetchStates())
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error deleting Supplier')
+    appStore.showSnack('ERROR', 'Error deleting Supplier')
 
     appStore.loading = false
   }
@@ -351,24 +350,24 @@ const saveSupplier = async() => {
   if (addMode.value) {
     try {
       const {status} = await postRequest('/featDb/supplier', editedItem.value, 'blueraven')
-      snackbar('SUCCESS', 'Supplier created')
+      appStore.showSnack('SUCCESS', 'Supplier created')
 
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error creating Supplier')
+      appStore.showSnack('ERROR', 'Error creating Supplier')
 
       appStore.loading = false
     }
   } else {
     try {
       const {status} = await putRequest(`/featDb/supplier/simpleUpdate`, editedItem.value, 'blueraven')
-      snackbar('SUCCESS', 'Supplier updated')
+      appStore.showSnack('SUCCESS', 'Supplier updated')
 
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error updating Supplier')
+      appStore.showSnack('ERROR', 'Error updating Supplier')
 
       appStore.loading = false
     }

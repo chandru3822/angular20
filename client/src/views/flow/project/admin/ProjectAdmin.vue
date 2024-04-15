@@ -56,7 +56,7 @@ import {deleteRequest, getProjectPath, getRequest, logError} from "@/helpers/hel
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -64,8 +64,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const projectId = ref(parseInt(route.params.projectId))
@@ -102,7 +101,7 @@ const getProject = async () => {
     window.document.title = `${project.value.projectName} - Admin`
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching project')
+    appStore.showSnack('ERROR', 'Error fetching project')
 
   }
 }
@@ -110,12 +109,12 @@ const deleteProject = async() => {
   try {
     appStore.loading = true
     await deleteRequest(`/project/${projectId.value}`)
-    snackbar('SUCCESS', 'Project Deleted')
+    appStore.showSnack('SUCCESS', 'Project Deleted')
 
     router.push('/projects')
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error deleting project')
+    appStore.showSnack('ERROR', 'Error deleting project')
 
   } finally {
     appStore.loading = false

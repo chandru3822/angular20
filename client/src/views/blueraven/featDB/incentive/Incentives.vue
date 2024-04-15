@@ -35,6 +35,7 @@
                                 v-model="incentiveFilters[header.value].value"
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
                                 clearable
+                                class="px-2"
                                 variant="filled"
                                 density="compact"
                                 hide-details
@@ -44,9 +45,10 @@
                                   v-model="incentiveFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
-                                  filled
                                   :item-title=header.value
-                                  dense
+                                  variant="filled"
+                                  class="px-2"
+                                  density="compact"
                                   type="search"
                                   autocomplete="off"
                                   hide-details
@@ -56,6 +58,7 @@
                                   v-model="incentiveFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
+                                  class="px-2"
                                   :item-title="header.value"
                                   item-value="type"
                                   variant="filled"
@@ -69,6 +72,7 @@
                                   v-model="incentiveFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
+                                  class="px-2"
                                   :item-title="header.value"
                                   item-value="status"
                                   variant="filled"
@@ -245,7 +249,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -253,7 +257,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const dataLoading = ref(true)
 const incentiveFilters = ref({name: {value: '', type: 'text', model: 'name'},state: {value: [], type: 'select', model: 'state'},type: {value: [], type: 'select', model: 'type'},status: {value: [], type: 'select', model: 'status'}})
@@ -329,7 +332,7 @@ const getTypes = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Types')
+    appStore.showSnack('ERROR', 'Error Retrieving Types')
 
     appStore.loading = false
   }
@@ -342,7 +345,7 @@ const getStatuses = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Status\'')
+    appStore.showSnack('ERROR', 'Error Retrieving Status\'')
 
     appStore.loading = false
   }
@@ -356,7 +359,7 @@ const fetchIncentives = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     dataLoading.value = false
     appStore.loading = false
@@ -371,7 +374,7 @@ const fetchStates = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving States')
+    appStore.showSnack('ERROR', 'Error Retrieving States')
 
     appStore.loading = false
   }
@@ -403,13 +406,13 @@ const confirmDeleteIncentive = async() => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/featDb/incentive/${incentiveToDelete.value.id}`, 'blueraven')
-    snackbar('SUCCESS', 'Incentive deleted')
+    appStore.showSnack('SUCCESS', 'Incentive deleted')
 
     await fetchIncentives().then(() => fetchStates())
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error deleting Incentive')
+    appStore.showSnack('ERROR', 'Error deleting Incentive')
 
     appStore.loading = false
   }
@@ -454,24 +457,24 @@ const saveIncentive = async() => {
   if (addMode.value) {
     try {
       const {status} = await postRequest('/featDb/incentive', editedItem.value, 'blueraven')
-      snackbar('SUCCESS', 'Incentive created')
+      appStore.showSnack('SUCCESS', 'Incentive created')
 
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error creating Incentive')
+      appStore.showSnack('ERROR', 'Error creating Incentive')
 
       appStore.loading = false
     }
   } else {
     try {
       const {status} = await putRequest(`/featDb/incentive/simpleUpdate`, editedItem.value, 'blueraven')
-      snackbar('SUCCESS', 'Incentive updated')
+      appStore.showSnack('SUCCESS', 'Incentive updated')
 
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error updating Incentive')
+      appStore.showSnack('ERROR', 'Error updating Incentive')
 
       appStore.loading = false
     }

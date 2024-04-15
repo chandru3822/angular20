@@ -19,13 +19,12 @@ import {handleHidingGlobalLoader, getRequest, } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useRoute} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const bracketCount = ref(0)
 const brackets = ref([])
@@ -85,7 +84,7 @@ const getBrackets = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Brackets')
+    appStore.showSnack('ERROR', 'Error Loading Brackets')
 
     appStore.loading = false
   }

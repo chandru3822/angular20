@@ -220,13 +220,12 @@ import {mapStores} from 'pinia'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const userStore = useUserStore()
+ const userStore = useUserStore()
 const route = useRoute()
 
 const scheduleToUsers = ref([])
@@ -308,7 +307,7 @@ const getCompanyTimezones = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Timezones')
+    appStore.showSnack('ERROR', 'Error Retrieving Timezones')
     appStore.loading = false
   }
 }
@@ -339,7 +338,7 @@ const getScheduleToUsers = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -361,7 +360,7 @@ const saveAllocationChanges = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Allocation Changes')
+    appStore.showSnack('ERROR', 'Error Saving Allocation Changes')
     appStore.loading = false
   }
 }
@@ -378,7 +377,7 @@ const deleteUserFromRoundRobin = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Removing User')
+    appStore.showSnack('ERROR', 'Error Removing User')
     appStore.loading = false
   }
 }
@@ -402,7 +401,7 @@ const addUserToRoundRobin = async (selected) => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding User')
+    appStore.showSnack('ERROR', 'Error Adding User')
     appStore.loading = false
   }
 }
@@ -415,7 +414,7 @@ const getUsers = async () => {
       usersLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Users')
+      appStore.showSnack('ERROR', 'Error Loading Users')
     }
   }
 }
@@ -428,7 +427,7 @@ const getRoundRobinDetails = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -438,10 +437,10 @@ const saveUserTimezone = async (user) => {
     const {data, status} = await putRequest(`/roundRobin/user/${user.roundRobinUserId}`, user)
     user.timezone = data.timezone
     user.edit = false
-    snackbar('SUCCESS', 'User Updated')
+    appStore.showSnack('SUCCESS', 'User Updated')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating User')
+    appStore.showSnack('ERROR', 'Error Updating User')
     appStore.loading = false
   }
 }

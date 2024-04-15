@@ -64,11 +64,11 @@ import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar}
 import {getCurrentInstance, onMounted, ref, toRefs, computed, watch} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const store = vueInstance.$store
 const userStore = useUserStore()
 const route = useRoute()
@@ -118,7 +118,7 @@ const loadSecondary = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Features')
+    appStore.showSnack('ERROR', 'Error Retrieving Features')
 
     appStore.loading = false
   }
@@ -242,7 +242,7 @@ const getFeatures = async () => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Features')
+      appStore.showSnack('ERROR', 'Error Retrieving Features')
 
       appStore.loading = false
     }

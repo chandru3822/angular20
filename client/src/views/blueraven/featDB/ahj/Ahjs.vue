@@ -171,7 +171,7 @@ import {FEAT_DB_TABS, FILTER_DEFAULTS} from "@/views/blueraven/featDB/FeatDbCons
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -179,7 +179,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const dataLoading = ref(true)
 const tabs = ref(FEAT_DB_TABS)
@@ -263,7 +263,7 @@ const fetchAhjs = async ()  => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     dataLoading.value = false
     appStore.loading = false
   }
@@ -276,7 +276,7 @@ const getActiveMetroAreas = async ()  => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -308,21 +308,21 @@ const saveAhj = async ()  => {
   if (!editedItem.value.id) {
     try {
       const {status} = await postRequest('/featDb/ahj', editedItem.value, 'blueraven')
-      snackbar('SUCCESS', 'AHJ created')
+      appStore.showSnack('SUCCESS', 'AHJ created')
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error creating AHJ')
+      appStore.showSnack('ERROR', 'Error creating AHJ')
       appStore.loading = false
     }
   } else {
     try {
       const {status} = await putRequest(`/featDb/ahj/${editedItem.value.id}`, editedItem.value, 'blueraven')
-      snackbar('SUCCESS', 'AHJ updated')
+      appStore.showSnack('SUCCESS', 'AHJ updated')
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error updating AHJ')
+      appStore.showSnack('ERROR', 'Error updating AHJ')
       appStore.loading = false
     }
   }
@@ -340,10 +340,10 @@ const deleteAhj = async ()  => {
     close()
     initFilters()
     await fetchAhjs().then(() => fetchStates())
-    snackbar('SUCCESS', 'AHJ deleted')
+    appStore.showSnack('SUCCESS', 'AHJ deleted')
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error deleting AHJ')
+    appStore.showSnack('ERROR', 'Error deleting AHJ')
     appStore.loading = false
   }
   ahjToDelete.value = null
@@ -356,7 +356,7 @@ const fetchStates = async ()  => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving States')
+    appStore.showSnack('ERROR', 'Error Retrieving States')
     appStore.loading = false
   }
 }

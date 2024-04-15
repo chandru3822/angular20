@@ -67,7 +67,7 @@ import {getActiveAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedTo
 import { getCurrentInstance, computed, ref, toRefs, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -75,7 +75,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 
 const props = defineProps({
@@ -146,7 +146,7 @@ const getSteps = async () => {
       })
     } catch (e) {
       logError(e)
-      snackbar('ERROR', 'Error fetching process steps')
+      appStore.showSnack('ERROR', 'Error fetching process steps')
 
     } finally {
       fetchingSteps.value = false
@@ -166,7 +166,7 @@ const getActiveStatusesAssignedToStep = async() => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching process step statuses')
+    appStore.showSnack('ERROR', 'Error fetching process step statuses')
 
   }
 }
@@ -184,7 +184,7 @@ const getCancelledStatuses = async () => {
     }
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching process step statuses')
+    appStore.showSnack('ERROR', 'Error fetching process step statuses')
 
   } finally {
     fetchingSteps.value = false
@@ -209,7 +209,7 @@ const addStep = async () => {
     router.push(`/project/${projectId.value}/processStep/${data}`)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error adding new process step')
+    appStore.showSnack('ERROR', 'Error adding new process step')
 
     appStore.loading = false
   }

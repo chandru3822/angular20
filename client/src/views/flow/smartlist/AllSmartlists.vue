@@ -148,6 +148,7 @@ import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
 import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 import constants from '@/helpers/constants'
 import { useUserStore } from '@/stores/UserStore.js'
+import {useRouter} from "vue-router/composables"
 
 const footerProps = ref({
   'items-per-page-options': [25, 50, 100],
@@ -167,11 +168,9 @@ const headers = ref([
 
 const search = ref('')
 const isLoading = ref(false)
-
-const vueInstance = getCurrentInstance().proxy
 const userStore = useUserStore()
 
-const router = vueInstance.$router
+const router = useRouter()
 const userCanAdd = userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
 const userCanEdit = userStore.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')
 const userCanDelete = userStore.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')
@@ -211,7 +210,7 @@ const getMetrics = async (smartlistId) => {
     metrics.value = data
   } catch (e) {
     logError(e)
-    vueInstance.$snackbar('ERROR', 'Unable to fetch smartlist metrics')
+    ('ERROR', 'Unable to fetch smartlist metrics')
   }
 }
 

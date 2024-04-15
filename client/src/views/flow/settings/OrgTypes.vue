@@ -146,9 +146,9 @@
 
   import {computed, getCurrentInstance, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStore.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const store = vueInstance.$store
   const userStore = useUserStore()
   const appStore = useAppStore()
@@ -173,7 +173,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Org Types')
+      appStore.showSnack('ERROR', 'Error Retrieving Org Types')
       appStore.loading = false
     }
   }
@@ -185,7 +185,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Org Levels')
+      appStore.showSnack('ERROR', 'Error Loading Org Levels')
       appStore.loading = false
     }
   }
@@ -198,17 +198,17 @@
         orgTypes.value.push(data)
         addType.value = false
         newOrgType.value = {}
-        snackbar('SUCCESS', 'Org Type Added')
+        appStore.showSnack('SUCCESS', 'Org Type Added')
       } else {
         ot.level = data.level
         ot.orgParentType = data.orgParentType
         expanded.value = []
-        snackbar('SUCCESS', 'Org Type Updated')
+        appStore.showSnack('SUCCESS', 'Org Type Updated')
       }
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', isNew ? 'Error Adding Org Type' : 'Error Updating Org Type')
+      appStore.showSnack('ERROR', isNew ? 'Error Adding Org Type' : 'Error Updating Org Type')
       appStore.loading = false
     }
   }

@@ -129,11 +129,11 @@
   import constants from '@/helpers/constants'
   import ConfirmationDialog from '@/components/ConfirmationDialog'
   import { useUserStore } from '@/stores/UserStore.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   import {useRouter} from "vue-router/composables"
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const store = vueInstance.$store
   const userStore = useUserStore()
   const appStore = useAppStore()
@@ -183,7 +183,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Attachment Types')
+      appStore.showSnack('ERROR', 'Error Retrieving Attachment Types')
       appStore.loading = false
     }
   }
@@ -193,7 +193,7 @@
     try {
       const {status} = await deleteRequest(`/attachmentType/delete/${item.id}`)
       item.archived = true
-      snackbar('SUCCESS', 'Successfully Deleted Attachment Type')
+      appStore.showSnack('SUCCESS', 'Successfully Deleted Attachment Type')
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
@@ -202,7 +202,7 @@
         deleteError.value = true
         cannotDeleteReasons.value = e.data
       }
-      snackbar('ERROR', 'Error Deleting Attachment Type')
+      appStore.showSnack('ERROR', 'Error Deleting Attachment Type')
       appStore.loading = false
     }
     closeDeleteDialog()
@@ -214,7 +214,7 @@
       newType.value.companyId = companyId.value
       const {data, status} = await postRequest(`/attachmentType/type`, newType.value, null, [])
 
-      snackbar('SUCCESS', 'Action Type Added')
+      appStore.showSnack('SUCCESS', 'Action Type Added')
 
       // add it to the records already on the screen
       attachmentTypes.value.push(data)
@@ -227,7 +227,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Adding Attachment Type')
+      appStore.showSnack('ERROR', 'Error Adding Attachment Type')
       appStore.loading = false
     }
   }

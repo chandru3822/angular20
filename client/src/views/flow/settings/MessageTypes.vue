@@ -144,10 +144,9 @@
 
   import {computed, getCurrentInstance, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStore.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
-  const vuetify = vueInstance.$vuetify
+     const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
   const appStore = useAppStore()
@@ -221,10 +220,10 @@
         messageTypes.value.push(data)
         addNew.value = false
         newType.value = {}
-        snackbar('SUCCESS', 'Message Type Added')
+        appStore.showSnack('SUCCESS', 'Message Type Added')
       } else {
         expanded.value = []
-        snackbar('SUCCESS', 'Message Type Updated')
+        appStore.showSnack('SUCCESS', 'Message Type Updated')
       }
 
       tempItemContent.value = ''
@@ -232,7 +231,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', isNew ? 'Error Adding Message Type' : 'Error Updating Message Type')
+      appStore.showSnack('ERROR', isNew ? 'Error Adding Message Type' : 'Error Updating Message Type')
       appStore.loading = false
     }
   }
@@ -244,7 +243,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Company Types')
+      appStore.showSnack('ERROR', 'Error Loading Company Types')
       appStore.loading = false
     }
   }
@@ -254,11 +253,11 @@
     try {
       const {status} = await deleteRequest(`/messageType/${messageType.id}`, 'blueraven')
       messageType.archived = true
-      snackbar('SUCCESS', 'Message Type Deleted')
+      appStore.showSnack('SUCCESS', 'Message Type Deleted')
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting Message Type')
+      appStore.showSnack('ERROR', 'Error Deleting Message Type')
       appStore.loading = false
     }
     typeToDelete.value = null

@@ -84,12 +84,11 @@
 
   import {getCurrentInstance, onMounted, ref, computed} from 'vue'
   import { useUserStore } from '@/stores/UserStore.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
-  const store = vueInstance.$store
+     const store = vueInstance.$store
   const userStore = useUserStore()
 
   const defaultAppointmentLength = ref(null)
@@ -168,7 +167,7 @@
       orgsLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Organizations')
+      appStore.showSnack('ERROR', 'Error Loading Organizations')
 
     }
   }
@@ -184,7 +183,7 @@
       usersLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Users')
+      appStore.showSnack('ERROR', 'Error Loading Users')
       appStore.loading = false
     }
   }
@@ -196,11 +195,11 @@
         defaultAppointmentLength: defaultAppointmentLength.value
       }
       await postRequest(`/availability/appointments/length`, params)
-      snackbar('SUCCESS', 'Appointment Length Saved')
+      appStore.showSnack('SUCCESS', 'Appointment Length Saved')
 
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Appointment Length')
+      appStore.showSnack('ERROR', 'Error Saving Appointment Length')
 
     }
   }
@@ -220,7 +219,7 @@
         valueChanged.value = false
         defaultAppointmentLength.value = null
         // appStore.loading = false
-        snackbar('ERROR', 'Error Loading Default Appointment Length')
+        appStore.showSnack('ERROR', 'Error Loading Default Appointment Length')
 
       }
     }

@@ -232,7 +232,7 @@ import ConfirmationDialog from '@/components/ConfirmationDialog'
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -240,7 +240,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const newPositionForm = ref(null)
 const newPosition = ref({})
@@ -299,7 +299,7 @@ const getPositions = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Positions')
+    appStore.showSnack('ERROR', 'Error Retrieving Positions')
 
     appStore.loading = false
   }
@@ -329,7 +329,7 @@ const getFilters = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Org Levels')
+    appStore.showSnack('ERROR', 'Error Retrieving Org Levels')
 
     appStore.loading = false
   }
@@ -369,7 +369,7 @@ const getUserPositions = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     appStore.loading = false
   }
@@ -431,7 +431,7 @@ const savePosition = async (item) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Position')
+    appStore.showSnack('ERROR', 'Error Saving Position')
 
     appStore.loading = false
   }
@@ -455,7 +455,7 @@ const deleteUserPosition = async() => {
     item.archived = true
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error deleting user position')
+    appStore.showSnack('ERROR', 'Error deleting user position')
 
   }
   positionToDelete.value = null

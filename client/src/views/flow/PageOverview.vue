@@ -171,15 +171,14 @@ import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 import {getCurrentInstance, onMounted, ref, defineProps} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useProjectStore } from '@/stores/ProjectStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
 const projectStore = useProjectStore()
-const router = vueInstance.$router
-const snackbar = vueInstance.$snackbar
+
 const filters = vueInstance.$filters
 
 const showNewMessageDialog = ref(false)
@@ -217,7 +216,7 @@ const copyToClipBoard = (textValue, label) => {
       label = 'text'
     }
     navigator.clipboard.writeText(textValue);
-    snackbar('SUCCESS', `Copied ${label} to clipboard`)
+    appStore.showSnack('SUCCESS', `Copied ${label} to clipboard`)
   }
 }
 const selectValue = () => {
@@ -228,9 +227,9 @@ const openMenu = () => {
 }
 const openSendMessageDialogue = (owner) => {
   if (!owner.hasSmsAccess) {
-    snackbar('ERROR', 'Message cannot be sent to a user that does not have SMS access')
+    appStore.showSnack('ERROR', 'Message cannot be sent to a user that does not have SMS access')
   } else if (!owner.hasAccess) {
-    snackbar('ERROR', 'Message cannot be sent to a user that is no longer active')
+    appStore.showSnack('ERROR', 'Message cannot be sent to a user that is no longer active')
   } else {
     showNewMessageDialog.value = true
   }
@@ -242,7 +241,7 @@ const fetchTeamsForUser = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching SMS Teams')
+    appStore.showSnack('ERROR', 'Error fetching SMS Teams')
   }
 }
 </script>

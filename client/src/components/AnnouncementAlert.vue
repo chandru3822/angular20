@@ -47,7 +47,7 @@ import AnnouncementModal from "@/components/AnnouncementModal.vue";
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -55,7 +55,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const announcementAlert = ref({})
 const showModal = ref(false)
@@ -111,7 +110,7 @@ const markAnnouncement = async(item, read, seen, alerted) => {
       await postRequestWithRequestParams(`/announcements/${item.id}/mark`, {}, params)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Marking Announcement As Seen')
+      appStore.showSnack('ERROR', 'Error Marking Announcement As Seen')
 
     }
   }

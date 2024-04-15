@@ -114,15 +114,14 @@ import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables";
 import { useFileStore } from '@/stores/FileStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const fileStore = useFileStore()
+ const fileStore = useFileStore()
 
 // const colorOptions = ref({
 //   canvasHeight: 75,
@@ -164,19 +163,19 @@ const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) =>
       displayName: file.name.substr(0, file.name.lastIndexOf('.')),
       callback: async (img, error) => {
         if (error?.error) {
-          snackbar('ERROR', error.errorMsg)
+          appStore.showSnack('ERROR', error.errorMsg)
           appStore.loading = false
         } else {
           item.icon = img
 
-          snackbar('SUCCESS', 'Image Uploaded')
+          appStore.showSnack('SUCCESS', 'Image Uploaded')
           appStore.loading = false
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Uploading File')
+    appStore.showSnack('ERROR', 'Error Uploading File')
     appStore.loading = false
   }
 }
@@ -187,13 +186,13 @@ const deleteAttachment = async (item) => {
       id: item.icon.id,
       callback: async () => {
         item.icon = {}
-        snackbar('SUCCESS', 'Image Deleted')
+        appStore.showSnack('SUCCESS', 'Image Deleted')
         appStore.loading = false
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting File')
+    appStore.showSnack('ERROR', 'Error Deleting File')
     appStore.loading = false
   }
 }
@@ -206,7 +205,7 @@ const getStatusInfo = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -218,7 +217,7 @@ const getTheseProjectStatusTypes = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -226,11 +225,11 @@ const saveType = async (type) => {
   appStore.loading = true
   try {
     const {data, status} = await putRequest(`/projectStatus/company`, type)
-    snackbar('SUCCESS', 'Project Status Saved')
+    appStore.showSnack('SUCCESS', 'Project Status Saved')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Project Status')
+    appStore.showSnack('ERROR', 'Error Saving Project Status')
     appStore.loading = false
   }
 }
@@ -239,11 +238,11 @@ const setAsInitial = async (item) => {
   try {
     const {status} = await putRequest(`/projectStatus/company/initial/${item.id}`,)
     item.isDefault = true
-    snackbar('SUCCESS', 'Status Updated')
+    appStore.showSnack('SUCCESS', 'Status Updated')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Status')
+    appStore.showSnack('ERROR', 'Error Updating Status')
     appStore.loading = false
   }
 }

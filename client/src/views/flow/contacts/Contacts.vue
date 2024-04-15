@@ -126,7 +126,7 @@ import axios from 'axios'
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -134,9 +134,10 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 
+const pageableTable = ref(null)
 const initialLoad = ref(true)
 const delay = ref(500)
 const menuOpen = ref(false)
@@ -181,7 +182,7 @@ watch(
 )
 watch(page, async() => {
   //this will also scroll when the rows per page changes IF not on the first page, which is correct behavior since it is resetting the search page back to 0
-  let table = vueInstance.$refs['pageable-table'];
+  let table = pageableTable.value;
   let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
   vuetify.goTo(table, {container: wrapper}); // to header
 })
@@ -232,7 +233,7 @@ const getContacts = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Contacts')
+    appStore.showSnack('ERROR', 'Error Retrieving Contacts')
 
     appStore.loading = false
   }

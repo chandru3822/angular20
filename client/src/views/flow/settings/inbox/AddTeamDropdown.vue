@@ -53,11 +53,11 @@ import { useUserStore } from '@/stores/UserStore.js'
 
 import {ref, onMounted, getCurrentInstance, computed, defineProps} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const route = useRoute()
 const router = useRouter()
 const vuetify = vueInstance.$vuetify
@@ -112,7 +112,7 @@ const getTeams = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.loading = false
-    snackbar('ERROR', 'Error retrieving teams')
+    appStore.showSnack('ERROR', 'Error retrieving teams')
 
   }
 }
@@ -132,13 +132,13 @@ const addTeamDetails = async () => {
 
     const snackbarText = (!ownersToSave.value || ownersToSave.value.length === 0 ) ? 'Team added':
         (isTeamAlreadyAdded(teamToSave.value) ? 'Conversation assigned' : `Conversation assigned and ${teamToSave.value.teamName} team added`)
-    snackbar('SUCCESS', snackbarText)
+    appStore.showSnack('SUCCESS', snackbarText)
     teamToSave.value = '';
     selectableUsers.value = []
     ownersToSave.value = []
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error adding team')
+    appStore.showSnack('ERROR', 'Error adding team')
   } finally {
     teamSaving.value = false
   }

@@ -152,13 +152,12 @@ import {handleHidingGlobalLoader, getRequest, postRequest, } from '@/helpers/hel
 import constants from '@/helpers/constants'
 import moment from 'moment'
 import {saveAs} from 'file-saver'
-import {mapState} from "vuex";
 import debounce from "lodash.debounce";
 
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -166,7 +165,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const FILTER_TYPE = {
   TEXT: 'text',
@@ -238,7 +236,7 @@ const getAllBatches = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Batches')
+    appStore.showSnack('ERROR', 'Error Loading Batches')
 
     appStore.loading = false
   }
@@ -254,11 +252,11 @@ const voidBatch = async () => {
     voidedBatch.value = true
     showVoidDialog.value = false
     handleHidingGlobalLoader( status)
-    snackbar('SUCCESS', 'Batch Voided')
+    appStore.showSnack('SUCCESS', 'Batch Voided')
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Voiding Batch')
+    appStore.showSnack('ERROR', 'Error Voiding Batch')
 
     appStore.loading = false
   }
@@ -275,7 +273,7 @@ const getBatchDetails = async (batchId) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Batch Details')
+    appStore.showSnack('ERROR', 'Error Loading Batch Details')
 
     appStore.loading = false
   }
@@ -295,7 +293,7 @@ const exportPayments = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Exporting Batch')
+    appStore.showSnack('ERROR', 'Error Exporting Batch')
 
     appStore.loading = false
   }
@@ -311,7 +309,7 @@ const exportChase = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Exporting Chase CSV')
+    appStore.showSnack('ERROR', 'Error Exporting Chase CSV')
 
     appStore.loading = false
   }

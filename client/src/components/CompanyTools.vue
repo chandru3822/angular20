@@ -93,7 +93,6 @@
 
 <script setup>
 import constants from '@/helpers/constants'
-import Vue2Filters from 'vue2-filters'
 import SpinnerInline from '@/components/SpinnerInline'
 import { getRequest,  } from '@/helpers/helpers'
 
@@ -101,7 +100,7 @@ import { getRequest,  } from '@/helpers/helpers'
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -109,7 +108,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   companyTools: Array,
@@ -145,7 +143,7 @@ const loadBrsTournaments = async() => {
     tourneysLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Tournaments')
+    appStore.showSnack('ERROR', 'Error Loading Tournaments')
     tourneysLoading.value = false
   }
 }

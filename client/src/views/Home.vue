@@ -34,7 +34,7 @@ import {handleHidingGlobalLoader, getRequest, putRequest} from "@/helpers/helper
 import {computed, getCurrentInstance, onMounted, ref} from 'vue'
 
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 
 const vueInstance = getCurrentInstance().proxy
@@ -42,7 +42,7 @@ const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
 const fileStore = useFileStore()
-const snackbar = vueInstance.$snackbar
+
 
 const logoLoaded = ref(false)
 const homePages = ref([])
@@ -71,11 +71,11 @@ const saveUserHomePage = async () => {
       homePageCompanyFeatureId: user.value.homePageCompanyFeatureId
     }
     const {status} = await putRequest(`/user/homePage`, tempUsr)
-    snackbar('SUCCESS', 'Default Home Page Saved')
+    appStore.showSnack('SUCCESS', 'Default Home Page Saved')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Default Home Page')
+    appStore.showSnack('ERROR', 'Error Saving Default Home Page')
   }
 }
 const getHomePages = async () => {
@@ -90,7 +90,7 @@ const getHomePages = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Home Pages')
+    appStore.showSnack('ERROR', 'Error Retrieving Home Pages')
     appStore.loading = false
   }
 }
@@ -108,7 +108,7 @@ const loadHomePageLogo = async () => {
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Background Image')
+    appStore.showSnack('ERROR', 'Error Loading Background Image')
     appStore.loading = false
   }
 }

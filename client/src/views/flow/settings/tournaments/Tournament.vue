@@ -30,13 +30,12 @@ import {
 } from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useRoute} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const route = useRoute()
+ const route = useRoute()
 
 const tournament = ref({})
 const tournamentId = ref(parseInt(route.params.id))
@@ -90,7 +89,7 @@ const getTournament = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Tournament')
+    appStore.showSnack('ERROR', 'Error Loading Tournament')
     appStore.loading = false
   }
 }

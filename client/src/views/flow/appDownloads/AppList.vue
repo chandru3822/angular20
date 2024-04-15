@@ -199,7 +199,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -207,7 +207,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   isIos: Boolean
@@ -324,7 +323,7 @@ const getApps = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Apps')
+    appStore.showSnack('ERROR', 'Error Retrieving Apps')
 
     appStore.loading = false
   }
@@ -337,7 +336,7 @@ const saveMinVersion = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Min Build Number')
+    appStore.showSnack('ERROR', 'Error Saving Min Build Number')
 
     appStore.loading = false
   }
@@ -350,7 +349,7 @@ const getAvailableBuildNumbers = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Build Numbers')
+    appStore.showSnack('ERROR', 'Error Retrieving Build Numbers')
 
     appStore.loading = false
   }
@@ -363,7 +362,7 @@ const getMinVersion = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Min Build Number')
+    appStore.showSnack('ERROR', 'Error Retrieving Min Build Number')
 
     appStore.loading = false
   }
@@ -377,7 +376,7 @@ const deleteApp = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Apps')
+    appStore.showSnack('ERROR', 'Error Deleting Apps')
 
     appStore.loading = false
   }
@@ -393,7 +392,7 @@ const showHideApp = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating App')
+    appStore.showSnack('ERROR', 'Error Updating App')
 
     appStore.loading = false
   }
@@ -410,7 +409,7 @@ const toggleBetaForApp = async() => {
     betaUpdatedAlertFailed.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating App')
+    appStore.showSnack('ERROR', 'Error Updating App')
 
     appStore.loading = false
     betaUpdatedAlertSuccess.value = false

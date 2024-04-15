@@ -169,7 +169,7 @@ import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -177,7 +177,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const itemType = ref('permit')
 const saveDialog = ref(false)
@@ -262,7 +262,7 @@ const validateForm = () => {
   if (ahjPermitForm.value.validate()) {
     saveDialog.value = true
   } else {
-    snackbar('ERROR', 'Missing Required Fields')
+    appStore.showSnack('ERROR', 'Missing Required Fields')
 
   }
 }
@@ -284,7 +284,7 @@ const getAhjPermit = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving AHJ Permit')
+    appStore.showSnack('ERROR', 'Error retrieving AHJ Permit')
     appStore.loading = false
   }
 }
@@ -303,7 +303,7 @@ const getCustomFieldGroupAssignmentsForScreen = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving custom fields')
+    appStore.showSnack('ERROR', 'Error retrieving custom fields')
     appStore.loading = false
   }
 }
@@ -337,7 +337,7 @@ const getSubmissionDocuments = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving documents')
+    appStore.showSnack('ERROR', 'Error retrieving documents')
     appStore.loading = false
   }
 }
@@ -350,7 +350,7 @@ const getApprovalDocuments = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving documents')
+    appStore.showSnack('ERROR', 'Error retrieving documents')
     appStore.loading = false
   }
 }
@@ -375,7 +375,7 @@ const updateAhjPermit = async() => {
         })
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'An error occurred when preparing to update all permits in ' + ahjPermit.value.stateName)
+        appStore.showSnack('ERROR', 'An error occurred when preparing to update all permits in ' + ahjPermit.value.stateName)
       }
     }
 
@@ -391,7 +391,7 @@ const updateAhjPermit = async() => {
         })
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'An error occurred when preparing to update all permits in ' + ahjPermit.value.stateName)
+        appStore.showSnack('ERROR', 'An error occurred when preparing to update all permits in ' + ahjPermit.value.stateName)
       }
     }
 
@@ -406,13 +406,13 @@ const updateAhjPermit = async() => {
     dataWasChanged.value = false
     resetCustomFieldValueWasChangedFlags()
     let successMessage = updateAllInState ? 'All permits in ' + ahjPermit.value.stateName + ' have been updated successfully' : updateAllInMetro ? 'All permits in ' + ahjPermit.value.metroArea + ' have been updated successfully': 'Permit updated successfully'
-    snackbar('SUCCESS', successMessage)
+    appStore.showSnack('SUCCESS', successMessage)
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let errorMessage = updateAllInState ? 'An error occurred when attempting to update all permits in ' + ahjPermit.value.stateName : updateAllInMetro ? 'An error occurred when attempting to update all permits in ' + ahjPermit.value.metroArea : 'Failed to update permit'
-    snackbar('ERROR', errorMessage)
+    appStore.showSnack('ERROR', errorMessage)
     appStore.loading = false
   }
 

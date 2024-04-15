@@ -8,10 +8,8 @@
 *
 */
 
-import constants from "@/helpers/constants.js";
 import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
-import {getSnackbar, postRequest, postRequestWithRequestParams} from "@/helpers/helpers.js";
-import {AppMutations} from "@/stores/AppStore.js";
+import {postRequest, postRequestWithRequestParams} from "@/helpers/helpers.js";
 import axios from "axios";
 
 import {getEventTypes} from "@/services/scheduleService.js";
@@ -21,8 +19,8 @@ import ProjectSearchResultCard from "@/views/flow/schedule/components/ProjectSea
 import SpinnerInline from "@/components/SpinnerInline.vue";
 
 import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 const props = defineProps({
@@ -44,7 +42,6 @@ const userStore = useUserStore()
 const scheduleStore = useScheduleStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const state =ref({}),
     eventStatusTypes= ref([]),
@@ -95,7 +92,7 @@ const fetchEventTypes = async() => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Event Types')
+    appStore.showSnack('ERROR', 'Error Retrieving Event Types')
     appStore.loading = false
   }
 }
@@ -107,7 +104,7 @@ const fetchEventStatusTypes = async() => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -124,7 +121,7 @@ const fetchStatusTypes = async() => {
     processStepStatusTypes.value = data?.filter(d => d.id !== 3)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Status Types')
+    appStore.showSnack('ERROR', 'Error Retrieving Status Types')
     appStore.loading = false
   }
 }
@@ -140,7 +137,7 @@ const searchForProjects = async(search) => {
     searchProjectsLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Searching Projects')
+    appStore.showSnack('ERROR', 'Error Searching Projects')
   }
 }
 const goGoGadgetMapSearch = () =>{
@@ -193,7 +190,7 @@ const getProjects = async(resetQuery) => {
       // initialLoad.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Projects')
+      appStore.showSnack('ERROR', 'Error Retrieving Projects')
       listLoading.value = false
     }
   } else {
@@ -235,7 +232,7 @@ const getProjectsSearchedFor = async(search) => {
     listLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Project Details')
+    appStore.showSnack('ERROR', 'Error Loading Project Details')
     listLoading.value = false
   }
 }

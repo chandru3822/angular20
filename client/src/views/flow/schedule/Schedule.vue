@@ -59,8 +59,7 @@
 </template>
 
 <script setup>
-import {AppMutations} from '@/stores/AppStore'
-import { postRequest, getSnackbar } from '@/helpers/helpers'
+import { postRequest } from '@/helpers/helpers'
 import {getActiveStatesByHierarchy} from '@/services/stateService'
 import Map from './components/Map'
 import Calendar from './components/Calendar'
@@ -76,7 +75,7 @@ import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter, onBeforeRouteLeave} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
 const appStore = useAppStore()
@@ -86,11 +85,9 @@ const userStore = useUserStore()
 const scheduleStore = useScheduleStore()
 
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 const vuetify = vueInstance.$vuetify
 const calendarRef = ref(null);
 
-const snackbar = ref({})
 const saveInvalid = ref(true)
 const startTime = ref(null)
 const endTime = ref(null)
@@ -208,13 +205,11 @@ const dateCallback =  (start, end) => {
 
 const scheduleResourceToCurrentProject = (resource)=> {
   calendarResourceToSchedule.value = resource
-  let snackbar = createSnackbar('Resource assigned')
-  store.commit(AppMutations.SHOW_SNACK, snackbar)
+  appStore.snack = {...createSnackbar('Resource assigned'), show: true}
 }
 const unscheduleResourceFromCurrentProject = ()=> {
   calendarResourceToSchedule.value = {}
-  let snackbar = createSnackbar('Resource unassigned')
-  store.commit(AppMutations.SHOW_SNACK, snackbar)
+  appStore.snack = {...createSnackbar('Resource unassigned'), show: true}
 }
 
 //this snackbar is different from others so we built it here
@@ -254,8 +249,7 @@ const getSingleProject = async(projectId, eventId, eventStatusTypeId, processSte
     selectedProject.value.resource = { id: selectedProject.value.resourceId, name: selectedProject.value.resourceName }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Loading Project Details')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
+    appStore.showSnack('ERROR', 'Error Loading Project Details')
   }
 }
 
@@ -265,9 +259,8 @@ const fetchActiveStatesByHierarchy = async() =>  {
     states.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving States')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-    store.commit(AppMutations.SET_LOADING, false)
+	appStore.showSnack('ERROR', 'Error Retrieving States')
+	appStore.loading = false
   }
 }
 const fetchEventTypes = async() =>  {
@@ -282,22 +275,20 @@ const fetchEventTypes = async() =>  {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Event Types')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.showSnack('ERROR', 'Error Retrieving Event Types')
+    appStore.loading = false
   }
 }
 const fetchEventStatusTypes = async() => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {data} = await getEventStatusTypes()
     eventStatusTypes.value = data
-    store.commit(AppMutations.SET_LOADING, false)
+	appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Data')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-    store.commit(AppMutations.SET_LOADING, false)
+	appStore.showSnack('ERROR', 'Error Retrieving Data')
+    appStore.loading = false
   }
 }
 const fetchStatusTypes = async() =>  {
@@ -313,9 +304,8 @@ const fetchStatusTypes = async() =>  {
     processStepStatusTypes.value = data?.filter(d => d.id !== 3)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar.value = getSnackbar('ERROR', 'Error Retrieving Status Types')
-    store.commit(AppMutations.SHOW_SNACK, snackbar.value)
-    store.commit(AppMutations.SET_LOADING, false)
+	appStore.showSnack('ERROR', 'Error Retrieving Status Types')
+    appStore.loading = false
   }
 }
 

@@ -40,12 +40,13 @@ import axios from 'axios'
 import {getCurrentInstance, onMounted, ref} from 'vue'
 
 import { useUserStore } from '@/stores/UserStore.js'
-import {useRouter} from "vue-router/composables"
+import {useRouter, useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = useRouter()
-const snackbar = vueInstance.$snackbar
+const route = useRoute()
+
 const userStore = useUserStore()
 
 const validForm = ref(false)
@@ -97,8 +98,8 @@ onMounted(() => {
 
       //this code handles redirecting them back to the page they were trying to get to after they login
       let rt = { name: 'home'}
-      if(vueInstance.$route.query?.redirect) {
-        rt = { path: vueInstance.$route.query?.redirect}
+      if(route.query?.redirect) {
+        rt = { path: route.query?.redirect}
       }
       await router.push(rt)
     }

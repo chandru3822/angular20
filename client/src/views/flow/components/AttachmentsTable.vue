@@ -129,7 +129,7 @@ import { useProjectStore } from '@/stores/ProjectStore.js'
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -138,8 +138,7 @@ const userStore = useUserStore()
 const projectStore = useProjectStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-// const rootInstance = getCurrentInstance().appContext.app;
+ // const rootInstance = getCurrentInstance().appContext.app;
 
 const props = defineProps({
   attachments: Array,
@@ -232,11 +231,11 @@ const deleteTheAttachment = async () => {
     //only emit a change event if something was linked, only the actively showing linked section will update
     vueInstance.$emit('attachmentDeleted', id)
 
-    snackbar('SUCCESS', 'Document Deleted')
+    appStore.showSnack('SUCCESS', 'Document Deleted')
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Document')
+    appStore.showSnack('ERROR', 'Error Deleting Document')
 
     appStore.loading = false
   } finally {
@@ -278,11 +277,11 @@ const linkAttachment = async(attachment, doLink) => {
     }
 
     performingLink.value = false
-    snackbar('SUCCESS', 'Document Linked')
+    appStore.showSnack('SUCCESS', 'Document Linked')
 
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Linking Document')
+    appStore.showSnack('ERROR', 'Error Linking Document')
 
     appStore.loading = false
   }

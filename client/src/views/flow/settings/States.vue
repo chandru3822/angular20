@@ -101,10 +101,10 @@
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
   import { useUserStore } from '@/stores/UserStore.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
@@ -163,15 +163,15 @@
         companyStates.value.push(data)
         addNew.value = false
         selectedState.value = {}
-        snackbar('SUCCESS', 'State Added')
+        appStore.showSnack('SUCCESS', 'State Added')
       } else {
         expanded.value = []
-        snackbar('SUCCESS', 'State Updated')
+        appStore.showSnack('SUCCESS', 'State Updated')
       }
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', isNew ? 'Error Adding State' : 'Error Updating State')
+      appStore.showSnack('ERROR', isNew ? 'Error Adding State' : 'Error Updating State')
       appStore.loading = false
     }
   }
@@ -183,7 +183,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Company States')
+      appStore.showSnack('ERROR', 'Error Loading Company States')
       appStore.loading = false
     }
   }
@@ -195,7 +195,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading States')
+      appStore.showSnack('ERROR', 'Error Loading States')
       appStore.loading = false
     }
   }
@@ -205,11 +205,11 @@
     try {
       const {status} = await deleteRequest(`/state/companyState/${companyState.id}`)
       companyState.archived = true
-      snackbar('SUCCESS', 'State Deleted')
+      appStore.showSnack('SUCCESS', 'State Deleted')
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting State')
+      appStore.showSnack('ERROR', 'Error Deleting State')
       appStore.loading = false
     }
     stateToDelete.value = null

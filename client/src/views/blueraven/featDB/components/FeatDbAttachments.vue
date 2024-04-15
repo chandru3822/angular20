@@ -17,7 +17,7 @@
                     :accept="acceptedFileTypes"
                     @change='uploadDocument($event.target.files, type.attachmentTypeId)'
                     style="display: none"
-                    @click.stop=""
+                    @click.native.stop=""
                     ref='fileInput'
                 >
                 <a-btn
@@ -68,7 +68,7 @@ import constants from "@/helpers/constants";
 import { getCurrentInstance, computed, ref, toRefs, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 
 
@@ -79,7 +79,6 @@ const userStore = useUserStore()
 const fileStore = useFileStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const dragTypeId = ref(null)
 const error = ref({})
@@ -129,7 +128,7 @@ const selectFile = function (typeId) {
 }
 const uploadDocument = async (files, attachmentTypeId) => {
   if (files?.length > maxFiles.value) {
-    snackbar('ERROR', `Cannot upload more than ${maxFiles.value} files at one time. Please try again and select fewer files.`)
+    appStore.showSnack('ERROR', `Cannot upload more than ${maxFiles.value} files at one time. Please try again and select fewer files.`)
   } else if (files?.length > 0) {
     appStore.loading = true
 
@@ -143,12 +142,12 @@ const uploadDocument = async (files, attachmentTypeId) => {
         deleteFirst: false,
         callback: async (document) => {
           props.attachments.push(document)
-          snackbar('SUCCESS', 'Successfully uploaded document')
+          appStore.showSnack('SUCCESS', 'Successfully uploaded document')
         }
       })
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error uploading document')
+      appStore.showSnack('ERROR', 'Error uploading document')
     }
     appStore.loading = false
   }
@@ -156,13 +155,13 @@ const uploadDocument = async (files, attachmentTypeId) => {
 const uploadCallback = async(newAttachment, error) => {
   if (error) {
     error.value = error
-    snackbar('ERROR', error.message)
+    appStore.showSnack('ERROR', error.message)
   } else {
     let tempFileName = newAttachment.filename.substr(0, newAttachment.filename.lastIndexOf('.'))
     newAttachment.editableName = tempFileName !== null && tempFileName !== '' ? tempFileName : newAttachment.filename
     //adding this "copy" so that if they edit a name then click cancel we dont update the ui with their change
     newAttachment.editableNameCopy = newAttachment.editableName
-    snackbar('SUCCESS', 'Document Uploaded')
+    appStore.showSnack('SUCCESS', 'Document Uploaded')
     props.attachments = [...props.attachments, newAttachment]
   }
   appStore.loading = false

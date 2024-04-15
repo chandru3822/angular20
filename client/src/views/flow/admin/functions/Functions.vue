@@ -121,7 +121,7 @@ import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest} from '
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import {useRouter} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
@@ -129,7 +129,7 @@ const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
 const router = useRouter()
-const snackbar = vueInstance.$snackbar
+
 
 const search = ref('')
 const addNew = ref(false)
@@ -165,7 +165,7 @@ const getFunctions = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Functions')
+    appStore.showSnack('ERROR', 'Error Loading Functions')
     appStore.loading = false
   }
 }
@@ -178,7 +178,7 @@ const getDataTypes = async () => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Data Types')
+      appStore.showSnack('ERROR', 'Error Loading Data Types')
       appStore.loading = false
     }
   }
@@ -192,7 +192,7 @@ const getFunctionTypes = async () => {
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Loading Functions')
+      appStore.showSnack('ERROR', 'Error Loading Functions')
       appStore.loading = false
     }
   }
@@ -207,7 +207,7 @@ const addFunction = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Functions')
+    appStore.showSnack('ERROR', 'Error Loading Functions')
     appStore.loading = false
   }
 }
@@ -218,11 +218,11 @@ const deleteFunction = async () => {
     const {status} = await deleteRequest(`/dbFunction/${item.id}`)
     item.archived = true
     handleHidingGlobalLoader(status)
-    snackbar('SUCCESS', 'Function Deleted')
+    appStore.showSnack('SUCCESS', 'Function Deleted')
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Functions')
+    appStore.showSnack('ERROR', 'Error Deleting Functions')
     appStore.loading = false
   }
 }

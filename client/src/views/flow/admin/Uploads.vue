@@ -50,7 +50,7 @@ import {getCurrentInstance, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 import {useRouter} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
@@ -58,7 +58,7 @@ const store = vueInstance.$store
 const userStore = useUserStore()
 const fileStore = useFileStore()
 const router = useRouter()
-const snackbar = vueInstance.$snackbar
+
 
 const error = ref({})
 const userId = ref(userStore.details.id)
@@ -79,7 +79,7 @@ const getAttachmentTypes = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -104,7 +104,7 @@ const uploadAttachment = async (files) => {
             displayName: f.name.substr(0, f.name.lastIndexOf('.')),
             deleteFirst: false,
             callback: async (document) => {
-              snackbar('SUCCESS', 'Successfully uploaded document')
+              appStore.showSnack('SUCCESS', 'Successfully uploaded document')
               count++
               if (count === numFiles) {
                 selectedAttachmentTypeId.value = null
@@ -117,7 +117,7 @@ const uploadAttachment = async (files) => {
       }
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error uploading document')
+      appStore.showSnack('ERROR', 'Error uploading document')
       appStore.loading = false
     }
   }

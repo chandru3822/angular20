@@ -39,8 +39,8 @@ import { getSnackbar, postRequestWithRequestParams } from '@/helpers/helpers'
 import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
-import { useBrsStore } from '@/stores/BrsStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
+import { useBrsStore } from '@/stores/BrsStore.js'
 
 const brsStore = useBrsStore()
 const appStore = useAppStore()
@@ -49,7 +49,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   override: Boolean,
@@ -67,7 +66,7 @@ const saveProjectToPlan = async() => {
   try {
     let url = override.value ? `/commissionManagement/overrides/plan/${planId.value}/assignToPlan` : `/commissionManagement/${planId.value}/assignToPlan`
     await postRequestWithRequestParams(url, null, { projectId: projectId.value }, 'blueraven')
-    snackbar('SUCCESS', 'Project Assigned')
+    appStore.showSnack('SUCCESS', 'Project Assigned')
 
     projectId.value = null
     dataSaving.value = false
@@ -75,7 +74,7 @@ const saveProjectToPlan = async() => {
     console.error('*** ERROR ***', e)
     dataSaving.value = false
     let msg = e?.data?.message || 'Error Assigning Project to Plan'
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
 
     appStore.loading = false
   }

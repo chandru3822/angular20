@@ -166,7 +166,7 @@ import BudgetReportTable from "@/views/blueraven/expenses/BudgetReportTable.vue"
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 
 const appStore = useAppStore()
@@ -176,7 +176,6 @@ const userStore = useUserStore()
 const fileStore = useFileStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const createNew = ref(true)
 const dataLoading = ref(true)
@@ -231,7 +230,7 @@ const submitReimbursementRequest = async() => {
     const {status} = await postRequest(`/reimbursement/request`, newReimbursement.value, 'blueraven')
     newReimbursement.value = {}
     receiptLogo.value = {}
-    snackbar('SUCCESS', 'Reimbursement Request Submitted.')
+    appStore.showSnack('SUCCESS', 'Reimbursement Request Submitted.')
 
     handleHidingGlobalLoader( status)
   } catch (e) {
@@ -240,7 +239,7 @@ const submitReimbursementRequest = async() => {
     if (e && e.status && e.status === 406) {
       msg = 'Error, Request exceeds budget. Please contact Administrator for assistance.'
     }
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
 
     appStore.loading = false
   }
@@ -254,7 +253,7 @@ const getTheBudgetTypes = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     appStore.loading = false
   }
@@ -270,7 +269,7 @@ const getRequestAttachmentPresignedUrl = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Attached Image')
+    appStore.showSnack('ERROR', 'Error Retrieving Attached Image')
 
     appStore.loading = false
   }
@@ -288,12 +287,12 @@ const uploadFile = async(files, attachmentTypeId) => {
       callback: async(img, error) => {
         savingReceiptImage.value = false
         if (error?.error) {
-          snackbar('ERROR', error.errorMsg)
+          appStore.showSnack('ERROR', error.errorMsg)
 
           appStore.loading = false
         } else {
           receiptLogo.value = img
-          snackbar('SUCCESS', 'Receipt Uploaded')
+          appStore.showSnack('SUCCESS', 'Receipt Uploaded')
 
           appStore.loading = false
         }
@@ -302,7 +301,7 @@ const uploadFile = async(files, attachmentTypeId) => {
   } catch (e) {
     savingReceiptImage.value = false
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Uploading File')
+    appStore.showSnack('ERROR', 'Error Uploading File')
 
     appStore.loading = false
   }
@@ -314,7 +313,7 @@ const getTheBudgetsForUser = async() => {
     availableBudgets.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   } finally {
     budgetsLoading.value = false

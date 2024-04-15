@@ -37,22 +37,19 @@
 </template>
 
 <script setup>
-import constants from '@/helpers/constants'
 import CompanyCustomFieldGroup from './CompanyCustomFieldGroup'
-import {AppMutations} from "@/stores/AppStore";
-import {getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers";
+import {getRequest, getRequestWithParams, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers";
 import cloneDeep from "lodash.clonedeep";
 
 
-import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
 const route = useRoute()
@@ -83,7 +80,7 @@ const getObjectType = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -102,7 +99,7 @@ const getCustomFieldGroups = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -120,11 +117,11 @@ const addCustomFieldGroup = async () => {
     addNew.value = false
     // add the new type to the list
     customFieldGroups.value.push(data)
-    snackbar('SUCCESS', 'Group Added')
+    appStore.showSnack('SUCCESS', 'Group Added')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Custom Field Group')
+    appStore.showSnack('ERROR', 'Error Adding Custom Field Group')
     appStore.loading = false
   }
 }

@@ -113,7 +113,6 @@
 </template>
 
 <script setup>
-import {AppMutations} from "@/stores/AppStore";
 import {getAvailableForEvent} from '@/services/eventStatusTypeService'
 import { getRequest, postRequest, putRequest, handleHidingGlobalLoader} from "@/helpers/helpers";
 import orderBy from "lodash.orderby"
@@ -121,13 +120,15 @@ import MultiSelectGroup from "@/components/MultiSelectGroup.vue"
 import {ref, computed, onMounted, getCurrentInstance} from "vue"
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
+import { useAppStore } from '@/stores/AppStore.js'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 
 const expandEsst = ref(true)
@@ -165,18 +166,17 @@ onMounted (() => {
   getPositions()
 })
 const getEvent = async  () => {
-      store.commit(AppMutations.SET_LOADING, true)
+	appStore.loading = true
       try {
         eventLoading.value = true;
         const {data} = await getRequest(`/event/${eventId.value}`)
         event.value = data
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.loading = false
         eventLoading.value = false;
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Data')
-
-        store.commit(AppMutations.SET_LOADING, false)
+		  appStore.showSnack('ERROR', 'Error Retrieving Data')
+        appStore.loading = false
       }
     }
 const filterAssignedEventStatusTypes = computed(() => {
@@ -185,7 +185,7 @@ const filterAssignedEventStatusTypes = computed(() => {
   }), [f => f.eventStatusType])
 })
 const assignStatusTypeToEvent = async  () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     newType.value.eventId = route.params.id
     newType.value.editableInSchedule
@@ -194,27 +194,27 @@ const assignStatusTypeToEvent = async  () => {
     // reset fields
     addNewEventStatusType.value = false
     newEventStatusTypeId.value = null
-    snackbar('SUCCESS', 'Status Type Added')
+	  appStore.showSnack('SUCCESS', 'Status Type Added')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Status Type')
+	  appStore.showSnack('ERROR', 'Error Adding Status Type')
 
-    store.commit(AppMutations.SET_LOADING, false)
+    appStore.loading = false
   }
 }
 
 const saveEditableInSchedule = async (item) => {
-      store.commit(AppMutations.SET_LOADING, true)
+      appStore.loading = true
       try {
        await postRequest(`/event/status/updateEditableInSchedule/${item.companyEventStatusTypeId}/forEvent/${parseInt(eventId.value)}?editableInSchedule=${item.editableInSchedule}`)
-        snackbar('SUCCESS', 'Editable in Schedule Updated')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.showSnack('SUCCESS', 'Editable in Schedule Updated')
+        appStore.loading = false
       }catch (e){
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Updating Editable in Schedule')
-        store.commit(AppMutations.SET_LOADING, false)
+        appStore.showSnack('ERROR', 'Error Updating Editable in Schedule')
+        appStore.loading = false
       }
     }
 const getCompanyEventStatusTypes = async () => {
@@ -226,7 +226,7 @@ const getCompanyEventStatusTypes = async () => {
       companyStatusesLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Event Status Types')
+		appStore.showSnack('ERROR', 'Error Retrieving Event Status Types')
 
       companyStatusesLoading.value = false
     }
@@ -256,29 +256,29 @@ const getPositions = async () => {
       const {data, status} = await getRequest(`/position/withParent`)
       positions.value = data
       positionsLoading.value = false
-      handleHidingGlobalLoader(vueInstance, status)
+       handleHidingGlobalLoader( status)
     } catch (e) {
       positionsLoading.value = false
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Positions')
-      store.commit(AppMutations.SET_LOADING, false)
+		appStore.showSnack('ERROR', 'Error Retrieving Positions')
+      appStore.loading = false
     }
   }
 }
 const saveHiddenAndWhiteList = async () => {
-  store.commit(AppMutations.SET_LOADING, true)
+  appStore.loading = true
   try {
     const {status} = await putRequest(`/event/saveHiddenAndWhiteList?positionsChanged=${event.value.hiddenPositionsChanged ?? false}`, event.value)
     hiddenPositionsChanged.value = false
     if(!event.value.hidden) {
       event.value.hiddenWhiteListedPositions = []
     }
-    snackbar('SUCCESS', 'Saved Successfully')
-    handleHidingGlobalLoader(vueInstance, status)
+    appStore.showSnack('SUCCESS', 'Saved Successfully')
+     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Event Access Control')
-    store.commit(AppMutations.SET_LOADING, false)
+	  appStore.showSnack('ERROR', 'Error Saving Event Access Control')
+    appStore.loading = false
   }
 }
 const hiddenSelectedEventListener = (e) => {

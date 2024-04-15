@@ -798,8 +798,7 @@ import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
 import moment from 'moment'
 import constants from '@/helpers/constants'
-import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getProjectPath} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
+import {handleHidingGlobalLoader, getRequest, postRequest, getProjectPath} from '@/helpers/helpers'
 import SpinnerInline from '@/components/SpinnerInline'
 import { saveAs } from 'file-saver'
 import {
@@ -813,7 +812,7 @@ import {
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -821,7 +820,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const funnelDrilldownDialog = ref(false)
@@ -1350,7 +1349,7 @@ const loadSources = () => {
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving lists of sources')
+    appStore.showSnack('ERROR', 'Error retrieving lists of sources')
 
   }
 }
@@ -1396,7 +1395,7 @@ const apptsCreatedPipelineLoad = async(start, end) => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving Appointments Created Pipeline data')
+    appStore.showSnack('ERROR', 'Error retrieving Appointments Created Pipeline data')
 
     apptsCreatedPipelineLoaded.value = true
     apptsCreatedPipelineDataLoading.value = false
@@ -1504,7 +1503,7 @@ const apptsToFdcPipelineLoad = async(start, end, useRepDataInstead) => {
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving Appointments to FDC Pipeline data')
+    appStore.showSnack('ERROR', 'Error retrieving Appointments to FDC Pipeline data')
 
     apptsToFdcPipelineLoaded.value = true
   }
@@ -1977,7 +1976,7 @@ const funnelDrilldown = async(funnel, dateRange, pipelineName, isCheckedInColumn
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving drilldown data')
+    appStore.showSnack('ERROR', 'Error retrieving drilldown data')
 
     appStore.loading = false
   }

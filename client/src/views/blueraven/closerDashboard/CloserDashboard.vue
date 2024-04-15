@@ -291,10 +291,8 @@
 
 <script setup>
 import moment from 'moment'
-import constants from '@/helpers/constants'
 import {getCloserRepRankings} from "@/services/dashboardService";
-import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
+import {handleHidingGlobalLoader, getRequest, getRequestWithParams} from '@/helpers/helpers'
 import SpinnerInline from '@/components/SpinnerInline'
 import {getCurrentInstance, ref, computed, onMounted} from "vue";
 import { useUserStore } from '@/stores/UserStore.js'
@@ -302,7 +300,7 @@ import { useUserStore } from '@/stores/UserStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const userStore = useUserStore()
 
 const currentUserOrgId = ref(null)
@@ -398,7 +396,7 @@ const loadRoundRobins = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving list of round robins')
+    appStore.showSnack('ERROR', 'Error retrieving list of round robins')
     roundRobinRanksLoading.value = false
   }
 }
@@ -411,7 +409,7 @@ const loadRoundRobinLeadAllocationRankData = async () => {
     leadAllocationRankingData.value = data
     roundRobinRanksLoading.value = false
   } catch (e) {
-    snackbar('ERROR', 'Error retrieving round robin lead allocation rank data')
+    appStore.showSnack('ERROR', 'Error retrieving round robin lead allocation rank data')
     roundRobinRanksLoading.value = false
   }
 }
@@ -433,7 +431,7 @@ const loadCloserOffices = async () => {
     officeFdcRankLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving list of closer offices')
+    appStore.showSnack('ERROR', 'Error retrieving list of closer offices')
     officeFdcRankLoading.value = false
   }
 }
@@ -445,7 +443,7 @@ const loadRepRankingsByOrg = async (orgId) => {
     officeFdcRankingData.value = data
     officeFdcRankLoading.value = false
   } catch (e) {
-    snackbar('ERROR', 'Error retrieving Office FDC rank data')
+    appStore.showSnack('ERROR', 'Error retrieving Office FDC rank data')
     officeFdcRankLoading.value = false
   }
 }
@@ -462,7 +460,7 @@ const loadRepRankingsForCompany = async () => {
     }
     topRepsLoading.value = false
   } catch (e) {
-    snackbar('ERROR', 'Error retrieving Top Reps rank data')
+    appStore.showSnack('ERROR', 'Error retrieving Top Reps rank data')
     topRepsLoading.value = false
   }
 }
@@ -518,7 +516,7 @@ const loadOrgRankings = async () => {
     companyOfficeRankLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving Office Ranking data')
+    appStore.showSnack('ERROR', 'Error retrieving Office Ranking data')
     companyOfficeRankLoading.value = false
   }
 }

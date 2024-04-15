@@ -133,10 +133,10 @@
   import {getCurrentInstance, computed, onMounted, ref} from "vue";
   import { useUserStore } from '@/stores/UserStore.js'
   import {useRoute} from "vue-router/composables"
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const store = vueInstance.$store
   const userStore = useUserStore()
   const appStore = useAppStore()
@@ -210,7 +210,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
       appStore.loading = false
     }
   }
@@ -235,11 +235,11 @@
       }
       expanded.value = []
       handleHidingGlobalLoader(status)
-      snackbar('SUCCESS', 'Parameter Updated')
+      appStore.showSnack('SUCCESS', 'Parameter Updated')
 
     } catch (e) {
       appStore.loading = false
-      snackbar('ERROR', 'Error Saving Parameter')
+      appStore.showSnack('ERROR', 'Error Saving Parameter')
     }
 
   }

@@ -934,7 +934,16 @@ BEGIN
   elsif v_commission_strategy_id = 23610 then
     v_desired_commission_amount = greatest(coalesce(v_desired_commission_amount / 1000, 0), 0);
     v_redline_markup = greatest(v_desired_commission_amount / 0.68, 0);
-    v_lead_source_discount = case when v_source_id in (523, 524) then coalesce(v_closer_gen_discount, 0) else 0 end;
+    v_lead_source_discount = case
+                               when v_version_id < 123 then--- CARLIN --- ADD CLOSER GEN SOURCE IDS
+                                 case
+                                   when v_source_id in (523, 524) then coalesce(v_closer_gen_discount, 0)
+                                   else 0 end
+                               else
+                                 case
+                                   when v_source_id in (523, 524, 530, 20016) then coalesce(v_closer_gen_discount, 0)
+                                   else 0 end
+      end;
     v_adjusted_price_per_watt =
           coalesce(v_red_line_funding_amount, 0) + coalesce(v_redline_markup, 0) - coalesce(v_lead_source_discount, 0);
     --raise notice 'v_desired_commission_amount = %',v_desired_commission_amount;
@@ -1073,6 +1082,23 @@ BEGIN
     v_additional_fee_for_exceeding_non_solar_threshold,
     v_maximum_dollar_per_watt_for_solar
   from brs.get_proposal_financiers(v_version_id, v_financier_id);
+
+  if v_financier_id = 24152 then -- ENFIN HAS SPECIAL CAPS
+    if coalesce(v_number_of_batteries,0) > 0 and coalesce(v_reroof_cost,0) = 0 then
+      v_maximum_dollar_per_watt_for_solar = 10::numeric;
+    elsif coalesce(v_number_of_batteries,0) = 0 and coalesce(v_reroof_cost,0) > 0 then
+      v_maximum_dollar_per_watt_for_solar = 12::numeric;
+    elsif coalesce(v_number_of_batteries,0) > 0 and coalesce(v_reroof_cost,0) > 0 then
+      v_maximum_dollar_per_watt_for_solar = 15::numeric;
+    elsif coalesce(v_number_of_batteries,0) = 0 and coalesce(v_reroof_cost,0) = 0 and v_state_id = 5 then -- California
+      v_maximum_dollar_per_watt_for_solar = 7::numeric;
+    else
+      v_maximum_dollar_per_watt_for_solar = 6.5::numeric;
+    end if;
+    if v_system_size <= 4.5 then
+      v_maximum_dollar_per_watt_for_solar = (v_maximum_dollar_per_watt_for_solar + 1::numeric);
+    end if;
+  end if;
 
   --raise notice 'v_non_solar_cap = %',v_non_solar_cap;
   --raise notice 'v_maximum_dollar_per_watt_for_solar = %',v_maximum_dollar_per_watt_for_solar;
@@ -1445,7 +1471,7 @@ BEGIN
                                   , 0);
       --raise notice 'v_required_down_payment_before_$/Watt_cap = %',v_required_down_payment;
     end if;
-  else
+  elsif v_version_id < 123 then
     v_battery_cap_down_payment =  coalesce(case
                                              when (v_number_of_batteries > 0 and v_financier_id = 116) then
                                                greatest(0,
@@ -1501,9 +1527,141 @@ BEGIN
 
     v_required_down_payment =
       greatest(0,
-               greatest(0, v_solar_only_cap_down_payment, v_ancillary_percent_cap_down_payment)
-                 + v_battery_cap_down_payment
-                 - v_down_payment_amount - v_above_line_rebate
+               greatest(0, coalesce(v_solar_only_cap_down_payment,0), coalesce(v_ancillary_percent_cap_down_payment,0))
+                 + coalesce(v_battery_cap_down_payment,0)
+                 - coalesce(v_down_payment_amount,0) - coalesce(v_above_line_rebate,0)
+      );
+  else
+    --GoodLeap  ID = 116
+    --    Solar Only -> Excluding any ancillary and battery pricing, total system price <= $6.50/W
+    --    Ancillary -> Ancillary work (excluding batteries) can account for 50% of total loan amount
+    --    Battery -> = $50000 max battery cost in loan. Battery cannot be more than $___ /kWh
+    --SunPower ID = 20065
+    --    Solar Only -> Excluding any ancillary and battery pricing, total system price <= $10/W
+    --    Ancillary -> Ancillary work (excluding batteries) can account for 15% of total loan amount
+    --    No specified battery cap
+    --EnFin ID = 24152
+    --    IF SYSTEM SIZE > 4.5kW LOAN amount must meet:
+    --    $6.50/W standard cap ($7 in CA)
+    --    $10/W if PV + Battery
+    --    $12/W if PV + Reroof
+    --    $15/W if PV + Battery + Reroof
+    --    IF SYSTEM SIZE <= 4.5kW LOAN amount must meet:
+    --    $7.50/W standard cap ($8 in CA)
+    --    $11/W if PV + Battery
+    --    $13/W if PV + Reroof
+    --    $16/W if PV + Battery + Reroof
+
+    v_battery_cap_down_payment = coalesce(case
+                                            when (coalesce(v_number_of_batteries,0) > 0 and v_financier_id = 116) then
+                                              greatest(0,
+                                                       coalesce(v_cash_price_storage,0) -
+                                                       50000::numeric * (1 - v_dealer_fee)
+                                              )
+                                            else 0
+                                            end, 0);
+
+    v_solar_only_cap_down_payment = case
+                                      when v_financier_id = 116 then
+                                        greatest(
+                                          case when v_dealer_fee > 0 then coalesce(
+                                            ((coalesce(v_no_ancillary_amount_to_finance,0) + coalesce(v_down_payment_amount, 0)) -
+                                             case
+                                               when v_product_id = 293
+                                                 then -- promotion_cost will be lower when down payments are applied. This case accounts for that.
+                                                 (coalesce(v_battery_cap_down_payment, 0) * v_initial_payment_factor * 18) /
+                                                 ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
+                                               else 0::numeric end -
+                                             (coalesce(v_maximum_dollar_per_watt_for_solar,0) *
+                                              v_system_size * 1000 *
+                                              (1 - v_dealer_fee))) /
+                                            (v_dealer_fee +
+                                             case
+                                               when v_product_id = 293
+                                                 then -- promotion_cost will be lower when down payments are applied. This case accounts for that.
+                                                 (v_initial_payment_factor * 18) /
+                                                 ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
+                                               else 0::numeric end)
+                                            , 0) else 0::numeric end
+                                          ,0)
+                                      when v_financier_id = 24152 then --EnFin has a single cap that changes depending on what's added. Ancillary costs can't be excluded
+                                        greatest(
+                                          coalesce(
+                                            (coalesce(v_total_amount_to_be_financed,0) +
+                                             coalesce(v_down_payment_amount, 0) -
+                                             coalesce(v_maximum_dollar_per_watt_for_solar,0) * v_system_size * 1000 * (1 - v_dealer_fee) -
+                                             coalesce(v_admin_discount,0)*(1-v_dealer_fee)) /
+                                            (case when v_product_id = 293 then
+                                                    ((v_initial_payment_factor * 18) /
+                                                     ((1 - v_dealer_fee) - (v_initial_payment_factor * 18)))
+                                                  else 0::numeric end + 1)
+                                            , 0)
+                                          , 0)
+                                      else
+                                        greatest(
+                                          case when coalesce(v_maximum_dollar_per_watt_for_solar,0) > 0 then coalesce(
+                                            (coalesce(v_no_ancillary_amount_to_finance, 0) +
+                                             coalesce(v_down_payment_amount, 0) -
+                                             coalesce(v_maximum_dollar_per_watt_for_solar,0)* v_system_size * 1000 * (1 - v_dealer_fee) -
+                                             coalesce(v_admin_discount,0)*(1-v_dealer_fee)) /
+                                            (case when v_product_id = 293 then
+                                                    ((v_initial_payment_factor * 18) /
+                                                     ((1 - v_dealer_fee) - (v_initial_payment_factor * 18)))
+                                                  else 0::numeric end + 1)
+                                            , 0) else 0::numeric end
+                                          , 0)
+      end;
+
+
+    v_ancillary_percent_cap_down_payment = case
+                                             when coalesce(v_non_solar_cap,0) > 0 then coalesce((v_non_solar_cap *
+                                                                                  (coalesce(v_total_amount_to_be_financed,0) + coalesce(v_down_payment_amount, 0) -
+                                                                                   coalesce(v_battery_cap_down_payment,0) - coalesce(v_solar_only_cap_down_payment,0) -
+                                                                                   case
+                                                                                     when v_product_id = 293 then
+                                                                                       (((coalesce(v_battery_cap_down_payment,0) + coalesce(v_solar_only_cap_down_payment,0))
+                                                                                         * v_initial_payment_factor * 18) /
+                                                                                        ((1 - v_dealer_fee) - (v_initial_payment_factor * 18)))
+                                                                                     else 0::numeric end) - coalesce(v_total_ancillary_costs,0)) /
+                                                                                 (coalesce(v_non_solar_cap,0) * (1 +
+                                                                                                     case
+                                                                                                       when v_product_id = 293 then
+                                                                                                         (coalesce(v_non_solar_cap,0) * v_initial_payment_factor * 18) /
+                                                                                                         ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
+                                                                                                       else 0::numeric end)-1), 0)
+                                             else 0::numeric end;
+    if (coalesce(v_down_payment_amount,0) + coalesce(v_above_line_rebate,0) + coalesce(v_battery_cap_down_payment,0)) >
+       coalesce(v_ancillary_percent_cap_down_payment,0) and coalesce(v_non_solar_cap,0) >0 then
+      -- If the sum of above_line_rebate and down_payment_amount is more than the default, the % will change
+      -- find the difference and apply those amounts to the ancillary work instead of requiring a down payment
+      v_ancillary_percent_cap_down_payment = coalesce(coalesce(v_total_ancillary_costs,0)-
+                                                      coalesce(v_non_solar_cap,0) *
+                                                      (coalesce(v_total_amount_to_be_financed,0) - coalesce(v_above_line_rebate,0) -
+                                                       case
+                                                         when v_product_id = 293 then
+                                                           ((coalesce(v_down_payment_amount, 0) +
+                                                             coalesce(v_above_line_rebate, 0)) *
+                                                            v_initial_payment_factor * 18) /
+                                                           ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
+                                                         else 0::numeric end)
+        ,0);
+    end if;
+
+    --raise notice 'v_solar_only_cap_down_payment = %',v_solar_only_cap_down_payment;
+    --raise notice 'v_ancillary_percent_cap_down_payment = %',v_ancillary_percent_cap_down_payment;
+    --raise notice 'v_battery_cap_down_payment = %',v_battery_cap_down_payment;
+
+    v_solar_only_cap_down_payment = greatest(0, v_solar_only_cap_down_payment);
+    v_ancillary_percent_cap_down_payment = greatest(0, v_ancillary_percent_cap_down_payment);
+    v_battery_cap_down_payment = greatest(0, v_battery_cap_down_payment);
+
+
+    v_required_down_payment =
+      greatest(0,
+               coalesce(v_solar_only_cap_down_payment,0)
+                 + coalesce(v_ancillary_percent_cap_down_payment,0)
+                 + coalesce(v_battery_cap_down_payment,0)
+                 - coalesce(v_down_payment_amount,0) - coalesce(v_above_line_rebate,0)
       );
   end if;
 
@@ -1849,17 +2007,39 @@ BEGIN
 
   --raise notice 'Carlins new value11111111 %',(coalesce(v_total_system_cost,0) - coalesce(v_storage_cost_with_fees,0) - ((coalesce(v_total_ancillary_costs,0) - coalesce(v_ancillary_percent_cap_down_payment,0))/(1-v_dealer_fee)))/(v_system_size*1000);
 
-  if v_non_solar_cap is not null and round(((coalesce(v_total_ancillary_costs,0) - coalesce(v_ancillary_percent_cap_down_payment,0))/(1-v_dealer_fee))/v_total_system_cost,2) > coalesce(v_non_solar_cap,0) then
-    raise exception 'Ancillary Costs exceed the maximum allowable value.';
+  if v_non_solar_cap is not null and round(((coalesce(v_total_ancillary_costs, 0) -
+                                             coalesce(v_ancillary_percent_cap_down_payment, 0)) /
+                                            (1 - v_dealer_fee)) / v_total_loan_amount, 2) >
+                                     coalesce(v_non_solar_cap, 0) then
+    --raise exception 'Ancillary Costs exceed the maximum allowable value.';
   end if;
 
-  if v_maximum_dollar_per_watt_for_solar is not null and round((v_total_system_cost - coalesce(v_storage_cost_with_fees,0) - (coalesce(v_total_ancillary_costs,0) - coalesce(v_ancillary_percent_cap_down_payment,0))/(1-v_dealer_fee))/(v_system_size * 1000),2) > coalesce(v_maximum_dollar_per_watt_for_solar,0) then
-    raise exception 'Solar Costs exceed the maximum allowable value.';
-  end if;
+  --raise notice 'new value %',round(v_total_loan_amount/(v_system_size * 1000),2);
 
+  if v_maximum_dollar_per_watt_for_solar is not null and
+     v_financier_id = 116 and
+            round((v_total_system_cost -
+                   coalesce(v_storage_cost_with_fees, 0) -
+                   (coalesce(v_total_ancillary_costs, 0) -
+                    coalesce(v_ancillary_percent_cap_down_payment, 0)) /
+                   (1 - v_dealer_fee)) / (v_system_size * 1000), 2) >
+            coalesce(v_maximum_dollar_per_watt_for_solar, 0) then
+    --raise exception 'Solar Costs exceed the maximum allowable value.';
+  elsif  v_maximum_dollar_per_watt_for_solar is not null and v_financier_id = 24152 and
+    round(v_total_loan_amount/(v_system_size * 1000),2) >
+      coalesce(v_maximum_dollar_per_watt_for_solar, 0) then
+    --raise exception 'Solar Costs exceed the maximum allowable value.';
+  elsif v_maximum_dollar_per_watt_for_solar is not null and
+    round((v_total_loan_amount -
+           coalesce(v_storage_cost_with_fees, 0) -
+           (coalesce(v_total_ancillary_costs, 0) -
+            coalesce(v_ancillary_percent_cap_down_payment, 0)) /
+           (1 - v_dealer_fee)) / (v_system_size * 1000), 2) >
+      coalesce(v_maximum_dollar_per_watt_for_solar, 0) then
+    --raise exception 'Solar Costs exceed the maximum allowable value.';
+  end if;
 
   if p_insert_prop_log_history is true then
-
     v_all_ancillary_costs = null;
     if coalesce(v_main_panel_upgrade_cost, 0)::numeric > 0 then
       v_all_ancillary_costs =

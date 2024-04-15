@@ -26,7 +26,9 @@ begin
                       coalesce(fd.commissions_earned_m2, 0)                             as commissions_earned_m2,
                       round((SUM(coalesce(fd.total_commissions, 0)) OVER ()
                         - SUM(coalesce(fd.total_commissions_paid_to_date, 0)) OVER ()
-                        - SUM(coalesce(pd.commission_forfeited_by_closer, 0)) OVER ())) as total_by_status
+                        - SUM(coalesce(pd.commission_forfeited_by_closer, 0)) OVER ())) as total_by_status,
+                 fd.final_design_complete_date,
+                 fd.substantial_completion_date
                from flow.project p
                       inner join brs.financial_details fd on fd.project_id = p.id
                       inner join brs.project_details pd on pd.project_id = fd.project_id
@@ -37,18 +39,21 @@ begin
       loop
         insert into commissions(total_by_status, commission_at_fdc, commission_at_substantial_completion)
         values (x.total_by_status,
-                case
-                  when x.commission_forfeited_by_closer > 0 and
-                       x.commission_forfeited_by_closer > x.total_commissions - x.commissions_earned_m1 then
-                    x.commissions_earned_m1 - x.total_commissions_paid_to_date -
-                    (x.commission_forfeited_by_closer -
-                     (x.total_commissions - x.commissions_earned_m1))
-                  else x.commissions_earned_m1 - x.total_commissions_paid_to_date end,
-        case when x.commissions_earned_m2 > 0 and
-                  x.commissions_earned_m2 - x.commission_forfeited_by_closer > 0 then
-          x.commissions_earned_m2 - x.commission_forfeited_by_closer
-             else
-               0
+                case when x.substantial_completion_date is null and (x.commission_forfeited_by_closer = 0 or
+                                                                     x.commission_forfeited_by_closer <= x.total_commissions - x.commissions_earned_m1                                       )  then
+                  x.commissions_earned_m1
+                when x.substantial_completion_date is null and x.commission_forfeited_by_closer > 0 and
+                     x.commission_forfeited_by_closer > x.total_commissions - x.commissions_earned_m1 then
+                  x.commissions_earned_m1 -
+                  (x.commission_forfeited_by_closer -
+                   (x.total_commissions - x.commissions_earned_m1)) end ,
+
+                case when x.commissions_earned_m2 = 0 and x.commission_forfeited_by_closer = 0 then
+                       x.total_commissions - x.commissions_earned_m1
+                     when   x.commissions_earned_m2 = 0 and  x.commission_forfeited_by_closer > 0 then
+                       greatest((x.total_commissions - x.commission_forfeited_by_closer - x.commissions_earned_m1),0)
+                     else
+                       0
           end);
 
       end loop;
@@ -58,9 +63,10 @@ begin
     from (
       select v_status_name as "statusType",
              c.total_by_status as "totalByStatus",
-             c.commission_at_fdc as "commissionAtFdc",
-             c.commission_at_substantial_completion as "commissionAtSubstantialCompletion"
-    from commissions c) as commission;
+             sum(c.commission_at_fdc) as "commissionAtFdc",
+             sum(c.commission_at_substantial_completion) as "commissionAtSubstantialCompletion"
+    from commissions c
+    group by c.total_by_status, v_status_name) as commission;
 
       drop table if exists  commissions;
     return coalesce(v_commissions, concat('{ "statusType": "' || v_status_name || '",

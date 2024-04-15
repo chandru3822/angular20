@@ -265,11 +265,11 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, onMounted, ref, computed} from "vue";
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables"
-import {useAppStore} from '@/stores/AppStorePinia.js'
+import {useAppStore} from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
@@ -365,7 +365,7 @@ const getProcessDetails = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
     appStore.loading = false
   }
@@ -387,12 +387,12 @@ const saveDeniedPositions = async () => {
   appStore.loading = true;
   try {
     const {status} = await putRequest(`/processes/saveDenyListPositions`, process.value)
-    snackbar('SUCCESS', 'Denied Positions Saved')
+    appStore.showSnack('SUCCESS', 'Denied Positions Saved')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Field')
+    appStore.showSnack('ERROR', 'Error Saving Field')
 
     appStore.loading = false
   }
@@ -402,12 +402,12 @@ const saveRowChanges = async (rows) => {
     appStore.loading = true
     try {
       const {status} = await putRequest(`/processes/${processId.value}/processStepProcesses`, rows)
-      snackbar('SUCCESS', 'Order Updated')
+      appStore.showSnack('SUCCESS', 'Order Updated')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Order Changes')
+      appStore.showSnack('ERROR', 'Error Saving Order Changes')
 
       appStore.loading = false
     }
@@ -422,12 +422,12 @@ const saveProcessStepProcess = async (item) => {
     item.companyProcessStepStatusTypeId = data.companyProcessStepStatusTypeId
     item.processStepStatusType = data.processStepStatusType
     expanded.value = []
-    snackbar('SUCCESS', 'Process Saved')
+    appStore.showSnack('SUCCESS', 'Process Saved')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Process')
+    appStore.showSnack('ERROR', 'Error Saving Process')
 
     appStore.loading = false
   }
@@ -437,12 +437,12 @@ const saveProcess = async () => {
   try {
     editName.value = false
     const {status} = await putRequest(`/processes`, process.value)
-    snackbar('SUCCESS', 'Process Updated')
+    appStore.showSnack('SUCCESS', 'Process Updated')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Process')
+    appStore.showSnack('ERROR', 'Error Updating Process')
 
     appStore.loading = false
   }
@@ -457,12 +457,12 @@ const deleteStepFromProcess = async () => {
     process.value.processStepProcesses = process.value.processStepProcesses.filter(psp => {
       return psp.id !== id
     })
-    snackbar('SUCCESS', 'Step Deleted from Process')
+    appStore.showSnack('SUCCESS', 'Step Deleted from Process')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Step From Process')
+    appStore.showSnack('ERROR', 'Error Deleting Step From Process')
 
     appStore.loading = false
   }
@@ -474,7 +474,7 @@ const getPositions = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Positions')
+    appStore.showSnack('ERROR', 'Error Retrieving Positions')
 
     appStore.loading = false
   }
@@ -492,7 +492,7 @@ const getAvailableProcessSteps = async () => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
     appStore.loading = false
   }
 }
@@ -505,11 +505,11 @@ const assignProcessStep = async () => {
 
     addNew.value = false
     newProcessStep.value = {}
-    snackbar('SUCCESS', 'Process Step Assigned')
+    appStore.showSnack('SUCCESS', 'Process Step Assigned')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Assigning Process Step')
+    appStore.showSnack('ERROR', 'Error Assigning Process Step')
     appStore.loading = false
   }
 }
@@ -523,7 +523,7 @@ const getActiveProcessAssignedToProcessStep = async (item) => {
       statusesLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
       statusesLoading.value = false
     }
   }

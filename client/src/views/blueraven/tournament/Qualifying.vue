@@ -122,7 +122,7 @@ import ScoreDrilldown from "./component/ScoreDrilldown";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -130,7 +130,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const tournamentId = computed(() => {
   return route.params.id
@@ -206,7 +205,7 @@ const toggleSelectAllQualifying = () => {
       pu.selected = true
       selectedUsers.value.push(pu)
       minRowsPerPage.value++
-      snackbar('ERROR', 'The final qualifying user is tied with other users. You will have to manually select who advances.')
+      appStore.showSnack('ERROR', 'The final qualifying user is tied with other users. You will have to manually select who advances.')
 
     } else {
       pu.selected = false
@@ -229,12 +228,12 @@ const advanceSelectedToBracket = async() => {
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Advancing Users')
+      appStore.showSnack('ERROR', 'Error Advancing Users')
 
       appStore.loading = false
     }
   } else {
-    snackbar('ERROR', 'Error Advancing Users')
+    appStore.showSnack('ERROR', 'Error Advancing Users')
 
   }
 }
@@ -328,7 +327,7 @@ const getTournament = async() => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Tournament')
+    appStore.showSnack('ERROR', 'Error Loading Tournament')
 
   }
 }
@@ -339,7 +338,7 @@ const getPool = async() => {
     pool.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching pool details')
+    appStore.showSnack('ERROR', 'Error fetching pool details')
 
   }
 }
@@ -354,7 +353,7 @@ const getPoolUsers = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching pool user details')
+    appStore.showSnack('ERROR', 'Error fetching pool user details')
 
     appStore.loading = false
   }

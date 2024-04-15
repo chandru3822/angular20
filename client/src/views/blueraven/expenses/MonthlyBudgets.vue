@@ -225,7 +225,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -233,8 +233,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 
 
 const dataLoading = ref(true)
@@ -299,7 +298,7 @@ const getBudgets = async() => {
     dataLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -312,7 +311,7 @@ const getAvailableUsers = async() => {
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Data')
+      appStore.showSnack('ERROR', 'Error Retrieving Data')
 
       appStore.loading = false
     }
@@ -326,7 +325,7 @@ const deleteBudget = async (id) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Error Deleting Budget')
+    appStore.showSnack('ERROR', 'Error Error Deleting Budget')
 
     appStore.loading = false
   }
@@ -351,7 +350,7 @@ const saveBudget = async(item, isNew) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', e?.data?.message || 'Error Saving Budget')
+    appStore.showSnack('ERROR', e?.data?.message || 'Error Saving Budget')
 
     appStore.loading = false
   }

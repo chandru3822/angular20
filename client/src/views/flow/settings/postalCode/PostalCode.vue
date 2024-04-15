@@ -98,13 +98,12 @@ import {useUserStore} from '@/stores/UserStore.js'
 
 import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const route = useRoute()
+ const route = useRoute()
 const router = useRouter()
 const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
@@ -154,7 +153,7 @@ const getPostalCode = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     dataLoading.value = false
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -164,7 +163,7 @@ const getAllStates = async () => {
     states.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -174,7 +173,7 @@ const getRoundRobins = async () => {
     roundRobins.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -184,7 +183,7 @@ const getZones = async () => {
     zones.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -194,7 +193,7 @@ const getCallGroups = async () => {
     callGroups.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -202,12 +201,12 @@ const savePostalCode = async () => {
   appStore.loading = true
   try {
     const {data, status} = await postRequest(`/postalCode`, postalCode.value)
-    snackbar('SUCCESS', 'Postal Code Saved')
+    appStore.showSnack('SUCCESS', 'Postal Code Saved')
 
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Postal Code')
+    appStore.showSnack('ERROR', 'Error Saving Postal Code')
     appStore.loading = false
   }
 }

@@ -206,9 +206,8 @@
 </template>
 <script setup>
 import {Fragment} from 'vue-frag'
-import {deleteRequestWithPayload, getRequestWithParams, getSnackbar, postRequest} from '@/helpers/helpers'
+import {deleteRequestWithPayload, getRequestWithParams, postRequest} from '@/helpers/helpers'
 import NewProposalValueDialog from './NewProposalValueDialog.vue'
-import {AppMutations} from '@/stores/AppStore'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ProposalVersionHistory from "@/views/blueraven/settings/proposals/ProposalVersionHistory.vue";
 import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
@@ -216,7 +215,7 @@ import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixin
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -224,7 +223,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const defaultActionColumn = {txt: 'Actions', value: 'actions', sortable: false}
 
@@ -363,9 +361,9 @@ const showHistory = ref(false)
         values.value = values
         selectedDeleteItem.value = undefined
 
-        snackbar('SUCCESS', `Row was successfully archived. It will not be available in future versions.`)
+        appStore.showSnack('SUCCESS', `Row was successfully archived. It will not be available in future versions.`)
       } catch (e) {
-        snackbar('ERROR', `Row was not archived successfully.`)
+        appStore.showSnack('ERROR', `Row was not archived successfully.`)
 
         //rollback changes if there was an error
         const pk = item.pk
@@ -393,7 +391,7 @@ const showHistory = ref(false)
 
       values.value = filteredValues
 
-      snackbar('SUCCESS', `Row was reverted to previous version!`)
+      appStore.showSnack('SUCCESS', `Row was reverted to previous version!`)
     }
     const undoAllChanges = async() => {
       const {data} = await postRequest(`/proposal/versions/${props.id}/values/${propType.value.code}/reset`, {}, 'blueraven')
@@ -404,7 +402,7 @@ const showHistory = ref(false)
       values.value = filteredValues
       undoDraftChanges.value = false
 
-      snackbar('SUCCESS', `All changes to "${propType.value.name}" successfully reverted!`)
+      appStore.showSnack('SUCCESS', `All changes to "${propType.value.name}" successfully reverted!`)
     }
     const getProposalDetail = async(proposalVersionId) => {
       try {
@@ -421,7 +419,7 @@ const showHistory = ref(false)
     const getProposalObjectTypeFields = async(objectType) => {
       const {data} = await getRequestWithParams(`/proposal/versions/fields/${objectType}`, {}, 'blueraven')
 
-      let headers = data?.length > 0
+      let headersTemp = data?.length > 0
         ? data.map(r => ({
           text: r.fieldName,
           sortable: true,
@@ -431,18 +429,18 @@ const showHistory = ref(false)
         }))
         : []
 
-      headers.sort((a, b) => a.fieldOrder - b.fieldOrder)
+      headersTemp.sort((a, b) => a.fieldOrder - b.fieldOrder)
 
       if (detail.value.status === 'DRAFT') {
-        headers.push(defaultActionColumn)
+        headersTemp.push(defaultActionColumn)
       }
-      headers.value = headers
+      headers.value = headersTemp
     }
     const getProposalObjectTypeFieldValues = async(proposalVersionId, objectType) => {
       const {data} = await getRequestWithParams(`/proposal/versions/${proposalVersionId}/values/${objectType}`, {}, 'blueraven')
       const filteredValues = data.map(({pk, versionId, archived, row}) => ({pk, versionId, archived, ...row}))
       const sortHeader = headers.value?.find(h => h.fieldOrder === 1)
-      filteredValues.sort(sorterFn(sortHeader.value))
+      filteredValues.sort(sorterFn(sortHeader))
       values.value = filteredValues
     }
     const publish = async(proposalVersionId, message) => {
@@ -452,10 +450,10 @@ const showHistory = ref(false)
         //hide the action column
         headers.value = headers.value?.slice(0, headers.value.length - 1)
 
-        snackbar('SUCCESS', `Proposal Version #${proposalVersionId} Successfully Published`)
+        appStore.showSnack('SUCCESS', `Proposal Version #${proposalVersionId} Successfully Published`)
       } catch (e) {
         const message = e?.data?.message ?? 'Unable to publish proposal version'
-        snackbar('ERROR', message)
+        appStore.showSnack('ERROR', message)
       }
     }
     const doInput = async(val) => {
@@ -473,9 +471,9 @@ const showHistory = ref(false)
         filteredValues.push({pk, versionId, ...row})
         filteredValues.sort(sorterFn(sortHeader?.value))
         values.value = filteredValues
-        snackbar('SUCCESS', 'Row updated successfully!')
+        appStore.showSnack('SUCCESS', 'Row updated successfully!')
       } catch (e) {
-        snackbar('ERROR', 'Error Updating Proposal Version Fields')
+        appStore.showSnack('ERROR', 'Error Updating Proposal Version Fields')
       }
     }
     const sortValues = (sortHeader) => {

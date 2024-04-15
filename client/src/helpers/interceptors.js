@@ -1,9 +1,9 @@
 import router from '@/router.js'
-import store, { pinia } from '@/store.js'
+import pinia from '@/store.js'
 import constants from '@/helpers/constants.js'
 import axios from 'axios'
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import { useFileStore } from '@/stores/FileStore.js'
 
 const { VITE_ENV, VITE_BASE_API } = import.meta.env
@@ -32,10 +32,10 @@ export function responseInterceptor({ response }) {
 
       if (response?.data?.maintenanceMode && status === 403) {
         //if we dont remove the store item then a logged in user who USED to have permission will still have permission later
-        localStorage.removeItem('store')
+        localStorage.removeItem('user')
         router.push({ name: 'siteUnderMaintenance' })
       } else {
-        localStorage.removeItem('store')
+        localStorage.removeItem('user')
         userStore.loginError = msg
 
         //this code handles redirecting them back to the page they were trying to get to after they login
@@ -79,8 +79,6 @@ export function responseInterceptor({ response }) {
 
 export function requestInterceptor(config) {
   if (
-    store &&
-    store.state &&
     userStore?.jwt &&
     (config.baseURL?.indexOf(VITE_BASE_API) > -1 ||
       config.url.indexOf(VITE_BASE_API) > -1)

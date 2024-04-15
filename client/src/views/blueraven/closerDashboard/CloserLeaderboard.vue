@@ -74,7 +74,7 @@
   import DatetimePickerInput from "@/components/DatetimePickerInput";
   import {getCurrentInstance, ref, computed, onMounted} from "vue";
 
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   import {useUserStore} from "@/stores/UserStore.js";
 
   const userStore = useUserStore()
@@ -117,10 +117,10 @@
 
             bookingsLoading.value = false
 
-            handleHidingGlobalLoader(vueInstance, status)
+             handleHidingGlobalLoader( status)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            snackbar('ERROR', `Error retrieving bookings.`)
+            appStore.showSnack('ERROR', `Error retrieving bookings.`)
             bookingsLoading.value = false
           }
         }

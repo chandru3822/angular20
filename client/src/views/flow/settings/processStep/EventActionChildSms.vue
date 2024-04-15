@@ -138,13 +138,12 @@ import {
 } from '@/helpers/helpers'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   selectedActionIndex: Number,
@@ -176,7 +175,7 @@ const loadChildTemplates = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Templates')
+    appStore.showSnack('ERROR', 'Error Loading Templates')
     appStore.loading = false
   }
 }
@@ -193,11 +192,11 @@ const saveSmsToAction = async () => {
     addSmsCallback(action.id, data)
     selectedTemplate.value = {}
     selectedTeams.value = []
-    snackbar('SUCCESS', 'SMS Template Added To Event Action')
+    appStore.showSnack('SUCCESS', 'SMS Template Added To Event Action')
     handleHidingGlobalLoader(this, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding SMS Template to Event Action')
+    appStore.showSnack('ERROR', 'Error Adding SMS Template to Event Action')
     appStore.loading = false
   }
 }
@@ -206,11 +205,11 @@ const deleteSmsFromAction = async (id) => {
   try {
     const {status} = await deleteRequest(`/processStep/${processStepId}/event/${action.id}/deleteSms/${id}`)
     deleteSmsCallback(action.id, id)
-    snackbar('SUCCESS', 'SMS Template Deleted From Event Action')
+    appStore.showSnack('SUCCESS', 'SMS Template Deleted From Event Action')
     handleHidingGlobalLoader(this, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting SMS Template From Event Action')
+    appStore.showSnack('ERROR', 'Error Deleting SMS Template From Event Action')
     appStore.loading = false
   }
 }

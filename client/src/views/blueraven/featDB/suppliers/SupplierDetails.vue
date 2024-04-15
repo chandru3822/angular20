@@ -109,7 +109,7 @@ import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 
 const appStore = useAppStore()
@@ -118,7 +118,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const itemType = ref("supplier")
 const dataWasChanged = ref(false)
@@ -171,7 +170,7 @@ const getSupplier = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)
-    snackbar("ERROR", "Error retrieving Supplier")
+    appStore.showSnack("ERROR", "Error retrieving Supplier")
 
     appStore.loading = false
   }
@@ -181,7 +180,7 @@ const validateForm = () => {
   if (supplierForm.value.validate()) {
     saveSupplier()
   } else {
-    snackbar('ERROR', 'Missing Required Fields')
+    appStore.showSnack('ERROR', 'Missing Required Fields')
 
   }
 }
@@ -199,7 +198,7 @@ const getCustomFieldGroupAssignmentsForScreen = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)
-    snackbar("ERROR", "Error retrieving custom fields")
+    appStore.showSnack("ERROR", "Error retrieving custom fields")
 
     appStore.loading = false
   }
@@ -233,12 +232,12 @@ const saveSupplier = async() => {
     const {data, status} = await putRequest("/featDb/supplier", supplier.value, "blueraven")
     supplier.value = cloneDeep(data)
     dataWasChanged.value = false
-    snackbar("SUCCESS", "Supplier saved")
+    appStore.showSnack("SUCCESS", "Supplier saved")
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)
-    snackbar("ERROR", "Error saving Supplier")
+    appStore.showSnack("ERROR", "Error saving Supplier")
 
     appStore.loading = false
   }

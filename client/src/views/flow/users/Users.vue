@@ -437,11 +437,11 @@
                             return-object
                             @change="handleTemplateSelection">
 
-                    <template slot="item" slot-scope="data">
+                    <template v-slot:item="{ props, item }">
                       <!-- HTML that describes how select should render items when the select is open -->
                       <div class="ellipse">
-                        <h4 class="template-title">{{ data.item.title }}<br /></h4>
-                        <span class="template-message">{{ data.item.message }}</span>
+                        <h4 class="template-title">{{ item.title }}<br /></h4>
+                        <span class="template-message">{{ item.message }}</span>
                       </div>
                     </template>
                   </a-select>
@@ -573,7 +573,7 @@ import { useFileStore } from '@/stores/FileStore.js'
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const fileStore = useFileStore()
@@ -582,7 +582,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 
 const defaultEmailMessage = '${user.firstName},\n'
@@ -864,7 +864,7 @@ const getAllUsers = async () => {
     // handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving All Users')
+    appStore.showSnack('ERROR', 'Error Retrieving All Users')
 
     allUsersLoading.value = false
     // appStore.loading = false
@@ -930,7 +930,7 @@ const getUsers = async (resetPage) => {
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Users')
+      appStore.showSnack('ERROR', 'Error Retrieving Users')
 
       appStore.loading = false
     }
@@ -996,7 +996,7 @@ const getImageUsers = async (resetPage) => {
       handleHidingGlobalLoader( status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Users')
+      appStore.showSnack('ERROR', 'Error Retrieving Users')
 
       appStore.loading = false
     }
@@ -1045,7 +1045,7 @@ const getTheOrgFilters = async (initialLoad) => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Org Filters')
+    appStore.showSnack('ERROR', 'Error Retrieving Org Filters')
 
     appStore.loading = false
   }
@@ -1085,7 +1085,7 @@ const getStatuses = async (useSavedSearch) => {
     // appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving User Statuses')
+    appStore.showSnack('ERROR', 'Error Retrieving User Statuses')
 
     appStore.loading = false
   }
@@ -1096,7 +1096,7 @@ const getPositions = async () => {
     positions.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Positions')
+    appStore.showSnack('ERROR', 'Error Retrieving Positions')
 
     appStore.loading = false
   }
@@ -1263,7 +1263,7 @@ const fetchTeamsForUser = async () => {
     await getSmsTeamTemplates();
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error fetching SMS Teams')
+    appStore.showSnack('ERROR', 'Error fetching SMS Teams')
     conversationIsLoading.value = false
   }
 }
@@ -1278,7 +1278,7 @@ const getSmsTeamTemplates = async() => {
     selectableTemplates.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving templates')
+    appStore.showSnack('ERROR', 'Error retrieving templates')
 
   }
 }
@@ -1309,7 +1309,7 @@ const sendMessage = async(sendEmail, sendText) => {
     if (sendText) {
       if (textMessage.value && textMessage.value.length > 1599) {
         let textOverflowLength = textMessage.value.length - 1599;
-        snackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
+        appStore.showSnack('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
 
         messageSuccess.value = false
         appStore.loading = false
@@ -1333,7 +1333,7 @@ const sendMessage = async(sendEmail, sendText) => {
       message = 'Error Sending Message: ' + matches[1]
     }
 
-    snackbar('ERROR', message)
+    appStore.showSnack('ERROR', message)
 
     appStore.loading = false
     return
@@ -1348,7 +1348,7 @@ const sendMessage = async(sendEmail, sendText) => {
     msg = 'Text messages were sent successfully'
   }
 
-  snackbar('SUCCESS', msg)
+  appStore.showSnack('SUCCESS', msg)
   msgDialog.value = false
   emailSubject.value= ''
   emailMessage.value= defaultEmailMessage
@@ -1391,7 +1391,7 @@ const uploadTextAttachment = async (files) => {
   } catch(e) {
     appStore.loading = false
     logError(e)
-    snackbar('ERROR', 'Error Uploading File')
+    appStore.showSnack('ERROR', 'Error Uploading File')
 
   }
 }
@@ -1401,7 +1401,7 @@ const getEmailSenders = async() => {
     fromEmails.value = data.map(e => e.emailAddress)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Email Addresses')
+    appStore.showSnack('ERROR', 'Error Retrieving Email Addresses')
 
   }
 }
@@ -1446,7 +1446,7 @@ const exportCsv = async() => {
     saveAs(blob, 'Users.csv')
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error exporting user data')
+    appStore.showSnack('ERROR', 'Error exporting user data')
 
   }
 }

@@ -399,7 +399,6 @@ import moment from 'moment-timezone'
 import {DateTime} from 'luxon'
 import SpinnerInline from '@/components/SpinnerInline'
 import {getStatusClass} from '@/services/eventStatusTypeService'
-import Vue2Filters from 'vue2-filters'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import ActionButton from "./ActionButton";
@@ -408,7 +407,7 @@ import { useProjectStore } from '@/stores/ProjectStore.js'
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
 
 const projectStore = useProjectStore()
@@ -418,7 +417,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
+
 const vuetify = vueInstance.$vuetify
 
 const props = defineProps({
@@ -684,7 +683,7 @@ const getStatusesAssignedToEvent = async() => {
     companyEventStatuses.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -701,7 +700,7 @@ const userCanScheduleLeadAllocation = async() => {
       schedulerCanEdit.value = data
     } catch (e) {
       logError(e)
-      snackbar('ERROR', 'Error Checking Scheduler Round Robin')
+      appStore.showSnack('ERROR', 'Error Checking Scheduler Round Robin')
 
     } finally {
       schedulerLoading.value = false
@@ -717,7 +716,7 @@ const userCanScheduleRemoteLeadAllocation = async() => {
       showRemoteSearch.value = data
     } catch (e) {
       logError(e)
-      snackbar('ERROR', 'Error Checking Scheduler Round Robin')
+      appStore.showSnack('ERROR', 'Error Checking Scheduler Round Robin')
 
     } finally {
       schedulerLoading.value = false
@@ -739,7 +738,7 @@ const doEventAction = async (action) => {
 
     const {data} = await postRequest(`/projectProcessStep/${projectProcessStepId.value}/event/${selectedEvent.value.id}/action/${action.id}/perform`, params)
 
-    snackbar('SUCCESS', 'Action Completed')
+    appStore.showSnack('SUCCESS', 'Action Completed')
 
 
     //calls fn that tells the upcoming events to update
@@ -778,7 +777,7 @@ const doEventAction = async (action) => {
     console.error('*** ERROR ***', e)
     let saveMismatch = e.data?.message === 'Save Version Mismatch'
     let msg = saveMismatch ? `Cannot save changes, this event has been updated by another user. Click <a class="white--text underline" href="">here</a> to refresh.` : 'Error Performing Event'
-    snackbar('ERROR', msg, saveMismatch)
+    appStore.showSnack('ERROR', msg, saveMismatch)
 
     appStore.loading = false
   }
@@ -867,7 +866,7 @@ const getEventDetails = async () => {
     if (data && data.projectId && data.projectId !== projectId.value) {
       projectMismatch.value = true
       eventDetailsLoading.value = false
-      snackbar('ERROR', `Invalid Request: Project Mismatch`)
+      appStore.showSnack('ERROR', `Invalid Request: Project Mismatch`)
 
     } else {
       selectedEvent.value = data
@@ -902,7 +901,7 @@ const getEventDetails = async () => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     let msg = e?.data?.message || 'Error Retrieving Details'
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
 
   }
 }
@@ -919,7 +918,7 @@ const deleteEvent = async  () => {
     router.push(`/project/${projectId.value}/processStep/${projectProcessStepId.value}`)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Event')
+    appStore.showSnack('ERROR', 'Error Deleting Event')
 
     appStore.loading = false
   }
@@ -948,7 +947,7 @@ const saveEventDetails = async(forceSave) => {
     dirtyCfvs.value = []
     ppseFieldsContainer.value.$el.scrollTop = 0
     selectedEvent.value = data
-    snackbar('SUCCESS', 'Fields Saved')
+    appStore.showSnack('SUCCESS', 'Fields Saved')
 
     emit('refresh-upcoming-events')
     if (data.uniqueBehaviorTypeId === 1) {
@@ -963,7 +962,7 @@ const saveEventDetails = async(forceSave) => {
       logError(e)
       let saveMismatch = e.data?.message === 'Save Version Mismatch'
       let msg = saveMismatch ? `<div class="text-center">Cannot Save Changes. <br/>This event has been updated by another user. <br/>Click <a class="white--text underline" href="">here</a> to refresh.</div>` : 'Error Performing Event'
-      snackbar('ERROR', msg, saveMismatch)
+      appStore.showSnack('ERROR', msg, saveMismatch)
 
     }
   } finally {
@@ -1010,7 +1009,7 @@ const getAvailableTimeSlots = async(remote) => {
     remoteSearchLoading.value = false
     inPersonSearchLoading.value = false
     let errorMsg = e.data ? e.data.message : 'Error Retrieving Time Slots'
-    snackbar('ERROR', errorMsg)
+    appStore.showSnack('ERROR', errorMsg)
 
   }
 }
@@ -1054,7 +1053,7 @@ const saveCloserAppointment = async() => {
   } catch (e) {
     logError(e)
     let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'
-    snackbar('ERROR', msg)
+    appStore.showSnack('ERROR', msg)
 
   } finally {
     appStore.loading = false
@@ -1076,7 +1075,7 @@ const checkAvailabilityDate = () => {
     }).plus({days: roundRobinNumberOfDays.value})
     if (selectedDate > cappedDate) {
       availabilityDateField.value.dateValue = null
-      snackbar('ERROR', `You can only schedule appointments ${roundRobinNumberOfDays.value} days in advance`)
+      appStore.showSnack('ERROR', `You can only schedule appointments ${roundRobinNumberOfDays.value} days in advance`)
 
     } else {
       populateDirtyCfvs(availabilityDateField.value)

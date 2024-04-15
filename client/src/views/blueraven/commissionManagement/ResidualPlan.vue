@@ -332,8 +332,8 @@ import { storeToRefs } from 'pinia'
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
-import { useBrsStore } from '@/stores/BrsStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
+import { useBrsStore } from '@/stores/BrsStore.js'
 
 const brsStore = useBrsStore()
 const { commissionPositionId } = storeToRefs(brsStore)
@@ -343,7 +343,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const cloneDialog = ref(false)
 const addUser = ref(false)
@@ -447,7 +446,7 @@ const getResidualPlanDetails = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Residual Plan Details')
+    appStore.showSnack('ERROR', 'Error Loading Residual Plan Details')
 
     appStore.loading = false
   }
@@ -533,7 +532,7 @@ const savePlan = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Residual Plan')
+    appStore.showSnack('ERROR', 'Error Saving Residual Plan')
 
     appStore.loading = false
   }
@@ -542,12 +541,12 @@ const approvePlan = async () => {
   appStore.loading = true
   try {
     const {data, status} = await postRequest(`/commissionManagement/residuals/plan/${planId.value}/approve`, {}, 'blueraven')
-    snackbar('SUCCESS', 'Residual Plan Approved')
+    appStore.showSnack('SUCCESS', 'Residual Plan Approved')
     residualPlan.value = data
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Approving Residual Plan')
+    appStore.showSnack('ERROR', 'Error Approving Residual Plan')
 
     appStore.loading = false
   }
@@ -558,12 +557,12 @@ const updateAssignedUser = async(item) => {
     const {status} = await postRequest(`/commissionManagement/residuals/${planId.value}/updateUser`, item, 'blueraven')
     assignedUserExpanded.value = []
     userHistory.value = []
-    snackbar('SUCCESS', 'Assigned User Updated')
+    appStore.showSnack('SUCCESS', 'Assigned User Updated')
 
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating Assigned User')
+    appStore.showSnack('ERROR', 'Error Updating Assigned User')
 
     appStore.loading = false
   }
@@ -584,7 +583,7 @@ const getUsersToAdd = async(query) => {
       usersLoading.value = false
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Residual Plan Users')
+      appStore.showSnack('ERROR', 'Error Retrieving Residual Plan Users')
 
       appStore.loading = false
     }
@@ -601,14 +600,14 @@ const addUserToPlan = async() => {
     }
     const {data, status} = await postRequest(`/commissionManagement/residuals/${planId.value}/users`, params, 'blueraven')
     residualPlan.value.users = data
-    snackbar('SUCCESS', 'Residual Plan User Added')
+    appStore.showSnack('SUCCESS', 'Residual Plan User Added')
 
     addUser.value = false
     newUser.value = {}
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Residual Plan User')
+    appStore.showSnack('ERROR', 'Error Adding Residual Plan User')
 
     appStore.loading = false
   }
@@ -618,13 +617,13 @@ const deleteUserFromPlan = async() => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/commissionManagement/residuals/${planId.value}/residualPlanUser/${residualPlanUser.id}`, 'blueraven')
-    snackbar('SUCCESS', 'Residual Plan User Deleted')
+    appStore.showSnack('SUCCESS', 'Residual Plan User Deleted')
 
     residualPlanUser.archived = true
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Residual Plan User')
+    appStore.showSnack('ERROR', 'Error Deleting Residual Plan User')
 
     appStore.loading = false
   }
@@ -646,7 +645,7 @@ const getUserHistory = async(userId) => {
   } catch (e) {
     errorLoadingUserHistory.value = true
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving User History')
+    appStore.showSnack('ERROR', 'Error Retrieving User History')
 
     appStore.loading = false
   }
@@ -662,7 +661,7 @@ const addLevelToPlan = async() => {
     addLevel.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Adding Level')
+    appStore.showSnack('ERROR', 'Error Adding Level')
 
     appStore.loading = false
   }
@@ -672,7 +671,7 @@ const deleteLevel = async () => {
   appStore.loading = true
   try {
     const {status} = await deleteRequest(`/commissionManagement/residuals/plan/${planId.value}/allocation/${residualPlanAllocationId}`, 'blueraven')
-    snackbar('SUCCESS', 'Level Deleted')
+    appStore.showSnack('SUCCESS', 'Level Deleted')
 
     residualPlan.value.residualPlanAllocations = residualPlan.value.residualPlanAllocations.filter(rpa => {
       return rpa.id !== residualPlanAllocationId
@@ -680,7 +679,7 @@ const deleteLevel = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Level')
+    appStore.showSnack('ERROR', 'Error Deleting Level')
 
     appStore.loading = false
   }
@@ -692,7 +691,7 @@ const updateLevel = async(item) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving Level')
+    appStore.showSnack('ERROR', 'Error Saving Level')
 
     appStore.loading = false
   }

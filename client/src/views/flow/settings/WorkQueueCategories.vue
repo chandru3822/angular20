@@ -180,11 +180,11 @@
   import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
   import { useUserStore } from '@/stores/UserStore.js'
-  import { useAppStore } from '@/stores/AppStorePinia.js'
+  import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
-  const snackbar = vueInstance.$snackbar
+
   const store = vueInstance.$store
   const userStore = useUserStore()
 
@@ -282,7 +282,7 @@
       } catch (e) {
         positionsLoading.value = false
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Retrieving Positions')
+        appStore.showSnack('ERROR', 'Error Retrieving Positions')
 
         appStore.loading = false
       }
@@ -296,7 +296,7 @@
       if (!workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hidden) {
         workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenWhiteListedPositions = []
       }
-      snackbar('SUCCESS', 'Saved Successfully')
+      appStore.showSnack('SUCCESS', 'Saved Successfully')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
@@ -319,7 +319,7 @@
       workQueueLoading.value = false;
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Retrieving Work Queue Categories')
+      appStore.showSnack('ERROR', 'Error Retrieving Work Queue Categories')
 
       appStore.loading = false
     }
@@ -329,12 +329,12 @@
     appStore.loading = true
     try {
       const {status} = await deleteRequest(`/workQueueCategory/${typeId}`)
-      snackbar('SUCCESS', 'Successfully Deleted Work Queue Category')
+      appStore.showSnack('SUCCESS', 'Successfully Deleted Work Queue Category')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Deleting Work Queue Category')
+      appStore.showSnack('ERROR', 'Error Deleting Work Queue Category')
 
       appStore.loading = false
     }
@@ -345,7 +345,7 @@
     try {
       const {data, status} = await postRequest(`/workQueueCategory`, newCategory.value)
 
-      snackbar('SUCCESS', 'Work Queue Category Added')
+      appStore.showSnack('SUCCESS', 'Work Queue Category Added')
 
 
       // add it to the records already on the screen
@@ -359,7 +359,7 @@
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Adding Work Queue Category')
+      appStore.showSnack('ERROR', 'Error Adding Work Queue Category')
 
       appStore.loading = false
     }
@@ -370,12 +370,12 @@
       selectedWorkQueueCategoryId.value = null
       const {status} = await putRequest(`/workQueueCategory`, wqc)
       wqc.showColor = false
-      snackbar('SUCCESS', 'Work Queue Category Saved')
+      appStore.showSnack('SUCCESS', 'Work Queue Category Saved')
 
       handleHidingGlobalLoader(status)
     } catch (e) {
       console.error('*** ERROR ***', e)
-      snackbar('ERROR', 'Error Saving Work Queue Category')
+      appStore.showSnack('ERROR', 'Error Saving Work Queue Category')
 
       appStore.loading = false
     }
@@ -385,11 +385,11 @@
       appStore.loading = true
       try {
         const {status} = await putRequest(`/workQueueCategory/order`, rows)
-        snackbar('SUCCESS', 'Work Queue Category Order Saved')
+        appStore.showSnack('SUCCESS', 'Work Queue Category Order Saved')
         handleHidingGlobalLoader(status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'Error Saving Work Queue Order')
+        appStore.showSnack('ERROR', 'Error Saving Work Queue Order')
 
         appStore.loading = false
       }

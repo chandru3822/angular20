@@ -303,7 +303,8 @@ this.$router.push('/login')
 <td>
 
 ```
-const router = vueInstance.$router
+import {useRouter} from "vue-router/composables"
+const router = useRouter()
 router.push('/login')
 ```
 </td>
@@ -326,7 +327,9 @@ this.$route.params.projectId
 <td>
 
 ```
-vueInstance.$route.params?.projectId
+import {useRoute} from "vue-router/composables"
+const route = useRoute()
+route.params?.projectId
 ```
 </td>
 </tr>
@@ -401,8 +404,8 @@ this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 <td>
 
 ```
-const snackbar = vueInstance.$snackbar
-snackbar('SUCCESS', 'Announcement Saved')
+const snackbar = 
+ appStore.showSnack('SUCCESS', 'Announcement Saved')
 ```
 </td>
 </tr>
@@ -425,7 +428,7 @@ handleHidingGlobalLoader(this, status)
 <td>
 
 ```
-handleHidingGlobalLoader(vueInstance, status)
+ handleHidingGlobalLoader( status)
 ```
 </td>
 </tr>
@@ -513,7 +516,7 @@ watch(options, () => {
 
 OR, when the watched prop is like:
   
-watch(() => vueInstance.$route.params.id, () => {
+watch(() => route.params.id, () => {
   //do stuff
 }  
 ```

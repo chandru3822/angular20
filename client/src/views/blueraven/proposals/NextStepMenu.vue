@@ -199,12 +199,11 @@ import {
 
 import { getCurrentInstance, toRefs, computed, ref } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
-const snackbar = vueInstance.$snackbar
 
 const emit = defineEmits(['update'])
 
@@ -331,7 +330,7 @@ const submitCreditCheck = async () => {
           'blueraven'
         )
       } catch (e) {
-        snackbar('ERROR', 'Error updating email')
+        appStore.showSnack('ERROR', 'Error updating email')
         return
       }
     }
@@ -343,7 +342,7 @@ const submitCreditCheck = async () => {
       'blueraven'
     )
     if (status !== 200) {
-      snackbar('ERROR', data?.message || 'Error creating credit application')
+      appStore.showSnack('ERROR', data?.message || 'Error creating credit application')
       return
     }
 
@@ -353,7 +352,7 @@ const submitCreditCheck = async () => {
       open(data, '_blank')
     }
   } catch (e) {
-    snackbar('ERROR', e?.data.message || 'Error creating credit application')
+    appStore.showSnack('ERROR', e?.data.message || 'Error creating credit application')
   }
 }
 
@@ -369,10 +368,10 @@ const lockProposal = async () => {
       {},
       'blueraven'
     )
-    snackbar('SUCCESS', 'Proposal locked')
+    appStore.showSnack('SUCCESS', 'Proposal locked')
     emit('update', data)
   } catch (e) {
-    snackbar('ERROR', e?.data?.message)
+    appStore.showSnack('ERROR', e?.data?.message)
     logError(e)
   } finally {
     appStore.loading = false
@@ -398,14 +397,14 @@ const sendDocs = async (docType) => {
     const { success, message } = data
     if (success) {
       const msg = DOCS_MESSAGE[docType]
-      snackbar('SUCCESS', msg.message)
+      appStore.showSnack('SUCCESS', msg.message)
       emit('update', { ...proposal.value, [msg.key]: true })
     } else {
-      snackbar('ERROR', message)
+      appStore.showSnack('ERROR', message)
     }
   } catch (e) {
     logError(e)
-    snackbar('ERROR', e?.data?.message)
+    appStore.showSnack('ERROR', e?.data?.message)
   } finally {
     appStore.loading = false
   }

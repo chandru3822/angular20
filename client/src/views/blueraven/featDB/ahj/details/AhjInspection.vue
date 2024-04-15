@@ -256,7 +256,7 @@ import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -264,7 +264,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 
 const itemType = ref('inspection')
@@ -342,7 +341,7 @@ const getAhjInspection = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving AHJ Inspection')
+    appStore.showSnack('ERROR', 'Error retrieving AHJ Inspection')
     appStore.loading = false
   }
 }
@@ -361,7 +360,7 @@ const getCustomFieldGroupAssignmentsForScreen = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving custom fields')
+    appStore.showSnack('ERROR', 'Error retrieving custom fields')
     appStore.loading = false
   }
 }
@@ -370,7 +369,7 @@ const validateForm = () => {
   if (ahjInspectionForm.value.validate()) {
     saveDialog.value = true
   } else {
-    snackbar('ERROR', 'Missing Required Fields')
+    appStore.showSnack('ERROR', 'Missing Required Fields')
 
   }
 }
@@ -417,7 +416,7 @@ const updateAhjInspection = async() => {
         })
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'An error occurred when preparing to update all inspections in ' + ahjInspection.value.stateName)
+        appStore.showSnack('ERROR', 'An error occurred when preparing to update all inspections in ' + ahjInspection.value.stateName)
       }
     }
 
@@ -433,7 +432,7 @@ const updateAhjInspection = async() => {
         })
       } catch (e) {
         console.error('*** ERROR ***', e)
-        snackbar('ERROR', 'An error occurred when preparing to update all inspections in ' + ahjInspection.value.stateName)
+        appStore.showSnack('ERROR', 'An error occurred when preparing to update all inspections in ' + ahjInspection.value.stateName)
       }
     }
 
@@ -447,12 +446,12 @@ const updateAhjInspection = async() => {
     dataWasChanged.value = false
     resetCustomFieldValueWasChangedFlags()
     let successMessage = updateAllInState ? 'All inspections in ' + ahjInspection.value.stateName + ' have been updated successfully' : updateAllInMetro ? 'All inspections in ' + ahjInspection.value.metroArea + ' have been updated successfully': 'Inspection updated successfully'
-    snackbar('SUCCESS', successMessage)
+    appStore.showSnack('SUCCESS', successMessage)
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let errorMessage = updateAllInState ? 'An error occurred when attempting to update all inspections in ' + ahjInspection.value.stateName : updateAllInMetro ? 'An error occurred when attempting to update all inspections in ' + ahjInspection.value.metroArea : 'Failed to update inspection'
-    snackbar('ERROR', errorMessage)
+    appStore.showSnack('ERROR', errorMessage)
     appStore.loading = false
   }
 

@@ -135,13 +135,12 @@ import moment from 'moment'
 
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
-const snackbar = vueInstance.$snackbar
 
 const addNew = ref(false)
 const timezone = ref(userStore.timezone.value)
@@ -181,15 +180,15 @@ const saveCert = async (isNew, cert) => {
       certs.value.push(data)
       addNew.value = false
       selectedCert.value = {}
-      snackbar('SUCCESS', 'Cert Added')
+      appStore.showSnack('SUCCESS', 'Cert Added')
     } else {
       expanded.value = []
-      snackbar('SUCCESS', 'Cert Updated')
+      appStore.showSnack('SUCCESS', 'Cert Updated')
     }
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', isNew ? 'Error Adding Cert' : 'Error Updating Cert')
+    appStore.showSnack('ERROR', isNew ? 'Error Adding Cert' : 'Error Updating Cert')
     appStore.loading = false
   }
 }
@@ -197,11 +196,11 @@ const sendEmails = async () => {
   appStore.loading = true
   try {
     const {status} = await postRequest(`/cert/sendEmails`, {})
-    snackbar('SUCCESS', 'Emails Sent')
+    appStore.showSnack('SUCCESS', 'Emails Sent')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Sending Emails')
+    appStore.showSnack('ERROR', 'Error Sending Emails')
     appStore.loading = false
   }
 }
@@ -217,7 +216,7 @@ const getCerts = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Certs')
+    appStore.showSnack('ERROR', 'Error Loading Certs')
     appStore.loading = false
   }
 }
@@ -228,11 +227,11 @@ const deleteCert = async () => {
   try {
     const {status} = await deleteRequest(`/cert/${cert.id}`)
     cert.archived = true
-    snackbar('SUCCESS', 'Cert Deleted')
+    appStore.showSnack('SUCCESS', 'Cert Deleted')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Cert')
+    appStore.showSnack('ERROR', 'Error Deleting Cert')
     appStore.loading = false
   }
 }

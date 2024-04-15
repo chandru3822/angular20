@@ -184,7 +184,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -192,7 +192,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   canEdit: {
@@ -257,7 +256,7 @@ const getAssignedFields = async () => {
     assignedFields.value = data
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching assigned fields')
+    appStore.showSnack('ERROR', 'Error fetching assigned fields')
 
   }
 }
@@ -283,7 +282,7 @@ const getAvailableFields = async () => {
     }
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching available fields')
+    appStore.showSnack('ERROR', 'Error fetching available fields')
 
   }
 }
@@ -298,7 +297,7 @@ const getProcessStepEvents = async() => {
     }
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error fetching process step events')
+    appStore.showSnack('ERROR', 'Error fetching process step events')
 
   }
 }
@@ -318,7 +317,7 @@ const addNewField = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error adding field to smartlist')
+    appStore.showSnack('ERROR', 'Error adding field to smartlist')
 
     appStore.loading = false
   }
@@ -334,7 +333,7 @@ const deleteField = async () => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error removing field from smartlist')
+    appStore.showSnack('ERROR', 'Error removing field from smartlist')
 
     appStore.loading = false
   }
@@ -354,7 +353,7 @@ const reorderFields = async ({moved}) => {
     return {status}
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error updating field order')
+    appStore.showSnack('ERROR', 'Error updating field order')
 
     appStore.loading = false
     return {status: 500}

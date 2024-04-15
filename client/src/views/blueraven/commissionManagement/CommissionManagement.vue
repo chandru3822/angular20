@@ -37,7 +37,7 @@
 
 <script setup>
 import {useUserStore} from '@/stores/UserStore.js'
-import {useBrsStore} from '@/stores/BrsStorePinia.js'
+import {useBrsStore} from '@/stores/BrsStore.js'
 import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import { storeToRefs } from 'pinia'
 import {useRoute} from "vue-router/composables";

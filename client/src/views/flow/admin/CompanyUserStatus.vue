@@ -65,13 +65,13 @@ import {getUserStatusTypes} from '@/services/userService'
 import {getCurrentInstance, onMounted, ref} from 'vue'
 
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
-const snackbar = vueInstance.$snackbar
+
 
 const statusTypes = ref([])
 const userId = ref(userStore.details.id)
@@ -95,7 +95,7 @@ const getCompanyUserStatusTypes = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Company User Status Types')
+    appStore.showSnack('ERROR', 'Error Loading Company User Status Types')
     appStore.loading = false
   }
 }
@@ -104,11 +104,11 @@ const saveCompanyUserStatusType = async (type) => {
   try {
     const {status} = await putRequest(`/user/statusType`, type)
     expanded.value = []
-    snackbar('SUCCESS', 'User Status Type Updated')
+    appStore.showSnack('SUCCESS', 'User Status Type Updated')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Updating User Status')
+    appStore.showSnack('ERROR', 'Error Updating User Status')
     appStore.loading = false
   }
 }

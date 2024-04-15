@@ -72,8 +72,8 @@
 import { getCurrentInstance, computed, toRefs, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
-import { useBrsStore } from '@/stores/BrsStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
+import { useBrsStore } from '@/stores/BrsStore.js'
 
 const brsStore = useBrsStore()
 const appStore = useAppStore()
@@ -82,7 +82,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   userFullName: String,
@@ -168,7 +167,7 @@ const exportData = async () => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Exporting Data')
+    appStore.showSnack('ERROR', 'Error Exporting Data')
 
     appStore.loading = false
   }

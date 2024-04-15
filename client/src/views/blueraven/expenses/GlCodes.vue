@@ -139,7 +139,7 @@ import constants from "@/helpers/constants.js";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -147,8 +147,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
-const vuetify = vueInstance.$vuetify
+ const vuetify = vueInstance.$vuetify
 
 const createNew = ref(false)
 const dataLoading = ref(true)
@@ -189,7 +188,7 @@ const getTheGlCodes = async() => {
     dataLoading.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Retrieving Data')
+    appStore.showSnack('ERROR', 'Error Retrieving Data')
 
   }
 }
@@ -201,7 +200,7 @@ const deleteGlCode = async(item) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting GL Code')
+    appStore.showSnack('ERROR', 'Error Deleting GL Code')
 
     appStore.loading = false
   }
@@ -221,7 +220,7 @@ const saveGlCode = async(item, isNew) => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Saving GL Code')
+    appStore.showSnack('ERROR', 'Error Saving GL Code')
 
     appStore.loading = false
   }

@@ -118,13 +118,13 @@ import orderBy from 'lodash.orderby'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
-const snackbar = vueInstance.$snackbar
+
 
 const isCompanyRoot = ref(userStore.isCompanyRoot)
 const addNew = ref(false)
@@ -171,15 +171,15 @@ const saveFeature = async (isNew, feature) => {
       companyFeatures.value.push(data)
       addNew.value = false
       selectedFeature.value = {}
-      snackbar('SUCCESS', 'Feature Added')
+      appStore.showSnack('SUCCESS', 'Feature Added')
     } else {
       expanded.value = []
-      snackbar('SUCCESS', 'Feature Updated')
+      appStore.showSnack('SUCCESS', 'Feature Updated')
     }
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', isNew ? 'Error Adding Feature' : 'Error Updating Feature')
+    appStore.showSnack('ERROR', isNew ? 'Error Adding Feature' : 'Error Updating Feature')
     appStore.loading = false
   }
 }
@@ -191,7 +191,7 @@ const getCompanyFeatures = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Features')
+    appStore.showSnack('ERROR', 'Error Loading Features')
     appStore.loading = false
   }
 }
@@ -203,7 +203,7 @@ const getFeatures = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Loading Features')
+    appStore.showSnack('ERROR', 'Error Loading Features')
     appStore.loading = false
   }
 }
@@ -213,11 +213,11 @@ const deleteFeature = async () => {
   try {
     const {status} = await deleteRequest(`${apiUrl.value}/${feature.id}`)
     feature.archived = true
-    snackbar('SUCCESS', 'Feature Deleted')
+    appStore.showSnack('SUCCESS', 'Feature Deleted')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Deleting Feature')
+    appStore.showSnack('ERROR', 'Error Deleting Feature')
     appStore.loading = false
   }
 }

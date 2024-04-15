@@ -24,11 +24,10 @@
 </template>
 
 <script setup>
-import { AppMutations } from '@/stores/AppStore'
-import { deleteRequest, getSnackbar, logError } from '@/helpers/helpers'
+import { deleteRequest, logError } from '@/helpers/helpers'
 import { getCurrentInstance, ref } from 'vue'
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const props = defineProps({
   smartlistId: {
@@ -60,28 +59,21 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['deleted'])
-
 let showDialog = ref(false)
-
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 const appStore = useAppStore()
 
 let deleteSmartlist = async () => {
 
-  let snackbar
-
   try {
     appStore.loading = true
     await deleteRequest(`/smartlist/${props.smartlistId}`)
-    snackbar = getSnackbar('SUCCESS', 'Smartlist Deleted')
+	appStore.showSnack('SUCCESS', 'Smartlist Deleted')
     emit('deleted')
   } catch (e) {
     logError(e)
-    snackbar = getSnackbar('ERROR', 'Unable to delete smartlist')
+	appStore.showSnack('ERROR', 'Unable to delete smartlist')
   } finally {
     appStore.loading = false
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
     showDialog.value = false
   }
 }

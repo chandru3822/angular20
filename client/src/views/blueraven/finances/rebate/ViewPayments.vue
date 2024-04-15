@@ -212,7 +212,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStorePinia.js'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -220,7 +220,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-const snackbar = vueInstance.$snackbar
 
 const defaultProjectPage = ref(getProjectPath().pathSuffix)
 const footerProps = ref({
@@ -369,7 +368,7 @@ const fetchPayments = async() => {
     }
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error retrieving rebate payments')
+    appStore.showSnack('ERROR', 'Error retrieving rebate payments')
 
   }
 }
@@ -429,7 +428,7 @@ const exportPayments = async() => {
     appStore.loading = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Error Exporting Proposal Logs')
+    appStore.showSnack('ERROR', 'Error Exporting Proposal Logs')
 
     appStore.loading = false
   }
@@ -450,14 +449,14 @@ const submitPay = async() => {
   submittingPay.value = true
   try {
     const {status} = await postRequest('/rebate/recurringPayment', newPayItem.value, 'blueraven')
-    snackbar('SUCCESS', 'Recurring Payment Saved')
+    appStore.showSnack('SUCCESS', 'Recurring Payment Saved')
 
     handleHidingGlobalLoader( status)
     await fetchPayments();
     submittingPay.value = false
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Failed to save Recurring Payment')
+    appStore.showSnack('ERROR', 'Failed to save Recurring Payment')
 
     appStore.loading = false
   }
@@ -489,7 +488,7 @@ const confirmPassword = async() => {
       let param = {paymentIds: paymentIdsToApprove.value}
       await postRequest('/rebate/approve', param, 'blueraven')
       window.location.reload()
-      snackbar('SUCCESS', 'Payment approved')
+      appStore.showSnack('SUCCESS', 'Payment approved')
 
     }
     passwordDialog.value = false;
@@ -497,7 +496,7 @@ const confirmPassword = async() => {
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
-    snackbar('ERROR', 'Failed to approve payment')
+    appStore.showSnack('ERROR', 'Failed to approve payment')
 
     passwordDialog.value = false;
     appStore.loading = false
