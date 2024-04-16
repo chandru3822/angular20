@@ -447,7 +447,7 @@ import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
 import { useUserStore } from '@/stores/UserStore.js'
 
 
-import {ref, onMounted, getCurrentInstance, computed, defineProps, watch} from "vue";
+import {ref, onMounted, toRefs, getCurrentInstance, computed, defineProps, watch} from "vue";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
@@ -462,6 +462,9 @@ const userStore = useUserStore()
 const props = defineProps({
   isProject: Boolean
 })
+
+const { isProject } = toRefs(props)
+
 const addNew = ref(false)
 const ownerPositionsChanged = ref(false)
 const objectType = ref({})
@@ -674,7 +677,6 @@ const iconOwner = () => {
         selectedAncillaryField.value = {}
         parent.value = {}
         addField.value = false
-        snackbar
         appStore.showSnack('SUCCESS', 'Field Added to Group')
 
         handleHidingGlobalLoader(status)

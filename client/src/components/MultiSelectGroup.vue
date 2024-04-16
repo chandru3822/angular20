@@ -163,7 +163,7 @@ const selectSome = (f, fieldName)  => {
   return f[fieldName]?.length > 0 && !selectAll(f)
 }
 const toggleSelectAllContent = ()  => {
-  vuetify.$nextTick(() => {
+  vueInstance.$nextTick(() => {
     if (selectAll()) {
       selected.value = []
       updateSelectedChanged()
