@@ -4,6 +4,7 @@
     :icon="!showText"
     :variant="showText ? 'text' : ''"
     class="pa-5"
+    id="qa-smartlist-copy"
     :disabled="disabled"
     prepend-icon="mdi-content-copy"
     :text="showText ? 'Duplicate' : ''"

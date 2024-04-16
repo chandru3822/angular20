@@ -10,6 +10,7 @@
               variant="text"
               to="/smartlist/editor"
               color="primary"
+              id="qa-add-smartlist"
               v-if="userCanAdd"
               text="Add Smartlist"
               prepend-icon="add"

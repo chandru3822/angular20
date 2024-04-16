@@ -4,6 +4,7 @@
       :icon="!showText"
       :variant="showText ? 'text' : ''"
       class="pa-5"
+      id="qa-smartlist-share"
       :disabled="disabled"
       color="unset"
   >

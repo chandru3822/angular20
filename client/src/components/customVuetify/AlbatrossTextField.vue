@@ -24,6 +24,7 @@
                 :outlined="variant === 'outlined'"
                 :solo="variant === 'solo'"
                 :maxlength="maxlength"
+                :autofocus="autofocus"
                 :persistent-hint="persistentHint"
                 :class="[customClasses]"
                 :label="label">
@@ -74,6 +75,7 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  autofocus: Boolean,
   required: Boolean,
   readonly: Boolean,
   disabled: Boolean,

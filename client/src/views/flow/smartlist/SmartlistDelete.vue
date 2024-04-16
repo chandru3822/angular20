@@ -4,6 +4,7 @@
   :icon="!showText"
   :variant="showText ? 'text' : ''"
   class="pa-5"
+  id="qa-smartlist-delete"
   :disabled="!smartlistId || disabled"
 >
   <template #default>
