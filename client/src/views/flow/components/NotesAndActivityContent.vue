@@ -496,14 +496,13 @@ const saveNote = async(n) => {
       n.showReply = false
       n.childNotes == null ? n.childNotes = [data] : n.childNotes.push(data)
     } else if (!n.id) {
-      notes.value.unshift(data)
       note.value = {}
     }
     if((isPsWqtNote.value || isEventWqtNote.value) && (!n.id || notes.value.findIndex(i => i.id === n.id) === 0)) {
       //if it is a new (non-child) note or edit to the first note, send the note back in the callback so the wq ui can be updated
-      props.callback(data)
+      props.callback(data, n.id === null)
     }
-    appStore.showSnack('SUCCESS', 'Note Added')
+    appStore.showSnack('SUCCESS', n.id === null ? 'Note Added' : 'Note Saved')
 
     dirtyNote.value = false
     savingNote.value = false

@@ -55,7 +55,7 @@
         <a-text-field
                       type="number"
                       label=""
-                      solo
+                      variant="solo"
                       :readonly="readonly"
                       :disabled="readonly"
                       @input="updateRecurrenceString"

@@ -6,6 +6,7 @@
       </div>
       <v-spacer></v-spacer>
       <a-btn
+          id="qa-delete-project-button"
           color="primary"
           class="float-right mr-1"
           :icon="isMobile"
@@ -29,6 +30,7 @@
             class="pl-1 pr-2 anchor"
             :to="`/project/${projectId}/${defaultProjectPage}`"
             color="unset"
+            id="qa-back-to-project-button"
             prepend-icon="arrow_left"
             text="Back to Project"
         ></a-btn>

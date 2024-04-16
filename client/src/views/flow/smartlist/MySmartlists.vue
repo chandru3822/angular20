@@ -4,6 +4,7 @@
       <v-card flat class="square-card pb-3 px-3 elevation-1" color="white">
         <a-text-field
           v-model="search"
+          id="qa-search-smartlist"
           prepend-inner-icon="mdi-magnify"
           label="Search"
           single-line

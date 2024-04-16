@@ -3,10 +3,12 @@
     <v-row>
       <v-col>
         <a-btn v-if="!addNew && userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')"
+               id="qa-add-appointment-button"
                          @click="addNew = !addNew" color="primary" class="mb-3" text="ADD APPOINTMENT"/>
         <v-card v-if="addNew" flat class="px-3">
-          <v-card-title>Add Schedule</v-card-title>
+          <v-card-title>Add Appointment</v-card-title>
           <a-text-field
+              id="qa-new-appt-title"
             v-model="newAppt.title"
             :maxlength="50"
             counter
@@ -14,11 +16,13 @@
             label="Title"
           ></a-text-field>
           <a-text-field
+              id="qa-new-appt-description"
             v-model="newAppt.description"
             placeholder=" "
             label="Description (optional)"
           ></a-text-field>
           <a-text-field
+              id="qa-new-appt-location"
             v-model="newAppt.location"
             placeholder=" "
             label="Location (optional)"
@@ -38,10 +42,12 @@
             :label="newAppt.allDay ? 'End Date' : 'End Time'"
           />
           <v-checkbox
+              id="qa-new-appt-all-day"
             v-model="newAppt.allDay"
             label="All Day"
           ></v-checkbox>
           <v-checkbox
+              id="qa-new-appt-repeat"
             v-model="newAppt.repeat"
             label="Repeat"
           ></v-checkbox>
@@ -69,6 +75,7 @@
                                text="CANCEL"
               />
               <a-btn color="primary"
+                     id="qa-new-appt-save-button"
                                @click="saveAppt(newAppt, false)" class="white--text"
                                :disabled="!newAppt.startTime || !newAppt.endTime || !newAppt.title || newAppt.title.length > 50"
                                text="SAVE"

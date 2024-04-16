@@ -12,11 +12,10 @@
                               label="Work Queue Category"
                               item-title="workQueueCategory"
                               item-value="id"
-                              solo
+                              variant="solo"
                               hide-details
                               :loading="categoriesLoading"
                               background-color="primary"
-                              dark
                               class="work-queue-selector d-inline-block clickable"
                               @input="loadBoth()"
               ></a-autocomplete>

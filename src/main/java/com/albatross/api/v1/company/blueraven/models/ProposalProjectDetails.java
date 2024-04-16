@@ -10,5 +10,5 @@ import java.util.Date;
 public class ProposalProjectDetails extends ProposalProject {
   //i needed some specific data so i changed from the flow project model to this one
   private String street1, city, state, postalCode, mobile;
-  private Date closerAppointmentStart;
+  private Date closerAppointmentStart, closerAppointmentEnd;
 }

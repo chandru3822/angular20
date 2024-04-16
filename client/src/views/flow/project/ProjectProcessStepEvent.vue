@@ -128,6 +128,7 @@
               <a-btn
                   class="ml-2 mt-1"
                   :class="{'mt-3': !isMobile}"
+                  id="qa-save-fields-button"
                   @click="checkFieldsForUnique"
                   :disabled="!userCanEdit || getIsEventReadonly()"
                   :icon="isMobile"

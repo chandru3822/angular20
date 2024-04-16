@@ -232,6 +232,7 @@
           <div>
             <a-btn
                 color="primary"
+                id="qa-save-fields-button"
                 class="ml-2 mt-1"
                 :class="{'mt-3': !isMobile}"
                 :icon="isMobile"

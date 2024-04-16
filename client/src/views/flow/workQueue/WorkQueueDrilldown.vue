@@ -68,12 +68,12 @@
               <th v-for="header in headers" :key="header.text" class="pa-2"
                   :style="{width: header.width ? header.width : 'auto',
                   'border-bottom': 'solid 1px #D8D9DA'}">
-                <v-text-field outlined
+                <a-text-field variant="outlined"
                               hide-details
                               class="filter-input"
                               v-model="filters[header.value]"
                               @input="filterResults()">
-                </v-text-field>
+                </a-text-field>
               </th>
             </tr>
           </template>
@@ -221,6 +221,7 @@
           :showNotes="true"
           :showActivity="false"
           :bordered="true"
+          :key="damnKeyThing"
           :notes="itemToUpdate ? itemToUpdate.notes : []"
           :is-ps-wqt-note="!workQueue.useEventData"
           :is-event-wqt-note="!!workQueue.useEventData"
@@ -267,6 +268,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
  const vuetify = vueInstance.$vuetify
 
+const damnKeyThing = ref(0)
 const showNotesModal = ref(false)
 const itemToUpdate = ref(null)
 const hideFutureFollowUps = ref(false)
@@ -635,7 +637,7 @@ const filterResults = () => {
   //we populate this so that if they hide/unhide future after doing some filtering we can get back to the filtered state
   filteredResults.value = cloneDeep(results.value)
 }
-const updateRowNotes = (item) => {
+const updateRowNotes = (item, isNew) => {
   //have to set the matching value in filteredResults...cuz we do and it is dumb
   let matchInFilteredResults = filteredResults.value.find(fr => fr.projectProcessStepEventId === results.value[notesPpsIndex.value].projectProcessStepEventId && fr.processStepEventWorkQueueTypeId === results.value[notesPpsIndex.value].processStepEventWorkQueueTypeId)
 
@@ -656,6 +658,10 @@ const updateRowNotes = (item) => {
   //also re-populate the entire notes array
   matchInFilteredResults.notes = results.value[notesPpsIndex.value].notes
 
+  if(isNew) {
+    itemToUpdate.value.notes = [ item, ...itemToUpdate.value.notes ]
+    damnKeyThing.value++
+  }
 }
 const closeNotesModal = () => {
   //this is dumb.  if you update the results before the modal closes things get weird
