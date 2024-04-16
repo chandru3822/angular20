@@ -8,7 +8,7 @@
                   multiple
                   placeholder="Select..."
                   height="35px"
-                  outlined
+                  variant="outlined"
                   class="user-filter-select"
                   @input="updateList"
   >

@@ -1,6 +1,7 @@
 <template>
   <SidePanelExpansionPanel v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
                            header="Active Events"
+                           id="qa-active-events-expansion"
                            :section-expanded="sectionExpanded"
                            :is-loading="activeEventsLoading"
                            @click="toggleCollapseExpand">

@@ -29,7 +29,7 @@
                           multiple
                           placeholder="Select Team(s)"
                           height="35px"
-                          outlined
+                          variant="outlined"
                           class="team-select"
           >
             <template  v-slot:selection="{item, index}">
@@ -91,7 +91,7 @@
                               multiple
                               placeholder="Select Team(s)"
                               height="35px"
-                              outlined
+                              variant="outlined"
                               class="team-select"
               >
                 <template  v-slot:selection="{item, index}">

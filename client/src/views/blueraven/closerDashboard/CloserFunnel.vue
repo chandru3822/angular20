@@ -628,8 +628,8 @@
                           placeholder="Type to filter..."
                           single-line
                           hide-details
-                          outlined
-                          dense
+                          variant="outlined"
+                          density="compact"
             ></a-text-field>
             <span id="funnel-drilldown-row-count">
             Records: {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}

@@ -125,9 +125,9 @@
             <input type="checkbox" v-else disabled readonly>
             <a-text-field
                           type="number"
-                          solo
+                          variant="solo"
                           single-line
-                          dense
+                          density="compact"
                           hide-details
                           :disabled="!userCanEdit"
                           :readonly="!userCanEdit"

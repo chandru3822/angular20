@@ -11,6 +11,7 @@
           <a-autocomplete v-if="viewAll"
                     v-model="orgId"
                     :items="orgs"
+                    id="qa-availability-search-org-field"
                     label="Select an Organization..."
                     item-title="orgName"
                     item-value="id"
@@ -21,6 +22,7 @@
           <a-autocomplete v-model="userId"
                     :items="users"
                     v-if="viewAll"
+                    id="qa-availability-search-user-field"
                     :readonly="!viewAll"
                     :disabled="!viewAll"
                     label="Select a User..."
@@ -65,7 +67,9 @@
           <v-app-bar dense tabs class="elevation-1">
             <v-tabs :optional="false" color="primary"
                     background-color="white" v-model="model" slider-color="primary">
-              <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
+              <v-tab v-for="(tab, index) in displayedTabs" :key="index"
+                     :id="tab.qaId"
+                     :to="tab.path">
                 {{tab.label}}
               </v-tab>
             </v-tabs>
@@ -105,11 +109,13 @@
   const tabs = ref([
     {
       label: 'Schedule',
+      qaId: 'qa-schedule',
       path: '/settings/availability/main/schedule',
       display: userStore.userHasFeature('AVAILABILITY')
     },
     {
       label: 'Appointments',
+      qaId: 'qa-appointments',
       path: '/settings/availability/main/appointments',
       display: userStore.userHasFeature('AVAILABILITY')
     }])

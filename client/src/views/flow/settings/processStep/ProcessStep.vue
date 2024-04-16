@@ -54,6 +54,7 @@
         <v-tabs class="tabs-bar">
           <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
                  class="text-capitalize ma-0"
+                 :id="tab.qaId"
                  :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
             {{ tab.label }}
           </v-tab>
@@ -98,26 +99,31 @@ const nonAdminAddWhiteListedPositionsChanged = ref(false)
 const tabs = ref([
   {
     id: 1,
+    qaId: 'qa-ui-components',
     label: 'UI Components',
     path: `/settings/processStep/${processStepId.value}/components`,
   },
   {
     id: 2,
+    qaId: 'qa-custom-field-groups',
     label: 'Custom Field Groups',
     path: `/settings/processStep/${processStepId.value}/customFieldGroups`,
   },
   {
     id: 3,
+    qaId: 'qa-actions',
     label: 'Actions',
     path: `/settings/processStep/${processStepId.value}/actions`,
   },
   {
     id: 4,
+    qaId: 'qa-events',
     label: 'Events',
     path: `/settings/processStep/${processStepId.value}/events`,
   },
   {
     id: 5,
+    qaId: 'qa-attachment-types',
     label: 'Attachment Types',
     path: `/settings/processStep/${processStepId.value}/attachmentTypes`,
   }

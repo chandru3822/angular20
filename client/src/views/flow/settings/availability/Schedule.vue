@@ -2,7 +2,9 @@
   <v-container v-if="orgId || userId">
     <v-row>
       <v-col>
-        <a-btn color="primary" v-if="!addNew && userCanAdd" @click="setNew" class="mb-3" text="ADD SCHEDULE"/>
+        <a-btn color="primary" v-if="!addNew && userCanAdd"
+               id="qa-add-schedule-button"
+               @click="setNew" class="mb-3" text="ADD SCHEDULE"/>
         <v-card v-if="addNew" flat class="px-3">
           <v-card-title>Add New Schedule</v-card-title>
           <DatetimePickerInput
@@ -133,7 +135,9 @@
           <v-card-actions>
             <v-card-actions>
               <a-btn variant="text" color="primary" @click="[newSchedule = {}, addNew = false]" text="CANCEL"/>
-              <a-btn color="primary"  @click="saveSchedule(newSchedule, true)" class="white--text"
+              <a-btn color="primary"  @click="saveSchedule(newSchedule, true)"
+                     id="qa-save-schedule-button"
+                     class="white--text"
                      :disabled="!newSchedule.startDate" text="SAVE"/>
             </v-card-actions>
           </v-card-actions>

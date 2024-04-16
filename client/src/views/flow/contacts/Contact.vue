@@ -370,7 +370,7 @@
                     color="primary"
                     class="body-medium mt-3"
                     v-if="userCanEdit"
-                    id="qa-edit-contact-save"
+                    id="qa-save-fields-button"
                     :loading="fieldsLoading"
                     :disabled="fieldsSaving"
                     @click="validateFields(true)"

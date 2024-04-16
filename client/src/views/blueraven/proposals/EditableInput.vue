@@ -1,7 +1,7 @@
 <template>
   <div class="editable-input d-flex pa-0 align-center">
     <span v-if="!isEditMode">{{ displayText || name }}</span>
-    <a-text-field v-else v-model="name" solo single-line flat autofocus />
+    <a-text-field v-else v-model="name" variant="solo" single-line autofocus />
     <div v-if="editable">
       <a-btn
         size="small"

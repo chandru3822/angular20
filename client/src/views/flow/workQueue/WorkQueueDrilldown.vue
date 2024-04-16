@@ -68,12 +68,12 @@
               <th v-for="header in headers" :key="header.text" class="pa-2"
                   :style="{width: header.width ? header.width : 'auto',
                   'border-bottom': 'solid 1px #D8D9DA'}">
-                <v-text-field outlined
+                <a-text-field variant="outlined"
                               hide-details
                               class="filter-input"
                               v-model="filters[header.value]"
                               @input="filterResults()">
-                </v-text-field>
+                </a-text-field>
               </th>
             </tr>
           </template>

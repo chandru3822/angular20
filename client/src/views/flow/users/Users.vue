@@ -179,7 +179,7 @@
                                 multiple
                                 placeholder="Select..."
                                 height="35px"
-                                outlined
+                                variant="outlined"
                                 class="user-filter-select"
                                 @input="getUsers(true)"
                 >
@@ -196,11 +196,13 @@
                 <v-checkbox v-else-if="header.selectFilter"
                             :disabled="allUsersLoading"
                             v-model="selectAllUsers" @change="toggleSelectAllUsers()"></v-checkbox>
-                <v-text-field outlined
+                <a-text-field variant="outlined"
                               v-else-if="header.value !== 'phoneExtension'"
                               hide-details
                               class="filter-input"
-                    v-model="filters[header.value]" @input="debounceGetUsers"></v-text-field>
+                              v-model="filters[header.value]"
+                              @input="debounceGetUsers">
+                </a-text-field>
                 <div v-else style="height: 35px;"></div>
               </th>
             </tr>

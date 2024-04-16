@@ -1,6 +1,7 @@
 <template>
   <SidePanelExpansionPanel v-if="userStore.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
                            header="Active Process Steps"
+                           id="qa-active-process-steps-expansion"
                            :section-expanded="sectionExpanded"
                            :is-loading="isProcessStepsLoading"
                            @click="toggleCollapseExpand"
@@ -10,6 +11,7 @@
           variant="text"
           size="small"
           color="primary"
+          id="qa-active-process-steps-button"
           class="pa-2 mx-2"
           @click.native.stop
           :to="`/project/${projectId}/processSteps`"

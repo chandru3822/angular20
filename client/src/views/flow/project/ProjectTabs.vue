@@ -1,11 +1,12 @@
 <template>
-  <SidePanelExpansionPanel header="Details" :section-expanded="sectionExpanded" @click="toggleCollapseExpand">
+  <SidePanelExpansionPanel header="Details" :section-expanded="sectionExpanded" @click="toggleCollapseExpand" id="qa-project-details-expansion">
     <template v-if="!hideAdminBtn" v-slot:tool-btn>
       <a-btn
           variant="text"
           size="small"
           color="primary"
           class="pa-0 mx-2"
+          id="qa-project-admin-button"
           html-style="max-width: 34px"
           v-if="userStore.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || userStore.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
           :to="`/projectAdmin/${projectId}/processSteps`"
