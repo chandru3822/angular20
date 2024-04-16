@@ -36,6 +36,10 @@
       prepend-item
       :label="label">
 
+    <!--  do not change :slot to use v-slot here until we are in vue3..this is so dumb  -->
+    <template v-for="(_, slot) in $slots" :slot="slot">
+      <slot :name="slot"></slot>
+    </template>
 
     <template v-for="(index, name) in $scopedSlots" v-slot:[name]="data">
       <slot :name="name" v-bind="data"></slot>

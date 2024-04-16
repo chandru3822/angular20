@@ -62,7 +62,6 @@
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
                 :maxlength="10"
-                @keydown="isNumberOrHyphen"
                 :rules="postalCodeRules"
                 @change="tempContact.reloadCoordinates = true"
                 label="Postal Code"
@@ -541,7 +540,6 @@ import {
   handleHidingGlobalLoader,
   getRequest,
   deleteRequest,
-  isNumberOrHyphen,
   putRequest,
   postRequest,
   formatPhoneNumber,

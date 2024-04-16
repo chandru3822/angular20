@@ -76,19 +76,19 @@ constants.EMAIL_RULES = [
 ]
 
 constants.POSTAL_CODE_RULES = [
-  v => (!v || (v && (v.length === 0 || v.length === 5 || v.length === 10))) || 'Must be 5 or 10 characters',
+  v => (!v || (v && (v.length === 0 || v.length === 5 || v.length === 10))) || 'Must be 5 or 10 numeric characters',
   v => (!v || /^\d{5}(?:[-\s]\d{4})?$/.test(v)) || "Postal Code must be a valid format: ##### or #####-####"
 ]
 
 constants.POSTAL_CODE_REQUIRED_RULES = [
   v => !!v || "Field is required",
-  v => (!v || (v && (v.length === 0 || v.length === 5 || v.length === 10))) || 'Must be 5 or 10 characters',
+  v => (!v || (v && (v.length === 0 || v.length === 5 || v.length === 10))) || 'Must be 5 or 10 numeric characters',
   v => (!v || /^\d{5}(?:[-\s]\d{4})?$/.test(v)) || "Postal Code must be a valid format: ##### or #####-####"
 ]
 
 constants.POSTAL_CODE_FIVE_REQUIRED_RULES = [
   v => !!v || "Field is required",
-  v => (!v || (v && (v.length === 0 || v.length === 5 ))) || 'Must be 5 characters',
+  v => (!v || (v && (v.length === 0 || v.length === 5 ))) || 'Must be 5 numeric characters',
   v => (!v || /^\d{5}(?:[-\s]\d{4})?$/.test(v)) || "Postal Code must be a valid format: ##### or #####-####"
 ]
 

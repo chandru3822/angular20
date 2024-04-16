@@ -59,10 +59,9 @@
                 <template v-slot:activator="{ on }">
                   <a-btn
                       :activation-handler="on"
-                      class="custom-dates-btn"
                       color="unset"
                       :text="apptsCreatedPipelineDateRange.label"
-                      prepend-icon="mdi-menu-down"
+                      append-icon="mdi-menu-down"
                   ></a-btn>
                 </template>
                 <v-list>
@@ -497,10 +496,9 @@
                   <template v-slot:activator="{ on }">
                     <a-btn
                         :activation-handler="on"
-                        class="custom-dates-btn"
                         color="unset"
                         :text="apptsToFdcPipelineDateRange.label"
-                        prepend-icon="mdi-menu-down"
+                        append-icon="mdi-menu-down"
                     ></a-btn>
                   </template>
                   <v-list>

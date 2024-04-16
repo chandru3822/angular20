@@ -277,9 +277,7 @@
                       {{ item.scheduledStartTime | formatDate('timestamp') }}
                     </template>
                     <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props">
                         {{ item.scheduledStartTime | formatDate('timestamp') }}
-                      </v-list-item>
                     </template>
                   </a-select>
                   <div v-else-if="searchedTimeSlots">No Times

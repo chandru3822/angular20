@@ -18,6 +18,7 @@
     <template v-slot:action="{ attrs }">
       <a-btn
           variant="text"
+          color="white"
           v-bind="attrs"
           @click="show = false"
           prepend-icon="clear"
