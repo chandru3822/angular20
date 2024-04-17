@@ -244,7 +244,7 @@
             <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
               <template v-slot:activator="{on}">
                 <a-btn icon size="small" @click="toggleMapPinsForAllResources(!allResourcesOnMap)" :activation-handler="on" class="mx-1">
-                  <v-icon color="primary lighten-5"  v-if="allResourcesOnMap">mdi-map-marker</v-icon>
+                  <v-icon color="grey darken-3"  v-if="allResourcesOnMap">mdi-map-marker</v-icon>
                   <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
                 </a-btn>
               </template>
@@ -262,7 +262,7 @@
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
                   <a-btn icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
-                    <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource) || allResourcesOnMap">mdi-map-marker</v-icon>
+                    <v-icon :color="resource.extendedProps.color"  v-if="isResourceOnMap(resource) || allResourcesOnMap">mdi-map-marker</v-icon>
                     <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
                   </a-btn>
                 </template>
