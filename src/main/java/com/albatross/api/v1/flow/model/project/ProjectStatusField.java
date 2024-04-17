@@ -20,7 +20,7 @@ public class ProjectStatusField {
 
   @Data
   public static class AssignedField {
-    Long id, dataTypeId;
+    Long id, dataTypeId, displayOrder;
     String fieldValue, fieldName;
   }
 }

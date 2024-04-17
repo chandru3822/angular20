@@ -371,7 +371,6 @@ const uploadDocument = async (files, type) => {
       //this could probably even be cleaned up a little more. but this is working for my first cleanup attempt
       if (sourceId != null) {
         if(files.length > 1) {
-          // console.log('doing multi')
           const filesToUpload = [...files].map(file => {
             return {
               file,
@@ -388,7 +387,6 @@ const uploadDocument = async (files, type) => {
         } else {
           let file = files[0]
           if(file?.size > 0) {
-            // console.log('doing this')
             await fileStore.uploadFile({
               file: file,
               attachmentTypeId: type.attachmentTypeId,
