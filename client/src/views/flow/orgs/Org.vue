@@ -454,7 +454,7 @@ onBeforeRouteLeave(async (to, from, next) => {
   // called when the route that renders this component is about to
   // be navigated away from.
   // has access to `this` component instance.
-  if (navigationOverride.value || (dirtyCfvs.value.length === 0 && !dirtySystemFields.value)) {
+  if (to.path === '/login' || navigationOverride.value || (dirtyCfvs.value.length === 0 && !dirtySystemFields.value)) {
     //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
     to.params.useSavedFilters = "true"
     next()

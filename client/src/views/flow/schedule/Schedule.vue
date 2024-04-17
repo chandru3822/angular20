@@ -10,10 +10,40 @@
              :showRightCollapseBtn="false"
   >
     <template v-slot:main-column>
-      <a-btn id="map-btn" v-if="!showMap" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
+      <a-btn id="map-btn" v-if="!showMap && vuetify.breakpoint.mdAndUp" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
+      <a-btn id="close-filters-mobile" v-if="showHideFilters && vuetify.breakpoint.smAndDown" class="absolute-right" color="primary" size="x-small" :elevation="5" custom-classes="mt-4 mb-n1 px-4" @click="[showHideFilters = false, showMobileBtns = false]"><v-icon>mdi-filter-remove</v-icon></a-btn>
+      <v-speed-dial
+          v-if="vuetify.breakpoint.smAndDown && !showHideFilters"
+          v-model="showMobileBtns"
+          class="mobile-btns"
+          bottom
+      >
+        <template v-slot:activator>
+          <a-btn
+              id="speed-dial-activator"
+              v-model="showMobileBtns"
+              color="primary"
+              size="x-small"
+              custom-classes="mt-4 mb-n1 px-4"
+          >
+            <v-icon v-if="showMobileBtns">
+              mdi-close
+            </v-icon>
+            <v-icon v-else>
+              mdi-rhombus-split
+            </v-icon>
+          </a-btn>
+        </template>
+        <a-btn id="filters-mobile-btn"  size="x-small"
+               custom-classes="mt-4 mb-n1 px-4" v-if="showMobileBtns" color="primary" @click="showHideFilters=!showHideFilters"><v-icon>mdi-filter</v-icon></a-btn>
+        <a-btn id="map-mobile-btn" size="x-small"
+               custom-classes="mt-4 mb-n1 px-4" v-if="!showMap" color="primary" @click="showHideMap(!showMap)"><v-icon>mdi-map</v-icon></a-btn>
+      </v-speed-dial>
+
       <Calendar :map-resources="mapResources"
                 ref="calendarRef"
                 :map-open="showMap"
+                :show-filters="showHideFilters"
                 :preselected-event="selectedProject"
                 :states="states"
                 :callback="resourceMapCallback"
@@ -119,6 +149,8 @@ const footerProps = ref({
 })
 const calendarResourceToSchedule =ref({})
 const mapChild =ref()
+const showHideFilters = ref(false)
+const showMobileBtns = ref(false)
 
 const activeComp = computed(() => {
   return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
@@ -351,7 +383,24 @@ const zoomToMap = (item, zoomOverride) => {
 #schedule-container .v-data-table td {
   height: 30px;
 }
+.mobile-btns{
+  position: absolute;
+  z-index: 5;
+  right: 24px;
+  border-radius: 4px;
+  bottom: 24px;
+}
+#filters-mobile-btn, #map-mobile-btn, #close-filters-mobile,
+#speed-dial-activator{
+  height: 46px;
+  width: 46px;
+}
+#close-filters-mobile{
+  bottom: 24px;
+  position: absolute;
 
+}
+#close-filters-mobile.absolute-right,
 #map-btn.absolute-right {
   position: absolute;
   z-index: 5;

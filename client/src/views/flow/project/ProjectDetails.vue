@@ -237,7 +237,7 @@ const isMobile = computed(() => {
 })
 
 onBeforeRouteLeave(async (to, from, next) => {
-  if(dirtyCfvs.value.length === 0){
+  if(to.path === '/login' || dirtyCfvs.value.length === 0){
     next()
   } else {
     toPath.value = to.path

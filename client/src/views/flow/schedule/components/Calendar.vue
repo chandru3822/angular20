@@ -1,11 +1,11 @@
 <template>
   <div id="calendar-container">
 
-    <div id="calendar-filter-container" class="pa-6 pt-1">
+    <div id="calendar-filter-container" v-show="!$vuetify.breakpoint.smAndDown || showFilters" class="pa-6 pt-1">
 <v-col cols="11" class="pa-0">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
-      <v-row class="py-0 d-flex align-baseline">
-        <v-col id="states-filter-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+  <v-row class="py-0 d-flex align-baseline">
+        <v-col id="states-filter-col" cols="12" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <a-autocomplete attach v-model="selectedStates"
                     :items="sortedStates"
                     label="States"
@@ -46,7 +46,7 @@
             </template>
           </a-autocomplete>
         </v-col>
-        <v-col id="org-resource-types-filter-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="org-resource-types-filter-col" cols="12" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <a-autocomplete v-model="selectedOrgTypes"
                           allow-overflow
                     :items="sortedOrgTypes"
@@ -95,7 +95,7 @@
           </a-autocomplete>
         </v-col>
 <!--        <v-col id="placeholder-col-1" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
-        <v-col id="org-resources-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="org-resources-col" cols="12" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <a-autocomplete v-model="selectedOrgs"
                           ref="orgSelector"
                           :items="sortedOrgs"
@@ -128,7 +128,7 @@
           </a-autocomplete>
         </v-col>
         <v-col id="placeholder-desktop-col" v-if="$vuetify.breakpoint.md && !mapOpen" cols="0" md="3" class="py-0"/>
-        <v-col id="position-resource-types-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="position-resource-types-col" cols="12" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <a-autocomplete v-model="selectedPositions"
                           :items="sortedPositions"
                           label="Position Resource Types"
@@ -174,7 +174,7 @@
 
         </v-col>
 <!--        <v-col id="placeholder-col-2" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
-        <v-col id="user-resources-col"  cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="user-resources-col"  cols="12" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <a-autocomplete v-model="selectedUsers"
                           :items="sortedUsers"
                           label="User Resources"
@@ -203,7 +203,7 @@
             </template>
           </a-autocomplete>
         </v-col>
-        <v-col id="time-zone-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+        <v-col id="time-zone-col" cols="12" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <a-select
               v-model="scheduleTimezone"
               :items="timezones"
@@ -244,7 +244,7 @@
             <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
               <template v-slot:activator="{on}">
                 <a-btn icon size="small" @click="toggleMapPinsForAllResources(!allResourcesOnMap)" :activation-handler="on" class="mx-1">
-                  <v-icon color="primary lighten-5"  v-if="allResourcesOnMap">mdi-map-marker</v-icon>
+                  <v-icon color="grey darken-3"  v-if="allResourcesOnMap">mdi-map-marker</v-icon>
                   <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
                 </a-btn>
               </template>
@@ -256,13 +256,13 @@
         </template>
         <template v-slot:resourceLabelContent="{resource, index}">
           <div class="d-flex justify-space-between align-baseline">
-            <a v-if="resource.id.charAt(0)==='1'" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`" target="_blank" class="body-large overflow-hidden resource-title">{{resource.title}}</a>
+            <a v-if="resource.id.charAt(0)==='1'" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`" target="_blank" class="body-large overflow-hidden resource-title text-decoration-none">{{resource.title}}</a>
             <span v-else class="body-large overflow-hidden resource-title">{{ resource.title }}</span>
             <div>
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
                   <a-btn icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
-                    <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource) || allResourcesOnMap">mdi-map-marker</v-icon>
+                    <v-icon :color="resource.extendedProps.color"  v-if="isResourceOnMap(resource) || allResourcesOnMap">mdi-map-marker</v-icon>
                     <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
                   </a-btn>
                 </template>
@@ -333,6 +333,7 @@ const props = defineProps({
   callback: Function,
   dateCallback: Function,
   states: {type: Array},
+  showFilters:Boolean,
   preselectedEvent: {type:Object, required: false}
 })
 
@@ -378,10 +379,10 @@ const calendarOptions = ref({
   nowIndicator:true,
   views:{
     resourceTimelineDay:{
-      titleFormat:{ month: 'long',
+      titleFormat:{ month: vuetify.breakpoint.smAndDown ? 'short' : 'long',
         year: 'numeric',
         day: 'numeric',
-        weekday: 'long'
+        weekday: vuetify.breakpoint.smAndDown ? 'short' : 'long'
       }
     },
     resourceTimelineWeek:{
@@ -549,7 +550,7 @@ const countSelected = computed(() => {
     watch(() => scheduleTimezone, (value) => {
         //when the schedule timezone value changes, update the calendar plugin's timezone
         let calendarApi = eventCalendar.value.getApi()
-        calendarApi.setOption('timeZone', scheduleTimezone)
+        calendarApi.setOption('timeZone', scheduleTimezone.value.value)
         //and show a snackbar if the timezones don't match
         if(userTimezone !== scheduleTimezone) {
           const snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
@@ -1293,7 +1294,7 @@ const createSnackbar = (text) => {
   /* without this when you resize the screen the calendar goes whackadoodle */
   //flex: 1 1 auto;
   position: relative;
-  height: calc(100% - 150px);
+  height: 100%;
 }
 
 .event-title {
