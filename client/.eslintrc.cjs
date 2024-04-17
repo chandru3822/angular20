@@ -16,6 +16,7 @@ module.exports = {
     'vue/return-in-computed-property': 'warn',
     'vue/no-unused-components': 'off',
     'vue/require-v-for-key': 'off',
+    'vue/no-v-for-template-key-on-child': 'off',
     'vue/no-unused-vars': 'off',
     'vue/valid-v-for': 'off',
     'vue/valid-v-on': 'warn',

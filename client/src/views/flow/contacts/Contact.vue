@@ -702,7 +702,7 @@ onBeforeRouteLeave(async (to, from, next) => {
   // be navigated away from.
   // has access to `this` component instance.
   hasDirtyNotes.value = notesComponent.value?.hasUnsavedNotes()
-  if (navigationOverride.value || (dirtyCfvs.value.length === 0 && !dirtySystemFields.value && !hasDirtyNotes.value)) {
+  if (to.path === '/login' || navigationOverride.value || (dirtyCfvs.value.length === 0 && !dirtySystemFields.value && !hasDirtyNotes.value)) {
     //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
     to.params.useSavedFilters = "true"
     next()

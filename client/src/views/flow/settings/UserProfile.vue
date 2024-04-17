@@ -322,7 +322,7 @@ onBeforeRouteLeave(async (to, from, next) => {
   // called when the route that renders this component is about to
   // be navigated away from.
   // has access to `this` component instance.
-  if (navigationOverride.value || !dirtyFields.value) {
+  if (to.path === '/login' || navigationOverride.value || !dirtyFields.value) {
     //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
     next()
   } else {
