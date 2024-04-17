@@ -178,7 +178,6 @@ const saveLink = async (newLink) => {
   appStore.loading = false
 }
 const deleteLink = async () => {
-  console.log('3222',selectedLink.value)
   appStore.loading = true
 
   try {

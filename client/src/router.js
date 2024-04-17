@@ -1562,7 +1562,7 @@ const router = new Router({
               }
             }
           }, {
-            path: 'projectActivity/:viewId', //should only be used on mobile
+            path: 'projectActivity',
             component: () => {
               if (userStore.userHasFeature('PROCESS_STEPS')) {
                 return import ( './views/flow/project/ProjectActivity.vue')

@@ -53,7 +53,6 @@ const ppsId = computed(() => {
 })
 
 onMounted(() => {
-  // console.log(steps)
 })
 const goToPath = (path) => {
   router.push(path)

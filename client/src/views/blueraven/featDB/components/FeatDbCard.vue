@@ -127,7 +127,6 @@ const addMe = () => {
   addMode.value = true
 }
 const save = () => {
-  console.log('here')
   if(addMode.value){
     emit('save-new')
     addMode.value = false

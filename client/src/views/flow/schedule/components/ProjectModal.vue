@@ -186,7 +186,6 @@ const validateSaveEvent = () => {
       || !props.project.resource || !props.project.resource.id || (props.project.start >= props.project.end) ||
       //if all 3 fields are read only, dont let them save
       (props.project.startFieldReadOnly && props.project.endFieldReadOnly && props.project.resourceFieldReadOnly));
-  console.log('save invalid?', saveInvalid.value)
 }
 const checkForSchedulingConflicts = async() => {
   //this is dumb but sometimes the timestamp formatting is different and not equal when it is actually equal.

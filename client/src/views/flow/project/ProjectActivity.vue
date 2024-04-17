@@ -194,10 +194,13 @@ import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
+import {storeToRefs} from "pinia";
 
 const appStore = useAppStore()
 const notificationStore = useNotificationStore()
 const projectStore = useProjectStore()
+const { selectedTab } = storeToRefs(projectStore)
+
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
@@ -259,10 +262,7 @@ const projectProcessStepEventId = computed(() => {
   return parseInt(route.params.ppsEventId) || null
 })
 const viewId = computed(() => {
-  // return parseInt(route.params.viewId)
-  return route.params?.viewId ? parseInt(route.params.viewId) :
-      (showSmsTab.value && route.path.indexOf('inbox') > 0) ? 0 :
-          (null == projectStore.selectedTab || (projectStore.selectedTab === 0 && !showSmsTab.value)) ? 1 : projectStore.selectedTab
+  return (null == selectedTab.value || (selectedTab.value === 0 && !showSmsTab.value)) ? 1 : selectedTab.value
 })
 const currentUserId = computed(() => {
   return userStore.details.id
@@ -316,7 +316,6 @@ onMounted(() => {
 })
 
 watch(projectId, async() => {
-  projectId.value = parseInt(route.params.projectId) || null
   if(viewId.value === 0) {
     await fetchTeamsForUser()
   }
@@ -325,7 +324,7 @@ watch(projectId, async() => {
 //   // selectedOption.value = viewId.value
 //   return (route.params.viewId ? parseInt(route.params.viewId) :
 //       (showSmsTab.value && route.path.indexOf('inbox') > 0) ? 0 :
-//           (null == projectStore.selectedTab || (projectStore.selectedTab === 0 && !showSmsTab.value)) ? 1 : projectStore.selectedTab
+//           (null == selectedTab.value || (selectedTab.value === 0 && !showSmsTab.value)) ? 1 : selectedTab.value
 // })
 watch(smsOwnershipEvents, debounce(async function() {
   await fetchTeamsForUser()
@@ -361,7 +360,7 @@ const collapseSide = ()  => {
   projectStore.rightSideSplit = !projectStore.rightSideSplit
 }
 const selectView = (viewOption) => {
-  projectStore.selectedTab = viewOption
+  selectedTab.value = viewOption
 }
 const selectNotesActivityView = () => {
   if(toggleTimelineView.value === 0){
