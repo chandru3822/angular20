@@ -346,7 +346,7 @@ const filteredTopics = computed(() => {
   return result
 })
 const sortedFilteredActivities = computed(() => {
-  let sortedList = orderBy(activities.value.filter(a => {
+  let sortedList = orderBy(activities.value?.filter(a => {
     //filter out archived
     //if search is not empty then filter that stuff here too
     //and ensure the activityTypeId is selected in the filter

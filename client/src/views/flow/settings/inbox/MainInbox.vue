@@ -36,9 +36,10 @@
             </v-tab>
             <v-spacer></v-spacer>
             <a-btn v-if="teamsAssociatedToUser.length > 0" color="primary"
-                    class="justify-end new-message-button mt-3" @click="showNewMessageDialog = true"
-                  prepend-icon="message-add-icon"
-                  text="NEW MESSAGE"
+                  class="justify-end new-message-button mt-3"
+                  @click="showNewMessageDialog = true"
+                  prepend-icon="add"
+                  text="New Message"
             />
           </v-tabs>
           <v-row class="px-2 pt-2 toolbar-row-2 mt-4">

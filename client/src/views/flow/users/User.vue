@@ -80,12 +80,12 @@
 
           <a-btn
               class="ml-3 elevation-2"
-              size="small"
-              fab
               v-if="userCanMasquerade && !userIsMasquerading && userId !== loggedInUserId && user.hasAccess"
-              color="primary"
+              color="white"
+              icon
+              html-style="background-color: var(--v-primary-base);"
               @click="masquerade()"
-              prepend-icon="mdi-account-switch"
+              append-icon="mdi-account-switch"
           ></a-btn>
           <v-spacer></v-spacer>
           <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
