@@ -57,26 +57,24 @@
             </template>
 
 
-                <template #item.statusType="{item}" class="text-left"><a href="/settings/eventStatuses">{{ item.eventStatusType }}</a></template>
-                <template #item.category="{item}" class="text-left">{{ item.rootEventStatusType }}</template>
-            <template #item.scheduleEditable="{item}" class="text-left">
-              <v-checkbox v-model="item.editableInSchedule" @change="saveEditableInSchedule(item)"/>
-            </template>
-            <td class="text-right">
+            <template #item="{ item, index }">
+              <tr class="clickable" :class="{'shaded-row': index % 2}">
+                <td class="text-left"><a href="/settings/eventStatuses">{{ item.eventStatusType }}</a></td>
+                <td class="text-left">{{ item.rootEventStatusType }}</td>
+                <td class="text-left"><v-checkbox v-model="item.editableInSchedule" @change="saveEditableInSchedule(item)"/></td>
+                <td>
                   <div class="flex-display align-center">
-                    <a-btn
-                      size="small"
-                      variant="text"
-                      color="primary"
-                      v-if="userCanEdit"
-                      @click="eventStatusTypeToDelete=item"
-                      prepend-icon="delete"
-                    />
+                    <v-btn small text color="primary" v-if="userCanEdit" @click="eventStatusTypeToDelete=item"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
+              </tr>
+            </template>
 
           </v-data-table>
         </div>
+        <ConfirmationDialog :open-dialog="!!eventStatusTypeToDelete" @confirm="deleteStatusTypeFromEvent" @close-dialog="eventStatusTypeToDelete=null">
+          Are you sure you want to delete {{ eventStatusTypeToDeleteName }}?
+        </ConfirmationDialog>
       </v-col>
     </v-row>
     <v-row>
@@ -114,7 +112,7 @@
 
 <script setup>
 import {getAvailableForEvent} from '@/services/eventStatusTypeService'
-import { getRequest, postRequest, putRequest, handleHidingGlobalLoader} from "@/helpers/helpers";
+import { getRequest, postRequest, deleteRequest, putRequest, handleHidingGlobalLoader} from "@/helpers/helpers";
 import orderBy from "lodash.orderby"
 import MultiSelectGroup from "@/components/MultiSelectGroup.vue"
 import {ref, computed, onMounted, getCurrentInstance} from "vue"
@@ -151,8 +149,8 @@ const userCanAdd = computed(() => {
 const eventHeaders = ref([
   {text: 'Status Type', value: 'statusType', show: true},
   {text: 'Category', value: 'category', show: true},
+  {text: 'Editable in Schedule', value: 'scheduleEditable', show: true},
   {text: '', value: 'icons', show: false, width: '100px'},
-  {text: 'Editable in Schedule', value: 'scheduleEditable', show: true}
 
 ])
 const eventStatusTypeToDelete = ref(null)
@@ -179,6 +177,11 @@ const getEvent = async  () => {
         appStore.loading = false
       }
     }
+
+const eventStatusTypeToDeleteName = computed(() => {
+  return eventStatusTypeToDelete.value?.eventStatusType
+})
+
 const filterAssignedEventStatusTypes = computed(() => {
   return orderBy(event.value?.companyEventStatusTypes?.filter(u => {
     return !u.archived
@@ -202,6 +205,23 @@ const assignStatusTypeToEvent = async  () => {
 	  appStore.showSnack('ERROR', 'Error Adding Status Type')
 
     appStore.loading = false
+  }
+}
+
+const deleteStatusTypeFromEvent = async() => {
+  const item = eventStatusTypeToDelete.value
+  appStore.loading = true
+  try {
+    item.archived = true
+    await deleteRequest(`/event/${eventId.value}/companyStatus/${item.id}`)
+    appStore.showSnack('SUCCESS', 'Event Status Type Deleted')
+    appStore.loading = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Deleting Event Status Type')
+    appStore.loading = false
+  } finally {
+    eventStatusTypeToDelete.value = null
   }
 }
 

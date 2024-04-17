@@ -1,8 +1,10 @@
 <template>
   <div id="project-container">
     <!--    modal for editing project fields -->
-    <ConfirmationDialog :open-dialog="showEditProjectModal"
-                        @confirm="validateForm"
+    <ConfirmationDialog v-if="showEditProjectModal"
+                        :open-dialog="showEditProjectModal"
+                        @confirm="validateForm()"
+                        parent-close
                         @close-dialog="showEditProjectModal = false">
       <template v-slot:title>Project Overview</template>
       <v-form ref="projectEditForm">
@@ -42,7 +44,6 @@
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
               :maxlength="10"
-              @keydown="isNumberOrHyphen"
               :rules="postalCodeRules"
               @change="tempProject.reloadCoordinates = true"
               label="Postal Code"
@@ -313,7 +314,6 @@ import {
   getRequestWithParams,
 
   handleHidingGlobalLoader,
-  isNumberOrHyphen,
   logError,
   postRequest,
   putRequest

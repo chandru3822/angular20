@@ -103,7 +103,6 @@
                             id="qa-zip-field"
                             counter
                             :maxlength="10"
-                            @keydown="isNumberOrHyphen"
                             :rules="postalCodeRules"
                             v-model="contact.postalCode"></a-text-field>
               <a-select attach v-model="contact.companyCountryId"
@@ -137,7 +136,7 @@
 <script setup>
 
 import SpinnerInline from '@/components/SpinnerInline'
-import { handleHidingGlobalLoader, getRequestWithParams, isNumberOrHyphen, postRequest, } from '@/helpers/helpers'
+import { handleHidingGlobalLoader, getRequestWithParams, postRequest, } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
 import {saveContact} from '@/services/contactService'

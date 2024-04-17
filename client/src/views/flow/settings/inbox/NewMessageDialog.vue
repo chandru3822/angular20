@@ -233,6 +233,7 @@ const inboxUrl = ref('')
 const addTeamUrl = ref('')
 const assignAndSend = ref(false)
 const menuOpen = ref(false)
+const _searchTimerId = ref()
 const messageSuccess = ref(false)
 const conversationIsLoading = ref(false)
 

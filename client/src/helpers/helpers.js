@@ -165,12 +165,6 @@ export function getUrlForLink(url, params) {
   return url
 }
 
-export function isNumberOrHyphen(val) {
-  if (val.key !== '-' && isNaN(Number(val.key))) {
-    return val.preventDefault()
-  }
-}
-
 export function formatPhoneNumber(phoneNumberString) {
   let cleaned = ('' + phoneNumberString).replace(/\D/g, '')
   //dont allow a 1 to be the first char

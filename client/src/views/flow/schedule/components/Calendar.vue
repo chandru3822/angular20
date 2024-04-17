@@ -237,6 +237,23 @@
         ></v-progress-circular>
       </div>
       <FullCalendar ref="eventCalendar" id="event-calendar" :options="calendarOptions">
+        <template v-slot:resourceAreaHeaderContent>
+          <div class="d-flex justify-space-between align-baseline">
+          <span>Resources</span>
+            <div>
+            <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
+              <template v-slot:activator="{on}">
+                <a-btn icon size="small" @click="toggleMapPinsForAllResources(!allResourcesOnMap)" :activation-handler="on" class="mx-1">
+                  <v-icon color="primary lighten-5"  v-if="allResourcesOnMap">mdi-map-marker</v-icon>
+                  <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
+                </a-btn>
+              </template>
+              <span v-if="allResourcesOnMap">Remove all from map</span>
+              <span v-else>Pin all on map</span>
+            </v-tooltip>
+            </div>
+          </div>
+        </template>
         <template v-slot:resourceLabelContent="{resource, index}">
           <div class="d-flex justify-space-between align-baseline">
             <a v-if="resource.id.charAt(0)==='1'" :href="`${getHostUrl()}/org/${resource.id.substring(1)}`" target="_blank" class="body-large overflow-hidden resource-title">{{resource.title}}</a>
@@ -245,7 +262,7 @@
               <v-tooltip bottom :open-on-hover="!$vuetify.breakpoint.smAndDown" :open-on-click="false">
                 <template v-slot:activator="{on}">
                   <a-btn icon size="small" @click="toggleMapPinForResource(resource)" :activation-handler="on" class="mx-1">
-                    <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
+                    <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource) || allResourcesOnMap">mdi-map-marker</v-icon>
                     <v-icon color="grey darken-1" v-else>mdi-map-marker-off</v-icon>
                   </a-btn>
                 </template>
@@ -573,6 +590,19 @@ const reloadCalendar = () =>{
 const isResourceOnMap = (resource) => {
   return mapPinnedResources.value?.findIndex(rId => resource.id === rId) >=0
 }
+const allResourcesOnMap = computed(() => {
+  const allResources = calendarOptions.value.resources
+  if (allResources.length === 0) {
+    return false
+  }
+  let allOnMap = true
+  allResources.forEach(r => {
+    if (!isResourceOnMap(r)) {
+      allOnMap = false
+    }
+  })
+  return allOnMap
+})
 const isAssignedResource = (resource) => {
   let result = false
   const selectedResourceId = scheduleStore.selectedResourceId
@@ -828,6 +858,12 @@ const toggleScheduleResource = (resource) =>{
 const toggleMapPinForResource = (resource) => {
   handlePopulatingMapPins(!isResourceOnMap(resource), resource, true)
 }
+const toggleMapPinsForAllResources = (pinOrNot) => {
+  const allResources = calendarOptions.value.resources
+  allResources.forEach(r => {
+    handlePopulatingMapPins(pinOrNot, r, true)
+  })
+}
 
 const handlePinsOnSelectedResourceChange = (removedResource) => {
   for(let resource of removedResource) {
@@ -863,13 +899,14 @@ const handlePopulatingMapPins = (addPin, resource, doCallback) => {
         stateAbbreviation: re.extendedProps.stateAbbreviation,
         postalCode: re.extendedProps.postalCode,
         street1: re.extendedProps.street1,
-        color: resource.extendedProps.color,
+        color: resource.color || resource.extendedProps.color,
         coordinates: [ re.extendedProps.longitude, re.extendedProps.latitude],
         start: re.startStr,
         end: re.endStr
       }
       mapResourceEvents.value.push(eventObj)
     })
+
     mapPinnedResources.value.push(resource.id)
   } else {
     mapResourceEvents.value = mapResourceEvents.value.filter(r => {
@@ -880,7 +917,6 @@ const handlePopulatingMapPins = (addPin, resource, doCallback) => {
   if(doCallback) {
     props.callback(mapResourceEvents.value, addPin)
   }
-  let calendarApi = eventCalendar.value.getApi()
 }
 
 
@@ -1204,6 +1240,9 @@ const createSnackbar = (text) => {
   border-left-width: 3px;
 }
 
+.fc .fc-datagrid-header .fc-datagrid-cell-frame {
+  display:block;
+}
 
 .fc .fc-scrollgrid {
   border-radius: 4px;
