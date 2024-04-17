@@ -252,7 +252,7 @@ const cancelProjectProcessStepEvent = async() => {
 <v-card id="map-project-modal" :class="{'pb-4': !userCanEdit}" elevation="10">
 <!--  title and subtitle always show, even when collapsed-->
   <v-card-title class="d-flex align-start clickable"  @click="show = !show">
-    <span class="label-large pr-1 break-word max-width-half">{{project.projectName}}</span>
+    <span class="label-large pr-1 break-word max-width-half" :class="{'text-no-wrap text-overflow-ellipsis overflow-x-hidden':vuetify.breakpoint.smAndDown}">{{project.projectName}}</span>
     <v-spacer/>
     <a-btn class="mx-2" icon size="small" color="primary" @click.native.stop="emit('toggleProjectMapPin')">
       <v-icon v-if="project.pinned">mdi-map-marker</v-icon>
@@ -379,11 +379,17 @@ const cancelProjectProcessStepEvent = async() => {
   right: 24px;
   width: 280px;
   z-index: 10;
+  @media (max-width: 960px) {
+    left:12px;
+  }
 }
 .max-width-half{
   //okay yes, this is more than half but I don't feel like changing the name
   //it's so the name wraps instead of the buttons
   max-width: 70%;
+}
+.text-overflow-ellipsis{
+  text-overflow: ellipsis;
 }
 </style>
 
