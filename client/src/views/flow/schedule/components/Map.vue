@@ -164,7 +164,7 @@ const distanceDivisionMetric = ref(1609.34)
 const durationDivisionMetric = ref(60)
 const defaultZoom = ref(2.0)
 const suggestions = ref([])
-const popupOffset = ref(0)
+const popupOffset = ref(10)
 // they do these coordinates backwards to comply with geoJSON whatever that is.
 //center of the USA
 const defaultCenter = ref([-98.5795, 39.8283])
