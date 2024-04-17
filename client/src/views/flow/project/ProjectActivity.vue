@@ -333,7 +333,6 @@ watch(viewId, async() => {
   handlePageLoad()
 })
 watch(userId, async() => {
-  userId.value = parseInt(route.params.userId) || null
   // selectedOption.value = route.path.indexOf('inbox') > 0 ? 0 : (null == userStore.selectedTab ? 1 : userStore.selectedTab)
   if(viewId.value === 0) {
     await fetchTeamsForUser()
