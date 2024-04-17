@@ -792,7 +792,6 @@ const getRoundRobinNumDays = async  () => {
   roundRobinNumberOfDays.value = data.schedulableFutureDays || 7
 }
 const endTimeChanged = ()  => {
-  console.log('AAAAAAA')
   defaultValuesChanged.value = true
 }
 const startTimeChanged = ()  => {
@@ -1082,7 +1081,6 @@ const checkAvailabilityDate = () => {
   }
 }
 const checkFieldsForUnique = () => {
-  console.log('test')
   let validSave = true
   let startTime = selectedEvent.value.startTime
   let endTime = selectedEvent.value.endTime

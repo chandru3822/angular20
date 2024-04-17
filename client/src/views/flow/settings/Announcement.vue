@@ -307,9 +307,6 @@ const cancel = () => {
   router.push(pathUrl.value)
 }
 const validate = async () => {
-  // console.log('json',[JSON.stringify({
-  //   ...announcement.value
-  // })])
   timeError.value = false
   if (announcement.value?.endTime != null && announcement.value.startTime > announcement.value.endTime) {
     timeError.value = true

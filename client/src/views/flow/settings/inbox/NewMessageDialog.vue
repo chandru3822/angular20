@@ -513,7 +513,6 @@ const getSmsTeamTemplates = async () => {
     const { data } = await getRequest(`/messaging/templates/` + templateTeams.value)
     selectableTemplates.value = data
   } catch (e) {
-    // console.log('ccc')
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error retrieving templates')
 

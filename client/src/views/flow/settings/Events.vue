@@ -200,7 +200,6 @@ const getEvents = async () => {
   appStore.loading = true
   try {
     const {data} = await getRequest(`/event`)
-    console.log(data)
     events.value = data
     appStore.loading = false
   } catch (e) {

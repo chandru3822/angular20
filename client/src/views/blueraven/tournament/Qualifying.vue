@@ -305,8 +305,6 @@ const populateSeededMatches =  () => {
     // let game = 'Game ' + i + ': ' + matches[0].seed + ' vs ' + matches[1].seed + '\n'
     // gamesString.value += game
   }
-  //log it out
-  // console.log('final matches', finalMatches.value)
 
 
 }

@@ -1079,7 +1079,6 @@ const goGetEventsNow = async (info, successCallback, failureCallback) => {
 
       })
       props.callback(mapResourceEvents.value, true)
-      // console.log('the events: ',data)
       let events = cloneDeep(data)
       events = events.concat(availabilityData)
       successCallback(events)

@@ -159,7 +159,6 @@ const getCommissionDetails = async () => {
       fieldsToSend.value.forEach((f) => {
         params[f.backendProp] = f.value
       })
-      console.log('params', params)
       const { data } = await getRequestWithParams(
         `/proposal/${proposalId.value}/commissionDetails`,
         { params },
