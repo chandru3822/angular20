@@ -733,48 +733,30 @@
                   </v-toolbar-items>
                 </v-toolbar>
                 <v-card flat class="text-left px-3" color="transparent">
-                  <div v-if="logicStringToggle">
+                  <div>
                     <draggable v-if="userCanEdit" v-model="item.processStepLogicList"
                                group="processStepLogicList" @start="drag=true" @end="drag=false"
                                @change="actionLogicOrderChanged(item)">
-                      <div v-for="(l, index) in item.processStepLogicList.filter(a => !a.archived)"
-
+                      <span v-for="(l, index) in item.processStepLogicList.filter(a => !a.archived)"
                            :style="{'margin-left': getLogicMargin(l, item, index)}"
                            :key="index">
-                        <a-btn
-                            size="small"
-                            color="unset"
-                            class="ml-1 mr-1 mt-1"
-                            :disabled="!userCanEdit"
-                            @click="[l.archived = true, item.logicListChanged = true]"
-                            :text=" getLogicButtonText(l) "
-                        ></a-btn>
-                      </div>
-                    </draggable>
-                  </div>
-                  <div v-else>
-                    <draggable v-if="userCanEdit" v-model="item.processStepLogicList"
-                               group="processStepLogicList" @start="drag=true" @end="drag=false"
-                               @change="actionLogicOrderChanged(item)">
-                      <span v-for="(l, idx) in item.processStepLogicList.filter(a => !a.archived)"
-                            :key="idx">
                         <v-tooltip top max-width="300px"
                         >
                           <template v-slot:activator="{ on:tooltip }">
-
                             <a-btn
                                 size="small"
                                 color="unset"
-                                class="ml-1 mr-1 mt-1 primary--text"
+                                class="ml-1 mr-1 mt-1"
                                 :activation-handler="tooltip"
                                 v-on="{ ...tooltip }"
                                 :disabled="!userCanEdit"
                                 @click="[l.archived = true, item.logicListChanged = true]"
-                            >{{ l.processStepRequirementId ? l.requirementNbr : l.operationType }}</a-btn>
 
-
+                            >
+                              {{!logicStringToggle && l.requirementNbr ? l.requirementNbr : getLogicButtonText(l)}}
+                            </a-btn>
                           </template>
-                          <span>{{ getLogicButtonText(l) }}</span>
+                          <span>{{ logicStringToggle && l.requirementNbr ? l.requirementNbr : getLogicButtonText(l) }}</span>
                         </v-tooltip>
                       </span>
                     </draggable>
@@ -817,7 +799,6 @@
                 </v-toolbar>
                 <v-card flat class="text-left mb-4 px-3" color="transparent">
                   <v-tooltip top max-width="300px"
-                             :disabled="logicStringToggle"
                              v-for="r in requirements" :key="r.id">
                     <template v-slot:activator="{ on:tooltip }">
                       <a-btn
@@ -826,12 +807,13 @@
                           class="ml-1 mr-1 mt-1 primary--text"
                           :disabled="!userCanEdit"
                           v-on="{ ...tooltip }"
+                          :activation-handler="tooltip"
                           @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false, logicString: r.logicString, sqlOrder: (item.processStepLogicList[item.processStepLogicList?.length - 1]?.sqlOrder + 1) }), actionLogicOrderChanged(item)]"
                           color="unset"
                       > {{ logicStringToggle ? getLogicButtonText(r) : r.requirementNbr }}
                       </a-btn>
                     </template>
-                    <span>{{ getLogicButtonText(r) }}</span>
+                    <span>{{ logicStringToggle && r.requirementNbr ? r.requirementNbr : getLogicButtonText(r) }}</span>
                   </v-tooltip>
                 </v-card>
                 <v-divider></v-divider>
@@ -1225,7 +1207,7 @@ const getLogicButtonText = (item) => {
     //this part make it work when clicking a requirement and adding to the current logic section, otherwise unused
     return item.logicString
   } else {
-    if (null != item.requirementNbr) {
+     if (null != item.requirementNbr) {
       //if not a system requirement (like AND, NOT, OR, etc)
       let value = ''
       if (item.dataTypeRequirement?.dataTypeValue) {
