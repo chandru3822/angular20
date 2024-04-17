@@ -205,7 +205,8 @@
         </v-col>
         <v-col id="time-zone-col" cols="12" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <a-select
-              v-model="scheduleTimezone"
+              v-model="timezone"
+              @input="updateTimezone(timezone)"
               :items="timezones"
               label="Current Time Zone"
               item-title="friendlyValue"
@@ -337,6 +338,7 @@ const props = defineProps({
   preselectedEvent: {type:Object, required: false}
 })
 
+const timezone = ref(scheduleStore.getTimezone)
 const scheduleTimezone = computed(() => scheduleStore.getTimezone)
 const userTimezone = computed(() => userStore.timezone)
 
@@ -547,14 +549,17 @@ const countSelected = computed(() => {
         filterOrgsAndUsers()
       }
     })
-    watch(() => scheduleTimezone, (value) => {
+    watch(() => scheduleStore.timezone, (value) => {
         //when the schedule timezone value changes, update the calendar plugin's timezone
         let calendarApi = eventCalendar.value.getApi()
         calendarApi.setOption('timeZone', scheduleTimezone.value.value)
         //and show a snackbar if the timezones don't match
-        if(userTimezone !== scheduleTimezone) {
+        if(userTimezone.value !== scheduleTimezone.value) {
           const snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')
           appStore.snack = {...snackbar, show: true}
+        }
+        if(timezone.value !== scheduleTimezone){
+          timezone.value = scheduleTimezone
         }
       })
       watch(userTimezone, (newVal) => {
