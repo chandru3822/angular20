@@ -172,7 +172,7 @@ onBeforeRouteLeave(async (to, from, next) => {
     hasDirtyNotes.value = userRouterViewContainer.value?.hasDirtyNotes()
   }
 
-  if (navigationOverride.value || (!hasDirtyFields.value && !hasDirtyNotes.value)) {
+  if (to.path === '/login' || navigationOverride.value || (!hasDirtyFields.value && !hasDirtyNotes.value)) {
     to.params.useSavedFilters = "true"
     //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
     next()
