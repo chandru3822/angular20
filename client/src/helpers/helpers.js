@@ -338,8 +338,8 @@ export function shadeColorByPercent(col, light) {
 export function getEventColorClass (index) {
     const colorClassList = [
         'event-tile-red', 'event-tile-green', 'event-tile-yellow','event-tile-blue',
-        'event-tile-orange', 'event-tile-purple', 'event-tile-cyan', 'event-tile-pink',
-        'event-tile-lime',  'event-tile-magenta', 'event-tile-teal', 'event-tile-lavender',
+        'event-tile-orange', 'event-tile-purple', 'event-tile-cyan', 'event-tile-magenta',
+        'event-tile-lime',  'event-tile-pink', 'event-tile-teal', 'event-tile-lavender',
         'event-tile-brown', 'event-tile-pale-yellow', 'event-tile-maroon', 'event-tile-mint',
         'event-tile-olive', 'event-tile-apricot', 'event-tile-navy', 'event-tile-dark-purple'
     ]
