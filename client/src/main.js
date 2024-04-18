@@ -58,17 +58,31 @@ Vue.filter('percent', function (value, digits = 0) {
     return parseFloat(value).toFixed(digits) + '%';
   }
 });
+//todo: kaleb, most of this stuff is for proposals but it wasn't working in the mixins.js file
+const dateTimeFormat = new Intl.DateTimeFormat('default', {
+  dateStyle: 'short',
+  timeStyle: 'short'
+})
 
-Vue.filter('customValueFormatter', function(value, type) {
+const numberFormat = new Intl.NumberFormat('default', {
+  maximumFractionDigits: 15
+})
+
+Vue.filter('customValueFormatter', function({value, type}) {
   if (Array.isArray(value)) {
     return value?.join(', ')
   }
 
   if (type === 'timestamp') {
-    return new Intl.DateTimeFormat('default', {
-      dateStyle: 'short',
-      timeStyle: 'short'
-    }).format(new Date(value))
+    return dateTimeFormat.format(new Date(value))
+  }
+
+  if (!isNaN(value) && (type === 'numeric' || type === 'integer')) {
+    return numberFormat.format(value)
+  }
+
+  if (type === 'boolean') {
+    return value ? '✔' : ''
   }
   return value
 })
