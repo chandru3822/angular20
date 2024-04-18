@@ -3,6 +3,7 @@
     <v-card-title style="min-height: 40px" class="py-0 title-medium flex-display align-center">
       <span class="select-group-title">{{title}}</span>
       <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
+                  :id="`${id}-checkbox`"
                   v-model="enabled" @change="checkboxChanged()"></v-checkbox>
     </v-card-title>
     <div class="button-toggle" v-if="enabled">
@@ -75,6 +76,7 @@
       <a-btn
           v-if="userCanEdit && saveButton"
           color="primary"
+          :id="`${id}-save-button`"
           class="d-inline-block mt-4"
           :class="{'full-size': fullSize}"
           @click="save()"
@@ -102,6 +104,7 @@ const props = defineProps({
   returnObject: {},
   content: {},
   dropdownEnabled: Boolean,
+  id: String, //added to help qa automations
   title: String,
   label: String,
   selectedContent: {},
@@ -160,7 +163,7 @@ const selectSome = (f, fieldName)  => {
   return f[fieldName]?.length > 0 && !selectAll(f)
 }
 const toggleSelectAllContent = ()  => {
-  vuetify.$nextTick(() => {
+  vueInstance.$nextTick(() => {
     if (selectAll()) {
       selected.value = []
       updateSelectedChanged()

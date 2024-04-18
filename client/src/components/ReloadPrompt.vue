@@ -48,7 +48,7 @@ const handleSWManualUpdates = (registration) => {
         :loading="loading"
         :disabled="loading"
         color="primary"
-        @click.prevent="doStuff()"
+        @click.native.stop="doStuff()"
         text="Reload"
     >
       <template #loader>

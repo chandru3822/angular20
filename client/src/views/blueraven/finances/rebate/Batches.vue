@@ -17,10 +17,8 @@
             #{{ item.displayName }}
           </template>
           <template v-slot:item="{ props, item }">
-            <v-list-item v-bind="props">
               <span v-if="item.voidedBatch" class="error--text mr-2">VOIDED</span>
               #{{ item.displayName }}
-            </v-list-item>
           </template>
         </a-select>
         <v-spacer></v-spacer>

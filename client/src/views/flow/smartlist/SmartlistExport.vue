@@ -4,6 +4,7 @@
     :icon="!showText"
     :variant="showText ? 'text' : ''"
     class="pa-5"
+    id="qa-smartlist-export"
     :disabled="disabled"
     :text="showText ? 'Export' : ''"
   >
@@ -52,7 +53,7 @@ let exportSmartlist = async () => {
     emit('exported')
   } catch (e) {
     logError(e)
-    appStore.showSnack('ERROR', e.data.message)
+    appStore.showSnack('ERROR', e.data.detail)
   } finally {
     appStore.loading = false
   }

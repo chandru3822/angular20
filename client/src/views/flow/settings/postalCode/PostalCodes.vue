@@ -24,7 +24,6 @@
                 tabindex=1
                 counter
                 :maxlength="10"
-                @keydown="isNumberOrHyphen"
                 :rules="postalCodeRules"
                 v-model="newPostalCode.postalCode"
               ></a-text-field>
@@ -142,7 +141,6 @@
 
 import {
   handleHidingGlobalLoader,
-  isNumberOrHyphen,
   getRequest,
   deleteRequest,
   postRequest,

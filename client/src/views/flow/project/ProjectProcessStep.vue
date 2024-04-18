@@ -232,6 +232,7 @@
           <div>
             <a-btn
                 color="primary"
+                id="qa-save-fields-button"
                 class="ml-2 mt-1"
                 :class="{'mt-3': !isMobile}"
                 :icon="isMobile"
@@ -461,7 +462,7 @@ onBeforeRouteUpdate(async (to, from, next) => {
 
 onBeforeRouteLeave(async (to, from, next) => {
   // called when the route that renders this component is about to be navigated away from.
-  if (navigationOverride.value || dirtyCfvs.value.length === 0) {
+  if (to.path === '/login' || navigationOverride.value || dirtyCfvs.value.length === 0) {
     //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
     navigationOverride.value = false
     next()

@@ -48,6 +48,7 @@
             <a-btn
                 variant="text"
                 color="primary"
+                id="qa-add-process-step-button"
                 @click="getAvailableProcessSteps()"
                 v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
                 :hide-text-on-mobile="isMobile"
@@ -101,6 +102,7 @@
         <v-container v-if="addNew">
           <a-autocomplete v-model="newProcessStep.processStepId"
                           :items="availableProcessSteps"
+                          id="qa-new-process-step-field"
                           no-data-text="No Steps Available"
                           label="Select a Process Step"
                           item-title="processStepName"
@@ -109,6 +111,7 @@
           ></a-autocomplete>
           <a-autocomplete v-model="newProcessStep.owningPositions"
                           :items="owningPositions"
+                          id="qa-new-owning-positions-field"
                           no-data-text="No Positions Available"
                           label="Select Owning Positions"
                           item-title="position"
@@ -120,6 +123,7 @@
           <!--  per scott: temporarily removing requirement for orgId        -->
           <a-btn
               color="primary"
+              id="qa-save-new-process-step-button"
               :disabled="!newProcessStep.processStepId || !newProcessStep.owningPositions || newProcessStep.owningPositions.length === 0"
               @click="assignProcessStep"
               text="SAVE"

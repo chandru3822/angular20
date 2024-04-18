@@ -23,6 +23,7 @@
                 variant="outlined"
                 placeholder="Type Name"
                 :hide-details="true"
+                id="qa-smartlist-name"
                 ref="reportNameField"
                 class="report-name"
                 @blur="toggleEditingReportName"
@@ -99,6 +100,7 @@
               :items="filteredReportTypes"
               item-value="companyObjectTypeId"
               item-title="objectType"
+              id="qa-smartlist-data-type"
               label="Data Type"
               placeholder="Data Type"
               :rules="constants.BASIC_REQUIRED_RULE"
@@ -149,8 +151,8 @@
             Columns and Filters
           </v-col>
           <v-tabs v-model="tab" class="tabs">
-            <v-tab>Columns</v-tab>
-            <v-tab>Filters</v-tab>
+            <v-tab id="qa-smartlist-columns">Columns</v-tab>
+            <v-tab id="qa-smartlist-filters">Filters</v-tab>
           </v-tabs>
           <v-tabs-items
             v-model="tab"

@@ -110,7 +110,6 @@
 </template>
 <script setup>
 import {getRequest} from "@/helpers/helpers";
-import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 
 
@@ -130,8 +129,6 @@ const headers = ref([
   {text: 'Changes', value: 'changes', sortable: false},
 ])
 
-//@kaleb mixins
-// mixins: [ProposalSettingsMixins],
 
 watch(visible, (val) => {
   show.value = val

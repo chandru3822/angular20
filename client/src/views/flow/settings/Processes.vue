@@ -42,6 +42,7 @@
                 <a-btn
                   @click="goToProcess(p.id)"
                   variant="text"
+                  id="qa-edit-process-button"
                   color="primary"
                   prepend-icon="edit"
                 />

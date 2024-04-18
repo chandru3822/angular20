@@ -35,8 +35,7 @@
               <p>If you want to use the value from a cfga, prefix the id with CFGA_ID_. </p>
               <p>For example, you should not add a url using "Project Process Step Event ID" to a Process Step. </p>
               <a-btn
-                variant="text"
-                outlined
+                variant="outlined"
                 color="primary"
                 v-for="p in linkParams"
                 @click="updateUrl(newLink, p.code)"
@@ -75,8 +74,7 @@
                       <p :class="{'px-4': vuetify.breakpoint.smAndDown}"> If you want to use the value from a cfga, prefix the id with CFGA_ID_ </p>
                       <p :class="{'px-4': vuetify.breakpoint.smAndDown}">For example, you should not add a url using "Project Process Step Event ID" to a Process Step. </p>
                       <a-btn
-                        variant="text"
-                        outlined
+                        variant="outlined"
                         color="primary"
                         v-for="p in linkParams"
                         @click="updateUrl(a, p.code)"

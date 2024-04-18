@@ -10,6 +10,7 @@
                 variant="text"
                 to="/smartlistv1/null"
                 color="primary"
+                id="qa-add-smartlist"
                 prepend-icon="add"
                 text="Add Smartlist"
             ></a-btn>

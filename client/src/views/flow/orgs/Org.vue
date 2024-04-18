@@ -124,6 +124,7 @@
                 <a-btn
                     color="primary"
                     class="mt-3"
+                    id="qa-save-fields-button"
                     v-if="userCanEdit"
                     :loading="fieldsLoading"
                     :disabled="fieldsSaving"
@@ -453,10 +454,9 @@ onBeforeRouteLeave(async (to, from, next) => {
   // called when the route that renders this component is about to
   // be navigated away from.
   // has access to `this` component instance.
-  if (navigationOverride.value || (dirtyCfvs.value.length === 0 && !dirtySystemFields.value)) {
+  if (to.path === '/login' || navigationOverride.value || (dirtyCfvs.value.length === 0 && !dirtySystemFields.value)) {
     //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
     to.params.useSavedFilters = "true"
-    console.log('randalogger',to.params.useSavedFilters)
     next()
   } else {
     toPath.value = to.path
@@ -466,7 +466,7 @@ onBeforeRouteLeave(async (to, from, next) => {
 
 const setSplitColumnValue = () => {
   //flip the flag
-  projectStore.manualColumnSplit != projectStore.manualColumnSplit
+  projectStore.manualColumnSplit = !projectStore.manualColumnSplit
 }
 const getCustomFieldValuesToDisplay = (values, columnNum) => {
   if (projectStore.manualColumnSplit) {

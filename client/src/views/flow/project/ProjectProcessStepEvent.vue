@@ -128,6 +128,7 @@
               <a-btn
                   class="ml-2 mt-1"
                   :class="{'mt-3': !isMobile}"
+                  id="qa-save-fields-button"
                   @click="checkFieldsForUnique"
                   :disabled="!userCanEdit || getIsEventReadonly()"
                   :icon="isMobile"
@@ -276,9 +277,7 @@
                       {{ item.scheduledStartTime | formatDate('timestamp') }}
                     </template>
                     <template v-slot:item="{ props, item }">
-                      <v-list-item v-bind="props">
                         {{ item.scheduledStartTime | formatDate('timestamp') }}
-                      </v-list-item>
                     </template>
                   </a-select>
                   <div v-else-if="searchedTimeSlots">No Times
@@ -503,7 +502,7 @@ onBeforeRouteUpdate(async (to, from, next) => {
 
 onBeforeRouteLeave(async (to, from, next) => {
   // called when the route that renders this component is about to be navigated away from.
-  if (navigationOverride.value || (dirtyCfvs.value.length === 0 && !defaultValuesChanged.value)) {
+  if (to.path === '/login' || navigationOverride.value || (dirtyCfvs.value.length === 0 && !defaultValuesChanged.value)) {
     //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
     navigationOverride.value = false
     next()
@@ -793,7 +792,6 @@ const getRoundRobinNumDays = async  () => {
   roundRobinNumberOfDays.value = data.schedulableFutureDays || 7
 }
 const endTimeChanged = ()  => {
-  console.log('AAAAAAA')
   defaultValuesChanged.value = true
 }
 const startTimeChanged = ()  => {
@@ -1083,7 +1081,6 @@ const checkAvailabilityDate = () => {
   }
 }
 const checkFieldsForUnique = () => {
-  console.log('test')
   let validSave = true
   let startTime = selectedEvent.value.startTime
   let endTime = selectedEvent.value.endTime

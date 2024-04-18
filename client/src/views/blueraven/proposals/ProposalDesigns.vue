@@ -95,20 +95,20 @@
             }"
           >
             <a-btn
-              size="x-small"
+              size="small"
               v-if="d.imageIndex !== 0"
               @click="d.imageIndex--"
-              color="black"
-              fab
+              color="white"
+              icon
               class="image-selection-icon"
               prepend-icon="mdi-chevron-left"
             ></a-btn>
             <a-btn
-              size="x-small"
+              size="small"
               v-if="d.imageIndex !== d.attachments.length - 1"
               @click="d.imageIndex++"
-              color="black"
-              fab
+              color="white"
+              icon
               class="image-selection-icon"
               prepend-icon="mdi-chevron-right"
             ></a-btn>
@@ -319,9 +319,9 @@
           "
         >
           <div class="mb-10">Immediate Design Pending Aurora Adjustments</div>
-          <v-btn outlined color="primary" @click="syncAuroraDesignDetails()">
+          <a-btn variant="outlined" color="primary" @click="syncAuroraDesignDetails()">
             Sync Design
-          </v-btn>
+          </a-btn>
         </v-card-text>
       </v-card>
     </v-row>
@@ -918,6 +918,7 @@ const uploadUtilityBillFiles = (files) => {
 
 .image-selection-icon {
   opacity: 0.6;
+  background-color: #000000;
 }
 
 .image-selection-container {

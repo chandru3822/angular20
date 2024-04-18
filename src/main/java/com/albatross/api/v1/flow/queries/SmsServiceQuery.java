@@ -17,12 +17,7 @@ public class SmsServiceQuery {
              inner join flow.user u on sms.message_sent_by_user_id = u.id
              inner join flow.contact c on c.search_phones = sms.search_to_phone and c.archived is false
              inner join flow.project p on c.id = p.contact_id and p.id = :projectId and p.archived is false
-        AND (error_message IS NULL OR
-             (LOWER(error_message) IN
-              ('api.twilio.com:443 failed to respond') AND
-                 -- so we don't retry very very old texts
-              created >= '2017-11-08'
-                 ))
+        AND error_message IS NULL
         AND sms.recipient_type_id = 2
     UNION ALL
     SELECT body          as message,
@@ -52,12 +47,7 @@ public class SmsServiceQuery {
                end                       as full_name
     FROM flow.sms_queue sms
              inner join flow.user u on sms.message_sent_by_user_id = u.id
-        AND (error_message IS NULL OR
-             (LOWER(error_message) IN
-              ('api.twilio.com:443 failed to respond') AND
-                 -- so we don't retry very very old texts
-              created >= '2017-11-08'
-                 ))
+        AND error_message IS NULL
         AND sms.search_to_phone = (select u2.search_phone from flow.user u2 where u2.id = :userId)
         AND sms.recipient_type_id = 1
     UNION ALL

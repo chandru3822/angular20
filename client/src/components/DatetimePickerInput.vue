@@ -51,7 +51,7 @@
           variant="text"
           color="primary"
           @click="saveDate()"
-          text="OK"
+          text="Ok"
       ></a-btn>
     </v-date-picker>
 

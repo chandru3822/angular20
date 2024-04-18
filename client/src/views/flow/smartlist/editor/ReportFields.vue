@@ -10,6 +10,7 @@
       :items="calculatedAvailableFields"
       item-title="calculatedName"
       return-object
+      id="qa-smartlist-add-column"
       placeholder="Add Column"
       :loading="loading"
       variant="solo"

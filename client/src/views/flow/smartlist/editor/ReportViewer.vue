@@ -169,7 +169,7 @@ const processQueue = async () => {
     emit('updated')
   } catch (e) {
     //@TODO: #smartlistsv2 - Frontend needs to know backend message here. Want a better way
-    const errMessage = e.response.data.message
+    const errMessage = e?.response?.data?.message || 'Unknown Error'
     appStore.loading = false
     if (errMessage.includes('An event smartlist must have at least 1 event type column')) {
       appStore.showSnack('ERROR', errMessage)

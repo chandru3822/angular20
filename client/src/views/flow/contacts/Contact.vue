@@ -62,7 +62,6 @@
                 :readonly="!userCanEdit"
                 :disabled="!userCanEdit"
                 :maxlength="10"
-                @keydown="isNumberOrHyphen"
                 :rules="postalCodeRules"
                 @change="tempContact.reloadCoordinates = true"
                 label="Postal Code"
@@ -370,7 +369,7 @@
                     color="primary"
                     class="body-medium mt-3"
                     v-if="userCanEdit"
-                    id="qa-edit-contact-save"
+                    id="qa-save-fields-button"
                     :loading="fieldsLoading"
                     :disabled="fieldsSaving"
                     @click="validateFields(true)"
@@ -541,7 +540,6 @@ import {
   handleHidingGlobalLoader,
   getRequest,
   deleteRequest,
-  isNumberOrHyphen,
   putRequest,
   postRequest,
   formatPhoneNumber,
@@ -704,7 +702,7 @@ onBeforeRouteLeave(async (to, from, next) => {
   // be navigated away from.
   // has access to `this` component instance.
   hasDirtyNotes.value = notesComponent.value?.hasUnsavedNotes()
-  if (navigationOverride.value || (dirtyCfvs.value.length === 0 && !dirtySystemFields.value && !hasDirtyNotes.value)) {
+  if (to.path === '/login' || navigationOverride.value || (dirtyCfvs.value.length === 0 && !dirtySystemFields.value && !hasDirtyNotes.value)) {
     //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
     to.params.useSavedFilters = "true"
     next()

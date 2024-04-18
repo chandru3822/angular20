@@ -607,7 +607,7 @@ public class SmartlistService {
     }
   }
 
-  public String export(Long smartlistId, String timezone) throws JsonProcessingException {
+  public String export(Long smartlistId, String timezone) throws IOException {
     Smartlist smartlist = this.getById(smartlistId);
 
     List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? getAssignedProjectDetailsFields(smartlistId, timezone) : getAssignedFields(smartlistId, timezone);
@@ -657,55 +657,16 @@ public class SmartlistService {
     if (results.isEmpty()) {
       return writeEmptyCsv(fields);
     } else {
-      return writeCsv(results, fields, null != smartlist.getWorkQueueTypeId(), smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6L);
+      try {
+		  return writeCsv(results, null != smartlist.getWorkQueueTypeId(), smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6L);
+	  } catch (IOException e) {
+		  throw e;
+	  }
     }
   }
 
-  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, Boolean workQueueSmartlist, Boolean useEventData) throws JsonProcessingException {
+  private String writeCsv(List<Map<String, Object>> data, Boolean workQueueSmartlist, Boolean useEventData) throws IOException {
     CsvSchema.Builder builder = CsvSchema.builder();
-
-    if (workQueueSmartlist) {
-      if (useEventData) {
-        //add default fields to fields list
-        var defaultFields = getEventWorkqueueDefaultFields(true);
-        defaultFields.addAll(headers);
-        headers = defaultFields;
-      } else {
-        //add extra headers to the beginning if wq smartlist
-        String[] wqHeaders = {
-          "Active Process Steps",
-          "Owner",
-          "State Abbreviation",
-          "Days In Queue",
-          "Process Step Status Type",
-          "Process Step Name",
-          "Project Name",
-        };
-        for (String header : wqHeaders) {
-          SmartlistFieldAssignment sfa = new SmartlistFieldAssignment();
-          sfa.setName(header);
-          headers.add(0, sfa);
-        }
-
-        //add most recent note header to the end after all the custom fields
-
-        SmartlistFieldAssignment sfa3 = new SmartlistFieldAssignment();
-        sfa3.setName("Next Follow-up Date");
-        headers.add(sfa3);
-
-        SmartlistFieldAssignment sfa4 = new SmartlistFieldAssignment();
-        sfa4.setName("Note Content");
-        headers.add(sfa4);
-
-        SmartlistFieldAssignment sfa5 = new SmartlistFieldAssignment();
-        sfa5.setName("Note Created By");
-        headers.add(sfa5);
-
-        SmartlistFieldAssignment sfa6 = new SmartlistFieldAssignment();
-        sfa6.setName("Note Created At");
-        headers.add(sfa6);
-      }
-    }
 
     // Dates have to be set as string, else when written to buffer, they display as epoch milli
     for (int i = 0; i < data.size(); i++) {
@@ -757,15 +718,19 @@ public class SmartlistService {
         r.remove("Notes");
       }
 
-      data.set(i, r);
+		// trim spaces from keys
+		Map<String, Object> trimmedKeys = new LinkedHashMap<>();
+		for(Map.Entry<String, Object> entry : r.entrySet()) {
+			trimmedKeys.put(entry.getKey().trim(), entry.getValue());
+		}
+
+      data.set(i, trimmedKeys);
     }
 
-    for (SmartlistFieldAssignment f : headers) {
-      if (f.getName().length() > 63) {
-        f.setName(f.getName().substring(0, 63));
-      }
-      builder.addColumn(f.getName(), CsvSchema.ColumnType.NUMBER_OR_STRING);
-    }
+	for(Map.Entry<String, Object> entry : data.getFirst().entrySet()) {
+		var key = entry.getKey();
+		builder.addColumn(key, CsvSchema.ColumnType.NUMBER_OR_STRING);
+	}
 
     CsvSchema schema = builder.build().withHeader();
     ObjectWriter w = new CsvMapper().writer(schema);
@@ -776,7 +741,7 @@ public class SmartlistService {
       toBuffer.flush();
       return buffer.toString(StandardCharsets.UTF_8);
     } catch (IOException e) {
-      return null;
+      throw e;
     }
   }
 

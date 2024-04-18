@@ -42,6 +42,7 @@
                 @click="[getRequirementTypes(), selectedDataTypeRequirement = {}]"
                 variant="text"
                 color="primary"
+                id="qa-add-requirement-btn"
                 v-if="userCanAdd"
                 :prepend-icon="!addNewRequirement ? 'add' : 'close'"
                 :text="$vuetify.breakpoint.smAndDown ? '' : addNewRequirement ? 'Cancel' : 'Add Requirement' "

@@ -17,6 +17,7 @@
         :items="calculatedAvailableFields"
         item-title="calculatedName"
         return-object
+        id="qa-smartlist-add-filter"
         placeholder="Add Filter"
         :variant="isEditorInUse ? 'flat' : 'solo'"
         hide-details
@@ -110,7 +111,7 @@
         placeholder="Type or Select Value"
         solo
         flat
-        hide-details="true"
+        :hide-details="true"
         :class="{'field-selector': !isEditorInUse}"
         @change="afterValueSelected(false)"
       >
@@ -156,7 +157,7 @@
         return-object
         placeholder="Type or Select Value"
         :variant="isEditorInUse ? 'flat' : 'solo'"
-        hide-details="true"
+        :hide-details="true"
         :multiple="requirement?.allowMultiple"
         :ripple="false"
         :class="{'field-selector': !isEditorInUse}"

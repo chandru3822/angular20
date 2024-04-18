@@ -36,9 +36,10 @@
             </v-tab>
             <v-spacer></v-spacer>
             <a-btn v-if="teamsAssociatedToUser.length > 0" color="primary"
-                    class="justify-end new-message-button mt-3" @click="showNewMessageDialog = true"
-                  prepend-icon="message-add-icon"
-                  text="NEW MESSAGE"
+                  class="justify-end new-message-button mt-3"
+                  @click="showNewMessageDialog = true"
+                  prepend-icon="add"
+                  text="New Message"
             />
           </v-tabs>
           <v-row class="px-2 pt-2 toolbar-row-2 mt-4">
@@ -252,13 +253,14 @@ import NewMessageDialog from "./NewMessageDialog";
 import debounce from 'lodash.debounce'
 import ProjectActivity from "@/views/flow/project/ProjectActivity.vue";
 
-
 import {ref, computed, onMounted, getCurrentInstance, watch} from "vue";
 import {useUserStore} from "@/stores/UserStore.js";
 import { useNotificationStore } from '@/stores/NotificationStore.js'
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStore.js'
+import {useProjectStore} from "@/stores/ProjectStore.js";
 const appStore = useAppStore()
+const projectStore = useProjectStore()
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -804,6 +806,7 @@ const teamSelectionChanged = () => {
 const openConversation = (item) => {
   if (item.projectId) {
     clearProjectNotification(item.projectId)
+    projectStore.selectedTab = 0
     router.push({path: `/inbox/inboxConversation/project/${item.projectId}`});
   }
 
