@@ -53,7 +53,7 @@ let exportSmartlist = async () => {
     emit('exported')
   } catch (e) {
     logError(e)
-    appStore.showSnack('ERROR', e.data.message)
+    appStore.showSnack('ERROR', e.data.detail)
   } finally {
     appStore.loading = false
   }

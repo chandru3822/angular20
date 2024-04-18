@@ -97,9 +97,14 @@ const extractFieldData = (field) => {
   return {id: field.id, value: objVal}
 }
 
-const props = defineProps(
-    ['objectCode', 'editing', 'visible']
-)
+const props = defineProps({
+  objectCode: String,
+  editing: Object,
+  visible: Boolean
+})
+
+const { visible } = toRefs(props)
+
 const emit = defineEmits(['input', 'save'])
 
 const apiPath = ref('blueraven')

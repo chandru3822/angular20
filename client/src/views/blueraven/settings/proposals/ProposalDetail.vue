@@ -95,7 +95,7 @@
           </ConfirmationDialog>
           <a-btn
               color="primary"
-              @click.prevent="visible = true"
+              @click.native.stop="visible = true"
               text="Add New"
           ></a-btn>
           <NewProposalValueDialog
@@ -210,7 +210,6 @@ import {deleteRequestWithPayload, getRequestWithParams, postRequest} from '@/hel
 import NewProposalValueDialog from './NewProposalValueDialog.vue'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ProposalVersionHistory from "@/views/blueraven/settings/proposals/ProposalVersionHistory.vue";
-import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
 
 import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
@@ -250,8 +249,6 @@ let headerSort = (a, b) => {
 
   return 0
 }
-// @kaleb mixin
-// mixins: [ProposalSettingsMixins],
 const props = defineProps(['id'])
 
 onMounted(() => {
@@ -338,13 +335,14 @@ const showHistory = ref(false)
       editedItem.value = {...item}
     }
     const archiveItem = async(item) => {
+      console.log('here')
       if (item.archived) {
         return
       }
       try {
 
         const pk = item.pk
-        const values = values.value.map(v => {
+        const tempValues = values.value.map(v => {
           if (v.pk === pk) {
             v.archived = true
             v.originalVersionId = v.versionId
@@ -356,9 +354,9 @@ const showHistory = ref(false)
         await postRequest(`/proposal/versions/${props.id}/values/${propType.value.code}/${item.pk}/archive`, undefined, 'blueraven')
 
         const sortHeader = headers.value.find(h => h.fieldOrder === 1)
-        values.sort(sorterFn(sortHeader?.value))
+        tempValues.sort(sorterFn(sortHeader?.value))
 
-        values.value = values
+        values.value = tempValues
         selectedDeleteItem.value = undefined
 
         appStore.showSnack('SUCCESS', `Row was successfully archived. It will not be available in future versions.`)
