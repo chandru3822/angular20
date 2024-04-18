@@ -1173,7 +1173,7 @@ const getOrgNameForFilter = (hierarchy, filterOrgLevelId, isExport = false) => {
   return result?.orgName ?? (isExport ? '' : 'N/A')
 }
 const getOrgIdsForMax = (resetSelected) => {
-  let maxKey = max(Object.keys(filters.value.orgs))
+  let maxKey = max(Object.keys(filters.value.orgs).map(n => parseInt(n)))
   if(resetSelected){
     selectedLevel.value = parseInt(maxKey)
   }
