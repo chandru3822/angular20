@@ -889,6 +889,8 @@ public class PandaDocService {
       tokens.put("Deal.Estimated ITC", result.get("estimated_itc"));
 
       // New params format:
+      tokens.put(
+        "Project.Total Cash Down Payment", result.get("optional_down_payment"));
       tokens.put("Project.Id", result.get("id"));
       tokens.put("Project.Name", result.get("project_name"));
       tokens.put(

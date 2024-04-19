@@ -6,7 +6,7 @@
         v-model="showCancelled"
         label="Show Cancelled"
         v-show="userCanManage"
-        @change="fetchProjects(searchQuery)"
+        @change="fetchProjects()"
     />
     <RequestTable :headers="headers" :projects="projects" :total-items="totalItems" :feature-code="'ELECTRONIC_DOCUMENTS'" :is-loading="dataLoading"
                   @openRequest="openRequest($event)" @searchInput="fetchProjects($event)" @submitRequest="submitRequest">
@@ -53,12 +53,10 @@
         </v-card-text>
       </template>
     </RequestTable>
-    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-container>
 </template>
 
 <script setup>
-import Snackbar from '@/components/Snackbar.vue'
 import {
   handleHidingGlobalLoader,
   getRequest,
@@ -94,7 +92,6 @@ const headers = ref([
 ])
 const pagination = ref({})
 const projectsSearch = ref('')
-const searchQuery = ref('')
 const showCancelled = ref(false)
 const totalItems = ref(0)
 const documents = ref([])
@@ -133,14 +130,11 @@ onMounted(() => {
 })
 
 const fetchProjects = async(searchQuery) => {
-  if(searchQuery !== undefined){
-    searchQuery.value = searchQuery
-  }
   try {
     dataLoading.value = true
     const {page, itemsPerPage} = options.value
     const params = {
-      query: searchQuery.value,
+      query: searchQuery || '',
       showCancelled: showCancelled.value,
       page: page - 1,
       size: itemsPerPage

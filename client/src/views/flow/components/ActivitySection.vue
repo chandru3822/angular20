@@ -261,6 +261,7 @@ import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
+const projectStore = useProjectStore()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
@@ -368,8 +369,6 @@ const sortedFilteredActivities = computed(() => {
     if(activityListTopic.value) {
       activityListTopic.value.infiniteStateLoaded(true)
     }
-    const emailRegex = /\((([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))\)/g
-    sortedList = sortedList.map(activity => ({...activity, note: activity.note.replaceAll(emailRegex, '')}))
     return sortedList
   }
   // return []
