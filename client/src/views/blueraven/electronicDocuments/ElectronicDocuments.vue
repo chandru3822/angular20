@@ -15,7 +15,6 @@
         <router-view></router-view>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-container>
 </template>
 
