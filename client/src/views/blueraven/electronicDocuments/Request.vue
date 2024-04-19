@@ -92,7 +92,6 @@ const headers = ref([
 ])
 const pagination = ref({})
 const projectsSearch = ref('')
-const searchQuery = ref('')
 const showCancelled = ref(false)
 const totalItems = ref(0)
 const documents = ref([])
@@ -130,12 +129,12 @@ onMounted(() => {
   })
 })
 
-const fetchProjects = async() => {
+const fetchProjects = async(searchQuery) => {
   try {
     dataLoading.value = true
     const {page, itemsPerPage} = options.value
     const params = {
-      query: searchQuery.value,
+      query: searchQuery || '',
       showCancelled: showCancelled.value,
       page: page - 1,
       size: itemsPerPage

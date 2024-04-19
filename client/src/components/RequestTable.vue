@@ -132,7 +132,7 @@ const closeDialog = () => {
 }
 
 const debounceFilterProjects = debounce((query) => {
-  if(searchQuery.value == ''){
+  if(searchQuery.value === ''){
     emit('clearSearch')
   }
   emit('searchInput', searchQuery.value)
