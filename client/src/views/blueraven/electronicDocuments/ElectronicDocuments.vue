@@ -36,7 +36,7 @@
   const tabs = computed(() => {
     return [ {
       label: 'Electronic Documents Request',
-      path: '/installation-agreements/request',
+      path: '/electronicDocuments/request',
       display: userStore.userHasFeature('ELECTRONIC_DOCUMENTS')
     }]
   })
