@@ -148,7 +148,7 @@ const tournamentUserCount = ref(0)
 const matchesNotGenerated = ref(false)
 const minRowsPerPage = ref(0)
 const footerProps = ref({
-  'items-per-page-options': [25, 50, 100],})
+  'items-per-page-options': [25, 50, 100, 250],})
 const dataLoading = ref(true)
 const pool = ref({})
 const poolUsers = ref([])
