@@ -16,6 +16,10 @@
         {{pool.customName || 'Qualifying'}}<br/>
         {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
         <v-spacer></v-spacer>
+        <div v-if="selectedUsers.length > 0" :class="{'error-text': tournamentUserCount < selectedUsers.length }">
+          You have selected {{ selectedUsers.length }}/{{tournamentUserCount}} users.
+        </div>
+        <v-spacer></v-spacer>
         <v-toolbar-items>
           <a-btn
               variant="text"
