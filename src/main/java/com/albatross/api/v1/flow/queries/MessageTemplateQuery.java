@@ -30,6 +30,31 @@ public class MessageTemplateQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getTemplateInUse = """
+    select ps.process_step_name,
+           null::text as event_name,
+           psa.action_name
+    from flow.process_step_action_message_template psamt
+    inner join flow.process_step_action psa on psamt.process_step_action_id = psa.id and psa.archived is false
+    inner join flow.process_step ps on psa.process_step_id = ps.id
+    inner join flow.message_template mt on psamt.message_template_id = mt.id
+    where psamt.archived is false
+      and mt.id = :templateId
+    union all
+    select ps.process_step_name,
+           e.event_name,
+           psea.action_name
+    from flow.process_step_event_action_message_template pseamt
+             inner join flow.message_template mt on pseamt.message_template_id = mt.id
+        inner join flow.process_step_event_action psea on pseamt.process_step_event_action_id = psea.id
+        inner join flow.process_step_event pse on psea.process_step_event_id = pse.id
+        inner join flow.event e on pse.event_id = e.id
+        inner join flow.process_step ps on pse.process_step_id = ps.id
+    where pseamt.archived is false
+      and mt.id = :templateId
+    """;
+
+  //language=PostgreSQL
   public final static String getAllTemplatesWithTeamInfo = """
       select id, title, message, archived,
              coalesce((

@@ -1,5 +1,37 @@
 <template>
   <v-container id="hierarchy-container">
+    <v-dialog
+        v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="text-h5 error--text">
+          Error Deleting Message Template
+        </v-card-title>
+
+        <v-card-text>
+          Template in use by:
+          <v-list v-for="(item, index) in templateInUseList" :key="index">
+            <v-list-item-content>
+              {{getNonDeleteText(item)}}
+            </v-list-item-content>
+          </v-list>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <a-btn
+              color="primary"
+              variant="text"
+              dark
+              class="white--text"
+              @click="deleteError = false"
+              text="OK"
+          />
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row class="fill-height" align="center" justify="start">
       <v-col class="shrink" cols="12">
         <v-toolbar flat>
@@ -178,6 +210,8 @@ const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
 
+const deleteError = ref(false)
+const templateInUseList = ref([])
 const templates = ref([])
 const newTemplate = ref({})
 const addTemplate = ref(false)
@@ -209,6 +243,10 @@ const filterTemplates = computed(() => {
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE')
 })
+
+const getNonDeleteText = (item) => {
+  return `Process Step: ${item.processStepName}, ${item.eventName ? `Event: ${item.eventName}, ` : ''} Action: ${item.actionName}`
+}
 
 const getTemplates = async () => {
   appStore.loading = true
@@ -253,6 +291,12 @@ const deleteTemplate = async () => {
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
+
+    if (e.status === 400) {
+      deleteError.value = true
+      templateInUseList.value = e.data
+    }
+
     appStore.showSnack('ERROR', 'Error Deleting Template')
     appStore.loading = false
   }

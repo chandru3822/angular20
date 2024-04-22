@@ -748,8 +748,8 @@
                           :activation-handler="{ ...tooltip }"
                           :disabled="!userCanEdit"
                           @click="[l.archived = true, action.logicListChanged = true]"
-                          color="unset"> {
-                        { l.requirementNbr || l.operationType }}
+                          color="unset">
+                        {{ l.requirementNbr || l.operationType }}
                       </a-btn>
                     </template>
                     <span>{{ getLogicButtonText(l) }}</span>
@@ -1042,10 +1042,10 @@ const filteredEventActions = computed(() => {
   }), [psea => psea.displayOrder])
 })
 const eventId = computed(() => {
-  return route.params.eventId
+  return parseInt(route.params.eventId)
 })
 const processStepId = computed(() => {
-  return route.params.id
+  return parseInt(route.params.id)
 })
 const userCanAdd = computed(() => {
   return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
