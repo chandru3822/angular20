@@ -111,9 +111,9 @@
                                  {pageName:'Details', subMenuSlot: true},
                                  {pageName:'Active Process Steps', subMenuSlot: true, updateKey:updatePpsKey, customPath:`/project/${ route.params.projectId }/activeprocessSteps`},
                                  {pageName:'Active Events', subMenuSlot:true, updateKey:updateEventKey, customPath: `/project/${ route.params.projectId }/activeevents`},
-                                 {pageName: 'Documents', customPath: `/project/${ route.params.projectId }/projectactivity/2`},
-                                 {pageName: 'Notes and Activities', customPath: `/project/${ route.params.projectId }/projectactivity/1`},
-                                 {pageName: 'Communication', customPath: `/project/${ route.params.projectId }/projectactivity/0`},
+                                 {pageName: 'Documents', customPath: `/project/${ route.params.projectId }/projectActivity?activityView=2`},
+                                 {pageName: 'Notes and Activities', customPath: `/project/${ route.params.projectId }/projectactivity?activityView=1`},
+                                 {pageName: 'Communication', customPath: `/project/${ route.params.projectId }/projectactivity?activityView=0`},
                                  {pageName: 'Admin', customPath: `/projectAdmin/${projectId}/processSteps`}
                                  ]"
                              :headerHeight="project.tags?.length > 0 ? '86px' : '76px'"

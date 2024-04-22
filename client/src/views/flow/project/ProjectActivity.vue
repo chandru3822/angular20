@@ -312,12 +312,22 @@ const projectId = computed(() => {
 
 
 onMounted(() => {
+  const projectActivityParam = parseInt(route.query.activityView | '-1')
+  if(projectActivityParam >= 0){
+    selectView(projectActivityParam)
+  }
   handlePageLoad()
 })
 
 watch(projectId, async() => {
   if(viewId.value === 0) {
     await fetchTeamsForUser()
+  }
+})
+watch(() =>route.query.activityView, async() => {
+  const projectActivityParam = parseInt(route.query.activityView | '-1')
+  if(projectActivityParam >= 0){
+    selectView(projectActivityParam)
   }
 })
 // watch(viewId, async() => {
