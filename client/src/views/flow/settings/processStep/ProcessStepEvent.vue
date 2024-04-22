@@ -628,14 +628,6 @@
                     </draggable>
                   </v-col>
                 </v-row>
-
-                <v-divider/>
-                <EventActionChildSms :selected-action-index="selectedActionIndex"
-                                     :action="action"
-                                     :process-step-id="processStepId"
-                                     :add-sms-callback="addSms"
-                                     :delete-sms-callback="deleteSms"
-                ></EventActionChildSms>
               </div>
               <div v-if="action.actionTypeId === 3">
                 <a-textarea required label="Banner Content" auto-grow variant="filled"
