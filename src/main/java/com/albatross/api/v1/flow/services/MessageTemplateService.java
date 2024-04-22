@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
@@ -95,13 +96,28 @@ public class MessageTemplateService {
     return getTemplate(id);
   }
 
-  public void deleteTemplate(Long templateId) {
-    User user = securityService.getCurrentUser();
+  public List<TemplateInUse> getTemplateInUse(Long templateId) {
     HashMap<String, Object> params = new HashMap<>();
+    params.put("templateId", templateId);
+    List<TemplateInUse> results = sqlCache.queryBySql(MessageTemplateQuery.getTemplateInUse, params, TemplateInUse.class);
 
-    params.put("id", templateId);
-    params.put("modifiedById", user.trueUserId());
-    sqlCache.updateBySql(MessageTemplateQuery.deleteTemplate, params);
+    return results;
+  }
+
+  public ResponseEntity<List<TemplateInUse>> deleteTemplate(Long templateId) {
+    List<TemplateInUse> templatesInUse = getTemplateInUse(templateId);
+
+    if(!templatesInUse.isEmpty()) {
+      return ResponseEntity.badRequest().body(templatesInUse);
+    } else {
+      User user = securityService.getCurrentUser();
+      HashMap<String, Object> params = new HashMap<>();
+
+      params.put("id", templateId);
+      params.put("modifiedById", user.trueUserId());
+      sqlCache.updateBySql(MessageTemplateQuery.deleteTemplate, params);
+      return ResponseEntity.ok().build();
+    }
   }
 
   public static class MessageTemplateMapper<T> extends BeanPropertyRowMapper<T> {

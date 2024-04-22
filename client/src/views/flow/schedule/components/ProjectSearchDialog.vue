@@ -153,8 +153,8 @@ const goGoGadgetMapSearch = () =>{
 }
 const getProjects = async(resetQuery) => {
   if(resetQuery) {
-    // todo: should we remove this.$route.query params if the button is clicked?
-    // this.$route.query = {}
+    // todo: should we remove route.query params if the button is clicked?
+    // route.query = {}
   }
   localStorage.setItem('scheduleState', JSON.stringify(state.value))
   localStorage.setItem('scheduleEventTypes', JSON.stringify(selectedEventTypes.value))

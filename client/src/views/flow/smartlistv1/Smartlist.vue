@@ -162,7 +162,7 @@
           :can-edit="userCanEdit"
           :is-project-details="smartlist.projectDetails"
           :project-details-columns="projectDetailsColumns"
-          :smartlist-id="$route.params.smartlistId"
+          :smartlist-id="route.params.smartlistId"
           :refresh="refreshData"
           @refreshed="refreshData = false"
       />

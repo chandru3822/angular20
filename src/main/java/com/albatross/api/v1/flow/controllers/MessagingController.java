@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,8 +56,8 @@ public class MessagingController {
   }
 
   @PutMapping(value = "/template/delete/{templateId}")
-  public void deleteTemplate(@PathVariable Long templateId) {
-    messageTemplateService.deleteTemplate(templateId);
+  public ResponseEntity<List<TemplateInUse>> deleteTemplate(@PathVariable Long templateId) {
+    return messageTemplateService.deleteTemplate(templateId);
   }
 
   @PostMapping(value = "/addTeam/project/{projectId}")

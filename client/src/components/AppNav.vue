@@ -61,7 +61,7 @@
             </template>
           </a-btn>
           <a-btn
-              v-if="showMobileBanner && $route.path !== '/apps'"
+              v-if="showMobileBanner && route.path !== '/apps'"
               @click="goToPath('/apps')"
               icon
               class="text-capitalize bold px-0"

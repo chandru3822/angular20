@@ -199,8 +199,8 @@
             item-title="hashtag"
         ></a-autocomplete>
         <v-checkbox
-            v-if="null != $route.params.processStepId
-                || null != $route.params.ppsEventId
+            v-if="null != route.params.processStepId
+                || null != route.params.ppsEventId
                 || editedActivity.linked"
             dense
             :disabled="editedActivity.createdById !== currentUserId && !addActivity"
@@ -208,7 +208,7 @@
             @change="linkEditedActivity"
             :label="getLinkLabel()"
         />
-        <div class="d-flex" :class="{'mt-6': !$route.params.processStepId && !$route.params.ppsEventId && !editedActivity.linked}">
+        <div class="d-flex" :class="{'mt-6': !route.params.processStepId && !route.params.ppsEventId && !editedActivity.linked}">
           <a-btn
               variant="text"
               color="primary"
