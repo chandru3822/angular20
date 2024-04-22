@@ -57,7 +57,7 @@
         <!-- don't put a.note on a new line or it adds a space character to the beginning of the note in the UI -->
         <div class="text-formatting">
           <div v-if="query && query !== ''" :inner-html.prop="a.note | searchHighlight(query)"/>
-          <vue-clamp v-else ellipsis="" autoresize :max-lines="5">{{a.note}}
+          <vue-clamp v-else ellipsis="" autoresize :max-lines="5">{{removeNoteTagEmail(a.note)}}
             <template #after="{ toggle, clamped, expanded }">
               <button v-if="clamped === true" @click="toggle" class="see-more-btn">...see more</button>
               <button v-if="expanded" @click="toggle" class="see-more-btn"> see less</button>
@@ -129,7 +129,7 @@ const props = defineProps({
     default: false,
   },
 })
-const { activities, contactId, orgId, userId, currentUserId,
+const { contactId, orgId, userId, currentUserId,
   projectId, sectionType, highlightPinnedActivity, query, useInfiniteLoader } = toRefs(props)
 
 const loaderState = ref(null)
@@ -138,6 +138,11 @@ const activityToDelete = ref(null)
 const hitMax = ref(false)
 
 const emit = defineEmits(['bottomHitCount', 'reload', 'remove-deleted'])
+
+const removeNoteTagEmail = (note) => {
+  const emailRegex = /\((([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))\)/g
+      return note.replaceAll(emailRegex, '')
+}
 
 const infiniteHandler = ($state) => {
   loaderState.value = $state
