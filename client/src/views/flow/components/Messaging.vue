@@ -162,6 +162,7 @@ const selectedUserId = ref(-1)
 const contactId = ref(null)
 const id = ref(null)
 const showTemplateDialog = ref(false)
+const sendingMessage = ref(false)
 const selectedTemplate = ref('')
 const selectableTemplates = ref([])
 const templateTeams = ref([])
@@ -222,69 +223,73 @@ const onMessageWasSent = async(message) => {
   if (message.data.text && message.data.text.length > 1599) {
     let textOverflowLength = message.data.text.length - 1599;
     appStore.showSnack('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
+    sendingMessage.value = false
+  } else if(!sendingMessage.value) {
+    sendingMessage.value = true
+    // called when the user sends a message
+    let params
+    let userIds = projectId.value ? [contactId.value] : [userId.value]
+    let attachmentUrl = projectId.value ? `/project/${projectId.value}/attachment` : `/user/${userId.value}/attachment`
+    let sendTextUrl = projectId.value ? `/communication/sendTextsForProject/${projectId.value}` : `/communication/sendTextsForUser/${userId.value}`
+    let lastSentUrl = projectId.value ? `/messaging/setLastSent/project/` + projectId.value : `/messaging/setLastSent/user/` + userId.value
+    let createNotificationUrl = projectId.value ? `/messaging/createNotification/project/${projectId.value}` : `/messaging/createNotification/user/${userId.value}`
 
-  }
-  // called when the user sends a message
-  let params
-  let userIds = projectId.value ? [contactId.value] : [userId.value]
-  let attachmentUrl = projectId.value ? `/project/${projectId.value}/attachment` : `/user/${userId.value}/attachment`
-  let sendTextUrl = projectId.value ? `/communication/sendTextsForProject/${projectId.value}` : `/communication/sendTextsForUser/${userId.value}`
-  let lastSentUrl = projectId.value ? `/messaging/setLastSent/project/` + projectId.value : `/messaging/setLastSent/user/` + userId.value
-  let createNotificationUrl = projectId.value ? `/messaging/createNotification/project/${projectId.value}` : `/messaging/createNotification/user/${userId.value}`
+    try {
+      if (message.type === 'file') {
+        let mediaUrls = []
+        let formData = new FormData()
+        formData.append('file', message.data.file)
+        formData.append('attachmentTypeId', 3)
 
-  try {
-    if (message.type === 'file') {
-      let mediaUrls = []
-      let formData = new FormData()
-      formData.append('file', message.data.file)
-      formData.append('attachmentTypeId', 3)
+        if (!projectId.value) {
+          formData.append('displayName', message.data.file.name.substr(0, message.data.file.name.lastIndexOf('.')))
+        }
 
-      if (!projectId.value) {
-        formData.append('displayName', message.data.file.name.substr(0, message.data.file.name.lastIndexOf('.')))
+        const resp = await postRequest(attachmentUrl, formData)
+        const { status } = resp
+
+        if (status === 200) {
+          mediaUrls.push(resp.data.url)
+        }
+
+        params = {
+          userIDs: userIds,
+          message: message.data.file.name,
+          mediaURLs: mediaUrls,
+          smsTeamId: teamsAssociatedToUser.value[0].id
+        }
+        await postRequest(sendTextUrl, params)
       }
 
-      const resp = await postRequest(attachmentUrl, formData)
-      const { status } = resp
-
-      if (status === 200) {
-        mediaUrls.push(resp.data.url)
+      if (message.data.text) {
+        params = {
+          userIDs: userIds,
+          message: message.data.text,
+          smsTeamId: teamsAssociatedToUser.value[0].id
+        }
+        await postRequest(sendTextUrl, params)
       }
 
-      params = {
-        userIDs: userIds,
-        message: message.data.file.name,
-        mediaURLs: mediaUrls,
-        smsTeamId: teamsAssociatedToUser.value[0].id
-      }
-      await postRequest(sendTextUrl, params)
+      await putRequest(lastSentUrl)
+      await postRequest(createNotificationUrl)
+
+      //dont add to the ui unless the message goes thru successfully
+      message.data.meta = currentUserFullName.value + ' ' + moment().format('M/D/YYYY h:mm a')
+      messageList.value = [...messageList.value, message]
+      newMessagesCount.value = isChatOpen.value ? newMessagesCount.value : newMessagesCount.value + 1
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      let message = e?.message ? 'Error Sending Message: ' + e.message :
+          e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
+      appStore.showSnack('ERROR', message)
+
+      let textInput = document.querySelector('.sc-user-input--text')
+      // This line fails, but accomplishes what I want - stops the plugin from clearing the message box
+      // when there's an error sending a message
+      textInput.innerHTML = message.data.text
+    } finally {
+      sendingMessage.value = false
     }
-
-    if (message.data.text) {
-      params = {
-        userIDs: userIds,
-        message: message.data.text,
-        smsTeamId: teamsAssociatedToUser.value[0].id
-      }
-      await postRequest(sendTextUrl, params)
-    }
-
-    await putRequest(lastSentUrl)
-    await postRequest(createNotificationUrl)
-
-    //dont add to the ui unless the message goes thru successfully
-    message.data.meta = currentUserFullName.value + ' ' + moment().format('M/D/YYYY h:mm a')
-    messageList.value = [...messageList.value, message]
-    newMessagesCount.value = isChatOpen.value ? newMessagesCount.value : newMessagesCount.value + 1
-  } catch (e) {
-    console.error('*** ERROR ***', e)
-    let message = e?.message ? 'Error Sending Message: ' + e.message :
-        e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
-    appStore.showSnack('ERROR', message)
-
-    let textInput = document.querySelector('.sc-user-input--text')
-    // This line fails, but accomplishes what I want - stops the plugin from clearing the message box
-    // when there's an error sending a message
-    textInput.innerHTML = message.data.text
   }
 }
 const openChat = () => {
