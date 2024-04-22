@@ -628,14 +628,6 @@
                     </draggable>
                   </v-col>
                 </v-row>
-
-                <v-divider/>
-                <EventActionChildSms :selected-action-index="selectedActionIndex"
-                                     :action="action"
-                                     :process-step-id="processStepId"
-                                     :add-sms-callback="addSms"
-                                     :delete-sms-callback="deleteSms"
-                ></EventActionChildSms>
               </div>
               <div v-if="action.actionTypeId === 3">
                 <a-textarea required label="Banner Content" auto-grow variant="filled"
@@ -748,8 +740,8 @@
                           :activation-handler="{ ...tooltip }"
                           :disabled="!userCanEdit"
                           @click="[l.archived = true, action.logicListChanged = true]"
-                          color="unset"> {
-                        { l.requirementNbr || l.operationType }}
+                          color="unset">
+                        {{ l.requirementNbr || l.operationType }}
                       </a-btn>
                     </template>
                     <span>{{ getLogicButtonText(l) }}</span>
@@ -1042,10 +1034,10 @@ const filteredEventActions = computed(() => {
   }), [psea => psea.displayOrder])
 })
 const eventId = computed(() => {
-  return route.params.eventId
+  return parseInt(route.params.eventId)
 })
 const processStepId = computed(() => {
-  return route.params.id
+  return parseInt(route.params.id)
 })
 const userCanAdd = computed(() => {
   return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')

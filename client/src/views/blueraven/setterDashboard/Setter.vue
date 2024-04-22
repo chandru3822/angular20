@@ -10,15 +10,15 @@
 
     <v-row id="setter-dash-tabs" class="mb-2" justify="center" no-gutters>
       <v-col cols="12">
-        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('funnel')}" @click="goToRoute('setterFunnel')">
+        <span class="clickable primary--text" :class="{'font-weight-bold': route.path.includes('funnel')}" @click="goToRoute('setterFunnel')">
           Funnel
         </span>
         <div class="tab-separator mx-2"></div>
-        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('dashboard')}" @click="goToRoute('setterDashboard')">
+        <span class="clickable primary--text" :class="{'font-weight-bold': route.path.includes('dashboard')}" @click="goToRoute('setterDashboard')">
           Dashboard
         </span>
         <div class="tab-separator mx-2"></div>
-        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('incentive')}" @click="goToRoute('setterIncentive')">
+        <span class="clickable primary--text" :class="{'font-weight-bold': route.path.includes('incentive')}" @click="goToRoute('setterIncentive')">
           Incentive
         </span>
       </v-col>
@@ -28,9 +28,10 @@
 </template>
 
 <script setup>
-import {useRouter} from "vue-router/composables";
+import {useRouter, useRoute} from "vue-router/composables";
 
 const router = useRouter()
+const route = useRoute()
 
 const goToRoute = (name) => {
   router.push({name})

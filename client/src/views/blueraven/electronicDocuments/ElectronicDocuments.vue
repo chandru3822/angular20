@@ -15,7 +15,6 @@
         <router-view></router-view>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-container>
 </template>
 
@@ -37,7 +36,7 @@
   const tabs = computed(() => {
     return [ {
       label: 'Electronic Documents Request',
-      path: '/installation-agreements/request',
+      path: '/electronicDocuments/request',
       display: userStore.userHasFeature('ELECTRONIC_DOCUMENTS')
     }]
   })

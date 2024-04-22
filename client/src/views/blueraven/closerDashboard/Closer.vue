@@ -10,23 +10,23 @@
 
     <v-row id="closer-dash-tabs" class="mb-2" justify="center" no-gutters>
       <v-col cols="12">
-        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('funnel')}" @click="goToRoute('closerFunnel')">
+        <span class="clickable primary--text" :class="{'font-weight-bold': route.path.includes('funnel')}" @click="goToRoute('closerFunnel')">
           Funnel
         </span>
         <div class="tab-separator mx-2"></div>
-        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('dashboard')}" @click="goToRoute('closerDashboard')">
+        <span class="clickable primary--text" :class="{'font-weight-bold': route.path.includes('dashboard')}" @click="goToRoute('closerDashboard')">
           Dashboard
         </span>
         <div class="tab-separator mx-2"></div>
-        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('incentive')}" @click="goToRoute('closerIncentive')">
+        <span class="clickable primary--text" :class="{'font-weight-bold': route.path.includes('incentive')}" @click="goToRoute('closerIncentive')">
           Incentive
         </span>
         <div class="tab-separator mx-2"></div>
-        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('leaderboard')}" @click="goToRoute('closerLeaderboard')">
+        <span class="clickable primary--text" :class="{'font-weight-bold': route.path.includes('leaderboard')}" @click="goToRoute('closerLeaderboard')">
           Leaderboard
         </span>
         <div class="tab-separator mx-2"></div>
-        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('residuals')}" @click="goToRoute('closerResiduals')">
+        <span class="clickable primary--text" :class="{'font-weight-bold': route.path.includes('residuals')}" @click="goToRoute('closerResiduals')">
           Residuals
         </span>
       </v-col>
@@ -36,9 +36,10 @@
 </template>
 
 <script setup>
-import {useRouter} from "vue-router/composables";
+import {useRouter, useRoute} from "vue-router/composables";
 
 const router = useRouter()
+const route = useRoute()
 
 const goToRoute = (name) => {
   router.push({name})
