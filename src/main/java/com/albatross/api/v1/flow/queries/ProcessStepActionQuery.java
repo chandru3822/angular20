@@ -720,7 +720,8 @@ public class ProcessStepActionQuery {
                  inner join flow.message_template mt on mt.id = psamt.message_template_id
           where
             psamt.process_step_action_id = :processStepActionId and
-            psamt.archived is not true
+            psamt.archived is not true and
+            mt.archived is not true
         """;
 
 }
