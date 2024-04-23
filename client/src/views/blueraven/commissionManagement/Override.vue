@@ -345,7 +345,7 @@
                     color="primary"
                     @click="expanded = []"
                     v-if="expanded.includes(item)"
-                    text="cancel"
+                    text="Cancel"
                 ></a-btn>
                 <a-btn
                     color="primary"
@@ -539,7 +539,7 @@
                     @click="assignedUserExpanded = []"
                     v-if="assignedUserExpanded.includes(item)"
                     color="unset"
-                    text="cancel"
+                    text="Cancel"
                 ></a-btn>
                 <a-btn
                     v-if="override.status === 'PENDING'"

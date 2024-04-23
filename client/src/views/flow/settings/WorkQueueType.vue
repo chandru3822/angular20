@@ -248,7 +248,7 @@
                   color="primary"
                   v-if="editDefaultFields"
                   @click="editDefaultFields = false"
-                  text="cancel"
+                  text="Cancel"
               ></a-btn>
             </div>
           </v-toolbar-items>

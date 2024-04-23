@@ -103,7 +103,7 @@
                   variant="text"
                   v-if="item.parameterTypeId === 3 && expanded.includes(item)"
                   @click="handleExpand(item, false)"
-                  text="cancel"
+                  text="Cancel"
                 />
               </td>
             </tr>

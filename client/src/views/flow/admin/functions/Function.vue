@@ -173,7 +173,7 @@
                                    @click="expanded = [item]">
                   </a-btn>
                   <a-btn size="small" v-if="expanded.includes(item)"
-                                   text="cancel"
+                                   text="Cancel"
                                    @click="expanded = []"></a-btn>
                 </td>
               </tr>

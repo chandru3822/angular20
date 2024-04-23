@@ -111,7 +111,7 @@
                     color="primary"
                     v-if="index === editIndex"
                     @click="clearChanges()"
-                    text="cancel"
+                    text="Cancel"
                 ></a-btn>
                 <a-btn
                     :disabled="item.isDefault"

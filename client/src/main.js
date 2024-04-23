@@ -32,14 +32,9 @@ Vue.filter('capitalize', function(value) {
 })
 
 Vue.filter('currency', function (value, symbol, digits) {
-  if (typeof value != "number" || typeof digits != "number")
+  if (typeof value != "number" || typeof digits != "number") {
     return
-
-  let integer = parseInt(value);
-
-  if (value === integer)
-    return symbol + value;
-  else {
+  } else {
     return symbol + parseFloat(value).toFixed(digits);
   }
 });

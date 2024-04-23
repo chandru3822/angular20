@@ -197,7 +197,7 @@
                     color="primary"
                     v-if="expanded.includes(item)"
                     @click="handleExpand(item, false)"
-                    text="cancel"
+                    text="Cancel"
                 ></a-btn>
                 <a-btn
                     v-if="userStore.userHasFeatureAccessLevel('USERS', 'DELETE')"

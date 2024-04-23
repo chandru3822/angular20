@@ -46,7 +46,7 @@
                 v-if="editName"
                 class=""
                 @click="[processStep.processStepName = oldName, editName = !editName]"
-                text="cancel"
+                text="Cancel"
             ></a-btn>
 
           </div>

@@ -214,7 +214,7 @@
               color="primary"
               class="text-capitalize"
               @click="[addActivity = false, editedActivity = {}]"
-              text="cancel"
+              text="Cancel"
           ></a-btn>
           <a-btn
               color="primary"

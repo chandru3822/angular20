@@ -60,7 +60,7 @@
                 color="primary"
                 variant="text"
                 class="text-capitalize mr-2 mb-2"
-                text="cancel"
+                text="Cancel"
             ></a-btn>
             <a-btn
                 @click="[$emit('submitRequest'), closeDialog()]"
