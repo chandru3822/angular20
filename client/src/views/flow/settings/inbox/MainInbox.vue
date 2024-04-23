@@ -13,8 +13,7 @@
       <ConfirmAssignmentDialog :show-join-conversation-dialog.sync="showAssignToMeDialog"
                                :teams-associated-to-user="teamsAssociatedToUser"
                                @joinConversation="joinConversation" />
-      <v-toolbar prominent elevation="4" color="grey lighten-4" class="pb-4 sticky-toolbar">
-        <v-toolbar-items class="px-2 pt-0 d-flex flex-column col-12">
+      <div id="inbox-header" class="px-6 pt-1">
           <v-tabs class="inbox-tabs pa-0" background-color="grey lighten-4">
             <v-tab :class="inboxNotificationCount > 0 ? 'inbox-tab-with-badge' : ''" text @click="showInbox = true; reloadConversations()">
               New
@@ -42,21 +41,24 @@
                   text="New Message"
             />
           </v-tabs>
-          <v-row class="px-2 pt-2 toolbar-row-2 mt-4">
+          <v-row class="px-2 toolbar-row-2 align-center">
+            <v-col cols="12" sm="4" lg="3" class="pa-0 mr-6">
             <a-text-field
               prepend-inner-icon="search"
               label="Search by project or owner"
               v-model="searchQuery"
               @input="searchConversations"
               :class="teamFilterOptions.length > 0 ? 'conversation-search' : 'conversation-search-no-teams'"
-              class="albatross-body-2 mb-n4 mt-2 pr-6"
+              class="albatross-body-2 mb-n4 mt-2"
               clearable
             />
+            </v-col>
+            <v-col cols="12" sm="4" md="3" lg="2" class="pa-0 mr-6">
             <a-select v-model="messageTypeFilter"
                       :items="messageTypes"
                       single-line
                       @change="reloadConversations"
-                      custom-classes="message-type-selector albatross-body-2 mb-n4 pr-6 mt-2"
+                      custom-classes="message-type-selector albatross-body-2 mb-n4 mt-2"
                       prepend-icon="filter_alt"
             >
               <template v-slot:prepend>
@@ -68,26 +70,31 @@
                 </span>
               </template>
             </a-select>
+            </v-col>
+            <v-col class="pa-0" cols="12" sm="2">
             <v-chip label color="primary--text" class="sort-chip align-self-center albatross-body-2 mr-6 flex-shrink-0"
                     @click="sortOldToNew = !sortOldToNew">
               {{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}
             </v-chip>
+            </v-col>
           </v-row>
-          <v-row class="toolbar-row-2 mt-6 mb-6">
+          <v-row class="toolbar-row-2 align-baseline">
+            <v-col class="pa-0 mr-3 flex-shrink-0" cols="12" sm="3" md="2" xl="1" >
             <v-checkbox
               v-model="showUnreadOnly"
               @change="reloadConversations"
               label="Show unread only"
-              class="read-filter albatross-body-2 align-self-end flex-shrink-0 default-text-color pr-6 pl-1"
-              :class="{'small-width': viewWidth===1264 && route.path.includes('inboxConversation')}"
+              class="read-filter albatross-body-2 align-self-end default-text-color pl-1"
             >
             </v-checkbox>
+            </v-col>
+            <v-col class="pa-0 mr-3" cols="12" sm="4">
             <a-autocomplete v-model="selectedTeamFilters"
                             :items="teamFilterOptions"
                             item-title="teamName"
                             item-value="id"
                             prepend-icon="group"
-                            class="filter-control albatross-body-2 align-self-end flex-shrink-1  mr-6"
+                            class="filter-control albatross-body-2"
                             placeholder="Teams"
                             :menu-props="{offsetY:true}"
                             multiple
@@ -119,12 +126,14 @@
                 >{{ selectedTeamFilters.length }} selected</span>
               </template>
             </a-autocomplete>
+            </v-col>
+            <v-col class="pa-0" cols="12" sm="4">
             <a-autocomplete v-model="selectedOwnerFilters"
                             :items="ownerFilterOptions"
                             item-title="name"
                             item-value="userId"
                             prepend-icon="person"
-                            class="filter-control albatross-body-2 align-self-end flex-shrink-1"
+                            class="filter-control albatross-body-2"
                             placeholder="Owners"
                             :menu-props="{offsetY:true}"
                             @input="reloadConversations"
@@ -155,10 +164,9 @@
                 >{{ selectedOwnerFilters.length }} selected</span>
               </template>
             </a-autocomplete>
-            <v-spacer></v-spacer>
+            </v-col>
           </v-row>
-        </v-toolbar-items>
-      </v-toolbar>
+      </div>
       <v-data-table
         :items="conversationsFiltered"
         :options.sync="options"
@@ -873,8 +881,19 @@ onMounted(() => {
 </style>
 
 <style scoped lang="scss">
+#inbox-header {
+  position: sticky;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  z-index: 1;
+  background-color: var(--v-grey-lighten4);
+  @media(max-width: 600px) {
+    max-height:50%;
+    overflow-y: scroll;
+  }
+}
+
 .sticky-toolbar {
-  height: 170px !important;
+  min-height: 170px !important;
   position: sticky;
   top: 0;
   z-index: 1; //just to get it in front of the rest of the section
@@ -889,10 +908,7 @@ onMounted(() => {
   position: relative;
   bottom: 1rem;
 
-  @media (max-width: 1264px) {
-    flex-wrap: wrap;
-    bottom: 0;
-  }
+
 }
 
 .read-filter.small-width {
@@ -936,10 +952,6 @@ a {
 
 .filter-control {
   bottom: -8px;
-
-  @media (max-width: 1264px) {
-    max-width: 45%;
-  }
 }
 
 .sort-chip {
@@ -994,10 +1006,6 @@ conversation-search-no-teams {
     height: calc(100vh - 275px);
     min-height: 300px;
   }
-}
-
-.message-type-selector {
-  max-width: 160px;
 }
 
 .internal-chip {
