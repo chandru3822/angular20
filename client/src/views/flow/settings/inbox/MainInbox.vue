@@ -71,8 +71,8 @@
               </template>
             </a-select>
             </v-col>
-            <v-col class="pa-0" cols="12" sm="2">
-            <v-chip label color="primary--text" class="sort-chip align-self-center albatross-body-2 mr-6 flex-shrink-0"
+            <v-col class="pa-0" cols="12" sm="3">
+            <v-chip label color="primary--text" class="sort-chip align-self-center albatross-body-2 flex-shrink-0"
                     @click="sortOldToNew = !sortOldToNew">
               {{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}
             </v-chip>
