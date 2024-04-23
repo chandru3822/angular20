@@ -175,7 +175,9 @@ create type brs.calculated_proposal_value as
   virtual_sales_price_adjustment numeric,
   red_line_funding_amount numeric,
   closer_gen_discount numeric,
-  small_system_size_adder_amount numeric
+  small_system_size_adder_amount numeric,
+  denver_care_rebate_amount varchar,
+  denver_care_rebate_amount_number numeric
 );
 
 drop type brs.excluded_proposal_value;
@@ -501,6 +503,8 @@ declare
   v_ancillary_percent_cap_down_payment                  numeric;
   v_battery_cap_down_payment                            numeric;
   v_all_ancillary_costs                 jsonb;
+  v_denver_care_rebate_amount numeric;
+v_denver_care_rebate_amount_number numeric;
 
 BEGIN
   select proposal_id,
@@ -1188,6 +1192,7 @@ BEGIN
     (coalesce(v_total_amount_to_be_financed, 0) + coalesce(v_down_payment_amount, 0) +
      coalesce((v_other_adder_and_discount_amount), 0));
   --raise notice 'v_total_system_cost_before_rebates = %',v_total_system_cost_before_rebates;
+  --raise notice 'v_company_process_id = %',v_company_process_id;
 
   --illinios
   if v_state_id = 13 and v_company_process_id = 1 then
@@ -1350,8 +1355,8 @@ BEGIN
   --raise notice 'v_col_springs_rebate = %',v_col_springs_rebate;
 
   v_above_the_line_utility_rebate_amount = 0.00::numeric;
-  select above_the_line_utility_rebate_amount,rebates,eto_rebate_amount
-  into v_above_the_line_utility_rebate_amount,v_above_the_line_utility_rebates,v_eto_rebate_amount
+  select above_the_line_utility_rebate_amount,rebates,eto_rebate_amount,other_rebate
+  into v_above_the_line_utility_rebate_amount,v_above_the_line_utility_rebates,v_eto_rebate_amount,v_denver_care_rebate_amount
   from brs.get_above_the_line_utility_rebates(v_version_id, v_utility_company_id,
                                               v_aurora_design_summary,v_system_size,
                                               v_total_system_cost_before_rebates,
@@ -1361,6 +1366,8 @@ BEGIN
   --raise notice 'v_above_the_line_utility_rebate_amount = %',v_above_the_line_utility_rebate_amount;
   --raise notice 'v_above_the_line_utility_rebates = %',v_above_the_line_utility_rebates;
   --raise notice 'v_eto_rebate_amount = %',v_eto_rebate_amount;
+  v_denver_care_rebate_amount_number = v_denver_care_rebate_amount;
+  --raise notice 'v_denver_care_rebate_amount_number = %',v_denver_care_rebate_amount_number;
 
   if v_above_the_line_utility_rebates is not null or v_above_the_line_utility_rebates != '{}' then
     v_rebates = coalesce(v_rebates,'{}'::jsonb) || v_above_the_line_utility_rebates;
@@ -2000,7 +2007,7 @@ BEGIN
       coalesce(v_above_line_rebate, 0) + coalesce(v_other_adder_and_discount_amount, 0) + coalesce(v_deposit_amount, 0);
 
   --raise notice 'v_total_system_cost at the end %',v_total_system_cost;
-  v_above_line_rebate_without_odoe = (coalesce(v_above_line_rebate,0) - coalesce(v_odoe_rebate,0) - coalesce(v_eto_rebate_amount,0));
+  v_above_line_rebate_without_odoe = (coalesce(v_above_line_rebate,0) - coalesce(v_odoe_rebate,0) - coalesce(v_eto_rebate_amount,0)- coalesce(v_denver_care_rebate_amount,0));
   v_below_line_rebate = coalesce(v_below_line_rebate - coalesce(v_federal_tax_incentive_amount,0));
   --raise notice 'v_below_line_rebate %',v_below_line_rebate;
   --raise notice 'Carlins new value %',((coalesce(v_total_ancillary_costs,0) - coalesce(v_ancillary_percent_cap_down_payment,0))/(1-v_dealer_fee))/v_total_system_cost;
@@ -2426,7 +2433,9 @@ BEGIN
            v_virtual_sales_price_adjustment,
            v_red_line_funding_amount,
            v_closer_gen_discount,
-           v_small_system_size_adder_amount;
+           v_small_system_size_adder_amount,
+           to_char(v_denver_care_rebate_amount, '$FM9,999,999')::varchar,
+           v_denver_care_rebate_amount_number;
 
 
 END

@@ -21,7 +21,8 @@ CREATE OR REPLACE FUNCTION brs.get_above_the_line_utility_rebates(p_version_id b
           (
             above_the_line_utility_rebate_amount numeric,
             rebates                              jsonb,
-            eto_rebate_amount                    numeric
+            eto_rebate_amount                    numeric,
+            other_rebate                         numeric
           )
 AS
 $BODY$
@@ -31,6 +32,7 @@ declare
   v_utility_rebate_amount        numeric;
   v_above_the_line_rebate_amount numeric;
   v_eto_rebate_amount            numeric;
+  v_other_amount                 numeric;
 BEGIN
   for x in select rebate_amount,
                   unit_type_id,
@@ -66,6 +68,7 @@ BEGIN
 --       raise notice 'above the line rebate_cap_amount = % ',x.rebate_cap_amount;
 --       raise notice 'above the line rebate_cap_percent_of_total = % ',x.rebate_cap_percent_of_total;
 --       raise notice ' above the lin erebate = % ',x.rebate;
+ --        raise notice ' what is my rebate  = % ',x.rebate_id;
 
       if x.minimum_tsrf_for_qualification is not null then
         select *
@@ -104,10 +107,15 @@ BEGIN
         v_eto_rebate_amount = coalesce(v_eto_rebate_amount, 0) + coalesce(v_utility_rebate_amount, 0);
       end if;
 
+      if x.rebate_id = 2241 then
+        v_other_amount = coalesce(v_utility_rebate_amount, 0);
+      end if;
+
     end loop;
   return query select coalesce(v_above_the_line_rebate_amount, 0),
                       COALESCE(v_rebates, '{}'::jsonb),
-                      v_eto_rebate_amount;
+                      v_eto_rebate_amount,
+                      COALESCE(v_other_amount, 0);
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE
