@@ -294,7 +294,7 @@
                     color="primary"
                     @click="assignedUserExpanded = []"
                     v-if="assignedUserExpanded.includes(item)"
-                    text="cancel"
+                    text="Cancel"
                 ></a-btn>
                 <a-btn
                     size="small"

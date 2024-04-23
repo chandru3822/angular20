@@ -405,6 +405,9 @@ BEGIN
   from brs.project_commission_snapshot pcs2
   where pcs2.project_id = any (v_project_ids);
 
+  delete from flow.import_sp_project
+    where project_id = any (v_project_ids);
+
   delete from flow.project where contact_id = p_contact_id;
   delete from flow.contact c where id = p_contact_id;
   commit;

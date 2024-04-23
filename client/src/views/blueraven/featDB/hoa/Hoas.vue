@@ -33,6 +33,7 @@
                 <div v-if="hoaFilters[header.value]" class="pt-2 table-filter">
                   <a-text-field v-if="hoaFilters[header.value].type === 'text'"
                                 v-model="hoaFilters[header.value].value"
+                                class="mx-2"
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
                                 clearable
                                 variant="filled"
@@ -42,6 +43,7 @@
                   <a-autocomplete v-else-if="hoaFilters[header.value].type === 'select'"
                                   :items="states"
                                   v-model="hoaFilters[header.value].value"
+                                  class="mx-2"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
                                   item-title="state"

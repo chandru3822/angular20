@@ -47,7 +47,7 @@
                 <a-btn variant="text" size="small" v-if="!expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </a-btn>
-                <a-btn size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></a-btn>
+                <a-btn size="small" text="Cancel" v-if="expanded.includes(item)" @click="expanded = []"></a-btn>
               </td>
             </tr>
           </template>
