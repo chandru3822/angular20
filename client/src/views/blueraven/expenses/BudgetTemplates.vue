@@ -115,7 +115,7 @@
                       color="primary"
                       v-if="expanded.includes(item)"
                       @click="expanded = []"
-                      text="cancel"
+                      text="Cancel"
                   ></a-btn>
                   <a-btn
                       size="small"

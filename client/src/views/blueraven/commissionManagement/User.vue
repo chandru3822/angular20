@@ -150,7 +150,7 @@
                     color="primary"
                     @click="[expanded = [], selectedIndex = index]"
                     v-if="expanded.includes(item)"
-                    text="cancel"
+                    text="Cancel"
                 ></a-btn>
               </td>
             </tr>
@@ -298,7 +298,7 @@
                     color="primary"
                     @click="[overrideExpanded = [], overrideSelectedIndex = index]"
                     v-if="overrideExpanded.includes(item)"
-                    text="cancel"
+                    text="Cancel"
                 ></a-btn>
               </td>
             </tr>
@@ -421,7 +421,7 @@
                     color="primary"
                     @click="[receivingExpanded = [], receivingSelectedIndex = index]"
                     v-if="receivingExpanded.includes(item)"
-                    text="cancel"
+                    text="Cancel"
                 ></a-btn>
               </td>
             </tr>

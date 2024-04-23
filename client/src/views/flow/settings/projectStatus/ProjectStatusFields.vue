@@ -51,7 +51,7 @@
           <a-btn
               class="ml-3"
               @click="[addNew = false, selectedDataViewField = {} ]"
-              text="cancel"
+              text="Cancel"
           ></a-btn>
 
         </div>

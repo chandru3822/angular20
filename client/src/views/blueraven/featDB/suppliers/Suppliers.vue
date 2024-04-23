@@ -33,6 +33,7 @@
                 <div v-if="supplierFilters[header.value]" class="pt-2 table-filter">
                   <a-text-field v-if="supplierFilters[header.value].type === 'text'"
                                 v-model="supplierFilters[header.value].value"
+                                class="mx-2"
                                 :placeholder="'Enter a ' + header.text.toLowerCase()"
                                 clearable
                                 filled
@@ -44,6 +45,7 @@
                                   v-model="supplierFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
+                                  class="mx-2"
                                   item-title="state"
                                   variant="filled"
                                   density="compact"

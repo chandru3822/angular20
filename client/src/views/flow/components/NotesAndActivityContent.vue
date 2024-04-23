@@ -143,7 +143,7 @@
                   variant="text"
                   color="primary"
                   @click="[dirtyNote = false, item.note = item.oldNote, item.edit = false, item.noteMenu = false]"
-                  text="cancel"
+                  text="Cancel"
               ></a-btn>
             </div>
           </td>
@@ -241,7 +241,7 @@
                   class="ml-2"
                   v-if="item.reply"
                   @click="[item.reply=null, item.showReply = false, !item.childNotes || item.childNotes.length === 0 ? expanded=[] : null]"
-                  text="cancel"
+                  text="Cancel"
               ></a-btn>
             </div>
           </div>
@@ -288,7 +288,7 @@
                     variant="text"
                     color="primary body-medium"
                     @click="[dirtyNote = false, cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]"
-                    text="cancel"
+                    text="Cancel"
                 ></a-btn>
               </div>
             </div>

@@ -314,7 +314,7 @@
                     color="primary"
                     @click="milestoneExpanded = []"
                     v-if="milestoneExpanded.includes(item)"
-                    text="cancel"
+                    text="Cancel"
                 ></a-btn>
                 <a-btn
                     size="small"
@@ -451,7 +451,7 @@
                     color="primary"
                     @click="sourceExpanded = []"
                     v-if="sourceExpanded.includes(item)"
-                    text="cancel"
+                    text="Cancel"
                 ></a-btn>
                 <a-btn
                     v-if="commission.statusType === 'PENDING'"
@@ -647,7 +647,7 @@
                     color="primary"
                     @click="assignedUserExpanded = []"
                     v-if="assignedUserExpanded.includes(item)"
-                    text="cancel"
+                    text="Cancel"
                 ></a-btn>
                 <a-btn
                     v-if="commission.statusType === 'PENDING'"

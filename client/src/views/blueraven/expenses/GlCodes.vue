@@ -103,7 +103,7 @@
                       color="primary"
                       @click="editIndex = null"
                       v-if="index === editIndex"
-                      text="cancel"
+                      text="Cancel"
                   ></a-btn>
                   <a-btn
                       size="small"

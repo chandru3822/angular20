@@ -334,7 +334,7 @@
                         color="primary"
                         @click="expanded = []"
                         v-else
-                        text="cancel"
+                        text="Cancel"
                     ></a-btn>
                     <a-btn
                         v-if="userCanEdit"

@@ -465,7 +465,7 @@
                             variant="text"
                             v-if="cpExpanded.includes(cp)"
                             @click="cpExpanded = []"
-                            text="cancel"
+                            text="Cancel"
                         ></a-btn>
                         <a-btn
                             variant="text"

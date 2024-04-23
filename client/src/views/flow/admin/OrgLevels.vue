@@ -69,7 +69,7 @@
               <td class="text-right">
                 <a-btn variant="text" size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
                 </a-btn>
-                <a-btn size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></a-btn>
+                <a-btn size="small" text="Cancel" v-if="expanded.includes(item)" @click="expanded = []"></a-btn>
                 <a-btn variant="text" size="small" prepend-icon="delete" @click="levelToDelete=item" />
               </td>
             </tr>

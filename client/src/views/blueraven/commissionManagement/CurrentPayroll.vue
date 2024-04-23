@@ -227,9 +227,10 @@
                     width="500">
                     <template v-slot:activator="{ on }">
                       <a-btn
-                          size="x-small"
-                          color="primary"
-                          fab
+                          size="small"
+                          color="white"
+                          icon
+                          html-style="background-color: var(--v-primary-base)"
                           class="ml-2"
                           :activation-handler="on"
                           @click="[delete item.adjustment, delete item.adjustmentNote, getAdjustmentHistory(item)]"
