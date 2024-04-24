@@ -5061,9 +5061,9 @@ public class SmartlistServicev1 {
     var projectName = new SmartlistFieldAssignment();
     projectName.setName("Project Name");
     defaultFields.add(projectName);
-	var projectId = new SmartlistFieldAssignment();
-	projectName.setName("Project ID");
-	defaultFields.add(projectId);
+//	var projectId = new SmartlistFieldAssignment();
+//	projectName.setName("Project ID");
+//	defaultFields.add(projectId);
     var event = new SmartlistFieldAssignment();
     event.setName("Event Name");
     defaultFields.add(event);
