@@ -35,7 +35,7 @@ const props = defineProps({
   headerColor: String, //@optional
   viewChangeCallback: Function, //@required,
   subMenuSelectedView: Object, //@optional, allows us to close the menu when using a submenu and the route doesn't change
-  useRightPanelMobile:Boolean,
+  showRightCol:Boolean,
   rightOpen:Boolean,
 })
 const emit = defineEmits(['selectMenuItem'])
@@ -90,13 +90,10 @@ const chooseSelectedView = (view, id) => {
   </v-row>
   <v-row class="mobile-background height-one-hunned">
     <v-col class=" py-0 main-column-container">
-    <slot name="main-column"/>
+    <slot v-if="!showRightCol" name="main-column"/>
+      <slot v-else name="right-column"/>
     </v-col>
   </v-row>
-    <v-navigation-drawer v-if="useRightPanelMobile" v-model="rightOpen" width="85%" right absolute temporary clipped stateless><!--stateless makes it so clicking content doesn't trigger the sidebar to close-->
-      <slot name="right-column"/>
-    </v-navigation-drawer>
-
   </v-container>
 </template>
 
