@@ -1,5 +1,5 @@
 <template>
-  <ThreeColumnLayout
+  <component :is="activeComp"
     id="main-inbox-container"
     :header-hidden="true"
     :right-hidden="!route.params.projectId && !route.params.userId"
@@ -7,6 +7,7 @@
     :half-n-half="true"
     :auto-overflow-left="true"
     :show-right-collapse-btn="false"
+             :show-right-col="route.params.projectId"
     @closeRight="router.push({path: `/inbox`})"
   >
     <template v-slot:main-column>
@@ -35,14 +36,14 @@
             </v-tab>
             <v-spacer></v-spacer>
             <a-btn v-if="teamsAssociatedToUser.length > 0" color="primary"
-                  class="justify-end new-message-button mt-3"
+                  class="new-message-button mt-3"
                   @click="showNewMessageDialog = true"
                   prepend-icon="add"
-                  text="New Message"
+                  :text="vuetify.breakpoint.mdAndUp ? 'New Message' : ''"
             />
           </v-tabs>
-          <v-row class="px-2 toolbar-row-2 align-center">
-            <v-col cols="12" sm="4" lg="3" class="pa-0 mr-6">
+          <v-row class="px-2 toolbar-row-2 align-center flex-wrap flex-nowrap-m">
+            <v-col cols="12" md="4" lg="3" class="pa-0 pr-6">
             <a-text-field
               prepend-inner-icon="search"
               label="Search by project or owner"
@@ -53,12 +54,12 @@
               clearable
             />
             </v-col>
-            <v-col cols="12" sm="4" md="3" lg="2" class="pa-0 mr-6">
+            <v-col cols="10" sm="8" md="4" xl="2" class="pa-0">
             <a-select v-model="messageTypeFilter"
                       :items="messageTypes"
                       single-line
                       @change="reloadConversations"
-                      custom-classes="message-type-selector albatross-body-2 mb-n4 mt-2"
+                      custom-classes="message-type-selector albatross-body-2 mb-n4 mt-2 pr-6"
                       prepend-icon="filter_alt"
             >
               <template v-slot:prepend>
@@ -71,15 +72,16 @@
               </template>
             </a-select>
             </v-col>
-            <v-col class="pa-0" cols="12" sm="3">
+            <v-col class="pa-0" cols="2" sm="4">
             <v-chip label color="primary--text" class="sort-chip align-self-center albatross-body-2 flex-shrink-0"
                     @click="sortOldToNew = !sortOldToNew">
-              {{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}
+              <span v-if="vuetify.breakpoint.smAndUp">{{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}</span>
+              <v-icon v-else>{{sortOldToNew ? 'mdi-sort-calendar-ascending' : 'mdi-sort-calendar-descending'}}</v-icon>
             </v-chip>
             </v-col>
           </v-row>
-          <v-row class="toolbar-row-2 align-baseline">
-            <v-col class="pa-0 mr-3 flex-shrink-0" cols="12" sm="3" md="2" xl="1" >
+          <v-row class="px-2 toolbar-row-2 align-center flex-wrap flex-nowrap-m">
+            <v-col class="pa-0" cols="12" sm="4" >
             <v-checkbox
               v-model="showUnreadOnly"
               @change="reloadConversations"
@@ -88,7 +90,7 @@
             >
             </v-checkbox>
             </v-col>
-            <v-col class="pa-0 mr-3" cols="12" sm="4">
+            <v-col class="pa-0" cols="12" sm="8" md="4" xl="2">
             <a-autocomplete v-model="selectedTeamFilters"
                             :items="teamFilterOptions"
                             item-title="teamName"
@@ -127,7 +129,7 @@
               </template>
             </a-autocomplete>
             </v-col>
-            <v-col class="pa-0" cols="12" sm="4">
+            <v-col class="pa-0" cols="12" md="4">
             <a-autocomplete v-model="selectedOwnerFilters"
                             :items="ownerFilterOptions"
                             item-title="name"
@@ -247,7 +249,7 @@
     <template v-slot:right-column>
       <ProjectActivity v-if="!thingsLoading" collapseBtnIcon="close" :allowSidebarCollapse="false" @collapseCallback="closeConversation"></ProjectActivity>
     </template>
-  </ThreeColumnLayout>
+  </component>
 </template>
 
 <script setup>
@@ -255,6 +257,7 @@ import {getRequest, handleHidingGlobalLoader, postRequest} from '@/helpers/helpe
 import constants from '@/helpers/constants'
 import moment from 'moment'
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
+import ThreeColumnLayoutMobile from "@/views/ThreeColumnLayoutMobile.vue";
 import TeamAssignmentChips from '@/views/flow/settings/inbox/TeamAssignmentChips'
 import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignmentDialog'
 import NewMessageDialog from "./NewMessageDialog";
@@ -277,6 +280,10 @@ const router = useRouter()
 const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
 const notificationStore = useNotificationStore()
+
+const activeComp = computed(() => {
+  return vuetify.breakpoint.smAndDown ? ThreeColumnLayoutMobile : ThreeColumnLayout
+})
 
 const conversations = ref([])
 const options = ref({
