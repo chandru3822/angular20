@@ -732,7 +732,7 @@ public class PandaDocService {
       tokens.put("Proposal.System Offset", Math.round(systemOffset) + "%");
 
       Double cashDownPayment = Double.min(1000, (0.10 * (totalCost - referralPromotionAmount)));
-      if (deets.getFinancier().equals("Cash")) {
+      if (deets.getFinancier() != null && deets.getFinancier().equals("Cash")) {
         tokens.put("Deal.NV Cash Down Payment", Math.round(cashDownPayment));
         tokens.put("Proposal.NV Cash Down Payment", Math.round(cashDownPayment));
         Double progressPayment = ((totalCost - referralPromotionAmount) / 2);
@@ -981,7 +981,24 @@ public class PandaDocService {
         }
       }
 
-    } catch (EmptyResultDataAccessException e) {
+      // Add values from the proposal if the proposal number is present
+      if (result.get("proposal_number_value") != null) {
+        Integer proposalNumberValue = (Integer) result.get("proposal_number_value");
+        Optional<PandaDocProjectDetails> projectDetails = getProjectDetails(projectId, Long.valueOf(proposalNumberValue));
+
+        if (projectDetails.isPresent()) {
+          JSONObject projectTokens = getProjectTokens(projectDetails.get());
+          Iterator<String> keys = projectTokens.keys();
+          while (keys.hasNext()) {
+            String key = keys.next();
+            if (!tokens.has(key)) {
+              tokens.put(key, projectTokens.get(key));
+            }
+          }
+        }
+      }
+
+    } catch (Exception e) {
       log.warn("PANDADOC Error getting proposal log values}", e);
     }
 

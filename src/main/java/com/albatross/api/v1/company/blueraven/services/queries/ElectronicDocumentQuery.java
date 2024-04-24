@@ -52,7 +52,7 @@ public class ElectronicDocumentQuery {
            s.state, s.abbreviation, p.postal_code, c.first_name,
            c.last_name, c.email, c.phone, pd.system_size, pd.total_system_price, pd.referral_promotion_amount,
            pd.total_cash_down_payment, pd.installation_agreement_signed_date,
-           pd.year_1_kwh_output, pd.estimated_itc, pd.utility_company_name,
+           pd.year_1_kwh_output, pd.estimated_itc, pd.utility_company_name, pd.proposal_number_value,
            (case when pd.primary_financier_name = 'Cash' then least(1000, 0.10 * (pd.total_system_price - pd.referral_promotion_amount))
                 else least(pd.total_cash_down_payment, 1000, 0.10 * (pd.total_system_price - pd.referral_promotion_amount))
                 end) as cash_down_payment,

@@ -1263,6 +1263,12 @@ const createSnackbar = (text) => {
     max-width: 30%;
   }
 }
+a.resource-title {
+  color: unset;
+}
+a.resource-title:hover{
+  color: var(--v-primary-lighten3);
+}
 .v-tooltip__content {
   background-color: white;
   color: var(--v-grey-darken4);

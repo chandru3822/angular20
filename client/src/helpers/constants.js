@@ -143,11 +143,10 @@ constants.USERNAME_RULES = [
   v => !!v && v.length >= 3 || 'Must be at least 3 characters'
 ]
 constants.COLOR_LIST = [
-    '#e6194b', '#3cb44b', '#ffe119', '#4363d8',
+    '#e6194b', '#3cb44b', '#FFC700', '#4363d8',
     '#f58231', '#911eb4', '#46f0f0', '#f032e6',
-    '#bcf60c', '#FF7F9E', '#008080', '#dcbeff',
-    '#9a6324', '#fdf8a2', '#800000', '#aaffc3',
-    '#808000', '#f6d5b1', '#000075', '#42063e'
+    '#FF7F9E', '#dcbeff', '#9a6324',
+    '#800000', '#808000',
 
 ]
 
