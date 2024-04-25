@@ -89,54 +89,63 @@ DECLARE
   v_utility_bill_verification_topic                  text;
   v_other_topic                                      text;
   v_hic_filename                                     text;
+  v_hic_displayname                                    text;
   v_hic_content_type                                 text;
   v_hic_s3_key                                       text;
   v_hic_size                                         text;
   v_hic_attachment_type_id                           bigint default 41;
   v_hic_attachment_id                                bigint;
   v_proposal_document_filename                       text;
+  v_proposal_document_displayname                    text;
   v_proposal_document_content_type                   text;
   v_proposal_document_s3_key                         text;
   v_proposal_document_size                           text;
   v_proposal_document_attachment_type_id             bigint default 37;
   v_proposal_document_attachment_id                  bigint;
   v_utility_bill_document_filename                   text;
+  v_utility_bill_document_displayname                   text;
   v_utility_bill_document_content_type               text;
   v_utility_bill_document_s3_key                     text;
   v_utility_bill_document_size                       text;
   v_utility_bill_document_attachment_type_id         bigint default 47;
   v_utility_bill_document_attachment_id              bigint;
   v_site_survey_photos_filename                      text;
+  v_site_survey_photos_displayname                     text;
   v_site_survey_photos_content_type                  text;
   v_site_survey_photos_s3_key                        text;
   v_site_survey_photos_size                          text;
   v_site_survey_photos_attachment_type_id            bigint default 36;
   v_site_survey_photos_attachment_id                 bigint;
   v_final_design_filename                            text;
+  v_final_design_displayname                            text;
   v_final_design_content_type                        text;
   v_final_design_s3_key                              text;
   v_final_design_size                                text;
   v_final_design_attachment_type_id                  bigint default 38;
   v_final_design_attachment_id                       bigint;
   v_permit_pack_filename                             text;
+  v_permit_pack_displayname                             text;
   v_permit_pack_content_type                         text;
   v_permit_pack_s3_key                               text;
   v_permit_pack_size                                 text;
   v_permit_pack_attachment_type_id                   bigint default 40;
   v_permit_pack_attachment_id                        bigint;
   v_shade_report_filename                            text;
+  v_shade_report_displayname                            text;
   v_shade_report_content_type                        text;
   v_shade_report_s3_key                              text;
   v_shade_report_size                                text;
   v_shade_report_attachment_type_id                  bigint default 465;
   v_shade_report_attachment_id                       bigint;
   v_approved_permit_pack_filename                    text;
+  v_approved_permit_pack_displayname                    text;
   v_approved_permit_pack_content_type                text;
   v_approved_permit_pack_s3_key                      text;
   v_approved_permit_pack_size                        text;
   v_approved_permit_pack_attachment_type_id          bigint default 950;
   v_approved_permit_pack_attachment_id               bigint;
-  v_chatter_file                                     text;
+  v_chatter_file_filename                                     text;
+  v_chatter_file_displayname                                     text;
   v_chatter_file_content_type                text;
   v_chatter_file_s3_key                      text;
   v_chatter_file_size                        text;
@@ -212,38 +221,50 @@ BEGIN
            p_record ->> 'Utility_Bill_Verification_Topic',
            p_record ->> 'Other_Topic',
            p_record -> 'Signed_HIC_Document' ->> 'filename',
+           p_record -> 'Signed_HIC_Document' ->> 'displayName',
            p_record -> 'Signed_HIC_Document' ->> 'contentType',
            p_record -> 'Signed_HIC_Document' ->> 's3Key',
            p_record -> 'Signed_HIC_Document' ->> 'size',
            p_record -> 'Proposal_Document' ->> 'filename',
+           p_record -> 'Proposal_Document' ->> 'displayName',
            p_record -> 'Proposal_Document' ->> 'contentType',
            p_record -> 'Proposal_Document' ->> 's3Key',
            p_record -> 'Proposal_Document' ->> 'size',
            p_record -> 'Utility_Bill_Document' ->> 'filename',
+           p_record -> 'Utility_Bill_Document' ->> 'displayName',
            p_record -> 'Utility_Bill_Document' ->> 'contentType',
            p_record -> 'Utility_Bill_Document' ->> 's3Key',
            p_record -> 'Utility_Bill_Document' ->> 'size',
            p_record -> 'Site_Survey_Photos' ->> 'filename',
+           p_record -> 'Site_Survey_Photos' ->> 'displayName',
            p_record -> 'Site_Survey_Photos' ->> 'contentType',
            p_record -> 'Site_Survey_Photos' ->> 's3Key',
            p_record -> 'Site_Survey_Photos' ->> 'size',
            p_record -> 'Final_Design' ->> 'filename',
+           p_record -> 'Final_Design' ->> 'displayName',
            p_record -> 'Final_Design' ->> 'contentType',
            p_record -> 'Final_Design' ->> 's3Key',
            p_record -> 'Final_Design' ->> 'size',
            p_record -> 'Permit_Pack' ->> 'filename',
+           p_record -> 'Permit_Pack' ->> 'displayName',
            p_record -> 'Permit_Pack' ->> 'contentType',
            p_record -> 'Permit_Pack' ->> 's3Key',
            p_record -> 'Permit_Pack' ->> 'size',
            p_record -> 'Shade_Report' ->> 'filename',
+           p_record -> 'Shade_Report' ->> 'displayName',
            p_record -> 'Shade_Report' ->> 'contentType',
            p_record -> 'Shade_Report' ->> 's3Key',
            p_record -> 'Shade_Report' ->> 'size',
            p_record -> 'Approved_Permit_Pack' ->> 'filename',
+           p_record -> 'Approved_Permit_Pack' ->> 'displayName',
            p_record -> 'Approved_Permit_Pack' ->> 'contentType',
            p_record -> 'Approved_Permit_Pack' ->> 's3Key',
            p_record -> 'Approved_Permit_Pack' ->> 'size',
-           p_record ->> 'Chatter_File'
+          p_record -> 'Chatter_File' ->> 'filename',
+          p_record -> 'Chatter_File' ->> 'displayName',
+          p_record -> 'Chatter_File' ->> 'contentType',
+          p_record -> 'Chatter_File' ->> 's3Key',
+          p_record -> 'Chatter_File' ->> 'size'
     into
       v_sp_project_id,
       v_current_milestone,
@@ -310,38 +331,50 @@ BEGIN
       v_utility_bill_verification_topic,
       v_other_topic,
       v_hic_filename,
+      v_hic_displayname,
       v_hic_content_type,
       v_hic_s3_key,
       v_hic_size,
       v_proposal_document_filename,
+      v_proposal_document_displayname,
       v_proposal_document_content_type,
       v_proposal_document_s3_key,
       v_proposal_document_size,
       v_utility_bill_document_filename,
+      v_utility_bill_document_displayname,
       v_utility_bill_document_content_type,
       v_utility_bill_document_s3_key,
       v_utility_bill_document_size,
       v_site_survey_photos_filename,
+      v_site_survey_photos_displayname,
       v_site_survey_photos_content_type,
       v_site_survey_photos_s3_key,
       v_site_survey_photos_size,
       v_final_design_filename,
+      v_final_design_displayname,
       v_final_design_content_type,
       v_final_design_s3_key,
       v_final_design_size,
       v_permit_pack_filename,
+      v_permit_pack_displayname,
       v_permit_pack_content_type,
       v_permit_pack_s3_key,
       v_permit_pack_size,
       v_shade_report_filename,
+      v_shade_report_displayname,
       v_shade_report_content_type,
       v_shade_report_s3_key,
       v_shade_report_size,
       v_approved_permit_pack_filename,
+      v_approved_permit_pack_displayname,
       v_approved_permit_pack_content_type,
       v_approved_permit_pack_s3_key,
       v_approved_permit_pack_size,
-      v_chatter_file;
+      v_chatter_file_filename,
+      v_chatter_file_displayname,
+      v_chatter_file_content_type,
+      v_chatter_file_s3_key,
+      v_chatter_file_size;
 
     begin
     select cs.id
@@ -386,25 +419,25 @@ BEGIN
 
 
     perform flow.set_pps_cfv(v_project_id, 2384850, 27055, v_sp_project_id::text); --v_sp_project_id
-    if v_current_milestone is not null then
+    if v_current_milestone is not null and v_current_milestone != '' then
       select lov.id
       into v_current_milestone_id
       from flow.list_of_value lov
       where parent_id = 24419
         and lower(lov.name) = lower(v_current_milestone);
-      if v_current_milestone_id is not null then
+      if v_current_milestone_id is not null  then
         perform flow.set_pps_cfv(v_project_id, 2384850, 27056, v_current_milestone_id::text); --v_current_milestone
       end if;
     end if;
 
-    if v_current_critical_path_task_name is not null then
+    if v_current_critical_path_task_name is not null and v_current_critical_path_task_name != '' then
       select lov.id
       into v_current_critical_path_task_name_id
       from flow.list_of_value lov
       where parent_id = 24455
         and lower(lov.name) = lower(v_current_critical_path_task_name);
 
-      if v_current_critical_path_task_name_id is not null then
+      if v_current_critical_path_task_name_id is not null  then
       perform flow.set_pps_cfv(v_project_id, 2384850, 27112,
                                '{'||v_current_critical_path_task_name_id::text||'}'); --v_current_critical_path_task_name
       end if;
@@ -419,7 +452,7 @@ BEGIN
                                round(v_total_yearly_usage_pre_solar::numeric)::text); --v_total_yearly_usage_pre_solar
     end if;
 
-    if v_inverter is not null then
+    if v_inverter is not null and v_inverter != '' then
 
       if v_inverter = 'ENPHASE IQ7HS MICROINVERTER' then
         v_inverter_id = 22929;
@@ -431,7 +464,7 @@ BEGIN
       end if;
     end if;
 
-    if v_panel_brand is not null then
+    if v_panel_brand is not null and v_panel_brand != '' then
 
       if v_panel_brand = 'Waaree Energies Ltd.' then
         v_panel_brand_id = 24438;
@@ -466,7 +499,7 @@ BEGIN
                                round(v_year_1_kwh_output::numeric)::text); --v_year_1_kwh_output
     end if;
 
-    if v_storage_brand is not null then
+    if v_storage_brand is not null  and v_storage_brand != '' then
       if v_storage_brand = 'SunPower' then
         v_storage_brand_id = 20090;
       elsif v_storage_brand = 'Enphase' then
@@ -492,7 +525,7 @@ BEGIN
                                v_installation_agreement_signed_date::text); --v_installation_agreement_signed_date
     end if;
 
-    if v_hoa_approval_required is not null then
+    if v_hoa_approval_required is not null and v_hoa_approval_required != '' then
       select lov.id
       into v_hoa_approval_required_id
       from flow.list_of_value lov
@@ -514,7 +547,7 @@ BEGIN
       perform flow.set_pps_cfv(v_project_id, 2384850, 27062, v_ahj::text); --v_ahj
     end if;
 
-    if v_permit_submission_method_online_in_person is not null then
+    if v_permit_submission_method_online_in_person is not null and v_permit_submission_method_online_in_person != '' then
       select lov.id
       into v_permit_submission_method_online_in_person_id
       from flow.list_of_value lov
@@ -559,7 +592,7 @@ BEGIN
                                v_Site_Survey_PhotoCircle_Link::text); --v_Site_Survey_PhotoCircle_Link
     end if;
 
-    if v_mpu_required is not null then
+    if v_mpu_required is not null and v_mpu_required != '' then
       select lov.id
       into v_mpu_required_id
       from flow.list_of_value lov
@@ -571,7 +604,7 @@ BEGIN
       end if;
     end if;
 
-    if v_reroof_required is not null then
+    if v_reroof_required is not null and v_reroof_required != '' then
       select lov.id
       into v_reroof_required_id
       from flow.list_of_value lov
@@ -582,7 +615,7 @@ BEGIN
       end if;
     end if;
 
-    if v_trenching_required is not null then
+    if v_trenching_required is not null and v_trenching_required != '' then
       select lov.id
       into v_trenching_required_id
       from flow.list_of_value lov
@@ -593,7 +626,7 @@ BEGIN
       end if;
     end if;
 
-    if v_structural_upgrades is not null then
+    if v_structural_upgrades is not null and v_structural_upgrades != '' then
       select lov.id
       into v_structural_upgrades_id
       from flow.list_of_value lov
@@ -604,14 +637,12 @@ BEGIN
       end if;
     end if;
 
-    if v_hic_filename is not null or v_hic_filename != '' then
+    if v_hic_filename is not null and v_hic_filename != '' then
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
       values (v_hic_attachment_type_id, 3, v_hic_filename, v_hic_content_type, v_hic_s3_key, v_hic_size::integer, false, now(),
-              now(), 2384850, 2384850, false, uuid_generate_v4(),
-              substring(v_hic_filename FROM 1 FOR strpos(v_hic_filename, '.') - 1))
+              now(), 2384850, 2384850, false, uuid_generate_v4(), v_hic_displayname)
       returning id into v_hic_attachment_id;
-
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
                                           modified_by_id, linked, archived)
@@ -619,14 +650,14 @@ BEGIN
 
     end if;
 
-    if v_proposal_document_filename is not null  or v_proposal_document_filename != '' then
+    if v_proposal_document_filename is not null  and v_proposal_document_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
       values (v_proposal_document_attachment_type_id, 3, v_proposal_document_filename, v_proposal_document_content_type,
               v_proposal_document_s3_key, v_proposal_document_size::integer, false, now(), now(), 2384850, 2384850, false,
               uuid_generate_v4(),
-              substring(v_proposal_document_filename FROM 1 FOR strpos(v_proposal_document_filename, '.') - 1))
+              v_proposal_document_displayname)
       returning id into v_proposal_document_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -635,14 +666,14 @@ BEGIN
 
     end if;
 
-    if v_utility_bill_document_filename is not null or v_utility_bill_document_filename != '' then
+    if v_utility_bill_document_filename is not null and v_utility_bill_document_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
       values (v_utility_bill_document_attachment_type_id, 3, v_utility_bill_document_filename,
               v_utility_bill_document_content_type, v_utility_bill_document_s3_key, v_utility_bill_document_size::integer, false,
               now(), now(), 2384850, 2384850, false, uuid_generate_v4(),
-              substring(v_utility_bill_document_filename FROM 1 FOR strpos(v_utility_bill_document_filename, '.') - 1))
+              v_utility_bill_document_displayname)
       returning id into v_utility_bill_document_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -651,14 +682,14 @@ BEGIN
 
     end if;
 
-    if v_site_survey_photos_filename is not null or v_site_survey_photos_filename != '' then
+    if v_site_survey_photos_filename is not null and v_site_survey_photos_filename != '' then
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
       values (v_site_survey_photos_attachment_type_id, 3, v_site_survey_photos_filename,
               v_site_survey_photos_content_type,
               v_site_survey_photos_s3_key, v_site_survey_photos_size::integer, false, now(), now(), 2384850, 2384850, false,
               uuid_generate_v4(),
-              substring(v_site_survey_photos_filename FROM 1 FOR strpos(v_site_survey_photos_filename, '.') - 1))
+              v_site_survey_photos_displayname)
       returning id into v_site_survey_photos_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -667,14 +698,14 @@ BEGIN
     end if;
 
 
-    if v_final_design_filename is not null or v_final_design_filename != '' then
+    if v_final_design_filename is not null and v_final_design_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
       values (v_final_design_attachment_type_id, 3, v_final_design_filename, v_final_design_content_type,
               v_final_design_s3_key, v_final_design_size::integer, false, now(), now(), 2384850, 2384850, false,
               uuid_generate_v4(),
-              substring(v_final_design_filename FROM 1 FOR strpos(v_final_design_filename, '.') - 1))
+              v_final_design_displayname)
       returning id into v_final_design_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -683,14 +714,14 @@ BEGIN
     end if;
 
 
-    if v_permit_pack_filename is not null or v_permit_pack_filename != '' then
+    if v_permit_pack_filename is not null and v_permit_pack_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
       values (v_permit_pack_attachment_type_id, 3, v_permit_pack_filename, v_permit_pack_content_type,
               v_permit_pack_s3_key,
               v_permit_pack_size::integer, false, now(), now(), 2384850, 2384850, false, uuid_generate_v4(),
-              substring(v_permit_pack_filename FROM 1 FOR strpos(v_permit_pack_filename, '.') - 1))
+              v_permit_pack_displayname)
       returning id into v_permit_pack_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -698,14 +729,14 @@ BEGIN
       values (v_permit_pack_attachment_id, v_project_id, now(), now(), 2384850, 2384850, false, false);
     end if;
 
-    if v_shade_report_filename is not null or v_shade_report_filename != '' then
+    if v_shade_report_filename is not null and v_shade_report_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
       values (v_shade_report_attachment_type_id, 3, v_shade_report_filename, v_shade_report_content_type,
               v_shade_report_s3_key, v_shade_report_size::integer, false, now(), now(), 2384850, 2384850, false,
               uuid_generate_v4(),
-              substring(v_shade_report_filename FROM 1 FOR strpos(v_shade_report_filename, '.') - 1))
+              v_shade_report_displayname)
       returning id into v_shade_report_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -714,7 +745,7 @@ BEGIN
     end if;
 
 
-    if v_approved_permit_pack_filename is not null or v_approved_permit_pack_filename != '' then
+    if v_approved_permit_pack_filename is not null and v_approved_permit_pack_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
@@ -722,7 +753,7 @@ BEGIN
               v_approved_permit_pack_content_type, v_approved_permit_pack_s3_key, v_approved_permit_pack_size::integer, false,
               now(),
               now(), 2384850, 2384850, false, uuid_generate_v4(),
-              substring(v_approved_permit_pack_filename FROM 1 FOR strpos(v_approved_permit_pack_filename, '.') - 1))
+              v_approved_permit_pack_displayname)
       returning id into v_approved_permit_pack_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -730,15 +761,15 @@ BEGIN
       values (v_approved_permit_pack_attachment_id, v_project_id, now(), now(), 2384850, 2384850, false, false);
     end if;
 
-    if v_chatter_file is not null or v_chatter_file != '' then
+    if v_chatter_file_filename is not null and v_chatter_file_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
-      values (v_chatter_file_attachment_type_id, 3, v_chatter_file,
+      values (v_chatter_file_attachment_type_id, 3, v_chatter_file_filename,
               v_chatter_file_content_type, v_chatter_file_s3_key, v_chatter_file_size::integer, false,
               now(),
               now(), 2384850, 2384850, false, uuid_generate_v4(),
-              substring(v_approved_permit_pack_filename FROM 1 FOR strpos(v_approved_permit_pack_filename, '.') - 1))
+              v_chatter_file_displayname)
       returning id into v_chatter_file_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -748,7 +779,7 @@ BEGIN
 
     v_project_activity_id = null;
 
-    if v_battery_topic is not null then
+    if v_battery_topic is not null and v_battery_topic != '' then
 
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
@@ -769,7 +800,7 @@ BEGIN
 
     v_project_activity_id = null;
 
-    if v_change_order_topic is not null then
+    if v_change_order_topic is not null and v_change_order_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -788,7 +819,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_design_rework_topic is not null then
+    if v_design_rework_topic is not null and v_design_rework_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -807,7 +838,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_electrical_review_topic is not null then
+    if v_electrical_review_topic is not null  and v_electrical_review_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -826,7 +857,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_final_design_topic is not null then
+    if v_final_design_topic is not null and v_final_design_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -845,7 +876,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_financing_topic is not null then
+    if v_financing_topic is not null and v_financing_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -864,7 +895,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_hic_topic is not null then
+    if v_hic_topic is not null  and v_hic_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -883,7 +914,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_hoa_topic is not null then
+    if v_hoa_topic is not null and v_hoa_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -902,7 +933,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_installation_topic is not null then
+    if v_installation_topic is not null and v_installation_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -921,7 +952,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_interconnection_topic is not null then
+    if v_interconnection_topic is not null and v_interconnection_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -940,7 +971,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_intro_call_topic is not null then
+    if v_intro_call_topic is not null and v_intro_call_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -959,7 +990,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_mpu_topic is not null then
+    if v_mpu_topic is not null and v_mpu_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -978,7 +1009,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_permit_pack_topic is not null then
+    if v_permit_pack_topic is not null and v_permit_pack_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -997,7 +1028,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_permit_rework_topic is not null then
+    if v_permit_rework_topic is not null and v_permit_rework_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1017,7 +1048,7 @@ BEGIN
 
 
     v_project_activity_id = null;
-    if v_permitting_topic is not null then
+    if v_permitting_topic is not null and v_permitting_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1036,7 +1067,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_proposals_topic is not null then
+    if v_proposals_topic is not null and v_proposals_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1055,7 +1086,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_rebate_topic is not null then
+    if v_rebate_topic is not null and v_rebate_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1074,7 +1105,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_reroof_topic is not null then
+    if v_reroof_topic is not null and v_reroof_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1093,7 +1124,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_resurvey_topic is not null then
+    if v_resurvey_topic is not null and v_resurvey_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1112,7 +1143,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_site_survey_topic is not null then
+    if v_site_survey_topic is not null and v_site_survey_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1131,7 +1162,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_structural_review_topic is not null then
+    if v_structural_review_topic is not null and v_structural_review_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1150,7 +1181,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_trenching_topic is not null then
+    if v_trenching_topic is not null and v_trenching_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1169,7 +1200,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_tree_trimming_or_removal_topic is not null then
+    if v_tree_trimming_or_removal_topic is not null and v_tree_trimming_or_removal_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1188,7 +1219,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_utility_bill_verification_topic is not null then
+    if v_utility_bill_verification_topic is not null and v_utility_bill_verification_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1207,7 +1238,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_other_topic is not null then
+    if v_other_topic is not null and v_other_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
