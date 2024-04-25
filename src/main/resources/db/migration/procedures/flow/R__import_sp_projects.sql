@@ -637,7 +637,7 @@ BEGIN
       end if;
     end if;
 
-    if v_hic_filename is not null or v_hic_filename != '' then
+    if v_hic_filename is not null and v_hic_filename != '' then
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
       values (v_hic_attachment_type_id, 3, v_hic_filename, v_hic_content_type, v_hic_s3_key, v_hic_size::integer, false, now(),
@@ -650,7 +650,7 @@ BEGIN
 
     end if;
 
-    if v_proposal_document_filename is not null  or v_proposal_document_filename != '' then
+    if v_proposal_document_filename is not null  and v_proposal_document_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
@@ -666,7 +666,7 @@ BEGIN
 
     end if;
 
-    if v_utility_bill_document_filename is not null or v_utility_bill_document_filename != '' then
+    if v_utility_bill_document_filename is not null and v_utility_bill_document_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
@@ -682,7 +682,7 @@ BEGIN
 
     end if;
 
-    if v_site_survey_photos_filename is not null or v_site_survey_photos_filename != '' then
+    if v_site_survey_photos_filename is not null and v_site_survey_photos_filename != '' then
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
       values (v_site_survey_photos_attachment_type_id, 3, v_site_survey_photos_filename,
@@ -698,7 +698,7 @@ BEGIN
     end if;
 
 
-    if v_final_design_filename is not null or v_final_design_filename != '' then
+    if v_final_design_filename is not null and v_final_design_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
@@ -714,7 +714,7 @@ BEGIN
     end if;
 
 
-    if v_permit_pack_filename is not null or v_permit_pack_filename != '' then
+    if v_permit_pack_filename is not null and v_permit_pack_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
@@ -729,7 +729,7 @@ BEGIN
       values (v_permit_pack_attachment_id, v_project_id, now(), now(), 2384850, 2384850, false, false);
     end if;
 
-    if v_shade_report_filename is not null or v_shade_report_filename != '' then
+    if v_shade_report_filename is not null and v_shade_report_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
@@ -745,7 +745,7 @@ BEGIN
     end if;
 
 
-    if v_approved_permit_pack_filename is not null or v_approved_permit_pack_filename != '' then
+    if v_approved_permit_pack_filename is not null and v_approved_permit_pack_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
@@ -761,7 +761,7 @@ BEGIN
       values (v_approved_permit_pack_attachment_id, v_project_id, now(), now(), 2384850, 2384850, false, false);
     end if;
 
-    if v_chatter_file_filename is not null or v_chatter_file_filename != '' then
+    if v_chatter_file_filename is not null and v_chatter_file_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
@@ -779,7 +779,7 @@ BEGIN
 
     v_project_activity_id = null;
 
-    if v_battery_topic is not null then
+    if v_battery_topic is not null and v_battery_topic != '' then
 
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
@@ -800,7 +800,7 @@ BEGIN
 
     v_project_activity_id = null;
 
-    if v_change_order_topic is not null then
+    if v_change_order_topic is not null and v_change_order_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -819,7 +819,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_design_rework_topic is not null then
+    if v_design_rework_topic is not null and v_design_rework_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -838,7 +838,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_electrical_review_topic is not null then
+    if v_electrical_review_topic is not null  and v_electrical_review_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -857,7 +857,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_final_design_topic is not null then
+    if v_final_design_topic is not null and v_final_design_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -876,7 +876,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_financing_topic is not null then
+    if v_financing_topic is not null and v_financing_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -895,7 +895,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_hic_topic is not null then
+    if v_hic_topic is not null  and v_hic_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -914,7 +914,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_hoa_topic is not null then
+    if v_hoa_topic is not null and v_hoa_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -933,7 +933,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_installation_topic is not null then
+    if v_installation_topic is not null and v_installation_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -952,7 +952,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_interconnection_topic is not null then
+    if v_interconnection_topic is not null and v_interconnection_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -971,7 +971,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_intro_call_topic is not null then
+    if v_intro_call_topic is not null and v_intro_call_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -990,7 +990,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_mpu_topic is not null then
+    if v_mpu_topic is not null and v_mpu_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1009,7 +1009,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_permit_pack_topic is not null then
+    if v_permit_pack_topic is not null and v_permit_pack_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1028,7 +1028,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_permit_rework_topic is not null then
+    if v_permit_rework_topic is not null and v_permit_rework_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1048,7 +1048,7 @@ BEGIN
 
 
     v_project_activity_id = null;
-    if v_permitting_topic is not null then
+    if v_permitting_topic is not null and v_permitting_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1067,7 +1067,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_proposals_topic is not null then
+    if v_proposals_topic is not null and v_proposals_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1086,7 +1086,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_rebate_topic is not null then
+    if v_rebate_topic is not null and v_rebate_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1105,7 +1105,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_reroof_topic is not null then
+    if v_reroof_topic is not null and v_reroof_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1124,7 +1124,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_resurvey_topic is not null then
+    if v_resurvey_topic is not null and v_resurvey_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1143,7 +1143,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_site_survey_topic is not null then
+    if v_site_survey_topic is not null and v_site_survey_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1162,7 +1162,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_structural_review_topic is not null then
+    if v_structural_review_topic is not null and v_structural_review_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1181,7 +1181,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_trenching_topic is not null then
+    if v_trenching_topic is not null and v_trenching_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1200,7 +1200,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_tree_trimming_or_removal_topic is not null then
+    if v_tree_trimming_or_removal_topic is not null and v_tree_trimming_or_removal_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1219,7 +1219,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_utility_bill_verification_topic is not null then
+    if v_utility_bill_verification_topic is not null and v_utility_bill_verification_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
@@ -1238,7 +1238,7 @@ BEGIN
     end if;
 
     v_project_activity_id = null;
-    if v_other_topic is not null then
+    if v_other_topic is not null and v_other_topic != '' then
       insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id,
                                         archived, pinned, pinned_by_id, linked,
                                         linked_pps_id, date_pinned, linked_ppse_id, activity_type_id,
