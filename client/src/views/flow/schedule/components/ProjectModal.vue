@@ -31,7 +31,6 @@ const emit = defineEmits(['toggleProjectMapPin', 'updateEvents'])
 
 const props = defineProps({
   project:Object,
-  timezone:Object,
   resourceFromCalendar:Object,
 })
 const show = ref(vuetify.breakpoint.mdAndUp)
@@ -54,6 +53,7 @@ const userIsAdmin = computed(() => {
   return  userStore.userHasFeatureAccessLevel('EVENTS', 'ADMIN')
 })
 const timezoneFriendly = computed(() => scheduleStore.timezone.friendlyValue)
+const timezoneValue = computed(() => scheduleStore.timezone.value)
 
 watch(() => props.resourceFromCalendar, () => {
   if(props.resourceFromCalendar.id) {
@@ -297,7 +297,7 @@ const cancelProjectProcessStepEvent = async() => {
         </a-autocomplete>
         <DatetimePickerInput
             v-model="project.start"
-            :timezone="timezone?.value"
+            :timezone="timezoneValue"
             :readonly="isStartReadOnly"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
@@ -309,7 +309,7 @@ const cancelProjectProcessStepEvent = async() => {
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in {{timezoneFriendly}}</div>
         <DatetimePickerInput
             v-model="project.end"
-            :timezone="timezone?.value"
+            :timezone="timezoneValue"
             :readonly="isEndReadOnly"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
