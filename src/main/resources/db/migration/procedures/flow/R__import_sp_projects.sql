@@ -425,7 +425,7 @@ BEGIN
       from flow.list_of_value lov
       where parent_id = 24419
         and lower(lov.name) = lower(v_current_milestone);
-      if v_current_milestone_id is not null and v_current_milestone_id != '' then
+      if v_current_milestone_id is not null  then
         perform flow.set_pps_cfv(v_project_id, 2384850, 27056, v_current_milestone_id::text); --v_current_milestone
       end if;
     end if;
