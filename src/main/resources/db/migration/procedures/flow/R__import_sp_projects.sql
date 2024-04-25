@@ -419,25 +419,25 @@ BEGIN
 
 
     perform flow.set_pps_cfv(v_project_id, 2384850, 27055, v_sp_project_id::text); --v_sp_project_id
-    if v_current_milestone is not null then
+    if v_current_milestone is not null and v_current_milestone != '' then
       select lov.id
       into v_current_milestone_id
       from flow.list_of_value lov
       where parent_id = 24419
         and lower(lov.name) = lower(v_current_milestone);
-      if v_current_milestone_id is not null then
+      if v_current_milestone_id is not null and v_current_milestone_id != '' then
         perform flow.set_pps_cfv(v_project_id, 2384850, 27056, v_current_milestone_id::text); --v_current_milestone
       end if;
     end if;
 
-    if v_current_critical_path_task_name is not null then
+    if v_current_critical_path_task_name is not null and v_current_critical_path_task_name != '' then
       select lov.id
       into v_current_critical_path_task_name_id
       from flow.list_of_value lov
       where parent_id = 24455
         and lower(lov.name) = lower(v_current_critical_path_task_name);
 
-      if v_current_critical_path_task_name_id is not null then
+      if v_current_critical_path_task_name_id is not null  then
       perform flow.set_pps_cfv(v_project_id, 2384850, 27112,
                                '{'||v_current_critical_path_task_name_id::text||'}'); --v_current_critical_path_task_name
       end if;
@@ -452,7 +452,7 @@ BEGIN
                                round(v_total_yearly_usage_pre_solar::numeric)::text); --v_total_yearly_usage_pre_solar
     end if;
 
-    if v_inverter is not null then
+    if v_inverter is not null and v_inverter != '' then
 
       if v_inverter = 'ENPHASE IQ7HS MICROINVERTER' then
         v_inverter_id = 22929;
@@ -464,7 +464,7 @@ BEGIN
       end if;
     end if;
 
-    if v_panel_brand is not null then
+    if v_panel_brand is not null and v_panel_brand != '' then
 
       if v_panel_brand = 'Waaree Energies Ltd.' then
         v_panel_brand_id = 24438;
@@ -499,7 +499,7 @@ BEGIN
                                round(v_year_1_kwh_output::numeric)::text); --v_year_1_kwh_output
     end if;
 
-    if v_storage_brand is not null then
+    if v_storage_brand is not null  and v_storage_brand != '' then
       if v_storage_brand = 'SunPower' then
         v_storage_brand_id = 20090;
       elsif v_storage_brand = 'Enphase' then
@@ -525,7 +525,7 @@ BEGIN
                                v_installation_agreement_signed_date::text); --v_installation_agreement_signed_date
     end if;
 
-    if v_hoa_approval_required is not null then
+    if v_hoa_approval_required is not null and v_hoa_approval_required != '' then
       select lov.id
       into v_hoa_approval_required_id
       from flow.list_of_value lov
@@ -547,7 +547,7 @@ BEGIN
       perform flow.set_pps_cfv(v_project_id, 2384850, 27062, v_ahj::text); --v_ahj
     end if;
 
-    if v_permit_submission_method_online_in_person is not null then
+    if v_permit_submission_method_online_in_person is not null and v_permit_submission_method_online_in_person != '' then
       select lov.id
       into v_permit_submission_method_online_in_person_id
       from flow.list_of_value lov
@@ -592,7 +592,7 @@ BEGIN
                                v_Site_Survey_PhotoCircle_Link::text); --v_Site_Survey_PhotoCircle_Link
     end if;
 
-    if v_mpu_required is not null then
+    if v_mpu_required is not null and v_mpu_required != '' then
       select lov.id
       into v_mpu_required_id
       from flow.list_of_value lov
@@ -604,7 +604,7 @@ BEGIN
       end if;
     end if;
 
-    if v_reroof_required is not null then
+    if v_reroof_required is not null and v_reroof_required != '' then
       select lov.id
       into v_reroof_required_id
       from flow.list_of_value lov
@@ -615,7 +615,7 @@ BEGIN
       end if;
     end if;
 
-    if v_trenching_required is not null then
+    if v_trenching_required is not null and v_trenching_required != '' then
       select lov.id
       into v_trenching_required_id
       from flow.list_of_value lov
@@ -626,7 +626,7 @@ BEGIN
       end if;
     end if;
 
-    if v_structural_upgrades is not null then
+    if v_structural_upgrades is not null and v_structural_upgrades != '' then
       select lov.id
       into v_structural_upgrades_id
       from flow.list_of_value lov
