@@ -89,54 +89,63 @@ DECLARE
   v_utility_bill_verification_topic                  text;
   v_other_topic                                      text;
   v_hic_filename                                     text;
+  v_hic_displayname                                    text;
   v_hic_content_type                                 text;
   v_hic_s3_key                                       text;
   v_hic_size                                         text;
   v_hic_attachment_type_id                           bigint default 41;
   v_hic_attachment_id                                bigint;
   v_proposal_document_filename                       text;
+  v_proposal_document_displayname                    text;
   v_proposal_document_content_type                   text;
   v_proposal_document_s3_key                         text;
   v_proposal_document_size                           text;
   v_proposal_document_attachment_type_id             bigint default 37;
   v_proposal_document_attachment_id                  bigint;
   v_utility_bill_document_filename                   text;
+  v_utility_bill_document_displayname                   text;
   v_utility_bill_document_content_type               text;
   v_utility_bill_document_s3_key                     text;
   v_utility_bill_document_size                       text;
   v_utility_bill_document_attachment_type_id         bigint default 47;
   v_utility_bill_document_attachment_id              bigint;
   v_site_survey_photos_filename                      text;
+  v_site_survey_photos_displayname                     text;
   v_site_survey_photos_content_type                  text;
   v_site_survey_photos_s3_key                        text;
   v_site_survey_photos_size                          text;
   v_site_survey_photos_attachment_type_id            bigint default 36;
   v_site_survey_photos_attachment_id                 bigint;
   v_final_design_filename                            text;
+  v_final_design_displayname                            text;
   v_final_design_content_type                        text;
   v_final_design_s3_key                              text;
   v_final_design_size                                text;
   v_final_design_attachment_type_id                  bigint default 38;
   v_final_design_attachment_id                       bigint;
   v_permit_pack_filename                             text;
+  v_permit_pack_displayname                             text;
   v_permit_pack_content_type                         text;
   v_permit_pack_s3_key                               text;
   v_permit_pack_size                                 text;
   v_permit_pack_attachment_type_id                   bigint default 40;
   v_permit_pack_attachment_id                        bigint;
   v_shade_report_filename                            text;
+  v_shade_report_displayname                            text;
   v_shade_report_content_type                        text;
   v_shade_report_s3_key                              text;
   v_shade_report_size                                text;
   v_shade_report_attachment_type_id                  bigint default 465;
   v_shade_report_attachment_id                       bigint;
   v_approved_permit_pack_filename                    text;
+  v_approved_permit_pack_displayname                    text;
   v_approved_permit_pack_content_type                text;
   v_approved_permit_pack_s3_key                      text;
   v_approved_permit_pack_size                        text;
   v_approved_permit_pack_attachment_type_id          bigint default 950;
   v_approved_permit_pack_attachment_id               bigint;
   v_chatter_file_filename                                     text;
+  v_chatter_file_displayname                                     text;
   v_chatter_file_content_type                text;
   v_chatter_file_s3_key                      text;
   v_chatter_file_size                        text;
@@ -212,38 +221,47 @@ BEGIN
            p_record ->> 'Utility_Bill_Verification_Topic',
            p_record ->> 'Other_Topic',
            p_record -> 'Signed_HIC_Document' ->> 'filename',
+           p_record -> 'Signed_HIC_Document' ->> 'displayName',
            p_record -> 'Signed_HIC_Document' ->> 'contentType',
            p_record -> 'Signed_HIC_Document' ->> 's3Key',
            p_record -> 'Signed_HIC_Document' ->> 'size',
            p_record -> 'Proposal_Document' ->> 'filename',
+           p_record -> 'Proposal_Document' ->> 'displayName',
            p_record -> 'Proposal_Document' ->> 'contentType',
            p_record -> 'Proposal_Document' ->> 's3Key',
            p_record -> 'Proposal_Document' ->> 'size',
            p_record -> 'Utility_Bill_Document' ->> 'filename',
+           p_record -> 'Utility_Bill_Document' ->> 'displayName',
            p_record -> 'Utility_Bill_Document' ->> 'contentType',
            p_record -> 'Utility_Bill_Document' ->> 's3Key',
            p_record -> 'Utility_Bill_Document' ->> 'size',
            p_record -> 'Site_Survey_Photos' ->> 'filename',
+           p_record -> 'Site_Survey_Photos' ->> 'displayName',
            p_record -> 'Site_Survey_Photos' ->> 'contentType',
            p_record -> 'Site_Survey_Photos' ->> 's3Key',
            p_record -> 'Site_Survey_Photos' ->> 'size',
            p_record -> 'Final_Design' ->> 'filename',
+           p_record -> 'Final_Design' ->> 'displayName',
            p_record -> 'Final_Design' ->> 'contentType',
            p_record -> 'Final_Design' ->> 's3Key',
            p_record -> 'Final_Design' ->> 'size',
            p_record -> 'Permit_Pack' ->> 'filename',
+           p_record -> 'Permit_Pack' ->> 'displayName',
            p_record -> 'Permit_Pack' ->> 'contentType',
            p_record -> 'Permit_Pack' ->> 's3Key',
            p_record -> 'Permit_Pack' ->> 'size',
            p_record -> 'Shade_Report' ->> 'filename',
+           p_record -> 'Shade_Report' ->> 'displayName',
            p_record -> 'Shade_Report' ->> 'contentType',
            p_record -> 'Shade_Report' ->> 's3Key',
            p_record -> 'Shade_Report' ->> 'size',
            p_record -> 'Approved_Permit_Pack' ->> 'filename',
+           p_record -> 'Approved_Permit_Pack' ->> 'displayName',
            p_record -> 'Approved_Permit_Pack' ->> 'contentType',
            p_record -> 'Approved_Permit_Pack' ->> 's3Key',
            p_record -> 'Approved_Permit_Pack' ->> 'size',
           p_record -> 'Chatter_File' ->> 'filename',
+          p_record -> 'Chatter_File' ->> 'displayName',
           p_record -> 'Chatter_File' ->> 'contentType',
           p_record -> 'Chatter_File' ->> 's3Key',
           p_record -> 'Chatter_File' ->> 'size'
@@ -313,38 +331,47 @@ BEGIN
       v_utility_bill_verification_topic,
       v_other_topic,
       v_hic_filename,
+      v_hic_displayname,
       v_hic_content_type,
       v_hic_s3_key,
       v_hic_size,
       v_proposal_document_filename,
+      v_proposal_document_displayname,
       v_proposal_document_content_type,
       v_proposal_document_s3_key,
       v_proposal_document_size,
       v_utility_bill_document_filename,
+      v_utility_bill_document_displayname,
       v_utility_bill_document_content_type,
       v_utility_bill_document_s3_key,
       v_utility_bill_document_size,
       v_site_survey_photos_filename,
+      v_site_survey_photos_displayname,
       v_site_survey_photos_content_type,
       v_site_survey_photos_s3_key,
       v_site_survey_photos_size,
       v_final_design_filename,
+      v_final_design_displayname,
       v_final_design_content_type,
       v_final_design_s3_key,
       v_final_design_size,
       v_permit_pack_filename,
+      v_permit_pack_displayname,
       v_permit_pack_content_type,
       v_permit_pack_s3_key,
       v_permit_pack_size,
       v_shade_report_filename,
+      v_shade_report_displayname,
       v_shade_report_content_type,
       v_shade_report_s3_key,
       v_shade_report_size,
       v_approved_permit_pack_filename,
+      v_approved_permit_pack_displayname,
       v_approved_permit_pack_content_type,
       v_approved_permit_pack_s3_key,
       v_approved_permit_pack_size,
       v_chatter_file_filename,
+      v_chatter_file_displayname,
       v_chatter_file_content_type,
       v_chatter_file_s3_key,
       v_chatter_file_size;
@@ -614,10 +641,8 @@ BEGIN
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
       values (v_hic_attachment_type_id, 3, v_hic_filename, v_hic_content_type, v_hic_s3_key, v_hic_size::integer, false, now(),
-              now(), 2384850, 2384850, false, uuid_generate_v4(),
-              substring(v_hic_filename FROM 1 FOR strpos(v_hic_filename, '.') - 1))
+              now(), 2384850, 2384850, false, uuid_generate_v4(), v_hic_displayname)
       returning id into v_hic_attachment_id;
-
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
                                           modified_by_id, linked, archived)
@@ -632,7 +657,7 @@ BEGIN
       values (v_proposal_document_attachment_type_id, 3, v_proposal_document_filename, v_proposal_document_content_type,
               v_proposal_document_s3_key, v_proposal_document_size::integer, false, now(), now(), 2384850, 2384850, false,
               uuid_generate_v4(),
-              substring(v_proposal_document_filename FROM 1 FOR strpos(v_proposal_document_filename, '.') - 1))
+              v_proposal_document_displayname)
       returning id into v_proposal_document_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -648,7 +673,7 @@ BEGIN
       values (v_utility_bill_document_attachment_type_id, 3, v_utility_bill_document_filename,
               v_utility_bill_document_content_type, v_utility_bill_document_s3_key, v_utility_bill_document_size::integer, false,
               now(), now(), 2384850, 2384850, false, uuid_generate_v4(),
-              substring(v_utility_bill_document_filename FROM 1 FOR strpos(v_utility_bill_document_filename, '.') - 1))
+              v_utility_bill_document_displayname)
       returning id into v_utility_bill_document_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -664,7 +689,7 @@ BEGIN
               v_site_survey_photos_content_type,
               v_site_survey_photos_s3_key, v_site_survey_photos_size::integer, false, now(), now(), 2384850, 2384850, false,
               uuid_generate_v4(),
-              substring(v_site_survey_photos_filename FROM 1 FOR strpos(v_site_survey_photos_filename, '.') - 1))
+              v_site_survey_photos_displayname)
       returning id into v_site_survey_photos_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -680,7 +705,7 @@ BEGIN
       values (v_final_design_attachment_type_id, 3, v_final_design_filename, v_final_design_content_type,
               v_final_design_s3_key, v_final_design_size::integer, false, now(), now(), 2384850, 2384850, false,
               uuid_generate_v4(),
-              substring(v_final_design_filename FROM 1 FOR strpos(v_final_design_filename, '.') - 1))
+              v_final_design_displayname)
       returning id into v_final_design_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -696,7 +721,7 @@ BEGIN
       values (v_permit_pack_attachment_type_id, 3, v_permit_pack_filename, v_permit_pack_content_type,
               v_permit_pack_s3_key,
               v_permit_pack_size::integer, false, now(), now(), 2384850, 2384850, false, uuid_generate_v4(),
-              substring(v_permit_pack_filename FROM 1 FOR strpos(v_permit_pack_filename, '.') - 1))
+              v_permit_pack_displayname)
       returning id into v_permit_pack_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -711,7 +736,7 @@ BEGIN
       values (v_shade_report_attachment_type_id, 3, v_shade_report_filename, v_shade_report_content_type,
               v_shade_report_s3_key, v_shade_report_size::integer, false, now(), now(), 2384850, 2384850, false,
               uuid_generate_v4(),
-              substring(v_shade_report_filename FROM 1 FOR strpos(v_shade_report_filename, '.') - 1))
+              v_shade_report_displayname)
       returning id into v_shade_report_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -728,7 +753,7 @@ BEGIN
               v_approved_permit_pack_content_type, v_approved_permit_pack_s3_key, v_approved_permit_pack_size::integer, false,
               now(),
               now(), 2384850, 2384850, false, uuid_generate_v4(),
-              substring(v_approved_permit_pack_filename FROM 1 FOR strpos(v_approved_permit_pack_filename, '.') - 1))
+              v_approved_permit_pack_displayname)
       returning id into v_approved_permit_pack_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
@@ -744,7 +769,7 @@ BEGIN
               v_chatter_file_content_type, v_chatter_file_s3_key, v_chatter_file_size::integer, false,
               now(),
               now(), 2384850, 2384850, false, uuid_generate_v4(),
-              substring(v_chatter_file_filename FROM 1 FOR strpos(v_chatter_file_filename, '.') - 1))
+              v_chatter_file_displayname)
       returning id into v_chatter_file_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
