@@ -605,6 +605,10 @@ onMounted (async () => {
 #closer-availability-calendar > div.fc-view-harness.fc-view-harness-active > div.fc-resourceTimelineWeek-view.fc-view.fc-resource-timeline.fc-resource-timeline-flat.fc-timeline.fc-timeline-overlap-enabled > table > tbody > tr > td:nth-child(3) > div > div > div > div.fc-timeline-slots > table > tbody > tr > td:nth-child(19n+1) {
   border-left-width: 3px;
 }
+
+.fc .fc-scrollgrid {
+  border-radius: 4px;
+}
 </style>
 
 <style lang="scss" scoped>
