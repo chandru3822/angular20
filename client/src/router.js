@@ -183,6 +183,18 @@ const router = new Router({
             }
           }
         }, {
+          path: '/roadmap',
+          name: 'roadmap',
+          meta: {title: 'Albatross - Road Map'},
+          props: true,
+          component: () => {
+            if (store.getters.userHasFeature('ROAD_MAP')) {
+              return import("./views/RoadMap.vue")
+            } else {
+              return accessDenied()
+            }
+          }
+        }, {
           path: '/users',
           name: 'users',
           meta: {title: 'Albatross - Users'},
