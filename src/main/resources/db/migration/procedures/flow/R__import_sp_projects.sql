@@ -136,7 +136,7 @@ DECLARE
   v_approved_permit_pack_size                        text;
   v_approved_permit_pack_attachment_type_id          bigint default 950;
   v_approved_permit_pack_attachment_id               bigint;
-  v_chatter_file                                     text;
+  v_chatter_file_filename                                     text;
   v_chatter_file_content_type                text;
   v_chatter_file_s3_key                      text;
   v_chatter_file_size                        text;
@@ -243,7 +243,10 @@ BEGIN
            p_record -> 'Approved_Permit_Pack' ->> 'contentType',
            p_record -> 'Approved_Permit_Pack' ->> 's3Key',
            p_record -> 'Approved_Permit_Pack' ->> 'size',
-           p_record ->> 'Chatter_File'
+          p_record -> 'Chatter_File' ->> 'filename',
+          p_record -> 'Chatter_File' ->> 'contentType',
+          p_record -> 'Chatter_File' ->> 's3Key',
+          p_record -> 'Chatter_File' ->> 'size'
     into
       v_sp_project_id,
       v_current_milestone,
@@ -341,7 +344,10 @@ BEGIN
       v_approved_permit_pack_content_type,
       v_approved_permit_pack_s3_key,
       v_approved_permit_pack_size,
-      v_chatter_file;
+      v_chatter_file_filename,
+      v_chatter_file_content_type,
+      v_chatter_file_s3_key,
+      v_chatter_file_size;
 
     begin
     select cs.id
@@ -730,15 +736,15 @@ BEGIN
       values (v_approved_permit_pack_attachment_id, v_project_id, now(), now(), 2384850, 2384850, false, false);
     end if;
 
-    if v_chatter_file is not null or v_chatter_file != '' then
+    if v_chatter_file_filename is not null or v_chatter_file_filename != '' then
 
       insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key, size, archived,
                                   date_created, date_modified, created_by_id, modified_by_id, show, uuid, display_name)
-      values (v_chatter_file_attachment_type_id, 3, v_chatter_file,
+      values (v_chatter_file_attachment_type_id, 3, v_chatter_file_filename,
               v_chatter_file_content_type, v_chatter_file_s3_key, v_chatter_file_size::integer, false,
               now(),
               now(), 2384850, 2384850, false, uuid_generate_v4(),
-              substring(v_approved_permit_pack_filename FROM 1 FOR strpos(v_approved_permit_pack_filename, '.') - 1))
+              substring(v_chatter_file_filename FROM 1 FOR strpos(v_chatter_file_filename, '.') - 1))
       returning id into v_chatter_file_attachment_id;
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
