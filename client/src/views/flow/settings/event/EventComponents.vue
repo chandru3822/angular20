@@ -64,7 +64,14 @@
                 <td class="text-left"><v-checkbox v-model="item.editableInSchedule" @change="saveEditableInSchedule(item)"/></td>
                 <td>
                   <div class="flex-display align-center">
-                    <v-btn small text color="primary" v-if="userCanEdit" @click="eventStatusTypeToDelete=item"><v-icon>delete</v-icon></v-btn>
+                    <a-btn
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        v-if="userCanEdit"
+                        @click="eventStatusTypeToDelete=item"
+                        prepend-icon="delete"
+                    ></a-btn>
                   </div>
                 </td>
               </tr>

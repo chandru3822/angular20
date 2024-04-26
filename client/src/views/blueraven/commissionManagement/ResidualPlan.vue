@@ -143,10 +143,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="residualPlan.statusType === 'PENDING'" @click="[selectedSource = {}, addSource = !addSource, getSources()]">
-              <v-icon v-if="addSource">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <a-btn
+                variant="text"
+                color="primary"
+                v-if="residualPlan.statusType === 'PENDING'"
+                @click="[selectedSource = {}, addSource = !addSource, getSources()]"
+                :prepend-icon="addSource ? 'remove' : 'add'"
+            ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -163,9 +166,12 @@
                           label="Amount"
                           :rules="amountRules"
                           v-model.number="selectedSource.amount"></v-text-field>
-            <v-btn color="primary" class="mr-3 white--text" @click="validateSource()">
-              Add
-            </v-btn>
+            <a-btn
+                color="primary"
+                class="mr-3"
+                @click="validateSource()"
+                text="Add"
+            ></a-btn>
           </v-form>
         </v-card>
         <v-divider v-if="addSource"></v-divider>
@@ -195,8 +201,12 @@
                             label="Amount"
                             :rules="amountRules"
                             v-model.number="item.amount"></v-text-field>
-              <v-btn :disabled="!item.amount || item.amount <= 0 || item.amount > 5"
-                     @click="[sourceExpanded = [], updateSource(item)]" color="primary">Save</v-btn>
+              <a-btn
+                  :disabled="!item.amount || item.amount <= 0 || item.amount > 5"
+                  @click="[sourceExpanded = [], updateSource(item)]"
+                  color="primary"
+                  text="Save"
+              ></a-btn>
             </td>
           </template>
 
@@ -205,18 +215,30 @@
               <td class="text-left">{{item.sourceName}}</td>
               <td class="text-left">{{item.amount}}</td>
               <td class="text-right">
-                <v-btn small text color="primary" @click="sourceExpanded = [item]"
-                       v-if="residualPlan.statusType === 'PENDING' && !sourceExpanded.includes(item)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" @click="sourceExpanded = []"
-                       v-if="sourceExpanded.includes(item)">cancel
-                </v-btn>
-                <v-btn v-if="residualPlan.statusType === 'PENDING'"
-                       small text color="primary"
-                       @click="sourceToDelete=item">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <a-btn
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="sourceExpanded = [item]"
+                    v-if="residualPlan.statusType === 'PENDING' && !sourceExpanded.includes(item)"
+                    prepend-icon="edit"
+                ></a-btn>
+                <a-btn
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="sourceExpanded = []"
+                    v-if="sourceExpanded.includes(item)"
+                    text="Cancel"
+                ></a-btn>
+                <a-btn
+                    v-if="residualPlan.statusType === 'PENDING'"
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="sourceToDelete=item"
+                    prepend-icon="delete"
+                ></a-btn>
               </td>
             </tr>
           </template>
