@@ -100,7 +100,7 @@ BEGIN
   from flow.project_process_step p
          left join flow.project_process_step_custom_field_value v
                    on v.project_process_step_id = p.id and
-                      v.custom_field_group_assignment_id = 26176 and --26168 stage -- 26176 prod
+                      v.custom_field_group_assignment_id = 27107 and
                       int_value is not null
          inner join brs.financial_details fd on fd.project_id = p.project_id
   where p.project_id = p_project_id
@@ -113,7 +113,7 @@ BEGIN
     from flow.project_process_step p
            left join flow.project_process_step_custom_field_value v
                      on v.project_process_step_id = p.id and
-                        v.custom_field_group_assignment_id = 26944 and
+                        v.custom_field_group_assignment_id = 27105 and
                         int_value is not null
            inner join brs.financial_details fd on fd.project_id = p.project_id
     where p.project_id = p_project_id
@@ -121,7 +121,7 @@ BEGIN
       and p.main is true;
   end if;
 
-  if v_commission_strategy_id = 23610 then
+  if v_commission_strategy_id = 24102 then
     select cp.id, cp.name, cps.status_type
     into v_commission_plan_id,v_commission_plan,v_commission_status
     from brs.commission_plan cp

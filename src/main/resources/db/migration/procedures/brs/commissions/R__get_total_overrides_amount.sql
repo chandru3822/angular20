@@ -37,7 +37,7 @@ BEGIN
   where f.project_id = p_project_id
     and (u.red_line_m1_allocation > 0 or u.red_line_m2_allocation >0);
 
-  if v_commission_strategy_id = 23610 then
+  if v_commission_strategy_id = 24102 then
     v_total = v_desired_commission_amount * v_system_size * 1000;
     v_total = v_total*(v_red_line_m1_allocation + v_red_line_m2_allocation);
   else

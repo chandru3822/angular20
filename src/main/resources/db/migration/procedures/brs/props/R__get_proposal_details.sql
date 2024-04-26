@@ -138,7 +138,7 @@ BEGIN
            d.unapproved_zip_code_adder,
            ppscfv42.int_array_value,
            ppscfv43.int_array_value,
-           ppscfv44.int_value,
+           pcfv25.int_value,
            pcfv23.int_array_value,
            ppscfv45.numeric_value,
            p.company_process_id,
@@ -194,6 +194,8 @@ BEGIN
                                                                pcfv22.custom_field_group_assignment_id = 480
            left join brs.proposal_custom_field_value pcfv23 on prop.id = pcfv23.proposal_id and
                                                                pcfv23.custom_field_group_assignment_id = 490
+           left join brs.proposal_custom_field_value pcfv25 on prop.id = pcfv25.proposal_id and
+                                                               pcfv25.custom_field_group_assignment_id = 581
            left join flow.project_process_step_custom_field_value ppscfv30
                      on pps.id = ppscfv30.project_process_step_id and
                         ppscfv30.custom_field_group_assignment_id = 22573
@@ -235,9 +237,6 @@ BEGIN
            left join flow.project_process_step_custom_field_value ppscfv43
                      on ppscfv43.project_process_step_id = pps.id and
                         ppscfv43.custom_field_group_assignment_id = 25981
-           left join flow.project_process_step_custom_field_value ppscfv44
-                     on ppscfv44.project_process_step_id = pps.id and
-                        ppscfv44.custom_field_group_assignment_id = 26122
         -- 45 = adder amount
            left join flow.project_process_step_custom_field_value ppscfv45
                      on ppscfv45.project_process_step_id = pps.id and

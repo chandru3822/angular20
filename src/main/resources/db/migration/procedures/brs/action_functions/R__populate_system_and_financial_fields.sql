@@ -104,7 +104,7 @@ BEGIN
                                             from flow.custom_field cf
                                                    inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
                                                    inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-                                            where cf.id = 12602
+                                            where cf.id = 12955
                                               and cfga.archived is false and cf.archived is false and cfg.archived is false
                                               and cf.company_id = v_company_id
                                               and cfg.process_step_id = p_process_step_id), plh.commission_strategy_id::bigint,
