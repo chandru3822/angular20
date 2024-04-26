@@ -6,6 +6,7 @@
       :items="items"
       :chips="chips"
       :loading="loading"
+      ref="albatrossSelect"
       :item-text="itemTitle"
       :item-value="itemValue"
       :return-object="returnObject"
@@ -107,6 +108,8 @@ const props = defineProps({
   autocomplete: String,
 })
 
+const albatrossSelect = ref(null)
+
 const combinedRules = computed(() => {
   let tempRules = []
   //set the rules to any rules that were passed in
@@ -116,6 +119,14 @@ const combinedRules = computed(() => {
     tempRules = tempRules.concat(basicRequiredRule.value)
   }
   return tempRules
+})
+
+const newFocus = () => {
+  albatrossSelect.value.focus()
+}
+
+defineExpose({
+  focus: newFocus
 })
 
 

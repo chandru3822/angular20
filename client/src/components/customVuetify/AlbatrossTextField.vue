@@ -4,6 +4,7 @@
                 :value="value"
                 :type="type"
                 :id="id"
+                ref="albatrossTextField"
                 :prepend-icon="prependIcon"
                 :prepend-inner-icon="prependInnerIcon"
                 :append-icon="appendInnerIcon"
@@ -89,6 +90,8 @@ const props = defineProps({
   maxlength: Number
 })
 
+const albatrossTextField = ref(null)
+
 const combinedRules = computed(() => {
   let tempRules = []
   //set the rules to any rules that were passed in
@@ -98,6 +101,14 @@ const combinedRules = computed(() => {
     tempRules = tempRules.concat(basicRequiredRule.value)
   }
   return tempRules
+})
+
+const newFocus = () => {
+  albatrossTextField.value.focus()
+}
+
+defineExpose({
+  focus: newFocus
 })
 
 

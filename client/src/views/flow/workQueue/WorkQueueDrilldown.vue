@@ -228,7 +228,7 @@
           :primary-id="itemToUpdate ? (workQueue.useEventData ? itemToUpdate.projectProcessStepEventId : itemToUpdate.projectProcessStepId) : null"
           :secondary-id="itemToUpdate ? (workQueue.useEventData ? itemToUpdate.processStepEventWorkQueueTypeId : itemToUpdate.processStepWorkQueueTypeId): null"
           type="ProjectProcessStep"
-          :callback="(item) => updateRowNotes(item)"
+          :callback="(item, isNew) => updateRowNotes(item, isNew)"
       />
       <template v-slot:no>Close</template>
     </ConfirmationDialog>

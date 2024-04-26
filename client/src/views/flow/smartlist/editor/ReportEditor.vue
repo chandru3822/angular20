@@ -662,7 +662,7 @@ const saveClicked = () => {
 const editNameClicked = () => {
   if (canEdit.value) {
     isEditingReportName.value = true
-    nextTick(reportNameField.value.focus)
+    nextTick(reportNameField.value.focus())
   }
 }
 
@@ -680,7 +680,7 @@ onMounted(async () => {
     }
 
     isEditingReportName.value = true
-    nextTick(reportNameField.value.focus)
+    nextTick(reportNameField.value.focus())
   }
 })
 

@@ -155,17 +155,18 @@
         <v-divider></v-divider>
         <v-card v-if="addSource" class="square-card text-left pa-5">
           <v-form ref="sourceForm">
-            <v-select attach v-model="selectedSource.id"
+            <a-select attach v-model="selectedSource.id"
                       :items="sources"
                       label="Select a Source..."
-                      item-text="sourceName"
+                      item-title="sourceName"
                       item-value="id"
                       autocomplete="off">
-            </v-select>
-            <v-text-field text type="number"
+            </a-select>
+            <a-text-field variant="text"
+                          type="number"
                           label="Amount"
                           :rules="amountRules"
-                          v-model.number="selectedSource.amount"></v-text-field>
+                          v-model.number="selectedSource.amount"></a-text-field>
             <a-btn
                 color="primary"
                 class="mr-3"
@@ -197,10 +198,10 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4 text-left">
-              <v-text-field text type="number"
+              <a-text-field variant="text" type="number"
                             label="Amount"
                             :rules="amountRules"
-                            v-model.number="item.amount"></v-text-field>
+                            v-model.number="item.amount"></a-text-field>
               <a-btn
                   :disabled="!item.amount || item.amount <= 0 || item.amount > 5"
                   @click="[sourceExpanded = [], updateSource(item)]"
