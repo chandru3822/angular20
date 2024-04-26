@@ -29,7 +29,8 @@ CREATE OR REPLACE FUNCTION brs.get_residual_account_details()
             total_clawback             numeric,
             adjustment_override        numeric,
             total                      numeric,
-            qualified_this_period_system_size numeric
+            qualified_this_period_system_size numeric,
+              system_size_by_source numeric
           )
   LANGUAGE plpgsql
 AS

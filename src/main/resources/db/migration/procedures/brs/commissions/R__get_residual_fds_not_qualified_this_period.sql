@@ -37,7 +37,8 @@ CREATE or replace function brs.get_residual_fds_not_qualified_this_period(p_clos
             system_size_by_source                       numeric,
             is_system_size boolean,
             expected_residual numeric,
-            plan_name text
+            plan_name text,
+            source_name text
           )
 AS
 $BODY$
@@ -76,7 +77,8 @@ begin
            foo.system_size_by_source,
            foo.is_system_size,
            foo.expected_residual,
-           foo.name
+           foo.name,
+           foo.source_name
     from (select pd.project_id,
                  pd.final_design_complete_date,
                  pd.final_design_signed_date,
@@ -126,7 +128,8 @@ begin
                                                                            p_current_qualified_fdc,
                                                                            p_total_system_size_by_source))
                       else 0 end as expected_residual,
-                rp.name
+                rp.name,
+                pd.source_name
           from brs.project_details pd
                  inner join brs.financial_details fd on fd.project_id = pd.project_id
                  inner join brs.residual_plan rp on rp.id = fd.residual_plan_id
