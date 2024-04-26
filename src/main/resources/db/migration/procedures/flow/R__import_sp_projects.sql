@@ -1322,7 +1322,7 @@ BEGIN
     return query
       select v_project_id, v_sp_project_id, now()::timestamp, coalesce(v_error_message, 'Success'), v_pps_id;
   else
-    select null, v_sp_project_id, now()::timestamp, 'Duplicate Project', null;
+    return query select null, v_sp_project_id, now()::timestamp, 'Duplicate Project', null;
   end if;
 end;
 $$
