@@ -5,7 +5,8 @@ CREATE OR REPLACE FUNCTION flow.import_sp_projects(p_record jsonb, p_file_name t
             flow_project_id   bigint,
             sp_project_id     text,
             created_timestamp timestamp,
-            error_status      text
+            error_status      text,
+            pps_id            bigint
           )
   LANGUAGE plpgsql
 AS
@@ -154,6 +155,7 @@ DECLARE
   v_company_state_id                                 bigint;
   v_error_message                                    text;
   v_project_activity_id                              bigint;
+  v_pps_id bigint;
 
 BEGIN
     select p_record ->> 'Project_ID',
@@ -418,7 +420,7 @@ BEGIN
     insert into flow.project_process_step(project_id, process_step_id, company_process_step_status_type_id,
                                           date_created, date_modified, created_by_id, modified_by_id,
                                           archived, main)
-    values (v_project_id, 3695, 1, now(), now(), 2384850, 2384850, false, true);
+    values (v_project_id, 3695, 1, now(), now(), 2384850, 2384850, false, true) returning id into v_pps_id;
 
 
     perform flow.set_pps_cfv(v_project_id, 2384850, 27055, v_sp_project_id::text); --v_sp_project_id
@@ -1273,6 +1275,6 @@ BEGIN
 --   raise notice 'coalesce(v_error_message, ''Success'') %',v_project_id;
 
   return query
-    select v_project_id, v_sp_project_id, now()::timestamp, coalesce(v_error_message, 'Success');
+    select v_project_id, v_sp_project_id, now()::timestamp, coalesce(v_error_message, 'Success'),v_pps_id;
 end;
 $$
