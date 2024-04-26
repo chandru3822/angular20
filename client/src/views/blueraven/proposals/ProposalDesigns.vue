@@ -299,15 +299,23 @@
             designs.length === 0
           "
         >
-          <v-btn text color="primary" @click="handleAIRequest(false)">
+          <a-btn
+              variant="text"
+              color="primary"
+              @click="handleAIRequest(false)"
+          >
             <v-icon :size="60">add</v-icon>
-          </v-btn>
+          </a-btn>
           <div class="mt-5 primary--text">Request AI Design</div>
         </div>
         <div v-if="canEdit && designs.length > 0 && !activeDesign.projectId">
-          <v-btn text color="primary" @click="handleAIRequest(true)">
+          <a-btn
+              variant="text"
+              color="primary"
+              @click="handleAIRequest(true)"
+          >
             <v-icon :size="60">add</v-icon>
-          </v-btn>
+          </a-btn>
           <div class="mt-5 primary--text">Create my own design in Aurora</div>
         </div>
         <v-card-text
@@ -401,22 +409,19 @@
 
         <v-card-actions>
           <v-spacer />
-          <v-btn
-            text
-            color="primary"
-            class="text-capitalize"
-            @click="showAIDesignRequestForm = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="primary"
-            :loading="savingNewAiDesign"
-            class="white--text text-capitalize font-weight-bold"
-            @click="validateAIRequest()"
-          >
-            Save
-          </v-btn>
+          <a-btn
+              variant="text"
+              color="primary"
+              @click="showAIDesignRequestForm = false"
+              text="Cancel"
+          ></a-btn>
+          <a-btn
+              color="primary"
+              :loading="savingNewAiDesign"
+              class="font-weight-bold"
+              @click="validateAIRequest()"
+              text="Save"
+          ></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
