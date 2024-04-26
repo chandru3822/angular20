@@ -129,24 +129,25 @@
               <span class="albatross-header-4-new">Add Template</span>
             </v-card-title>
             <v-card-text>
-              <a-select label="Template"
-                        class="template-selector pt-1"
-                        v-model="selectedTemplate"
-                        :items="selectableTemplates"
-                        item-title="title"
-                        item-value="id"
-                        return-object
-                        ref="templateSelect"
-                        @change="handleTemplateSelection">
+              <v-form ref="templateSelect">
+                <a-select label="Template"
+                          class="template-selector pt-1"
+                          v-model="selectedTemplate"
+                          :items="selectableTemplates"
+                          item-title="title"
+                          item-value="id"
+                          return-object
+                          @change="handleTemplateSelection">
 
-                <template v-slot:item="{ props, item }">
-                  <!-- HTML that describes how select should render items when the select is open -->
-                  <div class="ellipse">
-                    <h4 class="template-title">{{ item.title }}<br /></h4>
-                    <span class="template-message">{{ item.message }}</span>
-                  </div>
-                </template>
-              </a-select>
+                  <template v-slot:item="{ props, item }">
+                    <!-- HTML that describes how select should render items when the select is open -->
+                    <div class="ellipse">
+                      <h4 class="template-title">{{ item.title }}<br /></h4>
+                      <span class="template-message">{{ item.message }}</span>
+                    </div>
+                  </template>
+                </a-select>
+              </v-form>
             </v-card-text>
           </v-card>
         </v-menu>

@@ -500,7 +500,7 @@ const saveNote = async(n) => {
     }
     if((isPsWqtNote.value || isEventWqtNote.value) && (!n.id || notes.value.findIndex(i => i.id === n.id) === 0)) {
       //if it is a new (non-child) note or edit to the first note, send the note back in the callback so the wq ui can be updated
-      props.callback(data, n.id === null)
+      props.callback(data, !n.id)
     }
     appStore.showSnack('SUCCESS', n.id === null ? 'Note Added' : 'Note Saved')
 

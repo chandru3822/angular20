@@ -29,7 +29,8 @@ CREATE OR REPLACE FUNCTION brs.get_residual_account_details()
             total_clawback             numeric,
             adjustment_override        numeric,
             total                      numeric,
-            qualified_this_period_system_size numeric
+            qualified_this_period_system_size numeric,
+              system_size_by_source numeric
           )
   LANGUAGE plpgsql
 AS
@@ -73,7 +74,8 @@ begin
              when foo1.residual_earned is false and foo1.user_id = any(foo1.selected_user_ids) and coalesce(foo1.adjustment_override,0) > coalesce(foo1.total_clawback,0)  then
                  coalesce(foo1.adjustment_override,0) - coalesce(foo1.total_clawback,0)
              else 0.00 end as total,
-          foo1.qualified_this_period_system_size1
+          foo1.qualified_this_period_system_size1,
+          foo1.system_size_by_source1
     from (select *,
                  rpa.allocation                                                   as required_fdc_per_month,
                  case
@@ -94,7 +96,8 @@ begin
                        else 0 end
                    else coalesce(alloc.partial_allocation, 1) end                as percent_of_residual_earned,
                      foo.lifetime_earned as potential_residual,
-                 foo.qualified_this_period_system_size as qualified_this_period_system_size1
+                 foo.qualified_this_period_system_size as qualified_this_period_system_size1,
+                 foo.system_size_by_source as system_size_by_source1
           from (select u.first_name,
                        u.last_name,
                        u.id                                                                  as user_id,
@@ -143,6 +146,8 @@ begin
                         from brs.get_residual_fds_qualified_this_period(u.id,false)) as qualified_this_period_fdc,
                        (select sum(ao.system_size_adjusted_for_source) as qualified_this_period_system_size
                         from brs.get_residual_fds_qualified_this_period(u.id,false)as ao) as qualified_this_period_system_size,
+                       (select sum(ao.system_size_by_source) as system_size_by_source
+                        from brs.get_residual_fds_qualified_this_period(u.id,false)as ao) as system_size_by_source,
                        (select count(1)
                         from brs.get_residual_fds_not_qualified_this_period(u.id))           as fds_not_qualified,
                        coalesce((select sum(amount)  from brs.get_current_residual_clawbacks(u.id)),0) as current_clawback,
@@ -179,12 +184,16 @@ begin
                  inner join brs.residual_plan_allocation a on a.residual_plan_id = foo.residual_plan_id and
                                                               foo.lifetime_fdc between a.min and coalesce(a.max, 1000000)
                  left join lateral (select partial_allocation from brs.residual_plan_partial_allocation rppa
+                                                                     inner join brs.residual_plan_partial_allocation_type rppat on rppat.id = rppa.residual_plan_partial_allocation_type_id
                                     where rppa.residual_plan_allocation_id = a.id
-                                    and case when foo.is_system_size is true then
+                                    and case when rp2.is_based_on_source is true then
+                                                    foo.system_size_by_source >= rppa.fdc_count and
+                                                    foo.system_size_by_source < a.allocation
+                                         when foo.is_system_size is true then
                                                foo.qualified_this_period_system_size >= rppa.fdc_count and
                                                foo.qualified_this_period_system_size < a.allocation
                                         else foo.qualified_this_period_fdc >= rppa.fdc_count and
-                                             foo.qualified_this_period_fdc <  a.allocation end order by fdc_count desc limit 1) as alloc on true ) as foo1
+                                             foo.qualified_this_period_fdc <  a.allocation end order by rppa.fdc_count desc,rppat.rank_order limit 1) as alloc on true ) as foo1
     where foo1.lifetime_fdc > 0
        or foo1.total_clawback != 0;
 

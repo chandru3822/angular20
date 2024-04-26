@@ -33,6 +33,7 @@ $BODY$
 declare
   v_lifetime_fds              bigint;
   v_sum_system_size_qualified              numeric;
+  v_system_size_by_source numeric;
   v_count_qualified_fdc bigint;
   v_period_end                date;
   v_period_start              date;
@@ -80,8 +81,8 @@ begin
   into v_lifetime_fds
   from brs.get_residual_qualified_lifetime_fds(p_closer_user_id,v_period_end,v_grace_period_end);
 
-  select count(1),sum(system_size_adjusted_for_source)
-  into v_count_qualified_fdc,v_sum_system_size_qualified
+  select count(1),sum(system_size_adjusted_for_source),sum(system_size_by_source)
+  into v_count_qualified_fdc,v_sum_system_size_qualified,v_system_size_by_source
   from brs.get_residual_fds_qualified_this_period(p_closer_user_id,
                                                   v_period_end,
                                                   v_period_start,
@@ -170,7 +171,8 @@ begin
                                  fds_nq.is_system_size,
                                  fds_nq.expected_residual,
                                  fds_nq.plan_name,
-                                 fds_nq.system_size_adjusted_for_source
+                                 fds_nq.system_size_adjusted_for_source,
+                                 fds_nq.system_size_by_source
                           from brs.get_residual_fds_not_qualified_this_period(u.id,v_period_start,v_period_end,v_grace_period_end,
                                                                               v_lifetime_fds,
                                                                               v_count_qualified_fdc,
@@ -195,6 +197,7 @@ begin
                                  fds_nq.expected_residual,
                                  fds_nq.plan_name,
                                  fds_nq.system_size_adjusted_for_source,
+                                 fds_nq.system_size_by_source,
                                  fds_nq.source_name
                           from brs.get_residual_fds_qualified_this_period(u.id,
                                                                           v_period_end,
@@ -226,7 +229,7 @@ begin
                           from brs.get_current_residual_clawbacks(u.id) as fds_nq) as clawback_projects_drilldown1)                           as clawback_projects_drilldown,
                    (select array_to_json(array_agg(row_to_json(total_qualifying_fdc_to_date1)))
                     from (select p.contact_name, fds_nq.project_id,fds_nq.system_size,fds_nq.plan_name,fds_nq.qualified_date,fds_nq.expected_residual,fds_nq.is_system_size,
-                                 fds_nq.system_size_adjusted_for_source
+                                 fds_nq.system_size_adjusted_for_source,fds_nq.system_size_by_source
                           from brs.get_residual_qualified_lifetime_fds(u.id,v_period_end,v_grace_period_end,v_lifetime_fds,v_count_qualified_fdc,v_sum_system_size_qualified) as fds_nq
                                  inner join brs.project_details p on p.project_id = fds_nq.project_id) as total_qualifying_fdc_to_date1) as total_qualifying_fdc_to_date,
             (select sum(count)::bigint
@@ -240,12 +243,16 @@ begin
             (select coalesce((select sum(amount) from brs.get_current_residual_clawbacks(p_closer_user_id)),0)) as total_current_clawbacks,
             (select partial_allocation
              from brs.residual_plan_partial_allocation rppa
+             inner join brs.residual_plan_partial_allocation_type rppat on rppat.id = rppa.residual_plan_partial_allocation_type_id
              where rppa.residual_plan_allocation_id = rpa.id
-               and case when rp.is_system_size is true then
+               and case  when rp.is_based_on_source is true then
+                           v_system_size_by_source >= rppa.fdc_count and
+                           v_system_size_by_source < rpa.allocation
+                       when rp.is_system_size is true then
                           v_sum_system_size_qualified >= rppa.fdc_count and
                           v_sum_system_size_qualified < rpa.allocation
                         else v_count_qualified_fdc >= rppa.fdc_count and
-                             v_count_qualified_fdc < rpa.allocation end order by fdc_count desc limit 1)as partial_allocation
+                             v_count_qualified_fdc < rpa.allocation end order by fdc_count desc,rppat.rank_order limit 1)as partial_allocation
             from flow.user u
               inner join brs.user_residual ur on ur.user_id = u.id
               inner join brs.residual_plan rp on rp.id = ur.residual_plan_id

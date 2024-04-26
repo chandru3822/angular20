@@ -16,7 +16,7 @@
           v-if="requirement.updateType !== updateTypes.DELETE"
           :key="UUID()"
           class="ma-4"
-          :class="{'bye-bye': edits[index].isEditing}"
+          :class="{'bye-bye': edits[index]?.isEditing}"
           :disabled="!canEdit"
           @click="toggleEditing(index, true, $event)"
         >
@@ -41,7 +41,7 @@
         </v-card>
 
         <div
-          v-if="edits[index].isEditing"
+          v-if="edits[index]?.isEditing"
           class="editor-container"
           :style="{top: `${edits[index].top}px`}"
         >

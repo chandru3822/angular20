@@ -1575,10 +1575,10 @@ const regionLoad = async(preSelectLists) => {
     regionData.value = res
 
 
-        if (preSelectLists && (this.isCloserMgr || this.isCloserRegional)) {
-          this.regionModel = this.regionData.filter(od => od.active)
+        if (preSelectLists && (isCloserMgr.value || isCloserRegional.value)) {
+          regionModel.value = regionData.value.filter(od => od.active)
         } else if (preSelectLists) {
-          this.regionModel = cloneDeep(this.regionData)
+          regionModel.value = cloneDeep(regionData.value)
         }
 
     if (!initialPageLoad.value) {

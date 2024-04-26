@@ -271,7 +271,7 @@ const afterFieldSelected = () => {
 
   if (isPsEventSmartlistField) {
     showPsEventField.value = true
-    nextTick(psEventField.value.focus)
+    nextTick(psEventField.value.focus())
     nextTick(psEventField.value.activateMenu)
   } else {
     add()

@@ -337,7 +337,7 @@
             />
           </div>
 
-            <v-text-field v-model="emailSubject" label="Subject"></v-text-field>
+            <a-text-field v-model="emailSubject" label="Subject"></a-text-field>
             <b>Message </b><span class="count-span pl-2">Characters: {{emailCharacterCount}}  Words: {{emailWordCount}}</span>
             <quill-editor
                 class="py-3 rich-text-editor"

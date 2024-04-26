@@ -5,6 +5,7 @@
     :variant="showText ? 'text' : ''"
     class="pa-5"
     id="qa-smartlist-export"
+    prepend-icon="mdi-tray-arrow-down"
     :disabled="disabled"
     :text="showText ? 'Export' : ''"
   >

@@ -6,6 +6,7 @@
       :items="items"
       :chips="chips"
       :type="type"
+      ref="albatrossAutocomplete"
       :loading="loading"
       :item-text="itemTitle"
       :item-value="itemValue"
@@ -127,6 +128,8 @@ const props = defineProps({
   autocomplete: String,
 })
 
+const albatrossAutocomplete = ref(null)
+
 const combinedRules = computed(() => {
   let tempRules = []
   //set the rules to any rules that were passed in
@@ -141,6 +144,14 @@ const combinedRules = computed(() => {
 //i think this makes it work and not complain about changing values in the child..
 const syncSearchInput = ref(props.searchInput)
 
+
+const newFocus = () => {
+  albatrossAutocomplete.value.focus()
+}
+
+defineExpose({
+  focus: newFocus
+})
 </script>
 
 <style lang="scss" scoped>

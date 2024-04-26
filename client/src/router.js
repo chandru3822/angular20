@@ -188,8 +188,8 @@ const router = new Router({
           meta: {title: 'Albatross - Road Map'},
           props: true,
           component: () => {
-            if (store.getters.userHasFeature('ROAD_MAP')) {
-              return import("./views/RoadMap.vue")
+            if (userStore.userHasFeature('ROAD_MAP')) {
+              return import("./views/blueraven/RoadMap.vue")
             } else {
               return accessDenied()
             }
