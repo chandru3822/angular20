@@ -5,11 +5,18 @@ drop function if exists brs.get_residual_fds_not_qualified_this_period(p_closer_
                                                                        p_total_lifetime_fdc bigint,
                                                                        p_current_qualified_fdc bigint,
                                                                        p_total_system_size numeric);
+drop function if exists brs.get_residual_fds_not_qualified_this_period(p_closer_user_id bigint, p_start_date date,
+                                                                       p_end_date date, p_grace_period_end_date date,
+                                                                       p_total_lifetime_fdc bigint,
+                                                                       p_current_qualified_fdc bigint,
+                                                                       p_total_system_size numeric,
+                                                                       p_total_system_size_by_source numeric);
 CREATE or replace function brs.get_residual_fds_not_qualified_this_period(p_closer_user_id bigint, p_start_date date,
                                                                           p_end_date date, p_grace_period_end_date date,
                                                                           p_total_lifetime_fdc bigint default 0,
                                                                           p_current_qualified_fdc bigint default 0,
-                                                                          p_total_system_size numeric default 0::numeric)
+                                                                          p_total_system_size numeric default 0::numeric,
+                                                                          p_total_system_size_by_source numeric default 0::numeric)
   RETURNS table
           (
             project_id                                  bigint,
@@ -27,6 +34,7 @@ CREATE or replace function brs.get_residual_fds_not_qualified_this_period(p_clos
             on_hold_date                                date,
             system_size                                 numeric,
             system_size_adjusted_for_source numeric,
+            system_size_by_source                       numeric,
             is_system_size boolean,
             expected_residual numeric,
             plan_name text
@@ -35,6 +43,7 @@ AS
 $BODY$
 declare
   v_min_start_date date;
+  v_closer_gen_source_ids bigint[];
 begin
 
   select min(start_date)
@@ -42,6 +51,11 @@ begin
   from flow.user_position up
   where user_id = p_closer_user_id
     and position_id in (1, 2, 3, 517);
+
+  select (select string_to_array(value, ',')
+          from flow.company_configuration_value
+          where code = 'CLOSER_GEN_SOURCE_IDS')::bigint[]
+  into v_closer_gen_source_ids;
 
   return query
     select foo.project_id,
@@ -59,6 +73,7 @@ begin
            foo.on_hold_date,
            foo.system_size,
            foo.system_size_adjusted_for_source,
+           foo.system_size_by_source,
            foo.is_system_size,
            foo.expected_residual,
            foo.name
@@ -98,13 +113,18 @@ begin
                  case when rpsa.source_id is not null then
                         (pd.system_size::numeric * rpsa.amount::numeric)::numeric
                       else pd.system_size end as system_size_adjusted_for_source,
+                 case
+                   when pd.source = any (v_closer_gen_source_ids) then
+                     coalesce(pd.system_size, 0)
+                   else 0 end                        as system_size_by_source,
                  case when p_total_lifetime_fdc > 0 then
                         (select * from brs.get_residual_project_plan_total(rp.id,
                                                                            p_closer_user_id,
                                                                            pd.system_size,
                                                                            p_total_lifetime_fdc,
                                                                            p_total_system_size,
-                                                                           p_current_qualified_fdc))
+                                                                           p_current_qualified_fdc,
+                                                                           p_total_system_size_by_source))
                       else 0 end as expected_residual,
                 rp.name
           from brs.project_details pd

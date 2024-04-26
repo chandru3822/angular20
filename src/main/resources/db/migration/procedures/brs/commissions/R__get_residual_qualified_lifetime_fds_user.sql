@@ -16,6 +16,7 @@ CREATE or replace function brs.get_residual_qualified_lifetime_fds(p_closer_user
                  qualified_date date,
                  system_size                                 numeric,
                  system_size_adjusted_for_source             numeric,
+                 system_size_by_source                       numeric,
                  plan_name                               varchar,
                  expected_residual                           numeric,
                  is_system_size boolean) AS
@@ -26,6 +27,7 @@ v_grace_period_end date;
 v_lifetime_fds bigint;
 v_count_qualified_fdc bigint;
   v_sum_system_size_qualified numeric;
+  v_system_size_by_source numeric;
 begin
 
   select grace_period_end ,period_end
@@ -37,8 +39,8 @@ begin
   into v_lifetime_fds
   from brs.get_residual_qualified_lifetime_fds(p_closer_user_id,v_period_end,v_grace_period_end);
 
-  select count(1),sum(ao.system_size_adjusted_for_source)
-  into v_count_qualified_fdc,v_sum_system_size_qualified
+  select count(1),sum(ao.system_size_adjusted_for_source),sum(ao.system_size_by_source)
+  into v_count_qualified_fdc,v_sum_system_size_qualified,v_system_size_by_source
   from brs.get_residual_fds_qualified_this_period(p_closer_user_id)ao;
 
   return query
@@ -58,11 +60,12 @@ begin
          pd.qualified_date,
          pd.system_size,
          pd.system_size_adjusted_for_source,
+         pd.system_size_by_source,
          pd.plan_name,
          pd.expected_residual,
          pd.is_system_size
          from
-         brs.get_residual_qualified_lifetime_fds(p_closer_user_id,v_period_end,v_grace_period_end,v_lifetime_fds,v_count_qualified_fdc,v_sum_system_size_qualified) pd;
+         brs.get_residual_qualified_lifetime_fds(p_closer_user_id,v_period_end,v_grace_period_end,v_lifetime_fds,v_count_qualified_fdc,v_sum_system_size_qualified,v_system_size_by_source) pd;
 END
 $BODY$
   LANGUAGE plpgsql
