@@ -49,6 +49,14 @@
               <a-text-field
                             label="Description"
                             v-model="residualPlan.description"></a-text-field>
+              <a-text-field label="Total"
+                            readonly disabled
+                            prepend-icon="mdi-currency-usd"
+                            v-model.number="residualPlan.total"></a-text-field>
+              <a-text-field v-if="residualPlan.residualDurationMonths"
+                            label="Residual Lifetime (Months)"
+                            readonly disabled
+                            v-model="residualPlan.residualDurationMonths"></a-text-field>
             </v-card>
           </v-col>
           <v-col cols="12" sm="6">
@@ -117,8 +125,8 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.min}}</td>
               <td class="text-left">{{item.max}}</td>
-              <td class="text-left">{{item.allocation}}</td>
-              <td class="text-left">{{item.fdcCount}}</td>
+              <td class="text-left">{{item.allocation}} {{residualPlan.isSystemSize ? 'kW' : ''}}</td>
+              <td class="text-left">{{item.fdcCount}} {{residualPlan.isSystemSize && item.fdcCount ? 'kW' : ''}}</td>
               <td class="text-left">
                 <span v-if="item.partialAllocation !== null">{{ item.partialAllocation | percent(0)}}</span>
               </td>
@@ -127,6 +135,97 @@
         </v-data-table>
       </v-col>
     </v-row>
+    <v-row v-if="planId">
+      <v-col>
+        <v-toolbar flat>
+          <v-toolbar-title>
+            Source Adjustment
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text color="primary" v-if="residualPlan.statusType === 'PENDING'" @click="[selectedSource = {}, addSource = !addSource, getSources()]">
+              <v-icon v-if="addSource">remove</v-icon>
+              <v-icon v-else>add</v-icon>
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-divider></v-divider>
+        <v-card v-if="addSource" class="square-card text-left pa-5">
+          <v-form ref="sourceForm">
+            <v-select attach v-model="selectedSource.id"
+                      :items="sources"
+                      label="Select a Source..."
+                      item-text="sourceName"
+                      item-value="id"
+                      autocomplete="off">
+            </v-select>
+            <v-text-field text type="number"
+                          label="Amount"
+                          :rules="amountRules"
+                          v-model.number="selectedSource.amount"></v-text-field>
+            <v-btn color="primary" class="mr-3 white--text" @click="validateSource()">
+              Add
+            </v-btn>
+          </v-form>
+        </v-card>
+        <v-divider v-if="addSource"></v-divider>
+        <v-data-table
+            :headers="sourceHeaders"
+            :items="residualPlan.sources"
+            :fixed-header="true"
+            :items-per-page="-1"
+            disable-sort
+            :loading="dataLoading"
+            single-expand
+            :expanded.sync="sourceExpanded"
+            hide-default-footer
+            class="elevation-1"
+        >
+          <template #no-data>
+            <span class="default-text-color">No available sources</span>
+          </template>
+
+          <template #no-results>
+            <span class="default-text-color">No available sources</span>
+          </template>
+
+          <template #expanded-item="{ headers, item }">
+            <td :colspan="headers.length" class="pa-4 text-left">
+              <v-text-field text type="number"
+                            label="Amount"
+                            :rules="amountRules"
+                            v-model.number="item.amount"></v-text-field>
+              <v-btn :disabled="!item.amount || item.amount <= 0 || item.amount > 5"
+                     @click="[sourceExpanded = [], updateSource(item)]" color="primary">Save</v-btn>
+            </td>
+          </template>
+
+          <template #item="{ item, index }">
+            <tr :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{item.sourceName}}</td>
+              <td class="text-left">{{item.amount}}</td>
+              <td class="text-right">
+                <v-btn small text color="primary" @click="sourceExpanded = [item]"
+                       v-if="residualPlan.statusType === 'PENDING' && !sourceExpanded.includes(item)">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+                <v-btn small text color="primary" @click="sourceExpanded = []"
+                       v-if="sourceExpanded.includes(item)">cancel
+                </v-btn>
+                <v-btn v-if="residualPlan.statusType === 'PENDING'"
+                       small text color="primary"
+                       @click="sourceToDelete=item">
+                  <v-icon>delete</v-icon>
+                </v-btn>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-col>
+    </v-row>
+    <ConfirmationDialog :open-dialog="!!sourceToDelete" @confirm="deleteSource" @close-dialog="sourceToDelete=null">
+      Are you sure you want to delete this source: <strong>{{ sourceToDeleteName }}</strong>??
+    </ConfirmationDialog>
     <v-row v-if="planId">
       <v-col>
         <v-toolbar flat>
@@ -361,8 +460,8 @@ const levelHeaders = ref([
   {text: 'Lifetime FDC Lower', value: 'min', show: true},
   {text: 'Lifetime FDC Upper', value: 'max', show: true},
   {text: 'Target FDC', value: 'allocation', show: true},
-  {text: 'Partial FDC', value: 'fdcCount', show: true},
-  {text: 'Partial FDC %', value: 'partial', show: true},
+  {text: 'Partial Target', value: 'fdcCount', show: true},
+  {text: 'Partial Target %', value: 'partial', show: true},
 ])
 const addLevel = ref(false)
 const selectedLevel = ref({})
@@ -388,6 +487,22 @@ const historyHeaders = ref([
 const errorMessages = ref([])
 const cloneDateError = ref(false)
 const residualPlan = ref({users: [],})
+const sourceHeaders = ref([
+  {text: 'Source', value: 'source', show: true},
+  {text: 'Amount', value: 'amount', show: true},
+  {text: '', value: 'icons', show: true},
+])
+const sourceExpanded = ref([])
+const addSource = ref(false)
+const selectedSource = ref({})
+const sourceToDelete = ref(null)
+const sourceForm = ref(null)
+const amountRules = ref([
+  v => !!v || "This field is required",
+  v => ( v && v >= 0 ) || "Amount must be greater than 0",
+  v => ( v && v <= 5 ) || "Amount can not be above 5",
+  ])
+const sources = ref([])
 const levelToDelete = ref(null)
 const userToDelete = ref(null)
 
@@ -416,6 +531,9 @@ const levelToDeleteName = computed(() => {
 const userToDeleteName = computed(() => {
   return userToDelete.value ? userToDelete.value.name : ''
 })
+const sourceToDeleteName = computed(() => {
+  return sourceToDelete.value ? sourceToDelete.value.sourceName : ''
+})
 const filteredResidualPlanUsers = computed(() => {
   return residualPlan.value?.users?.filter(cu => { return !cu.archived})
 })
@@ -432,6 +550,13 @@ watch(userSearch, (val) => {
   usersToAdd.value = []
   getUsersToAddDebounced(val)
 })
+
+
+const validateSource = () => {
+  if(sourceForm.value.validate()) {
+    addSourceToPlan()
+  }
+}
 
 const getResidualPlanDetails = async () => {
   appStore.loading = true
@@ -692,7 +817,61 @@ const updateLevel = async(item) => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Saving Level')
-
+    appStore.loading = false
+  }
+}
+const getSources = async() => {
+  if(addSource.value) {
+    try {
+      const {data} = await getRequest(`/commissionManagement/residuals/${this.planId}/availableSources`, 'blueraven')
+      sources.value = data
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      appStore.showSnack('ERROR', 'Error Retrieving Sources')
+      appStore.loading = false
+    }
+  }
+}
+const updateSource = async(item) => {
+  appStore.loading = true
+  try {
+    const {data, status} = await putRequest(`/commissionManagement/residuals/${this.planId}/source`, item, 'blueraven')
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Saving Source')
+    appStore.loading = false
+  }
+}
+const addSourceToPlan = async() => {
+  try {
+    let params = {
+      sourceId: selectedSource.value.id,
+      amount: selectedSource.value.amount,
+    }
+    const {data} = await postRequest(`/commissionManagement/residuals/${this.planId}/source`, params, 'blueraven')
+    residualPlan.value.sources.push(data)
+    selectedSource.value = {}
+    addSource.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Adding Source')
+    appStore.loading = false
+  }
+}
+const deleteSource = async () => {
+  const id = sourceToDelete.value.id
+  appStore.loading = true
+  try {
+    const {status} = await deleteRequest(`/commissionManagement/residuals/${planId.value}/source/${id}`, 'blueraven')
+    appStore.showSnack('SUCCESS', 'Source Deleted')
+    residualPlan.value.sources = residualPlan.value.sources.filter(s => {
+      return s.id !== id
+    })
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Deleting Source')
     appStore.loading = false
   }
 }

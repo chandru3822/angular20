@@ -65,7 +65,7 @@ BEGIN
     and pps.process_step_id = 175
     and ppscfv.date_value is not null;
 
-  if v_commission_strategy_id = 23610 and p_code = 'M1' and (v_milestone_1 is not null or p_from_booking is true) then
+  if v_commission_strategy_id = 24102 and p_code = 'M1' and (v_milestone_1 is not null or p_from_booking is true) then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;
@@ -74,7 +74,7 @@ BEGIN
     else
       v_total = v_allocation_m1 * v_system_size;
     end if;
-  elsif v_commission_strategy_id = 23610 and p_code = 'M2' and v_milestone_2 is not null then
+  elsif v_commission_strategy_id = 24102 and p_code = 'M2' and v_milestone_2 is not null then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;

@@ -217,8 +217,13 @@
                 <td class="text-left">{{item.residualPlanName}}</td>
                 <td class="text-left">{{item.residualStartDate}}</td>
                 <td class="text-left clickable">
-                  <a @click="loadModalData(item, 1)">
+                  <a @click="loadModalData(item, 1, false)">
                     {{item.lifetimeFdc}}
+                  </a>
+                </td>
+                <td class="text-left clickable">
+                  <a @click="loadModalData(item, 1, true)">
+                    {{item.lifetimeSystemSize}}
                   </a>
                 </td>
                 <td class="text-left">
@@ -226,6 +231,7 @@
                     {{item.qualifiedThisPeriodFdc}}
                   </a>
                 </td>
+                <td class="text-left">{{item.qualifiedThisPeriodSystemSize}}</td>
                 <td class="text-left">
                   <a @click="loadModalData(item, 3)">
                     {{item.fdsNotQualified}}
@@ -402,9 +408,11 @@ const headers = ref([
   {text: 'Residual Plan', value: 'residualPlanName', show: true},
   {text: 'Residual Start Date', value: 'residualStartDate', show: true},
   {text: 'LTD Qualified FDC', value: 'lifetimeFdc', show: true},
-  {text: 'Qualified FDC This Period', value: 'qualifiedThisPeriodFdc', show: true},
-  {text: 'FDA Not Qualified This Period', value: 'fdsNotQualified', show: true},
-  {text: 'Required FDS for Month', value: 'requiredFdcPerMonth', show: true},
+  {text: 'LTD kW', value: 'lifetimeSystemSize', show: true},
+  {text: 'Qualified Projects This Period', value: 'qualifiedThisPeriodFdc', show: true},
+  {text: 'Qualified kW This Period', value: 'qualifiedThisPeriodSystemSize', show: true},
+  {text: 'Projects Not Qualified This Period', value: 'fdsNotQualified', show: true},
+  {text: 'Required Quota for Month', value: 'requiredFdcPerMonth', show: true},
   {text: 'Residual Earned', value: 'residualEarned', show: true},
   {text: '% of Residual Earned', value: 'percentOfResidualEarned', show: true},
   {text: 'Potential Residual', value: 'potentialResidual', show: true},
@@ -695,7 +703,9 @@ const exportResiduals = async () => {
           p.userFullName + ',' +
           p.residualStartDate + ',' +
           p.lifetimeFdc + ',' +
+          p.lifetimeSystemSize + ',' +
           p.qualifiedThisPeriodFdc + ',' +
+          p.qualifiedThisPeriodSystemSize + ',' +
           p.fdsNotQualified + ',' +
           p.requiredFdcPerMonth + ',' +
           p.residualEarned + ',' +

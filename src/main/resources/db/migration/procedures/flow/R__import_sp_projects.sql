@@ -392,6 +392,9 @@ BEGIN
             now(), now(), 2384850, 2384850, 3, false, 105806, v_company_state_id)
     returning id into v_contact_id;
 
+    perform flow.set_contact_cfv(v_contact_id,2384850,395, 24629::text);
+    perform flow.set_contact_cfv(v_contact_id,2384850,396, 24630::text);
+
     insert into flow.project (contact_id, company_process_id, project_name, date_created, date_modified,
                               created_by_id, modified_by_id, company_project_status_type_id, user_position_id,
                               street1, street2, postal_code, company_state_id, company_country_id, archived)

@@ -935,7 +935,7 @@ BEGIN
 
   if v_dealer is not null then
     v_adjusted_price_per_watt = coalesce(v_dealer_redline_price, 0) + coalesce(v_dealer_markup, 0);
-  elsif v_commission_strategy_id = 23610 then
+  elsif v_commission_strategy_id = 24102 then
     v_desired_commission_amount = greatest(coalesce(v_desired_commission_amount / 1000, 0), 0);
     v_redline_markup = greatest(v_desired_commission_amount / 0.68, 0);
     v_lead_source_discount = case

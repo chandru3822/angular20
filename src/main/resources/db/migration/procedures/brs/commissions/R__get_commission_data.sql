@@ -65,8 +65,8 @@ BEGIN
   from flow.project_process_step p
          left join flow.project_process_step_custom_field_value v
                    on v.project_process_step_id = p.id and
-                      v.custom_field_group_assignment_id = 26176 and --26168 stage -- 26176 prod
-                      int_value is not null
+                      v.custom_field_group_assignment_id = 27107 and
+                      v.int_value is not null
          inner join brs.financial_details fd on fd.project_id = p.project_id
   where p.project_id = p_project_id
     and p.process_step_id in (3355)
@@ -140,7 +140,7 @@ BEGIN
     from flow.project_process_step p
            left join flow.project_process_step_custom_field_value v
                      on v.project_process_step_id = p.id and
-                        v.custom_field_group_assignment_id = 26944 and
+                        v.custom_field_group_assignment_id = 27105 and
                         int_value is not null
            inner join brs.financial_details fd on fd.project_id = p.project_id
     where p.project_id = p_project_id

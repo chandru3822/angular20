@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.commissionManagement.ResidualController;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.CommissionPlanStatus;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
+import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.CommissionManagementQuery;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.ResidualQuery;
 import com.albatross.api.v1.flow.model.User;
 import lombok.Data;
@@ -267,4 +268,45 @@ public class ResidualService {
 
     return sqlCache.getBySql(ResidualQuery.clonePlan, params, new SingleColumnRowMapper<>(Long.class));
   }
+
+    public List<ResidualSource> getAvailableSources(Long planId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+
+        return sqlCache.queryBySql(ResidualQuery.getAvailableSources, params, ResidualSource.class);
+    }
+
+    public ResidualSource saveSource(Long planId, ResidualSource source) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("sourceId", source.getSourceId());
+        params.put("amount", source.getAmount());
+
+        Long id =
+                sqlCache.updateBySqlReturningId(ResidualQuery.saveSource, params, "id").longValue();
+        return getSource(id);
+    }
+
+    public ResidualSource updateSource(Long planId, ResidualSource source) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", source.getId());
+        params.put("amount", source.getAmount());
+
+        sqlCache.updateBySql(ResidualQuery.updateSource, params);
+        return getSource(source.getId());
+    }
+
+    public void removeSource(Long planId, Long sourceId) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", sourceId);
+        sqlCache.updateBySql(ResidualQuery.removeSource, params);
+    }
+
+    public ResidualSource getSource(Long id) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("id", id);
+
+        Optional<ResidualSource> result = sqlCache.getBySql(ResidualQuery.getSource, params, ResidualSource.class);
+        return result.orElse(null);
+    }
 }

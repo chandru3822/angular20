@@ -100,14 +100,14 @@ BEGIN
   end if;
 
   if v_df_proposal_id is not null then
-    perform flow.set_pps_cfv(p_project_id, 2356764, 26176, 23610::text, true);
+    perform flow.set_pps_cfv(p_project_id, 2356764, 27107, 24102::text, true);
     if v_closer_commission_amount is not null then
       perform flow.set_pps_cfv(p_project_id, 2356764, 26166, v_closer_commission_amount::text, true);
     end if;
   end if;
 
   update brs.proposal_log_history plh
-  set commission_strategy_id    = 23610,
+  set commission_strategy_id    = 24102,
       desired_commission_amount = v_closer_commission_amount,
       date_modified = now()
   where case

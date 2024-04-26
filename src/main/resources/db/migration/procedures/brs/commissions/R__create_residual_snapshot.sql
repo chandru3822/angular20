@@ -117,7 +117,10 @@ BEGIN
                                                      date_created,
                                                      created_by_id,
                                                      date_modified,
-                                                     modified_by_id)
+                                                     modified_by_id,
+                                                     qualified_date,
+                                                     system_size,
+                                                     residual_plan)
         (select v_snapshot_id,
                 rqlf.project_id,
                 (select id
@@ -135,14 +138,14 @@ BEGIN
                 rqlf.substantial_completion_date,
                 rqlf.cancelled_date,
                 rqlf.on_hold_date,
-                ((select rp.total
-                 from brs.user_residual as ur
-                        inner join brs.residual_plan as rp on rp.id = ur.residual_plan_id
-                 where ur.user_id = d.user_id)*(percent_of_residual_earned)),
+                rqlf.expected_residual,
                 now(),
                 p_updated_by_id,
                 now(),
-                p_updated_by_id
+                p_updated_by_id,
+                rqlf.qualified_date,
+                rqlf.system_size,
+                rqlf.residual_plan
          from brs.get_residual_qualified_lifetime_fds(d.user_id) rqlf
          inner join brs.user_residual_snapshot as u on u.user_id = d.user_id and
                                                        u.paid_in_period is true and
@@ -167,7 +170,8 @@ BEGIN
                                                      date_created,
                                                      created_by_id,
                                                      date_modified,
-                                                     modified_by_id)
+                                                     modified_by_id,
+                                                     system_size)
         (select v_snapshot_id,
                 rqlf.project_id,
                 (select id
@@ -188,7 +192,8 @@ BEGIN
                 now(),
                 p_updated_by_id,
                 now(),
-                p_updated_by_id
+                p_updated_by_id,
+                rqlf.system_size
          from brs.get_residual_fds_not_qualified_this_period(d.user_id) rqlf);
 
       for x in select *
@@ -214,7 +219,9 @@ BEGIN
                                                          date_created,
                                                          created_by_id,
                                                          date_modified,
-                                                         modified_by_id)
+                                                         modified_by_id,
+                                                         system_size,
+                                                         system_size_adjusted_for_source)
           values (v_snapshot_id,
                   x.project_id,
                   (select id
@@ -240,10 +247,12 @@ BEGIN
                   now(),
                   p_updated_by_id,
                   now(),
-                  p_updated_by_id);
+                  p_updated_by_id,
+                  x.system_size,
+                  x.system_size_adjusted_for_source);
           insert into brs.residual_project_qualified_date(project_id, qualified_date, date_created, date_modified,
                                                           created_by_id, modified_by_id, residual_id)
-          values (x.project_id, now(), now(), now(), p_updated_by_id, p_updated_by_id, p_residual_id);
+          values (x.project_id, least(qualified_date,'2024-03-31'::date)::date, now(), now(), p_updated_by_id, p_updated_by_id, p_residual_id);
         end loop;
 
 
@@ -275,7 +284,7 @@ BEGIN
       insert into brs.residual_project_qualified_date(project_id, qualified_date, date_created, date_modified,
                                                       created_by_id, modified_by_id, residual_id, excluded_from_cancel)
         (select a.project_id,
-                now(),
+                least(qualified_date,'2024-03-31'::date)::date,
                 now(),
                 now(),
                 p_updated_by_id,
