@@ -16,7 +16,14 @@ CREATE or replace function brs.get_residual_fds_qualified_this_period(p_closer_u
             substantial_completion_date                 date,
             cancelled_date                              date,
             on_hold_date                                date,
-            qualified_date                              date
+            qualified_date                              date,
+            system_size numeric,
+            system_size_adjusted_for_source numeric,
+            residual_plan text,
+            is_system_size boolean,
+            expected_residual numeric,
+            plan_name text,
+            source_name text
           )
 AS
 $BODY$
@@ -48,7 +55,14 @@ begin
            ao.substantial_completion_date,
            ao.cancelled_date,
            ao.on_hold_date,
-           ao.qualified_date
+           ao.qualified_date,
+           ao.system_size,
+           ao.system_size_adjusted_for_source,
+           ao.residual_plan,
+           ao.is_system_size,
+           ao.expected_residual,
+           ao.plan_name,
+           ao.source_name
     from brs.get_residual_fds_qualified_this_period(p_closer_user_id,
                                                     v_period_end,
                                                     v_period_start,

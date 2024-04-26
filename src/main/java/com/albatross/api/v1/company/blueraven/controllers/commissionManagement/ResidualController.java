@@ -144,6 +144,26 @@ public class ResidualController {
     }
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
   }
+
+    @GetMapping(value = "/{id}/availableSources")
+    public List<ResidualSource> getAvailableSources(@PathVariable Long id) {
+        return residualService.getAvailableSources(id);
+    }
+
+    @PostMapping(value = "/{planId}/source")
+    public ResidualSource saveSource(@PathVariable Long planId, @RequestBody ResidualSource source) {
+        return residualService.saveSource(planId, source);
+    }
+
+    @PutMapping(value = "/{planId}/source")
+    public ResidualSource updateSource(@PathVariable Long planId, @RequestBody ResidualSource source) {
+        return residualService.updateSource(planId, source);
+    }
+
+    @DeleteMapping(value = "/{planId}/source/{sourceId}")
+    public void removeSource(@PathVariable Long planId, @PathVariable Long sourceId) {
+        residualService.removeSource(planId, sourceId);
+    }
 }
 
 

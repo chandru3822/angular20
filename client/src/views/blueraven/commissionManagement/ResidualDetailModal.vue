@@ -36,34 +36,37 @@
         <span class="default-text-color">NO RESULTS</span>
       </template>
 
-      <template #item="{ item, index }">
-        <tr class="text-left" :class="{'shaded-row': index % 2}">
-          <td class="text-left">
-            <a-btn
-                variant="outlined"
-                :to="`/project/${item.projectId}/status`"
-                color="unset"
-                :text="item.projectId"
-                text="item.projectId"
-            ></a-btn>
-          </td>
-          <td class="text-left" v-if="typeId !== 4">{{item.state}}</td>
-          <td class="text-left" v-if="typeId !== 4">{{item.finalDesignSignedDate | formatDate('date')}}</td>
-          <td class="text-left" v-if="typeId !== 4">{{item.finalDesignCompleteDate | formatDate('date')}}</td>
-          <td class="text-left" v-if="typeId !== 4">{{item.utilityBillVerifiedDate | formatDate('date')}}</td>
-          <td class="text-left" v-if="typeId !== 4">{{item.financialAgreementSignedDate | formatDate('date')}}</td>
-          <td class="text-left" v-if="typeId !== 4">{{item.proofOfHomeownersInsuranceObtainedDate | formatDate('date')}}</td>
-          <td class="text-left" v-if="typeId !== 4">{{item.substantialCompletionDate | formatDate('date')}}</td>
-          <td class="text-left" v-if="typeId === 4">{{item.projectName }}</td>
-          <td class="text-left">{{item.cancelledDate | formatDate('date')}}</td>
-          <td class="text-left" v-if="typeId !== 4">{{item.onHoldDate | formatDate('date')}}</td>
-          <td class="text-left" v-if="typeId !== 4">{{item.totalCashDownPayment | currency('$', 0)}}</td>
-          <td class="text-left" v-if="typeId !== 4">{{item.firstCashPaymentAmount | currency('$', 0)}}</td>
-          <td class="text-left" v-if="typeId === 4">{{item.clawbackAmount | currency('$', 0)}}</td>
-          <td class="text-left" v-if="typeId === 4">{{item.clawbackDate | formatDate('date')}}</td>
-        </tr>
-      </template>
-    </v-data-table>
+        <template #item="{ item, index }">
+          <tr class="text-left" :class="{'shaded-row': index % 2}">
+            <td class="text-left">
+              <a-btn
+                  variant="outlined"
+                  :to="`/project/${item.projectId}/status`"
+                  color="unset"
+                  :text="item.projectId"
+                  text="item.projectId"
+              ></a-btn>
+            </td>
+            <td class="text-left" v-if="typeId !== 4">{{item.planName}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.systemSize}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.systemSizeAdjustedForSource}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.state}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.finalDesignSignedDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.finalDesignCompleteDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.utilityBillVerifiedDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.financialAgreementSignedDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.proofOfHomeownersInsuranceObtainedDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.substantialCompletionDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId === 4">{{item.projectName }}</td>
+            <td class="text-left">{{item.cancelledDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.onHoldDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.totalCashDownPayment | currency('$', 0)}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.firstCashPaymentAmount | currency('$', 0)}}</td>
+            <td class="text-left" v-if="typeId === 4">{{item.clawbackAmount | currency('$', 0)}}</td>
+            <td class="text-left" v-if="typeId === 4">{{item.clawbackDate | formatDate('date')}}</td>
+          </tr>
+        </template>
+      </v-data-table>
   </v-container>
 </template>
 

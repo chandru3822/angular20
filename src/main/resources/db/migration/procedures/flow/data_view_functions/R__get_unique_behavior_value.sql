@@ -11,6 +11,7 @@ $BODY$
 DECLARE
   v_value              text;
   v_commission_plan_id bigint;
+  v_residual_plan_id   bigint;
   v_override_plan_id   bigint;
   v_ppscfv_fdc_id      bigint;
   v_ppscfv_booking_id  bigint;
@@ -50,7 +51,13 @@ BEGIN
         v_commission_plan_id = null;
       end if;
 
-      if v_commission_plan_id is null and (v_ppscfv_fdc_id is not null or v_ppscfv_booking_id is not null) then
+      select residual_plan_id
+      into v_residual_plan_id
+      from brs.financial_details fd
+      where fd.project_id = p_project_id;
+
+      if ((v_commission_plan_id is null and (v_ppscfv_fdc_id is not null or v_ppscfv_booking_id is not null)) or
+         (v_residual_plan_id is null and v_ppscfv_fdc_id is not null)) then
         perform from brs.insert_commissions_on_project(p_project_id);
       end if;
 

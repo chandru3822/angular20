@@ -24,8 +24,14 @@ declare
   v_start_date                    timestamp;
   v_commission_booking_start_date timestamp;
   v_found_user_on_plan            bigint;
-  v_found_user_residual           bigint;
+  v_found_user_residual_id           bigint;
   v_commission_strategy_id        bigint;
+  v_fda_date date;
+  v_fda_month integer;
+  v_fdc_month integer;
+  v_fdc_day integer;
+  v_residual_date date;
+
 BEGIN
 
   select min(ppscfv.date_value) milestone_one_complete_date
@@ -36,6 +42,30 @@ BEGIN
   where pps.process_step_id = 175
     and pps.project_id = p_project_id;
 
+  if v_start_date is not null then
+    select min(ppscfv.date_value) milestone_one_complete_date
+    into v_fda_date
+    from flow.project_process_step pps
+           inner join flow.project_process_step_custom_field_value ppscfv
+                      on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id in (19504,25448)
+    where pps.process_step_id in ( 3355,3620)
+      and pps.project_id = p_project_id;
+
+    SELECT
+      EXTRACT(MONTH FROM v_fda_date) ,
+      EXTRACT(MONTH FROM v_start_date),
+      EXTRACT(DAY FROM v_start_date)
+    into v_fda_month,v_fdc_month,v_fdc_day;
+
+    if (v_fda_month = v_fdc_month) or (v_fdc_month > v_fda_month and v_fdc_day > 15) then
+      v_residual_date = v_start_date;
+    elsif v_fdc_month > v_fda_month and v_fdc_day <= 15 then
+      v_residual_date = v_start_date - interval '1 month';
+    end if;
+
+  end if;
+
+
   if v_start_date is null then
     select min(ppscfv.date_value) milestone_one_complete_date
     into v_commission_booking_start_date
@@ -45,12 +75,6 @@ BEGIN
     where pps.process_step_id = 4
       and pps.project_id = p_project_id;
   end if;
-
-  select rp.id, rp.name, rps.status_type
-  into v_residual_plan_id,v_residual_plan,v_residual_status
-  from brs.residual_plan rp
-         left join brs.residual_plan_status rps on rps.id = rp.residual_plan_status_id
-  where rp.default_plan is true;
 
   select count(1)
   into v_override_plan_found
@@ -74,6 +98,19 @@ BEGIN
   from flow.project p
          inner join flow.contact c on c.id = p.contact_id
   where p.id = p_project_id;
+
+  if v_start_date is not null and v_residual_date is not null then
+    select rp.id, rp.name, rps.status_type
+    into v_residual_plan_id,v_residual_plan,v_residual_status
+    from brs.residual_plan rp
+           inner join brs.residual_plan_user r on r.residual_plan_id = rp.id  and r.user_id = v_user_id
+           inner join brs.residual_plan_status rps on rps.id = rp.residual_plan_status_id
+    where v_residual_date >= r.start_date
+                and case
+                      when r.end_date is not null then
+                        v_residual_date <= r.end_date
+                      else true end;
+  end if;
 
   if v_start_date is not null then
     select op.id, op.name, ops.status_type
@@ -198,21 +235,26 @@ BEGIN
 
   if v_start_date is not null and v_user_id is not null and v_residual_plan_id is not null then
 
-    select count(1)
-    into v_found_user_residual
+    select ur.residual_plan_id
+    into v_found_user_residual_id
     from brs.user_residual ur
     where user_id = v_user_id;
 
-    if v_found_user_residual < 1 then
+    if v_found_user_residual_id is null then
       insert into brs.user_residual(user_id, residual_plan_id, date_created, created_by_id, modified_by_id)
       values (v_user_id, v_residual_plan_id, now(), 99999999, 99999999);
+    elsif v_found_user_residual_id != v_residual_plan_id and v_found_user_residual_id > v_residual_plan_id then
+      update brs.user_residual u
+      set residual_plan_id = v_residual_plan_id
+      where user_id = v_user_id;
     end if;
 
     update brs.financial_details d
     set residual_plan_id     = v_residual_plan_id,
         residual_plan        = v_residual_plan,
         residual_plan_status = v_residual_status
-    where project_id = p_project_id;
+    where project_id = p_project_id and
+      residual_plan_id is null;
 
     select count(1)
     into v_found_user_on_plan

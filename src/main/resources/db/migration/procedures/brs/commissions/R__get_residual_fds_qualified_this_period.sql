@@ -4,12 +4,20 @@ drop function if exists brs.get_residual_fds_qualified_this_period(p_closer_user
                                                                    p_fifteenth_previous_month date,
                                                                    p_fifteenth_current_month date,
                                                                    p_include_cancel boolean);
+drop function if exists brs.get_residual_fds_qualified_this_period(p_closer_user_id bigint,
+                                                                   p_end_of_previous_month date,
+                                                                   p_beginning_of_previous_month date,
+                                                                   p_fifteenth_previous_month date,
+                                                                   p_fifteenth_current_month date,
+                                                                   p_include_cancel boolean,p_total_lifetime_fdc bigint,
+                                                                   p_current_qualified_fdc bigint, p_total_system_size numeric);
 CREATE or replace function brs.get_residual_fds_qualified_this_period(p_closer_user_id bigint,
                                                                       p_end_of_previous_month date,
                                                                       p_beginning_of_previous_month date,
                                                                       p_fifteenth_previous_month date,
                                                                       p_fifteenth_current_month date,
-                                                                      p_include_cancel boolean default false)
+                                                                      p_include_cancel boolean default false,p_total_lifetime_fdc bigint default 0,
+                                                                      p_current_qualified_fdc bigint default 0, p_total_system_size numeric default 0::numeric)
   RETURNS table (project_id bigint,
                  final_design_complete_date date,
                  final_design_signed_date date,
@@ -23,7 +31,15 @@ CREATE or replace function brs.get_residual_fds_qualified_this_period(p_closer_u
                  substantial_completion_date date,
                  cancelled_date date,
                  on_hold_date date,
-                 qualified_date date) AS
+                 qualified_date date,
+                system_size numeric,
+                system_size_adjusted_for_source numeric,
+                residual_plan text,
+                is_system_size boolean,
+                 expected_residual numeric,
+                 plan_name text,
+    source_name text
+                ) AS
 $BODY$
 declare
   v_min_start_date timestamp;
@@ -57,7 +73,14 @@ begin
          foo.substantial_completion_date ,
          foo.cancelled_date ,
          foo.on_hold_date,
-         foo.final_design_complete_date1
+         foo.final_design_complete_date1,
+         foo.system_size,
+         foo.system_size_adjusted_for_source,
+         foo.residual_plan,
+         foo.is_system_size,
+         foo.expected_residual,
+         foo.name,
+         foo.source_name
   from (select pd.project_id ,
                pd.final_design_complete_date,
                pd.final_design_signed_date ,
@@ -88,9 +111,27 @@ begin
                                     greatest(pd.total_cash_down_payment,1))::numeric,2) >= .49) then
                                 pd.first_cash_payment_paid_date
                               else null end
-                          else null end)) as final_design_complete_date1
-
+                          else null end)) as final_design_complete_date1,
+              pd.system_size,
+              case when rpsa.source_id is not null then
+                (pd.system_size::numeric * rpsa.amount::numeric)::numeric
+              else pd.system_size end as system_size_adjusted_for_source,
+          fd.residual_plan,
+          rp.is_system_size,
+               case when p_total_lifetime_fdc > 0 then
+                      (select * from brs.get_residual_project_plan_total(rp.id,
+                                                                         p_closer_user_id,
+                                                                         pd.system_size,
+                                                                         p_total_lifetime_fdc,
+                                                                         p_total_system_size,
+                                                                         p_current_qualified_fdc))
+                    else 0 end as expected_residual,
+        rp.name,
+        fd.source_name
         from brs.project_details pd
+        inner join brs.financial_details fd on fd.project_id = pd.project_id
+        inner join brs.residual_plan rp on rp.id = fd.residual_plan_id
+        left join brs.residual_plan_source_allocation rpsa on rpsa.residual_plan_id = rp.id and rpsa.source_id = pd.source
         inner join flow.project p on p.id = pd.project_id and p.company_process_id = 1
         left join flow.state s on s.id = pd.project_state_id
         left join brs.residual_project_override_qualified_date rpoqd on rpoqd.project_id = pd.project_id

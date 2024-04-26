@@ -12,9 +12,12 @@ import lombok.Setter;
 public class ResidualDetail {
 
     private String finalDesignCompleteDate, finalDesignSignedDate, utilityBillVerifiedDate, financialAgreementSignedDate,
-      proofOfHomeownersInsuranceObtainedDate, substantialCompletionDate, clawbackDate, cancelledDate, onHoldDate, state, projectName;
+      proofOfHomeownersInsuranceObtainedDate, substantialCompletionDate, clawbackDate, cancelledDate, onHoldDate,
+      state, projectName, planName;
 
     private Long projectId, proofOfHomeownersInsuranceRequired;
 
-    private Double totalCashDownPayment, firstCashPaymentAmount, clawbackAmount;
+    private Double totalCashDownPayment, firstCashPaymentAmount, clawbackAmount, systemSize, systemSizeAdjustedForSource;
+
+    private Boolean isSystemSize;
 }

@@ -1,5 +1,9 @@
 drop function if exists brs.get_residual_qualified_lifetime_fds(p_closer_user_id bigint, p_end_of_period_date date,p_grace_period_end date);
-CREATE or replace function brs.get_residual_qualified_lifetime_fds(p_closer_user_id bigint, p_end_of_period_date date,p_grace_period_end date)
+drop function if exists brs.get_residual_qualified_lifetime_fds(p_closer_user_id bigint, p_end_of_period_date date,p_grace_period_end date,
+                                                                p_total_lifetime_fdc bigint,
+                                                                p_current_qualified_fdc bigint, p_total_system_size numeric);
+CREATE or replace function brs.get_residual_qualified_lifetime_fds(p_closer_user_id bigint, p_end_of_period_date date,p_grace_period_end date,p_total_lifetime_fdc bigint default 0,
+                                                                    p_current_qualified_fdc bigint default 0, p_total_system_size numeric default 0::numeric)
   RETURNS table
           (
             project_id                                  bigint,
@@ -15,7 +19,12 @@ CREATE or replace function brs.get_residual_qualified_lifetime_fds(p_closer_user
             substantial_completion_date                 date,
             cancelled_date                              date,
             on_hold_date                                date,
-            qualified_date                              date
+            qualified_date                              date,
+            system_size                                 numeric,
+            system_size_adjusted_for_source             numeric,
+            plan_name                               varchar,
+            expected_residual  numeric,
+            is_system_size boolean
           )
 AS
 $BODY$
@@ -27,6 +36,7 @@ begin
   from flow.user_position up
   where user_id = p_closer_user_id
   and up.position_id in (1, 2, 3, 517);
+
   return query
     select pd.project_id,
            pd.final_design_complete_date,
@@ -60,12 +70,39 @@ begin
                                          greatest(pd.total_cash_down_payment, 1)::numeric,2) >= .49) then
                                      pd.first_cash_payment_paid_date
                                    else null end
-                               else null end)) as final_design_complete_date1
+                               else null end)) as final_design_complete_date1,
+           pd.system_size,
+           case when rpsa.source_id is not null then
+                  (pd.system_size::numeric * rpsa.amount::numeric)::numeric
+                else pd.system_size end as system_size_adjusted_for_source,
+           rp.name::character varying,
+           case when p_total_lifetime_fdc > 0 then
+              (select * from brs.get_residual_project_plan_total(rp.id,
+                                                      p_closer_user_id,
+                                                       pd.system_size,
+                                                      p_total_lifetime_fdc,
+                                                      p_total_system_size,
+                                                      p_current_qualified_fdc))
+            else 0 end as expected_residual,
+           rp.is_system_size
     from brs.project_details pd
+           left join brs.residual_project_qualified_date rpqd on rpqd.project_id = pd.project_id
+           inner join brs.financial_details fd on fd.project_id = pd.project_id
+           inner join brs.residual_plan rp on rp.id = fd.residual_plan_id
+           left join brs.residual_plan_source_allocation rpsa on rpsa.residual_plan_id = rp.id and rpsa.source_id = pd.source
            inner join flow.project p on p.id = pd.project_id and p.company_process_id = 1
            left join flow.state s on s.id = pd.project_state_id
            left join brs.residual_project_override_qualified_date rpoqd on rpoqd.project_id = pd.project_id
     where pd.closer_user_id = p_closer_user_id
+       and  case when rpqd.id is not null then
+                 rpqd.qualified_date >= now() - interval ' 1 month' * (select r.residual_duration_months
+                                                                       from brs.residual_plan r
+                                                                       inner join brs.residual_plan_user rpu on rpu.residual_plan_id = r.id
+                                                                       where rpu.user_id =p_closer_user_id and
+                                                                         rpu.start_date >= v_min_start_date and
+                                                                         case when rpu.end_date is not null then
+                                                                          rpu.end_date <= v_min_start_date else 1=1 end limit 1)
+             else 1=1 end
         and pd.final_design_signed_date >= v_min_start_date and
           pd.final_design_signed_date >= '2017-01-01'::date
         and  pd.exclude_from_residuals is not true
