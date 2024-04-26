@@ -381,8 +381,8 @@ BEGIN
 
   select count(1)
   into v_existing_project_id
-  from flow.import_sp_project
-  where sp_project_id = v_sp_project_id;
+  from flow.import_sp_project isp
+  where isp.sp_project_id = v_sp_project_id;
 
   if v_existing_project_id < 1 then
     begin
