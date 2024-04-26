@@ -779,7 +779,7 @@ BEGIN
 
       insert into flow.project_attachment(attachment_id, project_id, date_created, date_modified, created_by_id,
                                           modified_by_id, linked, archived)
-      values (v_chatter_file_attachment_type_id, v_project_id, now(), now(), 2384850, 2384850, false, false);
+      values (v_chatter_file_attachment_id, v_project_id, now(), now(), 2384850, 2384850, false, false);
     end if;
 
     v_project_activity_id = null;
