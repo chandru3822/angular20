@@ -231,7 +231,7 @@
           :fixed-header="true"
           :items-per-page="100"
           :search="search"
-          class="elevation-1 table-striped"
+          class="elevation-1 table-striped word-break-all"
         >
           <template #no-data>
             NO DATA HERE!
@@ -242,8 +242,10 @@
           </template>
 
           <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pa-4"
+            <td :colspan="headers.length" class="pa-4 overflow-visible overflow-hidden-m"
                 :class="{'shaded-row': dataView.dataViewFieldConfigs.indexOf(item) % 2}">
+              <v-row>
+                <v-col cols="12">
               <h3>Edit Field Configs</h3>
               <div class="flex-display">
                 <a-text-field  v-model="item.displayName" class="d-inline-block display-name-field"
@@ -377,7 +379,7 @@
                   single-expand
                   :expanded.sync="childFieldExpanded"
                   :class="{'mt-4': addChild}"
-                  class="elevation-1 table-striped"
+                  class="elevation-1 table-striped word-break-all"
                 >
 
                   <template #expanded-item="{ headers, item: childField }">
@@ -445,6 +447,8 @@
                       </template>
                 </v-data-table>
               </v-card>
+                </v-col>
+              </v-row>
             </td>
           </template>
 
