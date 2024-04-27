@@ -231,7 +231,7 @@
           :fixed-header="true"
           :items-per-page="100"
           :search="search"
-          class="elevation-1"
+          class="elevation-1 table-striped"
         >
           <template #no-data>
             NO DATA HERE!
@@ -373,12 +373,11 @@
                   :headers="childFieldHeaders"
                   :items="item.childFieldConfigs"
                   :items-per-page="-1"
-                  :mobile-breakpoint="0"
                   hide-default-footer
                   single-expand
                   :expanded.sync="childFieldExpanded"
                   :class="{'mt-4': addChild}"
-                  class="elevation-1"
+                  class="elevation-1 table-striped"
                 >
 
                   <template #expanded-item="{ headers, item: childField }">
@@ -405,16 +404,14 @@
                     </tr>
                   </template>
 
-                  <template #item="{ item: childField }">
-                    <tr class="text-left" :class="{'shaded-row': item.childFieldConfigs.indexOf(childField) % 2}">
-                      <td class="text-left">{{ childField.displayName }}</td>
-                      <td class="text-left">{{ childField.fieldToUpdate }}</td>
-                      <td class="text-left">{{ childField.dataType }}</td>
-                      <td class="text-left">
+                      <template #item.displayName="{item: childField}" class="text-left">{{ childField.displayName }}</template>
+                      <template #item.fieldToUpdate="{item: childField}" class="text-left">{{ childField.fieldToUpdate }}</template>
+                      <template #item.dataType="{item: childField}" class="text-left">{{ childField.dataType }}</template>
+                      <template #item.uniqueBehaviorType="{item: childField}" class="text-left">
                         {{ childField.uniqueBehaviorType }} <br/>
                         {{ childField.uniqueBehaviorTypeDescription }}
-                      </td>
-                      <td style="width: 130px;">
+                      </template>
+                      <template #item.icons="{item: childField}" style="width: 130px;">
                         <v-tooltip left>
                           <template v-slot:activator="{ on, attrs }">
                             <a-btn
@@ -445,19 +442,15 @@
                           @click="childFieldExpanded = []"
                           text="Cancel"
                         />
-                      </td>
-                    </tr>
-                  </template>
+                      </template>
                 </v-data-table>
               </v-card>
             </td>
           </template>
 
-          <template #item="{ item }">
-            <tr class="text-left" :class="{'shaded-row': dataView.dataViewFieldConfigs.indexOf(item) % 2}">
-              <td class="text-left">{{ item.displayName }}</td>
-              <td class="text-left">{{ item.fieldToUpdate }}</td>
-              <td class="text-right d-flex">
+              <template #item.displayName="{ item }" class="text-left">{{ item.displayName }}</template>
+              <template #item.fieldToUpdate="{ item }" class="text-left">{{ item.fieldToUpdate }}</template>
+              <template #item.icons="{ item, index }" class="text-right d-flex">
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
                       <a-btn
@@ -489,10 +482,7 @@
                   @click="expanded = []"
                   text="Cancel"
                 />
-              </td>
-            </tr>
-          </template>
-
+              </template>
         </v-data-table>
       </v-col>
     </v-row>
