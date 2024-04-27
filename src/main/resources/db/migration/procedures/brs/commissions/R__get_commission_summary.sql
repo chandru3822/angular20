@@ -55,11 +55,11 @@ begin
                                                                                   when pd.cancelled_date is not null
                                                                                     then
                                                                                     0::numeric
-                                                                                  when fd.commission_strategy =23610 and fd.substantial_completion_date is not null then
+                                                                                  when fd.commission_strategy =24102 and fd.substantial_completion_date is not null then
                                                                                     (opru.red_line_m1_allocation +case when fd.substantial_completion_date is not null and
                                                                                                                             fd.substantial_completion_date <= p.period_end then
                                                                                                                          opru.red_line_m2_allocation else 0 end) * fd.total_commissions
-                                                                                  when fd.commission_strategy =23610 and fd.substantial_completion_date is null then
+                                                                                  when fd.commission_strategy =24102 and fd.substantial_completion_date is null then
                                                                                       (opru.red_line_m1_allocation) * fd.total_commissions
                                                                                   when fd.substantial_completion_date is not null
                                                                                     then
@@ -144,11 +144,11 @@ begin
                                                                                   when pd.cancelled_date is not null
                                                                                     then
                                                                                     0::numeric
-                                                                                  when fd.commission_strategy =23610 and fd.substantial_completion_date is not null then
+                                                                                  when fd.commission_strategy =24102 and fd.substantial_completion_date is not null then
                                                                                       (opru.red_line_m1_allocation + case when fd.substantial_completion_date is not null and
                                                                                                                                fd.substantial_completion_date <= p.period_end then
                                                                                                                             opru.red_line_m2_allocation else 0 end) * fd.total_commissions
-                                                                                  when fd.commission_strategy =23610 and fd.substantial_completion_date is null then
+                                                                                  when fd.commission_strategy =24102 and fd.substantial_completion_date is null then
                                                                                       (opru.red_line_m1_allocation) * fd.total_commissions
                                                                                   when fd.substantial_completion_date is not null
                                                                                     then

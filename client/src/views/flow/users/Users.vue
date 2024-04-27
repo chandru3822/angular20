@@ -261,10 +261,7 @@
           </template>
         </v-data-table>
         <v-card-actions class="flex-display justify-end">
-          <v-btn
-            @click="selectedUsersDialog = false">
-            Close
-          </v-btn>
+          <a-btn @click="selectedUsersDialog = false" color="unset" text="Close"></a-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -340,7 +337,7 @@
             />
           </div>
 
-            <v-text-field v-model="emailSubject" label="Subject"></v-text-field>
+            <a-text-field v-model="emailSubject" label="Subject"></a-text-field>
             <b>Message </b><span class="count-span pl-2">Characters: {{emailCharacterCount}}  Words: {{emailWordCount}}</span>
             <quill-editor
                 class="py-3 rich-text-editor"
@@ -360,20 +357,21 @@
             />
 
             <v-card-actions class="flex-display justify-end pt-0 px-0">
-              <v-btn
-                text color="primary"
-                @click="cancelSendMessageDialog">
-                Cancel
-              </v-btn>
-              <v-btn
-                color="primary" class="white--text"
-                :disabled="disableSendEmail"
-                @click="sendMessage(true, false)">
-                Send Email
-              </v-btn>
+              <a-btn
+                  variant="text"
+                  color="primary"
+                  @click="cancelSendMessageDialog"
+                  text="Cancel"
+              ></a-btn>
+              <a-btn
+                  color="primary"
+                  :disabled="disableSendEmail"
+                  @click="sendMessage(true, false)"
+                  text="Send Email"
+              ></a-btn>
             </v-card-actions>
         </div>
-        <div v-else-if="messageTab == 2" class="pa-6">
+        <div v-else-if="messageTab === 2" class="pa-6">
             <span>You will not be assigned to bulk conversations sent from this screen. If you wish to stay on top of
             conversations, use Inbox to send messages. <br></span>
             <label class="mr-2">To:</label>

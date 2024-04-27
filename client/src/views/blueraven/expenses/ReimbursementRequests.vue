@@ -13,7 +13,7 @@
                 @click="[createNew = !createNew, selectedBudgetReport = {}, newReimbursementRequest = {expenseBudgetId: null}]"
                 :prepend-icon="!createNew ? 'add' : 'close'"
                 hide-text-on-mobile
-                :text="createNew ? 'cancel' : 'Add Reimbursement Request'"
+                :text="createNew ? 'Cancel' : 'Add Reimbursement Request'"
             ></a-btn>
           </v-toolbar-items>
         </v-toolbar>

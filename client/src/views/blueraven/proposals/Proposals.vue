@@ -26,6 +26,8 @@
           :headers="headers"
           :items="projects"
           fixed-header
+          ref="pageableTable"
+          :page.sync="page"
           :options.sync="options"
           disable-sort
           :footer-props="footerProps"
@@ -79,10 +81,16 @@ import { logError, getRequestWithParams } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 
-import { ref, onMounted } from 'vue'
+import {ref, onMounted, watch, getCurrentInstance} from 'vue'
 import { useRouter } from 'vue-router/composables'
 
+const vueInstance = getCurrentInstance().proxy
+const vuetify = vueInstance.$vuetify
+
 const router = useRouter()
+const pageableTable = ref(null)
+const page = ref(1)
+const initialLoad = ref(true)
 const options = ref({ itemsPerPage: 100 })
 const headers = ref([
   { text: 'ID', value: 'id', show: true },
@@ -96,6 +104,23 @@ const projects = ref([])
 const searchQuery = ref('')
 const totalProjects = ref(0)
 const isProjectsLoading = ref(false)
+
+watch(page, async() => {
+  let table = pageableTable.value;
+  let wrapper = table.$el.querySelector('div.v-data-table__wrapper');
+
+  vuetify.goTo(table); // to table
+  vuetify.goTo(table, {container: wrapper}); // to header
+})
+
+watch(
+    () => options.value,
+    () => {
+      if(!initialLoad.value) {
+        getProposalProjects()
+      }
+    }
+)
 
 onMounted(() => {
   getProposalProjects()
@@ -114,6 +139,7 @@ const getProposalProjects = async () => {
     })
     projects.value = data.content
     totalProjects.value = data.totalElements
+    initialLoad.value = false
   } catch (e) {
     logError(e)
   } finally {

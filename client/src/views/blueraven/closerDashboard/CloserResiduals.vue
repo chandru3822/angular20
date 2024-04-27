@@ -1,5 +1,12 @@
 <template>
   <v-container id="closer-residuals-container" ref="closerResidualsContainer">
+    <v-dialog v-model="showModal" class="square-card">
+      <CloserClawbackModal :data="modalData"
+                           :title="'Clawbacks'"
+                           :user-full-name="modalUserFullName"
+                           @closerClawbackModalClosed="showModal = false"
+      ></CloserClawbackModal>
+    </v-dialog>
     <v-row>
       <v-col cols="12">
           <v-toolbar color="white" class="elevation-1">
@@ -50,11 +57,11 @@
         <v-col cols="12" md="4">
           <table class="residual-table">
             <tr>
-              <td>Required FDC residual quota this period</td>
+              <td>Required residual quota this period</td>
               <td class="residual-number-col">{{residualData.required_fdc_residual_this_period}}</td>
             </tr>
             <tr class="total-row">
-              <td>Qualified FDC residual quota this period</td>
+              <td>Qualified residual quota this period</td>
               <td class="residual-number-col">{{residualData.qualified_fdc_residual_this_period}}</td>
             </tr>
             <tr class="total-row">
@@ -80,7 +87,21 @@
               </td>
             </tr>
             <tr>
-              <td>Clawback</td>
+              <td>Existing Clawbacks</td>
+              <td class="residual-number-col">
+                <span v-if="residualData.total_existing_clawbacks < 0">({{residualData.total_existing_clawbacks | currency('$', 0)}})</span>
+                <span v-else>{{residualData.total_existing_clawbacks | currency('$', 0)}}</span>
+              </td>
+            </tr>
+            <tr>
+              <td>Current Clawbacks</td>
+              <td class="residual-number-col">
+                <span v-if="residualData.total_current_clawbacks < 0">({{residualData.total_current_clawbacks | currency('$', 0)}})</span>
+                <span v-else>{{residualData.total_current_clawbacks | currency('$', 0)}}</span>
+              </td>
+            </tr>
+            <tr>
+              <td>Total Clawbacks</td>
               <td class="residual-number-col">
                 <span v-if="residualData.total_clawbacks < 0">({{residualData.total_clawbacks | currency('$', 0)}})</span>
                 <span v-else>{{residualData.total_clawbacks | currency('$', 0)}}</span>
@@ -105,7 +126,7 @@
           </table>
         </v-col>
         <v-col cols="12" md="4">
-          <table class="residual-table" v-if="residualData.has_previous_snapshot">
+          <table class="residual-table" v-if="residualData.has_previous_snapshot && !residualData.is_system_size">
             <tr>
               <td>Prior period qualified FDC's</td>
               <td class="residual-number-col">{{residualData.prior_period_qualified_fdc}}</td>
@@ -127,7 +148,7 @@
               <td class="residual-number-col bold">{{residualData.residual_qualified_fdc}}</td>
             </tr>
           </table>
-          <div v-else class="residual-table">
+          <div v-else-if="!residualData.is_system_size" class="residual-table">
             {{ residualData.no_previous_month_message }}
           </div>
         </v-col>
@@ -136,9 +157,12 @@
 
     <v-card class="mt-3 square-card">
       <v-card-title>
-        Monthly Residual Quota - Qualified FDC's
+        Monthly Residual Quota - Qualified Projects
         <v-spacer></v-spacer>
-        <div class="residual-total-count">Total: {{ residualData.qualified_fdc?.length || 0 }}</div>
+        <div class="residual-total-count text-right">
+          Total System Size: {{ getTotalsForField(residualData.qualified_fdc, 'system_size') }} <br>
+          Total Counted for Quota: {{ getTotalsForField(residualData.qualified_fdc, 'system_size_adjusted_for_source') }}
+        </div>
       </v-card-title>
       <v-card-text>
         <v-data-table
@@ -162,7 +186,9 @@
       <v-card-title>
         Current Clawbacks
         <v-spacer></v-spacer>
-        <div class="residual-total-count">Total: {{residualData.clawback_projects?.length || 0}}</div>
+        <div class="residual-total-count text-right">
+<!--          Total Legacy Count: {{ totalQualifyingFdcToDate }} <br>-->
+        </div>
       </v-card-title>
       <v-card-text>
         <v-data-table
@@ -178,15 +204,21 @@
           <template #item.project_id="{item}">
             <a @click="goToProject(item.project_id)">{{item.project_id}}</a>
           </template>
+          <template #item.current_clawbacks="{item}">
+            <a @click="loadClawbackDrilldownData()">{{item.current_clawbacks}}</a>
+          </template>
         </v-data-table>
       </v-card-text>
     </v-card>
 
     <v-card class="mt-3 square-card">
       <v-card-title>
-        FDA in month - Not Qualifying
+        Projects in month - Not Qualifying
         <v-spacer></v-spacer>
-        <div class="residual-total-count">Total: {{residualData.fda_in_month_not_qualifying?.length || 0}}</div>
+        <div class="residual-total-count text-right">
+          Total System Size: {{ getTotalsForField(residualData.fda_in_month_not_qualifying, 'system_size') }} <br>
+          Total Counted for Quota: {{ getTotalsForField(residualData.fda_in_month_not_qualifying, 'system_size_adjusted_for_source') }}
+        </div>
       </v-card-title>
       <v-card-text>
         <v-data-table
@@ -209,9 +241,12 @@
 
     <v-card class="mt-3 square-card">
       <v-card-title>
-        Total Qualifying FDC's to date
+        Total Qualifying Projects to date
         <v-spacer></v-spacer>
-        <div class="residual-total-count">Total: {{residualData.total_qualifying_fdc_to_date?.length || 0}}</div>
+        <div class="residual-total-count text-right">
+          Total Legacy Count: {{ totalQualifyingFdcToDate }} <br>
+          Total System Size: {{ getTotalsForField(residualData.total_qualifying_fdc_to_date, 'system_size') | currency('', 2) }}
+        </div>
       </v-card-title>
       <v-card-text>
         <a-text-field
@@ -255,6 +290,8 @@
   import {useRoute, useRouter} from "vue-router/composables";
   import { useAppStore } from '@/stores/AppStore.js'
   import {useUserStore} from "@/stores/UserStore.js";
+  import sumBy from "lodash.sumby";
+  import CloserClawbackModal from "@/views/blueraven/commissionManagement/CloserClawbackModal.vue";
 
   const userStore = useUserStore()
   const appStore = useAppStore()
@@ -279,6 +316,9 @@
   const users = ref([])
   const selectedUserId = ref(null)
   const residualData = ref({})
+  const modalData = ref([])
+  const modalUserFullName = ref('')
+  const showModal = ref(false)
   const totalQualifyingSearch = ref('')
   const minDate = ref('2023-02')
   const maxDate = ref(moment().format('YYYY-MM'))
@@ -289,10 +329,17 @@
   const totalQualifyingFdcHeaders = ref([
     {text: 'Contact Name', value: 'contact_name', show: true},
     {text: 'Project ID', value: 'project_id', show: true},
+    {text: 'System Size', value: 'system_size', show: true},
+    {text: 'Plan Name', value: 'plan_name', show: true},
+    {text: 'Qualified Date', value: 'qualified_date', show: true},
+    {text: 'Expected Residual', value: 'expected_residual', show: true},
   ])
   const monthlyQualifiedHeaders = ref([
     {text: 'Contact Name', value: 'contact_name', show: true},
     {text: 'Project ID', value: 'project_id', show: true},
+    {text: 'Plan Name', value: 'plan_name', show: true},
+    {text: 'Lead Source', value: 'source_name', show: true},
+    {text: 'System Size', value: 'system_size', show: true},
     {text: 'FDA', value: 'final_design_signed_date', show: true},
     {text: 'FDC', value: 'final_design_complete_date', show: true},
     {text: 'Utility Bill Verified', value: 'utility_bill_verified_date', show: true},
@@ -303,17 +350,21 @@
     {text: 'On Hold', value: 'on_hold_date', show: true},
     {text: 'Total Cash Down Payment', value: 'total_cash_down_payment', show: true},
     {text: 'First Cash Payment Amount', value: 'first_cash_payment_amount', show: true},
+    {text: 'Expected Residual', value: 'expected_residual', show: true},
   ])
       const clawbackHeaders = ref([
     {text: 'Contact Name', value: 'contact_name', show: true},
     {text: 'Project ID', value: 'project_id', show: true},
+    {text: 'Plan Name', value: 'plan_name', show: true},
+    {text: 'System Size', value: 'system_size', show: true},
     {text: 'Cancelled Date', value: 'cancelled_date', show: true},
     {text: 'Current Clawbacks', value: 'current_clawbacks', show: true},
-    {text: 'Existing Clawbacks', value: 'existing_clawbacks', show: true},
   ])
       const notQualifyingHeaders = ref([
     {text: 'Contact Name', value: 'contact_name', show: true},
     {text: 'Project ID', value: 'project_id', show: true},
+    {text: 'Plan Name', value: 'plan_name', show: true},
+    {text: 'System Size', value: 'system_size', show: true},
     {text: 'FDA', value: 'final_design_signed_date', show: true},
     {text: 'FDC', value: 'final_design_complete_date', show: true},
     {text: 'Utility Bill Verified', value: 'utility_bill_verified_date', show: true},
@@ -324,6 +375,7 @@
     {text: 'On Hold', value: 'on_hold_date', show: true},
     {text: 'Total Cash Down Payment', value: 'total_cash_down_payment', show: true},
     {text: 'First Cash Payment Amount', value: 'first_cash_payment_amount', show: true},
+        {text: 'Expected Residual', value: 'expected_residual', show: true},
   ])
       const footerProps = ref({
     'items-per-page-options': [10, 20, 50],
@@ -340,6 +392,21 @@
         : isAdmin.value ? 'This user is not assigned to a residual plan. Please contact an administrator.'
             : 'You are not assigned to a residual plan.  Please contact an administrator.'
   })
+
+  const totalQualifyingFdcToDate = computed(() => {
+    return residualData.value?.total_qualifying_fdc_to_date?.filter(fdc => !fdc.is_system_size)?.length || 0
+  })
+
+  const qualifiedFdc = computed(() => {
+    return residualData.value?.qualified_fdc?.filter(fdc => !fdc.is_system_size)?.length || 0
+  })
+
+  const fdaInMonthNotQualifying = computed(() => {
+    return residualData.value?.fda_in_month_not_qualifying?.filter(fdc => !fdc.is_system_size)?.length || 0
+  })
+
+
+
 
       const setViewingDate = (goForward) => {
         viewingDataFor.value = goForward ? moment(viewingDataFor.value).add(1, 'month').format('YYYY-MM')
@@ -359,6 +426,19 @@
           usersLoading.value = false
         }
       }
+
+  const getTotalsForField = (items, field) => {
+    return sumBy(items, function (i) {
+      return i.is_system_size ? i[field] || 0 : 0
+    })
+  }
+
+  const loadClawbackDrilldownData = async(item) => {
+    modalData.value = residualData.value.clawback_projects_drilldown
+    showModal.value = true
+    modalUserFullName.value = residualData.value.closer_name
+  }
+
       const loadResidualData = async() => {
         if((isAdmin.value && selectedUserId.value != null) || !isAdmin.value) {
           appStore.loading = true

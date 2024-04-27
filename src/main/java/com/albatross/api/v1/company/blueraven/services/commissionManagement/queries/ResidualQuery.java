@@ -99,6 +99,9 @@ public class ResidualQuery {
                                           FROM (SELECT rp.id,
                                                        rps.status_type as "statusType",
                                                        rp.name,
+                                                       rp.total,
+                                                       rp.residual_duration_months as "residualDurationMonths",
+                                                       rp.is_system_size as "isSystemSize",
                                                        rp.description,
                                                        rp.residual_plan_status_id as "residualPlanStatusId",
                                                        concat(cu.first_name, ' ', cu.last_name) AS "createdName",
@@ -119,6 +122,15 @@ public class ResidualQuery {
                                                                         where rpa.residual_plan_id = rp.id
                                                                         order by rpa.min, rppa.fdc_count
                                                                       ) AS allocations), '[]') AS "residualPlanAllocations",
+                                                                      coalesce((SELECT array_to_json(array_agg(row_to_json(sources)))
+                                                                      FROM (SELECT cpsa.id,
+                                                                                   cpsa.amount,
+                                                                                   lov.name as "sourceName",
+                                                                                   cpsa.source_id as "sourceId"
+                                                                            FROM brs.residual_plan_source_allocation cpsa
+                                                                                INNER JOIN flow.list_of_value lov on lov.id = cpsa.source_id
+                                                                            WHERE cpsa.residual_plan_id = rp.id
+                                                                     ) AS sources), '[]')    AS sources,
                                                        coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
                                                                  FROM (SELECT rpu.id,
                                                                               concat(u.first_name, ' ', u.last_name) AS name,
@@ -334,5 +346,55 @@ public class ResidualQuery {
   public final static String clonePlan = """
     SELECT clone_residual_plan AS id
     FROM brs.clone_residual_plan(:planId::bigint, :startDate::DATE, :users::bigint[], :createdBy::bigint)
+    """;
+
+    //language=PostgreSQL
+    public final static String getSource = """
+    SELECT cpsa.id,
+           lov.name as "sourceName",
+           cpsa.amount,
+           cpsa.source_id as "sourceId"
+    FROM brs.residual_plan_source_allocation cpsa
+         INNER JOIN flow.list_of_value lov on lov.id = cpsa.source_id
+    WHERE cpsa.id = :id
+    """;
+
+    //language=PostgreSQL
+    public final static String saveSource = """
+    INSERT INTO brs.residual_plan_source_allocation (residual_plan_id, amount, source_id)
+    VALUES (:planId, :amount, :sourceId)
+    """;
+
+    //language=PostgreSQL
+    public final static String updateSource = """
+    UPDATE brs.residual_plan_source_allocation
+     SET
+        amount = :amount
+     WHERE id = :id
+    """;
+
+    //language=PostgreSQL
+    public final static String removeSource = """
+    DELETE
+      FROM brs.residual_plan_source_allocation
+       WHERE id = :id
+    """;
+
+    //language=PostgreSQL
+    public final static String getAvailableSources = """
+    with t1 as (select lov.id
+            from flow.list_of_value lov
+            where lov.parent_id = 5
+              and lov.archived is not true
+                except select source_id
+            from brs.residual_plan_source_allocation
+            where residual_plan_id = :planId)
+        select lov.id,
+               lov.name as source_name
+        from flow.list_of_value lov
+            inner join t1 on t1.id = lov.id
+        where lov.parent_id = 5
+          and lov.archived is not true
+        order by lov.name
     """;
 }

@@ -14,7 +14,14 @@ CREATE or replace function brs.get_residual_fds_not_qualified_this_period(p_clos
             first_cash_payment_amount                   numeric,
             substantial_completion_date                 date,
             cancelled_date                              date,
-            on_hold_date                                date
+            on_hold_date                                date,
+            system_size                                 numeric,
+            system_size_adjusted_for_source numeric,
+            system_size_by_source                       numeric,
+            is_system_size boolean,
+            expected_residual numeric,
+            plan_name text,
+            source_name text
           )
 AS
 $BODY$
@@ -43,7 +50,14 @@ begin
            foo.first_cash_payment_amount,
            foo.substantial_completion_date,
            foo.cancelled_date,
-           foo.on_hold_date
+           foo.on_hold_date,
+           foo.system_size,
+           foo.system_size_adjusted_for_source,
+           foo.system_size_by_source,
+           foo.is_system_size,
+           foo.expected_residual,
+           foo.plan_name,
+           foo.source_name
     from brs.get_residual_fds_not_qualified_this_period(p_closer_user_id, v_period_start, v_period_end,v_grace_period_end) as foo;
 
 END

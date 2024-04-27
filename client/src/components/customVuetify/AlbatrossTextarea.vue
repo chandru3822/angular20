@@ -5,6 +5,7 @@
                 :type="type"
                 :id="id"
                 :prepend-icon="prependIcon"
+                ref="albatrossTextarea"
                 :prepend-inner-icon="prependInnerIcon"
                 :append-icon="appendInnerIcon"
                 :append-outer-icon="appendIcon"
@@ -87,6 +88,8 @@ const props = defineProps({
   maxlength: Number
 })
 
+const albatrossTextarea = ref(null)
+
 const combinedRules = computed(() => {
   let tempRules = []
   //set the rules to any rules that were passed in
@@ -96,6 +99,14 @@ const combinedRules = computed(() => {
     tempRules = tempRules.concat(basicRequiredRule.value)
   }
   return tempRules
+})
+
+const newFocus = () => {
+  albatrossTextarea.value.focus()
+}
+
+defineExpose({
+  focus: newFocus
 })
 
 

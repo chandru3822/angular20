@@ -31,7 +31,7 @@ BEGIN
     v_desired_commission_amount,
     v_commission_strategy_id;
 
-  if v_commission_strategy_id = 23610 then
+  if v_commission_strategy_id = 24102 then
 
     v_total = v_desired_commission_amount * v_system_size * 1000;
   else

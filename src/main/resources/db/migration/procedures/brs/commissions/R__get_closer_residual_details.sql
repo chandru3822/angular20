@@ -4,8 +4,8 @@ CREATE or replace function brs.get_closer_residual_details(p_closer_user_id bigi
           (
             user_id                            bigint,
             closer_name                        text,
-            required_fdc_residual_this_period  integer,
-            qualified_fdc_residual_this_period bigint,
+            required_fdc_residual_this_period  numeric,
+            qualified_fdc_residual_this_period numeric,
             residual_qualified                 boolean,
             has_current_snapshot               boolean,
             potential_residual                 numeric,
@@ -18,16 +18,23 @@ CREATE or replace function brs.get_closer_residual_details(p_closer_user_id bigi
             fda_in_month_not_qualifying        json,
             qualified_fdc                      json,
             clawback_projects                  json,
+            clawback_projects_drilldown        json,
             total_qualifying_fdc_to_date       json,
             cancelled_fdc_during_period        bigint,
-            reactivated_fdc                    bigint,
+            reactivated_fdc                    numeric,
             residual_qualified_fdc             bigint,
-            no_previous_month_message          text
+            no_previous_month_message          text,
+            is_system_size                     boolean,
+            total_existing_clawbacks           numeric,
+            total_current_clawbacks            numeric
           )
 AS
 $BODY$
 declare
   v_lifetime_fds              bigint;
+  v_sum_system_size_qualified              numeric;
+  v_system_size_by_source numeric;
+  v_count_qualified_fdc bigint;
   v_period_end                date;
   v_period_start              date;
   v_previous_grace_period_end date;
@@ -70,56 +77,70 @@ begin
   select cast(date_trunc('month', p_date + interval '1 month') as date) + 14
   into v_grace_period_end;
 
-
   select count(1)
   into v_lifetime_fds
   from brs.get_residual_qualified_lifetime_fds(p_closer_user_id,v_period_end,v_grace_period_end);
+
+  select count(1),sum(system_size_adjusted_for_source),sum(system_size_by_source)
+  into v_count_qualified_fdc,v_sum_system_size_qualified,v_system_size_by_source
+  from brs.get_residual_fds_qualified_this_period(p_closer_user_id,
+                                                  v_period_end,
+                                                  v_period_start,
+                                                  v_previous_grace_period_end,
+                                                  v_grace_period_end);
 
   case
     when v_has_current_snapshot_id is null then return query
       select foo.id                                                                as user_id,
              foo.closer_name,
-             foo.required_fdc_residual_this_period,
-             coalesce(foo.qualified_fdc_residual_this_period, 0),
-             coalesce(foo.qualified_fdc_residual_this_period, 0) >=
-             coalesce(foo.required_fdc_residual_this_period, 0)                    as residual_qualified,
-             false                                                                 as has_current_snapshot,
-             coalesce(foo.potential_residual, 0),
+             foo.required_fdc_residual_this_period::numeric,
+             coalesce(foo.qualified_fdc_residual_this_period, 0)::numeric,
+             ((coalesce(foo.qualified_fdc_residual_this_period, 0) >=
+             coalesce(foo.required_fdc_residual_this_period, 0)) or partial_allocation is not null)                                                         as residual_qualified,
+             false                                                                                                       as has_current_snapshot,
+             (SELECT SUM((json_element ->> 'expected_residual')::numeric) AS total_amount
+              FROM (SELECT json_array_elements(foo.total_qualifying_fdc_to_date) AS json_element) as potential_residual) as potential_residual,
              case
-               when coalesce(foo.qualified_fdc_residual_this_period, 0) >=
-                    coalesce(foo.required_fdc_residual_this_period, 0) then
-                 foo.potential_residual
-               else 0.00 end                                                       as earned_residual,
+               when ((coalesce(foo.qualified_fdc_residual_this_period, 0) >=
+                    coalesce(foo.required_fdc_residual_this_period, 0)) or partial_allocation is not null) then
+                 (SELECT SUM((json_element ->> 'expected_residual')::numeric) AS total_amount
+                  FROM (SELECT json_array_elements(foo.total_qualifying_fdc_to_date) AS json_element) as potential_residual)
+               else 0.00 end                                                                                             as earned_residual,
              coalesce(foo.total_clawbacks, 0),
              coalesce(foo.manual_adjustments, 0),
              case
-               when foo.qualified_fdc_residual_this_period >= foo.required_fdc_residual_this_period then
-                     coalesce(foo.potential_residual, 0) - coalesce(foo.total_clawbacks, 0) +
+               when ((coalesce(foo.qualified_fdc_residual_this_period, 0) >=
+                      coalesce(foo.required_fdc_residual_this_period, 0)) or partial_allocation is not null) then
+                 (SELECT SUM((json_element ->> 'expected_residual')::numeric) AS total_amount
+                  FROM (SELECT json_array_elements(foo.total_qualifying_fdc_to_date) AS json_element) as potential_residual) - coalesce(foo.total_clawbacks, 0) +
                      coalesce(foo.manual_adjustments, 0)
                else 0.00 - coalesce(foo.total_clawbacks, 0) +
                     coalesce(foo.manual_adjustments, 0) end                        as total_residual_paid,
              case when v_has_previous_snapshot_id is null then false else true end as has_previous_snapshot,
              coalesce(foo.prior_period_qualified_fdc, 0)                           as prior_period_qualified_fdc,
-             coalesce(foo.fda_in_month_not_qualifying, '[]'),
-             coalesce(foo.qualified_fdc, '[]'),
-             coalesce(foo.clawback_projects, '[]'),
-             coalesce(foo.total_qualifying_fdc_to_date, '[]'),
+             coalesce(foo.fda_in_month_not_qualifying, '[]')::json,
+             coalesce(foo.qualified_fdc, '[]')::json,
+             coalesce(foo.clawback_projects, '[]')::json,
+             coalesce(foo.clawback_projects_drilldown, '[]')::json,
+             coalesce(foo.total_qualifying_fdc_to_date, '[]')::json,
              foo.cancelled_fdc_during_period                                       as cancelled_fdc_during_period,
+             case when foo.is_system_size is false then
              coalesce(v_lifetime_fds, 0) - coalesce(foo.prior_period_qualified_fdc, 0) -
              coalesce(foo.qualified_fdc_residual_this_period, 0) +
-             coalesce(foo.cancelled_fdc_during_period, 0)                          as reactivated_fdc,
+             coalesce(foo.cancelled_fdc_during_period, 0) else 0 end                         as reactivated_fdc,
              foo.residual_qualified_fdc                                            as residual_qualified_fdc,
-             v_no_previous_month_message
+             v_no_previous_month_message,
+             foo.is_system_size,
+             foo.total_existing_clawbacks,
+             foo.total_current_clawbacks
       from (select u.id,
+                   rp.is_system_size,
                    concat(u.first_name, ' ', u.last_name)                                                                                as closer_name,
                    rpa.allocation                                                                                                        as required_fdc_residual_this_period,
-                   (select count(1)
-                    from brs.get_residual_fds_qualified_this_period(u.id,
-                                                                    v_period_end,
-                                                                    v_period_start,
-                                                                    v_previous_grace_period_end,
-                                                                    v_grace_period_end))                                                 as qualified_fdc_residual_this_period,
-                   v_lifetime_fds * rp.total                                                                                             as potential_residual,
+                   case when rp.is_system_size is true then
+                          v_sum_system_size_qualified else
+                     v_count_qualified_fdc end as qualified_fdc_residual_this_period,
+                   0                                                                                             as potential_residual,
                    (select * from brs.get_total_residual_clawbacks(u.id))                                                                as total_clawbacks,
                    (select sum(ra.amount)
                     from brs.residual_adjustment ra
@@ -145,8 +166,17 @@ begin
                                  fds_nq.cancelled_date,
                                  fds_nq.on_hold_date,
                                  fds_nq.total_cash_down_payment,
-                                 fds_nq.first_cash_payment_amount
-                          from brs.get_residual_fds_not_qualified_this_period(u.id,v_period_start,v_period_end,v_grace_period_end) as fds_nq
+                                 fds_nq.first_cash_payment_amount,
+                                 fds_nq.system_size,
+                                 fds_nq.is_system_size,
+                                 fds_nq.expected_residual,
+                                 fds_nq.plan_name,
+                                 fds_nq.system_size_adjusted_for_source,
+                                 fds_nq.system_size_by_source
+                          from brs.get_residual_fds_not_qualified_this_period(u.id,v_period_start,v_period_end,v_grace_period_end,
+                                                                              v_lifetime_fds,
+                                                                              v_count_qualified_fdc,
+                                                                              v_sum_system_size_qualified) as fds_nq
                                  inner join brs.project_details p on p.project_id = fds_nq.project_id) as fda_not_qualifying)            as fda_in_month_not_qualifying,
                    (select array_to_json(array_agg(row_to_json(qualified_fdc1)))
                     from (select p.contact_name,
@@ -161,12 +191,23 @@ begin
                                  fds_nq.cancelled_date,
                                  fds_nq.on_hold_date,
                                  fds_nq.total_cash_down_payment,
-                                 fds_nq.first_cash_payment_amount
+                                 fds_nq.first_cash_payment_amount,
+                                 fds_nq.system_size,
+                                 fds_nq.is_system_size,
+                                 fds_nq.expected_residual,
+                                 fds_nq.plan_name,
+                                 fds_nq.system_size_adjusted_for_source,
+                                 fds_nq.system_size_by_source,
+                                 fds_nq.source_name
                           from brs.get_residual_fds_qualified_this_period(u.id,
                                                                           v_period_end,
                                                                           v_period_start,
                                                                           v_previous_grace_period_end,
-                                                                          v_grace_period_end) as fds_nq
+                                                                          v_grace_period_end,
+                                                                          false,
+                                                                          v_lifetime_fds,
+                                                                          v_count_qualified_fdc,
+                                                                          v_sum_system_size_qualified) as fds_nq
                                  inner join brs.project_details p on p.project_id = fds_nq.project_id) as qualified_fdc1)                as qualified_fdc,
                    (select array_to_json(array_agg(row_to_json(current_clawbacks1)))
                     from (select p.contact_name,
@@ -175,13 +216,21 @@ begin
                                  (select sum(amount)
                                   from brs.get_current_residual_clawbacks(u.id))  as current_clawbacks,
                                  (select sum(amount)
-                                  from brs.get_existing_residual_clawbacks(u.id)) as existing_clawbacks
+                                  from brs.get_existing_residual_clawbacks(u.id)) as existing_clawbacks,
+                                  p.system_size,
+                                  fd.residual_plan as plan_name
                           from brs.get_current_residual_clawbacks(u.id) as fds_nq
                                  inner join brs.project_details p on p.project_id = fds_nq.project_id
-                          group by p.contact_name, fds_nq.project_id, p.cancelled_date) as current_clawbacks1)                           as clawback_projects,
+                                 inner join brs.financial_details fd on fd.project_id = p.project_id
+                          group by p.contact_name, fds_nq.project_id, p.cancelled_date,p.system_size,fd.residual_plan) as current_clawbacks1)                           as clawback_projects,
+                   (select array_to_json(array_agg(row_to_json(clawback_projects_drilldown1)))
+                    from (select fds_nq.project_id,fds_nq.amount,fds_nq.paid_date,
+                                 fds_nq.plan_name,fds_nq.residual_id,fds_nq.description
+                          from brs.get_current_residual_clawbacks(u.id) as fds_nq) as clawback_projects_drilldown1)                           as clawback_projects_drilldown,
                    (select array_to_json(array_agg(row_to_json(total_qualifying_fdc_to_date1)))
-                    from (select p.contact_name, fds_nq.project_id
-                          from brs.get_residual_qualified_lifetime_fds(u.id,v_period_end,v_grace_period_end) as fds_nq
+                    from (select p.contact_name, fds_nq.project_id,fds_nq.system_size,fds_nq.plan_name,fds_nq.qualified_date,fds_nq.expected_residual,fds_nq.is_system_size,
+                                 fds_nq.system_size_adjusted_for_source,fds_nq.system_size_by_source
+                          from brs.get_residual_qualified_lifetime_fds(u.id,v_period_end,v_grace_period_end,v_lifetime_fds,v_count_qualified_fdc,v_sum_system_size_qualified) as fds_nq
                                  inner join brs.project_details p on p.project_id = fds_nq.project_id) as total_qualifying_fdc_to_date1) as total_qualifying_fdc_to_date,
             (select sum(count)::bigint
             from (
@@ -189,23 +238,34 @@ begin
             from (
               (select count(1), project_id from brs.get_current_residual_clawbacks(u.id) group by project_id)) as foo
             group by foo.project_id)) as foo1)::bigint as cancelled_fdc_during_period,
-              coalesce (v_lifetime_fds, 0) as residual_qualified_fdc
-
+              coalesce (v_lifetime_fds, 0) as residual_qualified_fdc,
+            (select (coalesce((select sum(amount) from brs.get_existing_residual_clawbacks(p_closer_user_id)),0))) as total_existing_clawbacks ,
+            (select coalesce((select sum(amount) from brs.get_current_residual_clawbacks(p_closer_user_id)),0)) as total_current_clawbacks,
+            (select partial_allocation
+             from brs.residual_plan_partial_allocation rppa
+             inner join brs.residual_plan_partial_allocation_type rppat on rppat.id = rppa.residual_plan_partial_allocation_type_id
+             where rppa.residual_plan_allocation_id = rpa.id
+               and case  when rp.is_based_on_source is true then
+                           v_system_size_by_source >= rppa.fdc_count and
+                           v_system_size_by_source < rpa.allocation
+                       when rp.is_system_size is true then
+                          v_sum_system_size_qualified >= rppa.fdc_count and
+                          v_sum_system_size_qualified < rpa.allocation
+                        else v_count_qualified_fdc >= rppa.fdc_count and
+                             v_count_qualified_fdc < rpa.allocation end order by fdc_count desc,rppat.rank_order limit 1)as partial_allocation
             from flow.user u
-              inner join brs.residual_plan_user rpu
-            on rpu.user_id = u.id and
-              (rpu.end_date is null or
-              now() at time zone 'US/Mountain' between rpu.start_date and rpu.end_date)
-              inner join brs.residual_plan rp on rp.id = rpu.residual_plan_id
+              inner join brs.user_residual ur on ur.user_id = u.id
+              inner join brs.residual_plan rp on rp.id = ur.residual_plan_id
               inner join brs.residual_plan_allocation rpa on rpa.residual_plan_id = rp.id and
               v_lifetime_fds between rpa.min and
               coalesce (rpa.max, 10000000)
             where u.id = p_closer_user_id) as foo;
+
     when v_has_current_snapshot_id is not null then return query
       select foo.user_id,
              foo.closer_name,
              foo.required_fdc_residual_this_period,
-             foo.qualified_fdc_residual_this_period::bigint,
+             foo.qualified_fdc_residual_this_period,
              foo.residual_qualified,
              foo.has_current_snapshot,
              foo.potential_residual,
@@ -215,15 +275,19 @@ begin
              foo.total_residual_paid,
              foo.has_previous_snapshot,
              foo.prior_period_qualified_fdc,
-             foo.fda_in_month_not_qualifying,
-             foo.qualified_fdc,
-             foo.clawback_projects,
-             foo.total_qualifying_fdc_to_date,
+             foo.fda_in_month_not_qualifying::json,--todo coalesce() this shit coalesce(foo.qualified_fdc, '[]')::json, I don't care about this
+             foo.qualified_fdc::json,
+             foo.clawback_projects::json,
+             '[]'::json,
+             foo.total_qualifying_fdc_to_date::json,
              foo.cancelled_fdc_during_period,
              v_lifetime_fds - foo.prior_period_qualified_fdc - foo.qualified_fdc_residual_this_period +
              foo.cancelled_fdc_during_period as reactivated_fdc,
              foo.residual_qualified_fdc,
-             foo.v_no_previous_month_message
+             foo.v_no_previous_month_message,
+             false,
+             foo.existing_clawbacks,
+             foo.current_clawbacks_in_period
       from (select urs2.user_id,
                    urs2.user_full_name                                                                as closer_name,
                    coalesce(urs2.required_fdc_per_month, 0)                                              required_fdc_residual_this_period,
@@ -306,7 +370,11 @@ begin
                             and urs.id = v_has_current_snapshot_id) as current_clawbacks1)            as clawback_projects,
                    (select array_to_json(array_agg(row_to_json(total_qualifying_fdc_to_date1)))
                     from (select p2.contact_name,
-                                 urps.project_id
+                                 urps.project_id,
+                                 urps.system_size,
+                                 urps.residual_plan,
+                                 urps.qualified_date,
+                                 urps.total
                           from brs.user_residual_snapshot urs
                                  inner join brs.user_residual_project_snapshot urps
                                             on urps.user_residual_snapshot_id = urs.id
@@ -323,7 +391,9 @@ begin
               (select count(1), project_id from brs.get_user_residual_project_snapshot_by_type(urs2.residual_id, urs2.user_id, 4) group by project_id)) as foo
             group by foo.project_id))as foo1)::bigint as cancelled_fdc_during_period,
               coalesce (v_lifetime_fds, 0) as residual_qualified_fdc,
-              v_no_previous_month_message as v_no_previous_month_message
+              v_no_previous_month_message as v_no_previous_month_message,
+              urs2.existing_clawbacks,
+              urs2.current_clawbacks_in_period
             from brs.user_residual_snapshot urs2
             where urs2.id = v_has_current_snapshot_id) as foo;
 
