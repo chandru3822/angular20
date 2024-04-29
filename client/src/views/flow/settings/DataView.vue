@@ -242,7 +242,7 @@
           </template>
 
           <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pa-4 overflow-visible overflow-hidden-m"
+            <td :colspan="headers.length" class="pa-4 overflow-visible overflow-hidden-m one-hunned-minus-fifty"
                 :class="{'shaded-row': dataView.dataViewFieldConfigs.indexOf(item) % 2}">
               <v-row>
                 <v-col cols="12">
@@ -371,7 +371,7 @@
                   </v-form>
                 </div>
                 <v-data-table
-                  v-if="item.childFieldConfigs && item.childFieldConfigs.length > 0"
+                  v-if="item?.childFieldConfigs?.length > 0"
                   :headers="childFieldHeaders"
                   :items="item.childFieldConfigs"
                   :items-per-page="-1"
@@ -383,8 +383,7 @@
                 >
 
                   <template #expanded-item="{ headers, item: childField }">
-                    <tr :class="{'shaded-row': item.childFieldConfigs.indexOf(childField) % 2}">
-                      <td :colspan="childFieldHeaders.length">
+                      <td :colspan="childFieldHeaders.length" class="one-hunned-minus-fifty" :class="{'shaded-row': item.childFieldConfigs.indexOf(childField) % 2}">
                         <v-card flat color="transparent">
                           <v-card-title class="pb-0">Edit Child Field Config</v-card-title>
                           <v-card-text class="pt-0">
@@ -403,7 +402,6 @@
                           </v-card-text>
                         </v-card>
                       </td>
-                    </tr>
                   </template>
 
                       <template #item.displayName="{item: childField}" class="text-left">{{ childField.displayName }}</template>
@@ -923,5 +921,11 @@ const isMobile = computed(() => vuetify.breakpoint.smAndDown)
 .page-title {
   font-size: 18px;
   font-weight: 200;
+}
+
+.one-hunned-minus-fifty{
+  @media (max-width: 960px) {
+    width: calc(100vw - 50px);
+  }
 }
 </style>
