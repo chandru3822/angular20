@@ -56,7 +56,7 @@ $default-text: rgba(0,0,0,0.87);
   position: sticky;
   position: -webkit-sticky; /* for Safari */
   top: 0;
-  z-index: 1;
+  z-index: 10;
 }
 
 .fixed-toolbar-bottom {
