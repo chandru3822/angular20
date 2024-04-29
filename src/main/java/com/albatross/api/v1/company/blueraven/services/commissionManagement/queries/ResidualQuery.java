@@ -116,9 +116,11 @@ public class ResidualQuery {
                                                                                rpa.max,
                                                                                rpa.allocation,
                                                                                rppa.fdc_count as "fdcCount",
-                                                                               rppa.partial_allocation as "partialAllocation"
+                                                                               rppa.partial_allocation as "partialAllocation",
+                                                                               rppat.residual_plan_partial_allocation_type as "residualPlanPartialAllocationType"
                                                                         from brs.residual_plan_allocation rpa
                                                                           left join brs.residual_plan_partial_allocation rppa on rppa.residual_plan_allocation_id = rpa.id
+                                                                          left join brs.residual_plan_partial_allocation_type rppat on rppa.residual_plan_partial_allocation_type_id = rppat.id
                                                                         where rpa.residual_plan_id = rp.id
                                                                         order by rpa.min, rppa.fdc_count
                                                                       ) AS allocations), '[]') AS "residualPlanAllocations",
