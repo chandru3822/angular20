@@ -282,7 +282,6 @@ const cancelProjectProcessStepEvent = async() => {
                         return-object
                         clearable
                         hide-details
-                        density="compact"
                         item-title="name"
                         item-value="id"
                         @input="[validateSaveEvent(), setSelectedResourceInStore(project.resource?.id)]"
