@@ -409,9 +409,9 @@
     }
   }
   const saveApptHelper = async (apptSource, dest) => {
-    const appt_id = dest.id
-    dest = apptSource
-    dest.id = appt_id
+    dest.title = apptSource.title
+    dest.description = apptSource.description
+    dest.location = apptSource.location
     const appt = dest
     if (appt.repeat) {
       // All day appointments don't have an attached timezone
