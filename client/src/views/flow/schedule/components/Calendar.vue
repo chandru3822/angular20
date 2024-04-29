@@ -60,7 +60,8 @@
                     item-value="id"
                     @input="orgTypeValuesChanged = true"
                     @blur="filterOrgsAndUsers"
-                          attach
+                    :menu-props="['attach']"
+
           >
             <template v-slot:selection="{item, index}">
               <div v-if="index === 0 && selectedOrgTypes.length < 3">
@@ -111,7 +112,7 @@
                           item-value="id"
                           @input="[orgValuesChanged = true, limiter()]"
                           @blur="reloadCalendar"
-                          attach
+                          :menu-props="['attach']"
           >
             <template
                 v-slot:selection="{item, index}"
@@ -140,7 +141,7 @@
                           item-value="id"
                           @input="positionValuesChanged = true"
                           @blur="filterOrgsAndUsers"
-                          attach
+                          :menu-props="['attach']"
           >
             <template  v-slot:selection="{item, index}">
               <div v-if="index === 0 && selectedPositions.length < 3">
@@ -189,7 +190,7 @@
                           item-value="id"
                           @input="[userValuesChanged = true, limiter()]"
                           @blur="reloadCalendar"
-                          attach
+                          :menu-props="['attach']"
           >
             <template  v-slot:selection="{item, index}">
               <span v-if="index === 0" class="primary--text text-caption">
@@ -1251,6 +1252,14 @@ const createSnackbar = (text) => {
 
 .fc .fc-scrollgrid {
   border-radius: 4px;
+}
+#org-resource-types-filter-col,
+#org-resources-col,
+#position-resource-types-col,
+#user-resources-col {
+  > div > div > div > div.v-menu.v-menu--attached > div {
+    top:34px !important;
+  }
 }
 
 </style>

@@ -64,7 +64,7 @@
               </v-list>
             </div>
             <div class="one-hunned d-flex justify-end pt-2">
-            <a-btn @click="loadDriveTime">Go</a-btn>
+            <a-btn @click="loadDriveTime" variant="outlined" class="one-hunned">Go</a-btn>
             </div>
             <div class="mt-2 body-large">
               <div>Drive Time:</div> <span class="label-large" v-if="drivingDuration">{{ drivingDuration }}</span>
