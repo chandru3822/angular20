@@ -151,11 +151,11 @@
   })
 
   const visibleHeaders = computed(() => {
-    return this.headers.filter(header => header.show === true)
+    return headers.value?.filter(header => header.show === true)
   })
 
   onMounted(async () => {
-    this.setHeaders();
+    setHeaders();
   })
 
   const setHeaders = () => {
