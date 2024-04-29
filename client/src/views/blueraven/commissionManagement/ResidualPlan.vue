@@ -849,7 +849,7 @@ const updateLevel = async(item) => {
 const getSources = async() => {
   if(addSource.value) {
     try {
-      const {data} = await getRequest(`/commissionManagement/residuals/${this.planId}/availableSources`, 'blueraven')
+      const {data} = await getRequest(`/commissionManagement/residuals/${planId.value}/availableSources`, 'blueraven')
       sources.value = data
     } catch (e) {
       console.error('*** ERROR ***', e)
@@ -861,7 +861,7 @@ const getSources = async() => {
 const updateSource = async(item) => {
   appStore.loading = true
   try {
-    const {data, status} = await putRequest(`/commissionManagement/residuals/${this.planId}/source`, item, 'blueraven')
+    const {data, status} = await putRequest(`/commissionManagement/residuals/${planId.value}/source`, item, 'blueraven')
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -875,7 +875,7 @@ const addSourceToPlan = async() => {
       sourceId: selectedSource.value.id,
       amount: selectedSource.value.amount,
     }
-    const {data} = await postRequest(`/commissionManagement/residuals/${this.planId}/source`, params, 'blueraven')
+    const {data} = await postRequest(`/commissionManagement/residuals/${planId.value}/source`, params, 'blueraven')
     residualPlan.value.sources.push(data)
     selectedSource.value = {}
     addSource.value = false

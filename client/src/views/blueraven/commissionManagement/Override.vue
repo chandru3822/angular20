@@ -402,7 +402,7 @@
                 </a-autocomplete>
                 <DatetimePickerInput
                   v-model="newAssignedUser.startDate"
-                  :timezone="this.timezone"
+                  :timezone="timezone"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
                   label="Start Date"
@@ -411,7 +411,7 @@
                 />
                 <DatetimePickerInput
                   v-model="newAssignedUser.endDate"
-                  :timezone="this.timezone"
+                  :timezone="timezone"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
                   label="End Date"

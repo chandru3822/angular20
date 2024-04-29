@@ -272,8 +272,9 @@
           <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
             <v-row>
               <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                <div v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)">
                 <CustomValueInput
-                    v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
+
                     :key="idx"
                     :use-field-ancillary-name="true"
                     :callback="populateDirtyCfvs"
@@ -281,6 +282,8 @@
                     :field="field"
                     :show-field-name="false"
                 />
+                {{getReadOnly(field)}}
+                </div>
               </v-col>
               <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
                 <CustomValueInput
@@ -699,7 +702,7 @@ const getReadOnly = (field) => {
   if (null != field) {
     fieldReadOnly = getCustomFieldReadOnly(field)
   }
-  let val = (!userIsAdmin.value && this?.processStep?.processStepStatusTypeId !== 1)
+  let val = (!userIsAdmin.value && processStep.value?.processStepStatusTypeId !== 1)
       || fieldReadOnly
       || !userCanEdit.value
       || processStepReadOnly.value
