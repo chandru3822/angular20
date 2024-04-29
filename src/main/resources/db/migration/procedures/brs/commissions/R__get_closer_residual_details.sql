@@ -4,7 +4,7 @@ CREATE or replace function brs.get_closer_residual_details(p_closer_user_id bigi
           (
             user_id                            bigint,
             closer_name                        text,
-            required_fdc_residual_this_period  integer,
+            required_fdc_residual_this_period  numeric,
             qualified_fdc_residual_this_period numeric,
             residual_qualified                 boolean,
             has_current_snapshot               boolean,
@@ -93,7 +93,7 @@ begin
     when v_has_current_snapshot_id is null then return query
       select foo.id                                                                as user_id,
              foo.closer_name,
-             foo.required_fdc_residual_this_period,
+             foo.required_fdc_residual_this_period::numeric,
              coalesce(foo.qualified_fdc_residual_this_period, 0)::numeric,
              ((coalesce(foo.qualified_fdc_residual_this_period, 0) >=
              coalesce(foo.required_fdc_residual_this_period, 0)) or partial_allocation is not null)                                                         as residual_qualified,
@@ -118,11 +118,11 @@ begin
                     coalesce(foo.manual_adjustments, 0) end                        as total_residual_paid,
              case when v_has_previous_snapshot_id is null then false else true end as has_previous_snapshot,
              coalesce(foo.prior_period_qualified_fdc, 0)                           as prior_period_qualified_fdc,
-             coalesce(foo.fda_in_month_not_qualifying, '[]'),
-             coalesce(foo.qualified_fdc, '[]'),
-             coalesce(foo.clawback_projects, '[]'),
-             coalesce(foo.clawback_projects_drilldown, '[]'),
-             coalesce(foo.total_qualifying_fdc_to_date, '[]'),
+             coalesce(foo.fda_in_month_not_qualifying, '[]')::json,
+             coalesce(foo.qualified_fdc, '[]')::json,
+             coalesce(foo.clawback_projects, '[]')::json,
+             coalesce(foo.clawback_projects_drilldown, '[]')::json,
+             coalesce(foo.total_qualifying_fdc_to_date, '[]')::json,
              foo.cancelled_fdc_during_period                                       as cancelled_fdc_during_period,
              case when foo.is_system_size is false then
              coalesce(v_lifetime_fds, 0) - coalesce(foo.prior_period_qualified_fdc, 0) -
@@ -265,7 +265,7 @@ begin
       select foo.user_id,
              foo.closer_name,
              foo.required_fdc_residual_this_period,
-             foo.qualified_fdc_residual_this_period::bigint,
+             foo.qualified_fdc_residual_this_period,
              foo.residual_qualified,
              foo.has_current_snapshot,
              foo.potential_residual,
@@ -275,15 +275,17 @@ begin
              foo.total_residual_paid,
              foo.has_previous_snapshot,
              foo.prior_period_qualified_fdc,
-             foo.fda_in_month_not_qualifying,
-             foo.qualified_fdc,
-             foo.clawback_projects,
-             foo.total_qualifying_fdc_to_date,
+             foo.fda_in_month_not_qualifying::json,--todo coalesce() this shit coalesce(foo.qualified_fdc, '[]')::json, I don't care about this
+             foo.qualified_fdc::json,
+             foo.clawback_projects::json,
+             '[]'::json,
+             foo.total_qualifying_fdc_to_date::json,
              foo.cancelled_fdc_during_period,
              v_lifetime_fds - foo.prior_period_qualified_fdc - foo.qualified_fdc_residual_this_period +
              foo.cancelled_fdc_during_period as reactivated_fdc,
              foo.residual_qualified_fdc,
              foo.v_no_previous_month_message,
+             false,
              foo.existing_clawbacks,
              foo.current_clawbacks_in_period
       from (select urs2.user_id,

@@ -197,13 +197,13 @@ import {
   putRequest
 } from '@/helpers/helpers'
 
-import { getCurrentInstance, toRefs, computed, ref } from 'vue'
+import { toRefs, computed, ref } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
+import { buildContext, exec } from './exec.js'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
 
 const emit = defineEmits(['update'])
 
@@ -258,12 +258,19 @@ const isEmailValid = computed(() => {
   )
 })
 const requiredFields = computed(() => {
+  const ctx = buildContext(proposal.value?.customFieldGroups)
   return proposal.value?.customFieldGroups
-    ?.flatMap((cfg) => {
-      return cfg.customFieldValues
-    })
+    ?.flatMap((cfg) => cfg.customFieldValues)
     ?.filter((field) => {
       return userHasWhiteListedPosition(field, 'hidden')
+    })
+    ?.filter((field) => {
+      //is the field actually visible
+      if (!field?.visibility) {
+        return true
+      }
+
+      return exec(field.visibility, ctx)
     })
     ?.filter((field) => {
       return field.required
@@ -342,7 +349,10 @@ const submitCreditCheck = async () => {
       'blueraven'
     )
     if (status !== 200) {
-      appStore.showSnack('ERROR', data?.message || 'Error creating credit application')
+      appStore.showSnack(
+        'ERROR',
+        data?.message || 'Error creating credit application'
+      )
       return
     }
 
@@ -352,7 +362,10 @@ const submitCreditCheck = async () => {
       open(data, '_blank')
     }
   } catch (e) {
-    appStore.showSnack('ERROR', e?.data.message || 'Error creating credit application')
+    appStore.showSnack(
+      'ERROR',
+      e?.data.message || 'Error creating credit application'
+    )
   }
 }
 
