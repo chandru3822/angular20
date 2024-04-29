@@ -126,7 +126,10 @@
               <td class="text-left">{{item.min}}</td>
               <td class="text-left">{{item.max}}</td>
               <td class="text-left">{{item.allocation}} {{residualPlan.isSystemSize ? 'kW' : ''}}</td>
-              <td class="text-left">{{item.fdcCount}} {{residualPlan.isSystemSize && item.fdcCount ? 'kW' : ''}}</td>
+              <td class="text-left">
+                {{item.fdcCount}} {{residualPlan.isSystemSize && item.fdcCount ? 'kW' : ''}}
+                - {{item.residualPlanPartialAllocationType}}
+              </td>
               <td class="text-left">
                 <span v-if="item.partialAllocation !== null">{{ item.partialAllocation | percent(0)}}</span>
               </td>
