@@ -301,7 +301,24 @@ public class BlueravenProposalService {
   }
 
   public Optional<ProposalDesign> getActiveDesign(@NonNull Long projectId) {
-    return sqlCache.getBySql(ProposalQuery.getActiveDesign, Map.of("projectId", projectId), new ProposalDesignMapper<>(ProposalDesign.class, om));
+    Optional<ProposalDesign> activeDesign = sqlCache.getBySql(ProposalQuery.getActiveDesign, Map.of("projectId", projectId), new ProposalDesignMapper<>(ProposalDesign.class, om));
+
+    if(activeDesign.isPresent() && activeDesign.get().getCompanyProcessStepStatusTypeId().equals(1649L)) {
+      //need to get the aurora project id if this was created by aurora stuff
+      try {
+        AuroraProxy.DesignSummary designSummary = auroraProxy.getDesignSummary(activeDesign.get().getDesignId());
+        if(designSummary.getProjectId().isPresent()) {
+          activeDesign.get().setAuroraProjectId(designSummary.getProjectId().get());
+        }
+      } catch (IOException e) {
+        throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          "AURORA: Failed to find design summary for design " + activeDesign.get().getDesignId(),
+          new Exception());
+      }
+    }
+
+    return activeDesign;
   }
 
   public List<ProposalDesign> requestNewDesign(
