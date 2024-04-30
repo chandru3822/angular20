@@ -142,11 +142,11 @@
 								<span v-else>{{ item.groupName }}</span>
 							</v-col>
 							<v-col cols="4" class="flex-grow-0 flex-shrink-1 pa-0 pr-6 align-content-center">
-								<v-autocomplete
+								<a-autocomplete
 									v-model="item.stupidSelectedStatuses"
 									:items="statuses"
 									:label="getStatusLabel(item)"
-									dense
+									density="compact"
 									item-value="uid"
 									return-object
 									hide-details
@@ -237,7 +237,7 @@
 											<v-list-item-title v-text="status.text"/>
 										</v-list-item>
 									</template>
-								</v-autocomplete>
+								</a-autocomplete>
 							</v-col>
 							<v-col cols="2" class="flex-grow-0 flex-shrink-1 align-content-center pa-0">
 								<div class="item-icons">

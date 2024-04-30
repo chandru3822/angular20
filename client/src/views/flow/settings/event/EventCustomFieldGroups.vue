@@ -172,11 +172,11 @@
             </v-row>
 			  <v-row class="mx-3">
 				  <v-col cols="12">
-					  <v-autocomplete
+					  <a-autocomplete
 						  v-model="event.stupidSelectedStatuses"
 						  :items="statuses"
 						  :label="getDefaultStatusLabel()"
-						  dense
+						  density="compact"
 						  item-value="uid"
 						  return-object
 						  hide-details
@@ -265,7 +265,7 @@
 								  <v-list-item-title v-text="status.text"/>
 							  </v-list-item>
 						  </template>
-					  </v-autocomplete>
+					  </a-autocomplete>
 				  </v-col>
 			  </v-row>
           </v-card>
@@ -367,11 +367,11 @@
                     </span>
                   </td>
 					<td>
-						<v-autocomplete
+						<a-autocomplete
 							v-model="item.stupidSelectedStatuses"
 							:items="statuses"
 							:label="getStatusLabel(item)"
-							dense
+							density="compact"
 							item-value="uid"
 							return-object
 							hide-details
@@ -461,7 +461,7 @@
 									<v-list-item-title v-text="status.text"/>
 								</v-list-item>
 							</template>
-						</v-autocomplete>
+						</a-autocomplete>
 					</td>
                   <td>
                     <div class="item-icons">
