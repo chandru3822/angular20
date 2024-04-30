@@ -60,7 +60,7 @@
                     item-value="id"
                     @input="orgTypeValuesChanged = true"
                     @blur="filterOrgsAndUsers"
-                    :menu-props="['attach']"
+                    menu-props="attach"
 
           >
             <template v-slot:selection="{item, index}">
@@ -112,7 +112,8 @@
                           item-value="id"
                           @input="[orgValuesChanged = true, limiter()]"
                           @blur="reloadCalendar"
-                          :menu-props="['attach']"
+                          menu-props="attach"
+
           >
             <template
                 v-slot:selection="{item, index}"
@@ -141,7 +142,8 @@
                           item-value="id"
                           @input="positionValuesChanged = true"
                           @blur="filterOrgsAndUsers"
-                          :menu-props="['attach']"
+                          menu-props="attach"
+
           >
             <template  v-slot:selection="{item, index}">
               <div v-if="index === 0 && selectedPositions.length < 3">
@@ -190,7 +192,8 @@
                           item-value="id"
                           @input="[userValuesChanged = true, limiter()]"
                           @blur="reloadCalendar"
-                          :menu-props="['attach']"
+                          menu-props="attach"
+
           >
             <template  v-slot:selection="{item, index}">
               <span v-if="index === 0" class="primary--text text-caption">
