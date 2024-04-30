@@ -68,15 +68,6 @@ public class BlueravenProposalController {
     return proposalService.doProposalAiRequest(projectId, values);
   }
 
-  @PostMapping(value = "/projects/{projectId}/ai/design/{designId}/duplicate")
-  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
-  public AuroraDesignWrappedDTO duplicateExistingProposalAi(@PathVariable Long projectId,
-                                                            @PathVariable String designId,
-                                                            @RequestBody List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
-    //this is called to generate an aurora design from an existing one
-    return proposalService.duplicateExistingProposalAi(projectId, designId, values);
-  }
-
   @PostMapping(value = "/projects/{projectId}/ai/design/{designId}")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public void handleNewPpsForAuroraDesign(@PathVariable Long projectId,

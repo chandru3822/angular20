@@ -603,43 +603,8 @@ const pageLoadOrRefresh = async () => {
 const validateAIRequest = async () => {
   const valid = aiForm.value.validate()
   if (valid) {
-    if (useExistingDesign.value) {
-      await createAiFromExisting()
-    } else {
-      await requestAIDesign()
-    }
-  }
-}
-const createAiFromExisting = async () => {
-  try {
-    savingNewAiDesign.value = true
-    // handle the duplication on the backend so mobile can do it too
-    const { data, status } = await postRequest(
-      `/proposal/projects/${projectId.value}/ai/design/${firstDesignId.value}/duplicate`,
-      aiRequestFields.value,
-      'blueraven'
-    )
-
-    if (null != data?.design?.id) {
-      //open the new design in sales mode
-      const url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
-      window.open(url, '_blank')
-
-      //reload the active design
-      await getActiveDesign()
-    } else {
-      appStore.showSnack('ERROR', 'Failed to find Aurora Project')
-    }
-  } catch (e) {
-    logError(e)
-    appStore.loading = false
-     appStore.showSnack(
-      'ERROR',
-      e?.data?.message || 'There was an error requesting a new design'
-    )
-  } finally {
-    showAIDesignRequestForm.value = false
-    savingNewAiDesign.value = false
+    //all checks for how to create the design are handled by backend now
+    await requestAIDesign()
   }
 }
 
