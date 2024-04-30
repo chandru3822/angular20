@@ -19,9 +19,9 @@
         return-object
         id="qa-smartlist-add-filter"
         placeholder="Add Filter"
-        :variant="isEditorInUse ? 'flat' : 'solo'"
+        variant="solo"
         hide-details
-        :class="{'field-selector': !isEditorInUse}"
+		:class="{'field-selector': !isEditorInUse, 'flat': isEditorInUse}"
         @change="afterFieldSelected"
         @focus="onFieldFocus"
       >
@@ -51,9 +51,9 @@
         item-value="id"
         return-object
         placeholder="Type or Select Name"
-        :variant="isEditorInUse ? 'flat' : 'solo'"
+        variant="solo"
         hide-details
-        :class="{'field-selector': !isEditorInUse}"
+		:class="{'field-selector': !isEditorInUse, 'flat': isEditorInUse}"
         @blur="afterPsEventSelected"
       >
         <template #append>
@@ -75,9 +75,9 @@
         item-value="id"
         return-object
         placeholder="Type or Select Operator"
-        :variant="isEditorInUse ? 'flat' : 'solo'"
+        variant="solo"
         hide-details
-        :class="{'field-selector': !isEditorInUse}"
+        :class="{'field-selector': !isEditorInUse, 'flat': isEditorInUse}"
         @change="afterOperatorSelected"
       >
         <template #append v-if="isEditorInUse">
@@ -156,11 +156,11 @@
         item-value="id"
         return-object
         placeholder="Type or Select Value"
-        :variant="isEditorInUse ? 'flat' : 'solo'"
+        variant="solo"
         :hide-details="true"
         :multiple="requirement?.allowMultiple"
         :ripple="false"
-        :class="{'field-selector': !isEditorInUse}"
+		:class="{'field-selector': !isEditorInUse, 'flat': isEditorInUse}"
         @change="afterValueSelected(false)"
       >
         <template #item="data">
@@ -189,6 +189,7 @@
         v-model="secondaryValue"
         placeholder="Type Value"
         variant="solo"
+		:class="{'flat': isEditorInUse}"
         hide-details
         @change="add"
       >
@@ -730,5 +731,11 @@ onMounted(() => {
 
 .hover {
   cursor: pointer;
+}
+
+.flat {
+	:deep(.v-input__slot) {
+		box-shadow: none !important;
+	}
 }
 </style>
