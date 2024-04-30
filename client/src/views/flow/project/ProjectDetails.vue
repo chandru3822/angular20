@@ -477,7 +477,7 @@ const uploadDocument = async (files, type) => {
               objectTypeId: 1,
               sourceId,
               secondaryId,
-              callback: fileUploaded()
+              callback: fileUploaded
             })
           }
         }
