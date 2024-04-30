@@ -78,7 +78,7 @@
 
                 :key="componentKey"
                 :headers="headers"
-                :items="filteredCustomFieldGroups"
+                :items="localCustomFieldGroups"
                 :items-per-page="-1"
                 single-expand
                 :expanded.sync="expanded"
@@ -675,11 +675,6 @@ const itemToDeleteGroupName = computed(() => {
 const assignmentToDeleteFieldName = computed(() => {
   return assignmentToDelete.value?.groupName || ''
 })
-const filteredCustomFieldGroups = computed(() => {
-  return localCustomFieldGroups.value?.filter(cfg => {
-    return !cfg.archived
-  })
-})
 
 const localCustomFieldGroups = computed({
   get: () => customFieldGroups.value?.map(g => {
@@ -831,7 +826,7 @@ const saveFieldGroup = async () => {
     newGroup.value.processStepId = processStepId.value
 
     const {data} = await postRequest(`/customFieldGroup/addProcessStepCustomFieldGroup`, newGroup.value)
-    localCustomFieldGroups.value.push(data)
+    customFieldGroups.value.push(data)
     newGroup.value = {}
     createNew.value = false
     appStore.showSnack('SUCCESS', 'Group Saved')
