@@ -153,7 +153,7 @@ public class BlueravenProposalService {
       .body(Resource.class);
   }
 
-  public AuroraDesignWrappedDTO duplicateExistingProposalAi(Long projectId, String designId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+  public AuroraDesignWrappedDTO duplicateExistingProposalAi(Long projectId, String designId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values, Boolean useExactDesign) {
     //this function needs to:
     //try/catch finding a design by id
     //if successful, try/catch finding all designs on that same project and getting the first one ever created
@@ -167,12 +167,23 @@ public class BlueravenProposalService {
       AuroraProxy.DesignSummary designSummary = auroraProxy.getDesignSummary(designId);
       if(designSummary.getProjectId().isPresent()) {
 
-        //using the project id of ^^ that design, get all designs for that project in aurora
-        AuroraDesignListDTO designsForProject = auroraProxy.getDesignsForProject(designSummary.getProjectId().get());
-        if(null != designsForProject && null != designsForProject.getDesigns() && !designsForProject.getDesigns().isEmpty()) {
+        //if not using the exact design id passed in then, using the project id of ^^ that design, get all designs for that project in aurora
+        AuroraDesignListDTO designsForProject = new AuroraDesignListDTO();
+        if(!useExactDesign) {
+          designsForProject = auroraProxy.getDesignsForProject(designSummary.getProjectId().get());
+        }
+
+        if(useExactDesign || (null != designsForProject && null != designsForProject.getDesigns() && !designsForProject.getDesigns().isEmpty())) {
 
           //get the oldest one which is the last one in this array.
-          AuroraDesignNotWrappedDTO firstDesign = designsForProject.getDesigns().stream().reduce((first, second) -> second).get();
+          AuroraDesignNotWrappedDTO firstDesign;
+          if(useExactDesign) {
+            firstDesign = new AuroraDesignNotWrappedDTO();
+            //this is the only field we use and the first if check ensures this id is valid
+            firstDesign.setId(designId);
+          } else {
+            firstDesign = designsForProject.getDesigns().stream().reduce((first, second) -> second).get();
+          }
 
           //get the design name to use when duplicating
           com.albatross.api.v1.flow.model.CustomFieldValue designNameField = values.stream().filter(v -> v.getCustomFieldGroupAssignmentId().equals(26300L)).findFirst().orElse(null);
@@ -182,7 +193,7 @@ public class BlueravenProposalService {
 
           if(null != auroraDesignWrappedDTO.getId()) {
             //find the design on our side that is using the firstDesignId...check the designedByAuroraField
-            Boolean designedByAurora = getDesignedByAuroraValue(projectId, firstDesign.getId());
+            Boolean designedByAurora = useExactDesign ? false : getDesignedByAuroraValue(projectId, firstDesign.getId());
 
             //then create the new pps
             handleNewPpsForAuroraDesign(projectId, auroraDesignWrappedDTO.getId(), values, designedByAurora);
@@ -218,6 +229,26 @@ public class BlueravenProposalService {
   }
 
   public AuroraDesignWrappedDTO doProposalAiRequest(Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+
+    //first check for any existing design id on a Create Proposal Design step, if found use the oldest, then do duplicateExistingProposalAi
+    Optional<String> oldestDesignId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getOldestDesignIdForProject, params, String.class);
+    if(oldestDesignId.isPresent()) {
+      return duplicateExistingProposalAi(projectId, oldestDesignId.get(), values, false);
+    } else {
+      //then check for any existing design id on a Create Predesign step, if found use the oldest then do new function to be made
+      Optional<String> createPredesignDesignId = sqlCache.queryForObjectOptionalBySql(ProposalQuery.getDesignIdForCreatePredesignStep, params, String.class);
+      if(createPredesignDesignId.isPresent()) {
+        return duplicateExistingProposalAi(projectId, createPredesignDesignId.get(), values, true);
+      } else {
+        //if none of those then createNewAuroraProjectAndDesign
+        return createNewAuroraProjectAndDesign(projectId, values);
+      }
+    }
+  }
+
+  public AuroraDesignWrappedDTO createNewAuroraProjectAndDesign(Long projectId, List<com.albatross.api.v1.flow.model.CustomFieldValue> values) {
     //this function needs to:
     //try/catch creating an aurora project
     //if successful, try/catch creating an aurora design with that project
