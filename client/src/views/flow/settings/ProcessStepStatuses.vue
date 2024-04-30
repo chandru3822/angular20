@@ -138,6 +138,7 @@
                       color="primary"
                       @click="getUsesForStatus(item.id, item.processStepStatusType)"
                       prepend-icon="mdi-clipboard-list-outline"
+                      :class="{'my-2':vuetify.breakpoint.smAndDown}"
                     />
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
@@ -148,6 +149,7 @@
                           v-bind="attrs"
                           :activation-handler="on"
                           prepend-icon="mdi-information"
+                          :class="{'my-2':vuetify.breakpoint.smAndDown}"
                         />
                       </template>
                       <span>Process Step Status ID: {{item.id}}</span>
@@ -160,6 +162,7 @@
                       v-if="!expanded.includes(item)"
                       @click="expanded = [item]"
                       prepend-icon="edit"
+                      :class="{'my-2':vuetify.breakpoint.smAndDown}"
                     />
                     <a-btn
                       size="small"
@@ -170,6 +173,7 @@
                       text="Cancel"
                       hide-text-on-mobile
                       :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
+                      :class="{'my-2':vuetify.breakpoint.smAndDown}"
                     />
 
                     <a-btn
@@ -179,6 +183,7 @@
                       v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                       @click="[itemToDelete=item, showDeleteDialog=true]"
                       prepend-icon="delete"
+                      :class="{'my-2':vuetify.breakpoint.smAndDown}"
                     />
                   </td>
 
