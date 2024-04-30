@@ -149,8 +149,15 @@ const newFocus = () => {
   albatrossAutocomplete.value.focus()
 }
 
+const activateMenu = () => {
+	if (Object.hasOwn(albatrossAutocomplete.value, 'activateMenu')) {
+		albatrossAutocomplete.value.activateMenu()
+	}
+}
+
 defineExpose({
-  focus: newFocus
+  focus: newFocus,
+  activateMenu
 })
 </script>
 
