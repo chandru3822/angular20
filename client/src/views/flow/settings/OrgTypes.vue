@@ -11,8 +11,8 @@
               color="primary"
               @click="[addType = !addType, newType = {}]"
               v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
-              :hide-text-on-mobile="constants.IS_MOBILE"
-              :prepend-icon="addType ? 'add' : ''"
+              :hide-text-on-mobile="true"
+              :prepend-icon="addType ? 'close' : 'add'"
               :text="addType ? 'CANCEL' : 'ADD NEW'"
             />
           </v-toolbar-items>
@@ -59,7 +59,6 @@
             :fixed-header="true"
             :items-per-page="-1"
             single-expand
-            :mobile-breakpoint="0"
             :expanded.sync="expanded"
             hide-default-footer
             class="elevation-1 org-type-table"
@@ -104,12 +103,9 @@
             </td>
           </template>
 
-          <template #item="{ item }">
-            <tr  class="text-left" :class="{'shaded-row': orgTypes.indexOf(item) % 2}">
-              <td class="text-left">{{ item.orgType }}</td>
-              <td class="text-left">{{ item.level || 'n/a' }}</td>
-              <td class="text-left">{{ item.orgParentType || 'n/a' }}</td>
-              <td>
+          <template #item.level="{ item }" class="text-end"><span class="ml-2">{{ item.level || 'n/a' }}</span></template>
+              <template #item.orgParentType="{item}" class="text-left">{{ item.orgParentType || 'n/a' }}</template>
+              <template #item.icons="{item, index}">
                 <a-btn
                   size="small"
                   variant="text"
@@ -126,10 +122,7 @@
                   @click="expanded = []"
                   text="CANCEL"
                 />
-              </td>
-            </tr>
-          </template>
-
+              </template>
         </v-data-table>
       </v-col>
 
@@ -160,7 +153,7 @@
   const expanded = ref([])
   const headers = ref([
     { text: 'Org Type', value: 'orgType', show: true },
-    { text: 'Level', value: 'level', width: 80, show: true },
+    { text: 'Level', value: 'level', width: 84, show: true },
     { text: 'Parent', value: 'orgParentType', show: true},
     { text: null, value: 'icons', show: true, sortable: false }
   ])
