@@ -138,6 +138,12 @@ select ps.id,
                                 cfg.archived,
                                 cfg.group_order as "groupOrder",
                                 cfg.process_step_id as "processStepId",
+                                coalesce(cfg.company_process_step_status_type_ids, array[]::bigint[]) as "companyProcessStepStatusTypeIds",
+                                coalesce(cfg.process_step_status_type_ids, array[]::bigint[]) as "processStepStatusTypeIds",
+                                coalesce(cfg.company_event_status_type_ids, array[]::bigint[]) as "companyEventStatusTypeIds",
+                                coalesce(cfg.event_status_type_ids, array[]::bigint[]) as "eventStatusTypeIds",
+                                cfg.ps_collapse_by_default as "psCollapseByDefault",
+                                cfg.event_collapse_by_default as "eventCollapseByDefault",
                                 coalesce((
                                            SELECT array_to_json(array_agg(row_to_json(customFields)))
                                            FROM (

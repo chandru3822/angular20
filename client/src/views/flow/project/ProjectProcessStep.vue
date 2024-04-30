@@ -244,62 +244,60 @@
           </div>
         </v-toolbar-items>
       </v-toolbar>
-      <v-col cols="12" class="text-left py-0 px-0">
+      <v-col cols="12">
         <!--    process field groups-->
-        <v-col
-            class="pt-0"
-            v-for="(cfg, index) in customFieldGroups"
-            :key="index"
-        >
-          <v-toolbar v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0" color="transparent" class="elevation-0 cfg-name-toolbar" dense>
-            <v-toolbar-title>
-              <!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
-              <a-btn
-                  size="small"
-                  variant="text"
-                  v-if="cfg.eventId && userStore.userHasFeature('SCHEDULE')"
-                  :to="`/schedule?projectProcessStepId=${projectProcessStepId}`"
-                  color="unset"
-                  prepend-icon="mdi-calendar"
-              ></a-btn>
-              {{ cfg.groupName }}
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-            </v-toolbar-items>
-          </v-toolbar>
-
-          <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
-            <v-row>
-              <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
-                <div v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)">
-                <CustomValueInput
-
-                    :key="idx"
-                    :use-field-ancillary-name="true"
-                    :callback="populateDirtyCfvs"
-                    :readonly="getReadOnly(field)"
-                    :field="field"
-                    :show-field-name="false"
-                />
-                {{getReadOnly(field)}}
-                </div>
-              </v-col>
-              <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
-                <CustomValueInput
-                    v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
-                    :key="idx"
-                    :use-field-ancillary-name="true"
-                    :callback="populateDirtyCfvs"
-                    :readonly="getReadOnly(field)"
-                    :field="field"
-                    :show-field-name="false"
-                />
-              </v-col>
-            </v-row>
-
-          </v-card>
-        </v-col>
+		  <v-expansion-panels
+			  multiple
+			  :value="expansionOpenStatus"
+		  >
+			  <v-expansion-panel
+				  v-for="(cfg, index) in customFieldGroups"
+				  :key="index"
+			  >
+				  <v-expansion-panel-header class="px-4 py-0 panel-header">
+					  <v-toolbar v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0" color="transparent" class="elevation-0 cfg-name-toolbar" dense>
+						  <v-toolbar-title>
+							  <!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
+							  <a-btn
+								  size="small"
+								  variant="text"
+								  v-if="cfg.eventId && userStore.userHasFeature('SCHEDULE')"
+								  :to="`/schedule?projectProcessStepId=${projectProcessStepId}`"
+								  color="unset"
+								  prepend-icon="mdi-calendar"
+							  ></a-btn>
+							  {{ cfg.groupName }}
+						  </v-toolbar-title>
+					  </v-toolbar>
+				  </v-expansion-panel-header>
+				  <v-expansion-panel-content v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+					  <v-row>
+						  <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+							  <CustomValueInput
+								  v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
+								  :key="idx"
+								  :use-field-ancillary-name="true"
+								  :callback="populateDirtyCfvs"
+								  :readonly="getReadOnly(field)"
+								  :field="field"
+								  :show-field-name="false"
+							  />
+						  </v-col>
+						  <v-col cols="6" v-if="projectStore.manualColumnSplit" class="pb-0 pt-2">
+							  <CustomValueInput
+								  v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+								  :key="idx"
+								  :use-field-ancillary-name="true"
+								  :callback="populateDirtyCfvs"
+								  :readonly="getReadOnly(field)"
+								  :field="field"
+								  :show-field-name="false"
+							  />
+						  </v-col>
+					  </v-row>
+				  </v-expansion-panel-content>
+			  </v-expansion-panel>
+		  </v-expansion-panels>
 
       </v-col>
 
@@ -340,7 +338,6 @@ import {getCompanyAssignedToProcessStep, getStatusClass} from '@/services/proces
 import Links from '@/views/flow/components/Links'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
-import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 import SpinnerInline from '@/components/SpinnerInline'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
@@ -359,7 +356,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const projectStore = useProjectStore()
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 
 const vuetify = vueInstance.$vuetify
 
@@ -476,6 +472,24 @@ onBeforeRouteLeave(async (to, from, next) => {
   }
 })
 
+const expansionOpenStatus = computed(() => {
+	// determine which groups to collapse. Default is expand
+	let indexes = []
+	customFieldGroups.value.forEach((group, index) => {
+		const defaultStatusNotSet = group.companyProcessStepStatusTypeIds.length === 0 &&
+			group.processStepStatusTypeIds.length === 0 &&
+			!group.psCollapseByDefault
+
+		const expandByCategory = group.processStepStatusTypeIds.includes(processStep.value.processStepStatusTypeId)
+		const expandByStatus = group.companyProcessStepStatusTypeIds.includes(processStep.value.companyProcessStepStatusTypeId)
+
+		if (expandByCategory || expandByStatus || defaultStatusNotSet) {
+			indexes.push(index)
+		}
+	})
+	return indexes
+})
+
 const setSplitColumnValue = () => {
   //flip the flag
   projectStore.manualColumnSplit = !projectStore.manualColumnSplit
@@ -492,9 +506,10 @@ const getCustomFieldValuesToDisplay = (values, columnNum) => {
 const loadAllPageDetails = async() => {
   processStepLoading.value = true
   //if you add a new item to requests make sure it returns the request status
-  const requests = [getCustomFieldGroups(), getProcessStep(true)]
+  const psStatus = await getProcessStep(true)
+  const requests = [getCustomFieldGroups()]
   await Promise.all(requests).then(async (statusVals) => {
-    let success = true
+    let success = psStatus === 200
     statusVals.forEach(status => {
       if (status !== 200) {
         success = false
@@ -891,6 +906,14 @@ owner-toolbar-tools {
 .pps-subheader {
   width: 186px;
   margin-top: 5px;
+}
+
+.panel-header {
+	font-weight: 600;
+
+	border-bottom: 1px solid var(--v-grey-lighten2) !important;
+	border-bottom-left-radius: 0 !important;
+	border-bottom-right-radius: 0 !important;
 }
 
 ::v-deep {

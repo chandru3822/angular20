@@ -19,7 +19,7 @@ public class CustomFieldGroup {
     orgAttachmentTypeId, userAttachmentTypeId, eventAttachmentTypeId;
   // originalGroupName used for frontend validation (without having to loop to populate it on frontend)
   private String groupName, objectType, originalGroupName, eventType, tabName;
-  private Boolean archived;
+  private Boolean archived, psCollapseByDefault, eventCollapseByDefault;
 
   // This list is used when looking at custom field ASSIGNMENTS to a group
   private List<CustomField> customFields;
@@ -33,5 +33,7 @@ public class CustomFieldGroup {
   private Boolean edit = false;
   private Boolean showColor = false;
   private Boolean showGroupId = false;
+
+  private List<Long> companyProcessStepStatusTypeIds, companyEventStatusTypeIds, processStepStatusTypeIds, eventStatusTypeIds;
 }
 

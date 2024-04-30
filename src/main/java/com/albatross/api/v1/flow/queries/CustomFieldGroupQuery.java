@@ -42,7 +42,13 @@ public class CustomFieldGroupQuery {
              company_object_type_tab_id = :companyObjectTypeTabId,
              group_order = :groupOrder,
              modified_by_id = :modifiedById,
-             date_modified = now()
+             date_modified = now(),
+             company_process_step_status_type_ids = array[ :companyProcessStepStatusTypeIds ]::bigint[],
+             company_event_status_type_ids = array[ :companyEventStatusTypeIds ]::bigint[],
+             process_step_status_type_ids = array[ :processStepStatusTypeIds ]::bigint[],
+             event_status_type_ids = array[ :eventStatusTypeIds ]::bigint[],
+             ps_collapse_by_default = :psCollapseByDefault,
+             event_collapse_by_default = :eventCollapseByDefault
        where id = :id
        """;
 

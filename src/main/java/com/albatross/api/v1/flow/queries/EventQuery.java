@@ -2,14 +2,41 @@ package com.albatross.api.v1.flow.queries;
 
 public class EventQuery {
 
-  //language=PostgreSQL
-  public final static String getAllForCompany = """
-    select *
-        from flow.event
-        where company_id = :companyId
-        and archived is not true
-        order by event_name
-        """;
+	//language=PostgreSQL
+	public final static String getAllForCompany = """
+		select
+			e.id,
+			e.event_name,
+			e.resource_custom_field_id,
+			e.company_id,
+			e.date_created,
+			e.date_modified,
+			e.created_by_id,
+			e.modified_by_id,
+			e.archived,
+			e.temp_cfg_id,
+			e.start_time_read_only,
+			e.end_time_read_only,
+			e.resource_read_only,
+			e.start_time_hidden,
+			e.end_time_hidden,
+			e.resource_hidden,
+			e.hidden,
+			e.start_time_read_only_allow,
+			e.start_time_hidden_allow,
+			e.end_time_read_only_allow,
+			e.end_time_hidden_allow,
+			e.resource_read_only_allow,
+			e.resource_hidden_allow,
+			e.hidden_allow,
+			coalesce(to_jsonb(e.company_event_status_type_ids), '[]') as company_event_status_type_ids,
+			coalesce(to_jsonb(e.event_status_type_ids), '[]') as event_status_type_ids
+		from flow.event e
+		where
+			e.company_id = :companyId and
+			e.archived is not true
+		order by e.event_name
+	""";
 
   //language=PostgreSQL
   public final static String getAttachmentType = """
@@ -131,6 +158,9 @@ public class EventQuery {
                hidden_allow,
                archived,
                hidden,
+               coalesce(to_jsonb(e.company_event_status_type_ids), '[]') as "companyEventStatusTypeIds",
+               coalesce(to_jsonb(e.event_status_type_ids), '[]') as "eventStatusTypeIds",
+               e.collapse_by_default,
                coalesce((
                   SELECT array_to_json(array_agg(row_to_json(wlp)))
                   FROM (
@@ -174,6 +204,9 @@ public class EventQuery {
                                         cfg.archived,
                                         cfg.group_order as "groupOrder",
                                         cfg.process_step_id as "processStepId",
+                                        coalesce(cfg.company_event_status_type_ids, array[]::bigint[]) as "companyEventStatusTypeIds",
+                                        coalesce(cfg.event_status_type_ids, array[]::bigint[]) as "eventStatusTypeIds",
+                                        cfg.event_collapse_by_default as "eventCollapseByDefault",
                                         coalesce((
                                                    SELECT array_to_json(array_agg(row_to_json(customFields)))
                                                    FROM (
@@ -444,7 +477,10 @@ public class EventQuery {
           end_time_hidden_allow = :endTimeHiddenAllow,
           resource_read_only_allow = :resourceReadOnlyAllow,
           resource_hidden_allow = :resourceHiddenAllow,
-          hidden_allow = :hiddenAllow
+          hidden_allow = :hiddenAllow,
+          company_event_status_type_ids = array[ :companyEventStatusTypeIds ]::bigint[],
+          event_status_type_ids = array[ :eventStatusTypeIds ]::bigint[],
+          collapse_by_default = :collapseByDefault
       where id = :id
     """;
 

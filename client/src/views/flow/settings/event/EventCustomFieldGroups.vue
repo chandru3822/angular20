@@ -170,6 +170,104 @@
                 </v-row>
               </v-col>
             </v-row>
+			  <v-row class="mx-3">
+				  <v-col cols="12">
+					  <v-autocomplete
+						  v-model="event.stupidSelectedStatuses"
+						  :items="statuses"
+						  :label="getDefaultStatusLabel()"
+						  dense
+						  item-value="uid"
+						  return-object
+						  hide-details
+						  multiple
+					  >
+						  <template #selection="{item: status, index}">
+							  <template v-if="getDefaultSelectAllIcon() === 'mdi-checkbox-marked'">
+								  <span v-if="index === 0">All status types</span>
+							  </template>
+							  <template v-else-if="event.eventStatusTypeIds?.length === categories?.length">
+								  <span v-if="index === 0">All root status types</span>
+							  </template>
+							  <template v-else>
+								  <template v-if="status?.isRoot">
+									  <v-chip
+										  v-if="index < 3"
+										  class="mb-1 font-weight-bold"
+										  small
+									  >
+										  {{ status.text }}
+									  </v-chip>
+								  </template>
+								  <template v-else>
+									  <v-chip
+										  v-if="index < 3"
+										  class="mb-1 font-weight-bold"
+										  small
+									  >
+										  {{ status.text }}
+									  </v-chip>
+								  </template>
+								  <template v-if="index === 3">
+									  <span>and {{ (event.eventStatusTypeIds?.length + event.companyEventStatusTypeIds?.length) - 3 }} more</span>
+								  </template>
+							  </template>
+						  </template>
+
+						  <template #prepend-item>
+							  <v-list-item>
+								  <v-list-item-action>
+									  <v-checkbox
+										  class="collapse-checkbox"
+										  color="rgba(0, 0, 0, 0.54)"
+										  :ripple="false"
+										  v-model="event.collapseByDefault"
+									  />
+								  </v-list-item-action>
+								  <v-list-item-title>Collapse by Default</v-list-item-title>
+							  </v-list-item>
+						  </template>
+
+						  <template #item="{item: status}">
+							  <v-list-item
+								  v-if="status.isHeader"
+								  class="pt-1 status-border"
+							  >
+								  <v-list-item-title class="status-header" v-text="status.text"/>
+							  </v-list-item>
+							  <v-list-item
+								  v-else-if="status.isSelectAll"
+								  :disabled="event.eventStatusTypeIds?.length > 0"
+								  @click="toggleSelectAllDefaultStatuses()"
+							  >
+								  <v-list-item-action>
+									  <v-icon>{{ getDefaultSelectAllIcon() }}</v-icon>
+								  </v-list-item-action>
+								  <v-list-item-title v-text="status.text"/>
+							  </v-list-item>
+							  <v-list-item
+								  v-else-if="status.isRoot"
+								  @click="toggleDefaultCategory(status)"
+							  >
+								  <v-list-item-action>
+									  <v-icon>{{ getDefaultCategoryIcon(status) }}</v-icon>
+								  </v-list-item-action>
+								  <v-list-item-title v-text="status.text"/>
+							  </v-list-item>
+							  <v-list-item
+								  v-else
+								  :disabled="event?.eventStatusTypeIds.includes(status.categoryId)"
+								  @click="toggleDefaultStatus(status)"
+							  >
+								  <v-list-item-action>
+									  <v-icon>{{ getDefaultStatusIcon(status) }}</v-icon>
+								  </v-list-item-action>
+								  <v-list-item-title v-text="status.text"/>
+							  </v-list-item>
+						  </template>
+					  </v-autocomplete>
+				  </v-col>
+			  </v-row>
           </v-card>
         </v-form>
         <v-divider></v-divider>
@@ -213,7 +311,7 @@
             <v-data-table
               :key="componentKey"
               :headers="headers"
-              :items="filterCustomFieldGroups"
+              :items="localCustomFieldGroups"
               :items-per-page="-1"
               single-expand
               :expanded.sync="expanded"
@@ -230,6 +328,16 @@
               <template #no-results>
                 <span class="default-text-color">No custom field groups for this event</span>
               </template>
+
+				<template #header>
+					<thead>
+					<tr>
+						<th style="width: 50px"></th>
+						<th>Custom Field Groups</th>
+						<th colspan="2">Assigned Event Statuses</th>
+					</tr>
+					</thead>
+				</template>
 
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2, 'mobile-tr': vuetify.breakpoint.xsOnly}">
@@ -258,6 +366,103 @@
                       {{ item.groupName }}
                     </span>
                   </td>
+					<td>
+						<v-autocomplete
+							v-model="item.stupidSelectedStatuses"
+							:items="statuses"
+							:label="getStatusLabel(item)"
+							dense
+							item-value="uid"
+							return-object
+							hide-details
+							multiple
+						>
+							<template #selection="{item: status, index}">
+								<template v-if="getSelectAllIcon(item) === 'mdi-checkbox-marked'">
+									<span v-if="index === 0">All status types</span>
+								</template>
+								<template v-else-if="item.eventStatusTypeIds?.length === categories?.length">
+									<span v-if="index === 0">All root status types</span>
+								</template>
+								<template v-else>
+									<template v-if="status?.isRoot">
+										<v-chip
+											v-if="index < 3"
+											class="mb-1 font-weight-bold"
+											small
+										>
+											{{ status.text }}
+										</v-chip>
+									</template>
+									<template v-else>
+										<v-chip
+											v-if="index < 3"
+											class="mb-1 font-weight-bold"
+											small
+										>
+											{{ status.text }}
+										</v-chip>
+									</template>
+									<template v-if="index === 3">
+										<span>and {{ (item.eventStatusTypeIds?.length + item.companyEventStatusTypeIds?.length) - 3 }} more</span>
+									</template>
+								</template>
+							</template>
+
+							<template #prepend-item>
+								<v-list-item>
+									<v-list-item-action>
+										<v-checkbox
+											class="collapse-checkbox"
+											color="rgba(0, 0, 0, 0.54)"
+											:ripple="false"
+											v-model="item.eventCollapseByDefault"
+											@click="updateStatus(item)"
+										/>
+									</v-list-item-action>
+									<v-list-item-title>Collapse by Default</v-list-item-title>
+								</v-list-item>
+							</template>
+
+							<template #item="{item: status}">
+								<v-list-item
+									v-if="status.isHeader"
+									class="pt-1 status-border"
+								>
+									<v-list-item-title class="status-header" v-text="status.text"/>
+								</v-list-item>
+								<v-list-item
+									v-else-if="status.isSelectAll"
+									:disabled="item.eventStatusTypeIds?.length > 0"
+									@click="toggleSelectAllStatuses(item)"
+								>
+									<v-list-item-action>
+										<v-icon>{{ getSelectAllIcon(item) }}</v-icon>
+									</v-list-item-action>
+									<v-list-item-title v-text="status.text"/>
+								</v-list-item>
+								<v-list-item
+									v-else-if="status.isRoot"
+									@click="toggleCategory(status, item)"
+								>
+									<v-list-item-action>
+										<v-icon>{{ getCategoryIcon(status, item) }}</v-icon>
+									</v-list-item-action>
+									<v-list-item-title v-text="status.text"/>
+								</v-list-item>
+								<v-list-item
+									v-else
+									:disabled="item.eventStatusTypeIds.includes(status.categoryId)"
+									@click="toggleStatus(status, item)"
+								>
+									<v-list-item-action>
+										<v-icon>{{ getStatusIcon(status, item) }}</v-icon>
+									</v-list-item-action>
+									<v-list-item-title v-text="status.text"/>
+								</v-list-item>
+							</template>
+						</v-autocomplete>
+					</td>
                   <td>
                     <div class="item-icons">
                       <v-tooltip left>
@@ -507,7 +712,7 @@
                 return-object
                 clearable
                 item-title="groupName"
-                :items="filterCustomFieldGroups"/>
+                :items="localCustomFieldGroups"/>
             <a-autocomplete
                 v-if="cfgToDisplayOnSnippet"
                 label="Custom Field"
@@ -558,13 +763,13 @@ import draggable from 'vuedraggable'
 
 import {getEventTypes} from '@/services/scheduleService'
 import {
-  getRequest,
-  putRequest,
-  deleteRequest,
-  postRequest,
-  getRequestWithParams,
-  handleHidingGlobalLoader,
-  defineSortableTable
+	getRequest,
+	putRequest,
+	deleteRequest,
+	postRequest,
+	getRequestWithParams,
+	handleHidingGlobalLoader,
+	defineSortableTable, UUID, logError
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import cloneDeep from 'lodash.clonedeep'
@@ -581,9 +786,8 @@ import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 const userStore = useUserStore()
- const route = useRoute()
+const route = useRoute()
 const vuetify = vueInstance.$vuetify
 
 const WhiteListTypeEnum = Object.freeze({
@@ -636,6 +840,7 @@ const cfgToDisplayOnSnippet = ref(null)
 const cfToDisplayOnSnippet = ref(null)
 const cfgToDelete = ref(null)
 const cFieldToDelete = ref(null)
+const originalCustomFieldGroups = ref([])
 
 watch(cfgToDisplayOnSnippet, () => {
   if (cfgToDisplayOnSnippet.value === null){
@@ -674,6 +879,40 @@ const userIsAdmin = computed(() => {
 const companyId = computed(() => {
   return userStore.details.companyId
 })
+
+const categories = computed(() => {
+	let cats = []
+	event.value.companyEventStatusTypes?.forEach(s => {
+		if (!cats.some(category => category.id === s.eventStatusTypeId)) {
+			cats.push({
+				id: s.eventStatusTypeId,
+				text: s.rootEventStatusType,
+				isRoot: true,
+				uid: UUID()
+			})
+		}
+	})
+	return cats.sort((a, b) => a.text.localeCompare(b.text))
+})
+const statuses = computed(() => {
+	// this will be combine categories and statuses
+	// put categories (root statuses) first
+	let stats = []
+
+	stats.push({uid: UUID(), text: 'Select by root status', isHeader: true})
+	stats = stats.concat(categories.value)
+	stats.push({uid: UUID(), text: 'Event status', isHeader: true})
+	stats.push({uid: UUID(), text: 'SELECT ALL', isSelectAll: true, isRoot: false})
+
+	return stats.concat(event.value.companyEventStatusTypes?.map(s => ({
+		id: s.companyEventStatusTypeId,
+		text: `${s.eventStatusType} (${s.rootEventStatusType})`,
+		categoryId: categories.value.find(c => c.text === s.rootEventStatusType)?.id,
+		isRoot: false,
+		uid: UUID()
+	})))
+})
+
 onMounted(async () => {
   await getResourceFields()
   await getPositions()
@@ -697,19 +936,209 @@ const getResourceFields = async () => {
 const getEvent = async () => {
   appStore.loading = true
   try {
-    eventLoading.value = true;
+    eventLoading.value = true
     const {data} = await getRequest(`/event/${eventId.value}`)
     event.value = data
+	const eventCategories = categories.value.filter(c => event.value.eventStatusTypeIds.includes(c.id))
+	const eventStatuses = statuses.value.filter(s => event.value.companyEventStatusTypeIds.includes(s.id) && !s.isRoot)
+	event.value.stupidSelectedStatuses = eventCategories.concat(eventStatuses)
+	event.value.customFieldGroups = event.value.customFieldGroups?.map(g => {
+		const selectedCategories = categories.value.filter(c => g.eventStatusTypeIds.includes(c.id))
+		const selectedStatuses = statuses.value.filter(s => g.companyEventStatusTypeIds.includes(s.id) && !s.isRoot)
+		return {
+		  ...g,
+		  // used for the vuetify v-autocomplete model and is stupid having to do it this way
+		  stupidSelectedStatuses: selectedCategories.concat(selectedStatuses)
+		}
+	})
+	originalCustomFieldGroups.value = cloneDeep(event.value.customFieldGroups)
     getDisplayOnSnippet()
     appStore.loading = false
-    eventLoading.value = false;
+    eventLoading.value = false
   } catch (e) {
-    console.error('*** ERROR ***', e)
+    logError(e)
     appStore.showSnack('ERROR', 'Error Retrieving Data')
-
     appStore.loading = false
   }
 }
+
+const updateStatus = (async (group) => {
+	appStore.loading = true
+	try {
+		event.valueLoading = true
+		await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
+		const selectedCategories = categories.value.filter(c => group.eventStatusTypeIds.includes(c.id))
+		const selectedStatuses = statuses.value.filter(s => group.companyEventStatusTypeIds.includes(s.id) && !s.isRoot)
+		group.stupidSelectedStatuses = selectedCategories.concat(selectedStatuses)
+		const index = event.value.customFieldGroups.findIndex(g => g.id === group.id)
+		event.value.customFieldGroups[index] = group
+		originalCustomFieldGroups.value = cloneDeep(event.value.customFieldGroups)
+		appStore.showSnack('SUCCESS', 'Status updated')
+		appStore.loading = false
+		eventLoading.value = false
+	} catch (e) {
+		console.error('*** ERROR ***', e)
+		appStore.showSnack('ERROR', 'Error updating statuses')
+		appStore.loading = false
+		//revert to previous status
+		event.value.customFieldGroups = cloneDeep(originalCustomFieldGroups.value)
+	}
+})
+
+const toggleSelectAllStatuses = ((group) => {
+	const allStatusIds = statuses.value.filter(s => !s.isRoot && !s.isHeader && !s.isSelectAll).map(s => s.id)
+	const allSelected = group.companyEventStatusTypeIds?.length === allStatusIds.length
+
+	if (allSelected) {
+		group.companyEventStatusTypeIds = []
+	} else {
+		//select all
+		group.companyEventStatusTypeIds = allStatusIds
+	}
+	updateStatus(group)
+})
+
+const toggleSelectAllDefaultStatuses = () => {
+	const allStatuses = statuses.value.filter(s => !s.isRoot && !s.isHeader && !s.isSelectAll)
+	const allSelected = event.value.companyEventStatusTypeIds?.length === allStatuses.length
+
+	if (allSelected) {
+		event.value.companyEventStatusTypeIds = []
+		event.value.stupidSelectedStatuses = event.value.stupidSelectedStatuses.filter(s => !allStatuses.map(inner => inner.uid).includes(s.uid))
+	} else {
+		//select all
+		event.value.companyEventStatusTypeIds = allStatuses.map(s => s.id)
+		event.value.stupidSelectedStatuses.push(...allStatuses)
+		event.value.stupidSelectedStatuses.sort((a, b) => a.text.localeCompare(b.text))
+	}
+}
+
+const toggleStatus = (status, group) => {
+	if (!group.companyEventStatusTypeIds?.includes(status.id)) {
+		group.companyEventStatusTypeIds.push(status.id)
+	} else {
+		group.companyEventStatusTypeIds = group.companyEventStatusTypeIds.filter(s => s !== status.id)
+	}
+	updateStatus(group)
+}
+
+const toggleDefaultStatus = (status) => {
+	if (!event.value.companyEventStatusTypeIds?.includes(status.id)) {
+		event.value.companyEventStatusTypeIds.push(status.id)
+		event.value.stupidSelectedStatuses.push(status)
+		event.value.stupidSelectedStatuses.sort((a, b) => a.text.localeCompare(b.text))
+	} else {
+		event.value.companyEventStatusTypeIds = event.value.companyEventStatusTypeIds.filter(s => s !== status.id)
+		event.value.stupidSelectedStatuses = event.value.stupidSelectedStatuses.filter(s => s.uid !== status.uid)
+	}
+}
+
+const toggleCategory = (category, group) => {
+	//add/remove category to/from list
+	if (!group.eventStatusTypeIds?.includes(category.id)) {
+		group.eventStatusTypeIds.push(category.id)
+
+		//since category overrides status, remove all statuses belonging to this category
+		const stats = statuses.value.filter(s => s.categoryId === category.id)
+		group.companyEventStatusTypeIds = group.companyEventStatusTypeIds.filter(s => !stats.map(inner => inner.id).includes(s))
+	} else {
+		group.eventStatusTypeIds = group.eventStatusTypeIds.filter(c => c !== category.id)
+	}
+
+	updateStatus(group)
+}
+
+const toggleDefaultCategory = (category) => {
+	//add/remove category to/from list
+	if (!event.value.eventStatusTypeIds?.includes(category.id)) {
+		event.value.eventStatusTypeIds.push(category.id)
+		event.value.stupidSelectedStatuses.push(category)
+
+		//since category overrides status, remove all statuses belonging to this category
+		const stats = statuses.value.filter(s => s.categoryId === category.id)
+		event.value.companyEventStatusTypeIds = event.value.companyEventStatusTypeIds.filter(s => !stats.map(inner => inner.id).includes(s))
+		event.value.stupidSelectedStatuses = event.value.stupidSelectedStatuses.filter(s => !stats.map(inner => inner.uid).includes(s.uid))
+		event.value.stupidSelectedStatuses.sort((a, b) => a.text.localeCompare(b.text))
+	} else {
+		event.value.eventStatusTypeIds = event.value.eventStatusTypeIds.filter(c => c !== category.id)
+		event.value.stupidSelectedStatuses = event.value.stupidSelectedStatuses.filter(c => c.uid !== category.uid)
+	}
+}
+
+const getStatusLabel = (group) => {
+	if (!group.companyEventStatusTypeIds?.length && !group.eventStatusTypeIds?.length && !group.eventCollapseByDefault) {
+		return 'None'
+	} else if (group.eventCollapseByDefault) {
+		return 'Collapse by Default'
+	} else {
+		return ''
+	}
+}
+
+const getDefaultStatusLabel = () => {
+	if (!event.value.companyEventStatusTypeIds?.length && !event.value.eventStatusTypeIds?.length && !event.value.collapseByDefault) {
+		return 'None'
+	} else if (event.value.collapseByDefault) {
+		return 'Collapse by Default'
+	} else {
+		return ''
+	}
+}
+
+const getStatusIcon = (status, group) => {
+	if (group.companyEventStatusTypeIds?.includes(status.id)) {
+		return 'mdi-checkbox-marked'
+	} else {
+		return 'mdi-checkbox-blank-outline'
+	}
+}
+
+const getDefaultStatusIcon = (status) => {
+	if (event.value.companyEventStatusTypeIds?.includes(status.id)) {
+		return 'mdi-checkbox-marked'
+	} else {
+		return 'mdi-checkbox-blank-outline'
+	}
+}
+
+const getCategoryIcon = (category, group) => {
+	if (group.eventStatusTypeIds?.includes(category.id)) {
+		return 'mdi-checkbox-marked'
+	} else {
+		return 'mdi-checkbox-blank-outline'
+	}
+}
+
+const getDefaultCategoryIcon = (category) => {
+	if (event.value.eventStatusTypeIds?.includes(category.id)) {
+		return 'mdi-checkbox-marked'
+	} else {
+		return 'mdi-checkbox-blank-outline'
+	}
+}
+
+const getSelectAllIcon = (group) => {
+	const allStatusIds = statuses.value.filter(s => !s.isRoot && !s.isHeader && !s.isSelectAll).map(s => s.id)
+	const allSelected = group.companyEventStatusTypeIds?.length === allStatusIds.length
+
+	if (allSelected) {
+		return 'mdi-checkbox-marked'
+	} else {
+		return 'mdi-checkbox-blank-outline'
+	}
+}
+
+const getDefaultSelectAllIcon = () => {
+	const allStatusIds = statuses.value.filter(s => !s.isRoot && !s.isHeader && !s.isSelectAll).map(s => s.id)
+	const allSelected = event.value.companyEventStatusTypeIds?.length === allStatusIds.length
+
+	if (allSelected) {
+		return 'mdi-checkbox-marked'
+	} else {
+		return 'mdi-checkbox-blank-outline'
+	}
+}
+
 const getDisplayOnSnippet = ()=> {
   for(let cfg of event.value.customFieldGroups){
     const customFieldToDisplay = cfg.customFields.find(cf => cf.displayOnSnippet === true)
@@ -1143,11 +1572,7 @@ const assignAncillaryCustomField = async (cfg) => {
     appStore.loading = false
   }
 }
-const filterCustomFieldGroups = computed(() => {
-  return localCustomFieldGroups.value?.filter(cfg => {
-    return !cfg.archived
-  })
-})
+
 const getAllEventTypes = async () => {
   appStore.loading = true
   try {
@@ -1271,6 +1696,16 @@ const copyToClipBoard = (textValue) => {
 }
 .mobile-width {
   width: calc(100vw - 100px);
+}
+
+.status-border {
+	border-top: 1px solid var(--v-grey-lighten2);
+}
+
+.status-header {
+	font-size: 12px !important;
+	font-weight: 400 !important;
+	color: #00000061;
 }
 </style>
 <style lang="scss">
