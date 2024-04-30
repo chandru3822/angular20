@@ -1077,7 +1077,7 @@ const saveRowChanges = async (rows) => {
     appStore.loading = true
     try {
       const {status} = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
-      localCustomFieldGroups.value = orderBy(localCustomFieldGroups.value, 'groupOrder')
+      customFieldGroups.value = orderBy(customFieldGroups.value, 'groupOrder')
       appStore.showSnack('SUCCESS', 'Group Order Saved')
       // this componentKey forces the data-table component to re-render
       componentKey.value += 1
