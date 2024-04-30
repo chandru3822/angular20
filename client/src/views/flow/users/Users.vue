@@ -1013,7 +1013,6 @@ const getTheOrgFilters = async (initialLoad) => {
     }
   })
   try {
-    console.log('randalogger', filters.value.orgs)
     if(Object.keys(filters.value.orgs).length > 0) {
       //org filters are being used. load their orgs again and repopulate the org lists accordingly
       const params = {

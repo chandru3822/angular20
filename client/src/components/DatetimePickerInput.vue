@@ -75,7 +75,7 @@
           color="primary"
           class="qa-date-ok"
           @click="saveTime()"
-          text="OK"
+          text="Ok"
       ></a-btn>
     </v-time-picker>
   </v-menu>
