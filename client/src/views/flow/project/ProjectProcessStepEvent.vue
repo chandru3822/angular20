@@ -170,15 +170,35 @@
       </v-card>
 
       <v-form ref="eventFieldForm" class="px-6" v-else>
-        <div class="albatross-header-4 d-flex align-baseline">Overview
-          <a small text color="anchor" v-if="userStore.userHasFeature('SCHEDULE')"
-             class="px-0 d-flex align-baseline" target="_blank"
-             :href="`/schedule?projectProcessStepEventId=${ppsEventId}&projectProcessStepId=${projectProcessStepId}`">
-            <span color="anchor" class="albatross-header-5 pl-2 scheduler-button-text">Open Scheduler</span>
-            <v-icon color="anchor" class="scheduler-button-icon">mdi-open-in-new</v-icon>
-          </a>
-        </div>
-        <v-card class="square-card px-4 pt-4 mt-4">
+		<v-expansion-panels
+			multiple
+			:value="expansionOpenStatus"
+		>
+			<v-expansion-panel class="square-card mt-4" key="0">
+				<v-expansion-panel-header class="px-4 py-0 panel-header">
+					<v-toolbar
+						color="transparent"
+						class="elevation-0 cfg-name-toolbar"
+						dense
+					>
+						<v-toolbar-title>
+							<div class="d-flex align-baseline">
+								Overview
+								<a
+									small
+									text
+									v-if="userStore.userHasFeature('SCHEDULE')"
+									class="px-0 pl-2 d-flex align-baseline scheduler-link"
+									target="_blank"
+									:href="`/schedule?projectProcessStepEventId=${ppsEventId}&projectProcessStepId=${projectProcessStepId}`"
+								>
+									Open Scheduler
+								</a>
+							</div>
+						</v-toolbar-title>
+					</v-toolbar>
+				</v-expansion-panel-header>
+        <v-expansion-panel-content class="pa-0">
 
           <a-autocomplete
               v-model="selectedEvent.companyEventStatusTypeId"
@@ -322,22 +342,20 @@
             </v-card-text>
 
           </div>
-        </v-card>
-        <v-col
+		</v-expansion-panel-content>
+		</v-expansion-panel>
+        <v-expansion-panel
             v-if="selectedEvent && selectedEvent.id"
             class="pt-0 px-0"
             v-for="(cfg, index) in selectedEvent.customFieldGroups"
             :key="cfg.id"
         >
-          <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-            <v-toolbar-title class="albatross-header-4">
-              {{ cfg.groupName }}
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-            </v-toolbar-items>
-          </v-toolbar>
-          <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+			<v-expansion-panel-header class="px-4 py-0 panel-header">
+				<v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
+			  		<v-toolbar-title class="albatross-header-4">{{ cfg.groupName }}</v-toolbar-title>
+          		</v-toolbar>
+		  </v-expansion-panel-header>
+          <v-expansion-panel-content class="pa-0 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
             <v-row>
               <v-col :cols="projectStore.manualColumnSplit && cfg.customFieldValues && cfg.customFieldValues.length > 1 ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
@@ -364,8 +382,9 @@
                 />
               </v-col>
             </v-row>
-          </v-card>
-        </v-col>
+		  </v-expansion-panel-content>
+        </v-expansion-panel>
+		</v-expansion-panels>
       </v-form>
 
 
@@ -565,6 +584,39 @@ const toggleViewButtonText = computed(() => {
 })
 const isMobile = computed(() => {
   return vuetify.breakpoint.smAndDown
+})
+
+const expansionOpenStatus = computed(() => {
+	// determine which groups to collapse. Default is expand
+	let indexes = []
+	const defaultStatusNotSet = selectedEvent.value.companyEventStatusTypeIds.length === 0 &&
+		selectedEvent.value.eventStatusTypeIds.length === 0 &&
+		!selectedEvent.value.collapseByDefault
+
+	const expandDefaultByCategory = selectedEvent.value.eventStatusTypeIds.includes(selectedEvent.value.eventStatusTypeId)
+	const expandDefaultByStatus =  selectedEvent.value.companyEventStatusTypeIds.includes(selectedEvent.value.companyEventStatusTypeId) ||
+		// keep default group expanded when event status field is changed but not yet saved
+		companyEventStatuses.value?.find(s => s.eventStatusType === selectedEvent.value.eventStatusType)?.id !== selectedEvent.value.companyEventStatusTypeId
+
+	//check default group
+	if (expandDefaultByCategory || expandDefaultByStatus || defaultStatusNotSet) {
+		indexes.push(0)
+	}
+
+	selectedEvent.value.customFieldGroups.forEach((group, index) => {
+		const defaultStatusNotSet = group.companyEventStatusTypeIds.length === 0 &&
+			group.eventStatusTypeIds.length === 0 &&
+			!group.eventCollapseByDefault
+
+		const expandbyCategory = group.eventStatusTypeIds.includes(selectedEvent.value.eventStatusTypeId)
+		const expandByStatus = group.companyEventStatusTypeIds.includes(selectedEvent.value.companyEventStatusTypeId)
+
+		if (expandbyCategory || expandByStatus || defaultStatusNotSet) {
+			// increment the index to account for default group
+			indexes.push(index + 1)
+		}
+	})
+	return indexes
 })
 
 const goToPath = (path, query) => {
@@ -1235,4 +1287,18 @@ const filterProjectProcessStepEvents = () => {
   text-transform: lowercase;
 }
 
+.panel-header {
+	font-weight: 600;
+
+	border-bottom: 1px solid var(--v-grey-lighten2) !important;
+	border-bottom-left-radius: 0 !important;
+	border-bottom-right-radius: 0 !important;
+}
+
+.scheduler-link {
+	font-weight: 400;
+	font-size: 12px;
+	text-decoration: none;
+	color: var(--v-primary-base);
+}
 </style>

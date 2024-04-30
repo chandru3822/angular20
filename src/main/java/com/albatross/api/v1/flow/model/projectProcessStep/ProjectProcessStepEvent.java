@@ -29,13 +29,14 @@ public class ProjectProcessStepEvent {
   private List<CustomFieldGroup> customFieldGroups;
   private List<Resource> availableResources;
   private List<ProcessStepEventAction> eventActions, eventBanners;
-  private Boolean archived, readonly, readonlyAllow, eventHidden, startTimeReadOnly, startTimeHidden, endTimeReadOnly, endTimeHidden, resourceReadOnly, resourceHidden, hasAttachmentTypesAssigned, startTimeReadOnlyAllow, startTimeHiddenAllow, endTimeReadOnlyAllow, endTimeHiddenAllow, resourceReadOnlyAllow, resourceHiddenAllow, eventHiddenAllow;
+  private Boolean archived, readonly, readonlyAllow, eventHidden, startTimeReadOnly, startTimeHidden, endTimeReadOnly, endTimeHidden, resourceReadOnly, resourceHidden, hasAttachmentTypesAssigned, startTimeReadOnlyAllow, startTimeHiddenAllow, endTimeReadOnlyAllow, endTimeHiddenAllow, resourceReadOnlyAllow, resourceHiddenAllow, eventHiddenAllow, collapseByDefault;
   private List<WhiteListedPosition> readonlyWhiteListedPositions, eventHiddenWhiteListedPositions, startTimeWhiteListedPositions, startTimeHiddenWhiteListedPositions, endTimeWhiteListedPositions, endTimeHiddenWhiteListedPositions, resourceWhiteListedPositions, resourceHiddenWhiteListedPositions;
   private CustomFieldValueDisplay customFieldDisplayValue;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private List<String> childFunctionReturnedStrings;
 
+  private List<Long> companyEventStatusTypeIds, eventStatusTypeIds;
 
   @Data
   public static class Resource {

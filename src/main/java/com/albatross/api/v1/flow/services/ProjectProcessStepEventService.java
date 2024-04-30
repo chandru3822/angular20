@@ -910,6 +910,20 @@ public class ProjectProcessStepEventService {
         List.class,
         "resourceHiddenWhiteListedPositions",
         new JsonCollectionDeserializer(resourceHiddenWhiteListedPositionsRef, objectMapper));
+
+		TypeReference<List<Long>> companyEventStatusTypeIdsRef = new TypeReference<>() {};
+		bw.registerCustomEditor(
+			List.class,
+			"companyEventStatusTypeIds",
+			new JsonCollectionDeserializer(companyEventStatusTypeIdsRef, objectMapper)
+		);
+
+		TypeReference<List<Long>> eventStatusTypeIdsRef = new TypeReference<>() {};
+		bw.registerCustomEditor(
+			List.class,
+			"eventStatusTypeIds",
+			new JsonCollectionDeserializer(eventStatusTypeIdsRef, objectMapper)
+		);
     }
   }
 
