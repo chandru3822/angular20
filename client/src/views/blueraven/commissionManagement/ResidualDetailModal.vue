@@ -43,8 +43,7 @@
                   variant="outlined"
                   :to="`/project/${item.projectId}/status`"
                   color="unset"
-                  :text="item.projectId"
-                  text="item.projectId"
+                  :text="`${item.projectId}`"
               ></a-btn>
             </td>
             <td class="text-left" v-if="typeId !== 4">{{item.planName}}</td>

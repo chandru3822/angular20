@@ -714,6 +714,12 @@ FROM (select cfg.id,
              cfg.event_id                                                     as "eventId",
              cfg.unique_behavior_type_id                                      as "uniqueBehaviorTypeId",
              cfg.process_step_id,
+             coalesce(cfg.company_process_step_status_type_ids, array[]::bigint[]) as "companyProcessStepStatusTypeIds",
+             coalesce(cfg.company_event_status_type_ids, array[]::bigint[]) as "companyEventStatusTypeIds",
+             coalesce(cfg.process_step_status_type_ids, array[]::bigint[]) as "processStepStatusTypeIds",
+             coalesce(cfg.event_status_type_ids, array[]::bigint[]) as "eventStatusTypeIds",
+             cfg.ps_collapse_by_default as "psCollapseByDefault",
+             cfg.event_collapse_by_default as "eventCollapseByDefault",
 --                pps.parent_project_process_step_id,  --todo: are these needed. they came from process step query
              coalesce((SELECT array_to_json(array_agg(row_to_json(fields)))
                        FROM (select cfvs.id,

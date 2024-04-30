@@ -332,7 +332,10 @@ onMounted(() => {
         item-value="id"
         @click:clear="clear"
         :disabled="!!searchProject?.projectId"
-        ></a-autocomplete>
+        ><template v-slot:item="data">
+          <!-- HTML that describe how select should render items when the select is open -->
+          <span class="body-large">{{ data.item.state }}</span>
+        </template></a-autocomplete>
         <a-autocomplete v-model="searchProject"
                         :items="searchProjects"
                         :loading="searchProjectsLoading"

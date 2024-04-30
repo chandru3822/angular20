@@ -115,6 +115,13 @@ public class EventService {
     params.put("resourceHiddenAllow", event.getResourceHiddenAllow());
     params.put("hiddenAllow", event.getHiddenAllow());
 
+	var statuses = (event.getCompanyEventStatusTypeIds() == null || event.getCompanyEventStatusTypeIds().isEmpty()) ? List.of() : event.getCompanyEventStatusTypeIds();
+	params.put("companyEventStatusTypeIds", statuses);
+
+	var rootStatuses = (event.getEventStatusTypeIds() == null || event.getEventStatusTypeIds().isEmpty()) ? List.of() : event.getEventStatusTypeIds();
+	params.put("eventStatusTypeIds", rootStatuses);
+	params.put("collapseByDefault", event.getCollapseByDefault());
+
     sqlCache.updateBySql(EventQuery.saveChangesToDefaultFields, params);
   }
 
@@ -455,6 +462,20 @@ public class EventService {
           List.class,
           "resourceHiddenWhiteListedPositions",
           new JsonCollectionDeserializer(resourceHiddenWhiteListedPositionsRef, objectMapper));
+
+		TypeReference<List<Long>> companyEventStatusTypeIdsRef = new TypeReference<>() {};
+		bw.registerCustomEditor(
+			List.class,
+			"companyEventStatusTypeIds",
+			new JsonCollectionDeserializer(companyEventStatusTypeIdsRef, objectMapper)
+		);
+
+		TypeReference<List<Long>> eventStatusTypeIdsRef = new TypeReference<>() {};
+		bw.registerCustomEditor(
+			List.class,
+			"eventStatusTypeIds",
+			new JsonCollectionDeserializer(eventStatusTypeIdsRef, objectMapper)
+		);
     }
   }
 }

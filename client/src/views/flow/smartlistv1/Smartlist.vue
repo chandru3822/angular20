@@ -293,7 +293,7 @@ const userCanEdit = computed(() => {
     return false
   }
 
-  if (userStore.details.id === this?.smartlist?.ownerId ||
+  if (userStore.details.id === smartlist.value?.ownerId ||
       userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
   ) {
     return true
@@ -309,7 +309,7 @@ const userCanView = computed(() => {
   return Smartlist.userCanView(smartlist.value)
 })
 const canDelete = computed(() => {
-  return ((!smartlist.value?.id || userStore.details.id === this?.smartlist?.ownerId) && userStore.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')) || userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+  return ((!smartlist.value?.id || userStore.details.id === smartlist.value?.ownerId) && userStore.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')) || userStore.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
 })
 const filteredCompanyObjectTypes = computed(() => {
   if (smartlist.value.id) {

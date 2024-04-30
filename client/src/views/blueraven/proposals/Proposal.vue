@@ -132,7 +132,10 @@
                     :hint="getHint(field)"
                   />
                   <CommissionDetailsMenu
-                    v-if="field.customFieldGroupAssignmentId === 454 && isFieldVisible(field)"
+                    v-if="
+                      field.customFieldGroupAssignmentId === 454 &&
+                      isFieldVisible(field)
+                    "
                     :custom-field-groups="sortedCustomFieldGroups"
                     :proposal-id="proposalId"
                   />
@@ -278,19 +281,13 @@ import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
 import EditableInput from '@/views/blueraven/proposals/EditableInput'
 import CommissionDetailsMenu from '@/views/blueraven/proposals/CommissionDetailsMenu.vue'
 
-import {
-  getCurrentInstance,
-  computed,
-  ref,
-  onMounted,
-  onBeforeUnmount,
-  provide
-} from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, provide } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router/composables'
 import { useAppStore } from '@/stores/AppStore.js'
 import useProposalStore from '@/views/blueraven/settings/proposalDesigner/store.js'
 import { storeToRefs } from 'pinia'
+import { buildContext, exec } from '@/views/blueraven/proposals/exec.js'
 
 const { VITE_HIDE_PROPOSAL } = import.meta.env
 
@@ -298,7 +295,6 @@ const appStore = useAppStore()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
 
 const store = useProposalStore()
 const { template, loading: templateLoading } = storeToRefs(store)
@@ -327,63 +323,12 @@ const USD = new Intl.NumberFormat('en-US', {
   currency: 'USD'
 })
 
-//usage: exec('customFieldHasValue(fieldId, expectedValue)') => bool
-const exec = function (expr, context = []) {
-  //returns a boolean if the provided fieldId matches the value passed in
-  function customFieldHasValue(fieldId, value) {
-    const match = context?.find(
-      (f) => f.fieldId === fieldId && f.value === value
-    )
-    return match !== undefined
-  }
-
-  const fn = new Function('customFieldHasValue', `"use strict"; return ${expr}`)
-  return fn(customFieldHasValue)
-}
-
-const getValueFromCustomField = function (field) {
-  switch (field.dataTypeId) {
-    case 1:
-      return field.dateValue
-    case 2:
-      return field.timestampValue
-    case 3:
-      return field.booleanValue
-    case 4:
-      return field.numericValue
-    case 5:
-    case 12:
-      return field.textValue
-    case 6:
-    case 8:
-    case 9:
-      return field.intValue
-    case 7:
-    case 10:
-      return field.intArrayValue
-    case 13:
-      return field.richTextValue
-  }
-}
-
 const isFieldVisible = (field) => {
   if (field?.visibility === undefined || field?.visibility === null) {
     return true
   }
 
-  // build context
-  const ctx = proposal.value?.customFieldGroups
-    ?.map((cfg) => cfg.customFieldValues)
-    ?.flat()
-    ?.filter((f) => f.customFieldId !== null)
-    ?.map((f) => {
-      const value = getValueFromCustomField(f)
-      return {
-        fieldId: f.customFieldId,
-        value
-      }
-    })
-
+  const ctx = buildContext(proposal.value?.customFieldGroups)
   return exec(field.visibility, ctx)
 }
 
@@ -496,7 +441,10 @@ const handleNameChange = async ({ save, value }) => {
       )
       proposal.value = data
     } catch (e) {
-      appStore.showSnack('ERROR', e?.data?.message || 'Error updating proposal name')
+      appStore.showSnack(
+        'ERROR',
+        e?.data?.message || 'Error updating proposal name'
+      )
     }
   }
 }
@@ -568,7 +516,10 @@ const getProposalDetails = async () => {
   } catch (e) {
     logError(e)
     proposalExists.value = false
-    appStore.showSnack('ERROR', `Error retrieving proposal #${proposalId.value}`)
+    appStore.showSnack(
+      'ERROR',
+      `Error retrieving proposal #${proposalId.value}`
+    )
   } finally {
     appStore.loading = false
   }
@@ -680,7 +631,10 @@ const deleteProposal = async () => {
       'blueraven'
     )
     proposalExists.value = false
-    appStore.showSnack('SUCCESS', `Deleted proposal #${proposal.value?.proposalNbr}`)
+    appStore.showSnack(
+      'SUCCESS',
+      `Deleted proposal #${proposal.value?.proposalNbr}`
+    )
     handleHidingGlobalLoader(status)
     await router.push({
       name: 'proposalDesigns',
@@ -708,7 +662,7 @@ const duplicate = async () => {
         name: 'proposal',
         params: { proposalId: data.id }
       })
-       appStore.showSnack(
+      appStore.showSnack(
         'SUCCESS',
         `Duplicate proposal #${data?.proposalNbr} created in new tab. <br/> <a href="${href}">Click to open again</a>`,
         true

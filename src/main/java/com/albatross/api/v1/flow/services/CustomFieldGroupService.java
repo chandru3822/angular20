@@ -449,6 +449,27 @@ public class CustomFieldGroupService {
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeTabId", customFieldGroup.getCompanyObjectTypeTabId());
     params.put("modifiedById", user.trueUserId());
+	params.put("companyProcessStepStatusTypeIds", (customFieldGroup.getCompanyProcessStepStatusTypeIds() == null || customFieldGroup.getCompanyProcessStepStatusTypeIds().isEmpty()) ?
+		List.of() :
+		customFieldGroup.getCompanyProcessStepStatusTypeIds()
+	);
+
+	params.put("companyEventStatusTypeIds", (customFieldGroup.getCompanyEventStatusTypeIds() == null || customFieldGroup.getCompanyEventStatusTypeIds().isEmpty()) ?
+		List.of() :
+		customFieldGroup.getCompanyEventStatusTypeIds()
+	);
+
+	params.put("processStepStatusTypeIds", (customFieldGroup.getProcessStepStatusTypeIds() == null || customFieldGroup.getProcessStepStatusTypeIds().isEmpty()) ?
+		List.of() :
+		customFieldGroup.getProcessStepStatusTypeIds()
+	);
+
+	params.put("eventStatusTypeIds", (customFieldGroup.getEventStatusTypeIds() == null || customFieldGroup.getEventStatusTypeIds().isEmpty()) ?
+		List.of() :
+		customFieldGroup.getEventStatusTypeIds()
+	);
+	params.put("psCollapseByDefault", customFieldGroup.getPsCollapseByDefault());
+	params.put("eventCollapseByDefault", customFieldGroup.getEventCollapseByDefault());
 
     sqlCache.updateBySql(CustomFieldGroupQuery.updateCustomFieldGroup, params);
 
@@ -548,6 +569,34 @@ public class CustomFieldGroupService {
         List.class,
         "customFieldValues",
         new JsonCollectionDeserializer(customFieldValueRef, objectMapper));
+
+		TypeReference<List<Long>> companyProcessStepStatusTypeIdsRef = new TypeReference<>() {};
+		bw.registerCustomEditor(
+			List.class,
+			"companyProcessStepStatusTypeIds",
+			new JsonCollectionDeserializer(companyProcessStepStatusTypeIdsRef, objectMapper)
+		);
+
+		TypeReference<List<Long>> companyEventStatusTypeIdsRef = new TypeReference<>() {};
+		bw.registerCustomEditor(
+			List.class,
+			"companyEventStatusTypeIds",
+			new JsonCollectionDeserializer(companyEventStatusTypeIdsRef, objectMapper)
+		);
+
+		TypeReference<List<Long>> processStepStatusTypeIdsRef = new TypeReference<>() {};
+		bw.registerCustomEditor(
+			List.class,
+			"processStepStatusTypeIds",
+			new JsonCollectionDeserializer(processStepStatusTypeIdsRef, objectMapper)
+		);
+
+		TypeReference<List<Long>> eventStatusTypeIdsRef = new TypeReference<>() {};
+		bw.registerCustomEditor(
+			List.class,
+			"eventStatusTypeIds",
+			new JsonCollectionDeserializer(eventStatusTypeIdsRef, objectMapper)
+		);
     }
   }
 
