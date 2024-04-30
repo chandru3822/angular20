@@ -14,6 +14,7 @@ import com.albatross.api.v1.flow.services.ProjectService;
 import com.albatross.api.v1.flow.services.ProjectStatusService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/flow/project", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -79,11 +81,11 @@ public class ProjectController {
     return projectService.getStatusFieldsByProject(projectId, null);
   }
 
-    @GetMapping(value = "/{projectId}/statusFields/{companyProjectStatusTypeId}")
-    public List<ProjectStatusField> getStatusFieldsByProjectForStatus(@PathVariable Long projectId,
-                                                                      @PathVariable Long companyProjectStatusTypeId) {
-        return projectService.getStatusFieldsByProject(projectId, companyProjectStatusTypeId);
-    }
+  @GetMapping(value = "/{projectId}/statusFields/{companyProjectStatusTypeId}")
+  public List<ProjectStatusField> getStatusFieldsByProjectForStatus(@PathVariable Long projectId,
+                                                                    @PathVariable Long companyProjectStatusTypeId) {
+    return projectService.getStatusFieldsByProject(projectId, companyProjectStatusTypeId);
+  }
 
   @DeleteMapping(value = "/{projectId}")
   public void deleteProject(
@@ -176,8 +178,13 @@ public class ProjectController {
     if (displayName == null) {
       displayName = file.getOriginalFilename();
     }
-    return new ResponseEntity<>(
-      projectService.addAttachment(file, projectId, attachmentTypeId, displayName), HttpStatus.OK);
+    try {
+      Attachment attachment = projectService.addAttachment(file, projectId, attachmentTypeId, displayName);
+      return new ResponseEntity<>(attachment, HttpStatus.OK);
+    } catch (Exception e) {
+      log.error("[Project Attachment] Error creating attachment msg={}", e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
   }
 
   @PostMapping(value = "/{projectId}/attachments")
