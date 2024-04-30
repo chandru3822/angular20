@@ -48,6 +48,11 @@ export function defineSortableTable (selector, items, orderField, saveFunction, 
   })
 }
 
+export const getRowClass = (item, itemList) => {
+    return itemList.indexOf(item) % 2 === 1 ? 'shaded-row' : ''
+}
+
+
 export function getYears(startingYear, sortDescending) {
   let yearEnd = parseInt(moment().format('YYYY'))
   let years = []
