@@ -26,7 +26,7 @@
             color="primary"
             dark
             @click="deleteError = false"
-            text="OK"
+            text="Ok"
           ></a-btn>
         </v-card-actions>
       </v-card>

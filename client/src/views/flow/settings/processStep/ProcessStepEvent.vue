@@ -696,7 +696,7 @@
                         <a-btn
                             @click="showActionLogicString = false"
                             color="unset"
-                            text="OK"
+                            text="Ok"
                         ></a-btn>
                       </v-card-actions>
                     </v-card>
