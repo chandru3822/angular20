@@ -86,9 +86,13 @@ public class BlueravenProposalVersionController {
 
   @DeleteMapping(value = "/{id}/values/{objectCode}/{groupUUID}")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
-  public Optional<ProposalCustomValuesRow> deleteCustomFieldGroup(
+  public ResponseEntity<?> deleteCustomFieldGroup(
     @PathVariable Long id, @PathVariable String objectCode, @PathVariable UUID groupUUID) {
-    return proposalVersionService.deleteCustomFieldGroup(id, objectCode, groupUUID);
+    Optional<ProposalCustomValuesRow> proposalCustomValuesRow = proposalVersionService.deleteCustomFieldGroup(id, objectCode, groupUUID);
+    if (proposalCustomValuesRow.isPresent()) {
+      return ResponseEntity.of(proposalCustomValuesRow);
+    }
+    return ResponseEntity.noContent().build();
   }
 
   @PostMapping(value = "/{id}/values/{objectCode}/{groupUUID}/archive")

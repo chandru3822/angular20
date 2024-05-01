@@ -62,7 +62,7 @@
               color="grey lighten-2"
               v-if="item.status"
             >
-              {{ item.status | capitalize }}
+              {{ capitalize(item.status) }}
             </v-chip>
             <v-chip
               class="ma-2 default-text-color"
@@ -82,7 +82,7 @@
               variant="text"
               icon
               color="primary"
-              @click.navive.stop="showHistory(item.version)"
+              @click.native.stop="showHistory(item.version)"
               prepend-icon="mdi-history"
             ></a-btn>
           </template>
@@ -103,6 +103,7 @@ import ProposalVersionHistory from '@/views/blueraven/settings/proposals/Proposa
 import { computed, ref, onMounted, watch } from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useRouter } from 'vue-router/composables'
+import { capitalize } from './formatters.js'
 
 const router = useRouter()
 const userStore = useUserStore()
