@@ -112,11 +112,9 @@ begin
        and  case when rpqd.id is not null then
                  rpqd.qualified_date >= now() - interval ' 1 month' * (select r.residual_duration_months
                                                                        from brs.residual_plan r
-                                                                       inner join brs.residual_plan_user rpu on rpu.residual_plan_id = r.id
-                                                                       where rpu.user_id =p_closer_user_id and
-                                                                         rpu.start_date >= v_min_start_date and
-                                                                         case when rpu.end_date is not null then
-                                                                          rpu.end_date <= v_min_start_date else 1=1 end limit 1)
+                                                                       inner join brs.user_residual ur on ur.residual_plan_id = r.id and
+                                                                                                          ur.user_id = p_closer_user_id
+                                                                       )
              else 1=1 end
         and pd.final_design_signed_date >= v_min_start_date and
           pd.final_design_signed_date >= '2017-01-01'::date
