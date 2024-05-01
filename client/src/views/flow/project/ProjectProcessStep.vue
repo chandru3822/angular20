@@ -251,11 +251,11 @@
 			  :value="expansionOpenStatus"
 		  >
 			  <v-expansion-panel
-				  v-for="(cfg, index) in customFieldGroups"
+				  v-for="(cfg, index) in customFieldGroups.filter(g => g.customFieldValues?.length > 0)"
 				  :key="index"
 			  >
 				  <v-expansion-panel-header class="px-4 py-0 panel-header">
-					  <v-toolbar v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0" color="transparent" class="elevation-0 cfg-name-toolbar" dense>
+					  <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
 						  <v-toolbar-title>
 							  <!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
 							  <a-btn
@@ -270,7 +270,7 @@
 						  </v-toolbar-title>
 					  </v-toolbar>
 				  </v-expansion-panel-header>
-				  <v-expansion-panel-content v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+				  <v-expansion-panel-content>
 					  <v-row>
 						  <v-col :cols="projectStore.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
 							  <CustomValueInput
