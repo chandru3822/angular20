@@ -134,7 +134,7 @@
       </v-card>
     </v-menu>
 
-    <confirm-dialog ref="confirmEmail">
+    <confirm-dialog ref="confirmEmailRef">
       <template #title>Confirm Email</template>
       <v-container>
         <p>
