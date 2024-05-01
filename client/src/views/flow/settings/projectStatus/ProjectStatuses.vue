@@ -53,8 +53,9 @@
                 color="primary"
                 @click="[addNew = !addNew, newType = {}]"
                 v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
-                prepend-icon="add"
+                :prepend-icon="addNew && vuetify.breakpoint.smAndDown ? 'close': !addNew ? 'add' : ''"
                 :text="addNew ? 'Cancel' : 'Add New'"
+                hide-text-on-mobile
             ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -86,11 +87,9 @@
             :loading="companyStatusesLoading"
             :sort-by="['displayOrder']"
             :sort-desc="[false]"
-            class="elevation-1"
+            class="elevation-1 table-striped"
         >
-          <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td style="width: 50px">
+          <template #item.draggable="{ item, index }" style="width: 50px">
                 <a-btn
                     variant="text"
                     color="primary"
@@ -100,20 +99,14 @@
                     v-if="userCanEdit"
                     prepend-icon="drag_handle"
                 ></a-btn>
-              </td>
-              <td class="text-left">
-                {{ item.projectStatusType }}
-              </td>
-              <td class="text-left">
-                {{ item.rootProjectStatusType }}
-              </td>
-              <td class="text-left">
+          </template>
+              <template #item.initial="{ item }" class="text-left">
                 <input v-if="item.isDefault" type="checkbox" v-model="item.isDefault" disabled readonly>
-              </td>
-              <td class="text-left">
-                <v-icon v-if="item.iconTag != null">{{ item.iconTag }}</v-icon>
-              </td>
-              <td class="text-right">
+              </template>
+          <template #item.icon="{ item }" class="text-right">
+            <v-icon v-if="item.iconTag != null">{{ item.iconTag }}</v-icon>
+          </template>
+              <template #item.icons="{ item }" class="text-right">
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
                     <a-btn
@@ -144,10 +137,8 @@
                     prepend-icon="delete"
                 ></a-btn>
 
-              </td>
+              </template>
 
-            </tr>
-          </template>
         </v-data-table>
       </v-col>
 
@@ -181,6 +172,7 @@ const appStore = useAppStore()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const vuetify = vueInstance.$vuetify
 
 const filteredProjectStatuses = computed(() => {
   return statusTypes.value.filter(s => {
