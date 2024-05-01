@@ -362,7 +362,7 @@ const sortedFilteredActivities = computed(() => {
   getPinnedActivitiesOnly(activities.value)
   if(sortedList.length > (activitiesToShow.value * bottomHitCount.value) ) {
     if(activityList.value) {
-      activityList.value.infiniteStateLoaded(false)
+      activityList.value[0].infiniteStateLoaded(false)
     }
     return sortedList.slice(0, (activitiesToShow.value * bottomHitCount.value))
   } else {

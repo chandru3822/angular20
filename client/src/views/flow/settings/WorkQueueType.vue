@@ -149,6 +149,7 @@
         <v-toolbar flat class="wqt-header-bar">
           <v-toolbar-title class="app-title">Work Queue Access Control</v-toolbar-title>
         </v-toolbar>
+        edit: {{userCanEdit}}
         <multi-select-group
           v-if="!workQueueLoading"
           :userCanEdit="userCanEdit"
@@ -166,7 +167,7 @@
           @allow-changed="workQueueTypeHiddenAllowEventListener"
           @checkbox-changed="workQueueTypeHiddenCheckboxEventListener"></multi-select-group>
             <br/>
-            <a-btn v-if="userCanEdit" color="primary" dark class="d-inline-block white--text"
+            <a-btn v-if="userCanEdit" color="primary" class="d-inline-block white--text"
                    @click="saveHiddenAndWhiteList()" prepend-icon="save" text="SAVE"/>
       </v-col>
     </v-row>
@@ -312,6 +313,7 @@ import draggable from 'vuedraggable'
 import ZonelessTimePickerInput from './availability/ZonelessTimePickerInput'
 import SmartlistColumn from '@/views/flow/smartlistv1/SmartlistColumn'
 import cloneDeep from 'lodash.clonedeep'
+import MultiSelectGroup from "@/components/MultiSelectGroup"
 
 import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
@@ -387,16 +389,16 @@ const workQueueTypeId = computed(() => {
   return route.params.id
 })
 const userCanAdd = computed(() => {
-  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADD')
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')
 })
 const userCanEdit = computed(() => {
-  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'EDIT')
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
 })
 const userCanDelete = computed(() => {
-  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'DELETE')
+  return userStore.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
 })
 const userIsAdmin = computed(() => {
-  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'Admin')
+  return userStore.userHasFeatureAccessLevel('WORK_QUEUE', 'ADMIN')
 })
 const companyId = computed(() => {
   return userStore.details.companyId
