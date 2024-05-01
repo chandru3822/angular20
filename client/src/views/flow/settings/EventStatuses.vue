@@ -57,11 +57,15 @@
             :sort-by="['displayOrder']"
             :sort-desc="[false]"
             class="elevation-1"
+            :item-class="rowClass"
+            @current-items="updateCurrentItems"
           >
             <template #expanded-item="{ headers, item }">
-              <td :colspan="headers.length" class="pa-4 text-left"
-                  :class="{'shaded-row': statusTypes.indexOf(item) % 2}">
+              <td :colspan="headers.length" class="pa-4 text-left overflow-visible overflow-hidden-m one-hunned-minus-fifty"
+                  :class="{'shaded-row': currentItems.indexOf(item) % 2 === 1}">
                 <h3 class="mb-3">Edit Status Type</h3>
+                <v-row>
+                  <v-col cols="12">
                 <a-text-field v-model="item.eventStatusType"
                               label="Status Type"
                               :readonly="!userCanEdit"
@@ -84,11 +88,11 @@
                   @click="saveType(item, false)"
                   text="Save"
                 />
+                  </v-col>
+                </v-row>
               </td>
             </template>
-            <template #item="{ item, index }">
-              <tr :class="{'shaded-row': index % 2}">
-                <td style="width: 50px">
+            <template #item.draggable="{ item, index }" style="width: 50px">
                   <a-btn
                     variant="text"
                     color="primary"
@@ -97,14 +101,14 @@
                     v-if="userCanEdit"
                     prepend-icon="drag_handle"
                   />
-                </td>
-                <td class="text-left">
+            </template>
+                <template #item.eventStatusType="{item}" class="text-left">
                   {{ item.eventStatusType }}
-                </td>
-                <td class="text-left">
+                </template>
+                <template #item.rootEventStatusType="{item}" class="text-left">
                   {{ item.rootEventStatusType }}
-                </td>
-                <td class="text-right">
+                </template>
+                <template #item.icons="{item, index}" class="text-right">
                   <a-btn
                     size="small"
                     variant="text"
@@ -147,10 +151,9 @@
                     @click="[itemToDelete=item, showDeleteDialog=true]"
                     prepend-icon="delete"
                   />
-                </td>
+                </template>
 
-              </tr>
-            </template>
+
           </v-data-table>
         </v-card>
       </v-col>
@@ -226,7 +229,7 @@ import draggable from 'vuedraggable'
 
 import orderBy from 'lodash.orderby'
 import {getCompanyEventStatusTypes, getEventStatusTypes} from '@/services/eventStatusTypeService'
-import {getRequest, deleteRequest, putRequest, defineSortableTable} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, defineSortableTable, getRowClass} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {computed, getCurrentInstance, ref, onMounted} from "vue";
@@ -451,6 +454,14 @@ const closeDeleteDialog = () =>{
   showDeleteDialog.value = false
   itemToDelete.value = null
 }
+const rowClass = (item) => {
+  debugger
+  return getRowClass(item, currentItems.value)
+}
+const currentItems = ref([])
+const updateCurrentItems = (cIs) => {
+  currentItems.value = cIs
+}
 
 </script>
 
@@ -463,5 +474,9 @@ const closeDeleteDialog = () =>{
 
 
 <style scoped lang="scss">
-
+.one-hunned-minus-fifty{
+  @media (max-width: 960px) {
+    width: calc(100vw - 50px);
+  }
+}
 </style>
