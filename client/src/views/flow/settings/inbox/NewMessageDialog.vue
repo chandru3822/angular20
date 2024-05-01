@@ -317,12 +317,12 @@ const sendMessage = async () => {
   else {
     // Send the message for each selected User
     for (let currentUserId of selectedUserIds.value) {
-      attachment.value =  `/user/` + currentUserId + `/attachment`
-      sendText.value = `/communication/sendTextsForUser/` + currentUserId
-      lastSent.value = `/messaging/setLastSent/user/` + currentUserId
-      createNotification.value = `/messaging/createNotification/user/` + currentUserId
-      inbox.value = `/inbox/inboxConversation/user/` + currentUserId
-      addTeam.value = `/messaging/addTeam/user/` + currentUserId
+      attachmentUrl.value =  `/user/` + currentUserId + `/attachment`
+      sendTextUrl.value = `/communication/sendTextsForUser/` + currentUserId
+      lastSentUrl.value = `/messaging/setLastSent/user/` + currentUserId
+      createNotificationUrl.value = `/messaging/createNotification/user/` + currentUserId
+      inboxUrl.value = `/inbox/inboxConversation/user/` + currentUserId
+      addTeamUrl.value = `/messaging/addTeam/user/` + currentUserId
       if (assignAndSend.value) {
         await sendMessageAndAssign();
       }
