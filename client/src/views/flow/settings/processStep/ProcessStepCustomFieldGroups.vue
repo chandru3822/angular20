@@ -83,7 +83,6 @@
                 single-expand
                 :expanded.sync="expanded"
                 hide-default-footer
-                hide-default-header
                 :sort-desc="[false]"
                 :sort-by="['groupOrder']"
                 class="elevation-1 fix-column-width-bug process-step-cfg-table square-card"
@@ -96,193 +95,176 @@
                 <span class="default-text-color">No actions for this process step</span>
               </template>
 
-				<!-- since the table below is just one td and then using flex, mimic that here to make headers align -->
-				<template #body.prepend>
-					<tr>
-						<td width="100%">
-							<v-row class="text-no-wrap stupid-header py-3">
-								<v-col cols="5" class="flex-grow-1 flex-shrink-0 text-left pa-0 pl-3 align-content-center">Custom Field Groups</v-col>
-								<v-col cols="4" class="flex-grow-0 flex-shrink-1 pa-0 pr-6 align-content-center">Assigned Process Step Status</v-col>
-								<v-col cols="2" class="flex-grow-0 flex-shrink-1 align-content-center pa-0"></v-col>
-							</v-row>
-						</td>
-					</tr>
-				</template>
-
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
-					<td width="100%">
-						<v-row class="text-no-wrap">
-							<v-col style="width: 50px" class="flex-grow-0 flex-shrink-1 py-0 px-3 justify-center align-content-center">
-								<a-btn
-									variant="text"
-									color="primary"
-									icon
-									size="small"
-									class="handle"
-									v-if="userCanEdit"
-									prepend-icon="drag_handle"
-								/>
-							</v-col>
-							<v-col cols="5" class="flex-grow-1 flex-shrink-0 text-left pa-0 pl-3 align-content-center">
-								<div v-if="userCanEdit">
-									<a-text-field
-										v-if="item.edit"
-										v-model="item.groupName">
-										<template v-slot:append-outer>
-											<v-icon color="primary" @click="[saveGroupName(item), item.edit = false]">save</v-icon>
-											<v-icon color="primary" @click="item.edit = false">clear</v-icon>
-										</template>
-									</a-text-field>
-									<a style="text-decoration: underline;" v-else @click="item.edit = true"
-									   class="default-text-color">
-										{{ item.groupName }}
-									</a>
-								</div>
-								<span v-else>{{ item.groupName }}</span>
-							</v-col>
-							<v-col cols="4" class="flex-grow-0 flex-shrink-1 pa-0 pr-6 align-content-center">
-								<a-autocomplete
-									v-model="item.stupidSelectedStatuses"
-									:items="statuses"
-									:label="getStatusLabel(item)"
-									density="compact"
-									item-value="uid"
-									return-object
-									hide-details
-									multiple
-									@change=""
+					<td style="width: 50px">
+						<a-btn
+							variant="text"
+							color="primary"
+							icon
+							size="small"
+							class="handle"
+							v-if="userCanEdit"
+							prepend-icon="drag_handle"
+						/>
+					</td>
+					<td>
+						<div v-if="userCanEdit">
+							<a-text-field
+								v-if="item.edit"
+								v-model="item.groupName">
+								<template v-slot:append-outer>
+									<v-icon color="primary" @click="[saveGroupName(item), item.edit = false]">save</v-icon>
+									<v-icon color="primary" @click="item.edit = false">clear</v-icon>
+								</template>
+							</a-text-field>
+							<a style="text-decoration: underline;" v-else @click="item.edit = true"
+							   class="default-text-color">
+								{{ item.groupName }}
+							</a>
+						</div>
+						<span v-else>{{ item.groupName }}</span>
+					</td>
+					<td>
+						<a-autocomplete
+							v-model="item.stupidSelectedStatuses"
+							:items="statuses"
+							:label="getStatusLabel(item)"
+							density="compact"
+							item-value="uid"
+							return-object
+							hide-details
+							multiple
+							@change=""
+						>
+							<template #selection="{item: status, index}">
+								<template v-if="getSelectAllIcon(item) === 'mdi-checkbox-marked'">
+									<span v-if="index === 0">All status types</span>
+								</template>
+								<template v-else-if="item.processStepStatusTypeIds?.length === categories?.length">
+									<span v-if="index === 0">All root status types</span>
+								</template>
+								<template v-else>
+									<template v-if="status?.isRoot">
+										<v-chip
+											v-if="index < 3"
+											class="mb-1 font-weight-bold"
+											small
+										>
+											{{ status.text }}
+										</v-chip>
+									</template>
+									<template v-else>
+										<v-chip
+											v-if="index < 3"
+											class="mb-1 font-weight-bold"
+											small
+										>
+											{{ status.text }}
+										</v-chip>
+									</template>
+									<template v-if="index === 3">
+										<span>and {{ (item.processStepStatusTypeIds?.length + item.companyProcessStepStatusTypeIds?.length) - 3 }} more</span>
+									</template>
+								</template>
+							</template>
+
+							<template #prepend-item>
+								<v-list-item>
+									<v-list-item-action>
+										<v-checkbox
+											class="collapse-checkbox"
+											color="rgba(0, 0, 0, 0.54)"
+											:ripple="false"
+											v-model="item.psCollapseByDefault"
+											@click="emit('default-collapse-updated', item)"
+										/>
+									</v-list-item-action>
+									<v-list-item-title>Collapse by Default</v-list-item-title>
+								</v-list-item>
+							</template>
+
+							<template #item="{item: status}">
+								<v-list-item
+									v-if="status.isHeader"
+									class="pt-1 status-border"
 								>
-									<template #selection="{item: status, index}">
-										<template v-if="getSelectAllIcon(item) === 'mdi-checkbox-marked'">
-											<span v-if="index === 0">All status types</span>
-										</template>
-										<template v-else-if="item.processStepStatusTypeIds?.length === categories?.length">
-											<span v-if="index === 0">All root status types</span>
-										</template>
-										<template v-else>
-											<template v-if="status?.isRoot">
-												<v-chip
-													v-if="index < 3"
-													class="mb-1 font-weight-bold"
-													small
-												>
-													{{ status.text }}
-												</v-chip>
-											</template>
-											<template v-else>
-												<v-chip
-													v-if="index < 3"
-													class="mb-1 font-weight-bold"
-													small
-												>
-													{{ status.text }}
-												</v-chip>
-											</template>
-											<template v-if="index === 3">
-												<span>and {{ (item.processStepStatusTypeIds?.length + item.companyProcessStepStatusTypeIds?.length) - 3 }} more</span>
-											</template>
-										</template>
-									</template>
-
-									<template #prepend-item>
-										<v-list-item>
-											<v-list-item-action>
-												<v-checkbox
-													class="collapse-checkbox"
-													color="rgba(0, 0, 0, 0.54)"
-													:ripple="false"
-													v-model="item.psCollapseByDefault"
-													@click="emit('default-collapse-updated', item)"
-												/>
-											</v-list-item-action>
-											<v-list-item-title>Collapse by Default</v-list-item-title>
-										</v-list-item>
-									</template>
-
-									<template #item="{item: status}">
-										<v-list-item
-											v-if="status.isHeader"
-											class="pt-1 status-border"
-										>
-											<v-list-item-title class="status-header" v-text="status.text"/>
-										</v-list-item>
-										<v-list-item
-											v-else-if="status.isSelectAll"
-											:disabled="item.processStepStatusTypeIds?.length > 0"
-											@click="toggleSelectAllStatuses(item)"
-										>
-											<v-list-item-action>
-												<v-icon>{{ getSelectAllIcon(item) }}</v-icon>
-											</v-list-item-action>
-											<v-list-item-title v-text="status.text"/>
-										</v-list-item>
-										<v-list-item
-											v-else-if="status.isRoot"
-											@click="toggleCategory(status, item)"
-										>
-											<v-list-item-action>
-												<v-icon>{{ getCategoryIcon(status, item) }}</v-icon>
-											</v-list-item-action>
-											<v-list-item-title v-text="status.text"/>
-										</v-list-item>
-										<v-list-item
-											v-else
-											:disabled="item.processStepStatusTypeIds.includes(status.categoryId)"
-											@click="toggleStatus(status, item)"
-										>
-											<v-list-item-action>
-												<v-icon>{{ getStatusIcon(status, item) }}</v-icon>
-											</v-list-item-action>
-											<v-list-item-title v-text="status.text"/>
-										</v-list-item>
-									</template>
-								</a-autocomplete>
-							</v-col>
-							<v-col cols="2" class="flex-grow-0 flex-shrink-1 align-content-center pa-0">
-								<div class="item-icons">
-									<v-tooltip left>
-										<template v-slot:activator="{ on, attrs }">
-											<a-btn
-												size="small"
-												icon
-												color="primary"
-												@click="copyToClipBoard(item.id)"
-												v-bind="attrs"
-												:activation-handler="on"
-												prepend-icon="mdi-information"
-											></a-btn>
-										</template>
-										<span>Custom Field Group Id: {{ item.id }}</span>
-										<div class="text-center">(click to copy)</div>
-									</v-tooltip>
-									<a-btn
-										v-if="userCanAdd"
-										size="small"
-										variant="text"
-										color="primary"
-										@click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]"
-										:prepend-icon="addField && expanded.includes(item) ? 'remove' : 'add'"
-									></a-btn>
+									<v-list-item-title class="status-header" v-text="status.text"/>
+								</v-list-item>
+								<v-list-item
+									v-else-if="status.isSelectAll"
+									:disabled="item.processStepStatusTypeIds?.length > 0"
+									@click="toggleSelectAllStatuses(item)"
+								>
+									<v-list-item-action>
+										<v-icon>{{ getSelectAllIcon(item) }}</v-icon>
+									</v-list-item-action>
+									<v-list-item-title v-text="status.text"/>
+								</v-list-item>
+								<v-list-item
+									v-else-if="status.isRoot"
+									@click="toggleCategory(status, item)"
+								>
+									<v-list-item-action>
+										<v-icon>{{ getCategoryIcon(status, item) }}</v-icon>
+									</v-list-item-action>
+									<v-list-item-title v-text="status.text"/>
+								</v-list-item>
+								<v-list-item
+									v-else
+									:disabled="item.processStepStatusTypeIds.includes(status.categoryId)"
+									@click="toggleStatus(status, item)"
+								>
+									<v-list-item-action>
+										<v-icon>{{ getStatusIcon(status, item) }}</v-icon>
+									</v-list-item-action>
+									<v-list-item-title v-text="status.text"/>
+								</v-list-item>
+							</template>
+						</a-autocomplete>
+					</td>
+					<td>
+						<div class="item-icons">
+							<v-tooltip left>
+								<template v-slot:activator="{ on, attrs }">
 									<a-btn
 										size="small"
-										variant="text"
+										icon
 										color="primary"
-										@click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]"
-										:prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
+										@click="copyToClipBoard(item.id)"
+										v-bind="attrs"
+										:activation-handler="on"
+										prepend-icon="mdi-information"
 									></a-btn>
-									<a-btn
-										v-if="userCanEdit"
-										size="small"
-										variant="text"
-										color="primary"
-										@click="customFieldGroupToDelete=item"
-										prepend-icon="delete"
-									></a-btn>
-									<span v-if="item.showGroupId" class="flex-align-items-center">id: {{ item.id }}</span>
-								</div>
-							</v-col>
-						</v-row>
+								</template>
+								<span>Custom Field Group Id: {{ item.id }}</span>
+								<div class="text-center">(click to copy)</div>
+							</v-tooltip>
+							<a-btn
+								v-if="userCanAdd"
+								size="small"
+								variant="text"
+								color="primary"
+								@click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]"
+								:prepend-icon="addField && expanded.includes(item) ? 'remove' : 'add'"
+							></a-btn>
+							<a-btn
+								size="small"
+								variant="text"
+								color="primary"
+								@click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]"
+								:prepend-icon="expanded.includes(item) ? 'expand_less' : 'expand_more'"
+							></a-btn>
+							<a-btn
+								v-if="userCanEdit"
+								size="small"
+								variant="text"
+								color="primary"
+								@click="customFieldGroupToDelete=item"
+								prepend-icon="delete"
+							></a-btn>
+							<span v-if="item.showGroupId" class="flex-align-items-center">id: {{ item.id }}</span>
+						</div>
 					</td>
                   <ConfirmationDialog :open-dialog="customFieldGroupToDelete && !assignmentToDelete"
                                       @confirm="deleteWithChecks" @close-dialog="customFieldGroupToDelete=null">
@@ -617,7 +599,7 @@ const props = defineProps({
 // const {customFieldGroups} = props
 const { customFieldGroups } = toRefs(props)
 
-const emit = defineEmits(['status-updated', 'default-collapse-updated'])
+const emit = defineEmits(['status-updated', 'default-collapse-updated', 'order-updated'])
 
 
 onMounted(async () => {
@@ -652,7 +634,8 @@ const assignmentToDelete = ref(null)
 const hoverIndex = ref(null)
 const headers = ref([
   {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
-  {text: 'Name', value: 'groupName', show: true},
+  {text: 'Custom Field Groups', value: 'groupName', show: true},
+  {text: 'Assigned Process Step Status', value: 'Assigned Process Step Status', show: true},
   {text: null, value: 'icons', show: true}
 ])
 const availableCompanyProcessStepStatusTypes = ref([])
@@ -1077,7 +1060,7 @@ const saveRowChanges = async (rows) => {
     appStore.loading = true
     try {
       const {status} = await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
-      customFieldGroups.value = orderBy(customFieldGroups.value, 'groupOrder')
+      emit('order-updated')
       appStore.showSnack('SUCCESS', 'Group Order Saved')
       // this componentKey forces the data-table component to re-render
       componentKey.value += 1
