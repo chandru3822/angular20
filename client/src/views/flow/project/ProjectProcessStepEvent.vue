@@ -347,7 +347,7 @@
         <v-expansion-panel
             v-if="selectedEvent && selectedEvent.id"
             class="pt-0 px-0"
-            v-for="(cfg, index) in selectedEvent.customFieldGroups"
+            v-for="(cfg, index) in selectedEvent.customFieldGroups.filter(g => g.customFieldValues?.length > 0)"
             :key="cfg.id"
         >
 			<v-expansion-panel-header class="px-4 py-0 panel-header">
@@ -355,7 +355,7 @@
 			  		<v-toolbar-title class="albatross-header-4">{{ cfg.groupName }}</v-toolbar-title>
           		</v-toolbar>
 		  </v-expansion-panel-header>
-          <v-expansion-panel-content class="pa-0 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+          <v-expansion-panel-content class="pa-0 square-card">
             <v-row>
               <v-col :cols="projectStore.manualColumnSplit && cfg.customFieldValues && cfg.customFieldValues.length > 1 ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
