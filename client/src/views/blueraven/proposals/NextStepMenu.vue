@@ -324,7 +324,7 @@ const submitCreditCheck = async () => {
   if (!proposal.value.creditCheckSubmitted) {
     //only do this if it wasn't already done on the first submit
     menu.value = false
-    const { ok, value } = await confirmEmailRef.value.open()
+    const { ok, value } = await confirmEmailRef.value?.open()
     if (!ok) {
       return
     }
