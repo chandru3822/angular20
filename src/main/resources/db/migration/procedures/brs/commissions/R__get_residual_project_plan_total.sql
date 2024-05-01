@@ -38,13 +38,16 @@ begin
                                     inner join brs.residual_plan_partial_allocation_type rppat on rppat.id = rppa.residual_plan_partial_allocation_type_id
                              where rppa.residual_plan_allocation_id = a.id
                                and case when rp2.is_based_on_source is true then
-                                          p_total_system_size_by_source >= rppa.fdc_count and
-                                          p_total_system_size_by_source < a.allocation
+                                          ((p_total_system_size_by_source >= rppa.fdc_count and rppa.residual_plan_partial_allocation_type_id = 2) or
+                                           (p_total_system_size >= rppa.fdc_count and rppa.residual_plan_partial_allocation_type_id = 1)) and
+                                          p_total_system_size < a.allocation
                                         when rp2.is_system_size is true then
                                           p_total_system_size >= rppa.fdc_count and
                                           p_total_system_size < a.allocation
                                         else p_current_qualified_fdc >= rppa.fdc_count and
-                                             p_current_qualified_fdc < a.allocation end order by fdc_count desc,rppat.rank_order limit 1) as alloc on true
+                                             p_current_qualified_fdc < a.allocation end
+                             order by case when rp2.is_system_size is true then rppa.partial_allocation end desc,
+                                      case when rp2.is_system_size is false then rppa.fdc_count end desc limit 1) as alloc on true
    where rpa.residual_plan_id = p_residual_plan_id and
      p_total_lifetime_fdc between rpa.min and coalesce(rpa.max,10000);
   return round(v_total,2);
