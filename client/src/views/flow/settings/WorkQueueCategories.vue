@@ -102,7 +102,9 @@
                                         backgroundColor="transparent"
                                         @selected-changed="workQueueCategoriesHiddenSelectedEventListener"
                                         @allow-changed="workQueueCategoriesHiddenAllowEventListener"
-                                        @checkbox-changed="workQueueCategoriesHiddenCheckboxEventListener"></multi-select-group>
+                                        @checkbox-changed="workQueueCategoriesHiddenCheckboxEventListener"
+                                        :full-size="vuetify.breakpoint.smAndDown"
+                    />
                                       <br v-if="!item.hidden">
                                       <a-btn color="primary" dark class="d-inline-block white--text"
                                              @click="saveHiddenAndWhiteList(item)" prepend-icon="save" text="SAVE HIDDEN"/>
