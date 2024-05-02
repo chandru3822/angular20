@@ -9,9 +9,9 @@
               variant="text"
               color="primary"
               @click="[addNew = !addNew, newCategory = { color: '#ffffff'}]" v-if="userCanAdd"
-              :hide-text-on-mobile="constants.IS_MOBILE"
-              :prepend-icon="constants.IS_MOBILE ? 'add' : ''"
-              :text="addNew ? 'CANCEL' : 'ADD NEW'"
+              :hide-text-on-mobile="vuetify.breakpoint.smAndDown"
+              :prepend-icon="vuetify.breakpoint.smAndDown ? addNew ? 'close' : 'add' : ''"
+              :text="addNew ? 'Cancel' : 'Add New'"
             />
           </v-toolbar-items>
         </v-toolbar>
@@ -37,7 +37,8 @@
               color="primary"
               :disabled="!newCategory.workQueueCategory"
               @click="addNewCategory"
-              text="SAVE"
+              text="Save"
+              class="mb-3"
             />
           </div>
           <v-data-table
@@ -50,7 +51,7 @@
               fixed-header
               single-expand
               :expanded.sync="expanded"
-              class="elevation-1"
+              class="elevation-1 table-striped"
           >
             <template #no-data>
               <span class="default-text-color">No available fields</span>
@@ -60,9 +61,7 @@
               <span class="default-text-color">No available fields</span>
             </template>
 
-            <template #item="{ item }">
-              <tr :class="{'shaded-row': workQueueCategories.indexOf(item) % 2}">
-                <td style="width: 50px">
+            <template #item.draggable="{ item }">
                   <a-btn variant="text"
                                    color="primary"
                                    icon
@@ -71,12 +70,12 @@
                                    v-if="userCanEdit"
                                    prepend-icon="drag_handle"
                   />
-                </td>
-                <td class="text-left">
+            </template>
+                <template #item.workQueueCategory="{ item }" class="text-left">
                   <a-text-field class="one-hunned" v-if="selectedWorkQueueCategoryId === item.id" v-model="item.workQueueCategory"></a-text-field>
                   <div v-else>{{item.workQueueCategory}}</div>
-                </td>
-                <td class="text-left">
+                </template>
+                <template #item.color="{ item }" class="text-left">
                   <v-avatar
                       :tile="false"
                       :size="30"
@@ -86,18 +85,10 @@
                   >
                   </v-avatar>
                   <v-color-picker v-if="item.showColor" class="my-3" v-model="item.color" :canvas-height="colorOptions.height" :width="colorOptions.width" :mode="colorOptions.mode" :hide-mode-switch="colorOptions.hideModeSwitch"></v-color-picker>
-                </td>
-                <td class="text-left">
-
-
-                                    <v-card flat color="transparent" class="square-card my-2" v-if="selectedWorkQueueCategoryId === item.id">
-<!--                    <v-card-title style="height: 40px" class="py-0 grey&#45;&#45;text text&#45;&#45;darken-1">-->
-<!--                      Hidden-->
-<!--                      <v-checkbox type="checkbox" class="ml-3"-->
-<!--                                  v-model="item.hidden"></v-checkbox>-->
-<!--                    </v-card-title>-->
-                                      <multi-select-group
-                                        v-if="!workQueueLoading"
+                </template>
+                <template #item.hidden="{ item }" class="text-left">
+                  <v-card flat color="transparent" class="square-card my-2" v-if="selectedWorkQueueCategoryId === item.id">
+                    <multi-select-group v-if="!workQueueLoading"
                                         :userCanEdit="userCanEdit"
                                         :returnObject="item"
                                         :content="positions"
@@ -114,13 +105,10 @@
                                         @checkbox-changed="workQueueCategoriesHiddenCheckboxEventListener"></multi-select-group>
                                       <br v-if="!item.hidden">
                                       <a-btn color="primary" dark class="d-inline-block white--text"
-                                             @click="saveHiddenAndWhiteList(item)" prepend-icon="save" text="SAVE HIDDEN"
-                                      />
+                                             @click="saveHiddenAndWhiteList(item)" prepend-icon="save" text="SAVE HIDDEN"/>
                                     </v-card>
-
-                </td>
-
-                <td class="text-right">
+                </template>
+                <template #item.icons="{ item }" class="text-right">
                   <div v-if="userCanEdit" class="item-icons">
                     <a-btn v-if="selectedWorkQueueCategoryId  === item.id"
                                      class="clickable"
@@ -144,10 +132,7 @@
                       prepend-icon="delete"
                     />
                   </div>
-                </td>
-              </tr>
-            </template>
-
+                </template>
           </v-data-table>
           <ConfirmationDialog :open-dialog="!!categoryToDelete" @confirm="[deleteCategory, categoryToDelete.archived = true]" @close-dialog="categoryToDelete=null">
             Are you sure you want to delete this work queue category: <strong>{{ categoryToDeleteName }}</strong>?
@@ -181,10 +166,11 @@
 
   import { useUserStore } from '@/stores/UserStore.js'
   import { useAppStore } from '@/stores/AppStore.js'
+  import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
-
+  const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
   const userStore = useUserStore()
 
