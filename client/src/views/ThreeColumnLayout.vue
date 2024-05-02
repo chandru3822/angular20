@@ -62,7 +62,7 @@
 import {getRequest, handleHidingGlobalLoader, logError} from '@/helpers/helpers'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 
-import {computed, defineProps, getCurrentInstance, onMounted, ref} from 'vue'
+import {computed, getCurrentInstance, onMounted, ref} from 'vue'
 import { useProjectStore } from '@/stores/ProjectStore.js'
 import {useRouter, useRoute} from 'vue-router/composables'
 

@@ -382,7 +382,6 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 
-import {defineProps} from 'vue'
 const props = defineProps({
   processStep: Object,
   event: Object

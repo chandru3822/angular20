@@ -18,7 +18,7 @@
 *
 */
 
-import {getCurrentInstance, computed, defineProps, defineEmits} from 'vue'
+import {getCurrentInstance, computed} from 'vue'
 import { useProjectStore } from '@/stores/ProjectStore.js'
 
 
@@ -117,7 +117,7 @@ const isMobile = computed(() => {
                         'width': isSidebarCollapsed ? 'calc(100% - 45px)' : '100%'}"
           class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
       >
-        <v-col v-for="(option, index) in viewOptions" :cols="12/viewOptions.length" class="px-0">
+        <v-col v-for="(option, index) in viewOptions" :cols="12/viewOptions.length" class="px-0" :key="index">
           <a-btn
               v-if="option.visible"
               variant="text"
