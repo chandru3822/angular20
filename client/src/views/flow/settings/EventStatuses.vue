@@ -455,7 +455,6 @@ const closeDeleteDialog = () =>{
   itemToDelete.value = null
 }
 const rowClass = (item) => {
-  debugger
   return getRowClass(item, currentItems.value)
 }
 const currentItems = ref([])
