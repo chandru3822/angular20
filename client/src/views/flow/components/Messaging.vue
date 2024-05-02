@@ -1,50 +1,63 @@
 <template>
   <div class="height-one-hunned">
-    <v-row id="project-tabs" class="message-container" justify="center" no-gutters>
+    <v-row
+      id="project-tabs"
+      class="message-container"
+      justify="center"
+      no-gutters
+    >
       <!-- MESSAGING TAB -->
       <template>
         <beautiful-chat
-            class="chat-container"
-            :participants="participants"
-            :onMessageWasSent="onMessageWasSent"
-            :messageList="messageList"
-            :newMessagesCount="newMessagesCount"
-            :isOpen="true"
-            :close="closeChat"
-            :open="openChat"
-            :showEmoji="true"
-            :showFile="true"
-            :showEdition="false"
-            :showDeletion="false"
-            :showCloseButton="false"
-            :showLauncher="false"
-            :showHeader="false"
-            :colors="colors"
-            :alwaysScrollToBottom="true"
-            :messageStyling="messageStyling" />
+          class="chat-container"
+          :participants="participants"
+          :onMessageWasSent="onMessageWasSent"
+          :messageList="messageList"
+          :newMessagesCount="newMessagesCount"
+          :isOpen="true"
+          :close="closeChat"
+          :open="openChat"
+          :showEmoji="true"
+          :showFile="true"
+          :showEdition="false"
+          :showDeletion="false"
+          :showCloseButton="false"
+          :showLauncher="false"
+          :showHeader="false"
+          :colors="colors"
+          :alwaysScrollToBottom="true"
+          :messageStyling="messageStyling"
+        />
       </template>
-      <template v-slot:user-avatar="{ message, user }">
-        <div class="message-avatar" v-if="message.type === 'text' && user && user.name">
+      <template #user-avatar="{ message, user }">
+        <div
+          class="message-avatar"
+          v-if="message.type === 'text' && user && user.name"
+        >
           {{ user.name.toUpperCase()[0] }}
         </div>
       </template>
     </v-row>
 
-
-
-    <v-menu top left offset-y :close-on-content-click="false" v-model="showTemplateDialog">
-      <template v-slot:activator="{on: menu, attrs}">
+    <v-menu
+      top
+      left
+      offset-y
+      :close-on-content-click="false"
+      v-model="showTemplateDialog"
+    >
+      <template #activator="{ on: menu }">
         <v-tooltip bottom small>
-          <template v-slot:activator="{on: tooltip, attrs}">
+          <template #activator="{ on: tooltip, attrs }">
             <a-btn
-                icon
-                color="primary"
-                v-bind="attrs"
-                :activation-handler="{...tooltip, ...menu}"
-                class="templateButton"
-                html-style="display: none"
-                small
-                prepend-icon="article"
+              icon
+              color="primary"
+              v-bind="attrs"
+              :activation-handler="{ ...tooltip, ...menu }"
+              class="templateButton"
+              html-style="display: none"
+              small
+              prepend-icon="article"
             ></a-btn>
           </template>
           <span class="albatross-body-3">Templates</span>
@@ -55,16 +68,17 @@
           <span class="albatross-header-4-new">Add Template</span>
         </v-card-title>
         <v-card-text>
-          <a-select label="Template"
-                    custom-classes="template-selector pt-1"
-                    v-model="selectedTemplate"
-                    :items="selectableTemplates"
-                    item-title="title"
-                    item-value="id"
-                    return-object
-                    @change="sendTemplateMessage">
-
-            <template v-slot:item="{ props, item }">
+          <a-select
+            label="Template"
+            custom-classes="template-selector pt-1"
+            v-model="selectedTemplate"
+            :items="selectableTemplates"
+            item-title="title"
+            item-value="id"
+            return-object
+            @change="sendTemplateMessage"
+          >
+            <template #item="{ item }">
               <!-- HTML that describes how select should render items when the select is open -->
               <div class="ellipse">
                 <h4 class="template-title">{{ item.title }}<br /></h4>
@@ -79,25 +93,29 @@
 </template>
 
 <script setup>
-import debounce from 'lodash.debounce'
-import { getRequest,  postRequest, putRequest } from '@/helpers/helpers'
-
 import moment from 'moment'
-import { useNotificationStore } from '@/stores/NotificationStore.js'
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
-import { useAppStore } from '@/stores/AppStore.js'
+import debounce from 'lodash.debounce'
 
+import { getRequest, postRequest, putRequest } from '@/helpers/helpers'
+import { useNotificationStore } from '@/stores/NotificationStore.js'
+import {
+  computed,
+  getCurrentInstance,
+  onMounted,
+  ref,
+  toRefs,
+  watch
+} from 'vue'
+import { useUserStore } from '@/stores/UserStore.js'
+import { useRoute } from 'vue-router/composables'
+import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
 const route = useRoute()
-const router = useRouter()
 const userStore = useUserStore()
 const notificationStore = useNotificationStore()
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
- const filters = vueInstance.$filters
+const filters = vueInstance.$filters
 
 const props = defineProps({
   userAssigned: Boolean,
@@ -109,8 +127,7 @@ const { userAssigned, userIdIn, teamsAssociatedToUser } = toRefs(props)
 onMounted(() => {
   if (projectId.value) {
     fetchProjectData()
-  }
-  else if (userId.value) {
+  } else if (userId.value) {
     fetchUserData()
   }
   fetchSmsData()
@@ -149,12 +166,7 @@ const colors = ref({
     button: '#1F3C73'
   }
 })
-const icons = ref({
-  emoji: {
-    img: 'article'
 
-  }
-})
 // when set to true always scrolls the chat to the bottom when new events are in (new message, user starts typing...)
 const alwaysScrollToBottom = ref(true)
 const messageStyling = ref(false)
@@ -170,38 +182,49 @@ const templateTeams = ref([])
 const currentUserFullName = computed(() => {
   return userStore.details.fullName
 })
+
 const smsOwnershipEvents = computed(() => {
   return notificationStore.getEventsByTopic('sms_ownership').length
 })
+
 const projectId = computed(() => {
   return parseInt(route.params.projectId)
 })
+
 const userId = computed(() => {
   return userIdIn.value ? userIdIn.value : parseInt(route.params.userId)
 })
 
-watch([projectId, userId], async() => {
+watch([projectId, userId], async () => {
   await fetchProjectData()
 })
-watch(teamsAssociatedToUser, async() => {
+
+watch(teamsAssociatedToUser, async (value, oldValue, onCleanup) => {
   templateTeams.value = []
   if (teamsAssociatedToUser.value.length > 0) {
     for (let team of teamsAssociatedToUser.value) {
-      templateTeams.value.push(team.id);
+      templateTeams.value.push(team.id)
     }
   }
   await getTemplates()
 })
-watch(userAssigned, debounce(() => {
-  toggleChatBox()
-}, 500))
-watch(smsOwnershipEvents, debounce(async () => {
-  await fetchSmsData()
-}, 800))
 
+watch(
+  userAssigned,
+  debounce(() => {
+    toggleChatBox()
+  }, 500)
+)
+
+watch(
+  smsOwnershipEvents,
+  debounce(async () => {
+    await fetchSmsData()
+  }, 800)
+)
 
 const toggleChatBox = () => {
-  let chatBox = document.querySelector('.sc-user-input')
+  const chatBox = document.querySelector('.sc-user-input')
   if (chatBox) {
     // Hide the chat box if the User is not an owner
     if (!userAssigned.value) {
@@ -215,24 +238,40 @@ const toggleChatBox = () => {
 }
 const sendMessage = (text) => {
   if (text.length > 0) {
-    newMessagesCount.value = isChatOpen.value ? newMessagesCount.value : newMessagesCount.value + 1
+    newMessagesCount.value = isChatOpen.value
+      ? newMessagesCount.value
+      : newMessagesCount.value + 1
     onMessageWasSent({ author: 'me', type: 'text', data: { text } })
   }
 }
-const onMessageWasSent = async(message) => {
+
+const onMessageWasSent = async (message) => {
   if (message.data.text && message.data.text.length > 1599) {
-    let textOverflowLength = message.data.text.length - 1599;
-    appStore.showSnack('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
+    const textOverflowLength = message.data.text.length - 1599
+    appStore.showSnack(
+      'ERROR',
+      'Message exceeds the 1600 character limit by ' +
+        textOverflowLength +
+        ' characters. '
+    )
     sendingMessage.value = false
-  } else if(!sendingMessage.value) {
+  } else if (!sendingMessage.value) {
     sendingMessage.value = true
     // called when the user sends a message
     let params
-    let userIds = projectId.value ? [contactId.value] : [userId.value]
-    let attachmentUrl = projectId.value ? `/project/${projectId.value}/attachment` : `/user/${userId.value}/attachment`
-    let sendTextUrl = projectId.value ? `/communication/sendTextsForProject/${projectId.value}` : `/communication/sendTextsForUser/${userId.value}`
-    let lastSentUrl = projectId.value ? `/messaging/setLastSent/project/` + projectId.value : `/messaging/setLastSent/user/` + userId.value
-    let createNotificationUrl = projectId.value ? `/messaging/createNotification/project/${projectId.value}` : `/messaging/createNotification/user/${userId.value}`
+    const userIds = projectId.value ? [contactId.value] : [userId.value]
+    const attachmentUrl = projectId.value
+      ? `/project/${projectId.value}/attachment`
+      : `/user/${userId.value}/attachment`
+    const sendTextUrl = projectId.value
+      ? `/communication/sendTextsForProject/${projectId.value}`
+      : `/communication/sendTextsForUser/${userId.value}`
+    const lastSentUrl = projectId.value
+      ? `/messaging/setLastSent/project/` + projectId.value
+      : `/messaging/setLastSent/user/` + userId.value
+    const createNotificationUrl = projectId.value
+      ? `/messaging/createNotification/project/${projectId.value}`
+      : `/messaging/createNotification/user/${userId.value}`
 
     try {
       if (message.type === 'file') {
@@ -242,7 +281,13 @@ const onMessageWasSent = async(message) => {
         formData.append('attachmentTypeId', 3)
 
         if (!projectId.value) {
-          formData.append('displayName', message.data.file.name.substr(0, message.data.file.name.lastIndexOf('.')))
+          formData.append(
+            'displayName',
+            message.data.file.name.substr(
+              0,
+              message.data.file.name.lastIndexOf('.')
+            )
+          )
         }
 
         const resp = await postRequest(attachmentUrl, formData)
@@ -274,16 +319,22 @@ const onMessageWasSent = async(message) => {
       await postRequest(createNotificationUrl)
 
       //dont add to the ui unless the message goes thru successfully
-      message.data.meta = currentUserFullName.value + ' ' + moment().format('M/D/YYYY h:mm a')
+      message.data.meta =
+        currentUserFullName.value + ' ' + moment().format('M/D/YYYY h:mm a')
       messageList.value = [...messageList.value, message]
-      newMessagesCount.value = isChatOpen.value ? newMessagesCount.value : newMessagesCount.value + 1
+      newMessagesCount.value = isChatOpen.value
+        ? newMessagesCount.value
+        : newMessagesCount.value + 1
     } catch (e) {
       console.error('*** ERROR ***', e)
-      let message = e?.message ? 'Error Sending Message: ' + e.message :
-          e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
+      const message = e?.message
+        ? 'Error Sending Message: ' + e.message
+        : e?.data?.message
+        ? 'Error Sending Message: ' + e.data.message
+        : 'Error Sending Message'
       appStore.showSnack('ERROR', message)
 
-      let textInput = document.querySelector('.sc-user-input--text')
+      const textInput = document.querySelector('.sc-user-input--text')
       // This line fails, but accomplishes what I want - stops the plugin from clearing the message box
       // when there's an error sending a message
       textInput.innerHTML = message.data.text
@@ -292,84 +343,88 @@ const onMessageWasSent = async(message) => {
     }
   }
 }
+
 const openChat = () => {
   // called when the user clicks on the fab button to open the chat
   isChatOpen.value = true
   newMessagesCount.value = 0
 }
+
 const closeChat = () => {
   // called when the user clicks on the button to close the chat
   isChatOpen.value = false
 }
-const fetchContact = async() => {
+const fetchContact = async () => {
   try {
     const { data } = await getRequest(`/contact/project/${projectId.value}`)
     contactId.value = data.id
-    participants.value = [{
-      id: id.value,
-      name: data.fullName,
-      phone: data.phone
-    }]
+    participants.value = [
+      {
+        id: id.value,
+        name: data.fullName,
+        phone: data.phone
+      }
+    ]
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error fetching SMS users')
-
   }
 }
-const fetchSmsData = async() => {
+const fetchSmsData = async () => {
   try {
     let fetchSmsDataUrl = ''
     if (projectId.value) {
       fetchSmsDataUrl = `/sms/messages/project/${projectId.value}`
-    }
-    else if (userId.value) {
+    } else if (userId.value) {
       fetchSmsDataUrl = `/sms/messages/user/${userId.value}`
-    }
-    else {
-      return;
+    } else {
+      return
     }
 
-    const { data } = await getRequest(fetchSmsDataUrl, null, [])
+    const { data = [] } = await getRequest(fetchSmsDataUrl, null, [])
 
-    let messages = []
-    data.forEach(u => {
+    messageList.value = data.map((u) => {
       let msgFrom = 'me'
-      if (u.fromPhone != null && u.fromPhone !== '+18014480212' && u.fromPhone !== '+18014480029') {
+      if (
+        u.fromPhone != null &&
+        u.fromPhone !== '+18014480212' &&
+        u.fromPhone !== '+18014480029'
+      ) {
         msgFrom = u.contactId
       }
 
-      let msg
       if (u.mediaUrls.length > 0) {
-        msg = {
+        return {
           type: 'file',
           author: msgFrom,
           data: {
             file: {
               name: u.message,
               url: u.mediaUrls[0],
-              meta: u.fullName ? u.fullName + ' ' + filters.formatDate(u.created, 'timestamp') : filters.formatDate(u.created, 'timestamp')
+              meta: u.fullName
+                ? u.fullName + ' ' + filters.formatDate(u.created, 'timestamp')
+                : filters.formatDate(u.created, 'timestamp')
             }
           }
         }
-      } else {
-        msg = {
-          type: 'text',
-          author: msgFrom,
-          data: {
-            text: u.message,
-            meta: u.fullName ? u.fullName + ' ' + filters.formatDate(u.created, 'timestamp') : filters.formatDate(u.created, 'timestamp')
-          }
+      }
+      return {
+        type: 'text',
+        author: msgFrom,
+        data: {
+          text: u.message,
+          meta: u.fullName
+            ? u.fullName + ' ' + filters.formatDate(u.created, 'timestamp')
+            : filters.formatDate(u.created, 'timestamp')
         }
       }
-
-      messages.push(msg)
     })
 
-    messageList.value = messages
-
     // Replace the emoji icon with the Template button
-    let emojiIcon = document.querySelector('.sc-user-input--emoji-icon-wrapper')
-    let templateIcon = document.querySelector('.templateButton')
+    const emojiIcon = document.querySelector(
+      '.sc-user-input--emoji-icon-wrapper'
+    )
+    const templateIcon = document.querySelector('.templateButton')
     if (templateIcon) {
       templateIcon.classList.add('template-button-display')
       if (emojiIcon != null) {
@@ -379,25 +434,25 @@ const fetchSmsData = async() => {
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error fetching messages')
-
   }
 }
-const getTemplates = async() => {
+const getTemplates = async () => {
   try {
     selectedTemplate.value = ''
     if (!templateTeams.value || templateTeams.value.length < 1) {
       return
     }
-    const { data } = await getRequest(`/messaging/templates/` + templateTeams.value)
+    const { data } = await getRequest(
+      `/messaging/templates/${templateTeams.value}`
+    )
     selectableTemplates.value = data
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error retrieving templates')
-
   }
 }
-const sendTemplateMessage = async() => {
-  let textInput = document.querySelector('.sc-user-input--text')
+const sendTemplateMessage = async () => {
+  const textInput = document.querySelector('.sc-user-input--text')
   textInput.innerHTML += selectedTemplate.value.message
   //clear out all the selections for the next time the template selector is opened
   selectedTemplate.value = undefined
@@ -407,23 +462,23 @@ const sendTemplateMessage = async() => {
   }
   showTemplateDialog.value = false
 }
-const fetchProjectData = async() => {
+const fetchProjectData = async () => {
   await fetchContact()
   await fetchSmsData()
   templateTeams.value = []
   if (teamsAssociatedToUser.value?.length > 0) {
     for (let team of teamsAssociatedToUser.value) {
-      templateTeams.value.push(team.id);
+      templateTeams.value.push(team.id)
     }
   }
   await getTemplates()
 }
-const fetchUserData = async() => {
+const fetchUserData = async () => {
   await fetchSmsData()
   templateTeams.value = []
   if (teamsAssociatedToUser.value?.length > 0) {
     for (let team of teamsAssociatedToUser.value) {
-      templateTeams.value.push(team.id);
+      templateTeams.value.push(team.id)
     }
   }
   await getTemplates()
@@ -465,10 +520,10 @@ a.chatLink {
   text-align: left;
 }
 
-.sc-message--meta, .sc-message--text-content {
+.sc-message--meta,
+.sc-message--text-content {
   margin-bottom: 5px !important;
   font-family: 'Lato', sans-serif;
-
 }
 
 .sc-message--text-content {
@@ -476,7 +531,10 @@ a.chatLink {
 }
 
 //this makes new lines show up when the user does shift + enter
-.sc-message--text, .sc-message--file-text { white-space: pre-wrap; }
+.sc-message--text,
+.sc-message--file-text {
+  white-space: pre-wrap;
+}
 
 .sc-chat-window {
   position: unset !important;
@@ -503,12 +561,19 @@ a.chatLink {
 }
 
 @media (max-width: 960px) {
-  #project-tabs{
+  #project-tabs {
     height: 100%;
   }
 }
 
-#project-tabs > div > div > div:nth-child(2) > form > div.sc-user-input--buttons > div:nth-child(3) > div {
+#project-tabs
+  > div
+  > div
+  > div:nth-child(2)
+  > form
+  > div.sc-user-input--buttons
+  > div:nth-child(3)
+  > div {
   left: 40% !important;
 }
 #project-tabs {
@@ -516,7 +581,6 @@ a.chatLink {
     padding-right: 8px;
   }
 }
-
 
 .sc-user-input {
   border-bottom-left-radius: 0 !important;
