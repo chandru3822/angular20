@@ -23,6 +23,7 @@
               item-value="id"
               @input="filterCategories()"
               attach
+              class="pt-4"
           ></a-autocomplete>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -69,6 +70,7 @@
               hide-details
           ></a-text-field>
           <v-data-table
+              id="work-queue-types-settings-table"
               :headers="headers"
               :items="filteredWorkQueueTypes"
               :fixed-header="true"
@@ -86,10 +88,7 @@
               <span class="default-text-color">No available fields</span>
             </template>
 
-            <template #item="{ item, index }">
-
-              <tr class="clickable" :class="{'shaded-row': workQueueTypes.indexOf(item) % 2}">
-                <td style="width: 50px" @click="goToDetails(item)">
+            <template #item.draggable="{ item, index }" style="width: 50px" @click="goToDetails(item)">
                   <a-btn
                       v-if="(userCanEdit || userIsAdmin) && selectedWorkQueueCategoryId !== -1"
                       variant="text"
@@ -99,23 +98,23 @@
                       class="handle"
                       prepend-icon="drag_handle"
                   ></a-btn>
-                </td>
-                <td class="text-left" @click="goToDetails(item)">
+            </template>
+                <template #item.workQueueType="{ item }" class="text-left" @click="goToDetails(item)">
                   <router-link :to="`/settings/workQueue/type/${item.id}`" class="router-link-td">
                     {{ item.workQueueType }}
                   </router-link>
-                </td>
-                <td class="text-left" @click="goToDetails(item)">
+                </template>
+                <template #item.workQueueCategory="{ item }" class="text-left" @click="goToDetails(item)">
                   <router-link :to="`/settings/workQueue/type/${item.id}`" class="router-link-td">
                     {{ item.workQueueCategory }}
                   </router-link>
-                </td>
-                <td class="text-left" @click="goToDetails(item)">
+                </template>
+                <template #item.useEventData="{ item }" class="text-left" @click="goToDetails(item)">
                   <router-link :to="`/settings/workQueue/type/${item.id}`" class="router-link-td">
                     <input type="checkbox" disabled v-model="item.useEventData">
                   </router-link>
-                </td>
-                <td class="text-right">
+                </template>
+                <template #item.icons="{ item }" class="text-right">
                   <div class="item-icons">
                     <a-btn
                         @click="goToDetails(item)"
@@ -136,9 +135,7 @@
                         prepend-icon="delete"
                     ></a-btn>
                   </div>
-                </td>
-              </tr>
-            </template>
+                </template>
 
           </v-data-table>
         </v-container>
@@ -334,6 +331,37 @@ const goToDetails = (item) => {
   padding-left: 0;
   padding-right: 0;
   padding-top: 0;
+}
+
+@media (max-width: 770px) {
+  #work-queue-types-settings-table {
+    padding-bottom: 12px;
+    div.v-data-footer {
+      display: inline-block;
+      width: 100%;
+      height: auto;
+
+      div.v-data-footer__select {
+        justify-content: center;
+      }
+
+      div.v-data-footer__pagination {
+
+      }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: calc(50% - 36px);
+
+
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
+    }
+  }
 }
 
 .no-change-text {
