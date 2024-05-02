@@ -253,6 +253,7 @@
 			  <v-expansion-panel
 				  v-for="(cfg, index) in customFieldGroups.filter(g => g.customFieldValues?.length > 0)"
 				  :key="index"
+				  class="my-1"
 			  >
 				  <v-expansion-panel-header class="px-4 py-0 panel-header">
 					  <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
@@ -940,5 +941,9 @@ owner-toolbar-tools {
     margin-left: 10px;
     font-size: 12px;
   }
+
+	.v-expansion-panel-header--active {
+		min-height: 48px;
+	}
 }
 </style>
