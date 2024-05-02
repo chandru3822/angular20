@@ -1,6 +1,6 @@
 <template xmlns="http://www.w3.org/1999/html">
   <v-chip-group column class="team-chips">
-    <span v-for="(team, index) in smsTeamOwners" class="d-flex flex-wrap">
+    <span v-for="(team, index) in smsTeamOwners" class="d-flex flex-wrap" :key="index">
         <v-chip v-if="team.users.length === 0"
                 label
                 :close="teamNamesAssociatedToUser.includes(team.teamName) && userCanView"
@@ -15,6 +15,7 @@
           <span >{{team.teamName}} - Unassigned</span>
         </v-chip>
         <v-chip v-else v-for="(user, index) in team.users"
+				:key="index"
                 label
                 :close="(user.userId === loggedInUserId && userCanView) || (teamNamesAssociatedToUser.includes(team.teamName) && userCanManage)"
                 close-icon="mdi-close"
@@ -146,21 +147,18 @@
 </template>
 
 <script setup>
-import {getSnackbar, getRequest, putRequest} from "@/helpers/helpers";
+import {getRequest, putRequest} from "@/helpers/helpers";
 import AddTeamDropdown from "@/views/flow/settings/inbox/AddTeamDropdown";
 
-import {ref, computed, onMounted, getCurrentInstance, watch, defineProps} from "vue";
+import {ref, computed, onMounted} from "vue";
 import {useUserStore} from "@/stores/UserStore.js";
 import {useRouter, useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 
 const route = useRoute()
 const router = useRouter()
-const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
 
 const props = defineProps({

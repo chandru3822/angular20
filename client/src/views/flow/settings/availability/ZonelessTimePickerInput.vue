@@ -48,7 +48,7 @@
 
 
 <script setup>
-import {onMounted, ref, toRefs, computed, watch, defineProps} from "vue";
+import {onMounted, ref, toRefs, computed, watch} from "vue";
 
 
 const props = defineProps({

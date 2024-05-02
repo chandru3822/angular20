@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import {getCurrentInstance, onMounted, defineProps, ref, computed} from 'vue'
+import {ref, computed} from 'vue'
 import constants from '@/helpers/constants'
 
 // reminder that v-model is sugar syntax for :value="value" @input="v => $emit('input', v)"

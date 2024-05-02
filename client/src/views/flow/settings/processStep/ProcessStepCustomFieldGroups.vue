@@ -581,7 +581,6 @@ import ConfirmationDialog from '@/components/ConfirmationDialog'
 import {getCurrentInstance, toRefs, computed, ref, onMounted} from 'vue'
 import {useRoute} from "vue-router/composables";
 import { useUserStore } from '@/stores/UserStore.js'
-import {defineProps} from 'vue'
 import MultiSelectGroup from '@/components/MultiSelectGroup.vue'
 import {useAppStore} from '@/stores/AppStore.js'
 

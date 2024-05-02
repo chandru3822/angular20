@@ -97,16 +97,11 @@
 <script setup>
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue"
 import constants from "@/helpers/constants"
-import {getCurrentInstance, computed, ref, onMounted} from 'vue'
-import { useAppStore } from '@/stores/AppStore.js'
-const appStore = useAppStore()
+import {computed, ref} from 'vue'
 
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 import {useUserStore} from '@/stores/UserStore.js'
 
 const userStore = useUserStore()
-import {defineProps} from 'vue'
 
 const props = defineProps({
   required: {

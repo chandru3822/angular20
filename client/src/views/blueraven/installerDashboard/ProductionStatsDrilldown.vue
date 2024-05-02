@@ -121,7 +121,7 @@
   import constants from '@/helpers/constants'
   import NotesAndActivityContent from '@/views/flow/components/NotesAndActivityContent'
 
-  import {ref, onMounted, computed, watch, getCurrentInstance, defineEmits} from "vue";
+  import {ref, onMounted, computed, watch} from "vue";
 
   const emit = defineEmits(['prodStatsDrilldownDialogClosed'])
   const props = defineProps({

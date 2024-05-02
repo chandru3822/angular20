@@ -51,16 +51,9 @@ import {getRequest, postRequest} from "@/helpers/helpers";
 import { useUserStore } from '@/stores/UserStore.js'
 
 
-import {ref, onMounted, getCurrentInstance, computed, defineProps} from "vue";
-import {useRouter, useRoute} from "vue-router/composables"
+import {ref, onMounted, computed} from "vue";
 import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
-
-const route = useRoute()
-const router = useRouter()
-const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
 
 const props = defineProps({

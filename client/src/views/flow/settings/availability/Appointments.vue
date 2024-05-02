@@ -237,7 +237,7 @@
 
   import RRule from '@/components/RRule.vue'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import { handleHidingGlobalLoader, deleteRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, deleteRequest, getRequestWithParams, postRequest} from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
   import moment from 'moment-timezone'
   import constants from '@/helpers/constants'
@@ -245,7 +245,7 @@
   import { DateTime } from 'luxon'
 
 
-  import {getCurrentInstance, onMounted, toRefs, ref, computed, watch, defineProps} from "vue";
+  import {getCurrentInstance, onMounted, toRefs, ref, computed, watch} from "vue";
   import { useUserStore } from '@/stores/UserStore.js'
   import {useRoute} from "vue-router/composables"
   import { useAppStore } from '@/stores/AppStore.js'

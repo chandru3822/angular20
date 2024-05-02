@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import {getCurrentInstance, ref, computed, defineProps, defineEmits} from 'vue'
+import {getCurrentInstance, ref, computed} from 'vue'
 import { useUserStore } from '@/stores/UserStore.js'
 import {useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStore.js'

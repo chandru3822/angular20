@@ -235,14 +235,12 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 
-import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
-import {useRouter, useRoute} from "vue-router/composables"
+import {ref, onMounted, getCurrentInstance, computed, onUpdated} from "vue";
+import {useRoute} from "vue-router/composables"
 
 const appStore = useAppStore()
 const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
  const route = useRoute()
-const router = useRouter()
 const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
 

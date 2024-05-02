@@ -23,7 +23,7 @@
 
 
 */
-import {ref, defineProps, defineEmits, onMounted, watch} from 'vue'
+import {ref, watch} from 'vue'
 import {useRoute} from "vue-router/composables";
 
 const route = useRoute()

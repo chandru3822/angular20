@@ -4,13 +4,13 @@
       No available notes or activities
     </div>
     <!--    <div v-for="a in activities">{{a.note}} <br></div>-->
-    <v-card v-else v-for="(a, aIdx) in activities" class="mt-3 pt-3 pb-2 elevation-0 card"
+    <v-card v-else v-for="(a, aIdx) in activities" :key="aIdx" class="mt-3 pt-3 pb-2 elevation-0 card"
             :class="{'pinned-card': a.pinned && highlightPinnedActivity, 'activity-card':a.activityTypeId === 1}">
       <v-toolbar flat color="transparent" class="toolbar-z-index-override-for-menu" id="activity-card-title">
         <v-toolbar-title class="body-medium">
           <v-icon small color="#FB8C00" v-if="a.pinned && highlightPinnedActivity" class="mr-2">mdi-pin</v-icon>
           <a @click="props.searchCallback('uncategorized', -1, SearchTypeEnum.TAG)" class="uncategorized-text" v-if="!a.activityHashtags || a.activityHashtags?.length === 0" :inner-html.prop="'[uncategorized]' | searchHighlight(query)"></a>
-          <span class="test" v-for="(ah, idx) in a.activityHashtags">
+          <span class="test" v-for="(ah, idx) in a.activityHashtags" :key="idx">
                 <span v-if="idx !== 0">, </span>
                 <a @click="props.searchCallback('#' + ah.hashtag)" :inner-html.prop="'#' + ah.hashtag | searchHighlight(query)"></a>
               </span>
