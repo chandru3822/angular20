@@ -75,7 +75,7 @@
           color="primary"
           class="qa-date-ok"
           @click="saveTime()"
-          text="OK"
+          text="Ok"
       ></a-btn>
     </v-time-picker>
   </v-menu>
@@ -155,6 +155,11 @@ watch(propsValue, async() => {
   }
 })
 
+watch(timezone, async() => {
+  //re-init if timezone changes, otherwise the auto-selected time is incorrect
+    init()
+})
+
 //if the company has set a default minute increment, use that. otherwise use 1
 const minuteIncrement = computed(() => {
   return userStore.details.minuteIncrement || 1
@@ -185,7 +190,6 @@ const setFunction = (date) => {
   //we have to combine the selected date with the current time in non-utc in case they have selected date with a different daylight savings time than "NOW"
   let combined = dateRef.value + ' ' + date
   time.value = moment.tz(combined, 'yyyy-MM-DD HH:mm', timezone.value).utc().format('HH:mm')
-
   // time.value = moment.tz(date, 'HH:mm', timezone).utc().format('HH:mm')
   // ^^ this is the old way, in case i broke something
 

@@ -356,11 +356,11 @@
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequestWithParams, postRequest, deleteRequest} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 
-  import {getCurrentInstance, onMounted, ref, toRefs, computed, watch, defineProps} from "vue";
+  import {getCurrentInstance, onMounted, ref, toRefs, computed, watch} from "vue";
   import { useUserStore } from '@/stores/UserStore.js'
   import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()

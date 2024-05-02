@@ -355,8 +355,8 @@
                       attach
                       item-value="id"
                       item-title="uniqueBehaviorType">
-                      <template v-slot:item="{ props, item }">
-                        {{ data.item.uniqueBehaviorType }} - {{ data.item.description }}
+                      <template #item="{item}">
+                        {{ item.uniqueBehaviorType }} - {{ item.description }}
                       </template>
                     </a-autocomplete>
                     <div class="mb-3 error--text" v-if="childSaveError">

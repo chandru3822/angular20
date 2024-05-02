@@ -53,6 +53,36 @@ public class ProposalQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getOldestDesignIdForProject = """
+    select text_value
+    from flow.project_process_step_custom_field_value ppscfv
+        inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+        inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+    where ppscfv.custom_field_group_assignment_id = 22560 --aurora design id
+    and pps.archived is false
+    and cpsst.process_step_status_type_id != 3
+    and ppscfv.text_value is not null
+    and pps.project_id = :projectId
+    order by pps.date_created
+    limit 1
+  """;
+
+  //language=PostgreSQL
+  public final static String getDesignIdForCreatePredesignStep = """
+    select text_value
+    from flow.project_process_step_custom_field_value ppscfv
+             inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+    where ppscfv.custom_field_group_assignment_id = 27106 --aurora design id on create predesign
+      and pps.archived is false
+      and cpsst.process_step_status_type_id != 3
+      and ppscfv.text_value is not null
+      and pps.project_id = :projectId
+    order by pps.date_created
+    limit 1
+    """;
+
+  //language=PostgreSQL
   public final static String getProjectsCount = """
           select count(distinct pps.project_id)
           from flow.project_process_step pps

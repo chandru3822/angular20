@@ -41,7 +41,7 @@ public class EventService {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    return sqlCache.queryBySql(EventQuery.getAllForCompany, params, Event.class);
+    return sqlCache.queryBySql(EventQuery.getAllForCompany, params, new EventMapper<>(Event.class, om));
   }
 
   public Event getEvent(Long id) {

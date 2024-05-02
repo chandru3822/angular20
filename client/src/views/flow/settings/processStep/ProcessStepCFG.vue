@@ -7,6 +7,7 @@
 				:customFieldGroups="processStep.customFieldGroups"
 				@status-updated="updateStatus"
 				@default-collapse-updated="toggleCollapseByDefault"
+				@order-updated="updateOrder"
 			/>
 		</v-col>
 	</v-row>
@@ -104,6 +105,8 @@ const toggleCollapseByDefault = async (group) => {
 		processStep.value = cloneDeep(processStep.value)
 	}
 }
+
+const updateOrder = () => getProcessStepDetails()
 </script>
 
 <style scoped lang="scss">

@@ -246,13 +246,16 @@ begin
              inner join brs.residual_plan_partial_allocation_type rppat on rppat.id = rppa.residual_plan_partial_allocation_type_id
              where rppa.residual_plan_allocation_id = rpa.id
                and case  when rp.is_based_on_source is true then
-                           v_system_size_by_source >= rppa.fdc_count and
-                           v_system_size_by_source < rpa.allocation
+                           ((v_system_size_by_source >= rppa.fdc_count and rppa.residual_plan_partial_allocation_type_id = 2) or
+                            (v_sum_system_size_qualified >= rppa.fdc_count and rppa.residual_plan_partial_allocation_type_id = 1)) and
+                           v_sum_system_size_qualified < rpa.allocation
                        when rp.is_system_size is true then
                           v_sum_system_size_qualified >= rppa.fdc_count and
                           v_sum_system_size_qualified < rpa.allocation
                         else v_count_qualified_fdc >= rppa.fdc_count and
-                             v_count_qualified_fdc < rpa.allocation end order by fdc_count desc,rppat.rank_order limit 1)as partial_allocation
+                             v_count_qualified_fdc < rpa.allocation end
+             order by case when rp.is_system_size is true then rppa.partial_allocation end desc,
+                      case when rp.is_system_size is false then rppa.fdc_count end desc limit 1)as partial_allocation
             from flow.user u
               inner join brs.user_residual ur on ur.user_id = u.id
               inner join brs.residual_plan rp on rp.id = ur.residual_plan_id
@@ -275,11 +278,11 @@ begin
              foo.total_residual_paid,
              foo.has_previous_snapshot,
              foo.prior_period_qualified_fdc,
-             foo.fda_in_month_not_qualifying::json,--todo coalesce() this shit coalesce(foo.qualified_fdc, '[]')::json, I don't care about this
-             foo.qualified_fdc::json,
-             foo.clawback_projects::json,
+             coalesce(foo.fda_in_month_not_qualifying::json, '[]')::json,
+             coalesce(foo.qualified_fdc::json, '[]')::json,
+             coalesce(foo.clawback_projects::json, '[]')::json,
              '[]'::json,
-             foo.total_qualifying_fdc_to_date::json,
+             coalesce(foo.total_qualifying_fdc_to_date::json, '[]')::json,
              foo.cancelled_fdc_during_period,
              v_lifetime_fds - foo.prior_period_qualified_fdc - foo.qualified_fdc_residual_this_period +
              foo.cancelled_fdc_during_period as reactivated_fdc,

@@ -284,6 +284,7 @@
       <v-card
         v-if="
           !hasActiveDesign &&
+          canAuroraAI &&
           (closerApptRequirementsMet || designs.length > 0 || hasActiveAiDesign)
         "
         color="transparent"
@@ -326,9 +327,26 @@
               pendingAuroraAdjustmentsStatusId
           "
         >
-          <div class="mb-10">Immediate Design Pending Aurora Adjustments</div>
-          <a-btn variant="outlined" color="primary" @click="syncAuroraDesignDetails()">
+          <div class="mb-3">
+            Immediate Design Pending Aurora Adjustments
+          </div>
+          <a v-if="activeDesign.auroraProjectId && activeDesign.designId"
+
+             @click="openSalesMode()">
+            Open in Sales Mode
+          </a>
+          <br>
+          <a-btn variant="solo"
+                 class="mt-8"
+                 color="primary"
+                 @click="syncAuroraDesignDetails()">
             Sync Design
+          </a-btn>
+          <br>
+          <a-btn variant="outlined"
+                 class="mt-4"
+                 @click="cancelPendingAuroraDesign()">
+            Cancel Aurora Design Request
           </a-btn>
         </v-card-text>
       </v-card>
@@ -552,6 +570,9 @@ const closerApptRequirementsMet = computed(() => {
     )
   )
 })
+const canAuroraAI = computed(() => {
+  return userStore.userHasFeatureAccessLevel('AURORA_AI', 'ADD')
+})
 const canEdit = computed(() => {
   const hasAdmin = userStore.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
   const hasEdit = userStore.userHasFeatureAccessLevel('PROPOSALS', 'EDIT')
@@ -582,43 +603,8 @@ const pageLoadOrRefresh = async () => {
 const validateAIRequest = async () => {
   const valid = aiForm.value.validate()
   if (valid) {
-    if (useExistingDesign.value) {
-      await createAiFromExisting()
-    } else {
-      await requestAIDesign()
-    }
-  }
-}
-const createAiFromExisting = async () => {
-  try {
-    savingNewAiDesign.value = true
-    // handle the duplication on the backend so mobile can do it too
-    const { data, status } = await postRequest(
-      `/proposal/projects/${projectId.value}/ai/design/${firstDesignId.value}/duplicate`,
-      aiRequestFields.value,
-      'blueraven'
-    )
-
-    if (null != data?.design?.id) {
-      //open the new design in sales mode
-      const url = `https://v2.aurorasolar.com/projects/${data?.design?.project_id}/designs/${data?.design?.id}/e-proposal`
-      window.open(url, '_blank')
-
-      //reload the active design
-      await getActiveDesign()
-    } else {
-      appStore.showSnack('ERROR', 'Failed to find Aurora Project')
-    }
-  } catch (e) {
-    logError(e)
-    appStore.loading = false
-     appStore.showSnack(
-      'ERROR',
-      e?.data?.message || 'There was an error requesting a new design'
-    )
-  } finally {
-    showAIDesignRequestForm.value = false
-    savingNewAiDesign.value = false
+    //all checks for how to create the design are handled by backend now
+    await requestAIDesign()
   }
 }
 
@@ -677,6 +663,29 @@ const requestAIDesign = async () => {
     showAIDesignRequestForm.value = false
     savingNewAiDesign.value = false
   }
+}
+
+const cancelPendingAuroraDesign = async () => {
+  appStore.loading = true
+  try {
+    let params = {
+      processStepStatusTypeId: 3, //this is the root status
+      id: 1654, //this is the company status
+      cancelledCompanyProcessStepStatusTypeId: 1654 //this is the cancelled status which in our case we just set to the same..it wont actually get used
+    }
+    await postRequest(`/projectProcessStep/${activeDesign.value.projectProcessStepId}/status`, params)
+    activeDesign.value = {}
+  } catch (e) {
+    logError(e)
+    appStore.showSnack('ERROR', 'Error Canceling Process Step')
+  } finally {
+    appStore.loading=false
+  }
+}
+
+const openSalesMode = async () => {
+  const url = `https://v2.aurorasolar.com/projects/${activeDesign.value.auroraProjectId}/designs/${activeDesign.value.designId}/e-proposal`
+  window.open(url, '_blank')
 }
 
 const syncAuroraDesignDetails = async () => {

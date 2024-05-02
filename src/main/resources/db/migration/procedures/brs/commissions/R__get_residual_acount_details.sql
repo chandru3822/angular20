@@ -172,7 +172,7 @@ begin
                        inner join brs.residual_plan_user rpu on rpu.residual_plan_id = rp.id and rpu.user_id = u.id
                        inner join brs.residual r on r.current is true
                 where
-                       u.id in (2401231) and
+                      -- u.id in (2402401,2353957,2401231) and
                       exists(select id
                              from flow.user_position up2
                              where up2.user_id = u.id
@@ -183,17 +183,26 @@ begin
                                                                 foo.lifetime_fdc between rpa.min and coalesce(rpa.max, 1000000)
                  inner join brs.residual_plan_allocation a on a.residual_plan_id = foo.residual_plan_id and
                                                               foo.lifetime_fdc between a.min and coalesce(a.max, 1000000)
-                 left join lateral (select partial_allocation from brs.residual_plan_partial_allocation rppa
-                                                                     inner join brs.residual_plan_partial_allocation_type rppat on rppat.id = rppa.residual_plan_partial_allocation_type_id
+                 left join lateral (select partial_allocation
+                                    from brs.residual_plan_partial_allocation rppa
+                                           inner join brs.residual_plan_partial_allocation_type rppat
+                                                      on rppat.id = rppa.residual_plan_partial_allocation_type_id
                                     where rppa.residual_plan_allocation_id = a.id
-                                    and case when rp2.is_based_on_source is true then
-                                                    foo.system_size_by_source >= rppa.fdc_count and
-                                                    foo.system_size_by_source < a.allocation
-                                         when foo.is_system_size is true then
-                                               foo.qualified_this_period_system_size >= rppa.fdc_count and
-                                               foo.qualified_this_period_system_size < a.allocation
-                                        else foo.qualified_this_period_fdc >= rppa.fdc_count and
-                                             foo.qualified_this_period_fdc <  a.allocation end order by rppa.fdc_count desc,rppat.rank_order limit 1) as alloc on true ) as foo1
+                                      and case
+                                            when rp2.is_based_on_source is true then
+                                              ((foo.system_size_by_source >= rppa.fdc_count and
+                                                rppa.residual_plan_partial_allocation_type_id = 2) or
+                                               (foo.qualified_this_period_system_size >= rppa.fdc_count and
+                                                rppa.residual_plan_partial_allocation_type_id = 1)) and
+                                              foo.qualified_this_period_system_size < a.allocation
+                                            when foo.is_system_size is true then
+                                              foo.qualified_this_period_system_size >= rppa.fdc_count and
+                                              foo.qualified_this_period_system_size < a.allocation
+                                            else foo.qualified_this_period_fdc >= rppa.fdc_count and
+                                                 foo.qualified_this_period_fdc < a.allocation end
+                                    order by case when foo.is_system_size is true then rppa.partial_allocation end desc,
+                                             case when foo.is_system_size is false then rppa.fdc_count end desc
+                                    limit 1) as alloc on true) as foo1
     where foo1.lifetime_fdc > 0
        or foo1.total_clawback != 0;
 

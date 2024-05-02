@@ -27,7 +27,7 @@
               variant="text"
               class=""
               @click="deleteError = false"
-              text="OK"
+              text="Ok"
           ></a-btn>
         </v-card-actions>
       </v-card>
@@ -733,8 +733,6 @@ const route = useRoute()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-
-import {defineProps} from 'vue'
 
 const props = defineProps({
   eventRequirements: Boolean,

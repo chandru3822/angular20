@@ -1,16 +1,19 @@
 <template>
-  <v-col class="spinner-container" :class="{'transparent': transparent, 'centered': centered}">
-    {{text}}
+  <v-col
+    class="spinner-container"
+    :class="{ transparent: transparent, centered: centered }"
+  >
+    {{ text }}
     <v-progress-circular
-        indeterminate
-        :size="size"
-        :color="spinnerColor"
+      indeterminate
+      :size="size"
+      :color="spinnerColor"
     ></v-progress-circular>
   </v-col>
 </template>
 
 <script setup>
-import { toRefs, computed } from 'vue'
+import { toRefs } from 'vue'
 
 const props = defineProps({
   spinnerColor: String,
@@ -20,13 +23,12 @@ const props = defineProps({
   centered: Boolean
 })
 const { spinnerColor, size, text, transparent, centered } = toRefs(props)
-
 </script>
 
 <style scoped lang="scss">
 .spinner-container {
   z-index: 1;
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .transparent {

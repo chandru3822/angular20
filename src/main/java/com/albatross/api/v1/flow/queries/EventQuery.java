@@ -30,7 +30,8 @@ public class EventQuery {
 			e.resource_hidden_allow,
 			e.hidden_allow,
 			coalesce(to_jsonb(e.company_event_status_type_ids), '[]') as company_event_status_type_ids,
-			coalesce(to_jsonb(e.event_status_type_ids), '[]') as event_status_type_ids
+			coalesce(to_jsonb(e.event_status_type_ids), '[]') as event_status_type_ids,
+			e.collapse_by_default
 		from flow.event e
 		where
 			e.company_id = :companyId and

@@ -7,6 +7,7 @@
       </AnnouncementModal>
     </v-dialog>
     <v-alert v-for="(a, idx) in unseenAnnouncements"
+			 :key="idx"
              elevation="1"
              :max-width="320"
              :min-width="320"
@@ -44,17 +45,10 @@ import moment from 'moment'
 import { postRequestWithRequestParams} from "@/helpers/helpers.js";
 import AnnouncementModal from "@/components/AnnouncementModal.vue";
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
+import {computed, ref} from 'vue'
 import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
-const route = useRoute()
-const router = useRouter()
-const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
 
 const announcementAlert = ref({})
 const showModal = ref(false)

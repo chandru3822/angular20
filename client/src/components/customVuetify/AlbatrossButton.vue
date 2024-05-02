@@ -38,7 +38,6 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue'
 
 //note in vue3 using the prepend icon you can't change its size. so for now if the size of the icon is custom, then a default template must be sent in to override
 //note the text-none class means that you dont have to specify casing, just pass the text in the way you want it to appear

@@ -124,22 +124,18 @@
 
 <script setup>
 
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest} from '@/helpers/helpers'
   import moment from 'moment'
   import ZonelessTimePickerInput from "./ZonelessTimePickerInput";
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 
-  import {getCurrentInstance, onMounted, ref, computed, watch, defineProps} from "vue";
+  import {onMounted, ref, computed} from "vue";
   import { useUserStore } from '@/stores/UserStore.js'
-  import {useRoute} from "vue-router/composables"
   import { useAppStore } from '@/stores/AppStore.js'
   const appStore = useAppStore()
 
-  const vueInstance = getCurrentInstance().proxy
-     const store = vueInstance.$store
   const userStore = useUserStore()
-  const route = useRoute()
 
   const addNew = ref(false)
   const showTime = ref(false)

@@ -262,6 +262,7 @@ public class ProposalVersionService {
     sqlCache.updateBySql(ProposalToolQuery.archiveCustomFieldGroup, params);
 
     return getProposalCustomFieldValuesByGroupUUID(versionId, objectCode, groupUUID)
+      .or(() -> proposalCustomFieldValuesByGroupUUID)
       .map(row -> {
         //because we are in a transaction these values aren't properly updated, so we manually set them here
         row.setVersionId(versionId);

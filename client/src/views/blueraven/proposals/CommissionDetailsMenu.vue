@@ -86,9 +86,7 @@
 <script setup>
 import { getRequestWithParams } from '@/helpers/helpers'
 import SpinnerInline from '@/components/SpinnerInline'
-import { getCurrentInstance, toRefs, ref, watch } from 'vue'
-
-const vueInstance = getCurrentInstance().proxy
+import { toRefs, ref, watch } from 'vue'
 
 const props = defineProps({
   proposalId: Number,

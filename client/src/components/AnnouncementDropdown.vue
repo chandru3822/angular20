@@ -1,29 +1,44 @@
 <template>
-  <div class="flex-align-items-center"  id="announcement-dropdown">
-    <v-dialog v-model="showModal" :max-width="765"
-              content-class="modal-content">
-      <AnnouncementModal :announcement="selectedAnnouncement"
-                         :close-callback="closeModal">
+  <div class="flex-align-items-center" id="announcement-dropdown">
+    <v-dialog
+      v-model="showModal"
+      :max-width="765"
+      content-class="modal-content"
+    >
+      <AnnouncementModal
+        :announcement="selectedAnnouncement"
+        :close-callback="closeModal"
+      >
       </AnnouncementModal>
     </v-dialog>
-    <v-menu data-app
-            left
-            offset-y
-            :max-height="`calc(100vh - 75px)`"
-            :max-width="menuWidth"
-            :min-width="menuWidth"
-            v-model="menuOpen"
-            class="account-menu"
-            :close-on-content-click="false">
+    <v-menu
+      data-app
+      left
+      offset-y
+      :max-height="`calc(100vh - 75px)`"
+      :max-width="menuWidth"
+      :min-width="menuWidth"
+      v-model="menuOpen"
+      class="account-menu"
+      :close-on-content-click="false"
+    >
       <template v-slot:activator="{ on }">
         <a-btn
-            class="account-menu-button label-medium"
-            :class="{'announcement-adjust-for-badge': hasUnalertedAnnouncements}"
-            :color="constants.ENV_COLOR"
-            :activation-handler="on">
+          class="account-menu-button label-medium"
+          :class="{
+            'announcement-adjust-for-badge': hasUnalertedAnnouncements
+          }"
+          :color="constants.ENV_COLOR"
+          :activation-handler="on"
+        >
           <template #default>
             <v-icon>mdi-bell</v-icon>
-            <v-badge dot class="alert-badge" v-if="hasUnalertedAnnouncements" color="error lighten-1" ></v-badge>
+            <v-badge
+              dot
+              class="alert-badge"
+              v-if="hasUnalertedAnnouncements"
+              color="error lighten-1"
+            ></v-badge>
           </template>
         </a-btn>
       </template>
@@ -31,11 +46,9 @@
         <v-list v-if="loadingAgain">
           <v-list-item class="pr-1">
             <v-list-item-icon>
-              <SpinnerInline :size="20" color="primary"/>
+              <SpinnerInline :size="20" color="primary" />
             </v-list-item-icon>
-            <v-list-item-content class="">
-              Loading
-            </v-list-item-content>
+            <v-list-item-content class=""> Loading </v-list-item-content>
           </v-list-item>
         </v-list>
         <v-list v-else-if="appStore.announcements?.length === 0">
@@ -46,35 +59,34 @@
           </v-list-item>
         </v-list>
         <v-list v-else-if="appStore.announcements?.length > 0">
-          <template  v-for="(item, index) in appStore.announcements">
-            <v-list-item class="pr-1"
-                         :key="item.id">
+          <template v-for="(item, index) in appStore.announcements">
+            <v-list-item class="pr-1" :key="item.id">
               <v-list-item-icon v-if="!item.read" class="mr-2">
-                <v-icon small tool
-                        color="error lighten-1">mdi-circle</v-icon>
+                <v-icon small tool color="error lighten-1">mdi-circle</v-icon>
               </v-list-item-icon>
               <v-list-item-content class="pr-2">
-                {{item.alertText}}
+                {{ item.alertText }}
               </v-list-item-content>
-              <v-list-item-action v-if="item.expandable"
-                                  class="announcement-action pr-4">
+              <v-list-item-action
+                v-if="item.expandable"
+                class="announcement-action pr-4"
+              >
                 <v-list-item-action-text>
                   <a-btn
-                      variant="text"
-                      color="primary"
-                      class="learn-more-btn text-transform-unset"
-                      @click="[ item.read = true, openModal(item)]"
-                      text="Learn More"
+                    variant="text"
+                    color="primary"
+                    class="learn-more-btn text-transform-unset"
+                    @click=";[(item.read = true), openModal(item)]"
+                    text="Learn More"
                   ></a-btn>
                 </v-list-item-action-text>
               </v-list-item-action>
             </v-list-item>
             <v-divider
-                v-if="index < appStore.announcements.length - 1"
+              v-if="index < appStore.announcements.length - 1"
             ></v-divider>
           </template>
         </v-list>
-
       </div>
     </v-menu>
   </div>
@@ -84,22 +96,17 @@
 import constants from '@/helpers/constants'
 
 import SpinnerInline from '@/components/SpinnerInline'
-import {getRequestWithParams, } from '@/helpers/helpers'
-
-import AnnouncementModal from "@/components/AnnouncementModal.vue";
+import AnnouncementModal from '@/components/AnnouncementModal.vue'
+import { getRequestWithParams } from '@/helpers/helpers'
 import { useFileStore } from '@/stores/FileStore.js'
 
-import { getCurrentInstance, toRefs, computed, ref, onMounted, watch } from 'vue'
-import {useUserStore} from '@/stores/UserStore.js'
-import {useRoute, useRouter} from "vue-router/composables";
+import { computed, ref, watch } from 'vue'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 
 const appStore = useAppStore()
-const route = useRoute()
-const router = useRouter()
 const userStore = useUserStore()
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
+const fileStore = useFileStore()
 
 const showModal = ref(false)
 const headerColor = ref(constants.ENV_COLOR)
@@ -109,7 +116,7 @@ const loadComplete = ref(false)
 const loadingAgain = ref(true)
 
 watch(menuOpen, (newValue, oldValue) => {
-  if(newValue) {
+  if (newValue) {
     getActiveAnnouncementsAgain()
   }
 })
@@ -121,34 +128,35 @@ const menuWidth = computed(() => {
   return constants.IS_MOBILE ? 320 : 400
 })
 const hasUnalertedAnnouncements = computed(() => {
-  return appStore.announcements?.filter(a => !a.alerted)?.length > 0 || false
+  return appStore.announcements?.filter((a) => !a.alerted)?.length > 0 || false
 })
 
 //we reload them again here in case something changes
-const getActiveAnnouncementsAgain = async() => {
+const getActiveAnnouncementsAgain = async () => {
   try {
     loadingAgain.value = true
-    let params = {
+    const params = {
       doUpdate: true //we do this every time in case something changed behind the scenes
     }
-    const {data, status} = await getRequestWithParams(`/announcements/active`, {params})
+    const { data } = await getRequestWithParams(`/announcements/active`, {
+      params
+    })
     appStore.announcements = data
   } catch (e) {
     console.error('*** ERROR ***', e)
     appStore.showSnack('ERROR', 'Error Retrieving Data')
-
   } finally {
     loadingAgain.value = false
   }
 }
-const openModal = async(item) => {
+const openModal = async (item) => {
   menuOpen.value = false
   showModal.value = true
   loadComplete.value = false
   await getAttachment(item)
   selectedAnnouncement.value = item
 }
-const getAttachment = async(item) => {
+const getAttachment = async (item) => {
   try {
     await fileStore.getOne({
       attachmentTypeId: 990,
@@ -159,7 +167,7 @@ const getAttachment = async(item) => {
         loadComplete.value = true
       }
     })
-  } catch(e) {
+  } catch (e) {
     console.error('*** ERROR ***', e)
     loadComplete.value = true
   }
@@ -183,7 +191,7 @@ const closeModal = () => {
   margin: 0 !important;
 }
 
-.account-menu-button{
+.account-menu-button {
   text-transform: capitalize;
   box-shadow: none !important;
   -webkit-box-shadow: none !important;
@@ -199,5 +207,4 @@ const closeModal = () => {
   padding-left: 4px !important;
   padding-right: 4px !important;
 }
-
 </style>

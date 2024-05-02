@@ -40,7 +40,7 @@
         variant="text"
         color="primary"
         @click="saveTime()"
-        text="OK"
+        text="Ok"
     ></a-btn>
   </v-time-picker>
 </v-menu>
@@ -48,7 +48,7 @@
 
 
 <script setup>
-import {onMounted, ref, toRefs, computed, watch, defineProps} from "vue";
+import {onMounted, ref, toRefs, computed, watch} from "vue";
 
 
 const props = defineProps({

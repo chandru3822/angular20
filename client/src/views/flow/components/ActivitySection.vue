@@ -28,7 +28,7 @@
           ></a-btn>
         </template>
         <v-list dense class="">
-          <v-list-item class="filterCheckbox" v-for="at in activityTypes">
+          <v-list-item class="filterCheckbox" v-for="(at, idx) in activityTypes" :key="idx">
             <v-list-item-content>
               <v-list-item-title>
                 <v-checkbox
@@ -66,11 +66,11 @@
       <div v-if="!timelineView">
         <div v-if="sortedFilteredActivities?.length === 0" class="body-large">No available notes or activities</div>
         <div v-else>
-          <div v-for="type in filteredTopics" class="title-medium" id="topic-activity-type-header">
+          <div v-for="(type, idx) in filteredTopics" class="title-medium" id="topic-activity-type-header" :key="idx">
             <span>{{ type.activityType }}</span><!--Activity Type (Notes or Activities) Header-->
             <div class="pt-4 body-large" v-if="!type.activityTypeHashtags || type.activityTypeHashtags.length === 0">No results found</div>
             <v-expansion-panels v-else accordion multiple flat class=".rounded-0"><!--Topic # header-->
-              <v-expansion-panel v-for="h in orderBy(searchfilteredActivityTypeHashtags(type.activityTypeHashtags), 'lastUpdated', (sortDirection === 'asc' ? 1 : -1))" :key="h.hashtagId">
+              <v-expansion-panel v-for="h in orderBy(searchfilteredActivityTypeHashtags(type.activityTypeHashtags), 'lastUpdated', sortDirection)" :key="h.hashtagId">
                 <v-expansion-panel-header class="expansion-panel-header px-0">
                   <template v-slot:default="{ open }">
                     <v-row no-gutters class="align-center" :class="{'bold' : open}">
@@ -362,7 +362,7 @@ const sortedFilteredActivities = computed(() => {
   getPinnedActivitiesOnly(activities.value)
   if(sortedList.length > (activitiesToShow.value * bottomHitCount.value) ) {
     if(activityList.value) {
-      activityList.value.infiniteStateLoaded(false)
+      activityList.value[0].infiniteStateLoaded(false)
     }
     return sortedList.slice(0, (activitiesToShow.value * bottomHitCount.value))
   } else {

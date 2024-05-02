@@ -1209,7 +1209,7 @@ const handleOrgFilterChange =  (reset, selectedLevelHere) => {
       }
     })
     //reload the filters
-    getOrgFilters()
+    getTheOrgFilters(false)
   }
 
   selectAllUsers.value = false

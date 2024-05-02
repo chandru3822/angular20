@@ -57,7 +57,9 @@ BEGIN
                                              date_modified,
                                              modified_by_id,
                                              existing_clawbacks,
-                                             current_clawbacks_in_period)
+                                             current_clawbacks_in_period,
+                                             lifetime_system_size,
+                                             qualified_this_period_system_size)
 
       VALUES (p_residual_id,
               d.user_id,
@@ -94,7 +96,9 @@ BEGIN
               now(),
               p_updated_by_id,
               (select sum(erc.amount) from  brs.get_existing_residual_clawbacks(d.user_id) erc),
-              (select sum(crc.amount) from  brs.get_current_residual_clawbacks(d.user_id) crc))
+              (select sum(crc.amount) from  brs.get_current_residual_clawbacks(d.user_id) crc),
+              d.lifetime_system_size,
+              d.qualified_this_period_system_size)
       ON CONFLICT (user_id, residual_id) DO NOTHING
       RETURNING id INTO v_snapshot_id;
 
@@ -262,7 +266,7 @@ BEGIN
                   x.system_size_by_source);
           insert into brs.residual_project_qualified_date(project_id, qualified_date, date_created, date_modified,
                                                           created_by_id, modified_by_id, residual_id)
-          values (x.project_id, least(qualified_date,'2024-03-31'::date)::date, now(), now(), p_updated_by_id, p_updated_by_id, p_residual_id);
+          values (x.project_id,x.qualified_date::date, now(), now(), p_updated_by_id, p_updated_by_id, p_residual_id);
         end loop;
 
 
@@ -294,7 +298,7 @@ BEGIN
       insert into brs.residual_project_qualified_date(project_id, qualified_date, date_created, date_modified,
                                                       created_by_id, modified_by_id, residual_id, excluded_from_cancel)
         (select a.project_id,
-                least(qualified_date,'2024-03-31'::date)::date,
+                qualified_date::date,
                 now(),
                 now(),
                 p_updated_by_id,

@@ -60,7 +60,7 @@
                     item-value="id"
                     @input="orgTypeValuesChanged = true"
                     @blur="filterOrgsAndUsers"
-                    :menu-props="['attach']"
+                    menu-props="attach"
 
           >
             <template v-slot:selection="{item, index}">
@@ -112,7 +112,8 @@
                           item-value="id"
                           @input="[orgValuesChanged = true, limiter()]"
                           @blur="reloadCalendar"
-                          :menu-props="['attach']"
+                          menu-props="attach"
+
           >
             <template
                 v-slot:selection="{item, index}"
@@ -141,7 +142,8 @@
                           item-value="id"
                           @input="positionValuesChanged = true"
                           @blur="filterOrgsAndUsers"
-                          :menu-props="['attach']"
+                          menu-props="attach"
+
           >
             <template  v-slot:selection="{item, index}">
               <div v-if="index === 0 && selectedPositions.length < 3">
@@ -190,7 +192,8 @@
                           item-value="id"
                           @input="[userValuesChanged = true, limiter()]"
                           @blur="reloadCalendar"
-                          :menu-props="['attach']"
+                          menu-props="attach"
+
           >
             <template  v-slot:selection="{item, index}">
               <span v-if="index === 0" class="primary--text text-caption">
@@ -554,6 +557,9 @@ const countSelected = computed(() => {
         //when the schedule timezone value changes, update the calendar plugin's timezone
         let calendarApi = eventCalendar.value.getApi()
         calendarApi.setOption('timeZone', scheduleTimezone.value.value)
+      //workaround - we have to reload the calendar to update the current time indicator b/c it doesn't automatically respond to the timezone changing
+        calendarApi.destroy()
+        calendarApi.render()
         //and show a snackbar if the timezones don't match
         if(userTimezone.value !== scheduleTimezone.value) {
           const snackbar = createSnackbar('Note: Timezone changes only affect the scheduling tool.  The timezone everywhere else on Albatross remains unchanged.')

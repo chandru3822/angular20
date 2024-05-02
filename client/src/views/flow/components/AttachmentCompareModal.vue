@@ -115,7 +115,7 @@
             <span class="left-column-header">Document Information</span><br>
           </v-col>
         </v-row>
-        <v-row v-for="field in allFields" class="">
+        <v-row v-for="(field, index) in allFields" :key="index">
           <v-col :cols="leftCols" class="left-column field-container">
             <div>
               <div class="left-column-subheader">

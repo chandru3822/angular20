@@ -15,7 +15,7 @@ import AlbatrossSelect from '@/components/customVuetify/AlbatrossSelect.vue'
 import AlbatrossAutocomplete from '@/components/customVuetify/AlbatrossAutocomplete.vue'
 
 import '@/styles/main.scss'
-import { requestInterceptor, responseInterceptor  } from '@/helpers/interceptors'
+import { requestInterceptor, responseInterceptor } from '@/helpers/interceptors'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useScheduleStore } from '@/stores/ScheduleStore.js'
 
@@ -25,84 +25,51 @@ Vue.config.productionTip = false
 Vue.use(SnackbarPlugin)
 Vue.prototype.$filters = Vue.options.filters
 
-//todo: @kaleb the filters in your mixin.js didnt seem to be working
-Vue.filter('capitalize', function(value) {
-  if (!value) return
-  return value[0].toUpperCase() + value?.slice(1).toLowerCase()
-})
-
 Vue.filter('currency', function (value, symbol, digits) {
-  if (typeof value != "number" || typeof digits != "number") {
+  if (typeof value != 'number' || typeof digits != 'number') {
     return
   } else {
-    return symbol + parseFloat(value).toFixed(digits);
+    return symbol + parseFloat(value).toFixed(digits)
   }
-});
+})
 
 Vue.filter('percent', function (value, digits = 0) {
-  if (typeof value != "number" || typeof digits != "number")
-    return
+  if (typeof value != 'number' || typeof digits != 'number') return
 
   value = value * 100
 
-  let integer = parseInt(value);
+  let integer = parseInt(value)
 
-  if (value === integer)
-    return value + '%';
+  if (value === integer) return value + '%'
   else {
-    return parseFloat(value).toFixed(digits) + '%';
+    return parseFloat(value).toFixed(digits) + '%'
   }
-});
-//todo: kaleb, most of this stuff is for proposals but it wasn't working in the mixins.js file
-const dateTimeFormat = new Intl.DateTimeFormat('default', {
-  dateStyle: 'short',
-  timeStyle: 'short'
-})
-
-const numberFormat = new Intl.NumberFormat('default', {
-  maximumFractionDigits: 15
-})
-
-Vue.filter('customValueFormatter', function({value, type}) {
-  if (Array.isArray(value)) {
-    return value?.join(', ')
-  }
-
-  if (type === 'timestamp') {
-    return dateTimeFormat.format(new Date(value))
-  }
-
-  if (!isNaN(value) && (type === 'numeric' || type === 'integer')) {
-    return numberFormat.format(value)
-  }
-
-  if (type === 'boolean') {
-    return value ? '✔' : ''
-  }
-  return value
 })
 
 //this filter is only used for the zoneless time picker stuff
-Vue.filter('formatDateZoneless', function(value) {
+Vue.filter('formatDateZoneless', function (value) {
   if (value) {
     return moment.utc(String(value), 'HH:mm:ss').format('h:mm a')
   }
 })
 
-Vue.filter('searchHighlight', function(value, query) {
+Vue.filter('searchHighlight', function (value, query) {
   if (value) {
-    return value.replace(new RegExp(query, "ig"),(v) => `<span class="grey lighten-2">${v}</span>`)
+    return value.replace(
+      new RegExp(query, 'ig'),
+      (v) => `<span class="grey lighten-2">${v}</span>`
+    )
   }
 })
 
-Vue.filter('fieldValues', function(field) {
-    if (Array.isArray(field.values)) {
-        return field?.values?.join(', ')
-    }
-    return field.values
+Vue.filter('fieldValues', function (field) {
+  if (Array.isArray(field.values)) {
+    return field?.values?.join(', ')
+  }
+  return field.values
 })
 
-Vue.filter('formatDate', function(value, type, format, inputFormat) {
+Vue.filter('formatDate', function (value, type, format, inputFormat) {
   /*
   //  this part of the code: `moment(String(value))` was throwing format warnings from moment with regular timestamp formats
   //  i can probably handle more scenarios but for now these don't throw errors: .format('YYYY-MM-DD') OR .format('YYYY-MM-DDTHH:mm:ssZ')
@@ -115,7 +82,10 @@ Vue.filter('formatDate', function(value, type, format, inputFormat) {
   let timezone = userStore.timezone.value
 
   //The schedule screen has it's own timezone. Use that if user is on schedule screen, else default to regular timezone
-  if (router.currentRoute.name === 'schedule' && scheduleStore.timezone?.value) {
+  if (
+    router.currentRoute.name === 'schedule' &&
+    scheduleStore.timezone?.value
+  ) {
     timezone = scheduleStore.timezone.value
   }
 
@@ -139,9 +109,9 @@ Vue.filter('formatDate', function(value, type, format, inputFormat) {
     return type === 'date'
       ? moment.utc(String(value), inputFormat ?? null).format(format)
       : moment
-        .utc(String(value), inputFormat ?? null)
-        .tz(timezone)
-        .format(format)
+          .utc(String(value), inputFormat ?? null)
+          .tz(timezone)
+          .format(format)
   }
 })
 
@@ -172,10 +142,11 @@ new Vue({
   render: (h) => h(App)
 }).$mount('#app')
 
-
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register(
-    import.meta.env.MODE === 'production' ? '/firebase-messaging-sw.js' : '/dev-sw.js?dev-sw',
+    import.meta.env.MODE === 'production'
+      ? '/firebase-messaging-sw.js'
+      : '/dev-sw.js?dev-sw',
     { type: import.meta.env.MODE === 'production' ? 'classic' : 'module' }
   )
 }

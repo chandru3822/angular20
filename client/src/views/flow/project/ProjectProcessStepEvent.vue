@@ -174,7 +174,7 @@
 			multiple
 			:value="expansionOpenStatus"
 		>
-			<v-expansion-panel class="square-card mt-4" key="0">
+			<v-expansion-panel class="square-card mt-4 mb-1" key="0">
 				<v-expansion-panel-header class="px-4 py-0 panel-header">
 					<v-toolbar
 						color="transparent"
@@ -346,16 +346,16 @@
 		</v-expansion-panel>
         <v-expansion-panel
             v-if="selectedEvent && selectedEvent.id"
-            class="pt-0 px-0"
-            v-for="(cfg, index) in selectedEvent.customFieldGroups"
+            class="pt-0 px-0 my-1 stupid-header"
+            v-for="(cfg, index) in selectedEvent.customFieldGroups.filter(g => g.customFieldValues?.length > 0)"
             :key="cfg.id"
         >
 			<v-expansion-panel-header class="px-4 py-0 panel-header">
 				<v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-			  		<v-toolbar-title class="albatross-header-4">{{ cfg.groupName }}</v-toolbar-title>
+			  		<v-toolbar-title>{{ cfg.groupName }}</v-toolbar-title>
           		</v-toolbar>
 		  </v-expansion-panel-header>
-          <v-expansion-panel-content class="pa-0 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+          <v-expansion-panel-content class="pa-0 square-card">
             <v-row>
               <v-col :cols="projectStore.manualColumnSplit && cfg.customFieldValues && cfg.customFieldValues.length > 1 ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
@@ -1267,6 +1267,10 @@ const filterProjectProcessStepEvents = () => {
     margin-left: 10px;
     font-size: 12px;
   }
+
+	.v-expansion-panel-header--active {
+		min-height: 48px;
+	}
 }
 
 .action-button-name {
@@ -1293,6 +1297,14 @@ const filterProjectProcessStepEvents = () => {
 	border-bottom: 1px solid var(--v-grey-lighten2) !important;
 	border-bottom-left-radius: 0 !important;
 	border-bottom-right-radius: 0 !important;
+
+	:deep(.v-toolbar) {
+		height: 48px !important;
+	}
+
+	:deep(.v-toolbar__content) {
+		height: 48px !important;
+	}
 }
 
 .scheduler-link {

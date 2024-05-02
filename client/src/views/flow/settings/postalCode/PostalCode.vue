@@ -91,21 +91,16 @@
 <script setup>
 
 import {getStates} from '@/services/stateService'
-import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import {handleHidingGlobalLoader, getRequest, postRequest} from '@/helpers/helpers'
 import constants from "@/helpers/constants";
 import {useUserStore} from '@/stores/UserStore.js'
 
-import {ref, onMounted, getCurrentInstance, computed, defineProps, onUpdated} from "vue";
-import {useRouter, useRoute} from "vue-router/composables"
+import {ref, onMounted, computed} from "vue";
+import {useRoute} from "vue-router/composables"
 import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
-const vueInstance = getCurrentInstance().proxy
-const store = vueInstance.$store
  const route = useRoute()
-const router = useRouter()
-const vuetify = vueInstance.$vuetify
 const userStore = useUserStore()
 
 const dataLoading = ref(true)
