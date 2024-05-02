@@ -736,7 +736,7 @@ const deleteAttachment = async (id) => {
     div.v-data-footer {
       display: inline-block;
       width: 100%;
-      padding-bottom: 12px;
+      height: auto;
 
       div.v-data-footer__select {
         justify-content: center;

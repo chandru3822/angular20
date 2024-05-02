@@ -1,7 +1,7 @@
 <template>
   <v-container class="wq-container">
     <v-row>
-      <v-col cols="12" class="pt-3">
+      <v-col cols="12" >
         <v-card color="white" class="square-card work-queue-container-top">
           <v-row>
             <v-col cols="6" class="">
@@ -16,7 +16,7 @@
                               hide-details
                               :loading="categoriesLoading"
                               background-color="primary"
-                              class="work-queue-selector d-inline-block clickable"
+                              class="work-queue-selector d-inline-block clickable pt-3"
                               @input="loadBoth()"
               ></a-autocomplete>
               <div class="radio-group-container mt-0">

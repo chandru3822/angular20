@@ -12,7 +12,7 @@
 
 
         <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="app-title">
+          <v-toolbar-title class="title-large text-wrap">
             {{ workQueueType.workQueueType }}
             <span :style="{'color': workQueueType.workQueueCategoryColor }">
                 ({{ workQueueType.workQueueCategory }})
@@ -23,7 +23,7 @@
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
               <a-btn variant="text" color="primary" v-if="!editType" class="" @click="[editType = !editType]" prepend-icon="edit"/>
               <a-btn variant="text" color="primary" class="" v-else @click="saveType()" prepend-icon="save"/>
-              <a-btn variant="text" color="primary" v-if="editType" class="" @click="[editType = !editType]" text="CANCEL"/>
+              <a-btn variant="text" color="primary" v-if="editType" class="" @click="[editType = !editType]" text="Cancel" hide-text-on-mobile :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"/>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -133,7 +133,7 @@
     <v-row>
       <v-col cols="12" class="pa-0 mt-4">
         <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="app-title">Work Queue In Use By</v-toolbar-title>
+          <v-toolbar-title class="title-large text-wrap">Work Queue In Use By</v-toolbar-title>
         </v-toolbar>
         <v-card flat color="rowShadeCustom" class="square-card my-2 px-4">
           <v-list class="pa-0">
@@ -147,7 +147,7 @@
     <v-row>
       <v-col cols="12" class="pa-0 mt-4">
         <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="app-title">Work Queue Access Control</v-toolbar-title>
+          <v-toolbar-title class="title-large text-wrap">Work Queue Access Control</v-toolbar-title>
         </v-toolbar>
         edit: {{userCanEdit}}
         <multi-select-group
@@ -168,13 +168,13 @@
           @checkbox-changed="workQueueTypeHiddenCheckboxEventListener"></multi-select-group>
             <br/>
             <a-btn v-if="userCanEdit" color="primary" class="d-inline-block white--text"
-                   @click="saveHiddenAndWhiteList()" prepend-icon="save" text="SAVE"/>
+                   @click="saveHiddenAndWhiteList()" prepend-icon="save" text="Save"/>
       </v-col>
     </v-row>
     <v-row v-if="workQueueType && workQueueType.id && !workQueueType.useEventData">
-      <v-col cols="12" class="pt-0">
+      <v-col cols="12" class="pt-4">
         <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title>Set Queue Schedule</v-toolbar-title>
+          <v-toolbar-title class="text-wrap">Set Queue Schedule</v-toolbar-title>
           <v-spacer/>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
@@ -183,7 +183,7 @@
               <a-btn variant="text" color="primary" class="" v-else
                                @click="saveType()" prepend-icon="save"/>
               <a-btn variant="text" color="primary" v-if="editSchedule" class=""
-                               @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]" text="CANCEL"/>
+                               @click="[editSchedule = !editSchedule, workQueueType.schedule = prevSchedule]" text="Cancel" :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''" hide-text-on-mobile/>
             </div>
           </v-toolbar-items>
         </v-toolbar>
@@ -226,7 +226,7 @@
     <v-row>
       <v-col cols="12" class="pa-0 mt-4">
         <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="app-title">Default Column Visibility</v-toolbar-title>
+          <v-toolbar-title class="title-large text-wrap">Default Column Visibility</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div v-if="userCanEdit || userIsAdmin" class="wqt-buttons">
@@ -250,6 +250,8 @@
                   v-if="editDefaultFields"
                   @click="editDefaultFields = false"
                   text="Cancel"
+                  hide-text-on-mobile
+                  :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
               ></a-btn>
             </div>
           </v-toolbar-items>
@@ -323,6 +325,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
+const vuetify = vueInstance.$vuetify
 
 const store = vueInstance.$store
 const userStore = useUserStore()

@@ -1,6 +1,11 @@
 <template>
   <v-col cols="12" class="pt-0">
-    <v-toolbar color="transparent" class="elevation-0">
+    <v-toolbar v-if="vuetify.breakpoint.smAndDown" color="transparent" class="elevation-0">
+      <v-toolbar-title class="text-wrap">Columns
+      <div class="body-medium" v-if="vuetify.breakpoint.smAndDown">Not accessible on mobile. Please use desktop to view and edit Columns.</div>
+      </v-toolbar-title>
+    </v-toolbar>
+    <v-toolbar v-else color="transparent" class="elevation-0">
       <v-toolbar-title>Columns</v-toolbar-title>
       <v-spacer />
       <v-toolbar-items>
@@ -104,8 +109,7 @@
         ></a-btn>
       </v-col>
     </v-card>
-
-    <v-list dense>
+    <v-list v-if="vuetify.breakpoint.mdAndUp" dense>
       <v-list-item>
         <v-list-item-action v-if="canEdit">
           <v-icon></v-icon>
@@ -192,6 +196,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const vuetify = vueInstance.$vuetify
 
 const props = defineProps({
   canEdit: {
@@ -388,7 +393,8 @@ const calculateAvailableFields =  () => {
 @import "@/styles/main.scss";
 
 .smartlist-field {
-  font-size: 12px;
+  //todo: this should be added to or changed to one of our app fonts
+  font-size: .75rem;
   color: var(--v-grey-base);
   font-weight: 700; line-height: 18px;
 }

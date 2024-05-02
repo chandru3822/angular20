@@ -231,7 +231,7 @@
           :fixed-header="true"
           :items-per-page="100"
           :search="search"
-          class="elevation-1"
+          class="elevation-1 table-striped word-break-all"
         >
           <template #no-data>
             NO DATA HERE!
@@ -242,8 +242,10 @@
           </template>
 
           <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pa-4"
+            <td :colspan="headers.length" class="pa-4 overflow-visible overflow-hidden-m one-hunned-minus-fifty"
                 :class="{'shaded-row': dataView.dataViewFieldConfigs.indexOf(item) % 2}">
+              <v-row>
+                <v-col cols="12">
               <h3>Edit Field Configs</h3>
               <div class="flex-display">
                 <a-text-field  v-model="item.displayName" class="d-inline-block display-name-field"
@@ -369,21 +371,19 @@
                   </v-form>
                 </div>
                 <v-data-table
-                  v-if="item.childFieldConfigs && item.childFieldConfigs.length > 0"
+                  v-if="item?.childFieldConfigs?.length > 0"
                   :headers="childFieldHeaders"
                   :items="item.childFieldConfigs"
                   :items-per-page="-1"
-                  :mobile-breakpoint="0"
                   hide-default-footer
                   single-expand
                   :expanded.sync="childFieldExpanded"
                   :class="{'mt-4': addChild}"
-                  class="elevation-1"
+                  class="elevation-1 table-striped word-break-all"
                 >
 
                   <template #expanded-item="{ headers, item: childField }">
-                    <tr :class="{'shaded-row': item.childFieldConfigs.indexOf(childField) % 2}">
-                      <td :colspan="childFieldHeaders.length">
+                      <td :colspan="childFieldHeaders.length" class="one-hunned-minus-fifty" :class="{'shaded-row': item.childFieldConfigs.indexOf(childField) % 2}">
                         <v-card flat color="transparent">
                           <v-card-title class="pb-0">Edit Child Field Config</v-card-title>
                           <v-card-text class="pt-0">
@@ -402,19 +402,16 @@
                           </v-card-text>
                         </v-card>
                       </td>
-                    </tr>
                   </template>
 
-                  <template #item="{ item: childField }">
-                    <tr class="text-left" :class="{'shaded-row': item.childFieldConfigs.indexOf(childField) % 2}">
-                      <td class="text-left">{{ childField.displayName }}</td>
-                      <td class="text-left">{{ childField.fieldToUpdate }}</td>
-                      <td class="text-left">{{ childField.dataType }}</td>
-                      <td class="text-left">
+                      <template #item.displayName="{item: childField}" class="text-left">{{ childField.displayName }}</template>
+                      <template #item.fieldToUpdate="{item: childField}" class="text-left">{{ childField.fieldToUpdate }}</template>
+                      <template #item.dataType="{item: childField}" class="text-left">{{ childField.dataType }}</template>
+                      <template #item.uniqueBehaviorType="{item: childField}" class="text-left">
                         {{ childField.uniqueBehaviorType }} <br/>
                         {{ childField.uniqueBehaviorTypeDescription }}
-                      </td>
-                      <td style="width: 130px;">
+                      </template>
+                      <template #item.icons="{item: childField}" style="width: 130px;">
                         <v-tooltip left>
                           <template v-slot:activator="{ on, attrs }">
                             <a-btn
@@ -445,19 +442,17 @@
                           @click="childFieldExpanded = []"
                           text="Cancel"
                         />
-                      </td>
-                    </tr>
-                  </template>
+                      </template>
                 </v-data-table>
               </v-card>
+                </v-col>
+              </v-row>
             </td>
           </template>
 
-          <template #item="{ item }">
-            <tr class="text-left" :class="{'shaded-row': dataView.dataViewFieldConfigs.indexOf(item) % 2}">
-              <td class="text-left">{{ item.displayName }}</td>
-              <td class="text-left">{{ item.fieldToUpdate }}</td>
-              <td class="text-right d-flex">
+              <template #item.displayName="{ item }" class="text-left">{{ item.displayName }}</template>
+              <template #item.fieldToUpdate="{ item }" class="text-left">{{ item.fieldToUpdate }}</template>
+              <template #item.icons="{ item, index }" class="text-right d-flex">
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
                       <a-btn
@@ -489,10 +484,7 @@
                   @click="expanded = []"
                   text="Cancel"
                 />
-              </td>
-            </tr>
-          </template>
-
+              </template>
         </v-data-table>
       </v-col>
     </v-row>
@@ -929,5 +921,11 @@ const isMobile = computed(() => vuetify.breakpoint.smAndDown)
 .page-title {
   font-size: 18px;
   font-weight: 200;
+}
+
+.one-hunned-minus-fifty{
+  @media (max-width: 960px) {
+    width: calc(100vw - 50px);
+  }
 }
 </style>

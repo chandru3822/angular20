@@ -14,6 +14,7 @@
                 @click="[addNew = !addNew, loadDataViews()]"
                 prepend-icon="add"
                 text="Add Field"
+                hide-text-on-mobile
             ></a-btn>
 
           </v-toolbar-items>

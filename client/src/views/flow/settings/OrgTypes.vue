@@ -11,8 +11,8 @@
               color="primary"
               @click="[addType = !addType, newType = {}]"
               v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
-              :hide-text-on-mobile="constants.IS_MOBILE"
-              :prepend-icon="addType ? 'add' : ''"
+              :hide-text-on-mobile="true"
+              :prepend-icon="addType ? 'close' : 'add'"
               :text="addType ? 'CANCEL' : 'ADD NEW'"
             />
           </v-toolbar-items>
@@ -59,10 +59,10 @@
             :fixed-header="true"
             :items-per-page="-1"
             single-expand
-            :mobile-breakpoint="0"
             :expanded.sync="expanded"
             hide-default-footer
             class="elevation-1 org-type-table"
+            :item-class="rowClass"
         >
           <template #no-data>
             <span class="default-text-color">NO DATA HERE!</span>
@@ -73,8 +73,8 @@
           </template>
 
           <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': orgTypes.indexOf(item) % 2}">
-              <h3>Edit Org Type</h3>
+            <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': orgTypes.indexOf(item) % 2 === 1}">
+              <h3>Edit Org Type {{orgTypes.indexOf(item) % 2}}</h3>
               <a-text-field  v-model="item.orgType"
                             label="Org Type Name" />
               <a-select attach v-model="item.orgLevelId"
@@ -85,7 +85,7 @@
               ></a-select>
               <a-select attach v-if="item.orgLevelId && item.orgLevelId"
                         v-model="item.orgParentTypeId"
-                        :items="filteredOrgTypes(item.orgLevelId)"
+                        :items="filteredOrgTypes(item)"
                         label="Parent"
                         item-title="orgType"
                         item-value="id"
@@ -104,12 +104,9 @@
             </td>
           </template>
 
-          <template #item="{ item }">
-            <tr  class="text-left" :class="{'shaded-row': orgTypes.indexOf(item) % 2}">
-              <td class="text-left">{{ item.orgType }}</td>
-              <td class="text-left">{{ item.level || 'n/a' }}</td>
-              <td class="text-left">{{ item.orgParentType || 'n/a' }}</td>
-              <td>
+          <template #item.level="{ item }" class="text-end"><span class="ml-2">{{ item?.level || 'n/a' }}</span></template>
+              <template #item.orgParentType="{item}" class="text-left">{{ item.orgParentType || 'n/a' }}</template>
+              <template #item.icons="{item, index}">
                 <a-btn
                   size="small"
                   variant="text"
@@ -126,10 +123,7 @@
                   @click="expanded = []"
                   text="CANCEL"
                 />
-              </td>
-            </tr>
-          </template>
-
+              </template>
         </v-data-table>
       </v-col>
 
@@ -138,7 +132,7 @@
 </template>
 
 <script setup>
-  import { handleHidingGlobalLoader, putRequest, getSnackbar } from '@/helpers/helpers'
+import {handleHidingGlobalLoader, putRequest, getSnackbar, getRowClass} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   import {getOrgTypes, getOrgLevels} from '@/services/orgService'
@@ -160,7 +154,7 @@
   const expanded = ref([])
   const headers = ref([
     { text: 'Org Type', value: 'orgType', show: true },
-    { text: 'Level', value: 'level', width: 80, show: true },
+    { text: 'Level', value: 'level', width: 84, show: true },
     { text: 'Parent', value: 'orgParentType', show: true},
     { text: null, value: 'icons', show: true, sortable: false }
   ])
@@ -214,10 +208,13 @@
   }
   const filteredOrgTypes = (orgLevelId) => {
     // filter list so they cannot select a parent that is further down in the hierarchy than self
-    const orgLevel = levels.value.find(l => l.id === orgLevelId)
+    const orgLevel = levels?.value.find(l => l.id === orgLevelId)
     return orgTypes.value.filter(ot => {
-      return ot.level < orgLevel.level
+      return ot.level < orgLevel?.level
     })
+  }
+  const rowClass = (item) => {
+    return getRowClass(item, orgTypes.value)
   }
 
   onMounted(async() => {

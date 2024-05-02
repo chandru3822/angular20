@@ -339,7 +339,7 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th, {
 }
 
 .table-striped{
-  tbody tr:nth-of-type(even) {
+  tbody tr:nth-of-type(even):not(.v-data-table__expanded.v-data-table__expanded__content) {
     background-color: var(--v-primary-lighten9) !important;
   }
 }
@@ -445,6 +445,9 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th, {
 }
 .overflow-auto {
   overflow: auto;
+}
+.word-break-all{
+  word-break: break-all;
 }
 .relative {
   position: relative;
