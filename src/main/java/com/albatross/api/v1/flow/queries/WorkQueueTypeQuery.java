@@ -220,7 +220,7 @@ public class WorkQueueTypeQuery {
   //language=PostgreSQL
   public final static String insertType = """
     insert into flow.work_queue_type(company_id, work_queue_type, work_queue_category_id, display_order, created_by_id, date_created, modified_by_id, date_modified, use_event_data, default_column_display)
-      values (:companyId, :workQueueType, :workQueueCategoryId, (select coalesce(max(display_order) + 1, 0) from flow.work_queue_type where work_queue_category_id = :workQueueCategoryId and archived is not true), :createdById, now(),  :createdById, now(), :useEventData, to_jsonb(:defaultColumnDisplay))
+      values (:companyId, :workQueueType, :workQueueCategoryId, (select coalesce(max(display_order) + 1, 0) from flow.work_queue_type where work_queue_category_id = :workQueueCategoryId and archived is not true), :createdById, now(),  :createdById, now(), :useEventData, :defaultColumnDisplay::jsonb)
         """;
 
   //language=PostgreSQL
