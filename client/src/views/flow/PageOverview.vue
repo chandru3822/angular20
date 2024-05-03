@@ -216,7 +216,7 @@ const copyToClipBoard = (textValue, label) => {
       label = 'text'
     }
     navigator.clipboard.writeText(textValue);
-    appStore.showSnack('SUCCESS', `Copied ${label} to clipboard`)
+    appStore.showSnack('MINOR', `Copied ${label} to clipboard`)
   }
 }
 const selectValue = () => {

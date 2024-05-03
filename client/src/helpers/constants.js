@@ -160,7 +160,18 @@ constants.SNACKBARS = {
     timeout: 5000,
     text: '',
     color: 'error',
-    fontClass: 'secondary--text'
+    fontClass: 'secondary--text',
+    showBtn: true,
+  },
+  MINOR: {
+    y: 'bottom',
+    x: null,
+    mode: '',
+    timeout: 5000,
+    text: '',
+    color: 'grey-darken-3',
+    fontClass: 'secondary--text',
+    showBtn: false
   },
   SUCCESS: {
     y: 'top',
@@ -170,7 +181,8 @@ constants.SNACKBARS = {
     // timeout: 5000000,
     text: '',
     color: 'success lighten-1',
-    fontClass: 'secondary--text'
+    fontClass: 'secondary--text',
+    showBtn: true,
   },
   WARNING: {
     y: 'top',
@@ -179,7 +191,8 @@ constants.SNACKBARS = {
     timeout: 5000,
     text: '',
     color: 'amber',
-    fontClass: 'secondary--text'
+    fontClass: 'secondary--text',
+    showBtn: true,
   },
   INFO: {
     y: 'top',
@@ -188,7 +201,8 @@ constants.SNACKBARS = {
     timeout: 5000,
     text: '',
     color: 'primary',
-    fontClass: 'secondary--text'
+    fontClass: 'secondary--text',
+    showBtn: true,
   }
 }
 

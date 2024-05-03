@@ -17,6 +17,7 @@
 
     <template v-slot:action="{ attrs }">
       <a-btn
+          v-if="snackbar.showBtn"
           variant="text"
           color="white"
           v-bind="attrs"
@@ -30,7 +31,6 @@
 <script setup>
 import { ref } from 'vue'
 import { useAppStore } from '@/stores/AppStore.js'
-
 const appStore = useAppStore()
 const snackbar = ref({})
 const show = ref(false)
