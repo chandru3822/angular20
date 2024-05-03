@@ -21,9 +21,6 @@ export const useAppStore = defineStore('app', {
 	state: () => ({...defaultState}),
 	getters: {},
 	actions: {
-		showSnackDeprecated(snack) {
-			this.snack = {...snack, show: true}
-		},
 		setPrimaryBaseColor(color) {
 			//vuetify's color generator does weird stuff. like if maroon is the base color then lighten-5 is orange. but this code seems to make appropriate colors.
 			//if adding a new color here like `lighten2` ensure you also add it in the defaultTheme.js

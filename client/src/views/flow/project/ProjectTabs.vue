@@ -15,7 +15,8 @@
       ></a-btn>
     </template>
     <template v-slot:expanded-content>
-      <v-card outlined v-for="tab in tabs"
+      <v-card outlined v-for="(tab, idx) in tabs"
+			  :key="idx"
               class="mb-2 pa-2 elevation-0 body-large"
               :class="{'active-tab': tabIsActive(tab)}"
               @click="changeTabs(tab, true)">

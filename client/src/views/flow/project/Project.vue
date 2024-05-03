@@ -153,6 +153,7 @@
           </div>
           <div class="mt-2">
             <v-chip v-for="(tag, idx) in project.tags"
+					:key="idx"
                     small
                     class="tag-chip"
                     :color="tag.bgColor"
@@ -215,6 +216,7 @@
           </div>
           <div class="mt-2">
             <v-chip v-for="(tag, idx) in project.tags"
+					:key="idx"
                     small
                     class="tag-chip"
                     :color="tag.bgColor"
@@ -227,7 +229,7 @@
         </v-toolbar-title>
         <v-spacer/>
         <div v-if="milestones && milestones.length > 0" class = "milestone-container toolbar-z-index-override">
-          <div class="milestone-item" v-for="(milestone, idx) in milestones">
+          <div class="milestone-item" v-for="(milestone, idx) in milestones" :key="idx">
             <v-menu v-model="milestone.menuOpen"
                     offset-y
                     rounded="0"
