@@ -50,7 +50,7 @@
           <!-- FIRST COLUMN -->
           <v-col cols="12" md="6" class="px-1 mb-3">
             <FeatDbLinks title="Links"
-                         :linkTypeId="linksTypeId.value"
+                         :linkTypeId="linksTypeId"
                          :user-can-edit="userCanEdit"
                          :itemId="ahjPermit.id"
                          :itemType="itemType"
