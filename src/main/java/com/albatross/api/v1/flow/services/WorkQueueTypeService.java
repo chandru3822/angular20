@@ -225,6 +225,11 @@ public class WorkQueueTypeService {
     params.put("createdById", user.trueUserId());
     params.put("workQueueCategoryId", type.getWorkQueueCategoryId());
     params.put("companyId", user.getCompanyId());
+    if (useEventData) {
+      params.put("defaultColumnDisplay", "[{\"show\": true, \"text\": \"Project Name\", \"value\": \"Project Name\"}, {\"show\": true, \"text\": \"Project ID\", \"value\": \"Project ID\"}, {\"show\": true, \"text\": \"Event Name\", \"value\": \"Event Name\"}, {\"show\": true, \"text\": \"Event Status\", \"value\": \"Event Status\"}, {\"show\": true, \"text\": \"Process Step Name\", \"value\": \"Process Step Name\"}, {\"show\": true, \"text\": \"Process Step Status\", \"value\": \"Process Step Status\"}, {\"show\": true, \"text\": \"Days In Queue\", \"value\": \"Days In Queue\"}, {\"show\": true, \"text\": \"Event Start Time\", \"value\": \"Event Start Time\"}]");
+    } else {
+      params.put("defaultColumnDisplay", "[{\"show\": true, \"text\": \"Project\", \"value\": \"Project Name\"}, {\"show\": true, \"text\": \"Project ID\", \"value\": \"Project ID\"}, {\"show\": true, \"text\": \"Process Step\", \"value\": \"Process Step Name\"}, {\"show\": true, \"text\": \"Status\", \"value\": \"Process Step Status Type\"}, {\"show\": true, \"text\": \"Days In Queue\", \"value\": \"Days In Queue\"}, {\"show\": true, \"text\": \"State\", \"value\": \"State Abbreviation\"}, {\"show\": true, \"text\": \"Owner\", \"value\": \"Owner\"}, {\"show\": true, \"text\": \"Active Process Steps\", \"value\": \"Active Process Steps\"}]");
+    }
     Long id = sqlCache.updateBySqlReturningId(WorkQueueTypeQuery.insertType, params, "id").longValue();
 
     // any time a work queue type is created we need to create a smartlist placeholder for any
