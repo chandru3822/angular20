@@ -56,11 +56,14 @@ const selectedAnnouncement = ref({})
 const loadComplete = ref(false)
 
 const unseenAnnouncements = computed(() => {
-  return appStore.announcements?.filter(a => !a.seen &&
-      (moment().isBetween(moment(a.startTime), moment(a.endTime))
-          || (moment().isAfter((moment(a.startTime))) && a.endTime == null))
-
-  )
+  if (Array.isArray(appStore.announcements)) {
+	  return appStore.announcements?.filter(a => !a.seen &&
+		  (moment().isBetween(moment(a.startTime), moment(a.endTime))
+			  || (moment().isAfter((moment(a.startTime))) && a.endTime == null))
+	  )
+  } else {
+	  return []
+  }
 })
 
 const closeModal = () => {

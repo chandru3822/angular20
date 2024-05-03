@@ -128,7 +128,11 @@ const menuWidth = computed(() => {
   return constants.IS_MOBILE ? 320 : 400
 })
 const hasUnalertedAnnouncements = computed(() => {
-  return appStore.announcements?.filter((a) => !a.alerted)?.length > 0 || false
+  if (Array.isArray(appStore.announcements)) {
+	  return appStore.announcements?.filter((a) => !a.alerted)?.length > 0 || false
+  } else {
+	  return false
+  }
 })
 
 //we reload them again here in case something changes
