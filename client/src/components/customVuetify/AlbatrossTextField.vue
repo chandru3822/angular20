@@ -26,6 +26,7 @@
                 :solo="variant === 'solo'"
                 :maxlength="maxlength"
                 :autofocus="autofocus"
+                :autocomplete="autocomplete"
                 :persistent-hint="persistentHint"
                 :class="[customClasses]"
                 :label="label">
@@ -77,6 +78,7 @@ const props = defineProps({
     default: ''
   },
   autofocus: Boolean,
+  autocomplete: String,
   required: Boolean,
   readonly: Boolean,
   disabled: Boolean,
