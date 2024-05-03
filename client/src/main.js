@@ -5,7 +5,6 @@ import App from '@/App.vue'
 import router from '@/router'
 import pinia from '@/store'
 import axios from 'axios'
-import { SnackbarPlugin } from '@/plugins/SnackbarPlugin'
 import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
 import AlbatrossTextField from '@/components/customVuetify/AlbatrossTextField.vue'
@@ -22,7 +21,6 @@ import { useScheduleStore } from '@/stores/ScheduleStore.js'
 const { VITE_GA_ID } = import.meta.env
 Vue.config.productionTip = false
 
-Vue.use(SnackbarPlugin)
 Vue.prototype.$filters = Vue.options.filters
 
 Vue.filter('currency', function (value, symbol, digits) {
