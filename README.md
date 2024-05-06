@@ -16,6 +16,8 @@ $ npm login --scope=@7oaksgroup --registry=https://npm.pkg.github.com
 > Email: PUBLIC-EMAIL-ADDRESS
 ```
 
+*** If npm version is 9 or above, append `--auth-type=legacy` to the `npm login` command
+
 #### Project setup
 ```
 npm install
