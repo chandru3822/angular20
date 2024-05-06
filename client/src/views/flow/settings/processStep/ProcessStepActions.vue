@@ -738,7 +738,7 @@
                                group="processStepLogicList" @start="drag=true" @end="drag=false"
                                @change="actionLogicOrderChanged(item)">
                       <span v-for="(l, index) in item.processStepLogicList.filter(a => !a.archived)"
-                           :style="{'margin-left': getLogicMargin(l, item, index)}"
+                            :style="{'margin-left': getLogicMargin(l, item, index)}"
                            :key="index">
                         <v-tooltip top max-width="300px"
                         >
@@ -1183,24 +1183,27 @@ const copyToClipBoard = () => {
   appStore.showSnack('SUCCESS', 'Copied text to clipboard')
 }
 const getLogicMargin = (item, parentItem, index) => {
-  parentItem.logicMargin = parentItem.logicMargin || 0
-  if (item.operationTypeId === 1) {
-    if (parentItem.indexOfPreviousAdd !== undefined && parentItem.indexOfPreviousAdd === index - 1) {
-      parentItem.logicMargin += 25
-    }
-    parentItem.indexOfPreviousAdd = index
-    return parentItem.logicMargin + 'px'
-  } else if (item.operationTypeId === 2) {
-    parentItem.indexOfPreviousSubtract = index
-    let placeholder = parentItem.logicMargin - 25
-    parentItem.logicMargin -= 25
-    return placeholder + 'px'
-  } else {
-    if (parentItem.indexOfPreviousAdd === index - 1) {
-      parentItem.logicMargin += 25
-    }
-    return parentItem.logicMargin + 'px'
-  }
+  // turning this off for now
+  // if(logicStringToggle.value) {
+  //   parentItem.logicMargin = parentItem.logicMargin || 0
+  //   if (item.operationTypeId === 1) {
+  //     if (parentItem.indexOfPreviousAdd !== undefined && parentItem.indexOfPreviousAdd === index - 1) {
+  //       parentItem.logicMargin += 25
+  //     }
+  //     parentItem.indexOfPreviousAdd = index
+  //     return parentItem.logicMargin + 'px'
+  //   } else if (item.operationTypeId === 2) {
+  //     parentItem.indexOfPreviousSubtract = index
+  //     let placeholder = parentItem.logicMargin - 25
+  //     parentItem.logicMargin -= 25
+  //     return placeholder + 'px'
+  //   } else {
+  //     if (parentItem.indexOfPreviousAdd === index - 1) {
+  //       parentItem.logicMargin += 25
+  //     }
+  //     return parentItem.logicMargin + 'px'
+  //   }
+  // }
 }
 const getLogicButtonText = (item) => {
   if (item.logicString) {

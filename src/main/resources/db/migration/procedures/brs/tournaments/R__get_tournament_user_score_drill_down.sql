@@ -92,7 +92,7 @@ BEGIN
                                                                and tffv.tournament_id = p_tournament_id
                                                                and tff.field_code = 'SELF_GEN_FDC_SCORE_VALUE')::int as score
                                           from brs.project_details pd
-                                                   inner join flow.contact_custom_field_value ccfv
+                                                   left join flow.contact_custom_field_value ccfv
                                                               on ccfv.contact_id = pd.contact_id and ccfv.custom_field_group_assignment_id = 19106
                                           where pd.final_design_complete_date is not null
                                             and pd.cancelled_date is null
