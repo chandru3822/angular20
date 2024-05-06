@@ -13,7 +13,7 @@
               v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               :hide-text-on-mobile="true"
               :prepend-icon="addType ? 'close' : 'add'"
-              :text="addType ? 'CANCEL' : 'ADD NEW'"
+              :text="addType ? 'Cancel' : 'Add New'"
             />
           </v-toolbar-items>
         </v-toolbar>
@@ -44,13 +44,13 @@
             color="primary"
             class="white--text mr-2"
             @click="saveOrgType(newOrgType, true)"
-            text="SAVE"
+            text="Save"
           />
           <a-btn
             variant="text"
             color="primary"
             @click="[addType = !addType, newOrgType = {}]"
-            text="CANCEL"
+            text="Cancel"
           />
         </v-card>
         <v-data-table
@@ -99,7 +99,7 @@
                 color="primary"
                 class="white--text mr-2"
                 @click="saveOrgType(item, false)"
-                text="SAVE"
+                text="Save"
               />
             </td>
           </template>
@@ -121,7 +121,7 @@
                   color="primary"
                   v-if="expanded.includes(item)"
                   @click="expanded = []"
-                  text="CANCEL"
+                  text="Cancel"
                 />
               </template>
         </v-data-table>
