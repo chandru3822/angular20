@@ -260,6 +260,32 @@ public class AuroraProxy {
             throw new IOException(msg, e);
         }
     }
+  public String getDesignRackingArrays(@NotBlank String designId) throws IOException {
+    try {
+      ResponseEntity<String> res = client
+        .get()
+        .uri("/tenants/%s/designs/%s/racking_arrays".formatted(tenantId, designId))
+        .header("Authorization", "Bearer " + tokenV2022)
+        .retrieve()
+        .toEntity(String.class)
+        .timeout(Duration.ofSeconds(30))
+        .onErrorMap(Exception.class, e -> {
+          System.out.println("Humes said it work work. It would be fun he said");
+          return e;
+        })
+        .block();
+
+
+      if (res != null && res.getStatusCode() != HttpStatus.OK) {
+        throw new RuntimeException("Received unexpected response code " + res.getStatusCodeValue());
+      }
+      return res.getBody();
+    } catch (Exception e) {
+      String msg = "AURORA: Failed to get racking arrays for design " + designId;
+      log.debug(msg, e);
+      throw new IOException(msg, e);
+    }
+  }
 
     public String getDesignId(Long ppsId, Long cfgaId) {
         return sqlCache.queryForObjectOptionalBySql(AuroraQuery.getIdByProjectProcessStepId, Map.of("ppsId", ppsId, "cfgaId", cfgaId), String.class)

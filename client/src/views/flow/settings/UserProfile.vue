@@ -73,6 +73,7 @@
                         required
                         v-if="showOnUserProfile('Username')"
                         type="search"
+                        autocomplete="off"
                         :rules="usernameRules"
                         @change="setFieldsDirty"
                         label="Username">
