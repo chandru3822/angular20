@@ -330,7 +330,7 @@
                               <label>
                                 <input type="checkbox" v-model="cf.customFieldGroupAssignmentHidden"
                                        :disabled="!userCanEdit" @change="saveHiddenAndWhiteList(cf)"/>
-                                Hidden
+                                Hidden {{cf.customFieldGroupAssignmentHidden}}
                               </label>
                               <div v-if="cf.customFieldGroupAssignmentHidden" class="d-flex align-center">
                                 <a-autocomplete
@@ -905,13 +905,13 @@ const selectAll = (f, attr) => {
   return f[attr]?.length === positions.value?.length
 }
 const selectSome = (f, attr) => {
-  return f[attr]?.length > 0 && !selectAll.value(f, attr)
+  return f[attr]?.length > 0 && !selectAll(f, attr)
 }
 const icon = (f, attr = 'whiteListedPositions') => {
-  if (selectAll.value(f, attr)) {
+  if (selectAll(f, attr)) {
     return 'check_box'
   }
-  if (selectSome.value(f, attr)) {
+  if (selectSome(f, attr)) {
     return 'indeterminate_check_box'
   }
   return 'check_box_outline_blank'
