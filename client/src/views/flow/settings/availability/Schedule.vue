@@ -4,9 +4,13 @@
       <v-col>
         <a-btn color="primary" v-if="!addNew && userCanAdd"
                id="qa-add-schedule-button"
-               @click="setNew" class="mb-3" text="ADD SCHEDULE"/>
+               @click="setNew" class="mb-3" text="Add Schedule"/>
         <v-card v-if="addNew" flat class="px-3">
-          <v-card-title>Add New Schedule</v-card-title>
+          <v-card-title class="px-0">
+            Add New Schedule
+            <v-spacer/>
+            <a-btn v-if="vuetify.breakpoint.smAndDown" variant="text" prepend-icon="close" @click="[newSchedule = {}, addNew = false]"/>
+          </v-card-title>
           <DatetimePickerInput
             v-model="newSchedule.startDate"
             :timezone="timezone"
@@ -25,10 +29,10 @@
             :items="newSchedule.resourceScheduleAvailability"
             :fixed-header="true"
             :items-per-page="-1"
-            hide-default-header
+            :headers="addEditScheduleHeaders"
             hide-default-footer
             disable-sort
-            class="elevation-1 mt-1"
+            class="elevation-1 mt-1 table-striped"
           >
             <template #no-data>
               <span class="default-text-color">No available days</span>
@@ -38,19 +42,9 @@
               <span class="default-text-color">No available days</span>
             </template>
 
-            <template #header="{ props: {} }">
-              <thead class="v-data-table-header">
-                <tr>
-                  <th>Work Day</th>
-                  <th :colspan="4">Hours</th>
-                </tr>
-              </thead>
-            </template>
-
-            <template #item="{ item, index }">
-              <tr class="clickable" :class="{'shaded-row': index % 2}">
-                <td class="text-left">{{item.dayOfWeek}}</td>
-                <td class="text-left" v-if="useSlotSchedule">
+            <template #item.weekday="{ item }" class="text-left">{{item.dayOfWeek}}</template>
+                <template #item.hours="{item}" class="text-left" >
+                  <div v-if="useSlotSchedule">
                   <a-select
                     v-model="item.resourceSlotScheduleId"
                     :items="slotSchedules"
@@ -65,7 +59,6 @@
                       {{ item.scheduleName }}
                     </template>
                   </a-select>
-
                   <v-card v-if="item.resourceSlotScheduleId" flat color="transparent" class="mb-4">
                     <div v-for="(slot, idx) in getMatchingSlots(item.resourceSlotScheduleId)" :key="idx">
                       <input type="checkbox"
@@ -74,8 +67,8 @@
                       {{slot.startTime | formatDateZoneless()}} - {{slot.endTime | formatDateZoneless()}}
                     </div>
                   </v-card>
-                </td>
-                <td class="text-left" v-else>
+                </div>
+                  <div v-else class="flex-display flex-column flex-md-row">
                   <DatetimePickerInput
                     v-model="item.startTime"
                     :timezone="timezone"
@@ -91,8 +84,10 @@
                     format="h:mm a"
                     label="End Time"
                   />
-                </td>
-                <td class="text-left px-0" width="150px"  v-if="!useSlotSchedule">
+                  </div>
+                </template>
+                <template #item.icons="{item, index}" class="text-left px-0" v-if="!useSlotSchedule">
+                  <div class="d-flex">
                   <v-tooltip top v-if="index !== 6">
                     <template v-slot:activator="{ on }">
                       <a-btn
@@ -124,21 +119,19 @@
                   </v-tooltip>
                   <a-btn variant="text" size="small" v-else/>
                   <a-btn variant="text" size="small" color="primary" @click="[item.startTime = null, item.endTime = null]" prepend-icon="close"/>
-                </td>
-
-              </tr>
-            </template>
+                  </div>
+                </template>
           </v-data-table>
           <div v-if="saveError" class="error--text mt-3">
             {{saveErrorMsg}}
           </div>
           <v-card-actions>
             <v-card-actions>
-              <a-btn variant="text" color="primary" @click="[newSchedule = {}, addNew = false]" text="CANCEL"/>
+              <a-btn variant="text" color="primary" @click="[newSchedule = {}, addNew = false]" text="Cancel"/>
               <a-btn color="primary"  @click="saveSchedule(newSchedule, true)"
                      id="qa-save-schedule-button"
                      class="white--text"
-                     :disabled="!newSchedule.startDate" text="SAVE"/>
+                     :disabled="!newSchedule.startDate" text="Save"/>
             </v-card-actions>
           </v-card-actions>
         </v-card>
@@ -163,7 +156,7 @@
           </template>
 
           <template #expanded-item="{ headers, item: schedule }">
-            <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': selectedIndex % 2}">
+            <template :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': selectedIndex % 2}">
               <v-card flat color="transparent" class="px-3">
                 <DatetimePickerInput
                   v-model="schedule.startDate"
@@ -190,10 +183,10 @@
                   :items="schedule.resourceScheduleAvailability"
                   :fixed-header="true"
                   :items-per-page="-1"
-                  hide-default-header
+                  :headers="addEditScheduleHeaders"
                   hide-default-footer
                   disable-sort
-                  class="elevation-1 mt-1"
+                  class="elevation-1 mt-1 table-striped"
                 >
                   <template #no-data>
                     <span class="default-text-color">No available days</span>
@@ -203,19 +196,9 @@
                     <span class="default-text-color">No available days</span>
                   </template>
 
-                  <template #header="{ props: {} }">
-                    <thead class="v-data-table-header">
-                    <tr>
-                      <th>Work Day</th>
-                      <th :colspan="4">{{ useSlotSchedule ? 'Schedule' : 'Hours'}}</th>
-                    </tr>
-                    </thead>
-                  </template>
-
-                  <template #item="{ item, index }">
-                    <tr class="clickable" :class="{'shaded-row': index % 2}">
-                      <td class="text-left">{{item.dayOfWeek}}</td>
-                      <td class="text-left" v-if="useSlotSchedule">
+                  <template #item.weekday="{ item, index }" class="text-left">{{item.dayOfWeek}}</template>
+                  <template #item.hours="{item}" class="text-left">
+                        <div  v-if="useSlotSchedule">
                         <a-select
                           v-model="item.resourceSlotScheduleId"
                           :items="slotSchedules"
@@ -238,39 +221,38 @@
                             {{slot.startTime | formatDateZoneless()}} - {{slot.endTime | formatDateZoneless()}}
                           </div>
                         </v-card>
-                      </td>
-                      <td class="text-left" v-else>
-                        <div class="flex-display">
+                        </div>
+                        <div v-else class="flex-display flex-column flex-md-row">
                           <DatetimePickerInput
-                            v-model="item.startTime"
-                            :timezone="timezone"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            type="time"
-                            format="h:mm a"
-                            :allowed-minutes="allowedMinutesStep"
-                            input-format="HH:mm:ss"
-                            label="Start Time"
-                            class="d-inline-block"
+                              v-model="item.startTime"
+                              :timezone="timezone"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
+                              type="time"
+                              format="h:mm a"
+                              :allowed-minutes="allowedMinutesStep"
+                              input-format="HH:mm:ss"
+                              label="Start Time"
+                              class="d-inline-block"
                           />
                           <div class="d-inline-block px-3 align-self-center">to</div>
                           <DatetimePickerInput
-                            v-model="item.endTime"
-                            :timezone="timezone"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            type="time"
-                            format="h:mm a"
-                            :allowed-minutes="allowedMinutesStep"
-                            input-format="HH:mm:ss"
-                            label="End Time"
-                            class="d-inline-block"
+                              v-model="item.endTime"
+                              :timezone="timezone"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
+                              type="time"
+                              format="h:mm a"
+                              :allowed-minutes="allowedMinutesStep"
+                              input-format="HH:mm:ss"
+                              label="End Time"
+                              class="d-inline-block"
                           />
                         </div>
-                      </td>
-                      <td class="text-left px-0" width="150px" v-if="!useSlotSchedule">
-
-                        <v-tooltip top v-if="index !== 6 && userCanEdit">
+                      </template>
+                  <template #item.icons="{item, index}" class="text-left px-0" v-if="!useSlotSchedule">
+                    <div class="d-flex">
+                    <v-tooltip top v-if="index !== 6 && userCanEdit">
                           <template v-slot:activator="{ on }">
                             <a-btn variant="text" size="small" color="primary" :activation-handler="on"
                                              @click="copyTimes(schedule, item, index, 'down')"
@@ -294,10 +276,8 @@
                                          @click="[item.startTime = null, item.endTime = null]" v-if="userCanEdit"
                                          prepend-icon="close"
                         />
-                      </td>
-
-                    </tr>
-                  </template>
+                    </div>
+                      </template>
                 </v-data-table>
                 <div v-if="saveError" class="error--text mt-3">
                   {{saveErrorMsg}}
@@ -306,13 +286,12 @@
                   <v-card-actions>
                     <a-btn color="primary"  @click="saveSchedule(schedule, false)" class="white--text"
                            v-if="userCanEdit || userCanAdd"
-                           :disabled="!schedule.startDate" text="SAVE"/>
+                           :disabled="!schedule.startDate" text="Save"/>
                   </v-card-actions>
                 </v-card-actions>
               </v-card>
-            </td>
           </template>
-
+          </template>
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.startDate | formatDate('date')}} - {{item.endDate | formatDate('date')}}</td>
@@ -327,7 +306,7 @@
                                  color="primary"
                                  @click="expanded = []"
                                  v-if="expanded.includes(item)"
-                                 text="CANCEL"
+                                 text="Cancel"
                 />
                 <a-btn size="small"
                                  variant="text"
@@ -366,6 +345,7 @@
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
+  const vuetify = vueInstance.$vuetify
      const store = vueInstance.$store
   const userStore = useUserStore()
 
@@ -384,6 +364,11 @@
   const headers = ref([
     { text: 'Schedules', value: 'schedule', show: true},
     { text: '', value: 'icons', show: true}
+  ])
+  const addEditScheduleHeaders = ref([
+    {text: 'Work Day', value:'weekday', show: true, width:'75px'},
+    {text: 'Hours', value:'hours', show: true},
+    {text:'', value:'icons', show: true, width:'150px'}
   ])
   const timezone = ref(userStore.timezone.value)
   const schedules = ref([])

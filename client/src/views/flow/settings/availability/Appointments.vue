@@ -4,9 +4,13 @@
       <v-col>
         <a-btn v-if="!addNew && userStore.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')"
                id="qa-add-appointment-button"
-                         @click="addNew = !addNew" color="primary" class="mb-3" text="ADD APPOINTMENT"/>
+                         @click="addNew = !addNew" color="primary" class="mb-3" text="Add Appointment"/>
         <v-card v-if="addNew" flat class="px-3">
-          <v-card-title>Add Appointment</v-card-title>
+          <v-card-title class="px-0">
+            Add Appointment
+            <v-spacer/>
+            <a-btn v-if="vuetify.breakpoint.smAndDown" variant="text" prepend-icon="close" @click="[newSchedule = {}, addNew = false]"/>
+          </v-card-title>
           <a-text-field
               id="qa-new-appt-title"
             v-model="newAppt.title"
@@ -67,25 +71,22 @@
           <div v-if="newSaveError" class="error--text mt-3">
             {{newSaveErrorMsg}}
           </div>
-          <v-card-actions>
-            <v-card-actions>
+            <v-card-actions class="px-0">
               <a-btn variant="text"
                                color="primary"
                                @click="[newAppt = {}, addNew = false]"
-                               text="CANCEL"
+                               text="Cancel"
               />
               <a-btn color="primary"
                      id="qa-new-appt-save-button"
                                @click="saveAppt(newAppt, false)" class="white--text"
                                :disabled="!newAppt.startTime || !newAppt.endTime || !newAppt.title || newAppt.title.length > 50"
-                               text="SAVE"
+                               text="Save"
               />
             </v-card-actions>
-          </v-card-actions>
         </v-card>
 
         <v-data-table
-          v-if="!addNew"
           :headers="headers"
           :items="filterAppointments"
           :fixed-header="true"
@@ -97,6 +98,7 @@
           :server-items-length="totalAppointments"
           disable-sort
           class="elevation-1 appointment-table"
+          :item-class="rowClass"
         >
           <template #no-data>
             <span class="default-text-color">No available appointments</span>
@@ -107,7 +109,7 @@
           </template>
 
           <template #expanded-item="{ headers, item: appt }">
-            <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': selectedIndex % 2}">
+            <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': filterAppointments.indexOf(appt) % 2 === 1}">
               <v-card flat color="transparent" class="px-3">
                 <!-- no edits allowed to recurring events for now -->
                 <!-- NOTE: THERE WOULD BE A BIG ISSUE IF WE ALLOWED EDITING RECURRING EVENTS AND THEY WERE EDITED FROM 2 DIFFERENT TIMEZONES! YIKES! -->
@@ -177,7 +179,7 @@
                       @click="[itemToSave = appt, appt.repeat ? showSaveDialog = true : saveAppt(appt, false)]"
                       class="white--text"
                       :disabled="saveError || !appt.startTime || !appt.endTime || !appt.title || appt.title.length > 50"
-                      text="SAVE"
+                      text="Save"
                     />
                   </v-card-actions>
                 </v-card-actions>
@@ -185,12 +187,10 @@
             </td>
           </template>
 
-          <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.startTime | formatDate(item.allDay ? 'date' : 'timestamp')}} - {{item.endTime | formatDate(item.allDay ? 'date' : 'timestamp')}}</td>
-              <td class="text-left">{{item.title}}</td>
-              <td><input type="checkbox" :disabled="true" v-model="item.allDay"></td>
-              <td class="text-left">
+          <template #item.appointment="{ item }" class="text-left">{{item.startTime | formatDate(item.allDay ? 'date' : 'timestamp')}} - {{item.endTime | formatDate(item.allDay ? 'date' : 'timestamp')}}</template>
+              <template #item.title="{ item }" class="text-left">{{item.title}}</template>
+              <template #item.allDay="{item}"><input type="checkbox" :disabled="true" v-model="item.allDay"></template>
+              <template #item.icons="{item, index}" class="text-left">
                 <a-btn
                   size="small"
                   variant="text"
@@ -200,15 +200,13 @@
                   prepend-icon="edit"
                 />
                 <a-btn size="small" variant="text" color="primary" @click="expanded = []"
-                       v-if="expanded.includes(item)" text="CANCEL"/>
+                       v-if="expanded.includes(item)" text="Cancel"/>
                 <a-btn size="small" variant="text" color="primary"
                        v-if="userStore.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE')"
                        @click="[itemToDelete=item, showDeleteDialog=true]"
                        prepend-icon="delete"
                 />
-              </td>
-            </tr>
-          </template>
+              </template>
         </v-data-table>
       </v-col>
     </v-row>
@@ -237,7 +235,13 @@
 
   import RRule from '@/components/RRule.vue'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import { handleHidingGlobalLoader, deleteRequest, getRequestWithParams, postRequest} from '@/helpers/helpers'
+  import {
+    handleHidingGlobalLoader,
+    deleteRequest,
+    getRequestWithParams,
+    postRequest,
+    getRowClass
+  } from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
   import moment from 'moment-timezone'
   import constants from '@/helpers/constants'
@@ -252,7 +256,8 @@
   const appStore = useAppStore()
 
   const vueInstance = getCurrentInstance().proxy
-     const store = vueInstance.$store
+  const vuetify = vueInstance.$vuetify
+  const store = vueInstance.$store
   const userStore = useUserStore()
   const route = useRoute()
 
@@ -551,6 +556,9 @@
   const closeSaveDialog =()=> {
       showSaveDialog.value = false
       itemToSave.value = null
+  }
+  const rowClass = (item) => {
+    return getRowClass(item, filterAppointments.value)
   }
 </script>
 

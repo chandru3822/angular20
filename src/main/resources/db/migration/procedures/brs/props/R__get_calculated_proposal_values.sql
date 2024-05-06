@@ -469,7 +469,9 @@ declare
   v_deposit_amount_number                               numeric;
   v_has_critter_guard                                   boolean;
   v_storage_name                                        text;
+  v_storage_id    bigint;
   v_storage_brand                                       text;
+  v_storage_brand_id bigint;
   v_qualifies_for_incentive                             bigint[];
   v_qualifies_for_incentive_boolean                     boolean;
   v_below_line_rebate                                   numeric;
@@ -811,25 +813,47 @@ BEGIN
 
   --raise notice 'v_current_estimated_cost_per_kwh = %',v_current_estimated_cost_per_kwh;
   --raise notice 'v_utility_cost_escaltor = %',v_utility_cost_escalator;
-  ----raise notice 'v_storage_type_id = %',v_storage_type_id;
+  --raise notice 'v_storage_type_id = %',v_storage_type_id;
   -- --todo test this
 
   select number_of_batteries,
          cash_price_storage,
          storage_capacity,
-         storage_name,
-         storage_brand,
+         storage_id,
+         storage_brand_id,
          nominal_power,
          battery_manufacturers_warranty,
          battery_workmanship_warranty
-  into v_number_of_batteries,v_cash_price_storage,v_storage_capacity,v_storage_name,v_storage_brand,v_nominal_power,
+  into v_number_of_batteries,v_cash_price_storage,v_storage_capacity,
+    v_storage_id,v_storage_brand_id,v_nominal_power,
     v_battery_manufacturers_warranty,v_battery_workmanship_warranty
   from brs.get_proposal_storage_details(v_version_id, coalesce(v_storage_type_id,0),coalesce(v_financier_id,0));
+
+  if v_storage_id is not null then
+    select name
+    into v_storage_name
+    from brs.list_of_value l
+    where l.id = v_storage_id and
+          l.parent_id =556;
+  end if;
+
+  if v_storage_brand_id is not null then
+    select name
+    into v_storage_brand
+    from flow.list_of_value l
+    where l.id = v_storage_brand_id and
+      l.parent_id = 19407;
+  end if;
 
   v_number_of_batteries = coalesce(v_number_of_batteries, 0);
   --raise notice 'v_number_of_batteries = %',v_number_of_batteries;
   --raise notice 'v_cash_price_storage = %',v_cash_price_storage;
+  --raise notice 'v_storage_type_id = %',v_storage_type_id;
   --raise notice 'v_storage_name = %',v_storage_name;
+  --raise notice 'v_storage_brand = %',v_storage_brand;
+  --raise notice 'v_storage_brand_id = %',v_storage_brand_id;
+
+
 
   v_instantly_used = v_first_year_production_estimate * v_instant_use_assumption;
   v_sent_to_grid = v_first_year_production_estimate - coalesce(v_instantly_used, 0);
@@ -2123,8 +2147,10 @@ BEGIN
                                          storage_cost_with_fees,
                                          commission_strategy_id,
                                          prepay_deposit,
+                                         storage_brand_id,
                                          storage_brand,
                                          storage_size_kwh,
+                                         storage_type_id,
                                          storage_name,
                                          all_rebates,
                                          net_system_cost,
@@ -2230,8 +2256,10 @@ BEGIN
             round(v_storage_cost_with_fees, 0),
             v_commission_strategy_id,
             v_deposit_amount_number,
+            v_storage_brand_id::bigint,
             v_storage_brand,
             v_storage_capacity,
+            v_storage_id::bigint,
             v_storage_name,
             v_rebates,
             v_net_system_cost,

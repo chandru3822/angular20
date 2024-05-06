@@ -149,7 +149,6 @@
         <v-toolbar flat class="wqt-header-bar">
           <v-toolbar-title class="title-large text-wrap">Work Queue Access Control</v-toolbar-title>
         </v-toolbar>
-        edit: {{userCanEdit}}
         <multi-select-group
           v-if="!workQueueLoading"
           :userCanEdit="userCanEdit"

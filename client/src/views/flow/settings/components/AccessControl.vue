@@ -8,6 +8,7 @@
       v-model="selectedRows"
       hide-default-footer
       disable-sort
+      mobile-breakpoint="960"
       show-select
       class="elevation-1 mt-1"
     >
@@ -25,16 +26,36 @@
 
       <template v-slot:header.data-table-select="{ on, props }">
         <v-simple-checkbox color="primary" v-bind="props" :ripple="false" v-on="on"
-                           v-if="userCanEdit" @input="dirtyFieldsCallback()"></v-simple-checkbox>
+                           v-if="userCanEdit && vuetify.breakpoint.mdAndUp" @input="dirtyFieldsCallback()"></v-simple-checkbox>
       </template>
 
       <template #item="{ item, index, isSelected, select }">
-        <tr :class="{ 'shaded-row': index % 2 }">
+        <tr v-if="vuetify.breakpoint.smAndDown" :class="{ 'shaded-row': index % 2 }">
+          <td class="text-left" :colspan="vuetify.breakpoint.smAndDown ? companyFeatureList.length : 1">
+            {{ item.featureName }}
+          </td>
+          <td class="one-hunned">
+              <div v-for="acl in item.accessControl">
+                <div v-if="acl.usedByFeature" class="d-flex justify-end">
+                  <span class="mr-4">{{ acl.accessLevel }}</span>
+                  <input type="checkbox" :readonly="!userCanEdit" color="primary"
+                         :disabled="!userCanEdit" v-model="acl.enabled" @input="[acl.dirty = true, item.dirty = true, callback(companyFeatureList), dirtyFieldsCallback()]">
+
+                  <v-icon class="ml-2 mb-1" small color="grey darken-1"
+                          v-if="secondaryFeatureAccess.length > 0 && secondaryHasAccess(item, acl)">
+                    mdi-alpha-p-box-outline
+                  </v-icon>
+                </div>
+              </div>
+          </td>
+        </tr>
+        <tr v-else :class="{ 'shaded-row': index % 2 }">
           <td class="text-center">
             <v-simple-checkbox color="primary" v-if="userCanEdit" :ripple="false" :value="isSelected" @input="[select($event), dirtyFieldsCallback()]"></v-simple-checkbox>
           </td>
           <td class="text-left">
             {{ item.featureName }}
+            <div v-if="vuetify.breakpoint.smAndDown"></div>
           </td>
           <td v-for="acl in item.accessControl">
             <div v-if="acl.usedByFeature">
@@ -68,6 +89,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 const appStore = useAppStore()
 
 const vueInstance = getCurrentInstance().proxy
+const vuetify = vueInstance.$vuetify
 
 const store = vueInstance.$store
 const userStore = useUserStore()
@@ -90,7 +112,7 @@ const secondaryFeatureAccess = ref([])
 const accessControlList = ref([])
 const parentId = ref(userStore.details.parentCompanyId)
 const headers = ref([
-  { text: 'Feature', value: 'featureName', show: true },
+  { text: 'Feature', value: 'featureName', show: true }
 ])
 
 const userId = computed(() => {

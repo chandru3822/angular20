@@ -11,7 +11,7 @@
             <a-btn variant="text"
                              color="primary"
                              @click="[addNew = !addNew, newSchedule = {}]"
-                             :text="addNew ? 'CANCEL' : 'ADD NEW'"
+                             :text="addNew ? 'Cancel' : 'Add New'"
             />
           </v-toolbar-items>
         </v-toolbar>
@@ -22,7 +22,7 @@
           ></a-text-field>
           <a-btn :disabled="!newSchedule.scheduleName"
                            @click="saveSchedule(newSchedule)"
-                           text="SAVE"
+                           text="Save"
           />
         </v-card>
         <v-data-table
@@ -56,7 +56,7 @@
                   color="primary"
                   class="mb-2"
                   dark @click="item.slotTimes.push({id: null, startTime: null, endTime: null, archived: false})"
-                  text="ADD SLOT"
+                  text="Add Slot"
                 />
                 <v-list v-for="(st, index) in item.slotTimes.filter(a => !a.archived)"
                         :key="index"  class="pa-0">
@@ -88,7 +88,7 @@
               </div>
               <a-btn color="primary" class="white--text mr-2"
                                @click="saveSchedule(item)"
-                               text="SAVE"
+                               text="Save"
               />
             </td>
           </template>
@@ -103,7 +103,7 @@
                 />
                 <a-btn size="small" variant="text" color="primary"
                                  v-if="userCanEdit && expanded.includes(item)"
-                                 @click="expanded = []" text="CANCEL"
+                                 @click="expanded = []" text="Cancel"
                 />
                 <a-btn size="small" variant="text" color="primary" v-if="userCanDelete"
                                  @click="[itemToDelete = item, showDeleteDialog = true]" prepend-icon="delete"

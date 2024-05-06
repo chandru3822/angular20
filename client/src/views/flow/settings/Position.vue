@@ -24,14 +24,16 @@
               color="primary"
               v-if="userCanEdit || userCanEditAccessControl"
               prepend-icon="save"
-              text="SAVE"
+              hide-text-on-mobile
+              text="Save"
             />
             <a-btn
               variant="text"
               color="primary"
               @click="router.push('/settings/positions')"
               prepend-icon="close"
-              text="CLOSE"
+              hide-text-on-mobile
+              text="Close"
             />
           </v-toolbar-items>
         </v-toolbar>

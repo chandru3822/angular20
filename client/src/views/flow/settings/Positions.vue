@@ -12,7 +12,8 @@
               color="primary"
               v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
               prepend-icon="add"
-              text="ADD POSITION"
+              hide-text-on-mobile
+              text="Add Position"
             />
           </v-toolbar-items>
         </v-toolbar>
@@ -34,7 +35,7 @@
             :items-per-page="-1"
             hide-default-footer
             :loading="dataLoading"
-            class="elevation-1 fix-column-width-bug positions-table"
+            class="elevation-1  positions-table table-striped"
         >
           <template #no-data>
             <span class="default-text-color">No available positions</span>
@@ -44,19 +45,17 @@
             <span class="default-text-color">No available positions</span>
           </template>
 
-          <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left" @click="clickRow(item.id)">
+          <template #item.position="{ item, index }" class="text-left" @click="clickRow(item.id)">
                 <router-link :to="`/settings/position/${item.id}`" class="router-link-td">
                   {{item.position}}
                 </router-link>
-              </td>
-              <td class="text-left" @click="clickRow(item.id)">
+          </template>
+              <template #item.orgType="{item}" class="text-left" @click="clickRow(item.id)">
                 <router-link :to="`/settings/position/${item.id}`" class="router-link-td">
                   {{item.orgType}}
                 </router-link>
-              </td>
-              <td class="px-0">
+              </template>
+              <template #item.icons="{item, index}" class="px-0">
                 <a-btn
                   size="small"
                   variant="text"
@@ -74,9 +73,7 @@
                   prepend-icon="delete"
                   custom-classes="pa-0"
                 />
-              </td>
-            </tr>
-          </template>
+              </template>
         </v-data-table>
       </v-col>
     </v-row>
