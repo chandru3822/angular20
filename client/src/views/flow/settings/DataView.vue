@@ -215,7 +215,7 @@
               @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null}, selectedDefaultField = {}, fixData()]"
               variant="text"
               color="primary"
-              text="Cancel"
+              text="Cancel" :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"  hide-text-on-mobile
             />
           </div>
 
@@ -335,7 +335,7 @@
                       variant="text"
                       color="primary"
                       @click="[addChild = !addChild, childField = {}]"
-                      prepend-icon="add"
+                      :prepend-icon="addChild ? 'close' : 'add'"
                     />
                   </v-toolbar-items>
                 </v-toolbar>
@@ -441,6 +441,8 @@
                           v-if="childFieldExpanded.includes(childField)"
                           @click="childFieldExpanded = []"
                           text="Cancel"
+                          :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
+                          hide-text-on-mobile
                         />
                       </template>
                 </v-data-table>
@@ -483,6 +485,7 @@
                   v-if="expanded.includes(item)"
                   @click="expanded = []"
                   text="Cancel"
+                  :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"  hide-text-on-mobile
                 />
               </template>
         </v-data-table>
