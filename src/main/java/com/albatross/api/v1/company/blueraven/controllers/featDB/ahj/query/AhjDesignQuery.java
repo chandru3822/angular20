@@ -46,6 +46,7 @@ public class AhjDesignQuery {
            AND ahj.archived IS FALSE
     """;
 
+  //language=PostgreSQL
   public final static String getAhjHistory = """
         select
             cf.id,

@@ -333,18 +333,7 @@ public class ExcelImportController {
     try {
       return ResponseEntity.ok(aurora.getDesignRackingArrays(designId));
     } catch (Exception e) {
-      String msg = "EXCEL_IMPORT: Failed tos get racking arrays for design " + designId;
-      log.error(msg, e);
-      return ResponseEntity.status(500).body(msg);
-    }
-  }
-
-  @GetMapping(value = "/designs/{id}/rackingArrays", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity getRackingArrays(@NonNull @PathVariable("id") String designId) {
-    try {
-      return ResponseEntity.ok(aurora.getDesignRackingArrays(designId));
-    } catch (Exception e) {
-      String msg = "EXCEL_IMPORT: Failed tos get racking arrays for design " + designId;
+      String msg = "EXCEL_IMPORT: Failed to get racking arrays for design " + designId;
       log.error(msg, e);
       return ResponseEntity.status(500).body(msg);
     }

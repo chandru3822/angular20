@@ -2,12 +2,11 @@
   <v-card class="design-card square-card">
     <v-row no-gutters class="px-2" id="ahj-permit">
       <v-col class="form-btns py-1" cols="12">
-        <v-menu max-height="450" :close-on-content-click="false" offset-y>
+        <v-menu content-class="db-change-log-menu" v-if="hasManageAccess" max-height="450" :close-on-content-click="false" offset-y>
           <template v-slot:activator="{on: menu, attrs }">
             <v-tooltip top>
               <template v-slot:activator="{ on: tooltip }">
                 <a-btn
-                  id="changeLogHistoryBtn"
                   variant="text"
                   color="primary"
                   prepend-icon="history"
@@ -164,7 +163,6 @@ const ahjDesign = ref({designRequirements: [],electricalRequirements: [],structu
 const ahjDesignForm = ref(null)
 const showChangeLog = ref(false)
 const changeLog = ref([])
-const refChangeLog = ref()
 
 
 const userCanEdit = computed(()  => {
@@ -369,10 +367,6 @@ const updateAhjDesign = async() => {
   flex-flow: row nowrap;
   justify-content: flex-end;
   align-items: center;
-}
-
-.v-menu__content::-webkit-scrollbar {
-  display: none;
 }
 
 .v-text-field,

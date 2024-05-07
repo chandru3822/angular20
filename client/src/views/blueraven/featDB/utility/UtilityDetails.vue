@@ -18,24 +18,24 @@
           <v-card class="mx-2 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
               <v-col class="form-btns" cols="12">
-                <v-tooltip top>
-                  <template v-slot:activator="{ on, attrs }">
-                    <a-btn
-                      variant="text"
-                      color="primary"
-                      prepend-icon="history"
-                      @click="showChangeLog = !showChangeLog"
-                      v-bind="attrs"
-                      :activation-handler="on">
-                    </a-btn>
+                <v-menu content-class="db-change-log-menu" v-if="hasManageAccess" max-height="450" :close-on-content-click="false" offset-y>
+                  <template v-slot:activator="{on: menu, attrs }">
+                    <v-tooltip top>
+                      <template v-slot:activator="{ on: tooltip }">
+                        <a-btn
+                          variant="text"
+                          color="primary"
+                          prepend-icon="history"
+                          @click="showChangeLog = !showChangeLog"
+                          v-bind="attrs"
+                          :activation-handler="{ ...tooltip, ...menu }">
+                        </a-btn>
+                      </template>
+                      <span>History</span>
+                    </v-tooltip>
                   </template>
-                  <span>History</span>
-                </v-tooltip>
-                <template v-if="hasManageAccess && showChangeLog===true">
-                  <DbChangeLog
-                    :history-list="changeLog">
-                  </DbChangeLog>
-                </template>
+                  <DbChangeLog :history-list="changeLog"/>
+                </v-menu>
                 <a-btn
                     variant="text"
                     color="primary"
