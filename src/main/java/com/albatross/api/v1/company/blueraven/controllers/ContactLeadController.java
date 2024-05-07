@@ -398,7 +398,7 @@ public class ContactLeadController {
 
 				contacts.forEach(c -> {
 					try {
-						Thread.sleep(100);
+						Thread.sleep(10);
 					} catch (InterruptedException e) {
 						throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "thread interrupted with phone: " + c.getPhone(), e);
 					}
