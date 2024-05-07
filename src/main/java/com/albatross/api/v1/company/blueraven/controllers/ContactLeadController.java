@@ -379,41 +379,4 @@ public class ContactLeadController {
   public void updateContactVivint (@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
-
-	@PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<Contact>> importJunk(@RequestParam("file") MultipartFile file) {
-	  	User user = securityService.getCurrentUser();
-		List<Contact> newContacts = new ArrayList<>();
-		if (user.getId() == 99999999L) {
-			CsvMapper mapper = new CsvMapper();
-			CsvSchema schema = CsvSchema.emptySchema().withHeader();
-
-			try {
-				MappingIterator<ContactLead> iterator = mapper
-					.readerFor(ContactLead.class)
-					.with(schema)
-					.readValues(file.getInputStream());
-
-				List<ContactLead> contacts = iterator.readAll();
-
-				contacts.forEach(c -> {
-					try {
-						Thread.sleep(10);
-					} catch (InterruptedException e) {
-						throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "thread interrupted with phone: " + c.getPhone(), e);
-					}
-					c.setLeadSource("Aged Lead");
-					c.setLeadSourceDetail("joe_assed");
-					final String name = c.getName();
-					c.setFirstName(name.substring(0, name.lastIndexOf(" ")).trim());
-					c.setLastName(name.substring(name.lastIndexOf(" ")).trim());
-
-					newContacts.add(contactLeadService.saveContactLead(c));
-				});
-			} catch (Exception e) {
-				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "boom", e);
-			}
-		}
-		return new ResponseEntity<>(newContacts, HttpStatus.OK);
-	}
 }

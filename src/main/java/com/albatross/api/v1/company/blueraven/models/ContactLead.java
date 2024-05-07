@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 public class ContactLead {
 
   private String firstName,
-	  name,
       lastName,
       zip,
       phone,
