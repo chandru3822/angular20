@@ -3,15 +3,15 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="title-large">Tags</v-toolbar-title>
+          <v-toolbar-title v-if="!vuetify.breakpoint.smAndDown" class="title-large">Tags</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn variant="text" color="primary"
                @click="[addNew = !addNew, newTag = { bgColor: '#878787', fontColor: '#1F3C73'}]"
                v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
-               :hide-text-on-mobile="constants.IS_MOBILE"
-               :prepend-icon="constants.IS_MOBILE ? 'add' : ''"
-               :text="addNew ? 'CANCEL' : 'ADD NEW'"
+               :hide-text-on-mobile="vuetify.breakpoint.smAndDown"
+               :prepend-icon="vuetify.breakpoint.smAndDown ? addNew ? 'close' : 'add' : ''"
+               :text="addNew ? 'Cancel' : 'Add New'"
             />
           </v-toolbar-items>
         </v-toolbar>

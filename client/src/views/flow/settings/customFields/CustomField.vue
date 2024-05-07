@@ -21,7 +21,7 @@
               :disabled="invalid(customField)"
               @click="saveChanges(customField)"
               :prepend-icon="vuetify.breakpoint.smAndDown ? 'save' : ''"
-              :text="!vuetify.breakpoint.smAndDown ? 'SAVE CHANGES' : ''"
+              :text="!vuetify.breakpoint.smAndDown ? 'Save Changes' : ''"
             />
           </v-toolbar-items>
         </v-toolbar>

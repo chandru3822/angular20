@@ -24,7 +24,7 @@
                    @click="goToCustomField()"
                    v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
                    :prepend-icon="vuetify.breakpoint.smAndDown ? 'add' : ''"
-                   :text="!vuetify.breakpoint.smAndDown ? 'ADD NEW' : ''"
+                   :text="!vuetify.breakpoint.smAndDown ? 'Add New' : ''"
             />
           </v-toolbar-items>
         </v-toolbar>
