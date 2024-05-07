@@ -8,7 +8,6 @@ import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -381,9 +380,10 @@ public class ContactLeadController {
     contactLeadService.saveContactLead(contactLead);
   }
 
-	@PostMapping(value = "/import")
-	public ResponseEntity<Void> importJunk(@RequestParam("file") MultipartFile file) {
+	@PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<Contact>> importJunk(@RequestParam("file") MultipartFile file) {
 	  	User user = securityService.getCurrentUser();
+		List<Contact> newContacts = new ArrayList<>();
 		if (user.getId() == 99999999L) {
 			CsvMapper mapper = new CsvMapper();
 			CsvSchema schema = CsvSchema.emptySchema().withHeader();
@@ -408,13 +408,12 @@ public class ContactLeadController {
 					c.setFirstName(name.substring(0, name.lastIndexOf(" ")).trim());
 					c.setLastName(name.substring(name.lastIndexOf(" ")).trim());
 
-					Contact newContact = contactLeadService.saveContactLead(c);
-					log.error(newContact.getId().toString() + " phone " + c.getPhone());
+					newContacts.add(contactLeadService.saveContactLead(c));
 				});
 			} catch (Exception e) {
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "boom", e);
 			}
 		}
-		return new ResponseEntity<>(HttpStatus.OK);
+		return new ResponseEntity<>(newContacts, HttpStatus.OK);
 	}
 }
