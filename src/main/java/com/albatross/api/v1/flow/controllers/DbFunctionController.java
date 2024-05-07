@@ -6,8 +6,8 @@ import com.albatross.api.v1.flow.model.function.DbFunctionParam;
 import com.albatross.api.v1.flow.model.function.DbFunctionType;
 import com.albatross.api.v1.flow.services.DbFunctionService;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,11 +21,11 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/dbFunction")
+@RequiredArgsConstructor
 public class DbFunctionController {
 
   // NOTE: ONLY THE ADMIN SCREEN FOR 7OAKS EMPLOYEES SHOULD EVER CALL THESE ENDPOINTS
-  @Autowired
-  private DbFunctionService dbFunctionService;
+  private final DbFunctionService dbFunctionService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<DbFunction> getDbFunctions () {

@@ -30,7 +30,7 @@ insert into flow.contact_custom_field_value(contact_id, date_value, custom_field
    select company_id
     from flow.contact
     where id = :sourceId
-    """;
+   """;
 
   //language=PostgreSQL
   public final static String getAncillaryCustomFieldGroupsAndValuesForAttachments = """

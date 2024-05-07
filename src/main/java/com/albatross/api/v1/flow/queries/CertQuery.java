@@ -12,7 +12,7 @@ public class CertQuery {
        from flow.cert c
        where c.archived is not true
        order by c.expiration_date, c.cert_name
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getOneCert = """
@@ -29,7 +29,7 @@ public class CertQuery {
   public final static String insertCert = """
     insert into flow.cert(cert_name, created_by_id, expiration_date, notes)
      values (:certName, :userId, :expirationDate, :notes)
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String updateCert = """
@@ -61,7 +61,7 @@ public class CertQuery {
         and c.thirty_day_notice_sent is not true
         and c.expiration_date between (now() + interval '7 days')::date and (now() + interval '30 days')::date
         order by c.expiration_date
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String getExpiring7DayCerts = """
@@ -74,7 +74,7 @@ public class CertQuery {
        where c.archived is not true
        and c.expiration_date between now()::date and (now() + interval '7 days')::date
       order by c.expiration_date
-     """;
+    """;
 
 
   //language=PostgreSQL

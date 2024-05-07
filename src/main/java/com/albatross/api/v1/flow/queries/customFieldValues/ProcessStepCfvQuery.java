@@ -52,7 +52,7 @@ ON CONFLICT (project_process_step_id, custom_field_group_assignment_id)
         inner join flow.project p on p.id = pps.project_id
         inner join flow.contact c on c.id = p.contact_id
         where pps.id = :sourceId
-        """;
+    """;
 
 
   //language=PostgreSQL

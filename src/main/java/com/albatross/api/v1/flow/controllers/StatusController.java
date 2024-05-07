@@ -2,8 +2,8 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.StatusType;
 import com.albatross.api.v1.flow.services.StatusService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,13 +18,13 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/status")
+@RequiredArgsConstructor
 public class StatusController {
 
-  @Autowired
-  private StatusService statusService;
+  private final StatusService statusService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<StatusType> getStatusTypesForCompany () {
+  public List<StatusType> getStatusTypesForCompany() {
     return statusService.getStatusTypesForCompany();
   }
 

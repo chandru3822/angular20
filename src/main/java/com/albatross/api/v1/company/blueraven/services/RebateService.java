@@ -8,11 +8,10 @@ import com.albatross.api.v1.company.blueraven.models.RebatePayment;
 import com.albatross.api.v1.company.blueraven.models.RebatePaymentState;
 import com.albatross.api.v1.company.blueraven.services.queries.RebateQuery;
 import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -29,21 +28,12 @@ import java.util.Optional;
  */
 @Service
 @PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccess('REBATES')")
+@RequiredArgsConstructor
 public class RebateService {
-  @Autowired
-  private SqlCache sqlCache;
-
-  @Autowired
-  private SecurityService securityService;
-
-  @Autowired
-  private NamedParameterJdbcTemplate jdbc;
-
-  @Autowired
-  CustomFieldValueService customFieldValueService;
-
-  @Autowired
-  ObjectMapper om;
+  private final SqlCache sqlCache;
+  private final SecurityService securityService;
+  private final NamedParameterJdbcTemplate jdbc;
+  private final ObjectMapper om;
 
   public List<RebatePayment> getPending() {
     User user = securityService.getCurrentUser();
@@ -67,18 +57,18 @@ public class RebateService {
     return jdbc.queryForObject(RebateQuery.getRebateDetails, parameters, String.class);
   }
 
-  public Optional<RebateBatchDetail> getBatchDetails(Long batchId){
+  public Optional<RebateBatchDetail> getBatchDetails(Long batchId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("batchId", batchId);
 
     return sqlCache.getBySql(RebateQuery.getBatchDetails, params, new RebateMapper<>(RebateBatchDetail.class, om));
   }
 
-  public List<RebateBatchDetail> getAllBatches(){
+  public List<RebateBatchDetail> getAllBatches() {
     return sqlCache.queryBySql(RebateQuery.getAllBatches, Collections.emptyMap(), RebateBatchDetail.class);
   }
 
-  public Optional<RebateBatchDetail> voidBatch(Long batchId){
+  public Optional<RebateBatchDetail> voidBatch(Long batchId) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -117,7 +107,7 @@ public class RebateService {
     sqlCache.updateBySql(RebateQuery.unvoidSinglePayment, params);
   }
 
-  public void updatePaymentNote(RebatePayment rebatePayment){
+  public void updatePaymentNote(RebatePayment rebatePayment) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -128,12 +118,11 @@ public class RebateService {
     sqlCache.updateBySql(RebateQuery.updatePaymentNote, params);
   }
 
-  public List<RebatePaymentState> getPaymentStates(){
-    List<RebatePaymentState> results = sqlCache.queryBySql(RebateQuery.getPaymentStates, Collections.emptyMap(), RebatePaymentState.class);
-    return results;
+  public List<RebatePaymentState> getPaymentStates() {
+    return sqlCache.queryBySql(RebateQuery.getPaymentStates, Collections.emptyMap(), RebatePaymentState.class);
   }
 
-  public void createRecurringPayment(RebatePayment rebatePayment){
+  public void createRecurringPayment(RebatePayment rebatePayment) {
     User currentUser = securityService.getCurrentUser();
     String sqlQuery = "select brs.create_rebate_payments(:projectId::bigint, :createdById::bigint, :totalAmount::numeric , :promotionPayments::bigint)";
 
@@ -146,7 +135,7 @@ public class RebateService {
     jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
 
-  public void addExtraPayment(RebatePayment rebatePayment){
+  public void addExtraPayment(RebatePayment rebatePayment) {
 
     User currentUser = securityService.getCurrentUser();
 
@@ -161,7 +150,7 @@ public class RebateService {
   }
 
 
-  public void approvePayments(RebatePayment rebatePayment){
+  public void approvePayments(RebatePayment rebatePayment) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("paymentIds", rebatePayment.getPaymentIds());
     params.put("userId", rebatePayment.getApprovedByUserId());
@@ -169,7 +158,7 @@ public class RebateService {
     sqlCache.updateBySql(RebateQuery.approvePayments, params);
   }
 
-  public void assignPaymentsToBatch(RebatePayment rebatePayment){
+  public void assignPaymentsToBatch(RebatePayment rebatePayment) {
     User user = securityService.getCurrentUser();
     //create batch
     HashMap<String, Object> batchParams = new HashMap<>();
@@ -185,7 +174,7 @@ public class RebateService {
     sqlCache.updateBySql(RebateQuery.assignPaymentsToBatch, params);
   }
 
-  public void updateTotalPromotionAmount(RebatePayment rebatePayment){
+  public void updateTotalPromotionAmount(RebatePayment rebatePayment) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("newTotal", rebatePayment.getTotalPromotionAmount());
     params.put("projectId", rebatePayment.getProjectId());
@@ -193,7 +182,7 @@ public class RebateService {
     sqlCache.updateBySql(RebateQuery.updateTotalPromotionAmount, params);
   }
 
-  public void updatePayment(RebatePayment rebatePayment){
+  public void updatePayment(RebatePayment rebatePayment) {
 
     User currentUser = securityService.getCurrentUser();
 
@@ -208,7 +197,7 @@ public class RebateService {
 
   }
 
-  public void deletePayment(Long paymentId){
+  public void deletePayment(Long paymentId) {
 
     User currentUser = securityService.getCurrentUser();
 

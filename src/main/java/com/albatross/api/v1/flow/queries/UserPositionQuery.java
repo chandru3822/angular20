@@ -22,7 +22,7 @@ public class UserPositionQuery {
             and upv.user_id = :userId
             and upv.archived is not true
           order by upv.start_date desc
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAllActive = """
@@ -41,7 +41,7 @@ public class UserPositionQuery {
                      OR now() between upv.start_date and upv.end_date)
               and upv.archived is not true
             order by upv.start_date desc
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getOne = """
@@ -58,7 +58,7 @@ public class UserPositionQuery {
           from flow.user_positions_vw upv
             inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id and uphv.org_id = upv.org_id and uphv.position_id = upv.position_id
           where upv.user_position_id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getUserPrimaryPosition = """
@@ -77,7 +77,7 @@ public class UserPositionQuery {
        and upv.archived is not true
        and upv.primary_flag is true
        and upv.archived is false
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String delete = """
@@ -99,13 +99,13 @@ public class UserPositionQuery {
                 modified_by_id = :modifiedById,
                 primary_flag = :primaryFlag
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertUserPosition = """
     insert into flow.user_position(user_id, position_id, start_date, end_date, org_id, primary_flag, created_by_id, date_created, modified_by_id, date_modified)
       values (:userId, :positionId, :startDate::date, :endDate::date, :orgId, :primaryFlag, :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String resetPrimaryFlags = """

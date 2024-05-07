@@ -4,19 +4,19 @@ public class ProposalQuery {
 
   //language=PostgreSQL
   public final static String getProjects = """
-    select distinct pps.project_id,
-                    p.project_name
-    from flow.project_process_step pps
-             inner join flow.project p on pps.project_id = p.id
-             inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
-    where p.archived is false
-      and pps.process_step_id in (3507, 3546)
-      and cpsst.process_step_status_type_id in (1, 2)
-      and case
-              when lower(trim(:query::text)) is not null then (p.id::text like '%' || lower(trim(:query::text)) || '%' OR
-                                                               lower(p.project_name) like '%' || lower(trim(:query::text)) || '%')
-              else 1 = 1 end
-    """;
+          select distinct pps.project_id,
+                          p.project_name
+          from flow.project_process_step pps
+                   inner join flow.project p on pps.project_id = p.id
+                   inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
+          where p.archived is false
+            and pps.process_step_id in (3507, 3546)
+            and cpsst.process_step_status_type_id in (1, 2)
+            and case
+                    when lower(trim(:query::text)) is not null then (p.id::text like '%' || lower(trim(:query::text)) || '%' OR
+                                                                     lower(p.project_name) like '%' || lower(trim(:query::text)) || '%')
+                    else 1 = 1 end
+          """;
 
   //language=PostgreSQL
   public final static String getProjectById = """
@@ -461,7 +461,7 @@ public class ProposalQuery {
                            and util_ppscfv.custom_field_group_assignment_id = 23802
     where p.id = :proposalId
       and p.archived is false
-        """;
+    """;
 
   public final static String simple = """
 select p.id,
@@ -495,7 +495,7 @@ where p.id = :proposalId
   //language=PostgreSQL
   public final static String insert = """
     insert into brs.proposal(project_process_step_id, created_by_id, proposal_version_id) values(:projectProcessStepId, :userId, :proposalVersionId)
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String getCalculatedProposalValues = """
@@ -511,7 +511,7 @@ where p.id = :proposalId
     where p.id = :proposalId
       and ppsa.archived is false
       and a.archived is false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String setLocked = """
@@ -520,7 +520,7 @@ where p.id = :proposalId
         date_modified  = now(),
         modified_by_id = :modifiedById
     where id = :id and locked_tsz is null and archived is false
-        """;
+    """;
   //language=PostgreSQL
   public final static String setCreditChecked = """
     update brs.proposal
@@ -528,7 +528,7 @@ where p.id = :proposalId
         date_modified  = now(),
         modified_by_id = :modifiedById
     where id = :id and credit_check_submitted_tsz is null and archived is false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String setArchived = """
@@ -537,7 +537,7 @@ where p.id = :proposalId
         date_modified  = now(),
         modified_by_id = :modifiedById
     where id = :id and locked_tsz is null and archived is false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String setFinanceDocsSent = """
@@ -546,7 +546,7 @@ where p.id = :proposalId
         date_modified  = now(),
         modified_by_id = :modifiedById
     where id = :id and finance_docs_sent_tsz is null and archived is false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String setInstallationAgreementDocsSent = """
@@ -555,12 +555,12 @@ where p.id = :proposalId
         date_modified  = now(),
         modified_by_id = :modifiedById
     where id = :id and installation_agreement_sent_tsz is null and archived is false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String setProcessed = """
     update brs.proposal set processed_tsz = now() where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String setProposalName = """
@@ -571,12 +571,12 @@ where p.id = :proposalId
     where id = :id
       and locked_tsz is null
        and archived is false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String duplicate = """
     select proposal_duplicate from brs.proposal_duplicate(:proposalId, :userId);
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String postalCodeApproved = """
@@ -629,7 +629,7 @@ where p.id = :proposalId
              inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
              inner join flow.data_type dt on cdt.data_type_id = dt.id
     where pps.id = :ppsId
-        """;
+    """;
 
   public static final String findUserOrgId = """
           select vw.org_id

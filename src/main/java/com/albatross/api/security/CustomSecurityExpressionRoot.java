@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class CustomSecurityExpressionRoot extends SecurityExpressionRoot
   implements MethodSecurityExpressionOperations {
 
-  private static Long SYS_ADMIN_ID = 1L;
+  private static final Long SYS_ADMIN_ID = 1L;
   private Object filterObject;
   private Object returnObject;
 

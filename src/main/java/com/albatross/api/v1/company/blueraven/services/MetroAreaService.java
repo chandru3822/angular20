@@ -3,8 +3,8 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.MetroArea;
 import com.albatross.api.v1.company.blueraven.services.queries.MetroAreaQuery;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -15,9 +15,10 @@ import java.util.List;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class MetroAreaService {
-    @Autowired
-    private SqlCache sqlCache;
+
+    private final SqlCache sqlCache;
 
     public List<MetroArea> getAllActiveMetroAreas() {
       return sqlCache.queryBySql(MetroAreaQuery.getAllActive, Collections.emptyMap(), MetroArea.class);

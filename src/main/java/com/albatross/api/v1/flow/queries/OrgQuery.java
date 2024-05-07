@@ -125,7 +125,7 @@ select oat.id,
           and up.primary_flag is true
           and up.start_date <= now() and (up.end_date is null or up.end_date >= now())
         order by full_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getSchedulingOrgs = """
@@ -157,7 +157,7 @@ select oat.id,
           and o.archived is not true
           and o.active_flag is true
         order by o.org_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getOrgsByType = """
@@ -172,7 +172,7 @@ select oat.id,
        and o.active_flag is true
        and o.archived is not true
      order by o.org_name
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String searchOrgs = """
@@ -188,7 +188,7 @@ select oat.id,
         order by o.org_name
         limit :limit
         offset :offset
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String searchOrgCount = """
@@ -215,7 +215,7 @@ select oat.id,
            and o.org_name ILIKE '%' || :query || '%'
            and o.archived is not true
        order by o.org_name desc
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String updateOrg = """
@@ -231,13 +231,13 @@ select oat.id,
              date_modified = now(),
              modified_by_id = :modifiedById
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertOrg = """
     insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, company_state_id, available_to_children, company_timezone_id, date_created, date_modified, created_by_id)
         values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :companyStateId, :availableToChildren, :companyTimezoneId, now(), now(), :createdById)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getOne = """
@@ -271,7 +271,7 @@ select oat.id,
         where o.id = :id
           and o.archived is false
           and o.company_id = :companyId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getOrgFiltersForCompany = """
@@ -286,7 +286,7 @@ select oat.id,
             inner join flow.org_level ol on ol.id = of.org_level_id
         where ol.company_id = :companyId
         order by of.rank
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getOneOrgFilter = """
@@ -347,7 +347,7 @@ select oat.id,
                rank = :rank,
                show_type = :showType
          where id = :id
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String insertOrgFilter = """
@@ -359,7 +359,7 @@ select oat.id,
   public final static String deleteOrgFilter = """
     delete from flow.org_filter
          where id = :id
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String getOrgsByHierarchyFilter = """
@@ -390,7 +390,7 @@ select oat.id,
           and o.archived is not true
           and o.active_flag is true
         order by o.org_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getOrgCalendarsForUser = """
@@ -471,7 +471,7 @@ select oat.id,
           and oa.archived is false
           and a.archived is not true
         order by oa.date_created desc
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String linkAttachment = """

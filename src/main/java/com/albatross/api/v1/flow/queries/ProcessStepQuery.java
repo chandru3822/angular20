@@ -48,7 +48,7 @@ public class ProcessStepQuery {
         where ps.company_id = :companyId
           and ps.archived is not true
         order by ps.process_step_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String get = """
@@ -362,7 +362,7 @@ where ps.id = :id
              modified_by_id = :userId,
              date_modified = now()
          where id = :psId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveWhiteListPositions = """
@@ -373,7 +373,7 @@ where ps.id = :id
        where process_step_id = :psId
          and company_id = :companyId
          and white_list_type_id = :whiteListTypeId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String insertWhiteListPosition = """
@@ -386,7 +386,7 @@ where ps.id = :id
                               and company_id = :companyId
                               and white_list_type_id = :whiteListTypeId
                                and archived is not true)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveWhiteListPositionsNoLongerUsed = """
@@ -398,7 +398,7 @@ where ps.id = :id
           and position_id not in (:positionIdsUsed)
           and company_id = :companyId
           and white_list_type_id = :whiteListTypeId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String delete = """
@@ -407,7 +407,7 @@ where ps.id = :id
               modified_by_id = :modifiedById,
               date_modified = now()
           where id = :processStepId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String update = """
@@ -418,13 +418,13 @@ where ps.id = :id
              non_admin_add = :nonAdminAdd,
              non_admin_add_allow = :nonAdminAddAllow
          where id = :psId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String insert = """
     insert into flow.process_step (company_id, process_step_name, non_admin_add, created_by_id, date_created, modified_by_id, date_modified)
             values (:companyId, :name, :nonAdminAdd, :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getParentObjects = """
@@ -433,7 +433,7 @@ where ps.id = :id
         where company_id = :companyId
           and archived is not true
         order by process_step_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getParentObjectsForProject = """
@@ -459,7 +459,7 @@ where ps.id = :id
                 from flow.data_view dv
                 where dv.archived is false
         order by name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getParentObjectsIncludingTypes = """
@@ -488,7 +488,7 @@ where ps.id = :id
                     from flow.data_view dv
                     where dv.archived is false
                   order by name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getProcessStepProcessByCompanyId = """
@@ -506,12 +506,12 @@ where ps.id = :id
       where ps.company_id = :companyId
         and psp.archived is not true
       order by ps.process_step_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getOwners = """
     select * from flow.get_process_step_available_owners(:id::bigint, :companyId::bigint, :inParentCompany)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAssignedStatusesByListOfValue = """
@@ -524,7 +524,7 @@ where ps.id = :id
       cpsst.company_id = :companyId and
       pscpsst.archived is not true
     order by cpsst.process_step_status_type
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAssignedCategoriesByListOfValue = """
@@ -538,5 +538,5 @@ where ps.id = :id
       cpsst.company_id = :companyId and
       pscpsst.archived is not true
     order by cpsst.process_step_status_type
-        """;
+    """;
 }

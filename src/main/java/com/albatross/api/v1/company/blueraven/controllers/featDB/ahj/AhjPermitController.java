@@ -6,7 +6,6 @@ import com.albatross.api.v1.company.blueraven.services.featDB.AhjPermitService;
 import com.albatross.api.v1.company.blueraven.services.featDB.AhjService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,8 +22,7 @@ public class AhjPermitController {
 
     private final AhjPermitService ahjPermitService;
 
-    @Autowired
-    private AhjService ahjService;
+    private final AhjService ahjService;
 
     @GetMapping(value = "")
     public Optional<AhjPermitDetail> getAhjPermitDetail(@PathVariable Long ahjId) {

@@ -384,7 +384,7 @@
     }
   }
   const filterCategories = computed(() => {
-    return workQueueCategories.value.filter(wqc => {
+    return workQueueCategories.value?.filter(wqc => {
       return !wqc.archived
     })
   })

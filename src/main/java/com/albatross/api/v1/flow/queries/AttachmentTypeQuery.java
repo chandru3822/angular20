@@ -49,7 +49,7 @@ public class AttachmentTypeQuery {
           where at.attachment_type_id = :typeId
             and at.archived is false
           order by process_step_name
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String getSystemTypes = """
@@ -118,7 +118,7 @@ public class AttachmentTypeQuery {
           where at.company_id = :companyId
             and at.id = :typeId
           order by at.attachment_type;
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteAttachmentType = """
@@ -178,7 +178,7 @@ public class AttachmentTypeQuery {
             and case when :focused::boolean is true then psat.focused is true else 1=1 end
             and case when :linkable::boolean is true then psat.linkable is true else 1=1 end
         order by at.attachment_type
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String getEventTypesByPpsEventId = """
@@ -213,7 +213,7 @@ public class AttachmentTypeQuery {
             and case when :focused::boolean is true then eat.focused is true else 1=1 end
             and case when :linkable::boolean is true then eat.linkable is true else 1=1 end
           order by at.attachment_type
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String getFocusedTypesForProject = """
@@ -227,7 +227,7 @@ public class AttachmentTypeQuery {
            and oat.archived is not true
            and oat.focused is true
          order by attachment_type
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String getFocusedTypesForPps = """
@@ -240,7 +240,7 @@ public class AttachmentTypeQuery {
           where psat.archived is not true
             and psat.focused is true
           order by attachment_type
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String getFocusedTypesForPpsEvent = """
@@ -316,7 +316,7 @@ public class AttachmentTypeQuery {
                  attachment_type_id,
                  coalesce(linkable, false) as linkable
           from types_with_linkable
-      """;
+    """;
 
   //attachment type queries that work for different object types
 //  public static String getTypes(String tablePrefix) {
@@ -355,7 +355,7 @@ public class AttachmentTypeQuery {
                 and oat.archived is not true
             )
           order by at.attachment_type
-      """;
+    """;
 
   //  USER - should prob move to own file
   //language=PostgreSQL
@@ -374,7 +374,7 @@ public class AttachmentTypeQuery {
         where oat.company_id = :companyId
           and oat.archived is not true
         order by at.attachment_type
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String projectGetAvailableTypes = """
@@ -471,7 +471,7 @@ public class AttachmentTypeQuery {
                 and oat.archived is not true
             )
           order by at.attachment_type
-      """;
+    """;
 
   //  CONTACT - should prob move to own file
   //language=PostgreSQL
@@ -490,7 +490,7 @@ public class AttachmentTypeQuery {
         where oat.company_id = :companyId
           and oat.archived is not true
         order by at.attachment_type
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String orgGetAvailableTypes = """
@@ -509,7 +509,7 @@ public class AttachmentTypeQuery {
                 and oat.archived is not true
             )
           order by at.attachment_type
-      """;
+    """;
 
   //  ORG - should prob move to own file
   //language=PostgreSQL
@@ -662,7 +662,7 @@ public class AttachmentTypeQuery {
           and case when :focused::boolean is true then oat.focused is true else 1=1 end
           and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
         order by at.attachment_type
-      """;
+    """;
 
 
   //language=PostgreSQL
@@ -693,7 +693,7 @@ public class AttachmentTypeQuery {
           and case when :focused::boolean is true then oat.focused is true else 1=1 end
           and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
         order by at.attachment_type
-      """;
+    """;
 
 
   //language=PostgreSQL
@@ -724,5 +724,5 @@ public class AttachmentTypeQuery {
           and case when :focused::boolean is true then oat.focused is true else 1=1 end
           and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
         order by at.attachment_type
-      """;
+    """;
 }

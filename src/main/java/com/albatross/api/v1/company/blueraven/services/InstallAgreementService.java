@@ -12,7 +12,6 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +29,6 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URISyntaxException;
 import java.net.http.HttpTimeoutException;
 import java.time.Duration;
 import java.util.*;
@@ -126,7 +124,7 @@ public class InstallAgreementService {
     params.put("proposalNumber", proposalNumber);
 
     Srec srec = sqlCache.getBySql(InstallAgreementQuery.getSrec, params, Srec.class)
-                        .orElse(null);
+      .orElse(null);
 
     // create disclosure doc only if all the following are met:
     // - there is a proposal
@@ -137,8 +135,7 @@ public class InstallAgreementService {
       srec == null ||
       srec.getIlSrecDisclosureFormId() != null ||
       srec.getSrecValue() == null ||
-      !Objects.equals(srec.getProjectStateAbbreviation(), "IL"))
-    {
+      !Objects.equals(srec.getProjectStateAbbreviation(), "IL")) {
       return true;
     }
 
@@ -165,14 +162,14 @@ public class InstallAgreementService {
     body.setDepositOwed(srec.getTotalCost());
     body.setReferenceNumber(srec.getProjectId().toString());
 
-	var systemSizeKw = new BigDecimal(srec.getSystemSize()).divide(new BigDecimal(1000));
+    var systemSizeKw = new BigDecimal(srec.getSystemSize()).divide(new BigDecimal(1000));
     var systemSizeAcKw = new BigDecimal(srec.getSystemSizeAc()).divide(new BigDecimal(1000));
 
     body.setProjectSizeKwDc(systemSizeKw.toString());
     body.setProjectSizeKwAc(systemSizeAcKw.toString());
     body.setGrossElectricProduction(srec.getYearOneKwhOutput());
 
-	var srecValue = new BigDecimal(srec.getSrecValue().toString()).divide(new BigDecimal("0.9"), 2, RoundingMode.HALF_UP);
+    var srecValue = new BigDecimal(srec.getSrecValue().toString()).divide(new BigDecimal("0.9"), 2, RoundingMode.HALF_UP);
 
     body.setExpectedRecValue(srecValue.toString());
     body.setRecCustomerPayment(srec.getSrecValue().toString());
@@ -210,11 +207,9 @@ public class InstallAgreementService {
       sqlCache.updateBySql(InstallAgreementQuery.setDisclosureId, params);
 
       successfullySent = true;
-    }
-    catch (WebClientResponseException e) {
+    } catch (WebClientResponseException e) {
       log.error("HIC (SREC): Error generating disclosure doc (" + projectId + ", " + proposalNumber + "): " + e.getMessage() + ": " + e.getResponseBodyAsString());
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       log.error("HIC (SREC) (" + projectId + ", " + proposalNumber + "): " + e.getMessage());
     }
 
@@ -305,7 +300,7 @@ public class InstallAgreementService {
     } catch (Exception e) {
       if (e.getMessage().contains("locate")) {
         log.warn(
-            "IARQ: Unable to locate goodleap application for project ID: %s".formatted(projectId));
+          "IARQ: Unable to locate goodleap application for project ID: %s".formatted(projectId));
         throw new RuntimeException(e);
       } else {
         if (!resultMsg.isEmpty()) {

@@ -235,7 +235,7 @@ public class ProcessStepEventRequirementQuery {
             and cfg.archived is not true
             and psr.process_step_event_id = :processStepEventId
           order by psr.requirement_nbr
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getRequirement = """
@@ -455,7 +455,7 @@ public class ProcessStepEventRequirementQuery {
                  inner join flow.operator_type ot on ot.id = psr.operator_type_id
                  inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
           where psr.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteRequirement = """
@@ -464,7 +464,7 @@ public class ProcessStepEventRequirementQuery {
                date_modified = now(),
                archived = true
            where id = :requirementId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String updateRequirement = """
@@ -481,7 +481,7 @@ public class ProcessStepEventRequirementQuery {
             modified_by_id = :modifiedById,
             date_modified = now()
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String actionsUsingRequirement = """
@@ -492,7 +492,7 @@ public class ProcessStepEventRequirementQuery {
          where psl.process_step_event_requirement_id = :requirementId
            and psl.archived is not true
            and psa.archived is not true
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String insertRequirement = """
@@ -507,13 +507,13 @@ public class ProcessStepEventRequirementQuery {
             and archived is not true), now(), :createdById, :processStepEventId, :secondaryRequirementValue, :dataTypeRequirementId,
          :listOfValueId, array[ :listOfValueIds ]::bigint[], :systemListOptionId, :customSqlOptionId, :referenceProcessStepId, :failIfNoReferenceStepFound,
          :dataViewFieldConfigId, :dataViewChildFieldConfigId)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertRequirementParamDynamicValue = """
     insert into flow.event_requirement_param_dynamic_value (db_function_param_id, process_step_event_requirement_id, dynamic_value, created_by_id, date_created)
         values (:dbFunctionParamId, :processStepEventRequirementId, :dynamicValue, :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateRequirementParamDynamicValue = """

@@ -1,6 +1,5 @@
 package com.albatross.api.v1.flow.model.project;
 
-import com.albatross.api.v1.flow.model.Attachment;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

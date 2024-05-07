@@ -1,24 +1,17 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
-import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.company.blueraven.models.ContactLead;
 import com.albatross.api.v1.company.blueraven.services.ContactLeadService;
 import com.albatross.api.v1.flow.model.Contact;
-import com.albatross.api.v1.flow.model.User;
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
@@ -26,9 +19,8 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/company/blueraven/contact")
 public class ContactLeadController {
   private final ContactLeadService contactLeadService;
-	private final SecurityService securityService;
 
-	@PostMapping(value = "/leadLabz", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/leadLabz", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateContactLeadLabz(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
@@ -376,7 +368,7 @@ public class ContactLeadController {
   }
 
   @PostMapping(value = "/vivint", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateContactVivint (@RequestBody ContactLead contactLead) {
+  public void updateContactVivint(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
 }

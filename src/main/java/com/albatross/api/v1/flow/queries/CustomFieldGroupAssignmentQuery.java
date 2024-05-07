@@ -57,7 +57,7 @@ public class CustomFieldGroupAssignmentQuery {
                 inner join flow.object_type ot on ot.id = cot.object_type_id
                 left join flow.company_object_type_tab cott on cott.id = cfg.company_object_type_tab_id
          where cfg.id = :id
-       """;
+  """;
 
   //language=PostgreSQL
   public final static String getByObjectTypeId = """
@@ -222,7 +222,7 @@ public class CustomFieldGroupAssignmentQuery {
       and cfg.archived is not true
     order by cott.display_order, cfg.group_order, cfg.group_name
 
-        """;
+  """;
 
   //language=PostgreSQL
   public final static String getCustomFieldsInGroup = """
@@ -241,7 +241,7 @@ public class CustomFieldGroupAssignmentQuery {
          and cfga.archived is not true
          and cf.archived is not true
        order by cfga.field_order, cf.field_name
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getNonEventCustomFieldGroupsByProcessStep = """
@@ -252,7 +252,7 @@ public class CustomFieldGroupAssignmentQuery {
         and cfg.event_id is null
         and cfg.archived is not true
       order by cfg.group_name
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String getEventResourceFields = """
@@ -280,7 +280,7 @@ public class CustomFieldGroupAssignmentQuery {
                          )
         else 1=1 end
         order by cf.field_name
-       """;
+      """;
 
   //language=PostgreSQL
   public final static String getAvailableCustomFieldsInGroup = """
@@ -299,7 +299,7 @@ public class CustomFieldGroupAssignmentQuery {
           and cf.archived is not true
           and cfg.archived is not true
         order by field_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAvailableNativeFieldsForProcessStep = """
@@ -317,7 +317,7 @@ public class CustomFieldGroupAssignmentQuery {
           and cfg.archived is not true
           and cf.archived is not true
         order by field_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAvailableNativeFieldsForAttachmentType = """
@@ -335,7 +335,7 @@ public class CustomFieldGroupAssignmentQuery {
          and cfg.archived is not true
          and cf.archived is not true
        order by field_name
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getAvailableNativeFieldsForEvent = """
@@ -353,7 +353,7 @@ public class CustomFieldGroupAssignmentQuery {
          and cfg.archived is not true
          and cf.archived is not true
        order by field_name
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getDataViewField = """
@@ -374,7 +374,7 @@ public class CustomFieldGroupAssignmentQuery {
            inner join flow.data_view_field_config dvfc on dvfc.id = cfga.data_view_field_config_id
            inner join flow.data_view dv on dv.id = dvfc.data_view_id
     WHERE cfga.id = :cfgaId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getDataViewChildField = """
@@ -396,7 +396,7 @@ public class CustomFieldGroupAssignmentQuery {
            inner join flow.data_view_field_config dvfc on dvfc.id = dvcfc.data_view_field_config_id
            inner join flow.data_view dv on dv.id = dvfc.data_view_id
     WHERE cfga.id = :cfgaId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getDefaultField = """
@@ -415,7 +415,7 @@ public class CustomFieldGroupAssignmentQuery {
              inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
              inner join flow.object_type ot on ot.id = cot.object_type_id
         WHERE cfga.id = :cfgaId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getCustomField = """
@@ -458,13 +458,13 @@ public class CustomFieldGroupAssignmentQuery {
                 inner join flow.company_object_type cot on cot.id = cfg2.company_object_type_id
                 inner join flow.object_type ot on ot.id = cot.object_type_id
        WHERE cfga.id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String addFieldToGroup = """
     insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, default_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, date_created, modified_by_id, date_modified, data_view_field_config_id, data_view_child_field_config_id)
         values (:customFieldGroupId, :customFieldId, :defaultFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, now(), :createdById, now(), :dataViewFieldConfigId, :dataViewChildFieldConfigId)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String moveFieldToOtherGroup = """
@@ -473,7 +473,7 @@ public class CustomFieldGroupAssignmentQuery {
                 modified_by_id = :modifiedById,
                 date_modified = now()
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String saveUseParentData = """
@@ -482,7 +482,7 @@ public class CustomFieldGroupAssignmentQuery {
              date_modified = now(),
              modified_by_id = :userId
        where id = :cfgaId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String saveDetailView = """
@@ -491,7 +491,7 @@ public class CustomFieldGroupAssignmentQuery {
               date_modified = now(),
               modified_by_id = :userId
         where id = :cfgaId
-        """;
+    """;
 
     //language=PostgreSQL
     public final static String saveDisplayOnSnippet = """
@@ -525,7 +525,7 @@ public class CustomFieldGroupAssignmentQuery {
               date_modified = now(),
               modified_by_id = :userId
         where id = :cfgaId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String saveHidden = """
@@ -535,7 +535,7 @@ public class CustomFieldGroupAssignmentQuery {
             date_modified = now(),
             modified_by_id = :userId
       where id = :cfgaId
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveWhiteListPositions = """
@@ -546,7 +546,7 @@ public class CustomFieldGroupAssignmentQuery {
        where case when :cfgaId::bigint is not null then custom_field_group_assignment_id = :cfgaId else 1=1 end
          and company_id = :companyId
          and white_list_type_id = :whiteListTypeId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveWhiteListPositionsNoLongerUsed = """
@@ -558,7 +558,7 @@ public class CustomFieldGroupAssignmentQuery {
         and position_id not in (:positionIdsUsed)
         and company_id = :companyId
         and white_list_type_id = :whiteListTypeId
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveAllWhiteListedPositions = """
@@ -569,7 +569,7 @@ public class CustomFieldGroupAssignmentQuery {
        where case when :cfgaId::bigint is not null then custom_field_group_assignment_id = :cfgaId else 1=1 end
          and white_list_type_id = :whiteListTypeId
          and company_id = :companyId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String insertWhiteListPosition = """
@@ -582,7 +582,7 @@ public class CustomFieldGroupAssignmentQuery {
                              and company_id = :companyId
                              and white_list_type_id = :whiteListTypeId
                               and archived is not true)
-       """;
+    """;
 
   public final static String insertWhiteListPositionWithNullCfgaId = """
     insert into flow.white_listed_position(position_id, custom_field_group_assignment_id, white_list_type_id, company_id, created_by_id, date_created, modified_by_id, date_modified)
@@ -594,7 +594,7 @@ public class CustomFieldGroupAssignmentQuery {
                              and company_id = :companyId
                              and white_list_type_id = :whiteListTypeId
                               and archived is not true)
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String updateFieldInGroup = """
@@ -603,7 +603,7 @@ public class CustomFieldGroupAssignmentQuery {
             date_modified = now(),
             modified_by_id = :modifiedById
       where id = :id
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteFieldFromGroup = """
@@ -612,7 +612,7 @@ public class CustomFieldGroupAssignmentQuery {
              date_modified = now(),
              modified_by_id = :modifiedById
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteAllFieldsInGroup = """
@@ -636,6 +636,6 @@ public class CustomFieldGroupAssignmentQuery {
             cfga.archived is not true and
             cfg.archived is not true and
             cf.archived is not true
-        """;
+    """;
 
 }

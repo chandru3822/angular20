@@ -73,7 +73,7 @@ public class CompanyFunctionQuery {
     from flow.company_function cf
              inner join flow.db_function df on df.id = cf.db_function_id
     where cf.id = :id
-    """;
+ """;
 
   //language=PostgreSQL
   public final static String getCompanyParam = """

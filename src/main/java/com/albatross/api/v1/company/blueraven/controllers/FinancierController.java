@@ -2,7 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.models.Financier;
 import com.albatross.api.v1.company.blueraven.services.FinancierService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,9 +12,9 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/financier")
+@RequiredArgsConstructor
 public class FinancierController {
-  @Autowired
-  private FinancierService financierService;
+  private final FinancierService financierService;
 
   @GetMapping(value = "/active")
   public List<Financier> getAllActiveFinanciers() {

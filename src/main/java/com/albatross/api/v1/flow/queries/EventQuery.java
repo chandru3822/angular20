@@ -127,7 +127,7 @@ public class EventQuery {
                  inner join flow.attachment_type at on oat.attachment_type_id = at.id
           where oat.id = :id
           and at.company_id = :companyId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getProcessStepsUsingEvent = """
@@ -136,7 +136,7 @@ public class EventQuery {
          inner join flow.process_step ps on pse.process_step_id = ps.id
        where pse.event_id = :eventId
          and pse.archived is false
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String get = """
@@ -449,7 +449,7 @@ public class EventQuery {
                                    AND wlp.archived is not true) wlp), '[]') AS "resourceHiddenWhiteListedPositions"
         from flow.event e
         where e.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String delete = """
@@ -509,7 +509,7 @@ public class EventQuery {
         from flow.event_status_type pst
         where pst.archived is not true
         order by pst.event_status_type
-        """;
+    """;
 
 
   //language=PostgreSQL
@@ -575,7 +575,7 @@ public class EventQuery {
           and ecest.archived is not true
           and ecest.event_id = :eventId
         order by display_sort, root_event_status_type, event_status_type
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAssignedStatuses = """
@@ -621,7 +621,7 @@ public class EventQuery {
         inner join flow.event_status_type pst on pst.id = cpst.event_status_type_id
         where cpst.company_id = :companyId and cpst.archived is not true
         order by cpst.display_order
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getOneCompanyStatus = """
@@ -651,7 +651,7 @@ public class EventQuery {
   public final static String insertCompanyStatus = """
     insert into flow.company_event_status_type(event_status_type_id, event_status_type, company_id, created_by_id)
       values (:rootEventStatusTypeId, :eventStatusType, :companyId, :currentUserId)
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteStatusFromEvent = """
@@ -692,7 +692,7 @@ public class EventQuery {
             inner join flow.event e on pse.event_id = e.id
           where psr.archived is false and pse.archived is false and psr.process_step_requirement_type_id = 11 and :id = any (psr.list_of_value_ids)
           order by e.event_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteCompanyStatus = """
@@ -715,7 +715,7 @@ public class EventQuery {
         modified_by_id = :currentUserId,
         date_modified = now()
     where event_id = :eventId and company_event_status_type_id = :companyEventStatusTypeId
-          """;
+    """;
 
   //language=PostgreSQL
   public final static String getEventCompanyEventStatusType = """
@@ -730,7 +730,7 @@ public class EventQuery {
                  inner join flow.company_event_status_type cest on ecest.company_event_status_type_id = cest.id
                  inner join flow.event_status_type est on cest.event_status_type_id = est.id
           where ecest.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String availableStatusesForEvent = """
@@ -748,7 +748,7 @@ public class EventQuery {
                 and ecest.event_id = :eventId
             )
           order by cest.event_status_type
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getProcessStepEventsByEventId = """
@@ -769,7 +769,7 @@ public class EventQuery {
               e.resource_custom_field_id is not null and
               pse.archived is not true
         order by pse.display_order
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAvailableOwners = """
@@ -783,7 +783,7 @@ public class EventQuery {
     )
     select o.*
     from customField, flow.get_system_list_options(:companyId::bigint, customField.company_system_list_id::bigint, true, customField.system_list_option_ids::bigint[]) o
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAssignedEventStatusesByListOfValue = """
@@ -795,7 +795,7 @@ public class EventQuery {
           cest.company_id = :companyId and
           ecest.archived is not true
     order by cest.event_status_type
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAssignedEventCategoriesByListOfValue = """
@@ -808,7 +808,7 @@ public class EventQuery {
           cest.company_id = :companyId and
           ecest.archived is not true
     order by cest.event_status_type
-        """;
+    """;
 
     //language=PostgreSQL
     public final static String saveHidden = """
@@ -818,7 +818,7 @@ public class EventQuery {
         modified_by_id = :userId,
         date_modified = now()
         where id = :eventId
-       """;
+    """;
 
 
     //language=PostgreSQL

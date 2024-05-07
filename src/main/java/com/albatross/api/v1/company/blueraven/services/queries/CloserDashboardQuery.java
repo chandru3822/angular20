@@ -257,5 +257,5 @@ public class CloserDashboardQuery {
    group by pd.closer_user_id, pd.closer_name, o.org_name, lov.name
    having count(1) > 1
    order by booking_count desc, closer_name;
-    """;
+   """;
 }
