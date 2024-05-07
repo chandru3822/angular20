@@ -96,4 +96,9 @@ public class AhjPermitController {
                                  @PathVariable Long linkId) {
         ahjPermitService.deletePermitLink(ahjId, permitId, linkId);
     }
+
+  @GetMapping(value="/getAhjPermitHistory")
+  public List<DatabaseHistory> getAhjPermitHistory(@PathVariable Long ahjId) {
+    return ahjPermitService.getAhjPermitHistory(ahjId);
+  }
 }

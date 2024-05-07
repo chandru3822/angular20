@@ -1,9 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.featDB.utility;
 
-import com.albatross.api.v1.company.blueraven.models.featDB.FeatDbContact;
-import com.albatross.api.v1.company.blueraven.models.featDB.FeatDbLink;
-import com.albatross.api.v1.company.blueraven.models.featDB.Utility;
-import com.albatross.api.v1.company.blueraven.models.featDB.UtilityDetail;
+import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.featDB.UtilityService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
@@ -84,5 +81,10 @@ public class UtilityController {
     @PutMapping(value = "/links/{linkId}/archive")
     public void deleteUtilityLink(@PathVariable Long linkId) {
         utilityService.deleteUtilityLink(linkId);
+    }
+
+    @GetMapping(value="/{utilityId}/getUtilityHistory")
+    public List<DatabaseHistory> getAhjDesignHistory(@PathVariable Long utilityId) {
+      return utilityService.getUtilityHistory(utilityId);
     }
 }

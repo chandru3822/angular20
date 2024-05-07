@@ -93,4 +93,9 @@ public class IncentiveController {
   public void deleteIncentiveLink(@PathVariable Long linkId) {
     incentiveService.deleteIncentiveLink(linkId);
   }
+
+  @GetMapping(value="/{incentiveId}/getIncentiveHistory")
+  public List<DatabaseHistory> getAhjDesignHistory(@PathVariable Long incentiveId) {
+    return incentiveService.getIncentiveHistory(incentiveId);
+  }
 }

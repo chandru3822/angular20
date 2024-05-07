@@ -19,6 +19,24 @@
           <v-card class="mx-2 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
               <v-col class="form-btns" cols="12">
+                <v-tooltip top>
+                  <template v-slot:activator="{ on, attrs }">
+                    <a-btn
+                      variant="text"
+                      color="primary"
+                      prepend-icon="history"
+                      @click="showChangeLog = !showChangeLog"
+                      v-bind="attrs"
+                      :activation-handler="on">
+                    </a-btn>
+                  </template>
+                  <span>History</span>
+                </v-tooltip>
+                <template v-if="hasManageAccess && showChangeLog===true">
+                  <DbChangeLog
+                    :history-list="changeLog">
+                  </DbChangeLog>
+                </template>
                 <a-btn
                     variant="text"
                     color="primary"
@@ -99,17 +117,15 @@
 import cloneDeep from "lodash.clonedeep"
 
 import {getRequest, getRequestWithParams,  handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
-import CustomValueInput from "@/views/flow/components/CustomValueInput.vue"
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
 import TwoColumnMasonry from "@/views/blueraven/featDB/components/TwoColumnMasonry.vue";
 import FeatDbContact from "@/views/blueraven/featDB/components/FeatDbContacts.vue";
 import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue";
-import FeatDbCustomFields from "@/views/blueraven/featDB/components/FeatDbCustomFieldGroup.vue";
-import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
 import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
+import DbChangeLog from "@/views/blueraven/featDB/components/DbChangeLog.vue";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -117,7 +133,12 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const showChangeLog = ref(false);
+const changeLog = ref([])
 
+const hasManageAccess = computed(()  => {
+  return userStore.userHasFeatureAccessLevel('INCENTIVE', 'MANAGE')
+})
 
 const userCanEdit = computed(()  => {
   return userStore.userHasFeatureAccessLevel("INCENTIVE", "EDIT")
@@ -149,8 +170,22 @@ const incentiveId = computed(() => {
 onMounted(async() => {
   await getIncentive()
   await getCustomFieldGroupAssignmentsForScreen()
+  await getChangeLog()
   dataReady.value = true
 })
+
+const getChangeLog = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/featDb/incentive/${incentiveId.value}/getIncentiveHistory`, 'blueraven')
+    changeLog.value = cloneDeep(data)
+    handleHidingGlobalLoader(status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error Retrieving Incentive Change Log')
+    appStore.loading = false
+  }
+}
 
 const updateDirtyValue = (item) => {
   item.valueWasChanged = true
@@ -235,7 +270,7 @@ const saveIncentive = async()  => {
     incentive.value = cloneDeep(data)
     dataWasChanged.value = false
     appStore.showSnack("SUCCESS", "Incentive saved")
-
+    await getChangeLog()
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)

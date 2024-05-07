@@ -2,7 +2,25 @@
 <template>
   <v-card class="permit-card square-card">
     <v-row no-gutters class="px-2" id="ahj-permit">
-      <v-col class="ahj-form-btns py-1" cols="12">
+      <v-col class="form-btns py-1" cols="12">
+        <v-tooltip top>
+          <template v-slot:activator="{ on, attrs }">
+            <a-btn
+              variant="text"
+              color="primary"
+              prepend-icon="history"
+              @click="showChangeLog = !showChangeLog"
+              v-bind="attrs"
+              :activation-handler="on">
+            </a-btn>
+          </template>
+          <span>History</span>
+        </v-tooltip>
+        <template v-if="hasManageAccess && showChangeLog===true">
+          <DbChangeLog
+            :history-list="changeLog">
+          </DbChangeLog>
+        </template>
         <a-btn
             variant="text"
             color="primary"
@@ -158,7 +176,6 @@
 
 <script setup>
 import cloneDeep from 'lodash.clonedeep'
-
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, } from '@/helpers/helpers'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
@@ -170,6 +187,7 @@ import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
+import DbChangeLog from "@/views/blueraven/featDB/components/DbChangeLog.vue";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -211,9 +229,15 @@ const approvalDocuments = ref([])
 const approvalDocTypeId = ref(981)
 const linksTypeId = ref(12)
 const ahjPermitForm = ref(null)
+const showChangeLog = ref(false);
+const changeLog = ref([])
 
-const userCanEdit = computed(() => {
+const userCanEdit = computed(()  => {
   return userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')
+})
+
+const hasManageAccess = computed(()  => {
+  return userStore.userHasFeatureAccessLevel('AHJ', 'MANAGE')
 })
 const hardCodedDocsMap = computed(() => {
   const docsMap = new Map()
@@ -245,11 +269,12 @@ const ahjId = computed(() => {
   return parseInt(route.params.ahjId)
 })
 
-onMounted(() => {
+onMounted(async () => {
   getAhjPermit().then(() => {
     getCustomFieldGroupAssignmentsForScreen()
     getSubmissionDocuments()
     getApprovalDocuments()
+    getChangeLog()
   })
 })
 
@@ -271,6 +296,18 @@ const toggleCollapseExpand = (wasExpanded) => {
     expandedGroups.value--
   } else {
     expandedGroups.value++
+  }
+}
+const getChangeLog = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/featDb/ahj/${ahjId.value}/permit/getAhjPermitHistory`, 'blueraven')
+    changeLog.value = cloneDeep(data)
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error retrieving AHJ Permit Change Log')
+    appStore.loading = false
   }
 }
 const getAhjPermit = async() => {
@@ -407,7 +444,7 @@ const updateAhjPermit = async() => {
     resetCustomFieldValueWasChangedFlags()
     let successMessage = updateAllInState ? 'All permits in ' + ahjPermit.value.stateName + ' have been updated successfully' : updateAllInMetro ? 'All permits in ' + ahjPermit.value.metroArea + ' have been updated successfully': 'Permit updated successfully'
     appStore.showSnack('SUCCESS', successMessage)
-
+    await getChangeLog()
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -447,7 +484,7 @@ const toggleMinimizeAll = () => {
   width: 100%;
 }
 
-.ahj-form-btns {
+.form-btns {
   display: flex;
   flex-flow: row nowrap;
   justify-content: flex-end;

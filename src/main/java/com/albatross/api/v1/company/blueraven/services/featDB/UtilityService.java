@@ -4,14 +4,12 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.FeatDbContactQuery;
+import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjDesignQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
-import com.albatross.api.v1.company.blueraven.models.featDB.FeatDbContact;
-import com.albatross.api.v1.company.blueraven.models.featDB.FeatDbLink;
-import com.albatross.api.v1.company.blueraven.models.featDB.Utility;
-import com.albatross.api.v1.company.blueraven.models.featDB.UtilityDetail;
+import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -168,6 +166,13 @@ public class UtilityService {
     params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.updateBySql(UtilityLinkQuery.delete, params);
+  }
+
+  public List<DatabaseHistory> getUtilityHistory(Long utilityId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("utilityId", utilityId);
+
+    return sqlCache.queryBySql(UtilityQuery.getUtilityHistory, params, DatabaseHistory.class);
   }
 
   public static class UtilityDetailMapper<T> extends BeanPropertyRowMapper<T> {

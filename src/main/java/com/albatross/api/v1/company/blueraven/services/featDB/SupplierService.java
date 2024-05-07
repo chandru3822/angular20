@@ -7,6 +7,7 @@ import com.albatross.api.v1.company.blueraven.controllers.featDB.FeatDbContactQu
 import com.albatross.api.v1.company.blueraven.controllers.featDB.suppliers.query.SupplierContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.suppliers.query.SupplierLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.suppliers.query.SupplierQuery;
+import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
@@ -167,6 +168,12 @@ public class SupplierService {
     params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.updateBySql(SupplierLinkQuery.delete, params);
+  }
+  public List<DatabaseHistory> getSupplierHistory(Long supplierId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("supplierId", supplierId);
+
+    return sqlCache.queryBySql(SupplierQuery.getSupplierHistory, params, DatabaseHistory.class);
   }
 
   public static class SupplierDetailMapper<T> extends BeanPropertyRowMapper<T> {

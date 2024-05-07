@@ -98,5 +98,47 @@ public class UtilityQuery {
           WHERE u.id = :id
     """;
 
+  public final static String getUtilityHistory = """
+        select
+          cf.id,
+          cf.field_name,
+          case
+              when dt.id = 6 and cdt.has_list_values is false then ucfva.old_value
+              when dt.id = 6 and cdt.has_list_values is true then (
+                  select lov.name from brs.list_of_value lov where lov.id = ucfva.old_value::bigint
+              )::text
+              when dt.id = 5 then ucfva.old_value
+              when dt.id = 4 then ucfva.old_value::text
+              when dt.id = 7 then (
+                with ids as (select unnest(string_to_array(substring(ucfva.old_value from '[0-9, ]+'), ','))::int AS int_id)
+                select array_to_string(array(select lov.name from brs.list_of_value lov where lov.id in (select int_id from ids)), ', '))
+              when dt.id = 13 then ucfva.old_value::text
+              end as previous_value,
+          case
+              when dt.id = 6 and cdt.has_list_values is false then ucfva.new_value
+              when dt.id = 6 and cdt.has_list_values is true then (
+                  select lov.name from brs.list_of_value lov where lov.id = ucfva.new_value::bigint
+              )::text
+              when dt.id = 5 then ucfva.new_value
+              when dt.id = 4 then ucfva.new_value::text
+              when dt.id = 7 then (
+                with ids as (select unnest(string_to_array(substring(ucfva.new_value from '[0-9, ]+'), ','))::int AS int_id)
+                select array_to_string(array(select lov.name from brs.list_of_value lov where lov.id in (select int_id from ids)), ', '))
+              when dt.id = 13 then ucfva.new_value::text
+              end as updated_value,
+          ucfva.date_modified,
+          concat(u.first_name, ' ', u.last_name) as modified_by
+        from brs.feat_db_utility_custom_field_value_audit ucfva
+                 join brs.feat_db_utility_custom_field_value adcfv on adcfv.id = ucfva.utility_custom_field_value_id
+                 join brs.feat_db_utility util on adcfv.utility_id = util.id
+                 join brs.custom_field_group_assignment cfga on adcfv.custom_field_group_assignment_id = cfga.id
+                 join brs.custom_field cf on cfga.custom_field_id = cf.id
+                 join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                 join flow.data_type dt on cdt.data_type_id = dt.id
+                 join flow."user" u on ucfva.modified_by_id= u.id
+        where utility_id = :utilityId
+        order by ucfva.date_modified desc;
+    """;
+
 
 }

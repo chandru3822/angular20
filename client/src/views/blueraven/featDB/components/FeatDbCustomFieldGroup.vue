@@ -91,7 +91,7 @@ watch(expandedAll, () => {
   }
   const toggleCollapseExpand = () => {
     expanded.value = !expanded.value
-    emit('toggle-collapse-expand', expand.value)
+    emit('toggle-collapse-expand', expanded.value)
   }
 </script>
 

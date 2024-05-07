@@ -3,7 +3,6 @@
   <v-container id="utility-details-container">
     <v-row>
       <v-col cols="12" class="pa-0">
-
         <v-row justify="space-between">
           <v-col class="text-left pa-0" cols="12">
             <v-card class="mx-4 square-card">
@@ -18,7 +17,25 @@
         <v-row dense>
           <v-card class="mx-2 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
-              <v-col class="utility-form-btns" cols="12">
+              <v-col class="form-btns" cols="12">
+                <v-tooltip top>
+                  <template v-slot:activator="{ on, attrs }">
+                    <a-btn
+                      variant="text"
+                      color="primary"
+                      prepend-icon="history"
+                      @click="showChangeLog = !showChangeLog"
+                      v-bind="attrs"
+                      :activation-handler="on">
+                    </a-btn>
+                  </template>
+                  <span>History</span>
+                </v-tooltip>
+                <template v-if="hasManageAccess && showChangeLog===true">
+                  <DbChangeLog
+                    :history-list="changeLog">
+                  </DbChangeLog>
+                </template>
                 <a-btn
                     variant="text"
                     color="primary"
@@ -120,6 +137,7 @@ import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
+import DbChangeLog from "@/views/blueraven/featDB/components/DbChangeLog.vue";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -127,7 +145,12 @@ const router = useRouter()
 const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const showChangeLog = ref(false);
+const changeLog = ref([])
 
+const hasManageAccess = computed(()  => {
+  return userStore.userHasFeatureAccessLevel('UTILITY', 'MANAGE')
+})
 
 const userCanEdit = computed(() => {
   return userStore.userHasFeatureAccessLevel("UTILITY", "EDIT")
@@ -164,7 +187,21 @@ const utilityId = computed(() => {
 
 onMounted(async() => {
   await pageLoad(true)
+  await getChangeLog()
 })
+
+const getChangeLog = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/featDb/utility/${utilityId.value}/getUtilityHistory`, 'blueraven')
+    changeLog.value = cloneDeep(data)
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error retrieving Utility Change Log')
+    appStore.loading = false
+  }
+}
 
 const updateDirtyValue = (item) => {
   item.valueWasChanged = true
@@ -221,6 +258,7 @@ const validateForm = () => {
   //checks for required fields prior to opening the save dialog
   if (utilityForm.value.validate()) {
     saveUtility()
+
   } else {
     appStore.showSnack('ERROR', 'Missing Required Fields')
 
@@ -302,7 +340,7 @@ const saveUtility = async() => {
     utility.value = cloneDeep(data)
     dataWasChanged.value = false
     appStore.showSnack("SUCCESS", "Utility saved")
-
+    await getChangeLog()
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error("*** ERROR ***", e)
@@ -361,7 +399,7 @@ const toggleMinimizeAll = () => {
   }
 }
 
-.utility-form-btns {
+.form-btns {
   display: flex;
   flex-flow: row nowrap;
   justify-content: flex-end;

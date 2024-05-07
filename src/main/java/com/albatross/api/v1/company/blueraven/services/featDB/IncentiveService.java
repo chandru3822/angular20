@@ -7,13 +7,9 @@ import com.albatross.api.v1.company.blueraven.controllers.featDB.FeatDbContactQu
 import com.albatross.api.v1.company.blueraven.controllers.featDB.incentive.query.IncentiveContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.incentive.query.IncentiveLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.incentive.query.IncentiveQuery;
+import com.albatross.api.v1.company.blueraven.controllers.featDB.utility.query.UtilityQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
-import com.albatross.api.v1.company.blueraven.models.featDB.FeatDbContact;
-import com.albatross.api.v1.company.blueraven.models.featDB.FeatDbLink;
-import com.albatross.api.v1.company.blueraven.models.featDB.Incentive;
-import com.albatross.api.v1.company.blueraven.models.featDB.IncentiveDetail;
-import com.albatross.api.v1.company.blueraven.models.featDB.IncentiveType;
-import com.albatross.api.v1.company.blueraven.models.featDB.IncentiveStatus;
+import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -188,6 +184,13 @@ public class IncentiveService {
     params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.updateBySql(IncentiveLinkQuery.delete, params);
+  }
+
+  public List<DatabaseHistory> getIncentiveHistory(Long incentiveId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("incentiveId", incentiveId);
+
+    return sqlCache.queryBySql(IncentiveQuery.getIncentiveHistory, params, DatabaseHistory.class);
   }
 
   public static class IncentiveDetailMapper<T> extends BeanPropertyRowMapper<T> {

@@ -1,7 +1,26 @@
 <template>
   <v-card class="design-card square-card">
     <v-row no-gutters class="px-2" id="ahj-permit">
-      <v-col class="ahj-form-btns py-1" cols="12">
+      <v-col class="form-btns py-1" cols="12">
+        <v-menu max-height="450" :close-on-content-click="false" offset-y>
+          <template v-slot:activator="{on: menu, attrs }">
+            <v-tooltip top>
+              <template v-slot:activator="{ on: tooltip }">
+                <a-btn
+                  id="changeLogHistoryBtn"
+                  variant="text"
+                  color="primary"
+                  prepend-icon="history"
+                  @click="showChangeLog = !showChangeLog"
+                  v-bind="attrs"
+                  :activation-handler="{ ...tooltip, ...menu }">
+                </a-btn>
+              </template>
+              <span>History</span>
+            </v-tooltip>
+          </template>
+          <DbChangeLog :history-list="changeLog"/>
+        </v-menu>
         <a-btn
             variant="text"
             color="primary"
@@ -117,12 +136,11 @@
 
 <script setup>
 import cloneDeep from 'lodash.clonedeep'
-
-import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+import DbChangeLog from "@/views/blueraven/featDB/components/DbChangeLog.vue";
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, } from '@/helpers/helpers'
 import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
 import TwoColumnMasonry from "@/views/blueraven/featDB/components/TwoColumnMasonry.vue";
-import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import {getCurrentInstance, computed, ref, onMounted} from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
@@ -144,9 +162,17 @@ const totalGroups = ref(8)
 const expandedGroups = ref(8)
 const ahjDesign = ref({designRequirements: [],electricalRequirements: [],structuralRequirements: [],contacts: []})
 const ahjDesignForm = ref(null)
+const showChangeLog = ref(false)
+const changeLog = ref([])
+const refChangeLog = ref()
+
 
 const userCanEdit = computed(()  => {
   return userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')
+})
+
+const hasManageAccess = computed(()  => {
+  return userStore.userHasFeatureAccessLevel('AHJ', 'MANAGE')
 })
 const expandedAll = computed(() => {
   if(expandedGroups.value === totalGroups.value){
@@ -166,6 +192,7 @@ onMounted(async() => {
   //this is how it was before. don't hate
   await getAhjDesign()
   await getCustomFieldGroupAssignmentsForScreen()
+  await getChangeLog()
   dataReady.value = true
 })
 
@@ -186,6 +213,19 @@ const toggleMinimizeAll = () => {
     expandedGroups.value = 0
   } else {
     expandedGroups.value = totalGroups.value
+  }
+
+}
+const getChangeLog = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/featDb/ahj/${ahjId.value}/design/getAhjDesignHistory`, 'blueraven')
+    changeLog.value = cloneDeep(data)
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error retrieving AHJ Design Change Log')
+    appStore.loading = false
   }
 }
 const getAhjDesign = async() => {
@@ -303,7 +343,7 @@ const updateAhjDesign = async() => {
     resetCustomFieldValueWasChangedFlags()
     let successMessage = updateAllInState ? 'All designs in ' + ahjDesign.value.stateName + ' have been updated successfully' : updateAllInMetro ? 'All designs in ' + ahjDesign.value.metroArea + ' have been updated successfully' : 'Design updated successfully'
     appStore.showSnack('SUCCESS', successMessage)
-
+    await getChangeLog()
     handleHidingGlobalLoader(status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -324,11 +364,15 @@ const updateAhjDesign = async() => {
   margin-right: 12px;
 }
 
-.ahj-form-btns {
+.form-btns {
   display: flex;
   flex-flow: row nowrap;
   justify-content: flex-end;
   align-items: center;
+}
+
+.v-menu__content::-webkit-scrollbar {
+  display: none;
 }
 
 .v-text-field,

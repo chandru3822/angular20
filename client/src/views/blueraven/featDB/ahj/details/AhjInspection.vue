@@ -2,7 +2,25 @@
 <template>
   <v-card class="inspection-card square-card pb-2" v-if="dataReady">
     <v-row class="px-2" no-gutters>
-      <v-col class="ahj-form-btns py-1" cols="12">
+      <v-col class="form-btns py-1" cols="12">
+        <v-tooltip top>
+          <template v-slot:activator="{ on, attrs }">
+            <a-btn
+              variant="text"
+              color="primary"
+              prepend-icon="history"
+              @click="showChangeLog = !showChangeLog"
+              v-bind="attrs"
+              :activation-handler="on">
+            </a-btn>
+          </template>
+          <span>History</span>
+        </v-tooltip>
+        <template v-if="hasManageAccess && showChangeLog===true">
+          <DbChangeLog
+            :history-list="changeLog">
+          </DbChangeLog>
+        </template>
         <a-btn
             variant="text"
             color="primary"
@@ -247,16 +265,16 @@ import {CollapseExpandEnum} from "@/views/blueraven/featDB/FeatDbConstants";
 
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, } from '@/helpers/helpers'
 import orderBy from "lodash.orderby";
-import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import TwoColumnMasonry from "@/views/blueraven/featDB/components/TwoColumnMasonry.vue";
 import FeatDbCard from "@/views/blueraven/featDB/components/FeatDbCard.vue";
 import FeatDbCustomFieldGroup from "@/views/blueraven/featDB/components/FeatDbCustomFieldGroup.vue";
 import FeatDbContact from "@/views/blueraven/featDB/components/FeatDbContacts.vue";
 import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue";
-import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
+import { getCurrentInstance, computed, ref, onMounted } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
+import DbChangeLog from "@/views/blueraven/featDB/components/DbChangeLog.vue";
 
 const appStore = useAppStore()
 const route = useRoute()
@@ -277,12 +295,19 @@ const totalGroups = ref(8)
 const expandedGroups = ref(8)
 const ahjInspection = ref({schedulingLinks: [],fotLinks: [],resultsLinks: [],schedulingContacts: [],feeContacts: [],obtainingResultsContacts: [],servicingFots: []})
 const ahjInspectionForm = ref(null)
+const showChangeLog = ref(false);
+const changeLog = ref([])
+
+const userCanEdit = computed(()  => {
+  return userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')
+})
+
+const hasManageAccess = computed(()  => {
+  return userStore.userHasFeatureAccessLevel('AHJ', 'MANAGE')
+})
 
 const filteredCfgs = computed(() => {
   return customFieldGroups.value.filter(cfg => cfg.id !== 45)
-})
-const userCanEdit = computed(() => {
-  return userStore.userHasFeatureAccessLevel('AHJ', 'EDIT')
 })
 const expandedAll = computed(()=> {
   if(expandedGroups.value === totalGroups.value){
@@ -302,8 +327,21 @@ onMounted(() => {
   getAhjInspection().then(() => {
     getCustomFieldGroupAssignmentsForScreen().then(() => dataReady.value = true)
   })
+  getChangeLog()
 })
 
+const getChangeLog = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/featDb/ahj/${ahjId.value}/inspection/getAhjInspectionHistory`, 'blueraven')
+    changeLog.value = cloneDeep(data)
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error retrieving AHJ Inspection Change Log')
+    appStore.loading = false
+  }
+}
 const updateDirtyValue = (item) => {
   item.valueWasChanged = true
   dataWasChanged.value = true
@@ -447,6 +485,7 @@ const updateAhjInspection = async() => {
     resetCustomFieldValueWasChangedFlags()
     let successMessage = updateAllInState ? 'All inspections in ' + ahjInspection.value.stateName + ' have been updated successfully' : updateAllInMetro ? 'All inspections in ' + ahjInspection.value.metroArea + ' have been updated successfully': 'Inspection updated successfully'
     appStore.showSnack('SUCCESS', successMessage)
+    await getChangeLog()
     handleHidingGlobalLoader( status)
   } catch (e) {
     console.error('*** ERROR ***', e)
@@ -477,7 +516,7 @@ const toggleMinimizeAll = () => {
   margin-right: 12px;
 }
 
-.ahj-form-btns {
+.form-btns {
   display: flex;
   flex-flow: row nowrap;
   justify-content: flex-end;
