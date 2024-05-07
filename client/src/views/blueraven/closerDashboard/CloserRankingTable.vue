@@ -13,6 +13,7 @@
 
 
       <div>
+        a
       </div>
     </v-data-table>
 
@@ -36,8 +37,6 @@
 
   const props = defineProps({
     title: String,
-    filterList: Array,
-    filterTypes: Array,
     tableData: Array,
     tableHeaders: Array
   })

@@ -53,10 +53,10 @@ const tabs = [
   }
 ]
 
-const activeTab = computed(() => {
-  return $route?.path?.includes('/event') ? `/settings/processStep/${$route.params.id}/events` : null
+const activeTab = (() => {
+  return route?.path?.includes('/event') ? `/settings/processStep/${route.params.id}/events` : null
   // get: function() {
-  //   return this.$route?.path?.includes('/event') ? `/settings/processStep/${this.$route.params.id}/events` : null
+  //   return this.route?.path?.includes('/event') ? `/settings/processStep/${this.route.params.id}/events` : null
   // },
   // set: function(val) {
   //   return val

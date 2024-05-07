@@ -1,4 +1,3 @@
-{
 <template>
   <v-container id="closer-dash-container" ref="closerDashContainer">
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
@@ -73,7 +72,8 @@
                   {{ getDropdownById(firstDateRange)?.friendlyName}}
                   </span>
                   <v-spacer></v-spacer>
-                  <v-icon>mdi-menu-down</v-icon>
+                                    <v-spacer></v-spacer>
+                  <v-icon color="primary">mdi-menu-down</v-icon>
                 </a-btn>
               </template>
               <div>
@@ -133,7 +133,8 @@
                       <span v-else class="placeholder-option body-small">
                     Select Date Range
                   </span>
-                  <v-icon>mdi-menu-down</v-icon>
+                  <v-spacer></v-spacer>
+                  <v-icon color="primary">mdi-menu-down</v-icon>
                 </a-btn>
               </template>
               <div>
@@ -193,7 +194,8 @@
                   <span v-else class="placeholder-option body-small">
                 Select Date Range
               </span>
-                  <v-icon>mdi-menu-down</v-icon>
+                                    <v-spacer></v-spacer>
+                  <v-icon color="primary">mdi-menu-down</v-icon>
                 </a-btn>
               </template>
               <div>
@@ -253,7 +255,7 @@
                       return-object
                       @input="changeSources()">
               <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+                  <span v-if="index === 0" class="selected-option text-caption">
                     {{ leadsCreatedSourceModel.length }} Checked
                   </span>
               </template>
@@ -285,7 +287,7 @@
                 return-object
                 @input="changeSources()">
               <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+                  <span v-if="index === 0" class="selected-option text-caption">
                     {{ brsProvidedSourceModel.length }} Checked
                   </span>
               </template>
@@ -315,7 +317,7 @@
                       return-object
                       @input="changeSources()">
               <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+                  <span v-if="index === 0" class="selected-option text-caption">
                     {{ selfGenSourceModel.length }} Checked
                   </span>
               </template>
@@ -425,9 +427,14 @@
         <div class="title-large closer-dashboard-header">
           Appointments to FDC Pipeline
         </div>
-        <a class="export-button" @click="exportCsv">
+        <a v-if="repModel?.length > 0" class="export-button" @click="exportCsv">
           <v-icon class="export-icon">mdi-tray-arrow-down</v-icon>
-          Export</a>
+          Export
+        </a>
+        <div v-else class="export-button" @click="exportCsv" :class="{'disabled-export': true}">
+          <v-icon class="export-icon disabled-export">mdi-tray-arrow-down</v-icon>
+          Export
+        </div>
         <v-spacer></v-spacer>
         <div class="flex-display flex-align-items-end table-collapse-button">
           <v-icon v-if="fdcPipelineExpanded" @click="fdcPipelineExpanded = !fdcPipelineExpanded">expand_less</v-icon>
@@ -452,7 +459,7 @@
                           @input="areaValuesChanged = true"
                           return-object>
             <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+                  <span v-if="index === 0" class="selected-option text-caption">
                     {{ areaModel.length }} Checked
                   </span>
             </template>
@@ -495,7 +502,7 @@
                           return-object
                           ref="regionSelect">
             <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+                  <span v-if="index === 0" class="selected-option text-caption">
                     {{ regionModel.length }} Checked
                   </span>
             </template>
@@ -538,7 +545,7 @@
                           @input="districtValuesChanged = true"
                           return-object>
             <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+                  <span v-if="index === 0" class="selected-option text-caption">
                     {{ districtModel.length }} Checked
                   </span>
             </template>
@@ -581,7 +588,7 @@
                           return-object
                           ref="officeSelect">
             <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+                  <span v-if="index === 0" class="selected-option text-caption">
                     {{ officeModel.length }} Checked
                   </span>
             </template>
@@ -623,10 +630,10 @@
                           return-object
                           ref="repSelect">
             <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0 && repModel[0].user_id != -1" class="grey--text text-caption">
+                  <span v-if="index === 0 && repModel[0].user_id != -1" class="selected-option text-caption">
                     {{ repModel.length }} Checked
                   </span>
-              <span v-if="index === 0 && repModel[0].user_id === -1" class="grey--text text-caption">
+              <span v-if="index === 0 && repModel[0].user_id === -1" class="selected-option text-caption">
                         {{ repDataMaster.length }} Checked
                   </span>
             </template>
@@ -693,7 +700,7 @@
               return-object
               @input="changeSources()">
             <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+                  <span v-if="index === 0" class="selected-option text-caption">
                     {{ fdcSourceModel.length }} Checked
                   </span>
             </template>
@@ -724,7 +731,7 @@
                           return-object
                           ref="repSelect">
             <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+                  <span v-if="index === 0" class="selected-option text-caption">
                     {{ appointmentTypesModel.length }} Checked
                   </span>
             </template>
@@ -808,7 +815,8 @@
               {{ getDropdownById(fdcFirstDateRange)?.friendlyName}}
               </span>
                   <v-spacer></v-spacer>
-                  <v-icon>mdi-menu-down</v-icon>
+                                    <v-spacer></v-spacer>
+                  <v-icon color="primary">mdi-menu-down</v-icon>
                 </a-btn>
               </template>
               <div>
@@ -869,7 +877,8 @@
                   <span v-else class="placeholder-option body-small">
                 Select Date Range
               </span>
-                  <v-icon>mdi-menu-down</v-icon>
+                                    <v-spacer></v-spacer>
+                  <v-icon color="primary">mdi-menu-down</v-icon>
                 </a-btn>
               </template>
               <div>
@@ -929,7 +938,8 @@
                   <span v-else class="placeholder-option body-small">
                 Select Date Range
               </span>
-                  <v-icon>mdi-menu-down</v-icon>
+                                    <v-spacer></v-spacer>
+                  <v-icon color="primary">mdi-menu-down</v-icon>
                 </a-btn>
               </template>
               <div>
@@ -989,7 +999,7 @@
                       return-object
                       @input="changeSources()">
               <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+                  <span v-if="index === 0" class="selected-option text-caption">
                     {{ leadsCreatedSourceModel.length }} Checked
                   </span>
               </template>
@@ -1021,7 +1031,7 @@
                 return-object
                 @input="changeSources()">
               <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+                  <span v-if="index === 0" class="selected-option text-caption">
                     {{ brsProvidedSourceModel.length }} Checked
                   </span>
               </template>
@@ -1051,7 +1061,7 @@
                       return-object
                       @input="changeSources()">
               <template v-slot:selection="{ item, index }">
-                  <span v-if="index === 0" class="grey--text text-caption">
+                  <span v-if="index === 0" class="selected-option text-caption">
                     {{ selfGenSourceModel.length }} Checked
                   </span>
               </template>
@@ -1615,6 +1625,7 @@ const fdcOpenThirdMenu = ref(false)
 const funnelDrilldownDialog = ref(false)
 const currentUserOrgId = ref(null)
 const dropdownValuesLoading = ref(true)
+const dropdownValues = ref([])
 const isCloser = ref(false)
 const isCloserMgr = ref(false)
 const selectedFunnel = ref({})
@@ -3820,6 +3831,15 @@ const closeFunnelDrilldownDialog = () => {
 <style lang="scss" scoped>
 #all-reps-btn{
   text-transform: none;
+}
+.disabled-export{
+  color: var(--v-grey-lighten1) !important;
+}
+.placeholder-option{
+  color: var(--v-grey-darken2) !important;
+}
+.selected-option{
+  color: var(--v-primary-base) !important;
 }
 .reset-button{
   color: var(--v-grey-darken2);

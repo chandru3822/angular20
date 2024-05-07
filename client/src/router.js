@@ -348,7 +348,7 @@ const router = new Router({
               path: 'dashboard',
               name: 'closerDashboard',
               meta: {title: 'Albatross - Closer Dashboard'},
-              component: () => import ( './views/blueraven/closerDashboard/CloserRanking.vue')
+              component: () => import ( './views/blueraven/closerDashboard/CloserRankingRework.vue')
             }, {
               path: 'funnel',
               alias: '/closerDashboard',
