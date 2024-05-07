@@ -5,8 +5,8 @@ import com.albatross.api.v1.flow.model.processStep.*;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
 import com.albatross.api.v1.flow.services.ProcessStepStatusService;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +22,10 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/processStep/status")
+@RequiredArgsConstructor
 public class ProcessStepStatusController {
 
-  @Autowired
-  private ProcessStepStatusService processStepStatusService;
+  private final ProcessStepStatusService processStepStatusService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStepStatusType> getStatusTypes() {
@@ -54,9 +54,9 @@ public class ProcessStepStatusController {
     return processStepStatusService.getCancelledCompanyStatusTypesForCompany(projectId, projectProcessStepId);
   }
 
-  @GetMapping(value="/getObjectsUsingStatus/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getObjectsUsingStatus/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStep> getObjectsUsingStatus(@PathVariable Long typeId) {
-      return processStepStatusService.getObjectsUsingProcessStepStatus(typeId);
+    return processStepStatusService.getObjectsUsingProcessStepStatus(typeId);
   }
 
   @DeleteMapping(value = "/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -120,7 +120,7 @@ public class ProcessStepStatusController {
     private Boolean inUseByWqt, inUseByInitialStep, inUseByPps;
     private List<ProcessStepAction> actions;
     private List<ProcessStepActionChildProcess> childProcesses;
-//    private List<ProjectProcessStep> projectSteps;
+    //    private List<ProjectProcessStep> projectSteps;
     private List<ProcessStep> steps;
   }
 }

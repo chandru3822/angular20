@@ -244,7 +244,7 @@ public class ProcessStepActionQuery {
     where case when :processStepId::bigint is not null then psa.process_step_id = :processStepId else 1 = 1 end
       and case when :id::bigint is not null then psa.id = :id else 1 = 1 end and psa.archived is not true
     order by psa.display_order
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteAction = """
@@ -253,7 +253,7 @@ public class ProcessStepActionQuery {
                date_modified = now(),
                archived = true
            where id = :actionId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String actionsUsingRequirement = """
@@ -266,7 +266,7 @@ public class ProcessStepActionQuery {
           where psl.process_step_requirement_id = :requirementId
             and psl.archived is not true
             and psa.archived is not true
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateActionDisplayOrder = """
@@ -275,12 +275,12 @@ public class ProcessStepActionQuery {
                modified_by_id = :modifiedById,
                date_modified = now()
            where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String duplicateAction = """
     select * from flow.duplicate_action(:actionId::bigint, :userId::bigint, :companyId::bigint);
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateAction = """
@@ -302,13 +302,13 @@ public class ProcessStepActionQuery {
             modified_by_id = :modifiedById,
             date_modified = now()
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertAction = """
     insert into flow.process_step_action(process_step_id, action_name, multiple_uses, trigger_automatically, action_type_id, company_process_step_status_type_id, company_project_status_type_id, archived, display_order, time_based_trigger, hide_from_mobile, hide_from_web, remove_process_step_owner, created_by_id, date_created, modified_by_id, date_modified, content, color, bg_color)
          values (:processStepId, :actionName, :multipleUses, :triggerAutomatically, :actionTypeId, :companyProcessStepStatusTypeId, :companyProjectStatusTypeId, false, (select coalesce(max(display_order) + 1, 0) from flow.process_step_action where process_step_id = :processStepId and archived is not true), :timeBasedTrigger, :hideFromMobile, :hideFromWeb, :removeProcessStepOwner, :createdById, now(), :createdById, now(), :content, :color, :bgColor)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveOldLogic = """
@@ -317,13 +317,13 @@ public class ProcessStepActionQuery {
            date_modified = now(),
            modified_by_id = :modifiedById
        where process_step_action_id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String insertLogic = """
     insert into flow.process_step_action_logic (process_step_requirement_id, operation_type_id, sql_order, process_step_action_id, date_created, created_by_id, date_modified, modified_by_id)
         values (:processStepRequirementId, :operationTypeId, :sqlOrder, :id, now(), :createdById, now(), :createdById)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getChildProcessStepsForAction = """
@@ -339,13 +339,13 @@ public class ProcessStepActionQuery {
               and acp.archived is not true
           )
         order by ps.process_step_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String addChildStepToAction = """
     insert into flow.process_step_action_child_process (process_step_action_id, process_step_id, display_order, existing_company_process_step_status_type_id, initial_company_process_step_status_type_id, created_by_id, date_created, modified_by_id, date_modified)
         values (:processStepActionId, :processStepId, :displayOrder, :existingCompanyProcessStepStatusTypeId, :initialCompanyProcessStepStatusTypeId, :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String saveChildProcessStatuses = """
@@ -355,7 +355,7 @@ public class ProcessStepActionQuery {
               date_modified = now(),
               modified_by_id = :modifiedById
         where id = :childProcessStepId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getActionChildStep = """
@@ -378,7 +378,7 @@ public class ProcessStepActionQuery {
             inner join flow.company_process_step_status_type ecpsst on ecpsst.id = cp.existing_company_process_step_status_type_id
             inner join flow.company_process_step_status_type icpsst on icpsst.id = cp.initial_company_process_step_status_type_id
         where cp.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteActionChildStep = """
@@ -387,7 +387,7 @@ public class ProcessStepActionQuery {
             modified_by_id = :modifiedById,
             date_modified = now()
       where id = :id
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String updateActionChildStep = """
@@ -398,13 +398,13 @@ public class ProcessStepActionQuery {
               modified_by_id = :modifiedById,
               date_modified = now()
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String addLinkToAction = """
     insert into flow.process_step_action_link (process_step_action_id, link_id, created_by_id, date_created, modified_by_id, date_modified)
       values (:processStepActionId, :linkId, :createdById, now(), :createdById, now())
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String getActionChildLink = """
@@ -421,7 +421,7 @@ public class ProcessStepActionQuery {
        from flow.process_step_action_link psal
            inner join flow.link l on l.id = psal.link_id
        where psal.id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteLinkFromAction = """
@@ -430,13 +430,13 @@ public class ProcessStepActionQuery {
             modified_by_id = :modifiedById,
             date_modified = now()
       where id = :id
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String addChildFunctionToAction = """
     insert into flow.process_step_action_company_function (process_step_action_id, company_function_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
         values (:processStepActionId, :companyFunctionId, (COALESCE((SELECT MAX(display_order) + 1 FROM flow.process_step_action_company_function psacf where psacf.process_step_action_id = :processStepActionId and psacf.archived is false), 1)), :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateChildFunctionOrder = """
@@ -445,7 +445,7 @@ public class ProcessStepActionQuery {
             date_modified = now(),
             modified_by_id = :modifiedById
       where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getActionChildFunction = """
@@ -483,7 +483,7 @@ public class ProcessStepActionQuery {
        from flow.process_step_action_company_function cp
                 inner join flow.company_function cf on cf.id = cp.company_function_id
        where cp.id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteActionChildFunction = """
@@ -492,7 +492,7 @@ public class ProcessStepActionQuery {
              modified_by_id = :modifiedById,
              date_modified = now()
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String updateActionChildFunction = """
@@ -501,13 +501,13 @@ public class ProcessStepActionQuery {
              modified_by_id = :modifiedById,
              date_modified = now()
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String insertActionParamDynamicValue = """
     insert into flow.action_param_dynamic_value (db_function_param_id, process_step_action_company_function_id, dynamic_value, created_by_id, date_created, modified_by_id, date_modified, process_step_event_action_company_function_id)
         values (:dbFunctionParamId, :processStepActionCompanyFunctionId, :dynamicValue, :createdById, now(), :createdById, now(), :processStepEventActionCompanyFunctionId);
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateActionParamDynamicValue = """
@@ -516,7 +516,7 @@ public class ProcessStepActionQuery {
            modified_by_id = :modifiedById,
            date_modified = now()
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getChildFunctionsByProjectProcessStepId = """
@@ -588,7 +588,7 @@ public class ProcessStepActionQuery {
     order by
       psacf.display_order,
       cf.company_function_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String actionLogicString = """
@@ -652,13 +652,13 @@ public class ProcessStepActionQuery {
          order by psl.sql_order
        )
        select array_to_string(array(select value from logic), ' ')
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String addSmsToAction = """
     insert into flow.process_step_action_message_template (process_step_action_id, message_template_id, sms_team_ids, created_by_id, date_created, modified_by_id, date_modified)
         values (:processStepActionId, :messageTemplateId, array[ :teamIds ]::bigint[], :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getActionChildSms = """
@@ -684,7 +684,7 @@ public class ProcessStepActionQuery {
        from flow.process_step_action_message_template psamt
               inner join flow.message_template mt on mt.id = psamt.message_template_id
        where psamt.id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteSmsFromAction = """
@@ -693,7 +693,7 @@ public class ProcessStepActionQuery {
              modified_by_id = :modifiedById,
              date_modified = now()
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getChildSmsTemplatesByActionId = """
@@ -722,6 +722,6 @@ public class ProcessStepActionQuery {
             psamt.process_step_action_id = :processStepActionId and
             psamt.archived is not true and
             mt.archived is not true
-        """;
+    """;
 
 }

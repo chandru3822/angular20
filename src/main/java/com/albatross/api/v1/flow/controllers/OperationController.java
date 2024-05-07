@@ -2,8 +2,8 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.OperationType;
 import com.albatross.api.v1.flow.services.OperationService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,10 +19,10 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/operation")
+@RequiredArgsConstructor
 public class OperationController {
 
-  @Autowired
-  private OperationService operationService;
+  private final OperationService operationService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<OperationType> getOperationTypes () {

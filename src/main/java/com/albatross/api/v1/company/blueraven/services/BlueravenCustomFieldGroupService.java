@@ -444,7 +444,7 @@ public class BlueravenCustomFieldGroupService {
       where cot.id = :objectTypeId
        and cfg.archived is not true
       order by cfg.group_order
-            """.formatted(primaryKeyColumn, objectType.tableName, primaryKeyColumn);
+      """.formatted(primaryKeyColumn, objectType.tableName, primaryKeyColumn);
     return sql;
   }
 

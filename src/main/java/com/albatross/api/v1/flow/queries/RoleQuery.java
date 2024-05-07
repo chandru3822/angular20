@@ -11,14 +11,14 @@ public class RoleQuery {
           where r.archived is not true
           and r.company_id = :companyId
           order by r.role_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateRole = """
     update flow.role
           set role_name = :roleName
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveRole = """
@@ -68,7 +68,7 @@ public class RoleQuery {
                     ) companyFeatures), '[]') AS "companyFeatures"
         from flow.role r
         where r.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertRoleFeatureAccessControl = """

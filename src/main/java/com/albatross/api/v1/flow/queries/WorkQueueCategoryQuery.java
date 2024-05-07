@@ -47,7 +47,7 @@ public class WorkQueueCategoryQuery {
                 AND wlp.work_queue_category_id = wqc.id)::bigint[], '{}')
                 else  1=1 end
         order by display_order
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getCategory = """
@@ -59,7 +59,7 @@ public class WorkQueueCategoryQuery {
          display_order
        from flow.work_queue_category
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteCategory = """
@@ -131,6 +131,6 @@ public class WorkQueueCategoryQuery {
   public final static String insertCategory = """
     insert into flow.work_queue_category(company_id, work_queue_category, color, display_order, created_by_id, date_created, modified_by_id, date_modified)
       values (:companyId, :workQueueCategory, :color, (select coalesce(max(display_order) + 1, 0) from flow.work_queue_category where archived is not true), :createdById, now(), :createdById, now())
-        """;
+    """;
 
 }

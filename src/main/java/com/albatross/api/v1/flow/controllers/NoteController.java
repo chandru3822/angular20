@@ -3,8 +3,8 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.InteractionTimer;
 import com.albatross.api.v1.flow.model.Note;
 import com.albatross.api.v1.flow.services.NoteService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +20,11 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/note")
+@RequiredArgsConstructor
 public class NoteController {
 
-  @Autowired
-  private NoteService noteService;
+
+  private final NoteService noteService;
 
   @GetMapping(value = "/getProjectProcessStepWorkQueueNotes", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Note> getProjectProcessStepWorkQueueNotes(@RequestParam Long projectProcessStepId,

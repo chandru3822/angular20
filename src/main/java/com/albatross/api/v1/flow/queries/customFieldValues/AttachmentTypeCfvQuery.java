@@ -83,7 +83,7 @@ public class AttachmentTypeCfvQuery {
             and cfg.archived is not true
             and cot.company_id = :companyId
           order by cfg.group_order
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String upsertCustomFieldValue = """
@@ -106,13 +106,13 @@ public class AttachmentTypeCfvQuery {
               int_array_value = :intArrayValue::int[],
               modified_by_id = :userId,
               date_modified = now()
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getCompanyId = """
     select at.company_id
         from flow.attachment_type at
         where at.id = :sourceId
-        """;
+    """;
 
 }

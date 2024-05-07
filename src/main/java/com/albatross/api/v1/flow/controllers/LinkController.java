@@ -3,8 +3,8 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.Link;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepLink;
 import com.albatross.api.v1.flow.services.LinkService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,10 +19,10 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/links")
+@RequiredArgsConstructor
 public class LinkController {
 
-  @Autowired
-  private LinkService linkService;
+  private final LinkService linkService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Link> getLinks () {

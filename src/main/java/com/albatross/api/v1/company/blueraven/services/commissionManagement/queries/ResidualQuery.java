@@ -318,7 +318,7 @@ public class ResidualQuery {
     from brs.residual_plan_allocation rpa
     where rpa.id = :id
   ) allocation
-    """;
+  """;
 
   //language=PostgreSQL
   public final static String insertAllocation = """

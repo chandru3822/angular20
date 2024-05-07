@@ -43,7 +43,7 @@ public class ExcelImportQuery {
              left join flow.state s on s.id = cs.state_id
              left join flow.user users on users.id = p.created_by_id
     where p.id = :projectId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insert = """

@@ -12,7 +12,7 @@ public class StateQuery {
                s.map_zoom
         from flow.state s
         order by s.state
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAvailableStates = """
@@ -50,7 +50,7 @@ public class StateQuery {
        where cs.company_id = :companyId
        and cs.archived is false
        order by s.state
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getActiveStatesByCompany = """

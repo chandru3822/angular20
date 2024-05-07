@@ -82,7 +82,7 @@ public class MessagingQuery {
                             where pmt.project_id = p.project_id
                               and pmt.archived is false) st), '[]')) as "smsTeamOwners"
     from projects p
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getProjectsCount = """
@@ -120,7 +120,7 @@ public class MessagingQuery {
                                 else sc.outbound_message is null or sc.outbound_message is true
                           end)
     select p.project_id from projects p
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getProjectCountCombined = """
@@ -149,7 +149,7 @@ public class MessagingQuery {
               else 1 = 1 end
       and (pmt.sms_team_id = any (array [ :smsTeamIds ]::bigint[]) and
            (of.id is not null or pmo2.id is null))
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getProject = """
@@ -181,7 +181,7 @@ public class MessagingQuery {
                 left outer join flow.company_state cs on cs.id = p.company_state_id
                 left outer join flow.state s on s.id = cs.state_id
        where p.id = :projectId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getUsers = """
@@ -253,7 +253,7 @@ public class MessagingQuery {
                             where umt.user_id = u.user_id
                               and umt.archived is false) st), '[]')) as "smsTeamOwners"
     from users u
-              """;
+    """;
 
   //language=PostgreSQL
   public final static String getUsersCount = """
@@ -343,7 +343,7 @@ select u.user_id, outbound_message from users u
        where u.id = :userId
        and uc.is_default is true
             and uc.archived is not true
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getProjectsBySmsTeam = """
@@ -364,7 +364,7 @@ select u.user_id, outbound_message from users u
   //language=PostgreSQL
   public final static String getActiveProjectId = """
     select pmp.id from flow.project_message_properties pmp where pmp.project_id = :projectId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertProject = """
@@ -374,7 +374,7 @@ select u.user_id, outbound_message from users u
     on conflict (project_id)
         do update set modified_by_id = excluded.modified_by_id,
                       date_modified  = excluded.date_modified
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String insertUser = """
@@ -384,7 +384,7 @@ select u.user_id, outbound_message from users u
     on conflict (user_id)
         do update set modified_by_id = excluded.modified_by_id,
                       date_modified  = excluded.date_modified
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String saveProjectStatusOpen = """
@@ -427,12 +427,12 @@ select u.user_id, outbound_message from users u
   //language=PostgreSQL
   public final static String getOwnersForProject = """
     select distinct user_id, sms_team_id from flow.project_message_owner where project_id = :projectId and archived is false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getOwnersForUser = """
     select distinct user_id, sms_team_id from flow.user_message_owner where owner_user_id = :userId and archived is false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getProjectHistory = """
@@ -449,7 +449,7 @@ select u.user_id, outbound_message from users u
                  where project_id = :projectId
                   order by pmoh.date_modified desc
             ) history), '[]') AS "conversationHistory"
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getUserHistory = """
@@ -465,37 +465,37 @@ select u.user_id, outbound_message from users u
                  where umoh.owner_user_id = :userId
                   order by umoh.date_modified desc
             ) history), '[]') AS "conversationHistory"
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String setLastSentForProject = """
     update flow.project_message_properties set last_sent = now(), date_modified = now(), modified_by_id = :modifiedById where project_id = :projectId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String setLastSentForUser = """
     update flow.user_message_properties set last_sent = now(), date_modified = now(), modified_by_id = :modifiedById where user_id = :userId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String clearProjectLastSent = """
     update flow.project_message_properties set last_sent = null, date_modified = now(), modified_by_id = :modifiedById where project_id in (:projectIds)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String clearUserLastSent = """
     update flow.user_message_properties set last_sent = null, date_modified = now(), modified_by_id = :modifiedById where user_id in (:userIds)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getStaleProjects = """
     select project_id from flow.project_message_properties pmp where pmp.last_sent < ((now() AT TIME ZONE 'US/Mountain') :: DATE) - 3
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getStaleUsers = """
     select user_id from flow.user_message_properties ump where ump.last_sent < ((now() AT TIME ZONE 'US/Mountain') :: DATE) - 3
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertProjectTeam = """
@@ -534,12 +534,12 @@ select u.user_id, outbound_message from users u
   //language=PostgreSQL
   public final static String getProjectTeamId = """
     select id from flow.project_message_team where project_id = :projectId and sms_team_id = :teamId and archived = false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getUserTeamId = """
     select id from flow.user_message_team where user_id = :userId and sms_team_id = :teamId and archived = false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getSmsTeamsForProject = """
@@ -561,7 +561,7 @@ select u.user_id, outbound_message from users u
              inner join flow.sms_team st on pmt.sms_team_id = st.id
     where pmt.project_id = :projectId
       and pmt.archived = false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getSmsTeamsForUserConversation = """
@@ -583,7 +583,7 @@ select u.user_id, outbound_message from users u
              inner join flow.sms_team st on umt.sms_team_id = st.id
     where umt.user_id = :userId
       and umt.archived = false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getSmsTeamsForProjectByUser = """
@@ -605,7 +605,7 @@ select u.user_id, outbound_message from users u
                                          inner join flow.sms_team st on pmt.sms_team_id = st.id
                                      where pmt.project_id = :projectId and pmt.archived = false
                                    and pmt.sms_team_id in (:userSmsTeamIds)
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String removeProjectTeam = """
@@ -638,7 +638,7 @@ select u.user_id, outbound_message from users u
          date_modified = now(),
          modified_by_id = :modifiedById
        where project_id = :projectId
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteUserConversation = """
@@ -647,7 +647,7 @@ select u.user_id, outbound_message from users u
          date_modified = now(),
          modified_by_id = :modifiedById
        where user_id = :userId
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String removeAllProjectTeams = """
@@ -742,7 +742,7 @@ select u.user_id, outbound_message from users u
     where notification_topic_id = :notificationTopicId
       and (metadata -> 'projectId')::bigint = :projectId
       and (metadata -> 'smsTeamId')::bigint = :smsTeamId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String findUserByForUserTeam = """
@@ -752,7 +752,7 @@ select u.user_id, outbound_message from users u
       and (metadata -> 'userId')::bigint = :userId
       and (metadata -> 'smsTeamId')::bigint = :smsTeamId
       and message_read_tsz is null
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String markSmsAsReadForProject = """
@@ -782,7 +782,7 @@ select u.user_id, outbound_message from users u
     from flow.notification
     where notification_topic_id = :notificationTopicId
       and (metadata -> 'projectId')::bigint = :projectId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String findUserByForUser = """
@@ -790,6 +790,6 @@ select u.user_id, outbound_message from users u
     from flow.notification
     where notification_topic_id = :notificationTopicId
       and (metadata -> 'userId')::bigint = :ownerUserId
-        """;
+    """;
 
 }

@@ -24,7 +24,7 @@ public class PositionQuery {
         where ot.company_id = :companyId
           and p.archived is not true
         order by p.position
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getSchedulablePositions = """
@@ -46,7 +46,7 @@ public class PositionQuery {
             and p.schedulable is true
             and p.archived is not true
         order by p.position
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAllForCompanyWithParent = """
@@ -66,7 +66,7 @@ public class PositionQuery {
         where (ot.company_id = :companyId OR (ot.company_id = :parentCompanyId AND p.available_to_children is true))
           and p.archived is not true
         order by p.position
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getOne = """
@@ -120,7 +120,7 @@ public class PositionQuery {
         from flow.position p
             inner join flow.org_type ot on ot.id = p.org_type_id
         where p.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insert = """
@@ -129,7 +129,7 @@ public class PositionQuery {
                               date_created, modified_by_id, date_modified)
     values (:companyId, :position, :orgTypeId, :schedulable, :availableToChildren, :scheduler, :contactOwner, :projectOwner,
             :smsOwner, :smsEnabled, :useSlotSchedule, :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String update = """

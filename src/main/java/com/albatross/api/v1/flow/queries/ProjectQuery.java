@@ -719,7 +719,7 @@ select
             modified_by_id = :modifiedById,
             date_modified = now()
     where id = :id
-    """;
+ """;
 
   //language=PostgreSQL
   public final static String getOwners = """

@@ -81,14 +81,14 @@ public class MailService {
       msg.setFrom(salesOperationsEmail);
       msg.setReplyTo(new Address[]{salesOperationsEmail});
       if (to != null) {
-        List<String> tos = Arrays.asList(to.split("\\s*,\\s*"));
+        String[] tos = to.split("\\s*,\\s*");
         for (String recipient : tos) {
           msg.addRecipient(
             Message.RecipientType.TO, new InternetAddress(StringUtils.trimWhitespace(recipient)));
         }
       }
       if (cc != null) {
-        List<String> ccs = Arrays.asList(cc.split("\\s*,\\s*"));
+        String[] ccs = cc.split("\\s*,\\s*");
         for (String recipient : ccs) {
           msg.addRecipient(
             Message.RecipientType.CC, new InternetAddress(StringUtils.trimWhitespace(recipient)));
@@ -185,7 +185,7 @@ public class MailService {
             mimeMessage.setFrom(fromAddress);
             mimeMessage.setReplyTo(new Address[]{fromAddress});
             if (message.getTo() != null) {
-              List<String> tos = Arrays.asList(message.getTo().split("\\s*,\\s*"));
+              String[] tos = message.getTo().split("\\s*,\\s*");
               for (String recipient : tos) {
                 mimeMessage.addRecipient(
                   Message.RecipientType.TO, new InternetAddress(StringUtils.trimWhitespace(recipient)));
@@ -193,7 +193,7 @@ public class MailService {
             }
             if (message.getCc() != null) {
 
-              List<String> ccs = Arrays.asList(message.getCc().split("\\s*,\\s*"));
+              String[] ccs = message.getCc().split("\\s*,\\s*");
               for (String recipient : ccs) {
                 mimeMessage.addRecipient(
                   Message.RecipientType.CC, new InternetAddress(StringUtils.trimWhitespace(recipient)));
@@ -207,7 +207,7 @@ public class MailService {
             Multipart multiPart = new MimeMultipart();
             multiPart.addBodyPart(bodyPart);
             ArrayList<String> attachmentNames = new ArrayList<>();
-            if (attachments != null && attachments.size() > 0) {
+            if (attachments != null && !attachments.isEmpty()) {
               for (String attachmentName : attachments.keySet()) {
                 DataSource attachment = attachments.get(attachmentName);
 
@@ -217,7 +217,7 @@ public class MailService {
                 multiPart.addBodyPart(attachmentPart);
                 attachmentNames.add(attachmentName);
               }
-            } else if (null != message.getAttachmentIds() && message.getAttachmentIds().size() > 0) {
+            } else if (null != message.getAttachmentIds() && !message.getAttachmentIds().isEmpty()) {
               for (Long attachmentId : message.getAttachmentIds()) {
                 Optional<Attachment> a = attachmentService.findSimpleById(attachmentId);
 

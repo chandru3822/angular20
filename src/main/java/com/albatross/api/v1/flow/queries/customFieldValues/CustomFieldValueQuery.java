@@ -12,7 +12,7 @@ public class CustomFieldValueQuery {
             lov.parent_id is not null and
             lov.archived is not true and
             lower(lov.name) = lower(:name)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String upsertAuroraDesign = """
@@ -29,7 +29,7 @@ public class CustomFieldValueQuery {
         set json_value = :jsonValue::jsonb,
             modified_by_id = :userId,
             date_modified = now()
-        """;
+    """;
 
 
   //language=PostgreSQL

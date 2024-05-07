@@ -64,13 +64,13 @@ public class LinkQuery {
         FROM flow.process_step_link psl
                inner join flow.link l on l.id = psl.link_id
         where psl.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertProcessStepLink = """
     insert into flow.process_step_link (link_id, process_step_id, display_order, created_by_id, date_created,  modified_by_id, date_modified)
     values (:linkId, :processStepId,(select coalesce(max(display_order) + 1, 0) from flow.process_step_link where process_step_id = :processStepId and archived is not true), :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getLink = """

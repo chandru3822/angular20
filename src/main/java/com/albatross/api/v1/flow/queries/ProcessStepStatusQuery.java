@@ -8,7 +8,7 @@ public class ProcessStepStatusQuery {
         from flow.process_step_status_type
         where archived is not true
         order by process_step_status_type
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getTypesForCompany = """
@@ -21,7 +21,7 @@ public class ProcessStepStatusQuery {
             then company_id = :parentCompanyId
             else company_id = :companyId end
         order by cpsst.process_step_status_type
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getStatusesForWqt = """
@@ -86,7 +86,7 @@ public class ProcessStepStatusQuery {
           and pscpsst.archived is not true
           and pscpsst.process_step_id = :processStepId
         order by display_sort, root_process_step_status_type, process_step_status_type
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String availableForProcessStep = """
@@ -104,7 +104,7 @@ public class ProcessStepStatusQuery {
                  and pscpsst.process_step_id = :processStepId
            )
        order by cpsst.process_step_status_type
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getCancelledTypesForCompany = """
@@ -118,7 +118,7 @@ public class ProcessStepStatusQuery {
            else company_id = :companyId end
            and cpsst.process_step_status_type_id = 3
        order by cpsst.process_step_status_type
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getType = """
@@ -130,7 +130,7 @@ public class ProcessStepStatusQuery {
          from flow.company_process_step_status_type cpsst
          inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
          where cpsst.id = :typeId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String typeInUseByProject = """
@@ -140,7 +140,7 @@ public class ProcessStepStatusQuery {
        where pps.archived is not true
          and pps.company_process_step_status_type_id = :companyProcessStepStatusTypeId
          limit 1
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String typeInUse = """
@@ -150,7 +150,7 @@ public class ProcessStepStatusQuery {
         where pscpsst.archived is not true and ps.archived is not true
           and pscpsst.company_process_step_status_type_id = :companyProcessStepStatusTypeId
           order by ps.process_step_name
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteType = """
@@ -159,7 +159,7 @@ public class ProcessStepStatusQuery {
               modified_by_id = :modifiedById,
               date_modified = now()
           where id = :id
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String updateType = """
@@ -169,20 +169,20 @@ public class ProcessStepStatusQuery {
               modified_by_id = :modifiedById,
               date_modified = now()
         where id = :id
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String insertType = """
     insert into flow.company_process_step_status_type(process_step_status_type, process_step_status_type_id, company_id,created_by_id, date_created, modified_by_id, date_modified)
           values (:processStepStatusType, :processStepStatusTypeId, :companyId, :createdById, now(), :createdById, now())
         returning id
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String assignStatusToProcessStep = """
     insert into flow.process_step_company_process_step_status_type(process_step_id, company_process_step_status_type_id, created_by_id, date_created, modified_by_id, date_modified)
            values (:processStepId, :companyProcessStepStatusTypeId, :createdById, now(), :createdById, now())
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String updateAllowNonAdminUse = """
@@ -191,7 +191,7 @@ public class ProcessStepStatusQuery {
            date_modified = now(),
            modified_by_id = :userId
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getProcessStepCompanyProcessStepStatusType = """
@@ -206,7 +206,7 @@ public class ProcessStepStatusQuery {
              inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
              inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id
          where pscpsst.id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteStatusFromProcessStep = """
@@ -215,7 +215,7 @@ public class ProcessStepStatusQuery {
              modified_by_id = :modifiedById,
              date_modified = now()
          where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String statusInUseByWQT = """
@@ -228,7 +228,7 @@ public class ProcessStepStatusQuery {
             and pscpsst.archived is not true
             and pswqtpsst.archived is not true
             and pswqt.archived is not true
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String statusInUseByInitialStep = """
@@ -238,7 +238,7 @@ public class ProcessStepStatusQuery {
             and initial_step is true
             and archived is not true
             and company_process_step_status_type_id = (select company_process_step_status_type_id from flow.process_step_company_process_step_status_type where id = :id)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String actionsUsingStatusToSetParent = """
@@ -247,7 +247,7 @@ public class ProcessStepStatusQuery {
        where process_step_id = :processStepId
          and company_process_step_status_type_id = (select company_process_step_status_type_id from flow.process_step_company_process_step_status_type where id = :id)
          and archived is not true
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String childProcessesUsingStatus = """
@@ -262,7 +262,7 @@ public class ProcessStepStatusQuery {
           or psacp.existing_company_process_step_status_type_id = (select pscpsst1.company_process_step_status_type_id from flow.process_step_company_process_step_status_type pscpsst1 where pscpsst1.id = :id))
           and psacp.archived is not true
     and psa.archived is not true
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getActiveAssignedToProcessStep = """
@@ -285,7 +285,7 @@ public class ProcessStepStatusQuery {
             and cpsst.process_step_status_type_id = 1
             and case when :nonAdmin::boolean is true then pscpsst.allow_non_admin_use = true else true end
           order by cpsst.process_step_status_type
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAssignedToStep = """
@@ -298,7 +298,7 @@ public class ProcessStepStatusQuery {
          AND pscpsst.archived is not true
          and cpsst.archived is not true
        order by psst.process_step_status_type
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getCompanyAssignedToStep = """
@@ -320,7 +320,7 @@ public class ProcessStepStatusQuery {
            AND pscpsst.archived is not true
            and cpsst.archived is not true
          order by cpsst.process_step_status_type
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getCancelledAssignedToStep = """
@@ -343,6 +343,6 @@ public class ProcessStepStatusQuery {
             AND cpsst.process_step_status_type_id = 3
             and case when :nonAdmin::boolean is true then pscpsst.allow_non_admin_use = true else true end
           order by cpsst.process_step_status_type
-        """;
+    """;
 
 }

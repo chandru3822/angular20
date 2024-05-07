@@ -5,8 +5,8 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.queries.EmailSenderQuery;
 import com.albatross.api.v1.flow.model.EmailSender;
 import com.albatross.api.v1.flow.model.User;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -17,16 +17,13 @@ import java.util.List;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EmailSenderService {
-    @Autowired
-    private SqlCache sqlCache;
-
-    @Autowired
-    private SecurityService securityService;
+    private final SqlCache sqlCache;
+    private final SecurityService securityService;
 
     public List<EmailSender> getEmailSenders() {
-    List<EmailSender> results = sqlCache.queryBySql(EmailSenderQuery.getEmailSenders, null, EmailSender.class);
-    return results;
+      return sqlCache.queryBySql(EmailSenderQuery.getEmailSenders, null, EmailSender.class);
   }
 
   public void saveEmailSenders(List<EmailSender> emailSenders) {

@@ -501,7 +501,7 @@ public class AvailabilityService {
             Integer.parseInt(recurringStartDay),
             Integer.parseInt(recurringStartHour),
             Integer.parseInt(recurringStartMinute),
-            00);
+            0);
 
         RecurrenceRule rule = new RecurrenceRule((rra.getRecurrence()));
         RecurrenceRuleIterator it = rule.iterator(recurringStartDate);
@@ -613,7 +613,7 @@ public class AvailabilityService {
           Integer.parseInt(recurringStartDay),
           Integer.parseInt(recurringStartHour),
           Integer.parseInt(recurringStartMinute),
-          00);
+          0);
 
       RecurrenceRule rule = new RecurrenceRule((ra.getRecurrence()));
 

@@ -25,7 +25,7 @@ public class CustomFieldGroupQuery {
                           when :contactAttachmentTypeId::bigint is not null then contact_attachment_type_id = :contactAttachmentTypeId::bigint
                           when :eventAttachmentTypeId::bigint is not null then event_attachment_type_id = :eventAttachmentTypeId::bigint
                           else company_object_type_id = :companyObjectTypeId end))
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String getCompanyObjectTypeId = """
@@ -33,7 +33,7 @@ public class CustomFieldGroupQuery {
         from flow.company_object_type
         where object_type_id = :objectTypeId
           and company_id = :companyId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateCustomFieldGroup = """
@@ -50,7 +50,7 @@ public class CustomFieldGroupQuery {
              ps_collapse_by_default = :psCollapseByDefault,
              event_collapse_by_default = :eventCollapseByDefault
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String delete = """
@@ -59,7 +59,7 @@ public class CustomFieldGroupQuery {
              modified_by_id = :modifiedById,
              date_modified = now()
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteCustomFieldGroup = """
@@ -68,7 +68,7 @@ public class CustomFieldGroupQuery {
          modified_by_id = :modifiedById,
          date_modified = now()
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getCustomFieldsByCfgaIds = """
@@ -213,7 +213,7 @@ public class CustomFieldGroupQuery {
           and cfg.archived is not true
           and cot.company_id = :companyId
         order by cfg.group_order
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateFieldShowOrRequire = """
@@ -224,7 +224,7 @@ public class CustomFieldGroupQuery {
            modified_by_id = :modifiedById,
            date_modified = now()
        where id = :customFieldGroupAssignmentId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String checkForFieldsInUse = """
@@ -268,6 +268,6 @@ public class CustomFieldGroupQuery {
             and cfga.archived is not true
             and ps.archived is not true
             order by object_type, process_step_name, group_name, field_name
-        """;
+    """;
 
 }

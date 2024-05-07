@@ -14,7 +14,7 @@ class BirdEyeQuery {
                   where cf.field_name in ('Birdeye Business ID', 'Org Email'))
     select (select text_value from vals where field_name = 'Org Email')           as org_email,
            (select text_value from vals where field_name = 'Birdeye Business ID') as birdeye_business_id
-        """;
+    """;
 
   //language=PostgreSQL
   final static String saveInvitation = """
@@ -49,7 +49,7 @@ class BirdEyeQuery {
     select birdeye_survey_id, custom_field_group_id
     from brs.birdeye_survey
     where enabled is true
-      """;
+    """;
 
   //language=PostgreSQL
   final static String getProjectByCustomer = """
