@@ -251,7 +251,7 @@ const uploadUserImage = async (files, attachmentTypeId, sourceId, sizeLimit) => 
   try {
     appStore.loading = true
     let file = files[0]
-    await fileStore.uploadfile({
+    await fileStore.uploadFile({
       file: file,
       attachmentTypeId,
       sizeLimit,
