@@ -35,7 +35,7 @@
     <v-row class="fill-height" align="center" justify="start">
       <v-col class="shrink" cols="12">
         <v-toolbar flat>
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Message Templates</v-toolbar-title>
+          <v-toolbar-title v-if="!vuetify.breakpoint.smAndDown" class="app-title">Message Templates</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn
@@ -43,9 +43,9 @@
               color="primary"
               @click="[addTemplate = !addTemplate, newType = {}]"
               v-if="userCanEdit"
-              :hide-text-on-mobile="constants.IS_MOBILE"
-              :prepend-icon="constants.IS_MOBILE ? 'add' : ''"
-              :text="addTemplate ? 'CANCEL' : 'ADD NEW'"
+              :hide-text-on-mobile="vuetify.breakpoint.smAndDown"
+              :prepend-icon="vuetify.breakpoint.smAndDown ? addTemplate ? 'close' : 'add' : ''"
+              :text="addTemplate ? 'Cancel' : 'Add New'"
             />
           </v-toolbar-items>
         </v-toolbar>
@@ -79,14 +79,14 @@
             variant="text"
             color="primary"
             @click="[addTemplate = !addTemplate, newTemplate = {}]"
-            text="CANCEL"
+            text="Cancel"
           />
           <a-btn
             :disabled="!newTemplate.title || !newTemplate.message"
             color="primary"
             class="white--text mr-2"
             @click="saveTemplate(newTemplate, true)"
-            text="SAVE"
+            text="Save"
           />
         </v-card>
         <v-data-table
@@ -95,13 +95,13 @@
           :fixed-header="true"
           :items-per-page="-1"
           single-expand
-          :mobile-breakpoint="0"
           :expanded.sync="expanded"
           hide-default-footer
           class="elevation-1 org-type-table"
+          :item-class="rowClass"
         >
           <template v-slot:header.teamIds="{ header }">
-            <div class="d-flex align-baseline filter-dropdown"> <div>{{ header.text }}<v-icon small @click="showFilter = !showFilter">mdi-filter</v-icon></div>
+            <div class="d-flex align-baseline filter-dropdown flex-column flex-md-row"> <div>{{ header.text }}<v-icon small @click="showFilter = !showFilter">mdi-filter</v-icon></div>
             <a-autocomplete v-if="showFilter"
                             v-model="teamFilter"
                             :items="selectableTeams"
@@ -146,16 +146,14 @@
                 color="primary"
                 class="white--text mr-2"
                 :disabled="!item.title || !item.message" @click="saveTemplate(item, false)"
-                text="SAVE"
+                text="Save"
               />
             </td>
           </template>
 
-          <template #item="{ item }">
-            <tr  class="text-left" :class="{'shaded-row': filterTemplates.indexOf(item) % 2}">
-              <td class="text-left">{{ item.title }}</td>
-              <td class="">{{getTeamsForTemplate(item)}}</td>
-              <td class="text-right flex-display align-center">
+          <template #item.title="{ item }" class="text-left">{{ item.title }}</template>
+              <template #item.teamIds="{item}" class="">{{getTeamsForTemplate(item)}}</template>
+              <template #item.icons="{item, index}" class="text-right flex-display align-center">
                 <a-btn
                   size="small"
                   variant="text"
@@ -177,11 +175,11 @@
                   color="primary"
                   v-if="expanded.includes(item)"
                   @click="expanded = []"
-                  text="CANCEL"
+                  text="Cancel"
+                  :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
+                  hide-text-on-mobile
                 />
-              </td>
-            </tr>
-          </template>
+              </template>
         </v-data-table>
       </v-col>
     </v-row>
@@ -195,7 +193,7 @@
 import {
   handleHidingGlobalLoader,
   putRequest,
-  getRequest,
+  getRequest, getRowClass,
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from '@/components/ConfirmationDialog'
@@ -206,6 +204,7 @@ import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 const vueInstance = getCurrentInstance().proxy
 
+const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
@@ -236,6 +235,9 @@ const headers = ref([
   },
   { text: null, value: 'icons', show: true, sortable: false }
 ])
+const rowClass = (item) => {
+  return getRowClass(item, filterTemplates.value)
+}
 
 const filterTemplates = computed(() => {
   return templates.value.filter(tmp => !tmp.archived)
@@ -338,7 +340,9 @@ onMounted(async () => {
 }
 
 .team-select {
-  width: 450px;
+  @media (min-width: 961px) {
+    width: 450px;
+  }
 }
 
 .wqt-header-bar {

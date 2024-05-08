@@ -9,7 +9,7 @@
           </template>
         </a-btn>
         <v-toolbar flat id="announcement-admin-header">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">
+          <v-toolbar-title v-if="!vuetify.breakpoint.smAndDown" class="app-title">
             {{ announcementId ? 'Edit Announcement' : 'Add Announcement' }}
           </v-toolbar-title>
           <v-spacer></v-spacer>
@@ -20,7 +20,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-form ref="announcementForm">
-          <h3>Overview</h3>
+          <h3 class="pb-4">Overview</h3>
           <div class="error--text" v-if="timeError">
             {{ timeErrorMsg }}
           </div>
@@ -181,6 +181,7 @@ import { useAppStore } from '@/stores/AppStore.js'
 import {useRouter, useRoute} from "vue-router/composables"
 
 const vueInstance = getCurrentInstance().proxy
+const vuetify = vueInstance.$vuetify
 const route = useRoute()
 const router = useRouter()
 
