@@ -446,7 +446,7 @@ onMounted(async () => {
   await Promise.all(requests).then(async () => {
     fieldsLoading.value = false
     if (org.value.parentOrgTypeId) {
-      getOrgsByType(org.value.parentOrgTypeId)
+      getAllOrgsByType(org.value.parentOrgTypeId)
     }
   })
 })
