@@ -71,21 +71,21 @@ public class EmailQuery {
                 WHERE archived is not true
                 AND company_id = :companyId
                 ORDER BY ems.email_address
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String saveFromAddress = """
     INSERT INTO flow.email_sender (email_address, sender_name, company_id, created_by_id, date_created)
     select :emailAddress, :senderName, :companyId, :createdById, now()
     where not exists(select id from flow.email_sender where email_address = :emailAddress)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateEmailAddress = """
     update flow.email_sender
     set sender_name = :senderName, email_address = :emailAddress, modified_by_id = :modifiedBy, date_modified = now()
     where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String changeDefaultAddress = """
@@ -96,11 +96,11 @@ public class EmailQuery {
     when id != :id then false
     end
     where company_id = :companyId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteEmailAddress = """
     update flow.email_sender set archived = true, modified_by_id = :modifiedBy, date_modified = now() where id = :id
-        """;
+    """;
 
 }

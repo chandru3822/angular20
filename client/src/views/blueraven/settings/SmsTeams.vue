@@ -134,6 +134,7 @@
                     @click="expanded = []"
                     color="unset"
                     text="Cancel"
+                    :prepend-icon="vuetify.breakpoint.smAndDown ? 'close' : ''"
                 ></a-btn>
               </td>
             </tr>
@@ -163,6 +164,7 @@ const userStore = useUserStore()
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 
+const vuetify = vueInstance.$vuetify
 const templates = ref([])
 const newTemplate = ref({})
 const addTemplate = ref(false)

@@ -38,7 +38,7 @@ public class UserQuery {
                   date_modified = now()
           where uc.company_id = :companyId
             and uc.user_id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String saveUserHomePage = """
@@ -69,7 +69,7 @@ public class UserQuery {
   public final static String insertUser = """
     insert into flow.user(first_name, last_name, phone_number, email, username, password, created_by_id, date_created, modified_by_id, date_modified)
       values(trim(:firstName), trim(:lastName), trim(:phone), trim(:email), trim(:email), :defaultPassword, :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getOne = """
@@ -126,7 +126,7 @@ public class UserQuery {
          where u.id = :id
            and uc.company_id = :companyId
            and uc.archived is not true
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getByIds = """
@@ -183,7 +183,7 @@ public class UserQuery {
           where u.id in (:ids)
             and uc.company_id = :companyId
             and uc.archived is not true
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAllActiveUsers = """
@@ -221,7 +221,7 @@ public class UserQuery {
          where u.id = :id
            and uc.company_id = 1
            and u.archived is not true
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getSchedulingUsers = """
@@ -285,7 +285,7 @@ public class UserQuery {
                                          and up.archived is not true) positions), '[]') AS "userPositions"
           from t1
             order by full_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String findByUsernameIgnoreCase = """
@@ -402,7 +402,7 @@ public class UserQuery {
                  "userPositions",
                  default_project_page
           from t1
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateLoginAttempts = """
@@ -411,7 +411,7 @@ public class UserQuery {
                date_modified = now(),
                modified_by_id = :userId
        where id = :userId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String findByUsernameOrEmailIgnoreCase = """
@@ -434,7 +434,7 @@ public class UserQuery {
         where lower(:usernameOrEmail::text) = lower(username)
               OR lower(:usernameOrEmail::text) = lower(email)
         limit 1
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String findUserById = """
@@ -542,7 +542,7 @@ public class UserQuery {
                highest_company_id,
                default_project_page
         from t1
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getCompanyUserStatuses = """
@@ -556,7 +556,7 @@ public class UserQuery {
             where company_id = :companyId
              and archived is not true
           order by user_status_type
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String saveUserStatusType = """
@@ -577,7 +577,7 @@ public class UserQuery {
          where ust.id = cus.user_status_type_id
              and cus.user_id = :userId
              and ust.company_id = :companyId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String upsertUserStatus = """
@@ -595,7 +595,7 @@ public class UserQuery {
         INSERT INTO flow.company_user_status (user_status_type_id, user_id)
         SELECT :userStatusTypeId, :userId
         WHERE NOT EXISTS (SELECT * FROM do_upsert)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateUserStatus = """
@@ -607,13 +607,13 @@ public class UserQuery {
        where ust.id = cus.user_status_type_id
          and cus.user_id = :userId
          and ust.company_id = :companyId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String insertUserStatus = """
     insert into flow.company_user_status(user_id, user_status_type_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:userId, :userStatusTypeId, :currentUserId, now(), :currentUserId, now())
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String updateDefault = """
@@ -626,20 +626,20 @@ public class UserQuery {
               date_modified = now()
           where company_id = :companyId
             and user_id = :userId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateAdminDefault = """
     update flow.user
          set default_company_id = :companyId
          where id = :userId
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String insertUserCompany = """
     insert into flow.user_company(company_id, user_id, is_default, home_page_company_feature_id)
        values (:companyId, :id, :isDefault, :homePageCompanyFeatureId)
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteUserCompany = """
@@ -671,7 +671,7 @@ public class UserQuery {
          and uc.archived is not true
          and c.archived is not true
          order by c.company_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String checkEmailExists = """
@@ -722,7 +722,7 @@ public class UserQuery {
        from flow.user u
        where u.uuid = :uuid
        limit 1
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String mentionableUsers = """
@@ -760,7 +760,7 @@ public class UserQuery {
     on conflict (user_id, token)
         do update set modified_by_id = excluded.modified_by_id,
                       date_modified  = now()
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String removeNotificationToken = """
@@ -805,7 +805,7 @@ public class UserQuery {
           and ua.archived is not true
           and a.archived is not true
         order by ua.date_created desc
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String linkAttachment = """
@@ -828,7 +828,7 @@ public class UserQuery {
   public final static String addAttachment = """
     insert into flow.user_attachment(attachment_id, user_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:attachmentId, :userId, :createdById, now(), :createdById, now())
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String isSuperAdmin = """

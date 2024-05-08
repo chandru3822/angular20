@@ -104,7 +104,7 @@ public class ProcessQuery {
           where company_id = :companyId
             and process_id = :processId
           order by p.process_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String delete = """
@@ -321,7 +321,7 @@ public class ProcessQuery {
                  inner join flow.process_step ps on ps.id = psp.process_step_id
                  left join flow.company_process_step_status_type cpsst on cpsst.id = psp.company_process_step_status_type_id
           where psp.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getOwnerPositionsByPosition = """

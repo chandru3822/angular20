@@ -17,7 +17,7 @@ public class DataViewQuery {
         from flow.data_view
         where company_id = :companyId
           and archived is false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getUniqueBehaviorTypes = """
@@ -111,13 +111,13 @@ public class DataViewQuery {
         from flow.data_view dv
         where dv.id = :viewId
           and dv.company_id = :companyId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String addFieldConfig = """
     insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, process_step_id, field_to_update, display_name, update_first_value_only, reset_on_new, created_by_id, reset_values_on_main, ignore_if_null)
         values(:viewId, :defaultFieldId, :customFieldGroupAssignmentId, :processStepEventId, :processStepId, :fieldToUpdate, :displayName, :updateFirstValueOnly, :resetOnNew, :userId, :resetValuesOnMain, :ignoreIfNull )
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateFieldConfig = """
@@ -131,7 +131,7 @@ public class DataViewQuery {
   //language=PostgreSQL
   public final static String addColumnToTable = """
     select from flow.add_column_to_data_view(:id::bigint, null::bigint)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getFieldConfig = """
@@ -187,7 +187,7 @@ public class DataViewQuery {
               left join flow.object_type ot on cot.object_type_id = ot.id
        where dvfc.id = :id
          and dvfc.archived is false
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getAvailableDefaultFields = """
@@ -275,7 +275,7 @@ public class DataViewQuery {
   //language=PostgreSQL
   public final static String addChildColumnToTable = """
     select from flow.add_column_to_data_view(:fieldId::bigint, :id::bigint)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getChildFieldConfig = """
@@ -288,13 +288,13 @@ public class DataViewQuery {
                inner join flow.data_type dt on ubt.return_data_type_id = dt.id
         where dvcfc.archived is false
           and dvcfc.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String add = """
     insert into flow.data_view(company_id, view_name, display_name, company_process_ids, created_by_id)
          values (:companyId, :viewName, :displayName, :companyProcessIds, :userId)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String update = """
@@ -304,12 +304,12 @@ public class DataViewQuery {
             company_process_ids = :companyProcessIds,
             date_modified = now()
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String addTableForView = """
     select from flow.initialize_data_view_table(:companyId::bigint, :viewName::character varying, :companyProcessIds::bigint[])
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getDataView = """
@@ -332,6 +332,6 @@ public class DataViewQuery {
   //language=PostgreSQL
   public final static String runMaintenance = """
     call flow.run_view_maintenance()
-        """;
+    """;
 
 }

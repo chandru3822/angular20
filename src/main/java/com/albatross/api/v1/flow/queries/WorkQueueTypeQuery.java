@@ -28,7 +28,7 @@ public class WorkQueueTypeQuery {
          inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
        where wqt.company_id = :companyId
          and wqt.archived is not true
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getItemsUsingType = """
@@ -53,7 +53,7 @@ public class WorkQueueTypeQuery {
         where psewqt.work_queue_type_id = :wqtId
           and psewqt.archived is not true
           order by name ) as results
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getDurationTypes = """
@@ -62,7 +62,7 @@ public class WorkQueueTypeQuery {
              archived
       from flow.duration_type
       where archived is false
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String getType = """
@@ -109,7 +109,7 @@ public class WorkQueueTypeQuery {
                inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
                inner join flow.smartlist s on s.work_queue_type_id = wqt.id
         where wqt.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String addSmartlist = """
@@ -117,7 +117,7 @@ public class WorkQueueTypeQuery {
         values (:workQueueType,
                 (select id from flow.company_object_type cot where cot.company_id = :companyId and cot.object_type_id = :objectTypeId),
                 true, 99999999, true, false, :workQueueTypeId, :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteType = """
@@ -136,7 +136,7 @@ public class WorkQueueTypeQuery {
            modified_by_id = :userId,
            date_modified = now()
        where id = :wqtId
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveWhiteListPositions = """
@@ -147,7 +147,7 @@ public class WorkQueueTypeQuery {
        where work_queue_type_id = :wqtId
          and company_id = :companyId
          and white_list_type_id = :whiteListTypeId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String insertWhiteListPosition = """
@@ -160,7 +160,7 @@ public class WorkQueueTypeQuery {
                              and company_id = :companyId
                              and white_list_type_id = :whiteListTypeId
                               and archived is not true)
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveWhiteListPositionsNoLongerUsed = """
@@ -172,7 +172,7 @@ public class WorkQueueTypeQuery {
          and position_id not in (:positionIdsUsed)
          and company_id = :companyId
          and white_list_type_id = :whiteListTypeId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getProcessStepsUsingWqt = """
@@ -193,7 +193,7 @@ public class WorkQueueTypeQuery {
          and pse.archived is false
          and ps.archived is false
        order by process_step_name
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String updateType = """
@@ -215,13 +215,13 @@ public class WorkQueueTypeQuery {
              schedule = :schedule,
              default_column_display = jsonb(:defaultColumnDisplay)
          where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String insertType = """
     insert into flow.work_queue_type(company_id, work_queue_type, work_queue_category_id, display_order, created_by_id, date_created, modified_by_id, date_modified, use_event_data, default_column_display)
       values (:companyId, :workQueueType, :workQueueCategoryId, (select coalesce(max(display_order) + 1, 0) from flow.work_queue_type where work_queue_category_id = :workQueueCategoryId and archived is not true), :createdById, now(),  :createdById, now(), :useEventData, :defaultColumnDisplay::jsonb)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAvailableWorkQueueTypesForStep = """
@@ -257,7 +257,7 @@ public class WorkQueueTypeQuery {
                   and archived is not true
             )
         order by wqt.work_queue_type
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getProcessStepWorkQueueType = """
@@ -309,7 +309,7 @@ public class WorkQueueTypeQuery {
                 inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
                 inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
        where pswqt.id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String insertProcessStepWorkQueueType = """
@@ -317,7 +317,7 @@ public class WorkQueueTypeQuery {
         values (:processStepId, :workQueueTypeId, :createdById, :createdById, now(), now())
         on conflict (process_step_id,work_queue_type_id)
           do update set archived = false, date_modified = now(), modified_by_id = excluded.modified_by_id
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteProcessStepWorkQueueType = """
@@ -336,12 +336,12 @@ public class WorkQueueTypeQuery {
              modified_by_id = :modifiedById,
              date_modified = now()
          where process_step_work_queue_type_id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String callPsConfigChangeFunction = """
     select * from flow.ps_wqt_configuration_change(:psWqtId::bigint, :createdById::bigint)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertProjectStatusTypeForProcessStep = """
@@ -349,7 +349,7 @@ public class WorkQueueTypeQuery {
         values (:companyProjectStatusTypeId, :projectStatusTypeId, :processStepWorkQueueTypeId, :userId, now(), :userId, now())
         on conflict (coalesce(company_project_status_type_id, -1), coalesce(project_status_type_id, -1), process_step_work_queue_type_id)
             do update set archived = false, modified_by_id = excluded.modified_by_id, date_modified = now()
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateProjectStatusTypeForProcessStep = """
@@ -358,7 +358,7 @@ public class WorkQueueTypeQuery {
           modified_by_id = :userId,
           date_modified = now()
       where id = :id
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String getProjectStatusesForPsWorkQueueType = """
@@ -377,7 +377,7 @@ public class WorkQueueTypeQuery {
          WHERE pswqtpst.process_step_work_queue_type_id = :processStepWorkQueueTypeId
            AND pswqtpst.archived is not true
          order by pst.project_status_type, cpst.project_status_type
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String insertProcessStepStatusTypeForProcessStep = """
@@ -385,7 +385,7 @@ public class WorkQueueTypeQuery {
        values (:companyProcessStepStatusTypeId, :processStepStatusTypeId, :processStepWorkQueueTypeId, :userId, :userId, now(), now())
        on conflict (coalesce(company_process_step_status_type_id, -1), coalesce(process_step_status_type_id, -1), process_step_work_queue_type_id)
        do update set archived = false, date_modified = now(), modified_by_id = excluded.modified_by_id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String updateProcessStepStatusTypeForProcessStep = """
@@ -394,7 +394,7 @@ public class WorkQueueTypeQuery {
            modified_by_id = :userId,
            date_modified = now()
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getProcessStepStatusesForPsWorkQueueType = """
@@ -413,7 +413,7 @@ public class WorkQueueTypeQuery {
        WHERE pswqtpsst.process_step_work_queue_type_id = :processStepWorkQueueTypeId
          AND pswqtpsst.archived is not true
        order by psst.process_step_status_type, cpsst.process_step_status_type
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getAvailableWorkQueueTypesForEvent = """
@@ -449,7 +449,7 @@ public class WorkQueueTypeQuery {
                  and archived is not true
            )
        order by wqt.work_queue_type
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteEventWorkQueueType = """
@@ -468,7 +468,7 @@ public class WorkQueueTypeQuery {
                   modified_by_id = :modifiedById,
                   date_modified = now()
               where process_step_event_work_queue_type_id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertProcessStepEventWorkQueueType = """
@@ -476,7 +476,7 @@ public class WorkQueueTypeQuery {
        values (:processStepEventId, :workQueueTypeId, :createdById, :createdById, now(), now())
        on conflict (process_step_event_id,work_queue_type_id)
          do update set archived = false, date_modified = now(), modified_by_id = excluded.modified_by_id
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String insertProjectStatusTypeForEvent = """
@@ -484,7 +484,7 @@ public class WorkQueueTypeQuery {
           values (:companyProjectStatusTypeId, :projectStatusTypeId, :processStepEventWorkQueueTypeId, :userId, now(), :userId, now())
           on conflict (coalesce(company_project_status_type_id, -1), coalesce(project_status_type_id, -1), process_step_event_work_queue_type_id)
             do update set archived = false, modified_by_id = excluded.modified_by_id, date_modified = now()
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateProjectStatusTypeForEvent = """
@@ -493,7 +493,7 @@ public class WorkQueueTypeQuery {
              modified_by_id = :userId,
              date_modified = now()
          where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String insertProcessStepStatusTypeForEvent = """
@@ -501,7 +501,7 @@ public class WorkQueueTypeQuery {
         values (:companyProcessStepStatusTypeId, :processStepStatusTypeId, :processStepEventWorkQueueTypeId, :userId, :userId, now(), now())
         on conflict (coalesce(company_process_step_status_type_id, -1), coalesce(process_step_status_type_id, -1), process_step_event_work_queue_type_id)
           do update set archived = false, date_modified = now(), modified_by_id = excluded.modified_by_id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateProcessStepStatusTypeForEvent = """
@@ -510,7 +510,7 @@ public class WorkQueueTypeQuery {
             modified_by_id = :userId,
             date_modified = now()
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getProcessStepEventWorkQueueType = """
@@ -580,13 +580,13 @@ public class WorkQueueTypeQuery {
               inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
               inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
        where pswqt.id = :id
-       """;
+    """;
 
 
   //language=PostgreSQL
   public final static String callEventConfigChangeFunction = """
     select * from flow.pse_wqt_configuration_change(:pseWqtId::bigint, :createdById::bigint)
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getProjectStatusesForEventWorkQueueType = """
@@ -605,7 +605,7 @@ public class WorkQueueTypeQuery {
       WHERE pswqtpst.process_step_event_work_queue_type_id = :processStepEventWorkQueueTypeId
         AND pswqtpst.archived is not true
       order by pst.project_status_type, cpst.project_status_type
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String getProcessStepStatusesForEventWorkQueueType = """
@@ -624,7 +624,7 @@ public class WorkQueueTypeQuery {
       WHERE pswqtpsst.process_step_event_work_queue_type_id = :processStepEventWorkQueueTypeId
         AND pswqtpsst.archived is not true
       order by psst.process_step_status_type, cpsst.process_step_status_type
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String getEventStatusesForWorkQueueType = """
@@ -643,7 +643,7 @@ public class WorkQueueTypeQuery {
        WHERE pswqtpst.process_step_event_work_queue_type_id = :processStepEventWorkQueueTypeId
          AND pswqtpst.archived is not true
        order by pst.event_status_type, cpst.event_status_type
-       """;
+    """;
 
 
   //language=PostgreSQL

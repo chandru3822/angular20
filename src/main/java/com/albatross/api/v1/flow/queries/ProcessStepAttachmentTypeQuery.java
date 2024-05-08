@@ -18,7 +18,7 @@ public class ProcessStepAttachmentTypeQuery {
         where psat.process_step_id = :processStepId
           and psat.archived is not true
         order by psat.display_order
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAvailableTypesForStep = """
@@ -37,7 +37,7 @@ public class ProcessStepAttachmentTypeQuery {
                 and psat.archived is not true
             )
           order by at.attachment_type
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String get = """
@@ -111,7 +111,7 @@ public class ProcessStepAttachmentTypeQuery {
         from flow.process_step_attachment_type psat
           inner join flow.attachment_type at on psat.attachment_type_id = at.id
         where psat.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String addTypeToStep = """
@@ -119,7 +119,7 @@ public class ProcessStepAttachmentTypeQuery {
       values (:processStepId, :attachmentTypeId, :createdById,
               (select coalesce(max(display_order) + 1, 0) from flow.process_step_attachment_type pse
                where process_step_id = :processStepId and archived is false))
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String updateDisplayOrder = """
@@ -128,7 +128,7 @@ public class ProcessStepAttachmentTypeQuery {
                modified_by_id = :modifiedById,
                date_modified = now()
            where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String update = """
@@ -139,7 +139,7 @@ public class ProcessStepAttachmentTypeQuery {
                 modified_by_id = :modifiedById,
                 date_modified = now()
             where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteTypeFromStep = """
@@ -148,6 +148,6 @@ public class ProcessStepAttachmentTypeQuery {
          date_modified = now(),
          modified_by_id = :userId
      where id = :id
-     """;
+    """;
 
 }

@@ -3,9 +3,9 @@ package com.albatross.api.v1.company.blueraven.controllers;
 import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.mypurecloud.sdk.v2.ApiException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,12 +14,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/genesys")
-@Slf4j
+@RequiredArgsConstructor
 public class GenesysController {
-  @Autowired
-  private GenesysService genesysService;
+  private final GenesysService genesysService;
 
   @GetMapping(value = "/outboundCall/{phoneNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> getContactUrlByPhone(@PathVariable String phoneNumber) {

@@ -5,7 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.Financier;
 import com.albatross.api.v1.company.blueraven.services.queries.FinancierQuery;
 import com.albatross.api.v1.flow.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -16,12 +16,10 @@ import java.util.List;
  * Created by Joseph Canto on 2020-02-07.
  */
 @Service
+@RequiredArgsConstructor
 public class FinancierService {
-  @Autowired
-  private SqlCache sqlCache;
-
-  @Autowired
-  private SecurityService securityService;
+  private final SqlCache sqlCache;
+  private final SecurityService securityService;
 
   public List<Financier> getAllActiveFinanciers() {
     return sqlCache.queryBySql(FinancierQuery.getActive, Collections.emptyMap(), Financier.class);

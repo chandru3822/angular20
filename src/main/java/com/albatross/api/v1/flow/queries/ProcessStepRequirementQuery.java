@@ -227,7 +227,7 @@ public class ProcessStepRequirementQuery {
                                         and cfg.archived is not true
                                         and psr.process_step_id = :processStepId
                                       order by psr.requirement_nbr
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getRequirement = """
@@ -434,17 +434,17 @@ public class ProcessStepRequirementQuery {
                  left join flow.data_view_field_config dvfc on dvfc.id = psr.data_view_field_config_id
                  left join flow.data_view_child_field_config dvcfc on dvcfc.id = psr.data_view_child_field_config_id
           where psr.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getRequirementsWithValuesByProjectProcessStepId = """
     select * from flow.get_project_process_step_requirements_with_values(:projectProcessStepId::bigint, :requirementIds::bigint[])
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getEventActionRequirementsWithValuesByProjectProcessStepId = """
     select * from flow.get_project_process_step_event_requirements_with_values(:projectProcessStepId::bigint, :requirementIds::bigint[])
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteRequirement = """
@@ -453,7 +453,7 @@ public class ProcessStepRequirementQuery {
                date_modified = now(),
                archived = true
            where id = :requirementId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String requirementsUsingCustomFieldGroup = """
@@ -462,7 +462,7 @@ public class ProcessStepRequirementQuery {
             inner join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
           where cfga.custom_field_group_id = :customFieldGroupId
             and psr.archived is not true
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String requirementsUsingCustomFieldGroupAssignment = """
@@ -471,7 +471,7 @@ public class ProcessStepRequirementQuery {
           inner join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
         where cfga.id = :customFieldGroupAssignmentId
           and psr.archived is not true
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String getRequirementTypes = """
@@ -480,7 +480,7 @@ public class ProcessStepRequirementQuery {
        where archived is not true
        and use_by_process_step is true
        order by display_order
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getEventRequirementTypes = """
@@ -489,7 +489,7 @@ public class ProcessStepRequirementQuery {
        where archived is not true
        and use_by_event is true
        order by display_order
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String updateRequirement = """
@@ -506,7 +506,7 @@ public class ProcessStepRequirementQuery {
             modified_by_id = :modifiedById,
             date_modified = now()
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertRequirement = """
@@ -531,13 +531,13 @@ public class ProcessStepRequirementQuery {
             :listOfValueId, array [ :listOfValueIds ]::bigint[], :systemListOptionId, :customSqlOptionId,
             :referenceProcessStepId, :failIfNoReferenceStepFound, now(), :createdById, now(), :createdById,
             :dataViewFieldConfigId, :dataViewChildFieldConfigId)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertRequirementParamDynamicValue = """
         insert into flow.requirement_param_dynamic_value (db_function_param_id, process_step_requirement_id, dynamic_value, created_by_id, date_created, modified_by_id, date_modified)
     values (:dbFunctionParamId, :processStepRequirementId, :dynamicValue, :createdById, now(),:createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateRequirementParamDynamicValue = """

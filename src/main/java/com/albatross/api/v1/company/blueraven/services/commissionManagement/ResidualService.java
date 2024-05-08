@@ -5,7 +5,6 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.commissionManagement.ResidualController;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.CommissionPlanStatus;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
-import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.CommissionManagementQuery;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.ResidualQuery;
 import com.albatross.api.v1.flow.model.User;
 import lombok.Data;
@@ -33,8 +32,7 @@ public class ResidualService {
   private final DataSource dataSource;
 
   public List<Residual> getResiduals() {
-    List<Residual> results = sqlCache.queryBySql(ResidualQuery.getAll, Collections.emptyMap(), Residual.class);
-    return results;
+    return sqlCache.queryBySql(ResidualQuery.getAll, Collections.emptyMap(), Residual.class);
   }
 
   @Data
@@ -46,8 +44,7 @@ public class ResidualService {
   public List<ResidualProject> getResidualProjects(String search) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("search", search);
-    List<ResidualProject> results = sqlCache.queryBySql(ResidualQuery.getProjects, params, ResidualProject.class);
-    return results;
+    return sqlCache.queryBySql(ResidualQuery.getProjects, params, ResidualProject.class);
   }
 
   public void saveProjectOverride(ResidualController.ProjectOverride projectOverride) {
@@ -70,29 +67,25 @@ public class ResidualService {
   public List<ResidualDetail> getCurrentClawbacks(Long userId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
-    List<ResidualDetail> results = sqlCache.queryBySql(ResidualQuery.getCurrentClawbacks, params, ResidualDetail.class);
-    return results;
+    return sqlCache.queryBySql(ResidualQuery.getCurrentClawbacks, params, ResidualDetail.class);
   }
 
   public List<ResidualDetail> getResidualQualifiedLifetimeFds(Long userId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
-    List<ResidualDetail> results = sqlCache.queryBySql(ResidualQuery.getResidualQualifiedLifetimeFds, params, ResidualDetail.class);
-    return results;
+    return sqlCache.queryBySql(ResidualQuery.getResidualQualifiedLifetimeFds, params, ResidualDetail.class);
   }
 
   public List<ResidualDetail> getResidualQualifiedFdsThisPeriod(Long userId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
-    List<ResidualDetail> results = sqlCache.queryBySql(ResidualQuery.getResidualQualifiedFdsThisPeriod, params, ResidualDetail.class);
-    return results;
+    return sqlCache.queryBySql(ResidualQuery.getResidualQualifiedFdsThisPeriod, params, ResidualDetail.class);
   }
 
   public List<ResidualDetail> getResidualNotQualifiedFdsThisPeriod(Long userId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
-    List<ResidualDetail> results = sqlCache.queryBySql(ResidualQuery.getResidualNotQualifiedFdsThisPeriod, params, ResidualDetail.class);
-    return results;
+    return sqlCache.queryBySql(ResidualQuery.getResidualNotQualifiedFdsThisPeriod, params, ResidualDetail.class);
   }
 
   public List<ResidualDetail> getSnapshotFdc(Long residualId, Long userId, Long snapshotTypeId) {
@@ -100,8 +93,7 @@ public class ResidualService {
     params.put("residualId", residualId);
     params.put("userId", userId);
     params.put("snapshotTypeId", snapshotTypeId);
-    List<ResidualDetail> results = sqlCache.queryBySql(ResidualQuery.getSnapshotFdc, params, ResidualDetail.class);
-    return results;
+    return sqlCache.queryBySql(ResidualQuery.getSnapshotFdc, params, ResidualDetail.class);
   }
 
   public List<ResidualPlan> getResidualPlans() {

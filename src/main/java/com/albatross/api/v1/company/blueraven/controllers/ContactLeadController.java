@@ -368,7 +368,7 @@ public class ContactLeadController {
   }
 
   @PostMapping(value = "/vivint", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateContactVivint (@RequestBody ContactLead contactLead) {
+  public void updateContactVivint(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
 }

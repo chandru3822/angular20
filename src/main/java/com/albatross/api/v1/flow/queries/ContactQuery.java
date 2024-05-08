@@ -159,7 +159,7 @@ select c.id,
                                                  from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
             else c.company_id = :companyId end
             and c.archived is not true
-    """;
+ """;
 
   //language=PostgreSQL
   public final static String updateContact = """

@@ -108,7 +108,7 @@ public class ProcessStepEventQuery {
                        ) end
                    else 1=1 end
       order by pse.display_order
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAvailableEventsForStep = """
@@ -141,7 +141,7 @@ public class ProcessStepEventQuery {
                 and pse.archived is not true
             )
             order by e.event_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String get = """
@@ -515,7 +515,7 @@ public class ProcessStepEventQuery {
                inner join flow.event e on pse.event_id = e.id
                inner join flow.company_event_status_type cest on pse.initial_company_event_status_type_id = cest.id
         where pse.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String addEventToStep = """
@@ -523,7 +523,7 @@ public class ProcessStepEventQuery {
        values (:processStepId, :eventId, :createdById, :initialCompanyEventStatusTypeId,
                (select coalesce(max(display_order) + 1, 0) from flow.process_step_event pse
                  where process_step_id = :processStepId and archived is false))
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String updateStepEvent = """
@@ -533,7 +533,7 @@ public class ProcessStepEventQuery {
            modified_by_id = :userId
        where process_step_id = :processStepId
        and event_id = :eventId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String updateDisplayOrder = """
@@ -542,7 +542,7 @@ public class ProcessStepEventQuery {
                modified_by_id = :modifiedById,
                date_modified = now()
            where id = :id
-       """;
+    """;
 
     //language=PostgreSQL
     public final static String saveReadOnly = """
@@ -552,7 +552,7 @@ public class ProcessStepEventQuery {
              modified_by_id = :userId,
              date_modified = now()
          where id = :processStepEventId
-       """;
+    """;
 
   //language=PostgreSQL
     public final static String archiveAllWhiteListPositionsForPSEvent = """
@@ -595,7 +595,7 @@ public class ProcessStepEventQuery {
             date_modified = now(),
             modified_by_id = :userId
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String addStepEventAction = """
@@ -603,7 +603,7 @@ public class ProcessStepEventQuery {
         values(:processStepEventId, :companyEventStatusTypeId, :companyProcessStepStatusTypeId, :actionName, :userId,
                (select coalesce(max(display_order) + 1, 0) from flow.process_step_event_action psea
                 where process_step_event_id = :processStepEventId and archived is false), :content, :color, :bgColor, :actionTypeId)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateStepEventAction = """
@@ -626,7 +626,7 @@ public class ProcessStepEventQuery {
               modified_by_id = :userId,
               date_modified = now()
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateActionDisplayOrder = """
@@ -635,12 +635,12 @@ public class ProcessStepEventQuery {
                 modified_by_id = :modifiedById,
                 date_modified = now()
             where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String duplicateAction = """
     select * from flow.duplicate_event_action(:actionId::bigint, :userId::bigint, :companyId::bigint)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getStepEventAction = """
@@ -846,13 +846,13 @@ where psea.id = :id
             date_modified = now(),
             modified_by_id = :userId
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String addLinkToAction = """
     insert into flow.process_step_event_action_link (process_step_event_action_id, link_id, created_by_id, date_created, modified_by_id, date_modified)
         values (:processStepEventActionId, :linkId, :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getActionChildLink = """
@@ -869,7 +869,7 @@ where psea.id = :id
        from flow.process_step_event_action_link psal
            inner join flow.link l on l.id = psal.link_id
        where psal.id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteLinkFromAction = """
@@ -878,13 +878,13 @@ where psea.id = :id
               modified_by_id = :modifiedById,
               date_modified = now()
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String addChildFunctionToAction = """
     insert into flow.process_step_event_action_company_function (process_step_event_action_id, company_function_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
         values (:processStepEventActionId, :companyFunctionId, (COALESCE((SELECT MAX(display_order) + 1 FROM flow.process_step_event_action_company_function psacf where psacf.process_step_event_action_id = :processStepEventActionId and psacf.archived is false), 1)), :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateChildFunctionOrder = """
@@ -893,7 +893,7 @@ where psea.id = :id
             date_modified = now(),
             modified_by_id = :modifiedById
       where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getActionChildFunction = """
@@ -932,7 +932,7 @@ where psea.id = :id
         from flow.process_step_event_action_company_function cp
                  inner join flow.company_function cf on cf.id = cp.company_function_id
         where cp.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteActionChildFunction = """
@@ -941,7 +941,7 @@ where psea.id = :id
              modified_by_id = :modifiedById,
              date_modified = now()
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String updateActionChildFunction = """
@@ -950,7 +950,7 @@ where psea.id = :id
              modified_by_id = :modifiedById,
              date_modified = now()
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getChildFunctionsByPpsEventId = """
@@ -1025,7 +1025,7 @@ where psea.id = :id
         order by
           psacf.display_order,
           cf.company_function_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveOldLogic = """
@@ -1034,13 +1034,13 @@ where psea.id = :id
             date_modified = now(),
             modified_by_id = :userId
         where process_step_event_action_id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertLogic = """
     insert into flow.process_step_event_action_logic (process_step_event_requirement_id, operation_type_id, sql_order, process_step_event_action_id, date_created, created_by_id)
        values (:processStepEventRequirementId, :operationTypeId, :sqlOrder, :id, now(), :createdById)
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String updateRequiredFieldStatus = """
@@ -1049,7 +1049,7 @@ where psea.id = :id
                modified_by_id = :userId,
                date_modified = now()
          where id = :pseafId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveRequiredFieldStatus = """
@@ -1058,7 +1058,7 @@ where psea.id = :id
              modified_by_id = :userId,
              date_modified = now()
        where id = :pseafId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String addRequiredFieldStatus = """
@@ -1076,7 +1076,7 @@ where psea.id = :id
             from flow.process_step_event pse
             where pse.id = :processStepEventId)
           AND wlp.archived is not true
-        """;
+    """;
 
 
   //language=PostgreSQL
@@ -1141,11 +1141,11 @@ where psea.id = :id
           order by psl.sql_order
         )
         select array_to_string(array(select value from logic), ' ')
-        """;
+    """;
   public final static String addSmsToEventAction = """
     insert into flow.process_step_event_action_message_template (process_step_event_action_id, message_template_id, sms_team_ids, created_by_id, date_created, modified_by_id, date_modified)
         values (:processStepEventActionId, :messageTemplateId, array[ :teamIds ]::bigint[], :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getEventActionChildSms = """
@@ -1171,7 +1171,7 @@ where psea.id = :id
        from flow.process_step_event_action_message_template pseamt
               inner join flow.message_template mt on mt.id = pseamt.message_template_id
        where pseamt.id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteSmsFromEventAction = """
@@ -1180,7 +1180,7 @@ where psea.id = :id
              modified_by_id = :modifiedById,
              date_modified = now()
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getChildSmsTemplatesByEventActionId = """
@@ -1208,5 +1208,5 @@ where psea.id = :id
           where
             pseamt.process_step_event_action_id = :processStepEventActionId and
             pseamt.archived is not true
-        """;
+    """;
 }

@@ -24,7 +24,7 @@ public class OrganizationCfvQuery {
               int_array_value = :intArrayValue::bigint[],
               modified_by_id = :userId,
               date_modified = now()
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getCompanyId = """
@@ -116,6 +116,6 @@ public class OrganizationCfvQuery {
           and cfg.archived is not true
           and cot.company_id = :companyId
         order by cfg.group_order
-        """;
+    """;
 
 }

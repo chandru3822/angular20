@@ -5,7 +5,7 @@ import com.albatross.api.v1.company.blueraven.models.FunnelRequest;
 import com.albatross.api.v1.company.blueraven.models.IncentiveCounts;
 import com.albatross.api.v1.company.blueraven.services.SetterDashboardService;
 import io.swagger.v3.oas.annotations.Hidden;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -14,20 +14,21 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Hidden
 @RequestMapping(value = "/api/v1/company/blueraven/setterDashboard")
+@RequiredArgsConstructor
 public class SetterDashboardController {
-  @Autowired
-  private SetterDashboardService setterDashboardService;
+
+  private final SetterDashboardService setterDashboardService;
 
   @GetMapping(value = "/getIncentivePitchCounts")
   public IncentiveCounts getIncentivePitchCounts(@RequestParam Boolean isSetterMgr,
-                                             @RequestParam (required = false) Integer setterMgrOfficeId) {
+                                                 @RequestParam(required = false) Integer setterMgrOfficeId) {
     return setterDashboardService.getIncentivePitchCounts(isSetterMgr, setterMgrOfficeId);
   }
 
   @GetMapping(value = "/pitchesDrilldown")
   public String pitchesDrilldown(@RequestParam int quarter,
                                  @RequestParam Boolean isSetterMgr,
-                                 @RequestParam (required = false) Integer setterMgrOfficeId) {
+                                 @RequestParam(required = false) Integer setterMgrOfficeId) {
     return setterDashboardService.pitchesDrilldown(quarter, isSetterMgr, setterMgrOfficeId);
   }
 
@@ -53,8 +54,8 @@ public class SetterDashboardController {
 
   @GetMapping(value = "/officeToBeat")
   public String officeToBeat(@RequestParam int officeId,
-                                   @RequestParam String startDate,
-                                   @RequestParam String endDate) {
+                             @RequestParam String startDate,
+                             @RequestParam String endDate) {
     return setterDashboardService.officeToBeat(officeId, startDate, endDate);
   }
 
