@@ -163,13 +163,7 @@ BEGIN
                                             where cf.parent_custom_field_id = 10062
                                               and cfga.archived is false and cf.archived is false and cfg.archived is false
                                               and cf.company_id = v_company_id
-                                              and cfg.process_step_id = p_process_step_id), (select lov2.id
-                                                                                             from flow.list_of_value lov
-                                                                                                      inner join flow.custom_field cf on cf.list_of_value_id = lov.id
-                                                                                                      inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
-                                                                                                 and cf.company_id = v_company_id
-                                                                                                 and cf.parent_custom_field_id = 10062 and cf.archived is false
-                                                                                             where lov2.name::text = plh.loan_product),
+                                              and cfg.process_step_id = p_process_step_id), plh.product_id,
                                             (select cfga.id
                                             from flow.custom_field cf
                                                      inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -271,13 +265,7 @@ BEGIN
                              where cf.parent_custom_field_id = 10460
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id), (select lov2.id
-                                                                              from flow.list_of_value lov
-                                                                                       inner join flow.custom_field cf on cf.list_of_value_id = lov.id
-                                                                                       inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
-                                                                                  and cf.company_id = v_company_id
-                                                                                  and cf.parent_custom_field_id = 10460 and cf.archived is false
-                                                                              where plh.loan_term::bigint = lov2.name::bigint),
+                               and cfg.process_step_id = p_process_step_id), plh.loan_term_id,
                             (select cfga.id
                              from flow.custom_field cf
                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -340,13 +328,7 @@ BEGIN
                              where cf.parent_custom_field_id = 10183
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id),(select lov2.id
-                                                                             from flow.list_of_value lov
-                                                                                      inner join flow.custom_field cf on cf.list_of_value_id = lov.id
-                                                                                      inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
-                                                                                 and cf.company_id = v_company_id
-                                                                                 and cf.parent_custom_field_id = 10183 and cf.archived is false
-                                                                             where lov2.name::text = case when v_loan_type = 'Mosiac' then 'Mosaic' else v_loan_type end),
+                               and cfg.process_step_id = p_process_step_id),plh.financier_id,
                            (select cfga.id
                             from flow.custom_field cf
                                    inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
