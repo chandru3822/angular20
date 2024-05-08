@@ -7,7 +7,7 @@ public class NotificationQuery {
     select id, user_id, notification_topic_id, title, body, priority, metadata, message_read_tsz
     from flow.notification
     where id = any (:ids::bigint[])
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getUnreadByUserPageable = """
@@ -17,7 +17,7 @@ public class NotificationQuery {
       and user_id = :userId
     order by priority desc, date_created desc
     limit :limit offset :offset
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getUnreadByUser = """
@@ -26,7 +26,7 @@ public class NotificationQuery {
     where message_read_tsz is null
       and user_id = :userId
     order by priority desc, date_created desc
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getUnreadProjectNotificationsByUser = """
@@ -36,7 +36,7 @@ public class NotificationQuery {
       and user_id = :userId
       and (metadata->>'projectId') is not null
     order by priority desc, date_created desc
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getUnreadUserNotificationsByUser = """
@@ -46,12 +46,12 @@ public class NotificationQuery {
       and user_id = :userId
       and (metadata->>'userId') is not null
     order by priority desc, date_created desc
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getUnreadByUserCount = """
     select count(1) from flow.notification where message_read_tsz is null and user_id = :userId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getUnreadByUserAfterId = """
@@ -61,7 +61,7 @@ public class NotificationQuery {
       and user_id = :userId
       and id > :afterId
     order by priority asc, date_created desc
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String markAsRead = """
@@ -71,6 +71,6 @@ public class NotificationQuery {
         modified_by_id = :modifiedById
     where id = any (:ids::bigint[])
       and user_id = :userId
-        """;
+    """;
 
 }

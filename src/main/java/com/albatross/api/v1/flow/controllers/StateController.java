@@ -2,8 +2,8 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CompanyState;
 import com.albatross.api.v1.flow.services.StateService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,10 +17,10 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/state")
+@RequiredArgsConstructor
 public class StateController {
 
-  @Autowired
-  private StateService stateService;
+  private final StateService stateService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CompanyState> getAllStates() {

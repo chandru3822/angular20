@@ -157,6 +157,7 @@ DECLARE
   v_project_activity_id                              bigint;
   v_pps_id                                           bigint;
   v_existing_project_id                              bigint;
+  v_city                                             text;
 
 BEGIN
   select p_record ->> 'Project_ID',
@@ -267,7 +268,8 @@ BEGIN
          p_record -> 'Chatter_File' ->> 'displayName',
          p_record -> 'Chatter_File' ->> 'contentType',
          p_record -> 'Chatter_File' ->> 's3Key',
-         p_record -> 'Chatter_File' ->> 'size'
+         p_record -> 'Chatter_File' ->> 'size',
+         p_record ->> 'city'
   into
     v_sp_project_id,
     v_current_milestone,
@@ -377,7 +379,8 @@ BEGIN
     v_chatter_file_displayname,
     v_chatter_file_content_type,
     v_chatter_file_s3_key,
-    v_chatter_file_size;
+    v_chatter_file_size,
+    v_city;
 
   select count(1)
   into v_existing_project_id
@@ -396,9 +399,9 @@ BEGIN
 
       insert into flow.contact (contact_type_id, first_name, last_name, street1, street2, postal_code, phone, email,
                                 date_created, date_modified, created_by_id, modified_by_id,
-                                company_id, archived, owner_user_position_id, company_state_id)
+                                company_id, archived, owner_user_position_id, company_state_id,city)
       values (1, v_first_name, v_last_name, v_street_1, v_street_2, v_postal_code, v_phone, v_email,
-              now(), now(), 2384850, 2384850, 3, false, 105806, v_company_state_id)
+              now(), now(), 2384850, 2384850, 3, false, 105806, v_company_state_id,v_city)
       returning id into v_contact_id;
 
       perform flow.set_contact_cfv(v_contact_id, 2384850, 395, 24629::text);
@@ -406,7 +409,7 @@ BEGIN
 
       insert into flow.project (contact_id, company_process_id, project_name, date_created, date_modified,
                                 created_by_id, modified_by_id, company_project_status_type_id, user_position_id,
-                                street1, street2, postal_code, company_state_id, company_country_id, archived)
+                                street1, street2, postal_code, company_state_id, company_country_id, archived,city)
         (select v_contact_id,
                 1,
                 concat(v_first_name, ' ', v_last_name),
@@ -421,7 +424,8 @@ BEGIN
                 v_postal_code,
                 v_company_state_id,
                 1,
-                false)
+                false,
+                v_city)
       returning id into v_project_id;
 
       insert into flow.project_process_step(project_id, process_step_id, company_process_step_status_type_id,

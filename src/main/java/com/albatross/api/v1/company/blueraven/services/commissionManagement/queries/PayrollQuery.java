@@ -75,7 +75,7 @@ public class PayrollQuery {
                           ELSE 1 = 1 END
                  AND CASE WHEN :projectId:: INTEGER IS NOT NULL
                               THEN pd.project_id = :projectId:: INTEGER ELSE 1 = 1 END
-         
+
                GROUP BY p.id, p.period_end
                ORDER BY p.period_end desc) AS sub_rows
     """;

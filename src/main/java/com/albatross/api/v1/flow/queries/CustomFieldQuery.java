@@ -47,7 +47,7 @@ public class CustomFieldQuery {
           inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
         where cf.id = :id
         order by cf.field_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAll = """
@@ -103,7 +103,7 @@ public class CustomFieldQuery {
                    else 1 = 1
             end)
         order by cf.field_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAllByPositionId = """
@@ -153,7 +153,7 @@ public class CustomFieldQuery {
           and cf.company_system_list_id = 2
           and :positionId = any(cf.system_list_option_ids)
         order by cf.field_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getGroupsUsingField = """
@@ -174,7 +174,7 @@ public class CustomFieldQuery {
       and cfg.archived is not true
       and cfga.archived is not true
     order by ot.object_type, ps.process_step_name, cfg.group_name, cf.field_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteField = """
@@ -202,7 +202,7 @@ public class CustomFieldQuery {
              modified_by_id = :modifiedById,
              date_modified = now()
        where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String insertField = """
@@ -220,7 +220,7 @@ public class CustomFieldQuery {
   public final static String insertListOfValue = """
     insert into flow.list_of_value(name, parent_id, display_order, date_created, created_by_id, date_modified, modified_by_id)
        values (trim(:name), :parentId, (select coalesce(max(display_order) + 1, 0) from flow.list_of_value where parent_id = :parentId and archived is not true), now(), :createdById, now(), :createdById)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateListOfValue = """
@@ -295,7 +295,7 @@ public class CustomFieldQuery {
           and cfga.archived is not true
           and cf.archived is not null
         order by cf.field_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getByEvent = """
@@ -358,7 +358,7 @@ public class CustomFieldQuery {
           and archived is false
           and df.id in (10,11,12)
         order by field_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getByParentProcessStep = """
@@ -414,7 +414,7 @@ public class CustomFieldQuery {
           and cfga.archived is not true
           and cf.archived is not null
         order by cf.field_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getByParentType = """
@@ -470,7 +470,7 @@ public class CustomFieldQuery {
           and cfga.archived is not true
           and cf.archived is not true
         order by cf.field_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getByDataView = """
@@ -517,7 +517,7 @@ public class CustomFieldQuery {
       and dv.company_id = :companyId
       and dvfc.archived is not true
     order by field_name
-        """;
+    """;
 
 
   //todo: unhardcode this from company_id = 3

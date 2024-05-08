@@ -6,8 +6,8 @@ import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType
 import com.albatross.api.v1.flow.model.processStep.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueType;
 import com.albatross.api.v1.flow.services.WorkQueueTypeService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,28 +23,28 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/workQueueType")
+@RequiredArgsConstructor
 public class WorkQueueTypeController {
 
-  @Autowired
-  private WorkQueueTypeService workQueueTypeService;
+  private final WorkQueueTypeService workQueueTypeService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<WorkQueueType> getWorkQueueTypes (@RequestParam(required = false) Boolean sortByName) {
+  public List<WorkQueueType> getWorkQueueTypes(@RequestParam(required = false) Boolean sortByName) {
     return workQueueTypeService.getWorkQueueTypes(sortByName);
   }
 
   @GetMapping(value = "/durationTypes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<DurationType> getDurationTypes () {
+  public List<DurationType> getDurationTypes() {
     return workQueueTypeService.getDurationTypes();
   }
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<WorkQueueType> getWorkQueueType (@PathVariable Long id) {
+  public Optional<WorkQueueType> getWorkQueueType(@PathVariable Long id) {
     return workQueueTypeService.getType(id);
   }
 
   @GetMapping(value = "/{id}/inUseBy", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getItemsUsingWorkQueue (@PathVariable Long id) {
+  public String getItemsUsingWorkQueue(@PathVariable Long id) {
     return workQueueTypeService.getItemsUsingWorkQueueType(id);
   }
 
@@ -76,7 +76,7 @@ public class WorkQueueTypeController {
   }
 
   @GetMapping(value = "/processStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<WorkQueueType> getAvailableWorkQueueTypesForStep (@PathVariable Long id) {
+  public List<WorkQueueType> getAvailableWorkQueueTypesForStep(@PathVariable Long id) {
     return workQueueTypeService.getAvailableWorkQueueTypesForStep(id);
   }
 
@@ -111,7 +111,7 @@ public class WorkQueueTypeController {
 
   //event wqt
   @GetMapping(value = "/event/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<WorkQueueType> getAvailableWorkQueueTypesForEvent (@PathVariable Long id) {
+  public List<WorkQueueType> getAvailableWorkQueueTypesForEvent(@PathVariable Long id) {
     return workQueueTypeService.getAvailableWorkQueueTypesForEvent(id);
   }
 

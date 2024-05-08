@@ -10,7 +10,6 @@ import com.albatross.api.v1.flow.model.roundRobin.RoundRobin;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -164,9 +163,7 @@ public class CloserDashboardService {
     params.put("currentUserId", securityService.getCurrentUser().getId());
     params.put("timeInterval", timeInterval);
 
-    List<CloserTableScore> closerTableScores = sqlCache.queryBySql(CloserDashboardQuery.getCloserOrgRankings, params, CloserTableScore.class);
-
-    return closerTableScores;
+    return sqlCache.queryBySql(CloserDashboardQuery.getCloserOrgRankings, params, CloserTableScore.class);
   }
 
   public void getUserImages(List<CloserTableScore> scores) {
@@ -382,7 +379,6 @@ public class CloserDashboardService {
     params.put("bookingDate", bookingDate);
 
 
-    List<LeaderboardBooking> results = sqlCache.queryBySql(CloserDashboardQuery.getLeaderboardBookings, params, LeaderboardBooking.class);
-    return results;
+    return sqlCache.queryBySql(CloserDashboardQuery.getLeaderboardBookings, params, LeaderboardBooking.class);
   }
 }

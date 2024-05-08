@@ -91,19 +91,19 @@ public class DbFunctionQuery {
             left join flow.data_type dt on df.return_data_type_id = dt.id
              inner join flow.db_function_type dft on dft.id = df.db_function_type_id
           where df.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertFunction = """
     insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name, run_in_backend, process_step_actionable, event_actionable)
          values (:functionName, :returnDataTypeId, :dbFunctionTypeId, :displayName, :runInBackend, :processStepActionable, :eventActionable)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertParam = """
     insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id, nullable, description)
             values(:dbFunctionId, :parameterName, (select coalesce(max(display_order) + 1, 0) from flow.db_function_param where db_function_id = :dbFunctionId), :dataTypeId, :parameterTypeId, :systemValueId, :nullable, :description)
-        """;
+    """;
 
 
   //language=PostgreSQL

@@ -61,7 +61,7 @@ public class SmsTeamQuery {
                   else st.company_id = :companyId end
           and st.archived = false
         order by st.team_name asc
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAllTeamUsers = """
@@ -121,7 +121,7 @@ public class SmsTeamQuery {
                   then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
               else st.company_id = :companyId end
       and st.archived is false;
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getTeamUsers = """
@@ -178,7 +178,7 @@ public class SmsTeamQuery {
     from flow.sms_team st
     where st.archived = false
       and st.id in (:ids)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getTeamNotificationUsers = """
@@ -195,7 +195,7 @@ public class SmsTeamQuery {
         from flow.sms_team st
         where st.archived = false
           and st.id in (:ids)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getDetails = """
@@ -237,7 +237,7 @@ public class SmsTeamQuery {
                                       AND sto.archived is not true) tb), '[]') AS "orgs"
        from flow.sms_team st
        where st.id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getTeamsForUser = """
@@ -300,7 +300,7 @@ public class SmsTeamQuery {
                   then st.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
               else st.company_id = :companyId end
       and st.archived = false;
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getDefaultTeamId = """

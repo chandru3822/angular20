@@ -52,7 +52,7 @@ public class PandaDocService {
 
   @Autowired private TemplatingEngineService templateService;
 
-  @Autowired @Lazy private InstallAgreementService installAgreementRepository;
+  @Autowired @Lazy private InstallAgreementService installAgreementService;
 
   /**
    * Get the necessary information about a project to determine which PandaDoc template to use when
@@ -179,9 +179,9 @@ public class PandaDocService {
 
     final PandaDocProjectDetails deets = projectDetails.get();
     deets.setFinancier(
-        installAgreementRepository.getFinancierFromProposalLog(projectId, proposalNbr));
+        installAgreementService.getFinancierFromProposalLog(projectId, proposalNbr));
     deets.setUtilityCompany(
-        installAgreementRepository.getUtilityFromProposalLog(projectId, proposalNbr));
+        installAgreementService.getUtilityFromProposalLog(projectId, proposalNbr));
 
     String templateId = findTemplateId(deets, isSpanish);
 
@@ -249,9 +249,9 @@ public class PandaDocService {
   public void validate(Long projectId, String financier, JSONObject tokens) throws Exception {
     final Set<String> ALLOWED_FINANCIERS = new HashSet<>(Arrays.asList("cash", "loanpal", "enfin", "goodleap", "sunlight", "sunpower",
                                                                                 "skeps", "dividend", "credit", "credit human"));
-    if (installAgreementRepository.isCashProject(financier)) {
+    if (installAgreementService.isCashProject(financier)) {
       validateCashProject(projectId, tokens);
-    } else if (installAgreementRepository.isGoodLeapProject(financier)) {
+    } else if (installAgreementService.isGoodLeapProject(financier)) {
       validateGoodLeapProject(projectId, tokens);
     } else if (!ALLOWED_FINANCIERS.contains(financier.toLowerCase())) {
       throw new Exception(

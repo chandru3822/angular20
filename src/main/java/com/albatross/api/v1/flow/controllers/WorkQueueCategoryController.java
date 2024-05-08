@@ -2,8 +2,8 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueCategory;
 import com.albatross.api.v1.flow.services.WorkQueueCategoryService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,18 +19,18 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/workQueueCategory")
+@RequiredArgsConstructor
 public class WorkQueueCategoryController {
 
-  @Autowired
-  private WorkQueueCategoryService workQueueCategoryService;
+  private final WorkQueueCategoryService workQueueCategoryService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<WorkQueueCategory> getWorkQueueCategoriesFiltered () throws SQLException {
+  public List<WorkQueueCategory> getWorkQueueCategoriesFiltered() throws SQLException {
     return workQueueCategoryService.getWorkQueueCategories(true);
   }
 
   @GetMapping(value = "/admin", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<WorkQueueCategory> getWorkQueueCategories () throws SQLException {
+  public List<WorkQueueCategory> getWorkQueueCategories() throws SQLException {
     return workQueueCategoryService.getWorkQueueCategories(false);
   }
 

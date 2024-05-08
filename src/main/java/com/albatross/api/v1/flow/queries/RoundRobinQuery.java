@@ -34,7 +34,7 @@ public class RoundRobinQuery {
                                     '%' || lower(trim(translate(:searchQuery::text, '*,.&', ''))) || '%')
             else 1=1 end
         order by round_robin_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getRoundRobinsForUser = """
@@ -95,7 +95,7 @@ public class RoundRobinQuery {
                )
            end
          order by round_robin_name
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getRoundRobinByPostalCode = """
@@ -114,12 +114,12 @@ public class RoundRobinQuery {
          and pc.archived is not true
          and pc.postal_code = :postalCode
        limit 1
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getScheduleToUsers = """
     select * from brs.get_allocation_by_round_robin(:roundRobinId::bigint, :currentUserId::bigint)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getScheduleByUsers = """
@@ -140,7 +140,7 @@ public class RoundRobinQuery {
           and pczu.archived is not true
           and pczu.round_robin_user_type_id = 2
         order by u.first_name, u.last_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAssignedCodesForRoundRobin = """
@@ -153,7 +153,7 @@ public class RoundRobinQuery {
          and pc.active is true
          and pc.archived is not true
        order by pc.postal_code
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getAvaialbleCodesForRoundRobin = """
@@ -167,7 +167,7 @@ public class RoundRobinQuery {
       and pc.active is true
       and pc.round_robin_id is null
       order by postal_code
-       """;
+      """;
 
   //language=PostgreSQL
   public final static String saveManualUserAllocation = """
@@ -176,7 +176,7 @@ public class RoundRobinQuery {
             modified_by_id = :modifiedById,
             date_modified = now()
         where id = :rruId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveInactiveUsers = """
@@ -198,7 +198,7 @@ public class RoundRobinQuery {
               date_modified = now()
         from updates u
         where u.id = pczu.id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getRoundRobin = """
@@ -216,13 +216,13 @@ public class RoundRobinQuery {
           left join flow.company_timezone ct on pcz.company_timezone_id = ct.id
           left join flow.timezone t on ct.timezone_id = t.id
         where pcz.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertRoundRobin = """
     insert into flow.round_robin(company_id, round_robin_name, distribution_time_frame_days, schedulable_future_days, company_timezone_id, created_by_id, date_created, modified_by_id, date_modified, uses_total_lead_allocation)
         values (:companyId, :roundRobinName, :distributionTimeFrameDays, :schedulableFutureDays, :companyTimezoneId, :createdById, now(), :createdById, now(), :usesTotalLeadAllocation)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateRoundRobin = """
@@ -235,7 +235,7 @@ public class RoundRobinQuery {
             modified_by_id = :modifiedById,
             date_modified = now()
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteRoundRobin = """
@@ -244,13 +244,13 @@ public class RoundRobinQuery {
             modified_by_id = :modifiedById,
             date_modified = now()
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insertRoundRobinUser = """
     insert into flow.round_robin_user(round_robin_id, user_id, round_robin_user_type_id, company_timezone_id, created_by_id, date_created, modified_by_id, date_modified)
         values (:roundRobinId, :userId, :roundRobinUserTypeId, :companyTimezoneId, :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateRoundRobinUser = """
@@ -259,7 +259,7 @@ public class RoundRobinQuery {
            modified_by_id = :modifiedById,
            date_modified = now()
        where id = :rruId
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteRoundRobinUser = """
@@ -268,7 +268,7 @@ public class RoundRobinQuery {
             modified_by_id = :modifiedById,
             date_modified = now()
         where id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getRoundRobinUser = """
@@ -287,7 +287,7 @@ public class RoundRobinQuery {
           left join flow.company_timezone ct on pczu.company_timezone_id = ct.id
           left join flow.timezone t on ct.timezone_id = t.id
         where pczu.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updatePostalCode = """
@@ -297,7 +297,7 @@ public class RoundRobinQuery {
              modified_by_id = :createdById,
              round_robin_id = :roundRobinId
          where id = :id
-       """;
+    """;
 
 
   //language=PostgreSQL
@@ -307,7 +307,7 @@ public class RoundRobinQuery {
            date_modified = now(),
            round_robin_id = null
      where id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getPostalCode = """
@@ -317,7 +317,7 @@ public class RoundRobinQuery {
           pc.archived
        from flow.postal_code pc
        where pc.id = :id
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String userCanSchedule = """
@@ -329,7 +329,7 @@ public class RoundRobinQuery {
           and pczu.archived is not true
           and pcz.company_id = :companyId
           and pc.postal_code = left(:postalCode, 5)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String userCanScheduleRemote = """
@@ -341,7 +341,7 @@ public class RoundRobinQuery {
           and pcz.company_id = :companyId
           and round_robin_user_type_id = 2
           and pcz.remote is true
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAvailableRoundRobinUsers = """
@@ -373,7 +373,7 @@ public class RoundRobinQuery {
                               and case when :loadSchedulers is true then pczu.round_robin_user_type_id = 2 else pczu.round_robin_user_type_id = 1 end
                               and archived is not true)
           order by full_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAllRoundRobinUsers = """
@@ -424,7 +424,7 @@ public class RoundRobinQuery {
           and pczu.round_robin_user_type_id = 1
           and ((cast(:roundRobinIds as int[]) is null) OR pczu.round_robin_id = any (:roundRobinIds))
         order by full_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getRoundRobinUsersByDownline = """
@@ -503,6 +503,6 @@ public class RoundRobinQuery {
               )
           else pczu.user_id = :userId end
         order by full_name
-        """;
+    """;
 
 }

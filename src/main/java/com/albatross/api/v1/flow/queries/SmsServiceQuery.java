@@ -32,7 +32,7 @@ public class SmsServiceQuery {
              inner join flow.project p on c.id = p.contact_id and p.id = :projectId and p.archived is false
         where sr.to_phone = '+18014480212'
     ORDER BY created ASC
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String fetchByUserId = """
@@ -62,7 +62,7 @@ public class SmsServiceQuery {
     where sr.search_from_phone = (select u3.search_phone from flow.user u3 where u3.id = :userId)
           AND sr.to_phone = '+18014480029'
     ORDER BY created ASC
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String insert = """
@@ -96,7 +96,7 @@ public class SmsServiceQuery {
                      sq.message_sent_by_user_id,
                      sq.sms_team_id
               FROM sq
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String next = """
@@ -133,7 +133,7 @@ public class SmsServiceQuery {
                 ORDER BY sms.priority_level, sms.created ASC
                 LIMIT 10
                 FOR UPDATE SKIP LOCKED
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateById = """
@@ -178,7 +178,7 @@ public class SmsServiceQuery {
                     END
                   )
                 WHERE message_sid = :messageSid
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String saveReply = """
@@ -203,14 +203,14 @@ public class SmsServiceQuery {
       inner join flow.contact c on p.contact_id = c.id
      where c.search_phones = :from
      and p.archived is false
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String getUsers = """
     select u.id from flow.user u
      where u.search_phone = :from
      and u.archived is false
-     """;
+    """;
 
 //  //language=PostgreSQL
 //  public final static String fetchReply = """
@@ -254,7 +254,7 @@ public class SmsServiceQuery {
         and case when :messageRead::boolean is not null then sms.message_read = :messageRead::boolean else true end
      order by sms.id desc
      limit :limit offset :offset
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String update = """

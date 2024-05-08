@@ -276,7 +276,7 @@ public class InstallAgreementQuery {
     inner join flow.contact c on p.contact_id = c.id
     where plh.project_id = :projectId and
           plh.proposal_nbr = :proposalNumber
-        
+
   """;
 
   //language=PostgreSQL

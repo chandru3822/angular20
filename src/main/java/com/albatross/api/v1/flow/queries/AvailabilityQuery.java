@@ -43,7 +43,7 @@ public class AvailabilityQuery {
         and rs.archived is not true
         and (rs.end_date is null OR rs.end_date > now() - interval '30 days')
         order by rs.start_date
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getWorkDays = """
@@ -128,7 +128,7 @@ public class AvailabilityQuery {
              LEFT JOIN flow.org o ON o.id = rs.org_id
              LEFT JOIN flow.user u ON u.id = rs.org_id
         WHERE rs.id = :id
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateHours = """
@@ -155,7 +155,7 @@ public class AvailabilityQuery {
   public final static String insertHours = """
     insert into flow.resource_schedule_availability(resource_schedule_id, start_time, end_time, day_of_week_id, resource_slot_schedule_id, daylight_savings, created_by_id, date_created, modified_by_id, date_modified)
         values (:resourceScheduleId, to_char(:startTime::time, 'HH24:MI')::time, to_char(:endTime::time, 'HH24:MI')::time, :dayOfWeekId, :resourceSlotScheduleId, :daylightSavings, :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateAppointment = """
@@ -180,7 +180,7 @@ public class AvailabilityQuery {
   public final static String insertAppointment = """
     insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, all_day, description, title, recurrence, recurring_start_time, recurring_end_time, recurring_event_id, recurring_event_end_type, location,  latitude, longitude, origin_timezone, origin_timezone_offset, created_by_id, date_created, modified_by_id, date_modified)
         values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :allDay, :description, :title, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType, :location,  :latitude, :longitude, :originTimezone, :originTimezoneOffset, :createdById, now(), :createdById, now())
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAppointment = """
@@ -207,7 +207,7 @@ public class AvailabilityQuery {
                  LEFT JOIN flow.org o ON o.id = ra.org_id
                  LEFT JOIN flow.user u ON u.id = ra.org_id
         WHERE ra.id = :id
-        """;
+    """;
 
 
   //language=PostgreSQL
@@ -246,7 +246,7 @@ public class AvailabilityQuery {
           and ((ra.start_time between :startTime::timestamp AND :endTime::timestamp)
               OR (ra.end_time between :startTime::timestamp AND :endTime::timestamp))
           order by ra.start_time, ra.end_time, ra.all_day
-        """;
+    """;
 
   public final static String getAppointmentsForOneResourceInRange = """
     SELECT
@@ -285,7 +285,7 @@ public class AvailabilityQuery {
               and ((ra.start_time between :startTime::timestamp AND :endTime::timestamp)
                   OR (ra.end_time between :startTime::timestamp AND :endTime::timestamp))
               order by ra.start_time, ra.end_time, ra.all_day
-            """;
+    """;
 
   //language=PostgreSQL
   public final static String getAppointmentsForResource = """
@@ -319,7 +319,7 @@ public class AvailabilityQuery {
           order by ra.start_time, ra.end_time, ra.all_day
           limit :limit
           offset :offset
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAppointmentsForResourceCount = """
@@ -387,12 +387,12 @@ public class AvailabilityQuery {
   //language=PostgreSQL
   public final static String getTimeSlots = """
     select success, scheduled_start_time, array_to_json(users) as users from flow.get_availability_time_slots(:projectId::bigint, :startTime::timestamp, :endTime::timestamp, :availableDate::date, :remote::boolean)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String setCloserAppointment = """
     select * from flow.set_closer_appointment(:projectId::bigint, :userId::bigint, :projectProcessStepId::bigint, :projectProcessStepEventId::bigint, :appointmentTime::timestamp, :users::bigint[], :remote::boolean);
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String saveOverrideInfoToAudit = """
@@ -479,7 +479,7 @@ public class AvailabilityQuery {
                                           and ra.start_time >= :startingDate
                                  ) appointments), '[]') AS "appointments"
            from recurring r
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String updateSlotSchedule = """
@@ -564,7 +564,7 @@ public class AvailabilityQuery {
   public final static String insertSlotTime = """
     insert into flow.resource_slot_time(resource_slot_schedule_id, start_time, end_time, created_by_id, date_created, modified_by_id, date_modified)
     values (:resourceSlotScheduleId, :startTime::time, :endTime::time, :userId, now(), :userId, now())
-      """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveUnusedExcludedSlots = """
@@ -574,12 +574,12 @@ public class AvailabilityQuery {
             date_modified = now()
         where resource_schedule_availability_id = :resourceScheduleAvailabilityId
         and case when :excludedIsEmpty::boolean is true then 1=1 else resource_slot_time_id not in (:excludedResourceSlotTimeIds) end
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String addExcludedSlots = """
     insert into flow.excluded_resource_slot_time(resource_slot_time_id, resource_schedule_availability_id, date_created, created_by_id, date_modified, modified_by_id)
         select time_slot_id, :resourceScheduleAvailabilityId, now(), :userId, now(), :userId from unnest(ARRAY[ :excludedResourceSlotTimeIds ]) as time_slot_id
         on conflict (resource_slot_time_id, resource_schedule_availability_id) do update set archived = false, date_modified = now(), modified_by_id = excluded.modified_by_id
-        """;
+    """;
 }

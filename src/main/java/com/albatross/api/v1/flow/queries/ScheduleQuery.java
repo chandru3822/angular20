@@ -7,7 +7,7 @@ public class ScheduleQuery {
     select id
         from flow.user_position up
         where user_id = any(array[ :userIds ]::bigint[])
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getEventsByProject = """
@@ -68,7 +68,7 @@ public class ScheduleQuery {
                inner join flow.contact c on p.contact_id = c.id
         where p.id = :projectId
           and p.archived is false
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getEvents = """
@@ -149,7 +149,7 @@ public class ScheduleQuery {
           and cpst.project_status_type_id != 2 --dont include process steps for cancelled projects
           and ppse.resource_id is not null
           and ppse.resource_id = any(array[ :combined ]::bigint[])
-        """;
+    """;
 
   public final static String getConflictingEvents = """
     select
@@ -230,13 +230,13 @@ public class ScheduleQuery {
           and cpst.project_status_type_id != 2 --dont include process steps for cancelled projects
           and ppse.resource_id is not null
           and ppse.resource_id = any(array[ :combined ]::bigint[])
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAvailability = """
     select *
         from flow.get_availability(:startTime::timestamp, :endTime::timestamp, array[ :orgIds ]::bigint[], array[ :userIds ]::bigint[], :timezone::text);
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getProjects = """
@@ -309,7 +309,7 @@ public class ScheduleQuery {
         order by p.date_created desc
         limit :limit
         offset :offset
-        """;
+    """;
 
     //language=PostgreSQL
     public final static String getProjectsCount = """
@@ -347,13 +347,13 @@ public class ScheduleQuery {
           and cest.event_status_type_id = :eventStatusTypeId
           and lower(translate(coalesce(p.project_name, ''), '*,.& ', '')) like
               '%' || lower(trim(translate(:search, '*,.& ', ''))) || '%'
-            """;
+        """;
 
   //language=PostgreSQL
   public final static String getAvailableProjectResources = """
     select *
           from flow.get_system_list_options(:companyId::bigint, :systemListId::bigint, true, array[ :systemListOptionIds ]::bigint[], :resourceId::bigint)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getProject = """
@@ -431,7 +431,7 @@ public class ScheduleQuery {
       and case when :processStepStatusTypeId::bigint is null then 1=1 else cpsst.process_step_status_type_id = :processStepStatusTypeId::bigint end
       and case when :eventStatusTypeId::bigint is null then 1=1 else cest.event_status_type_id = :eventStatusTypeId::bigint end
 
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String searchProjectsByName = """

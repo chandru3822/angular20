@@ -4,9 +4,8 @@ import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueue;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueOwner;
 import com.albatross.api.v1.company.blueraven.services.InstallerDashboardService;
-import com.albatross.api.v1.flow.services.WorkQueueService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,13 +20,10 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/installerDashboard")
+@RequiredArgsConstructor
 public class InstallerDashboardController {
 
-  @Autowired
-  private InstallerDashboardService installerDashboardService;
-
-  @Autowired
-  WorkQueueService workQueueService;
+  private final InstallerDashboardService installerDashboardService;
 
   @GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<WorkQueueOwner> getWorkQueueOwners (@RequestBody Map<String, String> requestData) {

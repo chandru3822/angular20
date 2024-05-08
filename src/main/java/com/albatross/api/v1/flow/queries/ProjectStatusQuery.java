@@ -216,7 +216,7 @@ select psa.action_name, ps.process_step_name
         and psl.archived is not true
         and psa.archived is not true
       group by psa.action_name, ps.process_step_name
-    """;
+ """;
 
   //language=PostgreSQL
   public final static String deleteCompanyStatus = """

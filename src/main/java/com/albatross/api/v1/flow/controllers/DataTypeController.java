@@ -4,8 +4,8 @@ import com.albatross.api.v1.flow.model.CompanyDataType;
 import com.albatross.api.v1.flow.model.DataType;
 import com.albatross.api.v1.flow.model.DataTypeRequirement;
 import com.albatross.api.v1.flow.services.DataTypeService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,10 +22,10 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/dataType")
+@RequiredArgsConstructor
 public class DataTypeController {
 
-  @Autowired
-  private DataTypeService dataTypeService;
+  private final DataTypeService dataTypeService;
 
   @GetMapping(value = "/getSystem", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<DataType> getSystemDataTypes() {
@@ -41,5 +41,4 @@ public class DataTypeController {
   public List<DataTypeRequirement> getDataTypeRequirements(@PathVariable Long dataTypeId) {
     return dataTypeService.getDataTypeRequirements(dataTypeId);
   }
-
 }

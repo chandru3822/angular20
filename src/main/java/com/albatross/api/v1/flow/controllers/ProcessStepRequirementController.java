@@ -4,8 +4,8 @@ import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepRequirement;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepRequirementType;
 import com.albatross.api.v1.flow.services.ProcessStepRequirementService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,29 +19,30 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/processStep/{stepId}/requirement")
+@RequiredArgsConstructor
 public class ProcessStepRequirementController {
 
-  @Autowired
-  private ProcessStepRequirementService processStepRequirementService;
+
+  private final ProcessStepRequirementService processStepRequirementService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepRequirement> getRequirementsForStep (@PathVariable Long stepId) {
+  public List<ProcessStepRequirement> getRequirementsForStep(@PathVariable Long stepId) {
     return processStepRequirementService.getRequirementsForStep(stepId);
   }
 
   @GetMapping(value = "/types", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepRequirementType> getRequirementTypes () {
+  public List<ProcessStepRequirementType> getRequirementTypes() {
     return processStepRequirementService.getRequirementTypes();
   }
 
   @GetMapping(value = "/event/types", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepRequirementType> getEventRequirementTypes () {
+  public List<ProcessStepRequirementType> getEventRequirementTypes() {
     return processStepRequirementService.getEventRequirementTypes();
   }
 
   @GetMapping(value = "/{requirementId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStepAction> getActionsUsingRequirement(@PathVariable Long requirementId) {
-      return processStepRequirementService.getActionsUsingRequirement(requirementId);
+    return processStepRequirementService.getActionsUsingRequirement(requirementId);
   }
 
   @PutMapping(value = "/{requirementId}", produces = MediaType.APPLICATION_JSON_VALUE)

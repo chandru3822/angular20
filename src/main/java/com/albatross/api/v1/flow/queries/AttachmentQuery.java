@@ -29,7 +29,7 @@ public class AttachmentQuery {
       left join lateral ( select * from flow.get_attachment_origin(a.id)) orgn on true
     WHERE a.id = :id
       and a.archived is not true
-    """;
+ """;
 
   //language=PostgreSQL
   public final static String findSimpleById = """
@@ -43,7 +43,7 @@ public class AttachmentQuery {
     FROM flow.attachment a
     WHERE a.id = :id
       and a.archived is not true
-    """;
+ """;
 
   //language=PostgreSQL
   public final static String getAttachmentForUuidCheck = """
@@ -57,7 +57,7 @@ public class AttachmentQuery {
     FROM flow.attachment a
     WHERE a.id = :id
       AND a.archived IS NOT TRUE
-    """;
+ """;
 
   //language=PostgreSQL
   public final static String getAttachmentById = """

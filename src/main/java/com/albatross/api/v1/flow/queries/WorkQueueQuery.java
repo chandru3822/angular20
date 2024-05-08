@@ -135,7 +135,7 @@ public class WorkQueueQuery {
                                                             AND wlp.work_queue_type_id = wqt.id)::bigint[]
               else 1=1 end
         order by work_queue_category_display_order, work_queue_type_display_order
-        """;
+ """;
 
   //language=PostgreSQL
   public final static String getWorkQueueMetrics = """
@@ -157,7 +157,7 @@ public class WorkQueueQuery {
                                                                 AND wlp.work_queue_type_id = wqt.id)::bigint[] else true end
         from flow.work_queue_type wqt
         where wqt.id = :workQueueTypeId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getWorkQueueOwners = """
@@ -175,7 +175,7 @@ public class WorkQueueQuery {
                                                     from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
              else ps.company_id = :companyId end
        order by first_name, last_name
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getInstallerDashboardWorkQueues = """
@@ -257,6 +257,6 @@ public class WorkQueueQuery {
       and wqt.archived is not true
       and wqt.id in (134, 96, 144, 110, 152)
     order by wqc.display_order, wqt.display_order
-        """;
+    """;
 
 }

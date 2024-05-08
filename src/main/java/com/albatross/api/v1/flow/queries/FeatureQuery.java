@@ -12,7 +12,7 @@ public class FeatureQuery {
        from flow.feature f
        where f.archived is not true
        order by f.feature_name
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getCompanyTools = """
@@ -33,7 +33,7 @@ public class FeatureQuery {
        and f.archived is not true
        and cf.show_in_tools is true
        order by feature_name
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getHomePagesForCompany = """
@@ -50,7 +50,7 @@ public class FeatureQuery {
           and f.archived is not true
           and cf.home_page is true
         order by cf.feature_name
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAllForCompany = """
@@ -67,7 +67,7 @@ public class FeatureQuery {
        and cf.archived is not true
        and cf.hidden is not true
        order by cf.feature_name
-       """;
+    """;
 
   //language=PostgreSQL
   public final static String getAllForCompanyWithAccess = """
@@ -128,7 +128,7 @@ public class FeatureQuery {
   and cf.archived is not true
   and cf.has_permissions is true
   order by feature_name;
-        """;
+  """;
 
   //language=PostgreSQL
   public final static String getPositionAccessForUser = """
@@ -151,7 +151,7 @@ public class FeatureQuery {
           and up.start_date <= now()
           and (up.end_date is null or up.end_date >= now())
           and cf.company_id = :companyId
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAccessForUser = """
@@ -236,7 +236,7 @@ public class FeatureQuery {
    and (up.end_date is
     null or up.end_date >= now())
       and cf.company_id = :companyId);
-       """;
+ """;
 
   //language=PostgreSQL
   public final static String getMasqueradedUserFeatureAccess = """
@@ -324,7 +324,7 @@ public class FeatureQuery {
                       and (up3.end_date is null or up3.end_date >= now())
                       and cf3.company_id = :companyId
                   )
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String upsertUserFeatureAccessControl = """
@@ -383,7 +383,7 @@ public class FeatureQuery {
   public final static String insertFeature = """
     insert into flow.feature(feature_name, feature_code, is_system)
      values (:featureName, :featureCode, :isSystem)
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String updateFeature = """

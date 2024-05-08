@@ -29,7 +29,7 @@ public class UserCfvQuery {
               int_array_value = :intArrayValue::bigint[],
               modified_by_id = :userId,
               date_modified = now()
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String getAncillaryCustomFieldGroupsAndValuesForAttachments = """
@@ -113,6 +113,6 @@ public class UserCfvQuery {
             and cfg.archived is not true
             and cot.company_id = :companyId
           order by cfg.group_order
-        """;
+    """;
 
 }

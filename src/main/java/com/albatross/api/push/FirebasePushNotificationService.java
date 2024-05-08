@@ -40,7 +40,7 @@ public class FirebasePushNotificationService implements PushNotificationService 
     set archived = true
     where archived is false
       and date_modified < now() - interval '60 days'
-        """;
+    """;
 
   @Async
   public void pushNotification(@NonNull Message message, @NonNull Long userId) {

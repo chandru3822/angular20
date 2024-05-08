@@ -105,7 +105,7 @@ public class ProposalToolQuery {
                                   on grp.proposal_group_uuid = vv.proposal_group_uuid
                                       and grp.proposal_version_id = :versionId
                group by vv.proposal_group_uuid, archived
-         """;
+    """;
 
   //language=PostgreSQL
   public static final String getKwhProposalValueForUtility = """
@@ -148,7 +148,7 @@ public class ProposalToolQuery {
       WHERE custom_field_group_assignment_id = 85
       AND value ->> 'value' = :utilityCompany
     )
-         """;
+    """;
 
   //language=PostgreSQL
   public static final String proposalVersionCustomFieldValuesByUUID = """
@@ -171,7 +171,7 @@ public class ProposalToolQuery {
     from version_values
     where proposal_group_uuid = :groupUUID
     group by proposal_group_uuid
-     """;
+    """;
 
   //language=PostgreSQL
   public static final String createCompanyProposalVersion = """
@@ -189,7 +189,7 @@ public class ProposalToolQuery {
   public static final String createProposalVersion = """
     insert into brs.proposal_version (company_id, version, proposal_version_status_id, date_created, date_modified, created_by_id, modified_by_id)
     values (:companyId, :version, :statusId, now(), now(), :currentUserId, :currentUserId)
-     """;
+    """;
 
   //language=PostgreSQL
   public static final String publishProposalVersion = """
@@ -243,7 +243,7 @@ public class ProposalToolQuery {
         set value     = excluded.value,
             date_modified  = now(),
             modified_by_id = excluded.modified_by_id
-     """;
+    """;
 
   public final static String deleteEmptyCustomFieldValues = """
     delete
@@ -265,7 +265,7 @@ public class ProposalToolQuery {
                    and cf.archived is false
                    and cfga.archived is false
                    and cf.id = :fieldId)
-        """;
+    """;
 
   //language=PostgreSQL
   public final static String archiveCustomFieldGroup = """
@@ -282,7 +282,7 @@ public class ProposalToolQuery {
       and v.proposal_version_status_id <> 2 -- only in draft mode
       and g.proposal_group_uuid = :groupUUID
       and g.proposal_version_id = :versionId
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String resetCustomFieldGroup = """
@@ -302,7 +302,7 @@ public class ProposalToolQuery {
       and pv.proposal_version_status_id <> 2 -- only in draft mode
       and pv.id = :versionId
       and ot.object_code = :objectCode
-     """;
+    """;
 
   public final static String unarchiveCustomFieldGroup = """
         with version_values as (select distinct proposal_group_uuid
@@ -320,7 +320,7 @@ public class ProposalToolQuery {
     where id in (select distinct a.id
                  from archived a
                           inner join version_values vv on a.proposal_group_uuid = vv.proposal_group_uuid);
-        """;
+    """;
 
   //language=PostgreSQL
   public static final String findProposalVersionValues = """
@@ -419,7 +419,7 @@ where a.int_value not in (select t.int_value from t where t.is_match is false)
                                                             '$[*] ? (@ == $filterFieldValue)',
                                                             jsonb_build_object('filterFieldValue', :filterFieldValue))) <= 0))
           select distinct (row -> 'intValue') from filtered
-        """;
+    """;
 
   public static final String findVersionHistoryByVersionId = """
     with version_values

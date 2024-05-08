@@ -96,7 +96,7 @@ public class AppQuery {
       and a.app_attachment_environment_id = :appAttachmentEnvironmentId
       AND a.archived IS NOT TRUE
       order by a.date_created desc
-    """;
+ """;
 
   //language=PostgreSQL
   public final static String getAttachmentsByAppAndAttachmentType = """

@@ -27,8 +27,7 @@ public class TemplatingEngineService {
     template.process(contextMap, new OutputStreamWriter(output));
   }
 
-  public String renderFreemarkerTemplate(String templateContent, Map<String, Object> context)
-      throws Exception {
+  public String renderFreemarkerTemplate(String templateContent, Map<String, Object> context) {
     try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
       applyFreemarkerTemplate(templateContent, context, output);
 

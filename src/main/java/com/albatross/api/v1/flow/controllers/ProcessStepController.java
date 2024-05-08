@@ -6,8 +6,8 @@ import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.processStep.ProcessStep;
 import com.albatross.api.v1.flow.services.ProcessStepService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +24,10 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/processStep")
+@RequiredArgsConstructor
 public class ProcessStepController {
 
-  @Autowired
-  private ProcessStepService processStepService;
+  private final ProcessStepService processStepService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStep> getProcessStepsForCompany() {
