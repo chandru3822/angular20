@@ -14,7 +14,7 @@
     </ConfirmationDialog>
     <v-row>
       <v-col class="shrink" cols="12">
-        <v-toolbar flat class="app-toolbar toolbar-z-index-override">
+        <v-toolbar flat class="app-toolbar">
           <a-autocomplete
               v-model="selectedWorkQueueCategoryId"
               :items="filteredCategories"
