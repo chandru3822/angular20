@@ -1117,7 +1117,7 @@ BEGIN
     v_maximum_dollar_per_watt_for_solar
   from brs.get_proposal_financiers(v_version_id, v_financier_id);
 
-  if v_financier_id = 24152 then -- ENFIN HAS SPECIAL CAPS
+  if v_financier_id = 24153 then -- ENFIN HAS SPECIAL CAPS
     if coalesce(v_number_of_batteries,0) > 0 and coalesce(v_reroof_cost,0) = 0 then
       v_maximum_dollar_per_watt_for_solar = 10::numeric;
     elsif coalesce(v_number_of_batteries,0) = 0 and coalesce(v_reroof_cost,0) > 0 then
@@ -1451,7 +1451,7 @@ BEGIN
   raise notice 'v_total_system_cost = %',v_total_system_cost;
   raise notice 'v_required_down_payment = %',v_required_down_payment;
   if v_version_id < 107 then
-    if v_financier_id = 116 then --check solar only $/Watt price cap for goodleap
+    if v_financier_id = 722 then --check solar only $/Watt price cap for goodleap
       v_required_down_payment =
         greatest(
           (
@@ -1506,7 +1506,7 @@ BEGIN
 
     raise notice 'v_required_down_payment before batteries = %',v_required_down_payment;
 
-    if v_number_of_batteries > 0 and v_financier_id = 116 then
+    if v_number_of_batteries > 0 and v_financier_id = 722 then
       v_required_down_payment = coalesce(v_required_down_payment, 0) +
                                 greatest(
                                   (
@@ -1518,7 +1518,7 @@ BEGIN
     end if;
   elsif v_version_id < 123 then
     v_battery_cap_down_payment =  coalesce(case
-                                             when (v_number_of_batteries > 0 and v_financier_id = 116) then
+                                             when (v_number_of_batteries > 0 and v_financier_id = 722) then
                                                greatest(0,
                                                         v_cash_price_storage -
                                                         50000::numeric * (1-v_dealer_fee)
@@ -1598,7 +1598,7 @@ BEGIN
     --    $16/W if PV + Battery + Reroof
 
     v_battery_cap_down_payment = coalesce(case
-                                            when (coalesce(v_number_of_batteries,0) > 0 and v_financier_id = 116) then
+                                            when (coalesce(v_number_of_batteries,0) > 0 and v_financier_id = 722) then
                                               greatest(0,
                                                        coalesce(v_cash_price_storage,0) -
                                                        50000::numeric * (1 - v_dealer_fee)
@@ -1607,7 +1607,7 @@ BEGIN
                                             end, 0);
 
     v_solar_only_cap_down_payment = case
-                                      when v_financier_id = 116 then
+                                      when v_financier_id = 722 then
                                         greatest(
                                           case when v_dealer_fee > 0 then coalesce(
                                             ((coalesce(v_no_ancillary_amount_to_finance,0) + coalesce(v_down_payment_amount, 0)) -
@@ -1629,7 +1629,7 @@ BEGIN
                                                else 0::numeric end)
                                             , 0) else 0::numeric end
                                           ,0)
-                                      when v_financier_id = 24152 then --EnFin has a single cap that changes depending on what's added. Ancillary costs can't be excluded
+                                      when v_financier_id = 24153 then --EnFin has a single cap that changes depending on what's added. Ancillary costs can't be excluded
                                         greatest(
                                           coalesce(
                                             (coalesce(v_total_amount_to_be_financed,0) +
@@ -2062,7 +2062,7 @@ BEGIN
   raise notice 'new value %',round(v_total_loan_amount/(v_system_size * 1000),2);
 
   if v_maximum_dollar_per_watt_for_solar is not null and
-     v_financier_id = 116 and
+     v_financier_id = 722 and
             round((v_total_system_cost -
                    coalesce(v_storage_cost_with_fees, 0) -
                    (coalesce(v_total_ancillary_costs, 0) -
@@ -2070,7 +2070,7 @@ BEGIN
                    (1 - v_dealer_fee)) / (v_system_size * 1000), 2) >
             coalesce(v_maximum_dollar_per_watt_for_solar, 0) then
     raise exception 'Solar Costs exceed the maximum allowable value.';
-  elsif  v_maximum_dollar_per_watt_for_solar is not null and v_financier_id = 24152 and
+  elsif  v_maximum_dollar_per_watt_for_solar is not null and v_financier_id = 24153 and
     round(v_total_loan_amount/(v_system_size * 1000),2) >
       coalesce(v_maximum_dollar_per_watt_for_solar, 0) then
     raise exception 'Solar Costs exceed the maximum allowable value.';
