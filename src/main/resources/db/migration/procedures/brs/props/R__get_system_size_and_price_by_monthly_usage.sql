@@ -171,7 +171,7 @@ BEGIN
     into v_battery_price
     from brs.get_proposal_version_value(v_version_id, array [(155, p_number_of_batteries, null, null)::ProposalFieldFilter,
       (412, p_battery_brand, null, null)::ProposalFieldFilter,
-      (102, null, 20065, null)::ProposalFieldFilter],
+      (102, null, 20064, null)::ProposalFieldFilter],
                                         'PROPOSAL_STORAGE_DETAILS');
   end if;
   select sapf.average_production_factor, s.id
