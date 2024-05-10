@@ -188,13 +188,7 @@ BEGIN
                                             where cf.parent_custom_field_id = 10352
                                               and cfga.archived is false and cf.archived is false and cfg.archived is false
                                               and cf.company_id = v_company_id
-                                              and cfg.process_step_id = p_process_step_id), (select lov2.id
-                                                                                             from flow.list_of_value lov
-                                                                                                      inner join flow.custom_field cf on cf.list_of_value_id = lov.id
-                                                                                                      inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
-                                                                                                 and cf.company_id = v_company_id
-                                                                                                 and cf.parent_custom_field_id = 10352 and cf.archived is false
-                                                                                             where upper(substring(plh.panel,1,length(plh.panel) - position(' ' in reverse(plh.panel)))) = upper(lov2.name)),
+                                              and cfg.process_step_id = p_process_step_id), plh.panel_id,
                              (select cfga.id
                               from flow.custom_field cf
                                        inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -235,13 +229,7 @@ BEGIN
                              where cf.parent_custom_field_id = 10318
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id), (select lov2.id
-                                                                              from flow.list_of_value lov
-                                                                                       inner join flow.custom_field cf on cf.list_of_value_id = lov.id
-                                                                                       inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
-                                                                                  and cf.company_id = v_company_id
-                                                                                  and cf.parent_custom_field_id = 10318 and cf.archived is false
-                                                                              where upper(inverter_custom_getting) = upper(lov2.name)),
+                               and cfg.process_step_id = p_process_step_id), plh.inverter_brand_id,
                             (select cfga.id
                              from flow.custom_field cf
                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id

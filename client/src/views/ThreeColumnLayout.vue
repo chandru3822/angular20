@@ -27,7 +27,7 @@
                       'hide-column-xs': projectStore.leftSideSplit}">
         <div class="mobile-padding-menu-button" :class="{'title-collapsed': projectStore.leftSideSplit,
                       'ml-2': !projectStore.leftSideSplit}">
-          <a-btn size="small" variant="text" prepend-icon="mdi-menu" @click="collapseSide('left')" />
+          <a-btn size="small" variant="text" :prepend-icon="projectStore.leftSideSplit || vuetify.breakpoint.smAndDown ? 'mdi-menu' : 'mdi-menu-open'" @click="collapseSide('left')" />
         </div>
         <div v-if="!projectStore.leftSideSplit" class="left-panel-scrollable-area auto-overflow">
           <slot name="left-column"></slot>
@@ -68,6 +68,7 @@ import {useRouter, useRoute} from 'vue-router/composables'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const vuetify = vueInstance.$vuetify
 const projectStore = useProjectStore()
 const appStore = useProjectStore()
 const route = useRoute()
