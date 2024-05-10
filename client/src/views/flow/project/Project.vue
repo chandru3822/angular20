@@ -104,6 +104,36 @@
       <template v-slot:yes>Save</template>
     </ConfirmationDialog>
     <!--    end dialog -->
+    <!--    modal to prompt contact address update -->
+    <ConfirmationDialog v-if="projectContact && contactLoading === false"  :open-dialog="!showEditProjectModal && projectAddressChanged"
+                        @cancel="projectAddressChanged = false" @confirm="updateContactAddress"
+    >
+      <template v-slot:title>Update Contact Information</template>
+      The address for <b>{{project.projectName}}</b> has changed.  Would you also like to update the contact <b>{{projectContact.fullName}}</b> to the new address?
+      <v-row>
+        <v-col>
+          <span class="label-medium">Current Contact Address</span>
+          <div
+              v-if="projectContact && (projectContact.street1 || projectContact.city || projectContact.state || projectContact.postalCode)"
+              class="body-medium text-wrap">
+            <div>{{ projectContact.street1 }}</div>
+            <div>{{ projectContact.city }}, {{ projectContact.state }} {{ projectContact.postalCode }}</div>
+          </div>
+        </v-col>
+        <v-col>
+          <span class="label-medium">New Address</span>
+        <div
+            v-if="project && (project.street1 || project.city || project.state || project.postalCode)"
+            class="body-medium text-wrap">
+          <span>{{ project.street1 }}</span><br/>
+          <span>{{ project.city }}, {{ project.state }} {{ project.postalCode }}</span>
+        </div>
+        </v-col>
+      </v-row>
+    <template v-slot:no>Do Not Update</template>
+      <template v-slot:yes>Update Contact</template>
+    </ConfirmationDialog>
+    <!--    end dialog -->
 
     <ThreeColumnLayoutMobile v-if="isMobile"
                              :menu-items="[
@@ -381,6 +411,9 @@ const projectLoading = ref(true)
 const pageOverviewMenuItem = ref({})
 const updateKeyProp = ref(0)
 const projectEditForm = ref(null)
+const projectAddressChanged = ref(false)
+const projectContact = ref({})
+const contactLoading = ref(false)
 
 onMounted(() => {
   //have to reset this on creation in case there is already a state then they go to the project url directly
@@ -716,7 +749,7 @@ const saveProjectAddressFields = async () => {
     //temp project holds all the changes in case they cancel. use those values
     const {status} = await putRequest(`/project`, tempProject.value)
     appStore.showSnack('SUCCESS', 'Project Updated')
-
+    projectAddressChanged.value = true
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
@@ -725,6 +758,42 @@ const saveProjectAddressFields = async () => {
     appStore.loading = false
   }
 }
+
+watch(projectAddressChanged, () => {
+  if(projectAddressChanged.value === true && !projectContact.value.id){
+    getContact()
+  }
+})
+
+const getContact = async () => {
+  try {
+    contactLoading.value = true
+    const {data, status} = await getRequest(`/contact/${project.value.contactId}`)
+    projectContact.value = data
+    contactLoading.value = false
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    contactLoading.value = false
+    appStore.showSnack('ERROR', 'Error Retrieving Contact')
+
+  }
+}
+const updateContactAddress = async () =>{
+  projectAddressChanged.value = false
+  projectContact.value.street1 = project.value.street1
+  projectContact.value.street2 = project.value.street2
+  projectContact.value.city = project.value.city
+  projectContact.value.stateId = project.value.stateId
+  projectContact.value.postalCode = project.value.postalCode
+  try {
+    const {status} = await postRequest(`/contact`, projectContact.value)
+    appStore.showSnack('SUCCESS', 'Contact Updated')
+  } catch (e) {
+    logError(e)
+    appStore.showSnack('ERROR', 'Error Saving Fields')
+  }
+}
+
 const getOwners = async () => {
   try {
     ownersLoading.value = true

@@ -11,9 +11,9 @@
               color="primary"
               @click="[addNew = !addNew, newTag = {}]"
               v-if="userStore.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
-              :hide-text-on-mobile="constants.IS_MOBILE"
+              hide-text-on-mobile
               :text="!addNew ? 'Add Topic' : 'Cancel'"
-              :prepend-icon="addNew ? '' : 'add'"
+              :prepend-icon="!addNew ? 'add' : vuetify.breakpoint.smAndDown ? 'close' : ''"
             />
           </v-toolbar-items>
         </v-toolbar>
@@ -195,6 +195,7 @@ import { useUserStore } from '@/stores/UserStore.js'
 import { useAppStore } from '@/stores/AppStore.js'
 
 const vueInstance = getCurrentInstance().proxy
+const vuetify = vueInstance.$vuetify
  const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()

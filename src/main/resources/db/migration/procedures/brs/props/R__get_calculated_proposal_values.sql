@@ -507,6 +507,9 @@ declare
   v_all_ancillary_costs                 jsonb;
   v_denver_care_rebate_amount numeric;
 v_denver_care_rebate_amount_number numeric;
+v_site_survey_resource_type_id bigint;
+v_loan_term_id bigint;
+  v_other_oregon_discount numeric;
 
 BEGIN
   select proposal_id,
@@ -756,8 +759,10 @@ BEGIN
   --raise notice 'v_site_survey_resource_type_yn = %',v_site_survey_resource_type_yn;
   if v_site_survey_resource_type_yn is not null and v_site_survey_resource_type_yn = 'No' then
     v_site_survey_resource_type = 'Service Tech or Higher';
+    v_site_survey_resource_type_id = 19822;
   elsif v_site_survey_resource_type_yn is not null and v_site_survey_resource_type_yn = 'Yes' then
     v_site_survey_resource_type = 'Site Surveyor';
+    v_site_survey_resource_type_id = 19821;
   end if;
 
   --raise notice 'v_site_survey_resource_type = %',v_site_survey_resource_type;
@@ -765,13 +770,14 @@ BEGIN
   select apr,
          financial_option,
          reamortized_payment_factor_without_itc_paydown,
+         loan_term_id,
          loan_term,
          dealer_fee,
          reamortization_factor,
          financier_id,
          financier,
          initial_payment_factor
-  into v_apr,v_financial_option,v_reamortized_payment_factor_without_itc_paydown,v_loan_term,
+  into v_apr,v_financial_option,v_reamortized_payment_factor_without_itc_paydown,v_loan_term_id,v_loan_term,
     v_dealer_fee,v_reamortization_factor,v_financier_id,v_financier,v_initial_payment_factor
   from brs.get_proposal_finance_products(v_version_id, v_financial_product_id);
 
@@ -1111,7 +1117,7 @@ BEGIN
     v_maximum_dollar_per_watt_for_solar
   from brs.get_proposal_financiers(v_version_id, v_financier_id);
 
-  if v_financier_id = 24152 then -- ENFIN HAS SPECIAL CAPS
+  if v_financier_id = 24153 then -- ENFIN HAS SPECIAL CAPS
     if coalesce(v_number_of_batteries,0) > 0 and coalesce(v_reroof_cost,0) = 0 then
       v_maximum_dollar_per_watt_for_solar = 10::numeric;
     elsif coalesce(v_number_of_batteries,0) = 0 and coalesce(v_reroof_cost,0) > 0 then
@@ -1354,7 +1360,7 @@ BEGIN
   --raise notice 'v_system_size_cutoff % ',v_system_size_cutoff;
 
   v_odoe_rebate = 0::numeric;
-  if v_odoe_rebate_id is not null then
+  if v_odoe_rebate_id is not null and (v_version_id <= 130 or v_system_size >= 9)  then
     select *
     into v_odoe_rebate
     from brs.get_rebate_for_standard_low_income(v_aurora_design_summary,
@@ -1374,6 +1380,8 @@ BEGIN
     if v_odoe_rebate_name is not null then
       v_rebates = coalesce(v_rebates,'{}'::jsonb) || jsonb_build_object(v_odoe_rebate_name, round(v_odoe_rebate,2));
     end if;
+  elseif v_odoe_rebate_id is not null then
+    v_other_oregon_discount = 400;
   end if;
   --raise notice 'v_odoe_rebate % ',v_odoe_rebate;
   --raise notice 'v_col_springs_rebate = %',v_col_springs_rebate;
@@ -1412,10 +1420,16 @@ BEGIN
     v_rebates = coalesce(v_rebates,'{}'::jsonb) || v_above_the_line_state_rebates;
   end if;
 
+  if v_other_oregon_discount is not null or v_other_oregon_discount > 0 then
+    v_rebates = coalesce(v_rebates,'{}'::jsonb) || jsonb_build_object('Other Oregon Discount', round(v_other_oregon_discount,2));
+  end if;
+
   --raise notice 'v_rebates after state above the line rebates %',v_rebates;
   --raise notice 'above_the_line_state_rebate_amount %',v_above_the_line_state_rebate_amount;
 
-  v_above_line_rebate = coalesce(v_above_the_line_state_rebate_amount,0) + coalesce(v_above_the_line_utility_rebate_amount, 0) + coalesce(v_ill_srec_rebate_amount, 0) + coalesce(v_odoe_rebate, 0);
+  --raise notice 'v_other_oregon_discount %',v_other_oregon_discount;
+
+  v_above_line_rebate = coalesce(v_other_oregon_discount,0) + coalesce(v_above_the_line_state_rebate_amount,0) + coalesce(v_above_the_line_utility_rebate_amount, 0) + coalesce(v_ill_srec_rebate_amount, 0) + coalesce(v_odoe_rebate, 0);
 
   if v_version_id < 107 then
     v_total_system_cost =
@@ -1437,7 +1451,7 @@ BEGIN
   --raise notice 'v_total_system_cost = %',v_total_system_cost;
   --raise notice 'v_required_down_payment = %',v_required_down_payment;
   if v_version_id < 107 then
-    if v_financier_id = 116 then --check solar only $/Watt price cap for goodleap
+    if v_financier_id = 722 then --check solar only $/Watt price cap for goodleap
       v_required_down_payment =
         greatest(
           (
@@ -1492,7 +1506,7 @@ BEGIN
 
     --raise notice 'v_required_down_payment before batteries = %',v_required_down_payment;
 
-    if v_number_of_batteries > 0 and v_financier_id = 116 then
+    if v_number_of_batteries > 0 and v_financier_id = 722 then
       v_required_down_payment = coalesce(v_required_down_payment, 0) +
                                 greatest(
                                   (
@@ -1504,7 +1518,7 @@ BEGIN
     end if;
   elsif v_version_id < 123 then
     v_battery_cap_down_payment =  coalesce(case
-                                             when (v_number_of_batteries > 0 and v_financier_id = 116) then
+                                             when (v_number_of_batteries > 0 and v_financier_id = 722) then
                                                greatest(0,
                                                         v_cash_price_storage -
                                                         50000::numeric * (1-v_dealer_fee)
@@ -1584,7 +1598,7 @@ BEGIN
     --    $16/W if PV + Battery + Reroof
 
     v_battery_cap_down_payment = coalesce(case
-                                            when (coalesce(v_number_of_batteries,0) > 0 and v_financier_id = 116) then
+                                            when (coalesce(v_number_of_batteries,0) > 0 and v_financier_id = 722) then
                                               greatest(0,
                                                        coalesce(v_cash_price_storage,0) -
                                                        50000::numeric * (1 - v_dealer_fee)
@@ -1593,7 +1607,7 @@ BEGIN
                                             end, 0);
 
     v_solar_only_cap_down_payment = case
-                                      when v_financier_id = 116 then
+                                      when v_financier_id = 722 then
                                         greatest(
                                           case when v_dealer_fee > 0 then coalesce(
                                             ((coalesce(v_no_ancillary_amount_to_finance,0) + coalesce(v_down_payment_amount, 0)) -
@@ -1615,7 +1629,7 @@ BEGIN
                                                else 0::numeric end)
                                             , 0) else 0::numeric end
                                           ,0)
-                                      when v_financier_id = 24152 then --EnFin has a single cap that changes depending on what's added. Ancillary costs can't be excluded
+                                      when v_financier_id = 24153 then --EnFin has a single cap that changes depending on what's added. Ancillary costs can't be excluded
                                         greatest(
                                           coalesce(
                                             (coalesce(v_total_amount_to_be_financed,0) +
@@ -2042,24 +2056,24 @@ BEGIN
                                              coalesce(v_ancillary_percent_cap_down_payment, 0)) /
                                             (1 - v_dealer_fee)) / v_total_loan_amount, 2) >
                                      coalesce(v_non_solar_cap, 0) then
-    --raise exception 'Ancillary Costs exceed the maximum allowable value.';
+    raise exception 'Ancillary Costs exceed the maximum allowable value.';
   end if;
 
   --raise notice 'new value %',round(v_total_loan_amount/(v_system_size * 1000),2);
 
   if v_maximum_dollar_per_watt_for_solar is not null and
-     v_financier_id = 116 and
+     v_financier_id = 722 and
             round((v_total_system_cost -
                    coalesce(v_storage_cost_with_fees, 0) -
                    (coalesce(v_total_ancillary_costs, 0) -
                     coalesce(v_ancillary_percent_cap_down_payment, 0)) /
                    (1 - v_dealer_fee)) / (v_system_size * 1000), 2) >
             coalesce(v_maximum_dollar_per_watt_for_solar, 0) then
-    --raise exception 'Solar Costs exceed the maximum allowable value.';
-  elsif  v_maximum_dollar_per_watt_for_solar is not null and v_financier_id = 24152 and
+    raise exception 'Solar Costs exceed the maximum allowable value.';
+  elsif  v_maximum_dollar_per_watt_for_solar is not null and v_financier_id = 24153 and
     round(v_total_loan_amount/(v_system_size * 1000),2) >
       coalesce(v_maximum_dollar_per_watt_for_solar, 0) then
-    --raise exception 'Solar Costs exceed the maximum allowable value.';
+    raise exception 'Solar Costs exceed the maximum allowable value.';
   elsif v_maximum_dollar_per_watt_for_solar is not null and
     round((v_total_loan_amount -
            coalesce(v_storage_cost_with_fees, 0) -
@@ -2067,7 +2081,7 @@ BEGIN
             coalesce(v_ancillary_percent_cap_down_payment, 0)) /
            (1 - v_dealer_fee)) / (v_system_size * 1000), 2) >
       coalesce(v_maximum_dollar_per_watt_for_solar, 0) then
-    --raise exception 'Solar Costs exceed the maximum allowable value.';
+    raise exception 'Solar Costs exceed the maximum allowable value.';
   end if;
 
   if p_insert_prop_log_history is true then
@@ -2104,12 +2118,12 @@ BEGIN
     end if;
 
     insert into brs.proposal_log_history(project_id, fullname, address, city, state, zip, phone,
-                                         email, loan_term, interest_rate, optional_down_payment,
+                                         email,loan_term_id, loan_term, interest_rate, optional_down_payment,
                                          required_down_payment,
                                          number_of_leds, number_of_ecobees, cost_per_kwh_before_solar,
                                          bp_plus_promotion, year_1_kwh_output, panel_number,
                                          panel_wattage, system_size, panel, number_of_inverters, inverter_mfg,
-                                         inverter_custom_getting,
+                                         inverter_custom_getting,inverter_brand_id,
                                          utility_name, total_yearly_usage_pre_solar,
                                          panel_adder,
                                          panel_adder_cost, total_adder_costs,
@@ -2130,8 +2144,9 @@ BEGIN
                                          nineteen_plus_payments_all_incentives, date_created,
                                          promotion_eighteen_months_free,
                                          proposal_date, proposal_nbr, proposal_log_id,
-                                         bp_plus_amount, aurora_design_id, loan_type, filename, financial_option,
+                                         bp_plus_amount, aurora_design_id,loan_type, filename, financial_option,
                                          site_survey_time_estimate,
+                                         site_survey_resource_type_id,
                                          site_survey_resource_type, site_survey_items, number_of_batteries,
                                          estimated_backup_days,
                                          solar_rebate_for_hic,
@@ -2139,6 +2154,7 @@ BEGIN
                                          closer_commission_forfeiture_amount,
                                          desired_commission_amount,
                                          number_of_promotion_payments,
+                                         product_id,
                                          loan_product,
                                          financed_system_cost_with_fees,
                                          financed_ancillary_cost_with_fees,
@@ -2158,7 +2174,10 @@ BEGIN
                                          virtual_sales_price_adjustment,
                                          virtual_sales_base_price,
                                          system_size_ac,
-                                         all_ancillary_costs)
+                                         all_ancillary_costs,
+                                         financier_id,
+                                         financier,
+                                         panel_id)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -2167,6 +2186,7 @@ BEGIN
             v_postal_code,
             v_contact_phone,
             v_contact_email,
+            v_loan_term_id,
             v_loan_term,
             v_apr,
             coalesce(round(v_down_payment_amount, 0), 0),
@@ -2183,6 +2203,7 @@ BEGIN
             v_panel_quantity,
             v_inverter_brand,
             v_inverter_brand,
+            v_inverter_brand_id,
             v_utility_company,
             v_estimated_annual_energy_consumption_kwh,
             v_equipment_panel_adder,
@@ -2238,6 +2259,7 @@ BEGIN
             v_display_name,
             v_financial_option,
             v_site_survey_time_estimate,
+            v_site_survey_resource_type_id,
             v_site_survey_resource_type,
             v_site_survey_items,
             v_number_of_batteries,
@@ -2247,6 +2269,7 @@ BEGIN
             v_other_adder_and_discount_amount * .5,
             v_desired_commission_amount,
             case when v_product_id = 293 then 18 else 0 end,
+            v_product_id,
             v_product_name,
             coalesce(round(v_total_loan_amount, 0), 0),
             case when v_total_ancillary_costs::numeric > 0::numeric then
@@ -2267,7 +2290,10 @@ BEGIN
             v_virtual_sales_price_adjustment,
             v_virtual_sales_base_price,
             v_system_size_ac,
-            v_all_ancillary_costs);
+            v_all_ancillary_costs,
+            v_financier_id,
+            v_financier,
+            v_panel_brand_id);
   end if;
 
   return query

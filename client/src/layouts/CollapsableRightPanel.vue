@@ -95,7 +95,7 @@ const isMobile = computed(() => {
                 variant="text" color="primary" @click="collapseButtonClicked">
           <template #default>
             <slot name="collapse-btn-icon">
-              <v-icon>mdi-menu</v-icon>
+              <v-icon>mdi-menu-close</v-icon>
             </slot>
           </template>
         </a-btn>

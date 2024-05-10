@@ -3,7 +3,7 @@
     <v-row  class="pt-0">
       <v-col cols="12"  class="pt-0">
         <v-toolbar flat>
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Announcements</v-toolbar-title>
+          <v-toolbar-title v-if="!vuetify.breakpoint.smAndDown" class="app-title">Announcements</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <a-btn
@@ -13,17 +13,19 @@
                 v-if="userCanAdd"
                 prepend-icon="add"
                 :text="addNew ? 'Cancel' : 'Add New'"
+                hide-text-on-mobile
             ></a-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-tabs class="tabs-bar" id="default-settings-tabs">
           <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path"
                  class="text-capitalize ma-0 label-medium"
-                 :style="{'margin-left': (index === 0 && vueInstance.$vuetify.breakpoint.smAndDown) ? '12px !important' : '0'}">
+                 :style="{'margin-left': (index === 0 && vuetify.breakpoint.smAndDown) ? '12px !important' : '0'}">
             {{ tab.label }}
           </v-tab>
         </v-tabs>
         <v-data-table
+            id="announcements-settings-table"
             :headers="headers"
             :items="filteredAnnouncements"
             :fixed-header="true"
@@ -32,31 +34,29 @@
             :loading="announcementsLoading"
             disable-sort
             :server-items-length="filteredAnnouncements.length"
-            class="elevation-1"
+            class="elevation-1 table-striped"
         >
-          <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td>
+          <template #item.title="{ item, index }">
                 <router-link :to="`/settings/announcement/${item.id}`" class="router-link-td">
                   {{item.title}}
                 </router-link>
-              </td>
-              <td>
+          </template>
+              <template #item.startTime="{ item }">
                 <router-link :to="`/settings/announcement/${item.id}`" class="router-link-td">
                   {{item.startTime  | formatDate('timestamp', 'MM/DD/YYYY h:mm a')}}
                 </router-link>
-              </td>
-              <td>
+              </template>
+              <template #item.endTime="{ item }">
                 <router-link :to="`/settings/announcement/${item.id}`" class="router-link-td">
                   {{item.endTime  | formatDate('timestamp', 'MM/DD/YYYY h:mm a')}}
                 </router-link>
-              </td>
-              <td>
+              </template>
+              <template #item.platform="{item}">
                 <span v-if="item.showOnWeb && item.showOnMobile">Web, Mobile</span>
                 <span v-else-if="item.showOnWeb">Web</span>
                 <span v-else-if="item.showOnMobile">Mobile</span>
-              </td>
-              <td>
+              </template>
+              <template #item.icons="{item, index}">
                 <a-btn
                     size="small"
                     variant="text"
@@ -72,9 +72,7 @@
                     @click.native.stop="[itemToDelete=item, showDeleteDialog=true]"
                     prepend-icon="delete"
                 ></a-btn>
-              </td>
-            </tr>
-          </template>
+              </template>
         </v-data-table>
         <ConfirmationDialog :open-dialog="showDeleteDialog"
                             @confirm="deleteAnnouncement"
@@ -101,6 +99,7 @@ import {useRoute, useRouter} from "vue-router/composables";
 
 
 const vueInstance = getCurrentInstance().proxy
+const vuetify = vueInstance.$vuetify
 const store = vueInstance.$store
 const userStore = useUserStore()
 const appStore = useAppStore()
@@ -230,4 +229,35 @@ const deleteAnnouncement = async () => {
     display: none;
   }
 }
+@media (max-width: 770px) {
+  #announcements-settings-table {
+    padding-bottom: 12px;
+    div.v-data-footer {
+      display: inline-block;
+      width: 100%;
+      height: auto;
+
+      div.v-data-footer__select {
+        justify-content: center;
+      }
+
+      div.v-data-footer__pagination {
+
+      }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: calc(50% - 36px);
+
+
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
+    }
+  }
+}
+
 </style>
