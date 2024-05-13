@@ -15,7 +15,7 @@ public class Five9Query {
     select pd.complete_date_booking
         from flow.contact c
         inner join brs.project_details pd on c.id = pd.contact_id
-        where c.id = 2762384 and pd.archived is false
+        where pd.archived is false
         order by pd.complete_date_booking desc limit 1
     """;
 

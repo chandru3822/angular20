@@ -138,4 +138,45 @@ public class IncentiveQuery {
           ORDER BY lov.name
     """;
 
+  public final static String getIncentiveHistory = """
+        select
+          cf.id,
+          cf.field_name,
+          case
+              when dt.id = 6 and cdt.has_list_values is false then icfva.old_value
+              when dt.id = 6 and cdt.has_list_values is true then (
+                  select lov.name from brs.list_of_value lov where lov.id = icfva.old_value::bigint
+              )::text
+              when dt.id = 5 then icfva.old_value
+              when dt.id = 4 then icfva.old_value::text
+              when dt.id = 7 then (
+                with ids as (select unnest(string_to_array(substring(icfva.old_value from '[0-9, ]+'), ','))::int AS int_id)
+                select array_to_string(array(select lov.name from brs.list_of_value lov where lov.id in (select int_id from ids)), ', '))
+              when dt.id = 13 then icfva.old_value::text
+              end as previous_value,
+          case
+              when dt.id = 6 and cdt.has_list_values is false then icfva.new_value
+              when dt.id = 6 and cdt.has_list_values is true then (
+                  select lov.name from brs.list_of_value lov where lov.id = icfva.new_value::bigint
+              )::text
+              when dt.id = 5 then icfva.new_value
+              when dt.id = 4 then icfva.new_value::text
+              when dt.id = 7 then (
+                with ids as (select unnest(string_to_array(substring(icfva.new_value from '[0-9, ]+'), ','))::int AS int_id)
+                select array_to_string(array(select lov.name from brs.list_of_value lov where lov.id in (select int_id from ids)), ', '))
+              when dt.id = 13 then icfva.new_value::text
+              end as updated_value,
+          icfva.date_modified,
+          concat(u.first_name, ' ', u.last_name) as modified_by
+      from brs.feat_db_incentive_custom_field_value_audit icfva
+               join brs.feat_db_incentive_custom_field_value icfv on icfv.id = icfva.feat_db_incentive_custom_field_value_id
+               join brs.feat_db_incentive incentive on icfv.feat_db_incentive_id = incentive.id
+               join brs.custom_field_group_assignment cfga on icfv.custom_field_group_assignment_id = cfga.id
+               join brs.custom_field cf on cfga.custom_field_id = cf.id
+               join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+               join flow.data_type dt on cdt.data_type_id = dt.id
+               join flow."user" u on icfva.modified_by_id= u.id
+      where feat_db_incentive_id = :incentiveId
+      order by icfva.date_modified desc
+    """;
 }

@@ -3,9 +3,11 @@ package com.albatross.api.v1.company.blueraven.services.featDB;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjDesignQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjPermitContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjPermitLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjPermitQuery;
+import com.albatross.api.v1.company.blueraven.models.featDB.DatabaseHistory;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
@@ -142,6 +144,13 @@ public class AhjPermitService {
     params.put("currentUser", currentUser.trueUserId());
 
     sqlCache.updateBySql(AhjPermitLinkQuery.delete, params);
+  }
+
+  public List<DatabaseHistory> getAhjPermitHistory(Long ahjId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ahjId", ahjId);
+
+    return sqlCache.queryBySql(AhjPermitQuery.getAhjHistory, params, DatabaseHistory.class);
   }
 
   public static class AhjPermitDetailMapper<T> extends BeanPropertyRowMapper<T> {

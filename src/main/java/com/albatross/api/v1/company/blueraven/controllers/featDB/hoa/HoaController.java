@@ -89,4 +89,11 @@ public class HoaController {
   public void deleteHoaLink(@PathVariable Long linkId) {
     hoaService.deleteHoaLink(linkId);
   }
+
+  @GetMapping(value="/{hoaId}/getHoaHistory")
+  public List<DatabaseHistory> getAhjDesignHistory(@PathVariable Long hoaId) {
+    return hoaService.getHoaHistory(hoaId);
+  }
+
 }
+

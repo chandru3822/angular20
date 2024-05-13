@@ -121,4 +121,45 @@ public class HoaQuery {
            ORDER BY lov.name
     """;
 
+  public final static String getHoaHistory = """
+    select
+        cf.id,
+        cf.field_name,
+        case
+            when dt.id = 6 and cdt.has_list_values is false then hcfva.old_value
+            when dt.id = 6 and cdt.has_list_values is true then (
+                select lov.name from brs.list_of_value lov where lov.id = hcfva.old_value::bigint
+            )::text
+            when dt.id = 5 then hcfva.old_value
+            when dt.id = 4 then hcfva.old_value::text
+            when dt.id = 7 then (
+              with ids as (select unnest(string_to_array(substring(hcfva.old_value from '[0-9, ]+'), ','))::int AS int_id)
+              select array_to_string(array(select lov.name from brs.list_of_value lov where lov.id in (select int_id from ids)), ', '))
+            when dt.id = 13 then hcfva.old_value::text
+            end as previous_value,
+        case
+            when dt.id = 6 and cdt.has_list_values is false then hcfva.new_value
+            when dt.id = 6 and cdt.has_list_values is true then (
+                select lov.name from brs.list_of_value lov where lov.id = hcfva.new_value::bigint
+            )::text
+            when dt.id = 5 then hcfva.new_value
+            when dt.id = 4 then hcfva.new_value::text
+            when dt.id = 7 then (
+              with ids as (select unnest(string_to_array(substring(hcfva.new_value from '[0-9, ]+'), ','))::int AS int_id)
+              select array_to_string(array(select lov.name from brs.list_of_value lov where lov.id in (select int_id from ids)), ', '))
+            when dt.id = 13 then hcfva.new_value::text
+            end as updated_value,
+        hcfva.date_modified,
+        concat(u.first_name, ' ', u.last_name) as modified_by
+    from brs.feat_db_hoa_custom_field_value_audit hcfva
+             join brs.feat_db_hoa_custom_field_value adcfv on adcfv.id = hcfva.hoa_custom_field_value_id
+             join brs.feat_db_hoa hoa on adcfv.hoa_id = hoa.id
+             join brs.custom_field_group_assignment cfga on adcfv.custom_field_group_assignment_id = cfga.id
+             join brs.custom_field cf on cfga.custom_field_id = cf.id
+             join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+             join flow.data_type dt on cdt.data_type_id = dt.id
+             join flow."user" u on hcfva.modified_by_id= u.id
+    where hoa_id = :hoaId
+    order by hcfva.date_modified desc
+    """;
 }

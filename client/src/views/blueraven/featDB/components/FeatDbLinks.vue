@@ -138,6 +138,7 @@ const saveLink = async (newLink) => {
   if (newLink) {
     try {
       let res = null
+      debugger
       //changed to not require updates when a new feat_db gets added
       if (['permit', 'inspection', 'design'].includes(itemType.value)) {
         res = await postRequest(`/featDb/ahj/${ahjId.value}/${itemType.value}/${itemId.value}/links`, selectedLink.value, 'blueraven')

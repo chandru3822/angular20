@@ -97,4 +97,8 @@ public class AhjInspectionController {
       ahjInspectionService.deleteInspectionLink(ahjId, inspectionId, linkId);
     }
 
+    @GetMapping(value="/getAhjInspectionHistory")
+    public List<DatabaseHistory> getAhjInspectionHistory(@PathVariable Long ahjId) {
+      return ahjInspectionService.getAhjInspectionHistory(ahjId);
+    }
 }

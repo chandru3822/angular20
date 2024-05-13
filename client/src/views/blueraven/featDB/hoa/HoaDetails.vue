@@ -19,6 +19,24 @@
           <v-card class="mx-2 px-2 py-3 one-hunned square-card">
             <v-row no-gutters>
               <v-col class="form-btns" cols="12">
+                <v-menu content-class="db-change-log-menu" v-if="hasManageAccess" max-height="450" :close-on-content-click="false" offset-y>
+                  <template v-slot:activator="{on: menu, attrs }">
+                    <v-tooltip top>
+                      <template v-slot:activator="{ on: tooltip }">
+                        <a-btn
+                          variant="text"
+                          color="primary"
+                          prepend-icon="history"
+                          @click="showChangeLog = !showChangeLog"
+                          v-bind="attrs"
+                          :activation-handler="{ ...tooltip, ...menu }">
+                        </a-btn>
+                      </template>
+                      <span>History</span>
+                    </v-tooltip>
+                  </template>
+                  <DbChangeLog :history-list="changeLog"/>
+                </v-menu>
                 <a-btn
                     variant="text"
                     color="primary"
@@ -110,6 +128,7 @@ import { getCurrentInstance, computed, ref, onMounted, watch } from 'vue'
 import {useUserStore} from '@/stores/UserStore.js'
 import {useRoute, useRouter} from "vue-router/composables";
 import { useAppStore } from '@/stores/AppStore.js'
+import DbChangeLog from "@/views/blueraven/featDB/components/DbChangeLog.vue";
 
 
 const appStore = useAppStore()
@@ -142,7 +161,12 @@ const hoa = ref({})
 const totalGroups = ref(2)
 const expandedGroups = ref(2)
 const hoaForm = ref(null)
+const showChangeLog = ref(false);
+const changeLog = ref([])
 
+const hasManageAccess = computed(()  => {
+  return userStore.userHasFeatureAccessLevel('HOA', 'MANAGE')
+})
 const hoaId = computed(() => {
   return route.params.hoaId
 })
@@ -151,8 +175,21 @@ onMounted(async() => {
   await getHoa()
   await getCustomFieldGroupAssignmentsForScreen()
   dataReady.value = true
+  await getChangeLog();
 })
 
+const getChangeLog = async() => {
+  appStore.loading = true
+  try {
+    const {data, status} = await getRequest(`/featDb/hoa/${hoaId.value}/getHoaHistory`, 'blueraven')
+    changeLog.value = cloneDeep(data)
+    handleHidingGlobalLoader( status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    appStore.showSnack('ERROR', 'Error retrieving HOA Change Log')
+    appStore.loading = false
+  }
+}
 
 const updateDirtyValue = (item) => {
   item.valueWasChanged = true

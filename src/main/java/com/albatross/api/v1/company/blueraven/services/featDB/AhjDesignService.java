@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjDe
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.featDB.AhjDesign;
 import com.albatross.api.v1.company.blueraven.models.featDB.AhjDesignDetail;
+import com.albatross.api.v1.company.blueraven.models.featDB.DatabaseHistory;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
@@ -81,6 +82,12 @@ public class AhjDesignService {
     return returnValue ? getAhjDesignDetailByAhjId(ahjId) : Optional.empty();
   }
 
+  public List<DatabaseHistory> getAhjDesignHistory(Long ahjId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ahjId", ahjId);
+
+    return sqlCache.queryBySql(AhjDesignQuery.getAhjHistory, params, DatabaseHistory.class);
+  }
   public List<AhjDesign> searchAhjsByState(Long stateId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("stateId", stateId);

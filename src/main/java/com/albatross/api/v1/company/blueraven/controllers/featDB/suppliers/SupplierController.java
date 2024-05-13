@@ -84,4 +84,9 @@ public class SupplierController {
   public void deleteSupplierLink(@PathVariable Long linkId) {
     supplierService.deleteSupplierLink(linkId);
   }
+
+  @GetMapping(value="/{supplierId}/getSupplierHistory")
+  public List<DatabaseHistory> getSupplierHistory(@PathVariable Long supplierId) {
+    return supplierService.getSupplierHistory(supplierId);
+  }
 }
