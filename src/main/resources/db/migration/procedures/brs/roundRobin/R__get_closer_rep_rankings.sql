@@ -1,5 +1,6 @@
 drop function if exists brs.get_closer_rep_rankings(bigint, bigint);
-CREATE OR REPLACE FUNCTION brs.get_closer_rep_rankings(p_time_interval bigint, p_org_id bigint default null )
+drop function if exists brs.get_closer_rep_rankings(date, date,bigint);
+CREATE OR REPLACE FUNCTION brs.get_closer_rep_rankings(p_start_date date,p_end_date date, p_org_id bigint default null )
   RETURNS table
           (
             user_id              bigint,
@@ -17,11 +18,15 @@ AS
 $BODY$
 declare
   v_closer_gen_source_ids bigint[];
+v_time_interval bigint;
 BEGIN
   select (select string_to_array(value, ',')
           from flow.company_configuration_value
           where code = 'CLOSER_GEN_SOURCE_IDS')::bigint[]
   into v_closer_gen_source_ids;
+
+  select (p_end_date - p_start_date)::bigint
+  into v_time_interval;
 
   return query
     with position_ids as (select unnest(string_to_array(value, ',')::bigint[]) as id
@@ -48,7 +53,7 @@ BEGIN
         and up.archived is false
         AND pd.company_id = 3
         and (up.end_date is null or
-             up.end_date >= (now() at time zone 'US/Mountain')::date - (p_time_interval || 'day')::interval)
+             up.end_date >= (now() at time zone 'US/Mountain')::date - (v_time_interval || 'day')::interval)
       GROUP BY u.id,up.id,u.first_name,u.last_name, o.org_name, o2.org_name, lov.name
     ), results as (select foo.id                                                                           as user_id,
                           foo.name,
@@ -77,7 +82,7 @@ BEGIN
                                   inner join current_closers u on u.id = pd.closer_user_id
                                   left join LATERAL brs.get_fdc_counts(u.id, u.user_position_id,
                                                                        v_closer_gen_source_ids,
-                                                                       p_time_interval) fdc_counts on true
+                                                                       v_time_interval) fdc_counts on true
                          GROUP BY u.id, u.user_position_id, u.first_name, u.last_name,
                                   u.metro_area, u.region, u.office_name,
                                   fdc_counts.lead_gen_fdc_count,
