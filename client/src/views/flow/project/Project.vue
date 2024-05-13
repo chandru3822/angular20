@@ -745,16 +745,24 @@ const validateForm = async() => {
 }
 const saveProjectAddressFields = async () => {
   appStore.loading = true
+  let addressChanged = false
+  if(tempProject.value.street1 !== project.value.street1 ||
+      tempProject.value.city !== project.value.city ||
+      tempProject.value.postalCode !== project.value.postalCode ||
+      tempProject.value.companyStateId !== project.value.companyStateId ||
+      tempProject.value.companyCountryId !== project.value.companyCountryId
+  ){
+    addressChanged = true
+  }
   try {
     //temp project holds all the changes in case they cancel. use those values
     const {status} = await putRequest(`/project`, tempProject.value)
     appStore.showSnack('SUCCESS', 'Project Updated')
-    projectAddressChanged.value = true
+    projectAddressChanged.value = addressChanged
     handleHidingGlobalLoader( status)
   } catch (e) {
     logError(e)
     appStore.showSnack('ERROR', 'Error Saving Address')
-
     appStore.loading = false
   }
 }
