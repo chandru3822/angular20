@@ -346,6 +346,8 @@ public class TournamentQuery {
   public final static String insertLoserToLastChance = """
     insert into brs.tournament_pool_user(user_id, tournament_pool_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:loserUserId, (select id from brs.tournament_pool where tournament_id = :tournamentId and tournament_pool_type_id = 2), :userId, now(), :userId, now())
+    on conflict (user_id, tournament_pool_id) WHERE archived is false
+    do nothing;
     """;
 
   //language=PostgreSQL
