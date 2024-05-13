@@ -84,7 +84,9 @@ public class BrsProcessStepActionFunctionService {
       "IQ7X-96-2-US (240V)", "Enphase IQ7X Microinverters",
       "IQ8A-72-2-US", "Enphase IQ8A Microinverters",
       "IQ8M-72-M-US", "Enphase IQ8M Microinverters",
-      "IQ8X-80-M-US (240V)", "Enphase IQ8X Microinverters"
+      "IQ8X-80-M-US (240V)", "Enphase IQ8X Microinverters",
+      "GW9600A-MS (240V)", "GoodWe GW9600A-MS",
+      "Powerwall 3 (integrated inverter)", "Tesla Powerwall 3 (integrated inverter)"
     );
     return inverterMap.getOrDefault(inverter, null);
   }
