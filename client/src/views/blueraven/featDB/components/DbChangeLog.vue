@@ -29,8 +29,7 @@
 import {ref, computed, defineProps, onMounted, getCurrentInstance, toRefs, onBeforeMount, onBeforeUnmount} from 'vue'
 import moment from "moment";
 import DbChangeLogItem from "./DbChangeLogItem.vue"
-import cloneDeep from "lodash.clonedeep";
-import {createDBChangeLogQuery} from "@/helpers/helpers.js";
+import cloneDeep from "lodash.clonedeep"
 
 const props = defineProps({
   historyList: Array,
