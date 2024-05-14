@@ -35,7 +35,7 @@
             color="primary"
             @click="collapseMenu"
             class="py-6"
-            prepend-icon="mdi-menu"
+            :prepend-icon=" userStore.settingsMenuCollapsed ? 'mdi-menu' : 'mdi-menu-open'"
           />
         </v-card>
       </v-col>
