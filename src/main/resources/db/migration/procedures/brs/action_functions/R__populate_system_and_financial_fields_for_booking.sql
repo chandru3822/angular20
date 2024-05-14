@@ -9,7 +9,7 @@ declare
     _key   text;
     _value text;
     v_company_id bigint;
-    v_loan_type varchar;
+v_financier_id bigint;
 BEGIN
 
     select ppscfv.int_value
@@ -23,14 +23,11 @@ BEGIN
 
 
 
-    select substring(loan_type,1,position(' ' in loan_type)-1)
-    into v_loan_type
+    select financier_id
+    into  v_financier_id
     from brs.proposal_log_history
     where id = v_proposal_history_id;
 
-    if v_loan_type = 'SunPower' then
-      v_loan_type = 'SunPower Financial';
-    end if;
 
     select cp.company_id
     into v_company_id
@@ -124,15 +121,7 @@ BEGIN
                                             where cf.id = 11350
                                               and cfga.archived is false and cf.archived is false and cfg.archived is false
                                               and cf.company_id = v_company_id
-                                              and cfg.process_step_id = p_process_step_id), (select array_agg(lov2.id)::text
-                                                                                             from flow.list_of_value lov
-                                                                                                    inner join flow.custom_field cf on cf.list_of_value_id = lov.id
-                                                                                                    inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
-                                                                                               and cf.company_id = v_company_id
-                                                                                               and cf.id = 11350 and cf.archived is false
-                                                                                             where lov2.name::text in (select trim(both unnest(string_to_array(plh2.site_survey_items,','))::text)
-                                                                                                                       from brs.proposal_log_history plh2
-                                                                                                                        where plh2.id = plh.id)),
+                                              and cfg.process_step_id = p_process_step_id), plh.site_survey_item_ids::text,
                                             (select cfga.id
                                             from flow.custom_field cf
                                                    inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -245,7 +234,7 @@ BEGIN
                              where cf.parent_custom_field_id = 10307
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id), case when v_loan_type != 'Cash' then
+                               and cfg.process_step_id = p_process_step_id), case when v_financier_id != 721 then
                                                                             plh.loan_amount::numeric
                                                                                   else 0.00::numeric end,
                            (select cfga.id
@@ -324,7 +313,7 @@ BEGIN
                                                                                       inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
                                                                                  and cf.company_id = v_company_id
                                                                                  and cf.parent_custom_field_id = 10404 and cf.archived is false
-                                                                             where lov2.name::text = case when plh.optional_down_payment::numeric >  0 then 'Cash' else null end),
+                                                                             where lov2.name::text = case when plh.optional_down_payment::numeric >  0 then 'Cash' else null end),  --secondary financier
                             (select cfga.id
                              from flow.custom_field cf
                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -332,18 +321,18 @@ BEGIN
                              where cf.parent_custom_field_id = 10429
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id),( case when (v_loan_type = 'Cash' and plh.loan_amount::numeric is null) then 0.00::numeric
-                                                                                   when (v_loan_type = 'Cash' and plh.loan_amount::numeric > 0.00::numeric) then coalesce(round(plh.loan_amount::numeric,2),0)::numeric +
+                               and cfg.process_step_id = p_process_step_id),( case when (v_financier_id = 721 and plh.loan_amount::numeric is null) then 0.00::numeric
+                                                                                   when (v_financier_id = 721 and plh.loan_amount::numeric > 0.00::numeric) then coalesce(round(plh.loan_amount::numeric,2),0)::numeric +
                                                                                                                                                                  coalesce(round(optional_down_payment::numeric,2),0)::numeric + coalesce(round(required_down_payment::numeric,2),0)::numeric
-                                                                                   when (v_loan_type != 'Cash' and optional_down_payment::numeric is null and required_down_payment is null) then 0.00::numeric
-                                                                                   when (v_loan_type != 'Cash' and (optional_down_payment::numeric > 0.00::numeric or required_down_payment > 0.00::numeric)) then coalesce(round(optional_down_payment::numeric,2),0)::numeric + coalesce(round(required_down_payment::numeric,2),0)::numeric
+                                                                                   when (v_financier_id != 721 and optional_down_payment::numeric is null and required_down_payment is null) then 0.00::numeric
+                                                                                   when (v_financier_id != 721 and (optional_down_payment::numeric > 0.00::numeric or required_down_payment > 0.00::numeric)) then coalesce(round(optional_down_payment::numeric,2),0)::numeric + coalesce(round(required_down_payment::numeric,2),0)::numeric
                                                                                    else 0.00::numeric end)) as me
                  from brs.proposal_log_history plh
                  inner join brs.project_details pd on pd.project_id = plh.project_id
                  where plh.id = v_proposal_history_id) as t
                  left join lateral jsonb_each_text(t.me) f on true
     LOOP
-      --  raise notice 'cfga% value %',_key,_value;
+--        raise notice 'cfga% value %',_key,_value;
       perform flow.set_pps_cfv(p_project_id,99999999, _key::bigint, _value, true);
     END LOOP;
 
